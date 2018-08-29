@@ -5,16 +5,16 @@ package us.eunoians.mcmmox.api.configuration;
  */
 public interface Node {
 
-    /**
-     * <p>Quarry the default value of the node
-     * after the initial file generation.</p>
-     *
-     * @return default value of the node.
-     */
-    Object getDefaultValue();
+  /**
+   * <p>Quarry the default value of the node
+   * after the initial file generation.</p>
+   *
+   * @return default value of the node.
+   */
+  Object getDefaultValue();
 
-    String[] getComment();
+  String[] getComment();
 
-    String key();
+  String key();
 
 }

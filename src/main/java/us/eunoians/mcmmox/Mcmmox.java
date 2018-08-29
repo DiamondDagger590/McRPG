@@ -28,73 +28,93 @@ import java.util.List;
 
 public class Mcmmox extends JavaPlugin implements Initializable {
 
-    private static Mcmmox instance;
+  private static Mcmmox instance;
 
-    @Getter private MConfigManager mConfigManager;
-    @Getter private PluginUpdater pluginUpdater;
-    @Getter private LocalizationFiles localizationFiles;
-    @Override
-    public void onEnable() {
+  @Getter
+  private MConfigManager mConfigManager;
+  @Getter
+  private PluginUpdater pluginUpdater;
+  @Getter
+  private LocalizationFiles localizationFiles;
 
-        Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
-        getCommand("mcmmox").setExecutor(new McMMOStub());
-        getServer().getPluginManager().registerEvents(new MoveEvent(), this.getInstance());
-    }
+  @Override
+  public void onEnable() {
+    Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
+  }
 
-    @Override
-    public void onDisable() {
-        if (!Initializer.finished())
-            Initializer.interrupt();
-    }
+  @Override
+  public void onDisable() {
+    if (!Initializer.finished())
+      Initializer.interrupt();
+  }
 
-    @Initialize(priority = 0)
-    private void preInit() {
-        var configManager = new ConfigManager(this);
-        mConfigManager = new MConfigManager(configManager);
-        if (!mConfigManager.setupConfigs(
-                GeneralConfig.class, SwordsConfig.class))
-            getServer().shutdown();
-        Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
-        Locale.init(mConfigManager);
-    }
+  @Initialize(priority = 0)
+  private void preInit() {
+    var configManager = new ConfigManager(this);
+    mConfigManager = new MConfigManager(configManager);
+    if (!mConfigManager.setupConfigs(
+            GeneralConfig.class, SwordsConfig.class))
+      getServer().shutdown();
+    Logger.init("McMMOX");
+    Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
+    Locale.init(mConfigManager);
+  }
 
-    @Initialize(priority = 1)
-    private void sanity() {
-        if (ProxySelector.getDefault() == null) {
-            ProxySelector.setDefault(new ProxySelector() {
-                private final List<Proxy> DIRECT_CONNECTION = Collections.unmodifiableList(Collections.singletonList(Proxy.NO_PROXY));
-                public void connectFailed(URI arg0, SocketAddress arg1, IOException arg2) {}
-                public List<Proxy> select(URI uri) { return DIRECT_CONNECTION; }
-            });
+  // @Initialize(priority = 1)
+  // Ignore sanity while in development
+  private void sanity() {
+    if (ProxySelector.getDefault() == null) {
+      ProxySelector.setDefault(new ProxySelector() {
+        private final List<Proxy> DIRECT_CONNECTION = Collections.unmodifiableList(Collections.singletonList(Proxy.NO_PROXY));
+
+        public void connectFailed(URI arg0, SocketAddress arg1, IOException arg2) {
         }
-        pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcmmox/plinfo");
-        pluginUpdater.setOut(true);
-        if(mConfigManager.getGeneralConfig().isAutoUpdate()) {
-            if(pluginUpdater.needsUpdate())
-                pluginUpdater.update();
-            else
-                Logger.info("No updates were found!");
-        } else {
-            Logger.info("New version of McMMOX is available: " + pluginUpdater.getVersion());
-            Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
+
+        public List<Proxy> select(URI uri) {
+          return DIRECT_CONNECTION;
         }
+      });
     }
-
-    @Initialize(priority = 2)
-    private void initPrimaryInstance() {
-        localizationFiles = new LocalizationFiles(this, true);
-        instance = this;
+    pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcmmox/plinfo");
+    pluginUpdater.setOut(true);
+    if (mConfigManager.getGeneralConfig().isAutoUpdate()) {
+      if (pluginUpdater.needsUpdate())
+        pluginUpdater.update();
+      else
+        Logger.info("No updates were found!");
+    } else {
+      Logger.info("New version of McMMOX is available: " + pluginUpdater.getVersion());
+      Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
     }
+  }
 
-    public static Mcmmox getInstance() {
-        if(instance == null)
-            return new Mcmmox();
-        return instance;
-    }
+  @Initialize(priority = 2)
+  private void initPrimaryInstance() {
+    localizationFiles = new LocalizationFiles(this, true);
+    instance = this;
+  }
 
-    public GeneralConfig getGeneralConfig() {
-        return mConfigManager.getGeneralConfig();
-    }
+  @Initialize(priority = 3)
+  private void initCmds() {
+    getCommand("mcmmox").setExecutor(new McMMOStub());
+  }
 
-    public SwordsConfig getSwordsConfig(){ return mConfigManager.getSwordsConfig();}
+  @Initialize(priority = 4)
+  private void initListener() {
+    getServer().getPluginManager().registerEvents(new MoveEvent(), this);
+  }
+
+  public static Mcmmox getInstance() {
+    if (instance == null)
+      throw new NullPointerException("Plugin was not initialized.");
+    return instance;
+  }
+
+  public GeneralConfig getGeneralConfig() {
+    return mConfigManager.getGeneralConfig();
+  }
+
+  public SwordsConfig getSwordsConfig() {
+    return mConfigManager.getSwordsConfig();
+  }
 }

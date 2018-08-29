@@ -10,11 +10,11 @@ import us.eunoians.mcmmox.gui.GUI;
 import us.eunoians.mcmmox.gui.GUIEventBinder;
 import us.eunoians.mcmmox.gui.GUITracker;
 
-public class InvClickEvent implements Listener{
+public class InvClickEvent implements Listener {
 
-    //TODO for Diamond to do. Overhaul old system and recreate it to be functional for what we want
-    @EventHandler
-    public void invClickEvent(InventoryClickEvent e) {
+  //TODO for Diamond to do. Overhaul old system and recreate it to be functional for what we want
+  @EventHandler
+  public void invClickEvent(InventoryClickEvent e) {
         /*
         Player p = (Player) e.getWhoClicked();
         if(GUITracker.isPlayerTracked(p)) {
@@ -207,6 +207,6 @@ public class InvClickEvent implements Listener{
 
             }
         }*/
-    }
+  }
 
 }

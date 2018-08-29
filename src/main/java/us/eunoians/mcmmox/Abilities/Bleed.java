@@ -5,11 +5,11 @@ import us.eunoians.mcmmox.util.Parser;
 
 public class Bleed extends BaseAbility {
 
-    private Parser bleedChanceEquation;
+  private Parser bleedChanceEquation;
 
-    public Bleed(){
-        super(DefaultAbilities.BLEED, true);
-    }
+  public Bleed() {
+    super(DefaultAbilities.BLEED, true);
+  }
 
 
 }

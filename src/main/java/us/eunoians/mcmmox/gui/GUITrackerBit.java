@@ -9,25 +9,29 @@ This class holds the players previous and current gui so that way back buttons c
  */
 public class GUITrackerBit {
 
-    @Getter @Setter private GUI currentGUI;
-    @Getter @Setter private GUI previousGUI;
+  @Getter
+  @Setter
+  private GUI currentGUI;
+  @Getter
+  @Setter
+  private GUI previousGUI;
 
-    public GUITrackerBit(GUI currentGUI, GUI previousGUI){
-        this.currentGUI = currentGUI;
-        this.previousGUI = previousGUI;
-    }
+  public GUITrackerBit(GUI currentGUI, GUI previousGUI) {
+    this.currentGUI = currentGUI;
+    this.previousGUI = previousGUI;
+  }
 
-    public GUITrackerBit(GUI currentGUI){
-        this.currentGUI = currentGUI;
-        this.previousGUI = null;
-    }
+  public GUITrackerBit(GUI currentGUI) {
+    this.currentGUI = currentGUI;
+    this.previousGUI = null;
+  }
 
-    public boolean hasPreviousGUI(){
-        if(previousGUI == null){
-            return false;
-        }
-        return true;
+  public boolean hasPreviousGUI() {
+    if (previousGUI == null) {
+      return false;
     }
+    return true;
+  }
 
 
 }

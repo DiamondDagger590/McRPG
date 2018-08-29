@@ -7,10 +7,10 @@ import us.eunoians.mcmmox.players.PlayerManager;
 
 public class MoveEvent implements Listener {
 
-    @EventHandler
-    public void playerMove(PlayerMoveEvent e){
-        if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
-            e.setCancelled(true);
-        }
+  @EventHandler
+  public void playerMove(PlayerMoveEvent e) {
+    if (PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())) {
+      e.setCancelled(true);
     }
+  }
 }

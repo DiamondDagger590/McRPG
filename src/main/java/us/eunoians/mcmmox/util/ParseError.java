@@ -2,13 +2,13 @@ package us.eunoians.mcmmox.util;
 
 /**
  * Copyright 2006 Bertoli Marco
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,39 +27,40 @@ package us.eunoians.mcmmox.util;
  * @version 1.0
  */
 public class ParseError extends RuntimeException {
-    /**
-     *
-     */
-    private static final long serialVersionUID = -3688639666380211029L;
-    private int position;
-    /**
-     * Basic constructor
-     * @param str Error description
-     * @param position Position that generated error in input string
-     */
-    public ParseError (String str, int position) {
-        super(str);
-        this.position = position;
-    }
+  /**
+   *
+   */
+  private static final long serialVersionUID = -3688639666380211029L;
+  private int position;
 
-    /**
-     * Get position that generated error in input string
-     * @return position
-     */
-    public int getPosition() {
-        return position;
-    }
+  /**
+   * Basic constructor
+   * @param str Error description
+   * @param position Position that generated error in input string
+   */
+  public ParseError(String str, int position) {
+    super(str);
+    this.position = position;
+  }
 
-    public ParseError(String message) {
-        super(message);
-    }
+  /**
+   * Get position that generated error in input string
+   * @return position
+   */
+  public int getPosition() {
+    return position;
+  }
 
-    public ParseError(Throwable cause) {
-        super(cause);
-    }
+  public ParseError(String message) {
+    super(message);
+  }
 
-    public ParseError(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public ParseError(Throwable cause) {
+    super(cause);
+  }
+
+  public ParseError(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }
