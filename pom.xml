@@ -50,7 +50,8 @@
         <dependency>
             <groupId>com.github.cyr1en</groupId>
             <artifactId>mcutils</artifactId>
-            <version>master-SNAPSHOT</version>
+            <version>9d852add79</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
