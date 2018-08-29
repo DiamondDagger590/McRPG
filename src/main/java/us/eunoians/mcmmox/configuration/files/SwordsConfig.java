@@ -47,7 +47,7 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
                 " %power_level% - The power level of the player", " %skill_level% - The skill level of the player", " "}, "1000*1.2^%skill_level%"),
         MATERIALBONUS("MaterialBonus", new String[]{""}, MaterialBonusChildren.values()),
         EXPAWARDEDPERMOB("ExpAwardedPerMob", new String[]{""}, ExpAwardedPerMobChildren.values()),
-        ISBLEEDENABLED("IsBleedEnabled", new String[] {" ", " Bleed is the default ability that every player has. " +
+        ISBLEEDENABLED("IsBleedEnabled", new String[] {" ", " Bleed is the default ability that every player has ",
                 "This ability will increase every  time the players Swords level is increased", " ", "Is Bleed enabled on the server"}, true),
         BLEEDCONFIG("BleedConfig", new String[]{""}, BleedConfigChildren.values());
 
@@ -61,7 +61,6 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
             this.defaultValue = defaultValue;
         }
 
-        @Override
         public String key() {
             return key;
         }
@@ -85,7 +84,6 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
         }
 
 
-        @Override
         public String key() {
             return this.key;
         }
@@ -158,8 +156,6 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
             this.defaultValue = defaultValue;
         }
 
-
-        @Override
         public String key() {
             return this.key;
         }
@@ -185,8 +181,6 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
             this.defaultValue = defaultValue;
         }
 
-
-        @Override
         public String key() {
             return this.key;
         }
@@ -207,7 +201,6 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
 
         }
 
-        @Override
         public String key(){ return this.key;}
     }
 
@@ -227,7 +220,6 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
             this.defaultValue = defaultValue;
         }
 
-        @Override
         public String key() {return this.key;}
 
     }
