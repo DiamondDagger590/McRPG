@@ -1,0 +1,10 @@
+name: McMMOX
+version: 0.0.1
+author: Eunoians
+description: Some description
+main: us.eunoians.mcmmox.Mcmmox
+
+commands:
+  mcmmox:
+    description: Opens the main menu for McMMOX
+    aliases: [mcmmo, mmo]

@@ -1,0 +1,45 @@
+Gui:
+  MainGUI:
+    Size: 27
+    Title: '&bMain McMMOx Menu'
+    Events:
+      10:
+        - 'OpenFile:abilityloadoutgui:AbilityGUI'
+      12:
+        - 'OpenFile:skillsgui:SkillGUI'
+      14:
+        - 'OpenFile:abilityupgradegui:AbilityUpgradeGUI'
+      16:
+        - 'OpenFile:abilityloadouteditgui:AbilityLoadOutGUI'
+    Items:
+      PlayerSkull:
+        Name: '&eYour Profile'
+        Material: PLAYER_HEAD
+        Owner: '%Player%'
+        Lore:
+          - '&eCurrent Power Level: &a%Power_Level%'
+          - '&eClick this to view your ability loadout'
+          - '&eYou can also change your personal settings'
+        Slot: 10
+      Skill_Menu:
+        Name: '&cSkill Menu'
+        Material: DIAMOND_SWORD
+        Lore:
+          - '&eClick this to view information about all of your skills'
+        Slot: 12
+      Upgrade_Abilities:
+        Name: '&lUpgrade Abilities'
+        Material: NETHER_STAR
+        Lore:
+          - '&eClick this to upgrade your abilites'
+          - '&eYou have %Ability_Points% to spend'
+        Slot: 14
+      Ability_Loadout:
+        Name: '&bEdit Ability Loadout'
+        Material: COMPASS
+        Lore:
+          - '&eClick this to edit your ability loadout'
+        Slot: 16
+    FillerItem:
+      Material: GRAY_STAINED_GLASS_PANE
+      Name: ' '

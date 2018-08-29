@@ -1,0 +1,190 @@
+#Is swords enabled
+SwordsEnabled: true
+#Exp equation for swords. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+#
+SwordsExpEquation: '1000*1.2^%power_level%'
+#If different materials of swords should give more exp. WOOD_SWORD: 1.0 means 100% of default exp
+MaterialBonus:
+  WOOD_SWORD: 1.0
+  STONE_SWORD: 1.1
+  GOLD_SWORD: 1.5
+  IRON_SWORD: 1.25
+  DIAMOND_SWORD: 1.3
+#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
+#Ex) Spider gives 30 exp. Deal 3 damage, get 90 exp with a wood sword
+ExpAwardedPerMob:
+#When a mob not on this list is hit, OTHER is used instead
+  OTHER: 5
+  ZOMBIE: 35
+  HUSK: 40
+#  DROWNED: 40
+  SPIDER: 30
+  CAVE_SPIDER: 35
+  CREEPER: 40
+  ENDERMAN: 55
+  SKELETON: 40
+  STRAY: 45
+  WITHER_SKELETON: 50
+  BLAZE: 50
+  GHAST: 75
+#  PHANTOM: 50
+#  FISH: 10
+#  TURTLE: 15
+#What abilities are enabled
+EnabledAbilities:
+  Bleed: true
+  BleedPlus: true
+  DeeperWound: true
+  Vampire: true
+  RageSpike: true
+  SerratedStrikes: true
+  TaintedBlade: true
+#If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
+#they will be required to swap the ability instead of getting a chance at replacing it right away for free
+#Perms will be mcmmox.swords.{ability}
+UsePermsForAbilites:
+  Bleed: false
+  BleedPlus: false
+  DeeperWound: false
+  Vampire: false
+  RageSpike: false
+  SerratedStrikes: false
+  TaintedBlade: false
+#At what swords level should these abilities be unlocked at
+UnlockLevelForAbility:
+  BleedPlus: 50
+  SerratedStrikes: 150
+  DeeperWound: 225
+  RageSpike: 300
+  Vampire: 450
+  TaintedBlade: 600
+#
+# Bleed is the default ability that every player has. This ability will increase every time the players Swords level is increased
+#
+BleedConfig:
+#Equation for bleed chance. Default gives 33% at level 1000.
+  BleedChanceEquation: (%Swords_Level%)*.033
+#How the amount of health that bleed cant go lower than. Ex) if set to 4, bleed wont bring the player below two hearts
+  MinimumHealthAllowed: 1
+#How long bleed should last for without DeeperSlash in seconds
+  BaseDuration: 6
+#How often should bleed be applied in seconds
+  Frequency: 2
+#How much damage it should deal without BleedPlus
+  BaseDamage: 1
+#Grant immunity from bleed for a short bit after it has been applied
+  BleedImmunityEnabled: true
+#Duration of the immunity in seconds
+  BleedImmunityDuration: 5
+#
+# Config for the ability Bleed+
+# This passive ability increases the damage the the default ability Bleed applies
+#
+BleedPlusConfig:
+#How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+#At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 225
+    TierIV: 325
+    TierV: 500
+#% Chance of Bleed+ occurring per tier
+  TierChanceOfActivation:
+    TierI: 10.0
+    TierII: 12.5
+    TierIII: 17.5
+    TierIV: 22.5
+    TierV: 25.0
+#How much should the damage increase when Bleed+ occurs
+  BleedPlusModifier: 1
+#
+# Config for the ability Deeper Wound
+# This ability extends the duration of the Bleed effect
+#
+DeeperWoundConfig:
+#How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+#At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 300
+    TierIII: 450
+    TierIV: 600
+    TierV: 750
+#Config for each Tier
+  TierI:
+#The chance of DeeperWound occurring per tier
+    ActivationChance: 33.3
+#How much the duration of Bleed is boosted in seconds per tier
+    DurationBoost: 2
+  TierII:
+    ActivationChance: 40.0
+    DurationBoost: 2
+  TierIII:
+    ActivationChance: 45.0
+    DurationBoost: 5
+  TierIV:
+    ActivationChance: 60.0
+    DurationBoost: 6
+  TierV:
+    ActivationChance: 75.0
+    DurationBoost: 8
+#
+# Config for the ability Vampire
+# This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
+#
+VampireConfig:
+#How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+#At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 550
+    TierIII: 650
+    TierIV: 800
+    TierV: 900
+#Config for each tier
+  TierI:
+#Odds of activation per tier
+    ActivationChance: 50.0
+  TierII:
+    ActivationChance: 60.0
+  TierIII:
+    ActivationChance: 70.0
+  TierIV:
+    ActivationChance: 80.0
+  TierV:
+    ActivationChance: 90.0
+#
+# Config for the ability Serrated Strikes
+# This active ability increases the chance of applying bleed for a short time
+#
+SerratedStrikesConfig:
+#How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+#At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 475
+    TierV: 600
+#Config for each tier
+  TierI:
+#How much should the activation rate be boosted at each tier
+    ActivationBoost: 5.0
+#Duration of the ability at each tier in seconds
+    Duration: 3
+  TierII:
+    ActivationBoost: 7.5
+    Duration: 3
+  TierIII:
+    ActivationBoost: 10.0
+    Duration: 5
+  TierIV:
+    ActivationBoost: 15.0
+    Duration: 5
+  TierV:
+    ActivationBoost: 20.0
+    Duration: 8
