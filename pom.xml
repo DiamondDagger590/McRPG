@@ -14,6 +14,18 @@
     <artifactId>Mcmmox</artifactId>
     <version>1.0-SNAPSHOT</version>
     <build>
+        <defaultGoal>clean install</defaultGoal>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+            <targetPath>.</targetPath>
+            <filtering>true</filtering>
+            <directory>${basedir}/src/main/resources/</directory>
+            <includes>
+                    <include>*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -25,7 +25,7 @@ public class PlayerManager {
   private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
   private static Plugin plugin = Bukkit.getPluginManager().getPlugin("McMMOX");
 
-  public void addMcMMOPlayer(Player player, boolean freeze) {
+  public static void addMcMMOPlayer(Player player, boolean freeze) {
     UUID uuid = player.getUniqueId();
     if (freeze) {
       playersFrozen.add(uuid);
@@ -33,6 +33,8 @@ public class PlayerManager {
     BukkitTask task = new BukkitRunnable() {
       public void run() {
         McMMOPlayer mp = new McMMOPlayer(uuid);
+        players.add(mp);
+
         playersFrozen.remove(uuid);
       }
     }.runTaskAsynchronously(plugin);

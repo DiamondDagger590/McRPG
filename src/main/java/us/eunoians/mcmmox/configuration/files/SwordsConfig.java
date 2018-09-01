@@ -76,12 +76,9 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
     IRON_SWORD("IRON_SWORD", new String[]{""}, 1.2),
     DIAMOND_SWORD("DIAMOND_SWORD", new String[]{""}, 1.3);
 
-    @Getter
-    private String key;
-    @Getter
-    private String[] comment;
-    @Getter
-    private Object defaultValue;
+    @Getter private String key;
+    @Getter private String[] comment;
+    @Getter private Object defaultValue;
 
     MaterialBonusChildren(String key, String[] comment, Object defaultValue) {
       this.key = key;
@@ -89,7 +86,7 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
       this.defaultValue = defaultValue;
     }
 
-
+	@Override
     public String key() {
       return this.key;
     }
@@ -165,6 +162,7 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
       this.defaultValue = defaultValue;
     }
 
+    @Override
     public String key() {
       return this.key;
     }
@@ -193,6 +191,7 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
       this.defaultValue = defaultValue;
     }
 
+    @Override
     public String key() {
       return this.key;
     }
@@ -216,6 +215,7 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
 
     }
 
+    @Override
     public String key() {
       return this.key;
     }
@@ -240,6 +240,7 @@ public class SwordsConfig extends BaseConfig implements SkillConfig {
       this.defaultValue = defaultValue;
     }
 
+    @Override
     public String key() {
       return this.key;
     }

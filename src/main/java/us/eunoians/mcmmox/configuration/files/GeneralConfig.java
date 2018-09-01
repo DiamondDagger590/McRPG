@@ -51,6 +51,7 @@ public class GeneralConfig extends BaseConfig {
       this.defaultValue = defaultValue;
     }
 
+    @Override
     public String key() {
       return key;
     }
@@ -73,6 +74,7 @@ public class GeneralConfig extends BaseConfig {
       this.defaultValue = defaultValue;
     }
 
+    @Override
     public String key() {
       return this.key;
     }
