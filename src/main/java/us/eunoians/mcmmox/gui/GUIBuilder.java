@@ -12,9 +12,9 @@ import org.bukkit.inventory.meta.SkullMeta;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
+import us.eunoians.mcmmox.util.IOUtil;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,23 +63,12 @@ public class GUIBuilder {
 		this.player = player;
 		this.rawFileName = fileName;
 		this.f = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "guis" + File.separator + fileName);
-		System.out.println("I hate my code");
-		if (!f.exists()) {
-			try {
-				System.out.println("I still hate my code");
-				File en = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "guis" + File.separator + "guis/maingui.yml");
-				InputStream E = getClass().getResourceAsStream(File.separator + "resources" + File.separator + "guis" + File.separator + "guis/maingui.yml");
-				Mcmmox.getInstance().copyFile(E, en);
-				System.out.println("Why you do dis");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		if (!f.exists())
+      IOUtil.saveResource(Mcmmox.getInstance(), "guis" + "/" + fileName, false);
     this.config =YamlConfiguration.loadConfiguration(f);
     this.rawPath =guiPath;
     this.path ="GUI."+guiPath +".";
     this.inv =
-
 	generateGUI();
     this.boundEvents =
 

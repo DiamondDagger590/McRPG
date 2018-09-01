@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.var;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.commands.McMMOStub;
 import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.GeneralConfig;
@@ -34,9 +33,6 @@ import java.util.List;
 public class Mcmmox extends JavaPlugin implements Initializable {
 
   private static Mcmmox instance;
-
-  @Getter
-  private FileManager fileManager;
   @Getter
   private MConfigManager mConfigManager;
   @Getter
@@ -55,32 +51,14 @@ public class Mcmmox extends JavaPlugin implements Initializable {
       Initializer.interrupt();
   }
 
-  private void loadGuiFiles() {
-    File mainGui = new File(this.getDataFolder(), File.separator + "guis" + File.separator + "guis/maingui.yml");
-    System.out.println("I hate my code");
-    if (!mainGui.exists()) {
-      try {
-        System.out.println("I still hate my code");
-        File en = new File(this.getDataFolder(), File.separator + "guis" + File.separator + "guis/maingui.yml");
-        InputStream E = getClass().getResourceAsStream(File.separator + "guis" + File.separator + "guis/maingui.yml");
-        copyFile(E, en);
-        System.out.println("Why you do dis");
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
   @Initialize(priority = 0)
   private void preInit() {
     var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
-    fileManager = new FileManager();
     if (!mConfigManager.setupConfigs(
             GeneralConfig.class, SwordsConfig.class))
       getServer().shutdown();
     Bukkit.getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
-    fileManager.setup(this);
     Logger.init("McMMOX");
     Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
     Locale.init(mConfigManager);
