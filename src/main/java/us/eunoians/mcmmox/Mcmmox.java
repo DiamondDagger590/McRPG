@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.var;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.commands.McMMOStub;
 import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.GeneralConfig;
@@ -18,6 +19,7 @@ import us.eunoians.mcmmox.events.vanilla.MoveEvent;
 import us.eunoians.mcmmox.events.vanilla.PlayerLoginEvent;
 import us.eunoians.mcmmox.localization.Locale;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
+import us.eunoians.mcmmox.util.IOUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,6 +41,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private PluginUpdater pluginUpdater;
   @Getter
   private LocalizationFiles localizationFiles;
+  @Getter
+  private FileManager fileManager;
 
   @Override
   public void onEnable() {
@@ -59,6 +63,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
             GeneralConfig.class, SwordsConfig.class))
       getServer().shutdown();
     Bukkit.getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
+    Bukkit.getServer().getPluginManager().registerEvents(new MoveEvent(), this);
+    fileManager = FileManager.getInstance().setup(this);
     Logger.init("McMMOX");
     Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
     Locale.init(mConfigManager);
@@ -142,4 +148,6 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   public SwordsConfig getSwordsConfig() {
     return mConfigManager.getSwordsConfig();
   }
+
+  public FileManager getFileManager(){return fileManager;}
 }

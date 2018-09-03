@@ -45,16 +45,16 @@ public class McMMOPlayer {
   /**
    * The array of skills for the player
    */
-  private ArrayList<Skill> skills;
+  private ArrayList<Skill> skills = new ArrayList<>();
   /**
    * The abilities a player has unlocked and has not yet accepted or denied. Whenever a player next opens the mcmmo main gui they should be forced to go through these
    */
   @Getter
-  private ArrayList<GenericAbility> pendingUnlockAbilities;
+  private ArrayList<GenericAbility> pendingUnlockAbilities = new ArrayList<>();
   /**
    * A map containing a enum key and a long for the end time in milis of the ability
    */
-  private HashMap<GenericAbility, Long> abilitiesOnCooldown;
+  private HashMap<GenericAbility, Long> abilitiesOnCooldown = new HashMap<>();
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -117,7 +117,8 @@ public class McMMOPlayer {
   public int updatePowerLevel() {
     if (skills.isEmpty()) {
       powerLevel = 0;
-    } else {
+    }
+    else {
       final AtomicInteger powerLevelUpdater = new AtomicInteger(0);
       skills.stream().forEach(skill -> powerLevelUpdater.addAndGet(skill.getCurrentLevel()));
       this.powerLevel = powerLevelUpdater.get();

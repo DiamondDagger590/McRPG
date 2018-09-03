@@ -16,16 +16,20 @@ import us.eunoians.mcmmox.util.Parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class PlayerManager {
 
   //Players who are currently logged on
-  private static ArrayList<McMMOPlayer> players = new ArrayList<McMMOPlayer>();
+  private static HashMap<UUID, McMMOPlayer> players = new HashMap<>();
   private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
-  private static Plugin plugin = Bukkit.getPluginManager().getPlugin("McMMOX");
+  private static Plugin plugin = Mcmmox.getInstance();
 
   public static void addMcMMOPlayer(Player player, boolean freeze) {
+    if(players.containsKey(player.getUniqueId())){
+      return;
+    }
     UUID uuid = player.getUniqueId();
     if (freeze) {
       playersFrozen.add(uuid);
@@ -33,8 +37,7 @@ public class PlayerManager {
     BukkitTask task = new BukkitRunnable() {
       public void run() {
         McMMOPlayer mp = new McMMOPlayer(uuid);
-        players.add(mp);
-
+        players.put(uuid, mp);
         playersFrozen.remove(uuid);
       }
     }.runTaskAsynchronously(plugin);
@@ -45,7 +48,7 @@ public class PlayerManager {
   }
 
   public static McMMOPlayer getPlayer(UUID uuid) {
-    return players.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    return players.get(uuid);
   }
 
 

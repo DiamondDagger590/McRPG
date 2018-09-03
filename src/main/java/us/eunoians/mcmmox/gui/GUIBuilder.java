@@ -1,11 +1,13 @@
 package us.eunoians.mcmmox.gui;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -46,10 +48,6 @@ public class GUIBuilder {
 	@Getter
 	private ArrayList<GUIEventBinder> boundEvents;
 	/**
-	 * The file instance
-	 */
-	private File f;
-	/**
 	 * The file configuration instance
 	 */
 	private FileConfiguration config;
@@ -59,33 +57,57 @@ public class GUIBuilder {
 	@Getter
 	private McMMOPlayer player;
 
+	@Getter @Setter
+	private GUIFunction replacePlaceHoldersFunction = (McMMOPlayer player) ->{
+		if (rawPath.equalsIgnoreCase("MainGUI")) {
+			for(int i = 0; i < this.getInv().getSize(); i++){
+				ItemStack item = getInv().getItem(i);
+				if(item.hasItemMeta() && item.getItemMeta().hasLore()) {
+					ItemMeta meta = item.getItemMeta();
+					List<String> lore = new ArrayList<>();
+					meta.getLore().stream().forEach(s -> lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
+							.replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints()))));
+					meta.setLore(lore);
+					item.setItemMeta(meta);
+					getInv().setItem(i, item);
+				}
+				continue;
+			}
+		}
+	};
+
+	/**
+	 * Used when loading a gui from a file. Typical usage would be when loading a custom gui that isnt defined in FileManager
+	 * @param fileName
+	 * @param guiPath
+	 * @param player
+	 */
 	public GUIBuilder(String fileName, String guiPath, McMMOPlayer player) {
 		this.player = player;
-		this.rawFileName = fileName;
-		this.f = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "guis" + File.separator + fileName);
+		File f = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "guis" + File.separator + fileName);
 		if (!f.exists())
-      IOUtil.saveResource(Mcmmox.getInstance(), "guis" + "/" + fileName, false);
-    this.config =YamlConfiguration.loadConfiguration(f);
-    this.rawPath =guiPath;
-    this.path ="GUI."+guiPath +".";
-    this.inv =
-	generateGUI();
-    this.boundEvents =
+    		 IOUtil.saveResource(Mcmmox.getInstance(), "guis" + "/" + fileName, false);
+   		this.config = YamlConfiguration.loadConfiguration(f);
+    	this.rawPath = guiPath;
+    	this.path = "Gui." + guiPath +".";
+    	this.inv =	generateGUI();
+    	this.boundEvents =	bindEvents();
+	}
 
-	bindEvents();
-
-}
-
-	public GUIBuilder(String fileName, String guiPath, FileConfiguration config, File f, McMMOPlayer player) {
+	/**
+	 * Used when loading a gui from a file thats been preloaded
+	 * @param fileName
+	 * @param guiPath
+	 * @param config
+	 * @param player
+	 */
+	public GUIBuilder(String fileName, String guiPath, FileConfiguration config, McMMOPlayer player) {
 		this.player = player;
-		this.rawFileName = fileName;
 		this.rawPath = guiPath;
 		this.config = config;
-		this.path = "GUI." + guiPath + ".";
-		this.f = f;
+		this.path = "Gui." + guiPath + ".";
 		this.inv = generateGUI();
 		this.boundEvents = bindEvents();
-
 	}
 
 	/**
@@ -94,13 +116,13 @@ public class GUIBuilder {
 	 * @return A new gui builder that is the same contents as the previous one but this will update placeholders.
 	 */
 	public GUIBuilder clone() {
-		return new GUIBuilder(this.rawFileName, this.rawPath, this.config, this.f, this.player);
+		return new GUIBuilder(this.rawFileName, this.rawPath, this.config, this.player);
 	}
 
 	private Inventory generateGUI() {
 		Inventory inv = Bukkit.createInventory(null, config.getInt(path + "Size"),
 				Methods.color(config.getString(path + "Title")));
-		items = new ArrayList<GUIItem>();
+		items = new ArrayList<>();
 		for (String itemName : config.getConfigurationSection(path + "Items").getKeys(false)) {
 			ItemStack item;
 			Material type = Material.getMaterial(config.getString(path + "Items." + itemName + ".Material"));
@@ -117,6 +139,7 @@ public class GUIBuilder {
 				meta.setLore(lore);
 			}
 			item.setItemMeta(meta);
+			item.getItemMeta().addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			GUIItem i = new GUIItem(item, config.getInt(path + ".Items." + itemName + ".Slot"));
 			items.add(i);
 		}
@@ -137,7 +160,6 @@ public class GUIBuilder {
 		}
 		inv = Methods.fillInventory(inv, filler, items);
 		return inv;
-
 	}
 
 	private ArrayList<GUIEventBinder> bindEvents() {
@@ -157,17 +179,7 @@ public class GUIBuilder {
 	}
 
 	public void replacePlaceHolders(McMMOPlayer player) {
-		if (rawPath.equalsIgnoreCase("MainGUI")) {
-			items.stream().filter(i -> i.getItemStack().hasItemMeta()).filter(i -> i.getItemStack().getItemMeta().hasLore()).forEach(i -> {
-				ItemMeta meta = i.getItemStack().getItemMeta();
-				List<String> lore2 = new ArrayList<>();
-				meta.getLore().stream().forEach(s -> {
-					lore2.add(s.replaceAll("%Power_Level", Integer.toString(player.getPowerLevel())).replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));
-				});
-				meta.setLore(lore2);
-				i.getItemStack().setItemMeta(meta);
-			});
-		}
+		replacePlaceHoldersFunction.replacePlaceHolders(player);
 	}
 
 }
