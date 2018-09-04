@@ -4,13 +4,13 @@ Gui:
     Title: '&bMain McMMOx Menu'
     Events:
       10:
-        - 'OpenFile:abilityloadoutgui:AbilityGUI'
+        - 'OpenFile:settingsgui.yml:SettingsGUI'
       12:
-        - 'OpenFile:skillsgui:SkillGUI'
+        - 'OpenFile:skillsgui.yml:SkillGUI.yml'
       14:
-        - 'OpenFile:abilityupgradegui:AbilityUpgradeGUI'
+        - 'OpenFile:abilityupgradegui.yml:AbilityUpgradeGUI'
       16:
-        - 'OpenFile:abilityloadouteditgui:AbilityLoadOutGUI'
+        - 'OpenFile:abilityloadoutgui.yml:AbilityLoadOutGUI'
     Items:
       PlayerSkull:
         Name: '&2Your Profile'

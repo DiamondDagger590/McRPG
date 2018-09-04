@@ -54,7 +54,7 @@ public class FileManager {
 			if(log) System.out.println(prefix + "Loading the " + file.getFileName());
 			if(!newFile.exists()) {
 				try {
-					IOUtil.saveResource(Mcmmox.getInstance(), file.fileLocation, false);
+					IOUtil.saveResource((Mcmmox) plugin, file.fileLocation, false);
 				}catch(Exception e) {
 					if(log) System.out.println(prefix + "Failed to load " + file.getFileName());
 					e.printStackTrace();
@@ -282,7 +282,8 @@ public class FileManager {
 	public enum Files {
 
 		//ENUM_NAME("FileName.yml", "FilePath.yml"),
-		MAIN_GUI("maingui.yml", "guis/maingui.yml");
+		MAIN_GUI("maingui.yml", "guis/maingui.yml"),
+		CONFIG("config.yml", "config.yml");
 
 		private String fileName;
 		private String fileLocation;

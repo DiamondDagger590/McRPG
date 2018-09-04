@@ -8,9 +8,12 @@ public class HomeGUI extends GUI {
 
   private static FileManager fm = Mcmmox.getInstance().getFileManager();
   private static FileManager.Files file = FileManager.Files.MAIN_GUI;
-  public HomeGUI(McMMOPlayer p) {
-    super(new GUIBuilder(file.getFileName(),"MainGUI", fm.getFile(file), p));
-    this.getGui().replacePlaceHolders(p);
-  }
 
+  public HomeGUI(McMMOPlayer p) {
+    super(new GUIBuilder("MainGUI", fm.getFile(file), p));
+    this.getGui().replacePlaceHolders(p);
+    if(!GUITracker.isPlayerTracked(p)){
+      GUITracker.trackPlayer(p , this);
+    }
+  }
 }

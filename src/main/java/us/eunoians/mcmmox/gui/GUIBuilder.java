@@ -22,54 +22,32 @@ import java.util.List;
 
 public class GUIBuilder {
 
-	/**
-	 * The actual file path of the gui inside of the file
-	 */
 	@Getter
 	private String path;
-	/**
-	 * The inventory or the actual 'gui'
-	 */
 	@Getter
 	private Inventory inv;
-	/**
-	 * The name of the gui file path without the folder modifications
-	 */
 	@Getter
 	private String rawPath;
-	/**
-	 * The name of the file the gui is located in
-	 */
-	@Getter
-	private String rawFileName;
-	/**
-	 * An array of events that are bound to slots
-	 */
 	@Getter
 	private ArrayList<GUIEventBinder> boundEvents;
-	/**
-	 * The file configuration instance
-	 */
 	private FileConfiguration config;
-
 	private ArrayList<GUIItem> items;
-
 	@Getter
 	private McMMOPlayer player;
 
 	@Getter @Setter
-	private GUIFunction replacePlaceHoldersFunction = (McMMOPlayer player) ->{
-		if (rawPath.equalsIgnoreCase("MainGUI")) {
-			for(int i = 0; i < this.getInv().getSize(); i++){
-				ItemStack item = getInv().getItem(i);
+	private static GUIFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
+		if (guiBuilder.getRawPath().equalsIgnoreCase("MainGUI")) {
+			for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
+				ItemStack item = guiBuilder.getInv().getItem(i);
 				if(item.hasItemMeta() && item.getItemMeta().hasLore()) {
 					ItemMeta meta = item.getItemMeta();
 					List<String> lore = new ArrayList<>();
-					meta.getLore().stream().forEach(s -> lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
-							.replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints()))));
+					meta.getLore().stream().forEach(s -> lore.add(s.replaceAll("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
+							.replaceAll("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))));
 					meta.setLore(lore);
 					item.setItemMeta(meta);
-					getInv().setItem(i, item);
+					guiBuilder.getInv().setItem(i, item);
 				}
 				continue;
 			}
@@ -96,12 +74,11 @@ public class GUIBuilder {
 
 	/**
 	 * Used when loading a gui from a file thats been preloaded
-	 * @param fileName
 	 * @param guiPath
 	 * @param config
 	 * @param player
 	 */
-	public GUIBuilder(String fileName, String guiPath, FileConfiguration config, McMMOPlayer player) {
+	public GUIBuilder(String guiPath, FileConfiguration config, McMMOPlayer player) {
 		this.player = player;
 		this.rawPath = guiPath;
 		this.config = config;
@@ -116,7 +93,7 @@ public class GUIBuilder {
 	 * @return A new gui builder that is the same contents as the previous one but this will update placeholders.
 	 */
 	public GUIBuilder clone() {
-		return new GUIBuilder(this.rawFileName, this.rawPath, this.config, this.player);
+		return new GUIBuilder(this.rawPath, this.config, this.player);
 	}
 
 	private Inventory generateGUI() {
@@ -179,7 +156,7 @@ public class GUIBuilder {
 	}
 
 	public void replacePlaceHolders(McMMOPlayer player) {
-		replacePlaceHoldersFunction.replacePlaceHolders(player);
+		replacePlaceHoldersFunction.replacePlaceHolders(this);
 	}
 
 }
