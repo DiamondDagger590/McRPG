@@ -103,7 +103,8 @@ public class McMMOPlayer {
 			if(skill.equals(Skills.SWORDS)){
 				Bleed bleed = new Bleed();
 				abilityMap.put(DefaultAbilities.BLEED, bleed);
-				Swords swords = new Swords(playerData.getInt("Swords.Level"), playerData.getInt("Swords.CurrentExp"), abilityMap);
+				Swords swords = new Swords(playerData.getInt("Swords.Level"),
+					playerData.getInt("Swords.CurrentExp"), abilityMap, this);
 				skills.add(swords);
 			}
 		});

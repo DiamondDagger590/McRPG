@@ -9,6 +9,7 @@ import us.eunoians.mcmmox.Abilities.Bleed;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.SwordsConfig;
+import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.types.GenericAbility;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.util.Parser;
@@ -25,8 +26,8 @@ public class Swords extends Skill {
    * @param currentLevel The current level of the players swords skill
    * @param currentExp   The current exp amount of the players swords skill
    */
-  public Swords(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map) {
-    super(Skills.SWORDS, map, currentLevel, currentExp);
+  public Swords(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map, McMMOPlayer player) {
+    super(Skills.SWORDS, map, currentLevel, currentExp, player);
   }
 
   /**
