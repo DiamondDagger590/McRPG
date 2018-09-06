@@ -57,7 +57,7 @@ public enum UnlockedAbilities implements GenericAbility {
   @Override
   public boolean isEnabled() {
     return YamlConfiguration.loadConfiguration(new File(Mcmmox.getInstance().getDataFolder(),
-            File.separator + "Skills" + File.separator + this.skill)).getBoolean("EnabledAbilities." + name);
+            File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getBoolean("EnabledAbilities." + name);
   }
 
   /**
@@ -75,7 +75,7 @@ public enum UnlockedAbilities implements GenericAbility {
    */
   public int getUnlockLevel() {
     return YamlConfiguration.loadConfiguration(new File(Mcmmox.getInstance().getDataFolder(),
-            File.separator + "Skills" + File.separator + skill)).getInt("UnlockLevelForAbility." + name);
+        File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getInt("UnlockLevelForAbility." + name);
   }
 
   /**
@@ -85,7 +85,7 @@ public enum UnlockedAbilities implements GenericAbility {
    */
   public boolean usePerm() {
     return YamlConfiguration.loadConfiguration(new File(Mcmmox.getInstance().getDataFolder(),
-            File.separator + "Skills" + File.separator + skill)).getBoolean("UsePermsForAbility." + name);
+        File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getBoolean("UsePermsForAbility." + name);
   }
 
   /**
@@ -95,7 +95,7 @@ public enum UnlockedAbilities implements GenericAbility {
    */
   public int getMaxTier() {
     return YamlConfiguration.loadConfiguration(new File(Mcmmox.getInstance().getDataFolder(),
-            File.separator + "Skills" + File.separator + skill)).getInt(name + "Config.TierAmount");
+        File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getInt(name + "Config.TierAmount");
   }
 
   /**

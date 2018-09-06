@@ -24,10 +24,9 @@ public class Swords extends Skill {
   /**
    * @param currentLevel The current level of the players swords skill
    * @param currentExp   The current exp amount of the players swords skill
-   * @param expEquation  The exp equation for swords skill
    */
-  public Swords(int currentLevel, int currentExp, Parser expEquation) {
-    super(Skills.SWORDS, new ArrayList<BaseAbility>(), currentLevel, currentExp);
+  public Swords(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map) {
+    super(Skills.SWORDS, map, currentLevel, currentExp);
   }
 
   /**

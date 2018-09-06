@@ -3,17 +3,15 @@ package us.eunoians.mcmmox.skills;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.Bukkit;
 import us.eunoians.mcmmox.Abilities.BaseAbility;
-import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerExpGainEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
+import us.eunoians.mcmmox.players.McMMOPlayer;
+import us.eunoians.mcmmox.types.GainReason;
 import us.eunoians.mcmmox.types.GenericAbility;
 import us.eunoians.mcmmox.types.Skills;
-import us.eunoians.mcmmox.util.Parser;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /*
@@ -51,30 +49,20 @@ public abstract class Skill {
   /**
    * The map of all the abilities the skill has loaded. The key is the enum of abilities while the values are the corresponding instance of an ability
    */
-  private HashMap<GenericAbility, BaseAbility> abilityMap = new HashMap<>();
-  /**
-   * idek what this is atm
-   */
-  //TODO move to a task manager
+  private HashMap<GenericAbility, BaseAbility> abilityMap;
+
   @Getter
-  private BukkitTask verifyAbilityCooldown;
+  private McMMOPlayer player;
 
-
-  /**
-   * @param type      The type of the Skill
-   * @param abilities The abilities the skill has
-   */
-  public Skill(Skills type, ArrayList<BaseAbility> abilities, int currentLevel, int currentExp) {
+  public Skill(Skills type, HashMap<GenericAbility, BaseAbility> abilityMap, int currentLevel, int currentExp, McMMOPlayer player) {
     this.type = type;
     this.currentLevel = currentLevel;
     this.currentExp = currentExp;
-        /*verifyAbilityCooldown = new BukkitRunnable(){
+    this.abilityMap = abilityMap;
+    this.player = player;
+    type.getExpEquation().setVariable("%skill_level%", currentLevel);
+    this.expToLevel = (int) type.getExpEquation().getValue();
 
-            @Override
-            public void run() {
-
-            }
-        }.runTaskTimerAsynchronously(Bukkit.getPluginManager().getPlugin("McMMOX"), 0, 20);*/
   }
 
   /**
@@ -111,13 +99,41 @@ public abstract class Skill {
     return type.getName();
   }
 
-   /* public void giveExp(int exp){
-        currentExp = currentExp + exp;
-        if(currentExp > expToLevel){
-            currentExp = currentExp - expToLevel;
-            currentLevel ++;
-            expEquation.setVariable("%Level%", currentLevel);
-            expToLevel = (int) expEquation.getValue();
-        }
-    }*/
+  /**
+   *
+   * @param exp The exp gained
+   * @param gainReason The reason the player is gaining the exp
+   */
+  public void giveExp(int exp, GainReason gainReason){
+	McMMOPlayerExpGainEvent expEvent = new McMMOPlayerExpGainEvent(exp, this, gainReason);
+	Bukkit.getPluginManager().callEvent(expEvent);
+	if(expEvent.isCancelled()){
+	  return;
+	}
+	exp = expEvent.getExpGained();
+    int oldLevel = currentLevel;
+    if(exp + currentExp >= expToLevel){
+      int amountOfLevels = 1;
+      int leftOverExp = currentExp + exp - expToLevel;
+      currentLevel++;
+	  type.getExpEquation().setVariable("%skill_level%", currentLevel);
+	  expToLevel = (int) type.getExpEquation().getValue();
+	  currentExp = leftOverExp;
+	  while(currentExp >= expToLevel){
+	    amountOfLevels++;
+	    leftOverExp = currentExp - expToLevel;
+	    currentLevel++;
+		type.getExpEquation().setVariable("%skill_level%", currentLevel);
+		expToLevel = (int) type.getExpEquation().getValue();
+		currentExp = leftOverExp;
+	  }
+	  McMMOPlayerLevelChangeEvent event = new McMMOPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
+	  Bukkit.getPluginManager().callEvent(event);
+	  return;
+    }
+	else{
+	  currentExp += exp;
+	  return;
+	}
+  }
 }

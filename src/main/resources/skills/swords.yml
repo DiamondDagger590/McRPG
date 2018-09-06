@@ -79,6 +79,8 @@ BleedConfig:
   BleedImmunityEnabled: true
 #Duration of the immunity in seconds
   BleedImmunityDuration: 5
+#Should bleed pierce armor
+  BleedPierceArmour: true
 #
 # Config for the ability Bleed+
 # This passive ability increases the damage the the default ability Bleed applies

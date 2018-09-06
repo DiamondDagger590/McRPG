@@ -283,6 +283,7 @@ public class FileManager {
 
 		//ENUM_NAME("FileName.yml", "FilePath.yml"),
 		MAIN_GUI("maingui.yml", "guis/maingui.yml"),
+		SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
 		CONFIG("config.yml", "config.yml");
 
 		private String fileName;

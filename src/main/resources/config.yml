@@ -25,3 +25,5 @@ Messages:
       PlayerHasNotLoggedIn: '&cThat player has not logged in before'
       InvalidAmount: '&cThe amount you entered is invalid. Please try again'
       OnlyPlayers: '&cOnly players can run this command'
+  Player:
+    LevelUp: '&eYou gained &a%levels% &elevel(s) in %skill%'
