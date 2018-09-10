@@ -181,6 +181,10 @@ public class McMMOPlayer {
 
 	}
 
+	public void saveData(){
+
+	}
+
 	public boolean isOnline(){
 	  return Bukkit.getOfflinePlayer(uuid).isOnline();
 	}

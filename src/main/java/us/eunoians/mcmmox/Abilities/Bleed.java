@@ -13,5 +13,6 @@ public class Bleed extends BaseAbility {
 
   public Bleed() {
     super(DefaultAbilities.BLEED, true);
+    System.out.println(Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getString("BleedConfig.BleedChanceEquation"));
   }
 }

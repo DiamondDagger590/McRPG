@@ -116,7 +116,7 @@ public abstract class Skill {
       int amountOfLevels = 1;
       int leftOverExp = currentExp + exp - expToLevel;
       currentLevel++;
-	  type.getExpEquation().setVariable("%skill_level%", currentLevel);
+	  type.getExpEquation().setVariable("skill_level", currentLevel);
 	  expToLevel = (int) type.getExpEquation().getValue();
 	  currentExp = leftOverExp;
 	  while(currentExp >= expToLevel){
@@ -129,11 +129,12 @@ public abstract class Skill {
 	  }
 	  McMMOPlayerLevelChangeEvent event = new McMMOPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
 	  Bukkit.getPluginManager().callEvent(event);
-	  return;
     }
 	else{
+	  System.out.println(expToLevel);
+	  System.out.println(exp);
 	  currentExp += exp;
-	  return;
 	}
+
   }
 }

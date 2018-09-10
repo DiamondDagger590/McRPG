@@ -28,7 +28,8 @@ public enum Skills {
   }
 
   public Parser getExpEquation(){
-    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    System.out.println(file.getFile().getString("ExpEquation"));
     return new Parser(file.getFile().getString("ExpEquation"));
   }
 
