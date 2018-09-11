@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -233,6 +234,10 @@ public class FileManager {
 	 */
 	public void reloadFile(Files file) {
 		configurations.put(file, YamlConfiguration.loadConfiguration(files.get(file)));
+	}
+
+	public void reloadFiles(){
+	  Arrays.stream(Files.values()).forEach(file -> reloadFile(file));
 	}
 
 	/**

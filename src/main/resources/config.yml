@@ -25,5 +25,9 @@ Messages:
       PlayerHasNotLoggedIn: '&cThat player has not logged in before'
       InvalidAmount: '&cThe amount you entered is invalid. Please try again'
       OnlyPlayers: '&cOnly players can run this command'
-  Player:
+    ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
+  Players:
     LevelUp: '&eYou gained &a%levels% &elevel(s) in %skill%'
+Configuration:
+#This is in minutes
+  SaveInterval: 5

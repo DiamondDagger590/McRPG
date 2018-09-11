@@ -21,7 +21,7 @@ import us.eunoians.mcmmox.events.mcmmo.McMMOPlayerLevelChange;
 import us.eunoians.mcmmox.events.vanilla.*;
 import us.eunoians.mcmmox.localization.Locale;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
-import us.eunoians.mcmmox.util.IOUtil;
+import us.eunoians.mcmmox.players.PlayerManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,6 +74,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 		Bukkit.getServer().getPluginManager().registerEvents(new McMMOExpGain(), this);
 		InvClickEvent.setConfig(this);
 		Bukkit.getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
+	  	PlayerManager.startSave(this);
 		Logger.init("McMMOX");
 		Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
 		Locale.init(mConfigManager);

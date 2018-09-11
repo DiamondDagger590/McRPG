@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class McMMOPlayer {
 
@@ -96,6 +97,7 @@ public class McMMOPlayer {
 			}
 		}
 		this.abilityPoints = playerData.getInt("AbilityPoints");
+		this.pendingUnlockAbilities = (ArrayList) playerData.getStringList("PendingAbilitiesUnlocked").stream().map(string -> UnlockedAbilities.fromString(string)).collect(Collectors.toList());
 		//Initialize swords
 
 		Arrays.stream(Skills.values()).forEach(skill ->{
@@ -182,8 +184,30 @@ public class McMMOPlayer {
 	}
 
 	public void saveData(){
+	  //for(Skills type : Skills.values()){
+	  	Skills type = Skills.SWORDS;
+		Skill skill = getSkill(type);
+		playerData.set(type.getName() + ".Level", skill.getCurrentLevel());
+		playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());
+		skill.getAbilityKeys().forEach(ability -> {
+		  if(ability instanceof UnlockedAbilities){
+			playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());
+			playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
+		  }
+		  if(skill.isAbilityOnCooldown(ability)){
+			playerData.set("Cooldowns." + ability.getName(), skill.getCooldownTimeLeft(ability));
+		  }
+		});
+		playerData.set("AbilityPoints", abilityPoints);
+		playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(ability -> ability.getName()).collect(Collectors.toList()));
+		try{
+		  playerData.save(playerFile);
+		}catch(IOException e){
+		  e.printStackTrace();
+		}
+	  }
 
-	}
+	//}
 
 	public boolean isOnline(){
 	  return Bukkit.getOfflinePlayer(uuid).isOnline();

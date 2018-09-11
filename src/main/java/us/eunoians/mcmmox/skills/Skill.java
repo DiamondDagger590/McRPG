@@ -11,8 +11,12 @@ import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.types.GainReason;
 import us.eunoians.mcmmox.types.GenericAbility;
 import us.eunoians.mcmmox.types.Skills;
+import us.eunoians.mcmmox.util.Parser;
 
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 /*
 A parent skill class that defines the basic behaviour of every skill
@@ -68,28 +72,37 @@ public abstract class Skill {
   /**
    * Check if the ability specified is on cooldown
    *
-   * @param abilityName The ability you want to check the cooldown for
+   * @param ability The ability you want to check the cooldown for
    * @return true if the ability is on cooldown and false if it isnt
    */
-  public boolean isAbilityOnCooldown(String abilityName) {
-    for (GenericAbility ab : abilitesOnCooldown.keySet()) {
-      if (ab.getName().equalsIgnoreCase(abilityName)) {
-        return true;
-      }
-    }
-    return false;
+  public boolean isAbilityOnCooldown(GenericAbility ability) {
+    return abilitesOnCooldown.keySet().stream().anyMatch(ab -> ab.equals(ability));
   }
+
+  public BaseAbility getAbility(GenericAbility ability){
+	return (abilityMap.containsKey(ability))? abilityMap.get(ability) : null;
+  }
+
+  public Collection<BaseAbility> getAbilities(){
+    return abilityMap.values();
+  }
+
+  public Set<GenericAbility> getAbilityKeys(){
+    return abilityMap.keySet();
+  }
+
 
   /**
    * Get the cooldown time for the specified ability
    *
-   * @param abilityName
+   * @param ability
    * @return
    */
-  public long getCooldownEndTime(String abilityName) {
+  public long getCooldownTimeLeft(GenericAbility ability) {
     for (GenericAbility ab : abilitesOnCooldown.keySet()) {
-      if (ab.getName().equalsIgnoreCase(abilityName)) {
-        return abilitesOnCooldown.get(ab);
+      if (ab.equals(ability)) {
+		Calendar cal = Calendar.getInstance();
+        return abilitesOnCooldown.get(ab) - cal.getTimeInMillis();
       }
     }
     return -1;
@@ -116,25 +129,31 @@ public abstract class Skill {
       int amountOfLevels = 1;
       int leftOverExp = currentExp + exp - expToLevel;
       currentLevel++;
-	  type.getExpEquation().setVariable("skill_level", currentLevel);
-	  expToLevel = (int) type.getExpEquation().getValue();
+      Parser parser = type.getExpEquation();
+	  parser.setVariable("skill_level", currentLevel);
+	  parser.setVariable("power_level", player.getPowerLevel());
+	  System.out.println(parser.getExpression() + " " + parser.getInputString());
+	  expToLevel = (int) parser.getValue();
 	  currentExp = leftOverExp;
 	  while(currentExp >= expToLevel){
 	    amountOfLevels++;
 	    leftOverExp = currentExp - expToLevel;
 	    currentLevel++;
-		type.getExpEquation().setVariable("%skill_level%", currentLevel);
-		expToLevel = (int) type.getExpEquation().getValue();
+		parser.setVariable("skill_level", currentLevel);
+		parser.setVariable("power_level", player.getPowerLevel());
+		expToLevel = (int) parser.getValue();
 		currentExp = leftOverExp;
 	  }
 	  McMMOPlayerLevelChangeEvent event = new McMMOPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
 	  Bukkit.getPluginManager().callEvent(event);
     }
 	else{
-	  System.out.println(expToLevel);
-	  System.out.println(exp);
 	  currentExp += exp;
 	}
+	this.player.saveData();
+	System.out.println(currentExp);
+	System.out.println(expToLevel);
+	System.out.println(currentLevel);
 
   }
 }

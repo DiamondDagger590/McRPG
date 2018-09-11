@@ -13,6 +13,9 @@ public abstract class BaseAbility {
   @Setter
   private boolean isToggled;
 
+  @Getter @Setter
+  private int currentTier;
+
   /**
    * @param genericAbility Accepts either a DefaultAbilities or UnlockedAbilities enum type
    * @param isToggled      If the ability is toggled for the player.

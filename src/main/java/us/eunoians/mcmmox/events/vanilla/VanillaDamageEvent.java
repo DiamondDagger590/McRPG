@@ -39,10 +39,9 @@ public class VanillaDamageEvent implements Listener {
           }
           double dmg = e.getDamage();
           int expAwarded = (int) (dmg * baseExp * multiplier);
-          mp.getSkill(Skills.SWORDS).giveExp(baseExp, GainReason.DAMAGE);
+          mp.getSkill(Skills.SWORDS).giveExp(expAwarded, GainReason.DAMAGE);
 
           return;
-          //TODO award player swords exp
         }
       }
     }

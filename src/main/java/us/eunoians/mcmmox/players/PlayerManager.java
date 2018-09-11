@@ -8,6 +8,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.util.FileManager;
+import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Swords;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
@@ -24,7 +26,8 @@ public class PlayerManager {
   //Players who are currently logged on
   private static HashMap<UUID, McMMOPlayer> players = new HashMap<>();
   private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
-  private static Plugin plugin = Mcmmox.getInstance();
+  private static Mcmmox plugin;
+  private static BukkitTask saveTask;
 
   public static void addMcMMOPlayer(Player player, boolean freeze) {
     if(players.containsKey(player.getUniqueId())){
@@ -51,5 +54,18 @@ public class PlayerManager {
     return players.get(uuid);
   }
 
+  public static void startSave(Plugin p){
+    plugin = (Mcmmox) p;
+    if(saveTask != null){
+      System.out.println(Methods.color(plugin.getPluginPrefix() + "&eRestarting player saving task...."));
+      saveTask.cancel();
+    }
+    saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(p, PlayerManager::run, 500, ((Mcmmox) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
+    System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
+  }
 
+
+  private static void run(){
+    players.values().stream().forEach(player -> player.saveData());
+  }
 }
