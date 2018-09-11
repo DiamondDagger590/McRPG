@@ -36,135 +36,134 @@ import java.util.List;
 
 public class Mcmmox extends JavaPlugin implements Initializable {
 
-	private static Mcmmox instance;
-	@Getter
-	private MConfigManager mConfigManager;
-	@Getter
-	private PluginUpdater pluginUpdater;
-	@Getter
-	private LocalizationFiles localizationFiles;
-	@Getter
-	private FileManager fileManager;
+  private static Mcmmox instance;
+  @Getter
+  private MConfigManager mConfigManager;
+  @Getter
+  private PluginUpdater pluginUpdater;
+  @Getter
+  private LocalizationFiles localizationFiles;
+  @Getter
+  private FileManager fileManager;
 
-	@Override
-	public void onEnable(){
-		Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
-	}
+  @Override
+  public void onEnable() {
+    Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
+  }
 
-	@Override
-	public void onDisable(){
-		if(!Initializer.finished())
-			Initializer.interrupt();
-	}
+  @Override
+  public void onDisable() {
+    if (!Initializer.finished())
+      Initializer.interrupt();
+  }
 
-	@Initialize(priority = 0)
-	private void preInit(){
-		var configManager = new ConfigManager(this);
-		mConfigManager = new MConfigManager(configManager);
-		if(!mConfigManager.setupConfigs(
-			GeneralConfig.class, SwordsConfig.class))
-			getServer().shutdown();
-		fileManager = FileManager.getInstance().setup(this);
-		Bukkit.getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
-		Bukkit.getServer().getPluginManager().registerEvents(new MoveEvent(), this);
-		Bukkit.getServer().getPluginManager().registerEvents(new InvClickEvent(), this);
-		Bukkit.getServer().getPluginManager().registerEvents(new AbilityActivate(), this);
-		Bukkit.getServer().getPluginManager().registerEvents(new McMMOPlayerLevelChange(), this);
-		Bukkit.getServer().getPluginManager().registerEvents(new VanillaDamageEvent(), this);
-		Bukkit.getServer().getPluginManager().registerEvents(new McMMOExpGain(), this);
-		InvClickEvent.setConfig(this);
-		Bukkit.getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
-	  	PlayerManager.startSave(this);
-		Logger.init("McMMOX");
-		Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
-		Locale.init(mConfigManager);
-	}
+  @Initialize(priority = 0)
+  private void preInit() {
+    var configManager = new ConfigManager(this);
+    mConfigManager = new MConfigManager(configManager);
+    if (!mConfigManager.setupConfigs(
+            GeneralConfig.class, SwordsConfig.class))
+      getServer().shutdown();
+    fileManager = FileManager.getInstance().setup(this);
+    InvClickEvent.setConfig(this);
+    Bukkit.getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
+    PlayerManager.startSave(this);
+    Logger.init("McMMOX");
+    Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
+    Locale.init(mConfigManager);
+  }
 
-	// @Initialize(priority = 1)
-	// Ignore sanity while in development
-	private void sanity(){
-		if(ProxySelector.getDefault() == null){
-			ProxySelector.setDefault(new ProxySelector() {
-				private final List<Proxy> DIRECT_CONNECTION = Collections.unmodifiableList(Collections.singletonList(Proxy.NO_PROXY));
+  // @Initialize(priority = 1)
+  // Ignore sanity while in development
+  private void sanity() {
+    if (ProxySelector.getDefault() == null) {
+      ProxySelector.setDefault(new ProxySelector() {
+        private final List<Proxy> DIRECT_CONNECTION = Collections.unmodifiableList(Collections.singletonList(Proxy.NO_PROXY));
 
-				public void connectFailed(URI arg0, SocketAddress arg1, IOException arg2){
-				}
+        public void connectFailed(URI arg0, SocketAddress arg1, IOException arg2) {
+        }
 
-				public List<Proxy> select(URI uri){
-					return DIRECT_CONNECTION;
-				}
-			});
-		}
-		pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcmmox/plinfo");
-		pluginUpdater.setOut(true);
-		if(mConfigManager.getGeneralConfig().isAutoUpdate()){
-			if(pluginUpdater.needsUpdate())
-				pluginUpdater.update();
-			else
-				Logger.info("No updates were found!");
-		}
-		else{
-			Logger.info("New version of McMMOX is available: " + pluginUpdater.getVersion());
-			Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
-		}
-	}
+        public List<Proxy> select(URI uri) {
+          return DIRECT_CONNECTION;
+        }
+      });
+    }
+    pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcmmox/plinfo");
+    pluginUpdater.setOut(true);
+    if (mConfigManager.getGeneralConfig().isAutoUpdate()) {
+      if (pluginUpdater.needsUpdate())
+        pluginUpdater.update();
+      else
+        Logger.info("No updates were found!");
+    } else {
+      Logger.info("New version of McMMOX is available: " + pluginUpdater.getVersion());
+      Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
+    }
+  }
 
-	@Initialize(priority = 2)
-	private void initPrimaryInstance(){
-		localizationFiles = new LocalizationFiles(this, true);
-		instance = this;
-	}
+  @Initialize(priority = 2)
+  private void initPrimaryInstance() {
+    localizationFiles = new LocalizationFiles(this, true);
+    instance = this;
+  }
 
-	@Initialize(priority = 3)
-	private void initCmds(){
-		getCommand("mcmmox").setExecutor(new McMMOStub());
-	}
+  @Initialize(priority = 3)
+  private void initCmds() {
+    getCommand("mcmmox").setExecutor(new McMMOStub());
+  }
 
-	@Initialize(priority = 4)
-	private void initListener(){
-		getServer().getPluginManager().registerEvents(new MoveEvent(), this);
-	}
+  @Initialize(priority = 4)
+  private void initListener() {
+    getServer().getPluginManager().registerEvents(new MoveEvent(), this);
+    getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
+    getServer().getPluginManager().registerEvents(new MoveEvent(), this);
+    getServer().getPluginManager().registerEvents(new InvClickEvent(), this);
+    getServer().getPluginManager().registerEvents(new AbilityActivate(), this);
+    getServer().getPluginManager().registerEvents(new McMMOPlayerLevelChange(), this);
+    getServer().getPluginManager().registerEvents(new VanillaDamageEvent(), this);
+    getServer().getPluginManager().registerEvents(new McMMOExpGain(), this);
+  }
 
-	public static Mcmmox getInstance(){
-		if(instance == null)
-			throw new NullPointerException("Plugin was not initialized.");
-		return instance;
-	}
+  public static Mcmmox getInstance() {
+    if (instance == null)
+      throw new NullPointerException("Plugin was not initialized.");
+    return instance;
+  }
 
-	public static void copyFile(InputStream in, File out) throws Exception{ // https://bukkit.org/threads/extracting-file-from-jar.16962/
-		InputStream fis = in;
-		FileOutputStream fos = new FileOutputStream(out);
-		try{
-			byte[] buf = new byte[1024];
-			int i = 0;
-			while((i = fis.read(buf)) != -1){
-				fos.write(buf, 0, i);
-			}
-		}catch(Exception e){
-			throw e;
-		}finally{
-			if(fis != null){
-				fis.close();
-			}
-			if(fos != null){
-				fos.close();
-			}
-		}
-	}
+  public static void copyFile(InputStream in, File out) throws Exception { // https://bukkit.org/threads/extracting-file-from-jar.16962/
+    InputStream fis = in;
+    FileOutputStream fos = new FileOutputStream(out);
+    try {
+      byte[] buf = new byte[1024];
+      int i = 0;
+      while ((i = fis.read(buf)) != -1) {
+        fos.write(buf, 0, i);
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      if (fis != null) {
+        fis.close();
+      }
+      if (fos != null) {
+        fos.close();
+      }
+    }
+  }
 
-	public String getPluginPrefix(){
-		return fileManager.getFile(FileManager.Files.CONFIG).getString("Messages.PluginInfo.PluginPrefix");
-	}
+  public String getPluginPrefix() {
+    return fileManager.getFile(FileManager.Files.CONFIG).getString("Messages.PluginInfo.PluginPrefix");
+  }
 
-	public GeneralConfig getGeneralConfig(){
-		return mConfigManager.getGeneralConfig();
-	}
+  public GeneralConfig getGeneralConfig() {
+    return mConfigManager.getGeneralConfig();
+  }
 
-	public SwordsConfig getSwordsConfig(){
-		return mConfigManager.getSwordsConfig();
-	}
+  public SwordsConfig getSwordsConfig() {
+    return mConfigManager.getSwordsConfig();
+  }
 
-	public FileManager getFileManager(){
-		return fileManager;
-	}
+  public FileManager getFileManager() {
+    return fileManager;
+  }
 }
