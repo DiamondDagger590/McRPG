@@ -4,16 +4,16 @@ Gui:
     Title: '&bMain McMMOx Menu'
     Events:
       10:
-        - 'OpenFile:abilityloadoutgui:AbilityGUI'
+        - 'OpenFile:settingsgui.yml:SettingsGUI'
       12:
-        - 'OpenFile:skillsgui:SkillGUI'
+        - 'OpenFile:skillsgui.yml:SkillGUI.yml'
       14:
-        - 'OpenFile:abilityupgradegui:AbilityUpgradeGUI'
+        - 'OpenFile:abilityupgradegui.yml:AbilityUpgradeGUI'
       16:
-        - 'OpenFile:abilityloadouteditgui:AbilityLoadOutGUI'
+        - 'OpenFile:abilityloadoutgui.yml:AbilityLoadOutGUI'
     Items:
       PlayerSkull:
-        Name: '&eYour Profile'
+        Name: '&2Your Profile'
         Material: PLAYER_HEAD
         Owner: '%Player%'
         Lore:
@@ -25,14 +25,15 @@ Gui:
         Name: '&cSkill Menu'
         Material: DIAMOND_SWORD
         Lore:
-          - '&eClick this to view information about all of your skills'
+          - '&eClick this to view information '
+          - '&eabout all of your skills'
         Slot: 12
       Upgrade_Abilities:
-        Name: '&lUpgrade Abilities'
+        Name: '&5Upgrade Abilities'
         Material: NETHER_STAR
         Lore:
           - '&eClick this to upgrade your abilites'
-          - '&eYou have %Ability_Points% to spend'
+          - '&eYou have &a%Ability_Points% &eto spend'
         Slot: 14
       Ability_Loadout:
         Name: '&bEdit Ability Loadout'

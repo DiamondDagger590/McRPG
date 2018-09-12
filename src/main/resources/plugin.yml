@@ -3,7 +3,7 @@ version: 0.0.1
 author: Eunoians
 description: Some description
 main: us.eunoians.mcmmox.Mcmmox
-
+api-version: 1.13
 commands:
   mcmmox:
     description: Opens the main menu for McMMOX

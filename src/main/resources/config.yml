@@ -1,0 +1,33 @@
+##################################
+### Main Config For McMMOx ###
+##################################
+#
+#Notes:
+#    Do not use ' or " in messages as I have not yet added support for these icons.
+#   - Do not remove any lines as that will throw errors
+#   - This plugin only supports Minecraft color codes. Ex) &eHello World&7!
+#       - Use this link for a list of the codes: https://wiki.ess3.net/mc/
+#   - If you want a message to be blank, please leave it as ''
+#   - This plugin supports player name place holders as %Player%
+# If you receive an error when VGBoosters loads, ensure that:
+#   - No tabs are present: YAML only allows spaces
+#   - Indents are correct: YAML hierarchy is based entirely on indentation
+###################################
+Messages:
+#Messages relating to the general plugin information
+  PluginInfo:
+    PluginPrefix: '&7[&1McMMOx&7]&6>>'
+#Meesages used by commands
+  Commands:
+#Messages used by every command
+    Utility:
+      NoPerms: '&cYou do not have the permissions to execute that command'
+      PlayerHasNotLoggedIn: '&cThat player has not logged in before'
+      InvalidAmount: '&cThe amount you entered is invalid. Please try again'
+      OnlyPlayers: '&cOnly players can run this command'
+    ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
+  Players:
+    LevelUp: '&eYou gained &a%levels% &elevel(s) in %skill%'
+Configuration:
+#This is in minutes
+  SaveInterval: 5

@@ -1,13 +1,13 @@
 package us.eunoians.mcmmox.util;
 /**
  * Copyright 2006 Bertoli Marco
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,28 +23,29 @@ package us.eunoians.mcmmox.util;
  * </p>
  * <p><b>Date:</b> 08/dic/06
  * <b>Time:</b> 19:45:36</p>
+ *
  * @author Bertoli Marco
  * @version 1.0
  */
 public class EvaluationException extends RuntimeException {
-    /**
-     *
-     */
-    private static final long serialVersionUID = -1297776708634902362L;
+  /**
+   *
+   */
+  private static final long serialVersionUID = -1297776708634902362L;
 
-    public EvaluationException() {
-    }
+  public EvaluationException() {
+  }
 
-    public EvaluationException(String message) {
-        super(message);
-    }
+  public EvaluationException(String message) {
+    super(message);
+  }
 
-    public EvaluationException(Throwable cause) {
-        super(cause);
-    }
+  public EvaluationException(Throwable cause) {
+    super(cause);
+  }
 
-    public EvaluationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public EvaluationException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

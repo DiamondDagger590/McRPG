@@ -1,2 +1,2 @@
-# Mcmmox-Maven
+# McMMOx
 Migrated to Maven

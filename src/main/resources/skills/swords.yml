@@ -5,7 +5,7 @@ SwordsEnabled: true
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
 #
-SwordsExpEquation: '1000*1.2^%power_level%'
+ExpEquation: '1000*(1.2^(%power_level%))'
 #If different materials of swords should give more exp. WOOD_SWORD: 1.0 means 100% of default exp
 MaterialBonus:
   WOOD_SWORD: 1.0
@@ -79,6 +79,8 @@ BleedConfig:
   BleedImmunityEnabled: true
 #Duration of the immunity in seconds
   BleedImmunityDuration: 5
+#Should bleed pierce armor
+  BleedPierceArmour: true
 #
 # Config for the ability Bleed+
 # This passive ability increases the damage the the default ability Bleed applies

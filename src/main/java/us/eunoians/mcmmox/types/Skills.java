@@ -4,41 +4,33 @@ import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.util.FileManager;
+import us.eunoians.mcmmox.util.Parser;
 
 import java.io.File;
+import java.util.Arrays;
 
 /*
 An enum that stores a type of every skill
  */
 public enum Skills {
-    SWORDS("Swords"),
-    MINING("Mining"),
-    AXES("Axes"),
-    ARCHERY("Archery"),
-    REPAIR("Repair");
+  SWORDS("Swords"),
+  MINING("Mining"),
+  AXES("Axes"),
+  ARCHERY("Archery"),
+  REPAIR("Repair");
 
-    @Getter private String name;
-    /**
-     * TODO these are being hard coded and need removed
-     */
-    private File skillFile;
-    private FileConfiguration skillFileConfiguration;
+  @Getter
+  private String name;
 
-    Skills(String name) {
-        this.name = name;
-        this.skillFile = new File(Mcmmox.getInstance().getDataFolder(),
-                File.separator + "Skills" + File.separator + this.getName());
-        this.skillFileConfiguration = YamlConfiguration.loadConfiguration(skillFile);
-    }
+  Skills(String name){
+	this.name = name;
+  }
 
-
-    public FileConfiguration getSkillFile(){
-        return this.skillFileConfiguration;
-    }
-
-    public void reloadSkillFile(){
-        skillFileConfiguration = YamlConfiguration.loadConfiguration(skillFile);
-    }
-
+  public Parser getExpEquation(){
+    FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    System.out.println(file.getFile().getString("ExpEquation"));
+    return new Parser(file.getFile().getString("ExpEquation"));
+  }
 
 }
