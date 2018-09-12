@@ -35,7 +35,6 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     @Getter private LocalizationFiles localizationFiles;
     @Override
     public void onEnable() {
-
         Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
         getCommand("mcmmox").setExecutor(new McMMOStub());
         getServer().getPluginManager().registerEvents(new MoveEvent(), this.getInstance());
