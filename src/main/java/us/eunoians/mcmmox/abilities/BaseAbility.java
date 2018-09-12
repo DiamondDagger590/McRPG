@@ -1,4 +1,4 @@
-package us.eunoians.mcmmox.Abilities;
+package us.eunoians.mcmmox.abilities;
 
 import lombok.Getter;
 import lombok.Setter;

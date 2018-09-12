@@ -7,8 +7,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import us.eunoians.mcmmox.Abilities.BaseAbility;
-import us.eunoians.mcmmox.Abilities.Bleed;
+import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.Bleed;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
@@ -54,9 +54,13 @@ public class McMMOPlayer {
    * A map containing a enum key and a long for the end time in milis of the ability
    */
   private HashMap<GenericAbility, Long> abilitiesOnCooldown = new HashMap<>();
+
   @Getter
   @Setter
   private boolean hasBleedImmunity = false;
+
+  @Getter @Setter
+  private DisplayType displayType = DisplayType.EXP_SCOREBOARD;
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -86,6 +90,7 @@ public class McMMOPlayer {
         playerData.set(ability.getSkill() + "." + ability.getName() + ".Tier", 0);
         playerData.set(ability.getSkill() + "." + ability.getName() + ".IsToggled", true);
       }
+      playerData.set("DisplayType", displayType.getName());
       playerData.set("Cooldowns.PlaceHolder", null);
       playerData.set("AbilityPoints", 0);
       playerData.set("PendingAbilitiesUnlocked.placeholder", null);
@@ -95,6 +100,7 @@ public class McMMOPlayer {
         e.printStackTrace();
       }
     }
+    this.displayType = DisplayType.fromString(playerData.getString("DisplayType"));
     this.abilityPoints = playerData.getInt("AbilityPoints");
     this.pendingUnlockAbilities = (ArrayList) playerData.getStringList("PendingAbilitiesUnlocked").stream().map(string -> UnlockedAbilities.fromString(string)).collect(Collectors.toList());
     //Initialize swords
@@ -195,6 +201,7 @@ public class McMMOPlayer {
         playerData.set("Cooldowns." + ability.getName(), skill.getCooldownTimeLeft(ability));
       }
     });
+    playerData.set("DisplayType", displayType.getName());
     playerData.set("AbilityPoints", abilityPoints);
     playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(ability -> ability.getName()).collect(Collectors.toList()));
     try {
@@ -212,5 +219,25 @@ public class McMMOPlayer {
 
   public Player getPlayer() {
     return (Player) Bukkit.getOfflinePlayer(uuid);
+  }
+
+  @Override
+  public boolean equals(Object object){
+    if(object instanceof McMMOPlayer){
+      if(uuid.equals(((McMMOPlayer) object).getUuid())){
+        return true;
+      }
+    }
+    else if(object instanceof Player){
+      if(uuid.equals(((Player) object).getUniqueId())){
+        return true;
+      }
+    }
+    else if(object instanceof UUID){
+      if(uuid.equals((object))){
+        return true;
+      }
+    }
+    return false;
   }
 }

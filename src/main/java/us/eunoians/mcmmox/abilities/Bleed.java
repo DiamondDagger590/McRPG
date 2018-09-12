@@ -1,4 +1,4 @@
-package us.eunoians.mcmmox.Abilities;
+package us.eunoians.mcmmox.abilities;
 
 import lombok.Getter;
 import us.eunoians.mcmmox.Mcmmox;
@@ -13,6 +13,5 @@ public class Bleed extends BaseAbility {
 
   public Bleed() {
     super(DefaultAbilities.BLEED, true);
-    System.out.println(Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getString("BleedConfig.BleedChanceEquation"));
   }
 }

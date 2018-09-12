@@ -3,9 +3,9 @@ package us.eunoians.mcmmox.api.events.mcmmo;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.file.FileConfiguration;
-import us.eunoians.mcmmox.Abilities.BaseAbility;
-import us.eunoians.mcmmox.Abilities.Bleed;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.Bleed;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 
