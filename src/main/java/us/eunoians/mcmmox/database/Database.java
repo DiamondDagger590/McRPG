@@ -30,13 +30,6 @@ public interface Database {
    */
   void closeConnection() throws SQLException;
 
-  // TODO: 9/11/18 make default because of redundancy.
-  /**
-   * <p> Tables that are going to be used with the database connection.</p>
-   *
-   * @param tables <p> Collection of {@link Table table} that will be used in the connection. </p>
-   */
-  void initializeTables(Collection<? super Table> tables);
 
   /**
    * <p> A connection (session) with a specific
@@ -47,6 +40,16 @@ public interface Database {
    * @return Current connection of the database.
    */
   Connection getConnection();
+
+  /**
+   * <p> Setup the tables that are going to be used by the class.</p>
+   *
+   * @param tables {@link Collection Collection} of tables that re going
+   *               to be used in this database wrapper.
+   */
+  default void setTables(Collection<Table> tables) {
+    this.tables.set(tables);
+  }
 
   /**
    * <p> Connect method to invoke {@link Database#connectFunction() Database#connectFunction()} when
@@ -60,5 +63,14 @@ public interface Database {
   default void connect() throws SQLException, ClassNotFoundException {
     this.connectFunction();
     this.initializeTables(tables.get());
+  }
+
+  /**
+   * <p> Initializes tables that are set.</p>
+   *
+   * @param tables <p> Collection of {@link Table table} that will be used in the connection. </p>
+   */
+  default void initializeTables(Collection<Table> tables) {
+    // TODO: 9/13/18 When finished Table interface.
   }
 }
