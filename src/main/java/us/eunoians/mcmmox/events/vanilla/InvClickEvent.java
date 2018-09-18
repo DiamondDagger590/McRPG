@@ -10,22 +10,18 @@ import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.GUI;
-import us.eunoians.mcmmox.gui.GUIBuilder;
 import us.eunoians.mcmmox.gui.GUIEventBinder;
 import us.eunoians.mcmmox.gui.GUITracker;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class InvClickEvent implements Listener {
 
 	private static FileConfiguration config;
 
-	//Because onEnable doesnt work
-	public static void setConfig(Mcmmox plugin){
-		config = plugin.getFileManager().getFile(FileManager.Files.CONFIG);
+	public InvClickEvent(Mcmmox plugin){
+	  config = plugin.getFileManager().getFile(FileManager.Files.CONFIG);
+
 	}
 
 	//TODO for Diamond to do. Overhaul old system and recreate it to be functional for what we want

@@ -19,15 +19,28 @@ Messages:
     PluginPrefix: '&7[&1McMMOx&7]&6>>'
 #Meesages used by commands
   Commands:
-#Messages used by every command
+    #Messages used by misc command
     Utility:
       NoPerms: '&cYou do not have the permissions to execute that command'
       PlayerHasNotLoggedIn: '&cThat player has not logged in before'
       InvalidAmount: '&cThe amount you entered is invalid. Please try again'
       OnlyPlayers: '&cOnly players can run this command'
+      HelpPrompt: '&eUse /mchelp or /mchelp <command> for proper usage'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
+    McDisplay:
+      #%String% is the failed input
+      InvalidInput: '&c%String% is not a skill or display type.'
+      NotAType: '&c%String% is not a proper display type. Use bossbar, actionbar or scoreboard'
+      NothingToClear: '&cThere is nothing to remove'
   Players:
-    LevelUp: '&eYou gained &a%levels% &elevel(s) in %skill%'
+    LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%'
+DisplayConfig:
+  Scoreboard:
+    DisplayName: '&5%Skill%'
+    Lines:
+      CurrentLevel: '&aCurrent Level:'
+      CurrentExp: '&aExp:'
+      ExpNeeded: '&aExp Left:'
 Configuration:
 #This is in minutes
-  SaveInterval: 5
+  SaveInterval: 1

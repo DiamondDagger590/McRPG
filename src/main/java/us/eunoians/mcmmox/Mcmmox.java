@@ -1,16 +1,17 @@
 package us.eunoians.mcmmox;
 
 import com.cyr1en.mcutils.PluginUpdater;
-import com.cyr1en.mcutils.config.ConfigManager;
 import com.cyr1en.mcutils.logger.Logger;
 import com.cyr1en.mcutils.utils.reflection.Initializable;
 import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
 import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
 import lombok.Getter;
-import lombok.var;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import us.eunoians.mcmmox.api.displays.DisplayManager;
 import us.eunoians.mcmmox.api.util.FileManager;
+import us.eunoians.mcmmox.commands.McDisplay;
 import us.eunoians.mcmmox.commands.McMMOStub;
 import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.GeneralConfig;
@@ -19,7 +20,6 @@ import us.eunoians.mcmmox.events.mcmmo.AbilityActivate;
 import us.eunoians.mcmmox.events.mcmmo.McMMOExpGain;
 import us.eunoians.mcmmox.events.mcmmo.McMMOPlayerLevelChange;
 import us.eunoians.mcmmox.events.vanilla.*;
-import us.eunoians.mcmmox.localization.Locale;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
 import us.eunoians.mcmmox.players.PlayerManager;
 
@@ -45,6 +45,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private LocalizationFiles localizationFiles;
   @Getter
   private FileManager fileManager;
+  @Getter
+  private DisplayManager displayManager;
 
   @Override
   public void onEnable() {
@@ -59,18 +61,14 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 0)
   private void preInit() {
-    var configManager = new ConfigManager(this);
+    /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
-    if (!mConfigManager.setupConfigs(
+    /*if (!mConfigManager.setupConfigs(
             GeneralConfig.class, SwordsConfig.class))
-      getServer().shutdown();
-    fileManager = FileManager.getInstance().setup(this);
-    InvClickEvent.setConfig(this);
-    Bukkit.getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
-    PlayerManager.startSave(this);
+      getServer().shutdown();*/
     Logger.init("McMMOX");
-    Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
-    Locale.init(mConfigManager);
+    //Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
+    //Locale.init(mConfigManager);
   }
 
   // @Initialize(priority = 1)
@@ -103,25 +101,29 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
-    localizationFiles = new LocalizationFiles(this, true);
+    //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
+    fileManager = FileManager.getInstance().setup(this);
+    displayManager = DisplayManager.getInstance();
+    PlayerManager.startSave(this);
   }
 
   @Initialize(priority = 3)
   private void initCmds() {
     getCommand("mcmmox").setExecutor(new McMMOStub());
+    getCommand("mcdisplay").setExecutor(new McDisplay());
   }
 
   @Initialize(priority = 4)
   private void initListener() {
-    getServer().getPluginManager().registerEvents(new MoveEvent(), this);
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
-    getServer().getPluginManager().registerEvents(new InvClickEvent(), this);
+    getServer().getPluginManager().registerEvents(new InvClickEvent(this), this);
     getServer().getPluginManager().registerEvents(new AbilityActivate(), this);
     getServer().getPluginManager().registerEvents(new McMMOPlayerLevelChange(), this);
     getServer().getPluginManager().registerEvents(new VanillaDamageEvent(), this);
     getServer().getPluginManager().registerEvents(new McMMOExpGain(), this);
+    getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
   }
 
   public static Mcmmox getInstance() {
@@ -165,5 +167,10 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 
   public FileManager getFileManager() {
     return fileManager;
+  }
+
+  @Override
+  public FileConfiguration getConfig(){
+    return fileManager.getFile(FileManager.Files.CONFIG);
   }
 }

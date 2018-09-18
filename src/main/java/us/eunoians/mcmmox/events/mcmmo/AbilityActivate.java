@@ -9,6 +9,6 @@ public class AbilityActivate implements Listener {
 
  @EventHandler
  public void abilityActivateEvent(AbilityActivateEvent e){
-   Bukkit.broadcastMessage("1");
+   Bukkit.broadcastMessage("abilityevent");
  }
 }

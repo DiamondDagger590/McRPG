@@ -8,3 +8,6 @@ commands:
   mcmmox:
     description: Opens the main menu for McMMOX
     aliases: [mcmmo, mmo]
+  mcdisplay:
+    description: Allows for command based editing of display types
+    aliases: [mcmmodisplay, mdisplay, mcd]

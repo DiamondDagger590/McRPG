@@ -1,14 +1,11 @@
 package us.eunoians.mcmmox.types;
 
 import lombok.Getter;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.util.Parser;
 
-import java.io.File;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /*
 An enum that stores a type of every skill
@@ -29,8 +26,15 @@ public enum Skills {
 
   public Parser getExpEquation(){
     FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-    System.out.println(file.getFile().getString("ExpEquation"));
     return new Parser(file.getFile().getString("ExpEquation"));
+  }
+
+  public static Skills fromString(String skill){
+    return Arrays.stream(Skills.values()).filter(type -> type.getName().equalsIgnoreCase(skill)).findFirst().orElse(SWORDS);
+  }
+
+  public static boolean isSkill(String skill){
+    return Arrays.stream(Skills.values()).map(type -> type.getName()).collect(Collectors.toList()).contains(skill);
   }
 
 }

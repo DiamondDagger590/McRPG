@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import us.eunoians.mcmmox.Abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 
 public class AbilityActivateEvent extends Event implements Cancellable {

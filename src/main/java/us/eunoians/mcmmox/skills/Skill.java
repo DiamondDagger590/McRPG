@@ -4,10 +4,14 @@ package us.eunoians.mcmmox.skills;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import us.eunoians.mcmmox.Abilities.BaseAbility;
+import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
+import us.eunoians.mcmmox.api.displays.GenericDisplay;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerExpGainEvent;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
 import us.eunoians.mcmmox.players.McMMOPlayer;
+import us.eunoians.mcmmox.types.DisplayType;
 import us.eunoians.mcmmox.types.GainReason;
 import us.eunoians.mcmmox.types.GenericAbility;
 import us.eunoians.mcmmox.types.Skills;
@@ -66,7 +70,6 @@ public abstract class Skill {
     this.player = player;
     type.getExpEquation().setVariable("%skill_level%", currentLevel);
     this.expToLevel = (int) type.getExpEquation().getValue();
-
   }
 
   /**
@@ -132,7 +135,6 @@ public abstract class Skill {
       Parser parser = type.getExpEquation();
 	  parser.setVariable("skill_level", currentLevel);
 	  parser.setVariable("power_level", player.getPowerLevel());
-	  System.out.println(parser.getExpression() + " " + parser.getInputString());
 	  expToLevel = (int) parser.getValue();
 	  currentExp = leftOverExp;
 	  while(currentExp >= expToLevel){
@@ -149,11 +151,17 @@ public abstract class Skill {
     }
 	else{
 	  currentExp += exp;
+	  expToLevel -= exp;
 	}
-	this.player.saveData();
-	System.out.println(currentExp);
-	System.out.println(expToLevel);
-	System.out.println(currentLevel);
-
+	if(!Mcmmox.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())){
+	  return ;
+	}
+	GenericDisplay display = Mcmmox.getInstance().getDisplayManager().getDisplay(player.getPlayer());
+	if(display.getType().equals(DisplayType.EXP_SCOREBOARD)){
+	  ExpScoreboardDisplay expBoard = (ExpScoreboardDisplay) display;
+	  if(expBoard.getSkill().equals(this.getType())){
+		((ExpScoreboardDisplay) display).sendUpdate(currentExp, expToLevel, currentLevel);
+	  }
+	}
   }
 }
