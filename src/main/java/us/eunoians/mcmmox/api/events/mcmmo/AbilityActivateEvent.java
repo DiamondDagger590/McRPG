@@ -15,11 +15,11 @@ public class AbilityActivateEvent extends Event implements Cancellable {
   @Getter
   private BaseAbility ability;
   @Getter
-  private McMMOPlayer player;
+  private McMMOPlayer user;
 
   public AbilityActivateEvent(BaseAbility ability, McMMOPlayer player){
     this.ability = ability;
-    this.player = player;
+    this.user = player;
     this.isCancelled = isCancelled();
   }
 

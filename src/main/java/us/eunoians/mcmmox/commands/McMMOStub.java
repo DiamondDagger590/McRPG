@@ -3,7 +3,6 @@ package us.eunoians.mcmmox.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.Methods;
@@ -29,12 +28,12 @@ public class McMMOStub implements CommandExecutor {
                 if(args[0].equalsIgnoreCase("reload")) {
                     if(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo.admin.*") || p.hasPermission("mcmmo.admin.reload")){
                         Mcmmox.getInstance().getFileManager().reloadFiles();
-                        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.ReloadFiles")));
+                        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
                         PlayerManager.startSave(plugin);
                         return true;
                     }
                     else{
-                        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.Utility.NoPerms")));
+                        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.NoPerms")));
                         return true;
                     }
                 }
@@ -52,7 +51,7 @@ public class McMMOStub implements CommandExecutor {
             else if(args.length == 1){
                 if(args[0].equalsIgnoreCase("reload")){
                     Mcmmox.getInstance().getFileManager().reloadFiles();
-                    sender.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.ReloadFiles")));
+                    sender.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
                     PlayerManager.startSave(plugin);
                     return true;
                 }

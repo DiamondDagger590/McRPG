@@ -3,8 +3,8 @@ package us.eunoians.mcmmox.api.events.mcmmo;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import us.eunoians.mcmmox.Mcmmox;
-import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.Bleed;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -12,9 +12,9 @@ import us.eunoians.mcmmox.players.McMMOPlayer;
 public class BleedEvent extends AbilityActivateEvent {
 
   @Getter
-  private McMMOPlayer target;
+  private Entity target;
   @Getter
-  private McMMOPlayer user;
+  private Bleed bleed;
   @Getter @Setter
   private int damage;
   @Getter @Setter
@@ -31,9 +31,11 @@ public class BleedEvent extends AbilityActivateEvent {
   private int bleedImmunityDuration;
 
 
-  public BleedEvent(BaseAbility ability, McMMOPlayer user, McMMOPlayer target, Bleed bleed){
-	super(ability, user);
+
+  public BleedEvent(McMMOPlayer user, Entity target, Bleed bleed){
+	super(bleed, user);
 	FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
+	this.bleed = bleed;
 	isCancelled = bleed.isToggled();
 	this.target = target;
 	this.damage = config.getInt("BleedConfig.BaseDamage");

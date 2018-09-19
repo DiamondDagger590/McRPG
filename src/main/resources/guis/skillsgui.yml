@@ -1,0 +1,19 @@
+Gui:
+  SkillsGUI:
+    Size: 54
+    Title: '&bMcMMOx Skills Menu'
+    Events:
+      1:
+      - 'OpenFile:swordsgui.yml:SwordsGUI'
+    Items:
+      SwordsSkill:
+        Name: '&5Swords Skill'
+        Material: DIAMOND_SWORD
+        Lore:
+        - '&eClick this to view your swords information'
+        - '&eCurrent Swords level: &a%Swords_Level%'
+        - '&eBleed chance: &c%Bleed_Chance%%'
+        Slot: 1
+    FillerItem:
+      Material: GRAY_STAINED_GLASS_PANE
+      Name: ' '

@@ -25,5 +25,4 @@ public abstract class BaseAbility {
     this.isToggled = isToggled;
 
   }
-
 }

@@ -20,7 +20,7 @@ public class McDisplay implements CommandExecutor {
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 	Mcmmox plugin = Mcmmox.getInstance();
 	DisplayManager displayManager = plugin.getDisplayManager();
-	FileConfiguration config = plugin.getConfig();
+	FileConfiguration config = plugin.getLangFile();
 	if(sender instanceof Player){
 	  Player p = (Player) sender;
 	  if(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo.display")){

@@ -59,15 +59,6 @@ public class Methods {
     return true;
   }
 
-  public static boolean isDouble(String s) {
-    try {
-      Double.parseDouble(s);
-    } catch (NumberFormatException nfe) {
-      return false;
-    }
-    return true;
-  }
-
   public static String color(String msg) {
     return ChatColor.translateAlternateColorCodes('&', msg);
   }

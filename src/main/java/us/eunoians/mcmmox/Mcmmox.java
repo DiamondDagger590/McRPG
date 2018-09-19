@@ -17,6 +17,7 @@ import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.GeneralConfig;
 import us.eunoians.mcmmox.configuration.files.SwordsConfig;
 import us.eunoians.mcmmox.events.mcmmo.AbilityActivate;
+import us.eunoians.mcmmox.events.mcmmo.McMMOBleed;
 import us.eunoians.mcmmox.events.mcmmo.McMMOExpGain;
 import us.eunoians.mcmmox.events.mcmmo.McMMOPlayerLevelChange;
 import us.eunoians.mcmmox.events.vanilla.*;
@@ -118,12 +119,14 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private void initListener() {
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
+    getServer().getPluginManager().registerEvents(new PlayerLogoutEvent(), this);
     getServer().getPluginManager().registerEvents(new InvClickEvent(this), this);
     getServer().getPluginManager().registerEvents(new AbilityActivate(), this);
     getServer().getPluginManager().registerEvents(new McMMOPlayerLevelChange(), this);
     getServer().getPluginManager().registerEvents(new VanillaDamageEvent(), this);
     getServer().getPluginManager().registerEvents(new McMMOExpGain(), this);
     getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
+    getServer().getPluginManager().registerEvents(new McMMOBleed(), this);
   }
 
   public static Mcmmox getInstance() {
@@ -154,7 +157,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   }
 
   public String getPluginPrefix() {
-    return fileManager.getFile(FileManager.Files.CONFIG).getString("Messages.PluginInfo.PluginPrefix");
+    return getLangFile().getString("Messages.PluginInfo.PluginPrefix");
   }
 
   public GeneralConfig getGeneralConfig() {
@@ -172,5 +175,9 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   @Override
   public FileConfiguration getConfig(){
     return fileManager.getFile(FileManager.Files.CONFIG);
+  }
+
+  public FileConfiguration getLangFile(){
+    return FileManager.Files.fromString(getConfig().getString("Configuration.LangFile")).getFile();
   }
 }

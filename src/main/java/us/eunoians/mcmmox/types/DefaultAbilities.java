@@ -3,18 +3,17 @@ package us.eunoians.mcmmox.types;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.util.FileManager;
+import us.eunoians.mcmmox.util.Parser;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * All abilities that come default with a skill should be stored in this enum
  */
 public enum DefaultAbilities implements GenericAbility {
-  BLEED("Bleed", "Swords", AbilityType.PASSIVE) {
+  BLEED("Bleed", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG) {
   };
 
   @Getter
@@ -23,8 +22,10 @@ public enum DefaultAbilities implements GenericAbility {
   private String skill;
   @Getter
   private AbilityType abilityType;
+  @Getter
+  private FileManager.Files file;
 
-  DefaultAbilities(String name, String skill, AbilityType type) {
+  DefaultAbilities(String name, String skill, AbilityType type, FileManager.Files file) {
     this.name = name;
     this.skill = skill;
     this.abilityType = type;
@@ -50,6 +51,10 @@ public enum DefaultAbilities implements GenericAbility {
    */
   public static DefaultAbilities getSkillsDefaultAbility(String skill) {
     return Arrays.stream(DefaultAbilities.values()).filter(n -> n.getSkill().equalsIgnoreCase(skill)).findFirst().orElse(null);
+  }
+
+  public Parser getActivationEquation(){
+    return new Parser(Mcmmox.getInstance().getFileManager().getFile(file).getString(name + "Config." + name + "ChanceEquation"));
   }
 
 }

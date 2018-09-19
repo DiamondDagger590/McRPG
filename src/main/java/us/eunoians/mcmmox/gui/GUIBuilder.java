@@ -14,12 +14,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
-import us.eunoians.mcmmox.util.IOUtil;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GUIBuilder {
 
@@ -37,7 +35,7 @@ public class GUIBuilder {
 	private McMMOPlayer player;
 
 	@Getter @Setter
-	private static GUIFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
+	private GUIFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
 		if (guiBuilder.getRawPath().equalsIgnoreCase("MainGUI")) {
 			for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
 				ItemStack item = guiBuilder.getInv().getItem(i);
@@ -64,8 +62,6 @@ public class GUIBuilder {
 	public GUIBuilder(String fileName, String guiPath, McMMOPlayer player) {
 		this.player = player;
 		File f = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "guis" + File.separator + fileName);
-		if (!f.exists())
-    		 IOUtil.saveResource(Mcmmox.getInstance(), "guis" + "/" + fileName, false);
    		this.config = YamlConfiguration.loadConfiguration(f);
     	this.rawPath = guiPath;
     	this.path = "Gui." + guiPath +".";
