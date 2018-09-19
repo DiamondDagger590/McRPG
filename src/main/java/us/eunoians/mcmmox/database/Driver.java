@@ -1,6 +1,6 @@
 package us.eunoians.mcmmox.database;
 
-public enum Drivers {
+public enum Driver {
   SQL,
   SQLite
 }

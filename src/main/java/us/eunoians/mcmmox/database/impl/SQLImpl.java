@@ -1,7 +1,7 @@
 package us.eunoians.mcmmox.database.impl;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 import us.eunoians.mcmmox.database.Database;
 
@@ -9,17 +9,18 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+@Builder(builderClassName = "Builder")
 public class SQLImpl implements Database {
 
   @Getter private Connection connection;
-  @Setter private String host, database, username, password;
-  @Setter private int port;
+  private String host, database, username, password;
+  private int port;
 
   @Override
   public void connectFunction() throws SQLException, ClassNotFoundException {
-    if(StringUtils.isBlank(host) || StringUtils.isBlank(host) ||
+    if (StringUtils.isBlank(host) || StringUtils.isBlank(host) ||
             StringUtils.isBlank(host) || StringUtils.isBlank(host))
-      // TODO: 9/13/18 throw some exception here!
+      throw new SQLException("One of the credentials provided is blank.");
     if (connection != null && !connection.isClosed()) {
       return;
     }

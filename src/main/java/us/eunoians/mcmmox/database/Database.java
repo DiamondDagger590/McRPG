@@ -60,9 +60,10 @@ public interface Database {
    * @throws ClassNotFoundException <p> An exception that provides an error stacktrace when
    *                                the JDBC driver could not be found</p>
    */
-  default void connect() throws SQLException, ClassNotFoundException {
+  default Database connect() throws SQLException, ClassNotFoundException {
     this.connectFunction();
     this.initializeTables(tables.get());
+    return this;
   }
 
   /**
