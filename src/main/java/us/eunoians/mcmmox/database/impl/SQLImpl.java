@@ -2,13 +2,12 @@ package us.eunoians.mcmmox.database.impl;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang.StringUtils;
 import us.eunoians.mcmmox.database.Database;
-import us.eunoians.mcmmox.database.Table;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collection;
 
 public class SQLImpl implements Database {
 
@@ -16,12 +15,11 @@ public class SQLImpl implements Database {
   @Setter private String host, database, username, password;
   @Setter private int port;
 
-  public void setTables(Collection<Table> table) {
-    tables.set(table);
-  }
-
   @Override
   public void connectFunction() throws SQLException, ClassNotFoundException {
+    if(StringUtils.isBlank(host) || StringUtils.isBlank(host) ||
+            StringUtils.isBlank(host) || StringUtils.isBlank(host))
+      // TODO: 9/13/18 throw some exception here!
     if (connection != null && !connection.isClosed()) {
       return;
     }
@@ -39,11 +37,5 @@ public class SQLImpl implements Database {
     if (connection != null && connection.isClosed())
       connection.close();
   }
-
-  @Override
-  public void initializeTables(Collection<? super Table> tables) {
-
-  }
-
 
 }
