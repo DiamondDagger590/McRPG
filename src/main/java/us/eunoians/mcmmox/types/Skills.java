@@ -5,6 +5,7 @@ import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.util.Parser;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /*
@@ -27,6 +28,17 @@ public enum Skills {
   public Parser getExpEquation(){
     FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
     return new Parser(file.getFile().getString("ExpEquation"));
+  }
+
+  public boolean isEnabled(){
+    FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return file.getFile().getBoolean(name + "Enabled");
+  }
+
+  public List<String> getEnabledAbilities(){
+    FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return file.getFile().getConfigurationSection("EnabledAbilities").getKeys(false)
+        .stream().filter(ability -> file.getFile().getBoolean("EnabledAbilities" + ability)).collect(Collectors.toList());
   }
 
   public static Skills fromString(String skill){

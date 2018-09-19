@@ -1,8 +1,6 @@
 package us.eunoians.mcmmox.players;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -10,13 +8,7 @@ import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
-import us.eunoians.mcmmox.skills.Swords;
-import us.eunoians.mcmmox.types.Skills;
-import us.eunoians.mcmmox.types.UnlockedAbilities;
-import us.eunoians.mcmmox.util.Parser;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -40,7 +32,9 @@ public class PlayerManager {
     BukkitTask task = new BukkitRunnable() {
       public void run() {
         McMMOPlayer mp = new McMMOPlayer(uuid);
-        players.put(uuid, mp);
+        if(mp.isOnline()){
+          players.put(uuid, mp);
+        }
         playersFrozen.remove(uuid);
       }
     }.runTaskAsynchronously(plugin);
@@ -52,6 +46,14 @@ public class PlayerManager {
 
   public static McMMOPlayer getPlayer(UUID uuid) {
     return players.get(uuid);
+  }
+
+  public static boolean isPlayerStored(UUID uuid){
+    return players.containsKey(uuid);
+  }
+
+  public static void removePlayer(UUID uuid){
+    players.remove(uuid).saveData();
   }
 
   public static void startSave(Plugin p){

@@ -11,10 +11,7 @@ import us.eunoians.mcmmox.api.displays.GenericDisplay;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerExpGainEvent;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
 import us.eunoians.mcmmox.players.McMMOPlayer;
-import us.eunoians.mcmmox.types.DisplayType;
-import us.eunoians.mcmmox.types.GainReason;
-import us.eunoians.mcmmox.types.GenericAbility;
-import us.eunoians.mcmmox.types.Skills;
+import us.eunoians.mcmmox.types.*;
 import us.eunoians.mcmmox.util.Parser;
 
 import java.util.Calendar;
@@ -84,6 +81,10 @@ public abstract class Skill {
 
   public BaseAbility getAbility(GenericAbility ability){
 	return (abilityMap.containsKey(ability))? abilityMap.get(ability) : null;
+  }
+
+  public BaseAbility getDefaultAbility(){
+    return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
   }
 
   public Collection<BaseAbility> getAbilities(){
