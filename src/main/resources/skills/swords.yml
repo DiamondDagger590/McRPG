@@ -5,7 +5,7 @@ SwordsEnabled: true
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
 #
-ExpEquation: '1000*(1.2^(%power_level%))'
+ExpEquation: '1000*(1.2^(power_level))'
 #If different materials of swords should give more exp. WOOD_SWORD: 1.0 means 100% of default exp
 MaterialBonus:
   WOOD_SWORD: 1.0
@@ -66,7 +66,7 @@ UnlockLevelForAbility:
 #
 BleedConfig:
 #Equation for bleed chance. Default gives 33% at level 1000.
-  BleedChanceEquation: (%Swords_Level%)*.033
+  BleedChanceEquation: (swords_level)*.033
 #How the amount of health that bleed cant go lower than. Ex) if set to 4, bleed wont bring the player below two hearts
   MinimumHealthAllowed: 1
 #How long bleed should last for without DeeperSlash in seconds

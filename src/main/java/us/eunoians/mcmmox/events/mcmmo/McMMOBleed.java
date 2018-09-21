@@ -31,6 +31,10 @@ public class McMMOBleed implements Listener {
     Entity target = e.getTarget();
 	McMMOPlayer player = e.getUser();
 	Bleed bleed = e.getBleed();
+	if(targetsBleedTasks.containsKey(target.getUniqueId())){
+	  e.setCancelled(true);
+	  return;
+	}
 	if(target instanceof Player){
 	  McMMOPlayer targ = PlayerManager.getPlayer(target.getUniqueId());
 	  if(!bleed.canTarget()){
@@ -48,7 +52,7 @@ public class McMMOBleed implements Listener {
 	startBleedTimer(e);
   }
 
-  public static void cancelPlayer(UUID uuid){
+  public static void cancelTarget(UUID uuid){
     if(targetsBleedTasks.containsKey(uuid)){
       targetsBleedTasks.get(uuid).cancel();
       targetsBleedTasks.remove(uuid);
@@ -94,10 +98,12 @@ public class McMMOBleed implements Listener {
     //TODO factor in players buffs
     AtomicInteger iterations = new AtomicInteger((e.getBaseDuration() / e.getFrequency()));
 	BukkitTask task = Bukkit.getScheduler().runTaskTimer(Mcmmox.getInstance(), () ->{
+	  System.out.println("2");
 	  Entity en = e.getTarget();
 	  //If the bleed effect is over
 	  if(iterations.get() == 0 || en.isDead() || ((en instanceof  Player) && !((Player)en).isOnline())){
-	    if(en instanceof Player && ((Player)en).isOnline()){
+		System.out.println("3");
+		if(en instanceof Player && ((Player)en).isOnline()){
 		  en.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
 			  + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Bleed.BleedingStopped")));
 		  McMMOPlayer targ = PlayerManager.getPlayer(e.getTarget().getUniqueId());
@@ -105,13 +111,14 @@ public class McMMOBleed implements Listener {
 			startBleedImmunityTimer(targ, e.getBleedImmunityDuration());
 		  }
 		}
+		cancelTarget(e.getTarget().getUniqueId());
 		if(en instanceof Player){
-		  cancelPlayer(e.getTarget().getUniqueId());
 		  removePlayerTargeted(e.getUser().getUuid(), e.getTarget().getUniqueId());
 		}
 	  }
 	  else{
-	    iterations.decrementAndGet();
+		System.out.println("4");
+		iterations.decrementAndGet();
 	    LivingEntity len = (LivingEntity) en;
 		en.getWorld().playEffect(len.getEyeLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
 		if(len.getHealth() >= e.getMinimumHealthAllowed()){
@@ -119,9 +126,7 @@ public class McMMOBleed implements Listener {
 		}
 	  }
 	}, 10, e.getFrequency() * 20);
-	if(e.getTarget() instanceof Player){
-	  targetsBleedTasks.put(e.getTarget().getUniqueId(), task);
-	}
+  	targetsBleedTasks.put(e.getTarget().getUniqueId(), task);
   }
 
   private static void startBleedImmunityTimer(McMMOPlayer targ, int bleedImmuneDuration){

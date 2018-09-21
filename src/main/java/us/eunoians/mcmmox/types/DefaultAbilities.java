@@ -29,7 +29,7 @@ public enum DefaultAbilities implements GenericAbility {
     this.name = name;
     this.skill = skill;
     this.abilityType = type;
-
+    this.file = file;
   }
 
   /**

@@ -11,37 +11,36 @@ import us.eunoians.mcmmox.util.Parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class SkillGUI extends GUI{
+public class SkillGUI extends GUI {
 
   private static FileManager fm = Mcmmox.getInstance().getFileManager();
   private static FileManager.Files file = FileManager.Files.SKILLS_GUI;
-  private static GUIFunction function = (GUIBuilder guiBuilder) ->{
-    McMMOPlayer player = guiBuilder.getPlayer();
-	if (guiBuilder.getRawPath().equalsIgnoreCase("SkillsGUI")) {
-	  AtomicInteger iterat = new AtomicInteger(0);
+  private static GUIFunction function = (GUIBuilder guiBuilder) -> {
+	McMMOPlayer player = guiBuilder.getPlayer();
+	if(guiBuilder.getRawPath().equalsIgnoreCase("SkillsGUI")){
 	  for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
-	    iterat.incrementAndGet();
 		ItemStack item = guiBuilder.getInv().getItem(i);
-		if(item.hasItemMeta() && item.getItemMeta().hasLore()) {
+		if(item.hasItemMeta() && item.getItemMeta().hasLore()){
 		  ItemMeta meta = item.getItemMeta();
 		  List<String> lore = new ArrayList<>();
-		  for(String s : lore){
-		    for(Skills skill : Skills.values()){
-		      s = s.replaceAll("%" + skill.getName() + "_Level%", Integer.toString(player.getSkill(skill).getCurrentLevel()));
-		      DefaultAbilities ability = DefaultAbilities.getSkillsDefaultAbility(skill.getName());
-		      Parser equation = ability.getActivationEquation();
-		      equation.setVariable(skill.getName() + "_level", player.getSkill(skill).getCurrentLevel());
-		      equation.setVariable("power_level", player.getPowerLevel());
-		      s = s.replaceAll("%" + ability.getName() + "_Chance%", Double.toString(ability.getActivationEquation().getValue()));
+		  for(String s : meta.getLore()){
+			for(Skills skill : Skills.values()){
+			  if(!skill.equals(Skills.SWORDS)){
+			    continue;
+			  }
+			  s = s.replaceAll("%" + skill.getName() + "_Level%", Integer.toString(player.getSkill(skill).getCurrentLevel()));
+			  DefaultAbilities ability = DefaultAbilities.getSkillsDefaultAbility(skill.getName());
+			  Parser equation = ability.getActivationEquation();
+			  equation.setVariable(skill.getName() + "_level", player.getSkill(skill).getCurrentLevel());
+			  equation.setVariable("power_level", player.getPowerLevel());
+			  s = s.replaceAll("%" + ability.getName() + "_Chance%", Double.toString(ability.getActivationEquation().getValue()));
 			}
-
-		  lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
-			.replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));
-		  meta.setLore(lore);
+			lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
+				.replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));
+			meta.setLore(lore);
 			item.setItemMeta(meta);
-			guiBuilder.getInv().setItem(iterat.get(), item);
+			guiBuilder.getInv().setItem(i, item);
 		  }
 		}
 		continue;

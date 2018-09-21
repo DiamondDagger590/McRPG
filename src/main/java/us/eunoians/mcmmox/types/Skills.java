@@ -1,6 +1,7 @@
 package us.eunoians.mcmmox.types;
 
 import lombok.Getter;
+import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.util.Parser;
 
@@ -27,18 +28,18 @@ public enum Skills {
 
   public Parser getExpEquation(){
     FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-    return new Parser(file.getFile().getString("ExpEquation"));
+    return new Parser(Mcmmox.getInstance().getFileManager().getFile(file).getString("ExpEquation"));
   }
 
   public boolean isEnabled(){
     FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-    return file.getFile().getBoolean(name + "Enabled");
+    return Mcmmox.getInstance().getFileManager().getFile(file).getBoolean(name + "Enabled");
   }
 
   public List<String> getEnabledAbilities(){
     FileManager.Files file  = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-    return file.getFile().getConfigurationSection("EnabledAbilities").getKeys(false)
-        .stream().filter(ability -> file.getFile().getBoolean("EnabledAbilities" + ability)).collect(Collectors.toList());
+    return Mcmmox.getInstance().getFileManager().getFile(file).getConfigurationSection("EnabledAbilities").getKeys(false)
+        .stream().filter(ability -> file.getFile().getBoolean("EnabledAbilities." + ability)).collect(Collectors.toList());
   }
 
   public static Skills fromString(String skill){

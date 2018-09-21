@@ -91,7 +91,13 @@ public class InvClickEvent implements Listener {
 		  if(events[1].equalsIgnoreCase("skillsgui.yml")){
 			gui = new SkillGUI(mp);
 		  }
+		  else{
+		    p.sendMessage("Not added yet");
+		    p.closeInventory();
+		    return;
+		  }
 		  currentGUI.setClearData(false);
+		  p.openInventory(gui.getGui().getInv());
 		  GUITracker.replacePlayersGUI(mp, gui);
 		  return;
 		}

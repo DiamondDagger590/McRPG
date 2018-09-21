@@ -65,7 +65,9 @@ public abstract class Skill {
     this.currentExp = currentExp;
     this.abilityMap = abilityMap;
     this.player = player;
-    type.getExpEquation().setVariable("%skill_level%", currentLevel);
+    Parser equation = type.getExpEquation();
+    equation.setVariable("skill_level", currentLevel);
+    equation.setVariable("power_level", player.getPowerLevel());
     this.expToLevel = (int) type.getExpEquation().getValue();
   }
 
@@ -130,7 +132,7 @@ public abstract class Skill {
 	exp = expEvent.getExpGained();
     int oldLevel = currentLevel;
     if(exp + currentExp >= expToLevel){
-      int amountOfLevels = 1;
+	  int amountOfLevels = 1;
       int leftOverExp = currentExp + exp - expToLevel;
       currentLevel++;
       Parser parser = type.getExpEquation();

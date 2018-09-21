@@ -7,9 +7,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.Bleed;
-import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
 import us.eunoians.mcmmox.types.*;
@@ -70,7 +70,7 @@ public class McMMOPlayer {
 
   public McMMOPlayer(UUID uuid) {
     this.uuid = uuid;
-    this.playerFile = new File(Mcmmox.getInstance().getDataFolder(), "PlayerData" + File.separator + uuid.toString());
+    this.playerFile = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "PlayerData" + File.separator + uuid.toString() + ".yml");
     this.playerData = YamlConfiguration.loadConfiguration(playerFile);
     boolean isNew = false;
     if (!playerFile.exists()) {
@@ -163,7 +163,7 @@ public class McMMOPlayer {
    * @return The instance of the players skill of the type provided
    */
   public Skill getSkill(Skills skill) {
-    return skills.stream().filter(n -> n.getName().equalsIgnoreCase(skill.getName())).findAny().orElse(null);
+    return skills.stream().filter(n -> n.getName().equalsIgnoreCase(skill.getName())).findFirst().orElse(null);
   }
 
   public void giveExp(Skills skill, int exp, GainReason reason) {

@@ -34,7 +34,6 @@ public class VanillaDamageEvent implements Listener {
       }
       else {
         Material weapon = damager.getItemInHand().getType();
-        if(e.getEntity() instanceof Player){
           if(weapon.name().contains("SWORD")){
             Skill playersSkill = mp.getSkill(Skills.SWORDS);
             if(!Skills.SWORDS.isEnabled()){
@@ -88,7 +87,6 @@ public class VanillaDamageEvent implements Listener {
           }
         }
       }
-    }
     else {
       return;
     }

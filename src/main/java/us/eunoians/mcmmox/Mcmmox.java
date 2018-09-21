@@ -24,6 +24,7 @@ import us.eunoians.mcmmox.events.vanilla.*;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
 import us.eunoians.mcmmox.players.PlayerManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -102,6 +103,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
+    File folder = new File(getDataFolder(), File.separator + "PlayerData");
+    if(!folder.exists()){folder.mkdir();}
     displayManager = DisplayManager.getInstance();
     PlayerManager.startSave(this);
   }
