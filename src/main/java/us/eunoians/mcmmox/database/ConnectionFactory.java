@@ -1,9 +1,10 @@
-package us.eunoians.mcmmox.database.impl;
+package us.eunoians.mcmmox.database;
 
 
 import org.apache.commons.lang.StringUtils;
-import us.eunoians.mcmmox.database.Database;
-import us.eunoians.mcmmox.database.Driver;
+import us.eunoians.mcmmox.database.impl.SQLImpl;
+import us.eunoians.mcmmox.database.impl.SQLiteImpl;
+import us.eunoians.mcmmox.database.models.Table;
 
 import java.sql.SQLException;
 
@@ -12,6 +13,7 @@ public class ConnectionFactory {
   private Driver driver;
   private String host, database, username, password, path;
   private int port;
+  private Table table;
 
   /**
    * Default constructor for {@link ConnectionFactory ConnectionFactory}.
@@ -23,6 +25,7 @@ public class ConnectionFactory {
     driver = Driver.SQL;
     port = 0;
     host = database = username = password = path = "";
+    table = null;
   }
 
   /**
@@ -156,6 +159,20 @@ public class ConnectionFactory {
   }
 
   /**
+   * Set the path for this {@link ConnectionFactory ConnectionFactory}.
+   *
+   * <p> This is the table that is going to be used when the connection is
+   * established.</p>
+   *
+   * @param table The table that's going to be used.
+   * @return current instance of {@link ConnectionFactory ConnectionFactory}.
+   */
+  public ConnectionFactory setTable(Table table) {
+    this.table = table;
+    return this;
+  }
+
+  /**
    * Build this {@link ConnectionFactory ConnectionFactory}.
    *
    * <p> This just builds the connection that's going to be used to
@@ -166,22 +183,27 @@ public class ConnectionFactory {
    *
    * @return {@link Database Database} disconnected representation of
    * the connection.
+   *
+   * @throws SQLException           refer to method docs to see exception throws.
+   * @throws ClassNotFoundException when JDBC driver cannot be found.
    */
-  public Database build() throws SQLException {
+  public Database build() throws SQLException, ClassNotFoundException {
     switch (driver) {
       case SQL: {
         if (!StringUtils.isBlank(path))
           throw new SQLException("Path cannot be used when using SQL driver");
-        if(StringUtils.isBlank(host) || StringUtils.isBlank(host) || StringUtils.isBlank(host) || StringUtils.isBlank(host))
+        if (StringUtils.isBlank(host) || StringUtils.isBlank(host) || StringUtils.isBlank(host) || StringUtils.isBlank(host))
           throw new SQLException("One of the credentials provided is blank.");
-        return new SQLImpl.Builder().host(host).port(port).database(database).username(username).password(password).build();
+        if (table == null)
+          throw new SQLException("No table was provided.");
+        return new SQLImpl().setHost(host).setPort(port).setDatabase(database).setUsername(username).setPassword(password).setTables(table).connect();
       }
       case SQLite: {
-        if(!StringUtils.isBlank(host) || !StringUtils.isBlank(host) || !StringUtils.isBlank(host) || !StringUtils.isBlank(host))
+        if (!StringUtils.isBlank(host) || !StringUtils.isBlank(host) || !StringUtils.isBlank(host) || !StringUtils.isBlank(host))
           throw new SQLException("Only path can be used when using SQLite driver.");
-        if(StringUtils.isBlank(path))
+        if (StringUtils.isBlank(path))
           throw new SQLException("There was no path provided.");
-        return new SQLiteImpl.Builder().path(path).build();
+        return new SQLiteImpl().setPath(path).setTables(table).connect();
       }
       default:
         return null;

@@ -24,10 +24,7 @@ import us.eunoians.mcmmox.events.vanilla.*;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
 import us.eunoians.mcmmox.players.PlayerManager;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -62,12 +59,12 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 0)
   private void preInit() {
+    Logger.init("McMMOX");
     /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(
             GeneralConfig.class, SwordsConfig.class))
       getServer().shutdown();*/
-    Logger.init("McMMOX");
     //Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
     //Locale.init(mConfigManager);
   }
@@ -133,27 +130,6 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     if (instance == null)
       throw new NullPointerException("Plugin was not initialized.");
     return instance;
-  }
-
-  public static void copyFile(InputStream in, File out) throws Exception { // https://bukkit.org/threads/extracting-file-from-jar.16962/
-    InputStream fis = in;
-    FileOutputStream fos = new FileOutputStream(out);
-    try {
-      byte[] buf = new byte[1024];
-      int i = 0;
-      while ((i = fis.read(buf)) != -1) {
-        fos.write(buf, 0, i);
-      }
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      if (fis != null) {
-        fis.close();
-      }
-      if (fos != null) {
-        fos.close();
-      }
-    }
   }
 
   public String getPluginPrefix() {

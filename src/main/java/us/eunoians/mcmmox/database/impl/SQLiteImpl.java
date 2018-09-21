@@ -1,15 +1,15 @@
 package us.eunoians.mcmmox.database.impl;
 
-import lombok.Builder;
 import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
 import us.eunoians.mcmmox.database.Database;
+import us.eunoians.mcmmox.database.Driver;
+import us.eunoians.mcmmox.database.models.Table;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@Builder(builderClassName = "Builder")
 public class SQLiteImpl implements Database {
 
   @Getter private Connection connection;
@@ -35,6 +35,37 @@ public class SQLiteImpl implements Database {
   public void closeConnection() throws SQLException {
     if (connection != null && connection.isClosed())
       connection.close();
+  }
+
+  /**
+   * Set the path for this {@link SQLiteImpl SQLiteImpl}.
+   *
+   * <p> This is the path for the database that will be used for the
+   * SQLite connection.</p>
+   *
+   * <p> Throws {@link java.sql.SQLException SQLException} when used with
+   * {@link Driver#SQL SQL} Driver.</p>
+   * <p> Throws {@link java.sql.SQLException SQLException} when the provided
+   * path is invalid.</p>
+   *
+   * @param path database path.
+   * @return current instance of {@link SQLImpl SQLImpl}.
+   */
+  public SQLiteImpl setPath(String path) {
+    this.path = path;
+    return this;
+  }
+
+
+  /**
+   * <p> Setup the tables that are going to be used by the class.</p>
+   *
+   * @param table {@link Table Table} that is going
+   *              to be used in this database wrapper.
+   */
+  public SQLiteImpl setTables(Table table) {
+    this.table.set(table);
+    return this;
   }
 
 }
