@@ -9,7 +9,6 @@ import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcmmox.api.displays.GenericDisplay;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
-import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.types.DisplayType;
 
@@ -18,7 +17,7 @@ public class McMMOPlayerLevelChange implements Listener {
   @EventHandler
   public void levelChange(McMMOPlayerLevelChangeEvent e){
     String message = Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-		Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getString("Messages.Players.LevelUp")
+		Mcmmox.getInstance().getLangFile().getString("Messages.Players.LevelUp")
 			.replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName()));
 	if(e.getMcMMOPlayer().isOnline()){
 	  Player p = e.getMcMMOPlayer().getPlayer();

@@ -47,6 +47,7 @@ public class McMMOBleed implements Listener {
 	      return;
 		}
 	  }
+	  addPlayerTargetedBy(player.getUuid(), targ.getUuid());
 	  targ.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Bleed.PlayerBleeding")));
 	}
 	startBleedTimer(e);
