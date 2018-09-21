@@ -1,6 +1,5 @@
 package us.eunoians.mcmmox.database.models;
 
-import lombok.Builder;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
@@ -8,7 +7,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-@Builder
 public class Table {
 
   public static final String TABLE_PREFIX = "mcmmox_";
