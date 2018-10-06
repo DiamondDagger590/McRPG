@@ -29,13 +29,15 @@ public class GUIBuilder {
 	private String rawPath;
 	@Getter
 	private ArrayList<GUIEventBinder> boundEvents;
+	@Getter
 	private FileConfiguration config;
+	@Getter @Setter
 	private ArrayList<GUIItem> items;
 	@Getter
 	private McMMOPlayer player;
 
 	@Getter @Setter
-	private GUIFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
+	private GUIPlaceHolderFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
 		if (guiBuilder.getRawPath().equalsIgnoreCase("MainGUI")) {
 			for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
 				ItemStack item = guiBuilder.getInv().getItem(i);
@@ -53,6 +55,63 @@ public class GUIBuilder {
 		}
 	};
 
+	@Getter @Setter
+	private GUIInventoryFunction buildGUIFunction = (GUIBuilder builder) -> {
+	  Inventory inv = Bukkit.createInventory(null, config.getInt(path + "Size"),
+		  Methods.color(config.getString(path + "Title")));
+	  items = new ArrayList<>();
+	  for (String itemName : config.getConfigurationSection(path + "Items").getKeys(false)) {
+		ItemStack item;
+		Material type = Material.getMaterial(config.getString(path + "Items." + itemName + ".Material"));
+		item = new ItemStack(type, 1);
+		ItemMeta meta = item.getItemMeta();
+		if (type.equals(Material.PLAYER_HEAD)) {
+		  SkullMeta sm = (SkullMeta) meta;
+		  sm.setOwningPlayer(player.getOfflineMcMMOPlayer());
+		}
+		meta.setDisplayName(Methods.color(config.getString(path + "Items." + itemName + ".Name")));
+		if (config.contains(path + "Items." + itemName + ".Lore")) {
+		  List<String> lore = config.getStringList(path + "Items." + itemName + ".Lore");
+		  lore = Methods.colorLore(lore);
+		  meta.setLore(lore);
+		}
+		item.setItemMeta(meta);
+		item.getItemMeta().addItemFlags(ItemFlag.HIDE_ENCHANTS);
+		GUIItem i = new GUIItem(item, config.getInt(path + ".Items." + itemName + ".Slot"));
+		items.add(i);
+	  }
+	  ItemStack filler;
+	  if (!config.contains(path + "FillerItem")) {
+		return inv;
+	  }
+	  Material fillerType = Material.getMaterial(config.getString(path + "FillerItem.Material"));
+	  filler = new ItemStack(fillerType, 1);
+	  ItemMeta meta = filler.getItemMeta();
+	  meta.setDisplayName(Methods.color(config.getString(path + "FillerItem.Name")));
+	  filler.setItemMeta(meta);
+	  if (config.contains(path + "FillerItem.Lore")) {
+		List<String> lore = config.getStringList(path + "FillerItem.Lore");
+		lore = Methods.colorLore(lore);
+		meta.setLore(lore);
+		filler.setItemMeta(meta);
+	  }
+	  inv = Methods.fillInventory(inv, filler, items);
+	  return inv;
+	};
+
+	@Getter @Setter
+	private GUIBindEventFunction bindEventsFunction = (GUIBuilder builder) -> {
+	  ArrayList<GUIEventBinder> binder = new ArrayList<GUIEventBinder>();
+	  if (!config.contains(path + "Events")) {
+		return binder;
+	  }
+	  for (String slotString : config.getConfigurationSection(path + "Events").getKeys(false)) {
+		GUIEventBinder boundEvent = new GUIEventBinder(Integer.parseInt(slotString), (ArrayList) config.getStringList(path + "Events." + slotString));
+		binder.add(boundEvent);
+	  }
+	  return binder;
+	};
+
 	/**
 	 * Used when loading a gui from a file. Typical usage would be when loading a custom gui that isnt defined in FileManager
 	 * @param fileName
@@ -64,9 +123,9 @@ public class GUIBuilder {
 		File f = new File(Mcmmox.getInstance().getDataFolder(), File.separator + "guis" + File.separator + fileName);
    		this.config = YamlConfiguration.loadConfiguration(f);
     	this.rawPath = guiPath;
-    	this.path = "Gui." + guiPath +".";
-    	this.inv =	generateGUI();
-    	this.boundEvents =	bindEvents();
+    	this.path = "Gui." + guiPath + ".";
+    	this.inv =	buildGUIFunction.generateInventory(this);
+    	this.boundEvents =	bindEventsFunction.bindEvents(this);
 	}
 
 	/**
@@ -80,8 +139,12 @@ public class GUIBuilder {
 		this.rawPath = guiPath;
 		this.config = config;
 		this.path = "Gui." + guiPath + ".";
-		this.inv = generateGUI();
-		this.boundEvents = bindEvents();
+		this.inv = buildGUIFunction.generateInventory(this);
+		this.boundEvents = bindEventsFunction.bindEvents(this);
+	}
+
+	public GUIBuilder(McMMOPlayer player){
+	  this.player = player;
 	}
 
 	/**
@@ -93,66 +156,17 @@ public class GUIBuilder {
 		return new GUIBuilder(this.rawPath, this.config, this.player);
 	}
 
-	private Inventory generateGUI() {
-		Inventory inv = Bukkit.createInventory(null, config.getInt(path + "Size"),
-				Methods.color(config.getString(path + "Title")));
-		items = new ArrayList<>();
-		for (String itemName : config.getConfigurationSection(path + "Items").getKeys(false)) {
-			ItemStack item;
-			Material type = Material.getMaterial(config.getString(path + "Items." + itemName + ".Material"));
-			item = new ItemStack(type, 1);
-			ItemMeta meta = item.getItemMeta();
-			if (type.equals(Material.PLAYER_HEAD)) {
-				SkullMeta sm = (SkullMeta) meta;
-				sm.setOwningPlayer(player.getOfflineMcMMOPlayer());
-			}
-			meta.setDisplayName(Methods.color(config.getString(path + "Items." + itemName + ".Name")));
-			if (config.contains(path + "Items." + itemName + ".Lore")) {
-				List<String> lore = config.getStringList(path + "Items." + itemName + ".Lore");
-				lore = Methods.colorLore(lore);
-				meta.setLore(lore);
-			}
-			item.setItemMeta(meta);
-			item.getItemMeta().addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			GUIItem i = new GUIItem(item, config.getInt(path + ".Items." + itemName + ".Slot"));
-			items.add(i);
-		}
-		ItemStack filler;
-		if (!config.contains(path + "FillerItem")) {
-			return inv;
-		}
-		Material fillerType = Material.getMaterial(config.getString(path + "FillerItem.Material"));
-		filler = new ItemStack(fillerType, 1);
-		ItemMeta meta = filler.getItemMeta();
-		meta.setDisplayName(Methods.color(config.getString(path + "FillerItem.Name")));
-		filler.setItemMeta(meta);
-		if (config.contains(path + "FillerItem.Lore")) {
-			List<String> lore = config.getStringList(path + "FillerItem.Lore");
-			lore = Methods.colorLore(lore);
-			meta.setLore(lore);
-			filler.setItemMeta(meta);
-		}
-		inv = Methods.fillInventory(inv, filler, items);
-		return inv;
-	}
-
-	private ArrayList<GUIEventBinder> bindEvents() {
-		ArrayList<GUIEventBinder> binder = new ArrayList<GUIEventBinder>();
-		if (!config.contains(path + "Events")) {
-			return binder;
-		}
-		for (String slotString : config.getConfigurationSection(path + "Events").getKeys(false)) {
-			GUIEventBinder boundEvent = new GUIEventBinder(Integer.parseInt(slotString), (ArrayList) config.getStringList(path + "Events." + slotString));
-			binder.add(boundEvent);
-		}
-		return binder;
-	}
-
 	public void setNewInventory(Inventory newInv) {
 		this.inv = newInv;
 	}
 
-	public void replacePlaceHolders(McMMOPlayer player) {
+	public void rebuildGUI(){	this.inv = buildGUIFunction.generateInventory(this);}
+
+	public void rebindEvents(){
+	  this.boundEvents = bindEventsFunction.bindEvents(this);
+	}
+
+	public void replacePlaceHolders() {
 		replacePlaceHoldersFunction.replacePlaceHolders(this);
 	}
 

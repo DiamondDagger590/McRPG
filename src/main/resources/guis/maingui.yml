@@ -10,7 +10,7 @@ Gui:
       14:
         - 'OpenFile:abilityupgradegui.yml:AbilityUpgradeGUI'
       16:
-        - 'OpenFile:abilityloadoutgui.yml:AbilityLoadOutGUI'
+        - 'OpenFile:abilityloadoutgui.yml:AbilityLoadoutGUI'
     Items:
       PlayerSkull:
         Name: '&2Your Profile'

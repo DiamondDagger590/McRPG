@@ -6,19 +6,76 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcmmox.api.displays.GenericDisplay;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
 import us.eunoians.mcmmox.api.util.Methods;
+import us.eunoians.mcmmox.players.McMMOPlayer;
+import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.types.DisplayType;
+import us.eunoians.mcmmox.types.GenericAbility;
+import us.eunoians.mcmmox.types.Skills;
+import us.eunoians.mcmmox.types.UnlockedAbilities;
+
+import java.util.List;
 
 public class McMMOPlayerLevelChange implements Listener {
 
   @EventHandler
   public void levelChange(McMMOPlayerLevelChangeEvent e){
-    String message = Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-		Mcmmox.getInstance().getLangFile().getString("Messages.Players.LevelUp")
+    Mcmmox mcmmox = Mcmmox.getInstance();
+    //Send the player a message that they leveled up
+    String message = Methods.color(mcmmox.getPluginPrefix() +
+		mcmmox.getLangFile().getString("Messages.Players.LevelUp")
 			.replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName()));
+    Skill skillLeveled = e.getSkillLeveled();
+	McMMOPlayer mp = e.getMcMMOPlayer();
+	//iterate across all levels gained
+	for(int i = e.getPreviousLevel() + 1; i < e.getNextLevel(); i ++){
+	  //if the level is at a interval to gain the player an ability point, award it to them
+	  if(i % mcmmox.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0){
+	    mp.setAbilityPoints(mp.getAbilityPoints() + 1);
+	    //Need to fiddle with this sound
+	    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 10 ,1);
+	    mp.getPlayer().sendMessage(Methods.color(mcmmox.getPluginPrefix() + mcmmox.getLangFile().getString("Messages.Players.AbilityPointGained")));
+	    mp.saveData();
+	  }
+	}
+	//Do things for swords ability
+    if(skillLeveled.getType().equals(Skills.SWORDS)){
+      //Get all enabled abilites
+	  List<String> enabledAbilities = Skills.SWORDS.getEnabledAbilities();
+	  for(String s : enabledAbilities){
+		GenericAbility ability = skillLeveled.getGenericAbility(s);
+		if(ability instanceof UnlockedAbilities){
+		  UnlockedAbilities ab = (UnlockedAbilities) ability;
+		  BaseAbility base = skillLeveled.getAbility(ability);
+		  if(base.isUnlocked()){
+		    continue;
+		  }
+		  else{
+		    if(e.getNextLevel() >= ab.getUnlockLevel()){
+		      Player p = mp.getPlayer();
+		      p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
+				  mcmmox.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
+		      p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 10, 1);
+		      base.setUnlocked(true);
+		      base.setCurrentTier(1);
+		      mp.addPendingAbilityUnlock(ab);
+		      mp.getPlayer().sendMessage(mp.getPendingUnlockAbilities().toString());
+		      mp.saveData();
+			}
+			else{
+			  continue;
+			}
+		  }
+		}
+		else{
+		  continue;
+		}
+	  }
+	}
 	if(e.getMcMMOPlayer().isOnline()){
 	  Player p = e.getMcMMOPlayer().getPlayer();
 	  p.sendMessage(message);

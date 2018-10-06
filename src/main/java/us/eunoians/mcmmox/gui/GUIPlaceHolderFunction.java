@@ -1,6 +1,7 @@
 package us.eunoians.mcmmox.gui;
 
-public interface GUIFunction {
+@FunctionalInterface
+public interface GUIPlaceHolderFunction {
 
 	void replacePlaceHolders(GUIBuilder guiBuilder);
 }

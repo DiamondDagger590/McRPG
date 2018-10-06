@@ -16,7 +16,7 @@ public class SkillGUI extends GUI {
 
   private static FileManager fm = Mcmmox.getInstance().getFileManager();
   private static FileManager.Files file = FileManager.Files.SKILLS_GUI;
-  private static GUIFunction function = (GUIBuilder guiBuilder) -> {
+  private static GUIPlaceHolderFunction function = (GUIBuilder guiBuilder) -> {
 	McMMOPlayer player = guiBuilder.getPlayer();
 	if(guiBuilder.getRawPath().equalsIgnoreCase("SkillsGUI")){
 	  for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
@@ -32,9 +32,9 @@ public class SkillGUI extends GUI {
 			  s = s.replaceAll("%" + skill.getName() + "_Level%", Integer.toString(player.getSkill(skill).getCurrentLevel()));
 			  DefaultAbilities ability = DefaultAbilities.getSkillsDefaultAbility(skill.getName());
 			  Parser equation = ability.getActivationEquation();
-			  equation.setVariable(skill.getName() + "_level", player.getSkill(skill).getCurrentLevel());
+			  equation.setVariable(skill.getName().toLowerCase() + "_level", player.getSkill(skill).getCurrentLevel());
 			  equation.setVariable("power_level", player.getPowerLevel());
-			  s = s.replaceAll("%" + ability.getName() + "_Chance%", Double.toString(ability.getActivationEquation().getValue()));
+			  s = s.replaceAll("%" + ability.getName() + "_Chance%", Double.toString(equation.getValue()));
 			}
 			lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
 				.replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));
@@ -51,7 +51,7 @@ public class SkillGUI extends GUI {
   public SkillGUI(McMMOPlayer p){
 	super(new GUIBuilder("SkillsGUI", fm.getFile(file), p));
 	this.getGui().setReplacePlaceHoldersFunction(function);
-	this.getGui().replacePlaceHolders(p);
+	this.getGui().replacePlaceHolders();
 	if(!GUITracker.isPlayerTracked(p)){
 	  GUITracker.trackPlayer(p, this);
 	}

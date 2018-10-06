@@ -15,7 +15,7 @@ public class Bleed extends BaseAbility {
   private ArrayList<UUID> targeted;
 
   public Bleed() {
-    super(DefaultAbilities.BLEED, true);
+    super(DefaultAbilities.BLEED, true, true);
     targeted = new ArrayList<>();
   }
 

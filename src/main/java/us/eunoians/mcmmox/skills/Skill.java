@@ -85,6 +85,10 @@ public abstract class Skill {
 	return (abilityMap.containsKey(ability))? abilityMap.get(ability) : null;
   }
 
+  public GenericAbility getGenericAbility(String ability){
+    return abilityMap.keySet().stream().filter(ab -> ab.getName().equalsIgnoreCase(ability)).findFirst().orElse(null);
+  }
+
   public BaseAbility getDefaultAbility(){
     return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
   }
@@ -163,7 +167,7 @@ public abstract class Skill {
 	if(display.getType().equals(DisplayType.EXP_SCOREBOARD)){
 	  ExpScoreboardDisplay expBoard = (ExpScoreboardDisplay) display;
 	  if(expBoard.getSkill().equals(this.getType())){
-		((ExpScoreboardDisplay) display).sendUpdate(currentExp, expToLevel, currentLevel);
+		expBoard.sendUpdate(currentExp, expToLevel, currentLevel);
 	  }
 	}
   }

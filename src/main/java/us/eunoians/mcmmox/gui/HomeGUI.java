@@ -11,7 +11,7 @@ public class HomeGUI extends GUI {
 
   public HomeGUI(McMMOPlayer p) {
     super(new GUIBuilder("MainGUI", fm.getFile(file), p));
-    this.getGui().replacePlaceHolders(p);
+    this.getGui().replacePlaceHolders();
     if(!GUITracker.isPlayerTracked(p)){
       GUITracker.trackPlayer(p , this);
     }

@@ -2,12 +2,18 @@ package us.eunoians.mcmmox.api.events.mcmmo;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.Bleed;
+import us.eunoians.mcmmox.abilities.DeeperWound;
 import us.eunoians.mcmmox.api.util.FileManager;
+import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
+import us.eunoians.mcmmox.types.UnlockedAbilities;
+
+import java.util.Random;
 
 public class BleedEvent extends AbilityActivateEvent {
 
@@ -45,6 +51,21 @@ public class BleedEvent extends AbilityActivateEvent {
 	this.pierceArmour = config.getBoolean("BleedConfig.BleedPierceArmour");
 	this.bleedImmunityEnabled = config.getBoolean("BleedConfig.BleedImmunityEnabled");
 	this.bleedImmunityDuration = config.getInt("BleedConfig.BleedImmunityDuration");
+
+	if(UnlockedAbilities.DEEPER_WOUND.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DEEPER_WOUND)){
+	  Random ran = new Random();
+	  int range = ran.nextInt(10000);
+	  int chance = (int) config.getDouble("DeeperWoundConfig.Tier" + Methods.convertToNumeral(user.getBaseAbility(UnlockedAbilities.DEEPER_WOUND).getCurrentTier())
+		  + ".ActivationChance") * 100;
+	  if(chance >= range){
+	    DeeperWoundEvent deeperWoundEvent = new DeeperWoundEvent(user, target, (DeeperWound) user.getBaseAbility(UnlockedAbilities.DEEPER_WOUND));
+		Bukkit.getPluginManager().callEvent(deeperWoundEvent);
+		if(!deeperWoundEvent.isCancelled){
+		  baseDuration += deeperWoundEvent.getDurationBoost();
+		  user.getPlayer().sendMessage("Deeper Wound Activated");
+		}
+	  }
+	}
   }
 
 }

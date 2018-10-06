@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.util.IOUtil;
 
 import java.io.File;
@@ -365,8 +366,12 @@ public class FileManager {
     /**
      * Overrides the loaded state file and loads the file systems file.
      */
-    public void relaodFile() {
+    public void reloadFile() {
       getInstance().reloadFile(this);
+    }
+
+    public static Files getSkillFile(Skills skill){
+      return fromString(skill.getName());
     }
 
   }

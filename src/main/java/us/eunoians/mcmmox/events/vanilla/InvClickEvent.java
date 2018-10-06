@@ -7,18 +7,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import us.eunoians.mcmmox.Mcmmox;
-import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
+import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 public class InvClickEvent implements Listener {
 
-  private static FileConfiguration config;
+  private FileConfiguration config;
 
   public InvClickEvent(Mcmmox plugin){
-	config = plugin.getFileManager().getFile(FileManager.Files.CONFIG);
+	config = Mcmmox.getInstance().getLangFile();
 
   }
 
@@ -31,6 +31,29 @@ public class InvClickEvent implements Listener {
 	  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	  if(e.getCurrentItem() == null) return;
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);
+	  if(currentGUI instanceof AcceptAbilityGUI){
+	    AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
+	    int slot = e.getSlot();
+	    if(slot == 16){
+		  currentGUI.setClearData(true);
+		  p.closeInventory();
+		  GUITracker.stopTrackingPlayer(p);
+		  return;
+		}
+	    if(slot == 10 && mp.getAbilityLoadout().size() < 9){
+	      mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
+	      mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
+	      mp.saveData();
+	      currentGUI.setClearData(true);
+	      p.closeInventory();
+	      GUITracker.stopTrackingPlayer(p);
+	      p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbilities").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
+	      return;
+	    }
+		else{
+		  return;
+		}
+	  }
 	  GUIEventBinder binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
 	  if(binder == null) return;
 	  for(String eventBinder : binder.getBoundEventList()){

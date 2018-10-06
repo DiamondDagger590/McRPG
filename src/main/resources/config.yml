@@ -20,6 +20,9 @@ DisplayConfig:
       CurrentLevel: '&aCurrent Level:'
       CurrentExp: '&aExp:'
       ExpNeeded: '&aExp Left:'
+PlayerConfiguration:
+  AmountOfTotalAbilities: 9
+  AbilityPointInterval: 250
 Configuration:
 #This is in minutes
   SaveInterval: 1

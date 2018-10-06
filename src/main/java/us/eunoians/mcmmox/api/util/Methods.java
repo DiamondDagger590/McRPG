@@ -5,9 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcmmox.gui.GUIItem;
-import us.eunoians.mcmmox.players.McMMOPlayer;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -117,33 +115,5 @@ public class Methods {
     Calendar cal = Calendar.getInstance();
     cal.add(type, duration);
     return cal.getTimeInMillis();
-  }
-
-  public static Inventory parseGUILore(Inventory inv) {
-    Inventory newInv = Bukkit.createInventory(null, inv.getSize(), inv.getTitle());
-    for (int x = 0; x < inv.getSize(); x++) {
-      ItemStack i = inv.getItem(x);
-      List<String> newLore = new ArrayList<String>();
-      if (i.hasItemMeta() && i.getItemMeta().hasLore()) {
-        List<String> lore = i.getItemMeta().getLore();
-                /*for(String s : lore) {
-                    s = s.replaceAll("%NormalAmount%", Integer.toString(p.getNormalBoosterAmount(type)));
-                    s = s.replaceAll("%LuckyAmount%", Integer.toString(p.getLuckyBoosterAmount(type)));
-                    newLore.add(s);
-                }*/
-        ItemMeta meta = i.getItemMeta();
-        meta.setLore(newLore);
-        i.setItemMeta(meta);
-        newInv.setItem(x, i);
-      } else {
-        newInv.setItem(x, i);
-      }
-    }
-    return newInv;
-  }
-
-  public static String replacePlaceHolders(String s, McMMOPlayer player) {
-    return s.replaceAll("%Player%", player.getOfflineMcMMOPlayer().getName()).replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints()))
-            .replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()));
   }
 }

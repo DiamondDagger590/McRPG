@@ -7,6 +7,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcmmox.Mcmmox;
@@ -26,12 +27,13 @@ public class McMMOBleed implements Listener {
   private static HashMap<UUID, BukkitTask> targetsBleedTasks = new HashMap<>();
   private static HashMap<UUID, ArrayList<UUID>> playersTargeted = new HashMap<>();
 
-  @EventHandler
+  @EventHandler (priority = EventPriority.LOW)
   public void bleed(BleedEvent e){
+
     Entity target = e.getTarget();
 	McMMOPlayer player = e.getUser();
 	Bleed bleed = e.getBleed();
-	if(targetsBleedTasks.containsKey(target.getUniqueId())){
+	if(isTargeted(target.getUniqueId())){
 	  e.setCancelled(true);
 	  return;
 	}
@@ -63,6 +65,8 @@ public class McMMOBleed implements Listener {
 	  return;
 	}
   }
+
+  public static boolean isTargeted(UUID uuid){ return targetsBleedTasks.containsKey(uuid);}
 
   public static ArrayList<UUID> getPlayersTargetedBy(UUID user){
     if(playersTargeted.containsKey(user)){
@@ -99,11 +103,9 @@ public class McMMOBleed implements Listener {
     //TODO factor in players buffs
     AtomicInteger iterations = new AtomicInteger((e.getBaseDuration() / e.getFrequency()));
 	BukkitTask task = Bukkit.getScheduler().runTaskTimer(Mcmmox.getInstance(), () ->{
-	  System.out.println("2");
 	  Entity en = e.getTarget();
 	  //If the bleed effect is over
 	  if(iterations.get() == 0 || en.isDead() || ((en instanceof  Player) && !((Player)en).isOnline())){
-		System.out.println("3");
 		if(en instanceof Player && ((Player)en).isOnline()){
 		  en.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
 			  + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Bleed.BleedingStopped")));
@@ -118,7 +120,6 @@ public class McMMOBleed implements Listener {
 		}
 	  }
 	  else{
-		System.out.println("4");
 		iterations.decrementAndGet();
 	    LivingEntity len = (LivingEntity) en;
 		en.getWorld().playEffect(len.getEyeLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);

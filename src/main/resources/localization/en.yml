@@ -21,5 +21,9 @@ Messages:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'
       BleedingStopped: '&cThe bleeding has stopped'
+  Guis:
+    AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
   Players:
     LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%'
+    AbilityUnlocked: '&eYou just unlocked %Ability%! Open up the main menu in order to accept or deny this ability.'
+    AbilityPointGained: '&eYou just gained an ability point! Use it to upgrade the power of your abilities!'

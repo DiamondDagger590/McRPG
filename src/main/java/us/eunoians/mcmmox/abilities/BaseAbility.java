@@ -16,13 +16,16 @@ public abstract class BaseAbility {
   @Getter @Setter
   private int currentTier;
 
+  @Getter @Setter
+  private boolean isUnlocked;
+
   /**
    * @param genericAbility Accepts either a DefaultAbilities or UnlockedAbilities enum type
    * @param isToggled      If the ability is toggled for the player.
    */
-  public BaseAbility(GenericAbility genericAbility, boolean isToggled) {
+  public BaseAbility(GenericAbility genericAbility, boolean isToggled, boolean isUnlocked) {
     this.genericAbility = genericAbility;
     this.isToggled = isToggled;
-
+    this.isUnlocked = isUnlocked;
   }
 }

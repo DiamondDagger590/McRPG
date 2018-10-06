@@ -56,6 +56,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   public void onDisable() {
     if (!Initializer.finished())
       Initializer.interrupt();
+    PlayerManager.shutDownManager();
   }
 
   @Initialize(priority = 0)
