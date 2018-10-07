@@ -29,50 +29,80 @@ public class InvClickEvent implements Listener {
   @EventHandler
   public void invClickEvent(InventoryClickEvent e){
 	Player p = (Player) e.getWhoClicked();
+	//If this is a gui
 	if(GUITracker.isPlayerTracked(p)){
+	  //Ignore player inventory
 	  if(e.getClickedInventory() instanceof PlayerInventory){
-	    return;
+		return;
 	  }
+	  //Cancel event
 	  e.setCancelled(true);
 	  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	  //Cuz null errors are fun
 	  if(e.getCurrentItem() == null) return;
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);
+	  //This gui was hardcoded so hardcoded events are fine :D
 	  if(currentGUI instanceof AcceptAbilityGUI){
-	    AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
-	    int slot = e.getSlot();
-	    if(slot == 16){
+		AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
+		int slot = e.getSlot();
+		if(slot == 16){
+		  //This is for canceling
+		  mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
+		  mp.saveData();
 		  currentGUI.setClearData(true);
 		  p.closeInventory();
 		  GUITracker.stopTrackingPlayer(p);
 		  return;
 		}
-	    if(slot == 10 && mp.getAbilityLoadout().size() < 9){
-	      mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
-	      mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
-	      acceptAbilityGUI.getAbility().setToggled(true);
-	      mp.saveData();
-	      currentGUI.setClearData(true);
-	      p.closeInventory();
-	      GUITracker.stopTrackingPlayer(p);
-	      p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
-	      return;
-	    }
+		if(slot == 10 && mp.getAbilityLoadout().size() < 9){
+		  //If they accept and their loadout isnt full
+		  mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
+		  mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
+		  acceptAbilityGUI.getAbility().setToggled(true);
+		  mp.saveData();
+		  currentGUI.setClearData(true);
+		  p.closeInventory();
+		  GUITracker.stopTrackingPlayer(p);
+		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
+		  return;
+		}
+		else if(slot == 10){
+		  //If their loadout is full but they want this ability
+		  BaseAbility ability = acceptAbilityGUI.getAbility();
+		  mp.removePendingAbilityUnlock((UnlockedAbilities) ability.getGenericAbility());
+		  mp.saveData();
+		  EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_OVERRIDE, ability);
+		  currentGUI.setClearData(false);
+		  GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
+		  return;
+		}
 		else{
 		  return;
 		}
 	  }
 	  else if(currentGUI instanceof EditLoadoutGUI){
-	    EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
-		BaseAbility ability = editLoadoutGUI.getAbilityFromSlot(e.getSlot());
-		ability.setToggled(!ability.isToggled());
-		if(!ability.isToggled()){
-		  e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+		EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
+		BaseAbility abilityToChange = editLoadoutGUI.getAbilityFromSlot(e.getSlot());
+		if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.TOGGLE){
+		  abilityToChange.setToggled(!abilityToChange.isToggled());
+		  if(!abilityToChange.isToggled()){
+			e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+		  }
+		  else{
+			e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+		  }
 		}
 		else{
-		  e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+		  //TODO revist this later
+		  editLoadoutGUI.getAbilities().set(e.getSlot(), editLoadoutGUI.getReplaceAbility());
+		  mp.getAbilityLoadout().set(e.getSlot(), editLoadoutGUI.getReplaceAbility());
+		  editLoadoutGUI.setClearData(true);
+		  GUITracker.stopTrackingPlayer(p);
+		  p.closeInventory();
+		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", editLoadoutGUI.getReplaceAbility().getGenericAbility().getName()));
 		}
 		mp.saveData();
-	    return;
+		return;
 	  }
 	  GUIEventBinder binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
 	  if(binder == null) return;
@@ -132,10 +162,10 @@ public class InvClickEvent implements Listener {
 		else if(event.equalsIgnoreCase("OpenNative")){
 		  GUI gui = null;
 		  if(events[1].equalsIgnoreCase("EditLoadoutGUI")){
-		    gui = new EditLoadoutGUI(mp);
-		    currentGUI.setClearData(false);
-		    p.openInventory(gui.getGui().getInv());
-		    GUITracker.replacePlayersGUI(mp, gui);
+			gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.TOGGLE);
+			currentGUI.setClearData(false);
+			p.openInventory(gui.getGui().getInv());
+			GUITracker.replacePlayersGUI(mp, gui);
 		  }
 		}
 		else if(event.equalsIgnoreCase("OpenFile")){
@@ -144,9 +174,9 @@ public class InvClickEvent implements Listener {
 			gui = new SkillGUI(mp);
 		  }
 		  else{
-		    p.sendMessage("Not added yet");
-		    p.closeInventory();
-		    return;
+			p.sendMessage("Not added yet");
+			p.closeInventory();
+			return;
 		  }
 		  currentGUI.setClearData(false);
 		  p.openInventory(gui.getGui().getInv());

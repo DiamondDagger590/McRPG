@@ -12,21 +12,21 @@ import us.eunoians.mcmmox.players.PlayerManager;
 
 public class InvCloseEvent implements Listener {
 
-	@EventHandler
-	public void invClose(InventoryCloseEvent e){
-		Player p = (Player) e.getPlayer();
-		GUI currentGUI = GUITracker.getPlayersGUI(p);
-		if(currentGUI instanceof EditLoadoutGUI){
-		  currentGUI.setClearData(false);
-		  GUI prev = new HomeGUI(PlayerManager.getPlayer(p.getUniqueId()));
-		  GUITracker.replacePlayersGUI(PlayerManager.getPlayer(p.getUniqueId()), prev);
-		  return;
-		}
-		if(GUITracker.isPlayerTracked(p)){
-			if(GUITracker.getPlayersGUI(p).isClearData()){
-				GUITracker.stopTrackingPlayer(p);
-			}
-		}
-
+  @EventHandler
+  public void invClose(InventoryCloseEvent e){
+	Player p = (Player) e.getPlayer();
+	GUI currentGUI = GUITracker.getPlayersGUI(p);
+	if(GUITracker.isPlayerTracked(p)){
+	  if(currentGUI instanceof EditLoadoutGUI){
+		currentGUI.setClearData(false);
+		GUI prev = new HomeGUI(PlayerManager.getPlayer(p.getUniqueId()));
+		GUITracker.replacePlayersGUI(PlayerManager.getPlayer(p.getUniqueId()), prev);
+		return;
+	  }
+	  if(GUITracker.getPlayersGUI(p).isClearData()){
+		GUITracker.stopTrackingPlayer(p);
+	  }
 	}
+
+  }
 }
