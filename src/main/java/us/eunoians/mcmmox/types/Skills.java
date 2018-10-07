@@ -47,7 +47,7 @@ public enum Skills {
   }
 
   public static boolean isSkill(String skill){
-    return Arrays.stream(Skills.values()).map(type -> type.getName()).collect(Collectors.toList()).contains(skill);
+    return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
   }
 
 }

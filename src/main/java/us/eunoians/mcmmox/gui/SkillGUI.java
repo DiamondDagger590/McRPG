@@ -15,7 +15,9 @@ import java.util.List;
 public class SkillGUI extends GUI {
 
   private static FileManager fm = Mcmmox.getInstance().getFileManager();
+
   private static FileManager.Files file = FileManager.Files.SKILLS_GUI;
+
   private static GUIPlaceHolderFunction function = (GUIBuilder guiBuilder) -> {
 	McMMOPlayer player = guiBuilder.getPlayer();
 	if(guiBuilder.getRawPath().equalsIgnoreCase("SkillsGUI")){

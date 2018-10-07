@@ -140,13 +140,17 @@ Bleed+Config:
     TierIII: 225
     TierIV: 325
     TierV: 500
-#% Chance of Bleed+ occurring per tier
-  TierChanceOfActivation:
-    TierI: 10.0
-    TierII: 12.5
-    TierIII: 17.5
-    TierIV: 22.5
-    TierV: 25.0
+  TierI:
+    #The chance of Bleed_ occurring per tier
+    ActivationChance: 10.0
+  TierII:
+    ActivationChance: 12.5
+  TierIII:
+    ActivationChance: 17.5
+  TierIV:
+    ActivationChance: 22.5
+  TierV:
+    ActivationChance: 25.0
 #How much should the damage increase when Bleed+ occurs
   BleedPlusModifier: 1
   #How this ability should be seen in the GUIS
@@ -156,7 +160,7 @@ Bleed+Config:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     Lore:
-    - '&cYou have a %Bleed+_Chance%% chance of Bleed+ activating'
+    - '&cYou have a %ActivationChance%% chance of Bleed+ activating'
 #
 # Config for the ability Deeper Wound
 # This ability extends the duration of the Bleed effect
@@ -195,7 +199,8 @@ DeeperWoundConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     Lore:
-    - '&cYou have a %Deeper_Wound_Chance%% chance of Deeper Wound activating'
+    - '&cYou have a &e%ActivationChance%% &cchance'
+    - '&cof Deeper Wound activating for plus &e%DurationBoost% &cseconds'
 #
 # Config for the ability Vampire
 # This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)

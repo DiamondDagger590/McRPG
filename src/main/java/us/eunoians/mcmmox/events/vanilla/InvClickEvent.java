@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.PlayerInventory;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
@@ -27,6 +28,9 @@ public class InvClickEvent implements Listener {
   public void invClickEvent(InventoryClickEvent e){
 	Player p = (Player) e.getWhoClicked();
 	if(GUITracker.isPlayerTracked(p)){
+	  if(e.getClickedInventory() instanceof PlayerInventory){
+	    return;
+	  }
 	  e.setCancelled(true);
 	  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	  if(e.getCurrentItem() == null) return;
@@ -43,16 +47,21 @@ public class InvClickEvent implements Listener {
 	    if(slot == 10 && mp.getAbilityLoadout().size() < 9){
 	      mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
 	      mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
+	      acceptAbilityGUI.getAbility().setToggled(true);
 	      mp.saveData();
 	      currentGUI.setClearData(true);
 	      p.closeInventory();
 	      GUITracker.stopTrackingPlayer(p);
-	      p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbilities").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
+	      p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
 	      return;
 	    }
 		else{
 		  return;
 		}
+	  }
+	  else if(currentGUI instanceof EditLoadoutGUI){
+	    EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
+	    return;
 	  }
 	  GUIEventBinder binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
 	  if(binder == null) return;
@@ -108,6 +117,15 @@ public class InvClickEvent implements Listener {
 		  p.closeInventory();
 		  p.sendMessage(Methods.color("&cThis has yet to be implemented"));
 		  return;
+		}
+		else if(event.equalsIgnoreCase("OpenNative")){
+		  GUI gui = null;
+		  if(events[1].equalsIgnoreCase("EditLoadoutGUI")){
+		    gui = new EditLoadoutGUI(mp);
+		    currentGUI.setClearData(false);
+		    p.openInventory(gui.getGui().getInv());
+		    GUITracker.replacePlayersGUI(mp, gui);
+		  }
 		}
 		else if(event.equalsIgnoreCase("OpenFile")){
 		  GUI gui = null;

@@ -63,7 +63,6 @@ public class McMMOPlayerLevelChange implements Listener {
 		      base.setUnlocked(true);
 		      base.setCurrentTier(1);
 		      mp.addPendingAbilityUnlock(ab);
-		      mp.getPlayer().sendMessage(mp.getPendingUnlockAbilities().toString());
 		      mp.saveData();
 			}
 			else{
