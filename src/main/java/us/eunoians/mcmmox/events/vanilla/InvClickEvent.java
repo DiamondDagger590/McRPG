@@ -2,12 +2,14 @@ package us.eunoians.mcmmox.events.vanilla;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.PlayerInventory;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -61,6 +63,15 @@ public class InvClickEvent implements Listener {
 	  }
 	  else if(currentGUI instanceof EditLoadoutGUI){
 	    EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
+		BaseAbility ability = editLoadoutGUI.getAbilityFromSlot(e.getSlot());
+		ability.setToggled(!ability.isToggled());
+		if(!ability.isToggled()){
+		  e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+		}
+		else{
+		  e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+		}
+		mp.saveData();
 	    return;
 	  }
 	  GUIEventBinder binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
