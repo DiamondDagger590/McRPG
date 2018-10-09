@@ -1,6 +1,7 @@
 package us.eunoians.mcmmox.events.vanilla;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -45,39 +46,64 @@ public class InvClickEvent implements Listener {
 	  if(currentGUI instanceof AcceptAbilityGUI){
 		AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
 		int slot = e.getSlot();
-		if(slot == 16){
-		  //This is for canceling
-		  mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
-		  mp.saveData();
-		  currentGUI.setClearData(true);
-		  p.closeInventory();
-		  GUITracker.stopTrackingPlayer(p);
-		  return;
+		if(acceptAbilityGUI.getAcceptType() == AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY){
+		  if(slot == 16){
+			//This is for canceling
+			mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
+			mp.saveData();
+			currentGUI.setClearData(true);
+			p.closeInventory();
+			GUITracker.stopTrackingPlayer(p);
+			return;
+		  }
+		  if(slot == 10 && mp.getAbilityLoadout().size() < 9){
+			//If they accept and their loadout isnt full
+			mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
+			mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
+			acceptAbilityGUI.getAbility().setToggled(true);
+			mp.saveData();
+			currentGUI.setClearData(true);
+			p.closeInventory();
+			GUITracker.stopTrackingPlayer(p);
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
+			return;
+		  }
+		  else if(slot == 10){
+			//If their loadout is full but they want this ability
+			BaseAbility ability = acceptAbilityGUI.getAbility();
+			mp.removePendingAbilityUnlock((UnlockedAbilities) ability.getGenericAbility());
+			mp.saveData();
+			EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_OVERRIDE, ability);
+			currentGUI.setClearData(false);
+			GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
+			return;
+		  }
+		  else{
+			return;
+		  }
 		}
-		if(slot == 10 && mp.getAbilityLoadout().size() < 9){
-		  //If they accept and their loadout isnt full
-		  mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
-		  mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
-		  acceptAbilityGUI.getAbility().setToggled(true);
-		  mp.saveData();
-		  currentGUI.setClearData(true);
-		  p.closeInventory();
-		  GUITracker.stopTrackingPlayer(p);
-		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
-		  return;
-		}
-		else if(slot == 10){
-		  //If their loadout is full but they want this ability
-		  BaseAbility ability = acceptAbilityGUI.getAbility();
-		  mp.removePendingAbilityUnlock((UnlockedAbilities) ability.getGenericAbility());
-		  mp.saveData();
-		  EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_OVERRIDE, ability);
-		  currentGUI.setClearData(false);
-		  GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
-		  return;
-		}
-		else{
-		  return;
+		else if(acceptAbilityGUI.getAcceptType() == AcceptAbilityGUI.AcceptType.ACCEPT_UPGRADE){
+		  if(slot == 16){
+			//This is for canceling
+			currentGUI.setClearData(true);
+			p.closeInventory();
+			GUITracker.stopTrackingPlayer(p);
+			return;
+		  }
+		  if(slot == 10){
+		    mp.setAbilityPoints(mp.getAbilityPoints() - 1);
+		    acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
+			mp.saveData();
+			currentGUI.setClearData(true);
+			p.closeInventory();
+			GUITracker.stopTrackingPlayer(p);
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
+			.replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier())));
+			return;
+		  }
+		  else{
+			return;
+		  }
 		}
 	  }
 	  else if(currentGUI instanceof EditLoadoutGUI){
@@ -90,6 +116,16 @@ public class InvClickEvent implements Listener {
 		  }
 		  else{
 			e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+		  }
+		}
+		else if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_UPGRADE){
+		  UnlockedAbilities unlockedAbility = (UnlockedAbilities) abilityToChange.getGenericAbility();
+		  if(abilityToChange.getCurrentTier() < 5){
+
+		  }
+		  else{
+		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+		    return;
 		  }
 		}
 		else{
@@ -166,6 +202,18 @@ public class InvClickEvent implements Listener {
 			currentGUI.setClearData(false);
 			p.openInventory(gui.getGui().getInv());
 			GUITracker.replacePlayersGUI(mp, gui);
+			return;
+		  }
+		  if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
+		    if(mp.getAbilityPoints() == 0){
+		      p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+		      return;
+			}
+		    gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
+		    currentGUI.setClearData(false);
+		    p.openInventory(gui.getGui().getInv());
+		    GUITracker.replacePlayersGUI(mp, gui);
+		    return;
 		  }
 		}
 		else if(event.equalsIgnoreCase("OpenFile")){

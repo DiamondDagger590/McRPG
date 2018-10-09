@@ -15,8 +15,8 @@ public class InvCloseEvent implements Listener {
   @EventHandler
   public void invClose(InventoryCloseEvent e){
 	Player p = (Player) e.getPlayer();
-	GUI currentGUI = GUITracker.getPlayersGUI(p);
 	if(GUITracker.isPlayerTracked(p)){
+	  GUI currentGUI = GUITracker.getPlayersGUI(p);
 	  if(currentGUI instanceof EditLoadoutGUI){
 		currentGUI.setClearData(false);
 		GUI prev = new HomeGUI(PlayerManager.getPlayer(p.getUniqueId()));

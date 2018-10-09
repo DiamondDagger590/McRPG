@@ -8,7 +8,7 @@ Gui:
       12:
         - 'OpenFile:skillsgui.yml:SkillGUI.yml'
       14:
-        - 'OpenFile:abilityupgradegui.yml:AbilityUpgradeGUI'
+        - 'OpenNative:UpgradeAbilityGUI'
       16:
         - 'OpenNative:EditLoadoutGUI'
     Items:

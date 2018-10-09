@@ -80,9 +80,19 @@ public class EditLoadoutGUI extends GUI{
 	this.editType = type;
 	this.replaceAbility = replaceAbility;
 	buildGUIFunction = (GUIBuilder builder) -> {
+	  String invName;
+	  if(editType == EditType.ABILITY_OVERRIDE){
+	    invName = "&eOverride an ability with " + replaceAbility.getGenericAbility().getName();
+	  }
+	  else if(editType == EditType.ABILITY_UPGRADE){
+	    invName = "&Upgrade an ability! You have " + player.getAbilityPoints() + " points to spend.";
+	  }
+	  else{
+	    invName = "&eEdit your ability loadout";
+	  }
 	  //FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
 	  Inventory inv = Bukkit.createInventory(null, 9,
-		  Methods.color("&eEdit your ability loadout"));
+		  Methods.color(invName));
 	  ArrayList<GUIItem> items = new ArrayList<>();
 
 	  for(int i = 0; i < player.getAbilityLoadout().size(); i++){
@@ -129,6 +139,7 @@ public class EditLoadoutGUI extends GUI{
 
   public enum EditType{
     TOGGLE,
-	ABILITY_OVERRIDE;
+	ABILITY_OVERRIDE,
+	ABILITY_UPGRADE
   }
 }

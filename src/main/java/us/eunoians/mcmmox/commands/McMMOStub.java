@@ -27,7 +27,7 @@ public class McMMOStub implements CommandExecutor {
 		if(mp.hasPendingAbility()){
 		  UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
 		  BaseAbility baseAbility = mp.getBaseAbility(ability);
-		  GUI gui = new AcceptAbilityGUI(mp, baseAbility);
+		  GUI gui = new AcceptAbilityGUI(mp, baseAbility, AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY);
 		  p.openInventory(gui.getGui().getInv());
 		  GUITracker.trackPlayer(p, gui);
 		}

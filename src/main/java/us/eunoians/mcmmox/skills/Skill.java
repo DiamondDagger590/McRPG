@@ -68,7 +68,7 @@ public abstract class Skill {
     Parser equation = type.getExpEquation();
     equation.setVariable("skill_level", currentLevel);
     equation.setVariable("power_level", player.getPowerLevel());
-    this.expToLevel = (int) type.getExpEquation().getValue();
+    this.expToLevel = (int) equation.getValue();
   }
 
   /**

@@ -23,6 +23,7 @@ Messages:
       BleedingStopped: '&cThe bleeding has stopped'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
+    UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
   Players:
     LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%'
     AbilityUnlocked: '&eYou just unlocked %Ability%! Open up the main menu in order to accept or deny this ability.'

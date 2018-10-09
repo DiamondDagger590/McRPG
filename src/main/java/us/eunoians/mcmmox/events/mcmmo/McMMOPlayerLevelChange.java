@@ -32,7 +32,7 @@ public class McMMOPlayerLevelChange implements Listener {
     Skill skillLeveled = e.getSkillLeveled();
 	McMMOPlayer mp = e.getMcMMOPlayer();
 	//iterate across all levels gained
-	for(int i = e.getPreviousLevel() + 1; i < e.getNextLevel(); i ++){
+	for(int i = e.getPreviousLevel() + 1; i <= e.getNextLevel(); i ++){
 	  //if the level is at a interval to gain the player an ability point, award it to them
 	  if(i % mcmmox.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0){
 	    mp.setAbilityPoints(mp.getAbilityPoints() + 1);
