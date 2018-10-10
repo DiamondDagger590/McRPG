@@ -32,7 +32,7 @@ Gui:
         Name: '&5Upgrade Abilities'
         Material: NETHER_STAR
         Lore:
-          - '&eClick this to upgrade your abilites'
+          - '&eClick this to upgrade your abilities'
           - '&eYou have &a%Ability_Points% &eto spend'
         Slot: 14
       Ability_Loadout:

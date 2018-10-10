@@ -32,12 +32,12 @@ public class InvClickEvent implements Listener {
 	Player p = (Player) e.getWhoClicked();
 	//If this is a gui
 	if(GUITracker.isPlayerTracked(p)){
+	  //Cancel event
+	  e.setCancelled(true);
 	  //Ignore player inventory
 	  if(e.getClickedInventory() instanceof PlayerInventory){
 		return;
 	  }
-	  //Cancel event
-	  e.setCancelled(true);
 	  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	  //Cuz null errors are fun
 	  if(e.getCurrentItem() == null) return;
@@ -93,12 +93,13 @@ public class InvClickEvent implements Listener {
 		  if(slot == 10){
 		    mp.setAbilityPoints(mp.getAbilityPoints() - 1);
 		    acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
+		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
 			mp.saveData();
 			currentGUI.setClearData(true);
 			p.closeInventory();
 			GUITracker.stopTrackingPlayer(p);
-			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
-			.replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier())));
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
+			.replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
 			return;
 		  }
 		  else{
@@ -121,7 +122,15 @@ public class InvClickEvent implements Listener {
 		else if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_UPGRADE){
 		  UnlockedAbilities unlockedAbility = (UnlockedAbilities) abilityToChange.getGenericAbility();
 		  if(abilityToChange.getCurrentTier() < 5){
-
+		    if(unlockedAbility.tierUnlockLevel(abilityToChange.getCurrentTier() + 1) > mp.getSkill(unlockedAbility.getSkill()).getCurrentLevel()){
+		      p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+		      return;
+			}
+		    AcceptAbilityGUI gui = new AcceptAbilityGUI(mp, abilityToChange, AcceptAbilityGUI.AcceptType.ACCEPT_UPGRADE);
+		    currentGUI.setClearData(false);
+		    GUITracker.replacePlayersGUI(mp, gui);
+		    p.openInventory(gui.getGui().getInv());
+			return;
 		  }
 		  else{
 		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);

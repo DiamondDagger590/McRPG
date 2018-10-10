@@ -14,6 +14,7 @@ import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
+import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,15 @@ public class EditLoadoutGUI extends GUI{
 		    s = s.replace("%" + value + "%", config.getString(ability.getGenericAbility().getName() +"Config." + tier + "." + value));
 		  }
 		  newLore.add(s);
+		}
+		if(type == EditType.ABILITY_UPGRADE){
+		  if(ability.getCurrentTier() == 5){
+		    newLore.add(Methods.color("&5You have maxed this ability out!"));
+		  }
+		  else{
+			newLore.add(Methods.color("&eYou must be at least level &a" + ((UnlockedAbilities) ability.getGenericAbility()).tierUnlockLevel(ability.getCurrentTier() + 1)));
+			newLore.add(Methods.color("&eTo upgrade this ability to Tier " + Methods.convertToNumeral(ability.getCurrentTier() + 1)));
+		  }
 		}
 		abilityMeta.setLore(newLore);
 		abilityItem.setItemMeta(abilityMeta);

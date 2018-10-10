@@ -122,6 +122,12 @@ public abstract class Skill {
     return type.getName();
   }
 
+  public void updateExpToLevel(){
+	Parser parser = type.getExpEquation();
+	parser.setVariable("skill_level", currentLevel);
+	parser.setVariable("power_level", player.getPowerLevel());
+	expToLevel = (int) parser.getValue();
+  }
   /**
    *
    * @param exp The exp gained

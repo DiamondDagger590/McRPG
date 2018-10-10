@@ -3,6 +3,7 @@ package us.eunoians.mcmmox.types;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.configuration.enums.Config;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public enum UnlockedAbilities implements GenericAbility {
     this.abilityType = type;
     this.configType = config;
   }
-
+//TODO FIX FILES HERE BOI
   /**
    * Check if the ability is passive or not
    *
@@ -105,7 +106,8 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return The level that the tier is unlocked or -1 if that tier doesnt exist
    */
   public int tierUnlockLevel(int tier) {
-    return -1;
+    return YamlConfiguration.loadConfiguration(new File(Mcmmox.getInstance().getDataFolder(), File.separator + "skills" + File.separator
+	+ this.skill.toLowerCase() + ".yml")).getInt(this.name + "Config.TierUpgrade.Tier" + Methods.convertToNumeral(tier));
   }
 
 }

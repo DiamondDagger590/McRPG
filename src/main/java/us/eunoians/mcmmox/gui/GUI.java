@@ -1,11 +1,11 @@
 package us.eunoians.mcmmox.gui;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
+
+import java.util.List;
 
 /*
 This is the base class for any gui.
@@ -24,7 +24,7 @@ public abstract class GUI {
    */
   @Getter
   @Setter
-  private boolean clearData = true;
+  private boolean clearData = false;
 
   public GUI(GUIBuilder gui) {
     this.gui = gui;

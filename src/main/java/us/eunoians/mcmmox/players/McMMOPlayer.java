@@ -139,6 +139,9 @@ public class McMMOPlayer {
 	  abilityLoadout.add(getSkill(ability.getSkill()).getAbility(ability));
 	}
 	updatePowerLevel();
+	for(Skill s : skills){
+	  s.updateExpToLevel();
+	}
   }
 
   public OfflinePlayer getOfflineMcMMOPlayer(){
