@@ -194,7 +194,7 @@ DeeperWoundConfig:
     DurationBoost: 8
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&cDeeper Wound'
+    DisplayName: '&4Deeper Wound'
     Material: ROSE_RED
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis

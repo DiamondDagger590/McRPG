@@ -34,8 +34,15 @@ public class EditLoadoutGUI extends GUI{
 	this.editType = type;
 	buildGUIFunction = (GUIBuilder builder) -> {
 	  //FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+	  String title = "";
+	  if(type == EditType.TOGGLE){
+	    title = Methods.color("&eToggle abilities");
+	  }
+	  else if(type == EditType.ABILITY_UPGRADE){
+	    title = Methods.color("&eUpgrade Abilities: &a" + player.getAbilityPoints() + " &epoint(s)");
+	  }
 	  Inventory inv = Bukkit.createInventory(null, 9,
-		  Methods.color("&eEdit your ability loadout"));
+		  title);
 	  ArrayList<GUIItem> items = new ArrayList<>();
 
 	  for(int i = 0; i < player.getAbilityLoadout().size(); i++){
@@ -62,8 +69,8 @@ public class EditLoadoutGUI extends GUI{
 		    newLore.add(Methods.color("&5You have maxed this ability out!"));
 		  }
 		  else{
-			newLore.add(Methods.color("&eYou must be at least level &a" + ((UnlockedAbilities) ability.getGenericAbility()).tierUnlockLevel(ability.getCurrentTier() + 1)));
-			newLore.add(Methods.color("&eTo upgrade this ability to Tier " + Methods.convertToNumeral(ability.getCurrentTier() + 1)));
+			newLore.add(Methods.color("&6You must be at least level &a" + ((UnlockedAbilities) ability.getGenericAbility()).tierUnlockLevel(ability.getCurrentTier() + 1)));
+			newLore.add(Methods.color("&6to upgrade this ability to Tier " + Methods.convertToNumeral(ability.getCurrentTier() + 1)));
 		  }
 		}
 		abilityMeta.setLore(newLore);

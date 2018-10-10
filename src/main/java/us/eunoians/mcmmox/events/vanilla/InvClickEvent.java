@@ -65,7 +65,7 @@ public class InvClickEvent implements Listener {
 			currentGUI.setClearData(true);
 			p.closeInventory();
 			GUITracker.stopTrackingPlayer(p);
-			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName()));
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())));
 			return;
 		  }
 		  else if(slot == 10){
