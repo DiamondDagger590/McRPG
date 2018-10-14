@@ -15,6 +15,7 @@ import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
+import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 public class InvClickEvent implements Listener {
@@ -199,12 +200,20 @@ public class InvClickEvent implements Listener {
 			GUITracker.replacePlayersGUI(mp, gui);
 			return;
 		  }
-		  if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
+		  else if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
 		    if(mp.getAbilityPoints() == 0){
 		      p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
 		      return;
 			}
 		    gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
+		    currentGUI.setClearData(false);
+		    p.openInventory(gui.getGui().getInv());
+		    GUITracker.replacePlayersGUI(mp, gui);
+		    return;
+		  }
+		  else if(events[1].equalsIgnoreCase("SubSkillGUI")){
+		    Skills skill = Skills.fromString(events[2]);
+		    gui = new SubSkillGUI(mp, skill);
 		    currentGUI.setClearData(false);
 		    p.openInventory(gui.getGui().getInv());
 		    GUITracker.replacePlayersGUI(mp, gui);

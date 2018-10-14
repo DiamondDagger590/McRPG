@@ -63,8 +63,8 @@ public class ShiftToggle implements Listener {
 			    for(Entity en : player.getNearbyEntities(2, 2, 2)){
 			      if(en instanceof LivingEntity && !entities.contains(en.getUniqueId())){
 			        LivingEntity len = (LivingEntity) en;
-			        Vector targVector = new Vector(en.getLocation().getDirection().getX(), -2, player.getLocation().getDirection().getZ());
-			        en.setVelocity(targVector.multiply(-5));
+			        Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
+			        en.setVelocity(targVector.multiply(-4.3));
 			        len.damage(Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getDouble("RageSpikeConfig.Tier" +
 						Methods.convertToNumeral(mp.getBaseAbility(UnlockedAbilities.RAGE_SPIKE).getCurrentTier()) + ".Damage"));
 			        entities.add(en.getUniqueId());

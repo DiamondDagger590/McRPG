@@ -66,6 +66,9 @@ public class PlayerManager {
 	System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
 	Bukkit.getScheduler().runTaskTimer(Mcmmox.getInstance(), () ->{
 	  for(McMMOPlayer mp : players.values()){
+	    if(isPlayerFrozen(mp.getUuid())){
+	      continue;
+		}
 	    mp.updateCooldowns();
 	}
 	}, 0, 20);
@@ -73,7 +76,7 @@ public class PlayerManager {
 
 
   private static void run(){
-	players.values().stream().forEach(player -> player.saveData());
+	players.values().forEach(McMMOPlayer::saveData);
   }
 
   public static void saveAll(){run();}

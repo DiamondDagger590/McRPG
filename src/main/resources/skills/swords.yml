@@ -74,7 +74,7 @@ ExpAwardedPerMob:
 #What abilities are enabled
 EnabledAbilities:
   Bleed: true
-  BleedPlus: true
+  Bleed+: true
   DeeperWound: true
   Vampire: true
   RageSpike: true
@@ -85,7 +85,7 @@ EnabledAbilities:
 #Perms will be mcmmox.swords.{ability}
 UsePermsForAbilites:
   Bleed: false
-  BleedPlus: false
+  Bleed+: false
   DeeperWound: false
   Vampire: false
   RageSpike: false
@@ -93,7 +93,7 @@ UsePermsForAbilites:
   TaintedBlade: false
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
-  BleedPlus: 50
+  Bleed+: 50
   SerratedStrikes: 150
   DeeperWound: 225
   RageSpike: 300
@@ -121,12 +121,14 @@ BleedConfig:
   BleedPierceArmour: true
 #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&cBleed'
+    DisplayName: '&4Bleed'
     Material: REDSTONE
     Amount: 1
 #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
-    Lore:
+    PlayerLore:
       - '&cYou have a %Bleed_Chance%% chance of inflicting bleed'
+    MenuLore:
+      - '&cThis ability has a chance of causing damage over time to a target'
 #
 # Config for the ability Bleed+
 # This passive ability increases the damage the the default ability Bleed applies
@@ -155,12 +157,14 @@ Bleed+Config:
   BleedPlusModifier: 1
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&cBleed+'
+    DisplayName: '&4Bleed+'
     Material: REDSTONE_BLOCK
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
-    Lore:
-    - '&cYou have a %ActivationChance%% chance of Bleed+ activating'
+    PlayerLore:
+      - '&cYou have a %ActivationChance%% chance of Bleed+ activating'
+    MenuLore:
+      - '&cThis ability increases the damage dealt by Bleed'
 #
 # Config for the ability Deeper Wound
 # This ability extends the duration of the Bleed effect
@@ -198,9 +202,12 @@ DeeperWoundConfig:
     Material: ROSE_RED
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
-    Lore:
-    - '&cYou have a &e%ActivationChance%% &cchance'
-    - '&cof Deeper Wound activating for plus &e%DurationBoost% &cseconds'
+    PlayerLore:
+      - '&cYou have a &e%ActivationChance%% &cchance'
+      - '&cof Deeper Wound activating for plus'
+      -  '&e%DurationBoost% &cseconds'
+    MenuLore:
+      - '&cThis ability extends the duration of Bleed'
 #
 # Config for the ability Vampire
 # This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
@@ -226,6 +233,18 @@ VampireConfig:
     ActivationChance: 80.0
   TierV:
     ActivationChance: 90.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Vampire'
+    Material: GHAST_TEAR
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a %ActivationChance%% chance'
+      - '&cof Vampire activating'
+    MenuLore:
+      - '&cThis ability has a chance of healing you'
+      - '&con target Bleed'
 #
 # Config for the ability Serrated Strikes
 # This active ability increases the chance of applying bleed for a short time
@@ -245,18 +264,36 @@ SerratedStrikesConfig:
     ActivationBoost: 5.0
 #Duration of the ability at each tier in seconds
     Duration: 3
+    Cooldown: 180
   TierII:
     ActivationBoost: 7.5
     Duration: 3
+    Cooldown: 180
   TierIII:
     ActivationBoost: 10.0
     Duration: 5
+    Cooldown: 180
   TierIV:
     ActivationBoost: 15.0
     Duration: 5
+    Cooldown: 180
   TierV:
     ActivationBoost: 20.0
     Duration: 8
+    Cooldown: 180
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Serrated Strikes'
+    Material: GOLDEN_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cThis ability increases the'
+      - '&c activation rate of Bleed'
+      - '&cGain %ActivationBoost%% for %Duration% seconds'
+      - '&cCooldown: %Cooldown%'
+    MenuLore:
+      - '&cIncrease activation rate of Bleed'
 RageSpikeConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -290,3 +327,71 @@ RageSpikeConfig:
     ChargeTime: 1
     Damage: 4
     Cooldown: 240
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Rage Spike'
+    Material: IRON_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cCharge by shifting for %ChargeTime%'
+      - '&cto dash forward'
+      - '&cDealing %Damage% damage.'
+      - '&cCooldown: %Cooldown%'
+    MenuLore:
+      - '&cThis ability dashs you forward'
+      - '&cdealing damage and knockback'
+TaintedBladeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 475
+    TierV: 600
+  #Config for each tier
+  TierI:
+    StrengthDuration: 3
+    ResistanceDuration: 3
+    HungerDuration: 3
+    #Cooldown in seconds
+    Cooldown: 240
+  TierII:
+    StrengthDuration: 4
+    ResistanceDuration: 3
+    HungerDuration: 4
+    #Cooldown in seconds
+    Cooldown: 240
+  TierIII:
+    StrengthDuration: 4
+    ResistanceDuration: 4
+    HungerDuration: 5
+    #Cooldown in seconds
+    Cooldown: 240
+  TierIV:
+    StrengthDuration: 5
+    ResistanceDuration: 5
+    HungerDuration: 5
+    #Cooldown in seconds
+    Cooldown: 240
+  TierV:
+    StrengthDuration: 6
+    ResistanceDuration: 6
+    HungerDuration: 5
+    #Cooldown in seconds
+    Cooldown: 240
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Tainted Blade'
+    Material: STONE_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cTake %HungerDuration% seconds of hunger for'
+      - '&c%StrengthDuration% seconds of strength'
+      - '&c%ResistanceDuration% seconds or resistance'
+      - '&cCooldown: %Cooldown%'
+    MenuLore:
+      - '&cGain hunger in exchange'
+      - '&cfor Strength and Resistance'

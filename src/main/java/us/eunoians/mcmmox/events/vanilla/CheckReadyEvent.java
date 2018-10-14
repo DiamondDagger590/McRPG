@@ -48,7 +48,7 @@ public class CheckReadyEvent implements Listener {
 	else{
 	  //If they are already readying we dont need to do anything
 	  if(mp.isReadying()){
-	    return;
+		return;
 	  }
 	  else{
 	    //Get the skill from the material of the item

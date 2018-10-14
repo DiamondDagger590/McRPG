@@ -4,7 +4,7 @@ Gui:
     Title: '&bMcMMOx Skills Menu'
     Events:
       1:
-      - 'OpenFile:swordsgui.yml:SwordsGUI'
+      - 'OpenNative:SubSkillGUI:Swords'
     Items:
       SwordsSkill:
         Name: '&5Swords Skill'

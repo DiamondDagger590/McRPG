@@ -8,10 +8,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
-import us.eunoians.mcmmox.abilities.BaseAbility;
-import us.eunoians.mcmmox.abilities.Bleed;
-import us.eunoians.mcmmox.abilities.DeeperWound;
-import us.eunoians.mcmmox.abilities.RageSpike;
+import us.eunoians.mcmmox.abilities.*;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
@@ -138,6 +135,27 @@ public class McMMOPlayer {
 		if(playerData.getInt("Swords.DeeperWound.Tier") != 0){
 		  deeperWound.setUnlocked(true);
 		}
+		//Initialize Bleed+
+		BleedPlus bleedPlus = new BleedPlus();
+		bleedPlus.setToggled(playerData.getBoolean("Swords.Bleed+.IsToggled"));
+		bleedPlus.setCurrentTier(playerData.getInt("Swords.Bleed+.Tier"));
+		if(playerData.getInt("Swords.Bleed+.Tier") != 0){
+		  bleedPlus.setUnlocked(true);
+		}
+		//Initialize Vampire
+		Vampire vampire = new Vampire();
+		vampire.setToggled(playerData.getBoolean("Swords.Vampire.IsToggled"));
+		vampire.setCurrentTier(playerData.getInt("Swords.Vampire.Tier"));
+		if(playerData.getInt("Swords.Vampire.Tier") != 0){
+		  vampire.setUnlocked(true);
+		}
+		//Initialize Serrated Strikes
+		SerratedStrikes serratedStrikes = new SerratedStrikes();
+		serratedStrikes.setToggled(playerData.getBoolean("Swords.SerratedStrikes.IsToggled"));
+		serratedStrikes.setCurrentTier(playerData.getInt("Swords.SerratedStrikes.Tier"));
+		if(playerData.getInt("Swords.SerratedStrikes.Tier") != 0){
+		  serratedStrikes.setUnlocked(true);
+		}
 		//Initialize Rage Spike
 		RageSpike rageSpike = new RageSpike();
 		rageSpike.setToggled(playerData.getBoolean("Swords.RageSpike.IsToggled"));
@@ -145,9 +163,20 @@ public class McMMOPlayer {
 		if(playerData.getInt("Swords.RageSpike.Tier") != 0){
 		  rageSpike.setUnlocked(true);
 		}
+		//Initialize Tainted Blade
+		TaintedBlade taintedBlade = new TaintedBlade();
+		taintedBlade.setToggled(playerData.getBoolean("Swords.TaintedBlade.IsToggled"));
+		taintedBlade.setCurrentTier(playerData.getInt("Swords.TaintedBlade.Tier"));
+		if(playerData.getInt("Swords.TaintedBlade.Tier") != 0){
+		  taintedBlade.setUnlocked(true);
+		}
 		abilityMap.put(DefaultAbilities.BLEED, bleed);
 		abilityMap.put(UnlockedAbilities.DEEPER_WOUND, deeperWound);
+		abilityMap.put(UnlockedAbilities.BLEED_PLUS, bleedPlus);
+		abilityMap.put(UnlockedAbilities.VAMPIRE, vampire);
+		abilityMap.put(UnlockedAbilities.SERRATED_STRIKES, serratedStrikes);
 		abilityMap.put(UnlockedAbilities.RAGE_SPIKE, rageSpike);
+		abilityMap.put(UnlockedAbilities.TAINTED_BLADE, taintedBlade);
 		//Create skill
 		Swords swords = new Swords(playerData.getInt("Swords.Level"),
 			playerData.getInt("Swords.CurrentExp"), abilityMap, this);
@@ -166,7 +195,9 @@ public class McMMOPlayer {
 		if(cooldown <= 0){
 		  continue;
 		}
-		abilitiesOnCooldown.put(ab, cooldown);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, (int) cooldown);
+		abilitiesOnCooldown.put(ab, cal.getTimeInMillis());
 	  }
 	}
 	updatePowerLevel();
@@ -267,7 +298,17 @@ public class McMMOPlayer {
         toRemove.add(ability);
 	  }
 	}
-	toRemove.stream().forEach(ab -> abilitiesOnCooldown.remove(ab));
+	if(!toRemove.isEmpty()){
+	  for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()){
+		playerData.set("Cooldowns." + ab.getName(), null);
+		abilitiesOnCooldown.remove(ab);
+		try{
+		  playerData.save(playerFile);
+		}catch(IOException e){
+		  e.printStackTrace();
+		}
+	  }
+	}
   }
 
   public void saveData(){
@@ -288,6 +329,9 @@ public class McMMOPlayer {
 		playerData.set("Cooldowns." + ability.getName(), this.getCooldown(ability));
 	  }
 	});
+	if(abilitiesOnCooldown.isEmpty()){
+	  playerData.set("Cooldowns.placeholder", null);
+	}
 	playerData.set("DisplayType", displayType.getName());
 	playerData.set("AbilityPoints", abilityPoints);
 	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
