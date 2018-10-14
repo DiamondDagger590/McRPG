@@ -26,7 +26,6 @@ public class InvClickEvent implements Listener {
 
   }
 
-  //TODO for Diamond to do. Overhaul old system and recreate it to be functional for what we want
   @EventHandler
   public void invClickEvent(InventoryClickEvent e){
 	Player p = (Player) e.getWhoClicked();
@@ -51,9 +50,7 @@ public class InvClickEvent implements Listener {
 			//This is for canceling
 			mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
 			mp.saveData();
-			currentGUI.setClearData(true);
 			p.closeInventory();
-			GUITracker.stopTrackingPlayer(p);
 			return;
 		  }
 		  if(slot == 10 && mp.getAbilityLoadout().size() < 9){
@@ -62,9 +59,7 @@ public class InvClickEvent implements Listener {
 			mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
 			acceptAbilityGUI.getAbility().setToggled(true);
 			mp.saveData();
-			currentGUI.setClearData(true);
 			p.closeInventory();
-			GUITracker.stopTrackingPlayer(p);
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())));
 			return;
 		  }
@@ -85,9 +80,7 @@ public class InvClickEvent implements Listener {
 		else if(acceptAbilityGUI.getAcceptType() == AcceptAbilityGUI.AcceptType.ACCEPT_UPGRADE){
 		  if(slot == 16){
 			//This is for canceling
-			currentGUI.setClearData(true);
 			p.closeInventory();
-			GUITracker.stopTrackingPlayer(p);
 			return;
 		  }
 		  if(slot == 10){
@@ -95,9 +88,7 @@ public class InvClickEvent implements Listener {
 		    acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
 		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
 			mp.saveData();
-			currentGUI.setClearData(true);
 			p.closeInventory();
-			GUITracker.stopTrackingPlayer(p);
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
 			.replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
 			return;
@@ -141,8 +132,6 @@ public class InvClickEvent implements Listener {
 		  //TODO revist this later
 		  editLoadoutGUI.getAbilities().set(e.getSlot(), editLoadoutGUI.getReplaceAbility());
 		  mp.getAbilityLoadout().set(e.getSlot(), editLoadoutGUI.getReplaceAbility());
-		  editLoadoutGUI.setClearData(true);
-		  GUITracker.stopTrackingPlayer(p);
 		  p.closeInventory();
 		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", editLoadoutGUI.getReplaceAbility().getGenericAbility().getName()));
 		}
@@ -157,8 +146,6 @@ public class InvClickEvent implements Listener {
 		if(event.equalsIgnoreCase("Permission")){
 		  String perm = events[1];
 		  if(!p.hasPermission(perm)){
-			currentGUI.setClearData(true);
-			p.closeInventory();
 			GUITracker.stopTrackingPlayer(p);
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
 			return;
@@ -186,14 +173,13 @@ public class InvClickEvent implements Listener {
 		else if(event.equalsIgnoreCase("back")){
 		  if(GUITracker.doesPlayerHavePrevious(p)){
 			GUI previousGUI = GUITracker.getPlayersPreviousGUI(p);
+			previousGUI.setClearData(true);
 			currentGUI.setClearData(false);
 			p.openInventory(previousGUI.getGui().getInv());
 			GUITracker.replacePlayersGUI(p, previousGUI);
 			continue;
 		  }
 		  else{
-			currentGUI.setClearData(true);
-			p.closeInventory();
 			GUITracker.stopTrackingPlayer(p);
 			continue;
 		  }

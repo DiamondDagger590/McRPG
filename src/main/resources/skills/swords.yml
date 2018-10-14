@@ -257,3 +257,36 @@ SerratedStrikesConfig:
   TierV:
     ActivationBoost: 20.0
     Duration: 8
+RageSpikeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 475
+    TierV: 600
+  #Config for each tier
+  TierI:
+    #How long the ability takes to charge
+    ChargeTime: 5
+    #Damage dealt via collision
+    Damage: 1
+    #Cooldown in seconds
+    Cooldown: 240
+  TierII:
+    ChargeTime: 4
+    Damage: 1
+    Cooldown: 240
+  TierIII:
+    ChargeTime: 3
+    Damage: 2
+    Cooldown: 240
+  TierIV:
+    ChargeTime: 2
+    Damage: 3
+    Cooldown: 240
+  TierV:
+    ChargeTime: 1
+    Damage: 4
+    Cooldown: 240

@@ -11,6 +11,8 @@ import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.Bleed;
 import us.eunoians.mcmmox.abilities.DeeperWound;
+import us.eunoians.mcmmox.abilities.RageSpike;
+import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
 import us.eunoians.mcmmox.types.*;
@@ -18,6 +20,7 @@ import us.eunoians.mcmmox.types.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -49,7 +52,7 @@ public class McMMOPlayer {
   @Getter
   private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
 
-  private HashMap<GenericAbility, Long> abilitiesOnCooldown = new HashMap<>();
+  private HashMap<UnlockedAbilities, Long> abilitiesOnCooldown = new HashMap<>();
 
   @Getter
   @Setter
@@ -62,6 +65,13 @@ public class McMMOPlayer {
   @Setter
   private DisplayType displayType = DisplayType.EXP_SCOREBOARD;
 
+  @Getter
+  @Setter
+  private boolean isReadying = false;
+
+  @Getter
+  @Setter
+  private PlayerReadyBit readyingAbilityBit = null;
 
   /**
    * The file configuration of the player that we get to edit.
@@ -108,26 +118,37 @@ public class McMMOPlayer {
 	}
 	this.displayType = DisplayType.fromString(playerData.getString("DisplayType"));
 	this.abilityPoints = playerData.getInt("AbilityPoints");
-	List<UnlockedAbilities> list = new ArrayList<>();
+	ArrayList<UnlockedAbilities> list = new ArrayList<>();
 	for(String string : playerData.getStringList("PendingAbilitiesUnlocked")){
 	  UnlockedAbilities unlockedAbilities = UnlockedAbilities.fromString(string);
 	  list.add(unlockedAbilities);
 	}
-	this.pendingUnlockAbilities = (ArrayList) list;
+	this.pendingUnlockAbilities = list;
 	//Initialize swords
 	Arrays.stream(Skills.values()).forEach(skill -> {
 	  HashMap<GenericAbility, BaseAbility> abilityMap = new HashMap<>();
 	  if(skill.equals(Skills.SWORDS)){
+	    //Initialize bleed
 		Bleed bleed = new Bleed();
 		bleed.setToggled(playerData.getBoolean("Swords.Bleed.IsToggled"));
+		//Initialize Deeper Wound
 		DeeperWound deeperWound = new DeeperWound();
 		deeperWound.setToggled(playerData.getBoolean("Swords.DeeperWound.IsToggled"));
 		deeperWound.setCurrentTier(playerData.getInt("Swords.DeeperWound.Tier"));
 		if(playerData.getInt("Swords.DeeperWound.Tier") != 0){
 		  deeperWound.setUnlocked(true);
 		}
+		//Initialize Rage Spike
+		RageSpike rageSpike = new RageSpike();
+		rageSpike.setToggled(playerData.getBoolean("Swords.RageSpike.IsToggled"));
+		rageSpike.setCurrentTier(playerData.getInt("Swords.RageSpike.Tier"));
+		if(playerData.getInt("Swords.RageSpike.Tier") != 0){
+		  rageSpike.setUnlocked(true);
+		}
 		abilityMap.put(DefaultAbilities.BLEED, bleed);
 		abilityMap.put(UnlockedAbilities.DEEPER_WOUND, deeperWound);
+		abilityMap.put(UnlockedAbilities.RAGE_SPIKE, rageSpike);
+		//Create skill
 		Swords swords = new Swords(playerData.getInt("Swords.Level"),
 			playerData.getInt("Swords.CurrentExp"), abilityMap, this);
 		skills.add(swords);
@@ -137,6 +158,16 @@ public class McMMOPlayer {
 	  //It has to be an unlocked ability since default ones cant be in the loadout
 	  UnlockedAbilities ability = UnlockedAbilities.fromString(s);
 	  abilityLoadout.add(getSkill(ability.getSkill()).getAbility(ability));
+	}
+	if(playerData.contains("Cooldowns")){
+	  for(String s : playerData.getConfigurationSection("Cooldowns").getKeys(false)){
+		UnlockedAbilities ab = UnlockedAbilities.fromString(s);
+		long cooldown = playerData.getLong("Cooldowns." + s);
+		if(cooldown <= 0){
+		  continue;
+		}
+		abilitiesOnCooldown.put(ab, cooldown);
+	  }
 	}
 	updatePowerLevel();
 	for(Skill s : skills){
@@ -202,12 +233,41 @@ public class McMMOPlayer {
   public long getCooldown(GenericAbility ability){
 
 	if(abilitiesOnCooldown.containsKey(ability)){
-	  return abilitiesOnCooldown.get(ability);
+	  return TimeUnit.MILLISECONDS.toSeconds(abilitiesOnCooldown.get(ability) - Calendar.getInstance().getTimeInMillis());
 	}
 	else{
 	  return -1;
 	}
+  }
 
+  public long getCooldown(Skills skill){
+    for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()){
+      if(ab.getSkill().equalsIgnoreCase(skill.getName())){
+        return TimeUnit.MILLISECONDS.toSeconds(abilitiesOnCooldown.get(ab) - Calendar.getInstance().getTimeInMillis());
+	  }
+	}
+	return -1;
+  }
+
+  public void addAbilityOnCooldown(UnlockedAbilities ability, long timeToEnd){
+    abilitiesOnCooldown.put(ability, timeToEnd);
+  }
+
+  public void removeAbilityOnCooldown(UnlockedAbilities ability){
+    abilitiesOnCooldown.remove(ability);
+  }
+
+  public void updateCooldowns(){
+    ArrayList<UnlockedAbilities> toRemove = new ArrayList<>();
+    for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()){
+      long timeToEnd = abilitiesOnCooldown.get(ability);
+      if(Calendar.getInstance().getTimeInMillis() >= timeToEnd){
+        this.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+			Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
+        toRemove.add(ability);
+	  }
+	}
+	toRemove.stream().forEach(ab -> abilitiesOnCooldown.remove(ab));
   }
 
   public void saveData(){
@@ -224,13 +284,13 @@ public class McMMOPlayer {
 		playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());
 		playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
 	  }
-	  if(skill.isAbilityOnCooldown(ability)){
-		playerData.set("Cooldowns." + ability.getName(), skill.getCooldownTimeLeft(ability));
+	  if(abilitiesOnCooldown.containsKey(ability)){
+		playerData.set("Cooldowns." + ability.getName(), this.getCooldown(ability));
 	  }
 	});
 	playerData.set("DisplayType", displayType.getName());
 	playerData.set("AbilityPoints", abilityPoints);
-	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(ability -> ability.getName()).collect(Collectors.toList()));
+	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
 	playerData.set("AbilityLoadout", abilityLoadout.stream().map(ability -> ability.getGenericAbility().getName()).collect(Collectors.toList()));
 	try{
 	  playerData.save(playerFile);
@@ -238,8 +298,6 @@ public class McMMOPlayer {
 	  e.printStackTrace();
 	}
   }
-
-  //}
 
   public void addPendingAbilityUnlock(UnlockedAbilities abilities){
 	this.pendingUnlockAbilities.add(abilities);
@@ -267,12 +325,17 @@ public class McMMOPlayer {
   }
 
   public boolean doesPlayerHaveAbilityInLoadout(GenericAbility ability){
-    if(abilityLoadout.stream().filter(ability1 -> ability1.getGenericAbility().getName().equalsIgnoreCase(ability.getName())).findFirst().orElse(null) == null){
-      return false;
-	}
-	else{
-	  return true;
-	}
+	return abilityLoadout.stream().filter(ability1 -> ability1.getGenericAbility().getName().equalsIgnoreCase(ability.getName())).findFirst().orElse(null) != null;
+  }
+
+  public boolean doesPlayerHaveActiveAbilityFromSkill(Skills skill){
+	return abilityLoadout.stream().filter(ability -> ability.getGenericAbility().getSkill().equals(skill.getName()))
+		.filter(ability -> ability.getGenericAbility().getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
+  }
+
+  public UnlockedAbilities getActiveAbilityForSkill(Skills skill){
+	return (UnlockedAbilities) abilityLoadout.stream().filter(ability -> ability.getGenericAbility().getSkill().equals(skill.getName()))
+		.filter(ability -> ability.getGenericAbility().getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null).getGenericAbility();
   }
 
   @Override

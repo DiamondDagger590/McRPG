@@ -21,6 +21,9 @@ Messages:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'
       BleedingStopped: '&cThe bleeding has stopped'
+    RageSpike:
+      Charging: '&eYou are now charging Rage Spike. Please stay crouched for &a%Charge% &eseconds'
+      ChargeCancelled: '&cYou canceled the charge of Rage Spike'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
@@ -28,3 +31,7 @@ Messages:
     LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%'
     AbilityUnlocked: '&eYou just unlocked %Ability%! Open up the main menu in order to accept or deny this ability.'
     AbilityPointGained: '&eYou just gained an ability point! Use it to upgrade the power of your abilities!'
+    PlayerReady: '&7You raise your %Skill_Item%'
+    PlayerUnready: '&7You lowered your %Skill_Item%'
+    CooldownExpire: '&aYour cooldown for %Ability% is finished'
+    CooldownActive: '&cYour %Skill% ability is on cooldown for &e%Time% &cseconds'

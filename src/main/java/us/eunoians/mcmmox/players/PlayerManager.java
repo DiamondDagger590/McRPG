@@ -64,6 +64,11 @@ public class PlayerManager {
 	}
 	saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(p, PlayerManager::run, 500, ((Mcmmox) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
 	System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
+	Bukkit.getScheduler().runTaskTimer(Mcmmox.getInstance(), () ->{
+	  for(McMMOPlayer mp : players.values()){
+	    mp.updateCooldowns();
+	}
+	}, 0, 20);
   }
 
 

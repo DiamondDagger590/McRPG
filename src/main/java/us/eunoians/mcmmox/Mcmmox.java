@@ -128,6 +128,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new McMMOExpGain(), this);
     getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
     getServer().getPluginManager().registerEvents(new McMMOBleed(), this);
+    getServer().getPluginManager().registerEvents(new CheckReadyEvent(), this);
+    getServer().getPluginManager().registerEvents(new ShiftToggle(), this);
   }
 
   public static Mcmmox getInstance() {

@@ -21,6 +21,9 @@ public class PlayerLogoutEvent implements Listener {
   public void logout(PlayerQuitEvent e){
     Player p = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	if(ShiftToggle.isPlayerCharging(p)){
+	  ShiftToggle.removePlayerCharging(p);
+	}
 	BukkitTask task = Bukkit.getScheduler().runTaskLater(Mcmmox.getInstance(), ()->{
 		if(p.isOnline() && PlayerManager.isPlayerStored(p.getUniqueId())){
 		  PlayerManager.removePlayer(p.getUniqueId());

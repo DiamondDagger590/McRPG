@@ -14,7 +14,6 @@ import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.types.*;
 import us.eunoians.mcmmox.util.Parser;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -47,11 +46,6 @@ public abstract class Skill {
   @Getter
   private int expToLevel;
   /**
-   * The map of abilities a player has that is on cooldown. Keys are the enum values of abilities and the values are the end time of the cooldown in milis
-   */
-  @Setter
-  private HashMap<GenericAbility, Long> abilitesOnCooldown = new HashMap<GenericAbility, Long>();
-  /**
    * The map of all the abilities the skill has loaded. The key is the enum of abilities while the values are the corresponding instance of an ability
    */
   private HashMap<GenericAbility, BaseAbility> abilityMap;
@@ -69,16 +63,6 @@ public abstract class Skill {
     equation.setVariable("skill_level", currentLevel);
     equation.setVariable("power_level", player.getPowerLevel());
     this.expToLevel = (int) equation.getValue();
-  }
-
-  /**
-   * Check if the ability specified is on cooldown
-   *
-   * @param ability The ability you want to check the cooldown for
-   * @return true if the ability is on cooldown and false if it isnt
-   */
-  public boolean isAbilityOnCooldown(GenericAbility ability) {
-    return abilitesOnCooldown.keySet().stream().anyMatch(ab -> ab.equals(ability));
   }
 
   public BaseAbility getAbility(GenericAbility ability){
@@ -99,23 +83,6 @@ public abstract class Skill {
 
   public Set<GenericAbility> getAbilityKeys(){
     return abilityMap.keySet();
-  }
-
-
-  /**
-   * Get the cooldown time for the specified ability
-   *
-   * @param ability
-   * @return
-   */
-  public long getCooldownTimeLeft(GenericAbility ability) {
-    for (GenericAbility ab : abilitesOnCooldown.keySet()) {
-      if (ab.equals(ability)) {
-		Calendar cal = Calendar.getInstance();
-        return abilitesOnCooldown.get(ab) - cal.getTimeInMillis();
-      }
-    }
-    return -1;
   }
 
   public String getName() {

@@ -6,6 +6,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcmmox.gui.GUIItem;
+import us.eunoians.mcmmox.types.Skills;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -115,5 +116,16 @@ public class Methods {
     Calendar cal = Calendar.getInstance();
     cal.add(type, duration);
     return cal.getTimeInMillis();
+  }
+
+  public static Skills getSkillsItem(ItemStack item){
+	switch(item.getType()){
+	  case DIAMOND_SWORD: return Skills.SWORDS;
+	  case IRON_SWORD: return Skills.SWORDS;
+	  case GOLDEN_SWORD: return Skills.SWORDS;
+	  case STONE_SWORD: return Skills.SWORDS;
+	  case WOODEN_SWORD: return Skills.SWORDS;
+	}
+	return null;
   }
 }

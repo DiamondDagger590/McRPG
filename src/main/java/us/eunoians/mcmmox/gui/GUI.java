@@ -24,7 +24,7 @@ public abstract class GUI {
    */
   @Getter
   @Setter
-  private boolean clearData = false;
+  private boolean clearData = true;
 
   public GUI(GUIBuilder gui) {
     this.gui = gui;
