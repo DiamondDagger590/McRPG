@@ -1,8 +1,10 @@
-package us.eunoians.mcmmox.abilities;
+package us.eunoians.mcmmox.abilities.swords;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.types.DefaultAbilities;
 
@@ -13,6 +15,10 @@ public class Bleed extends BaseAbility {
 
   @Getter
   private ArrayList<UUID> targeted;
+
+  @Getter
+  @Setter
+  private double bonusChance = 0.0;
 
   public Bleed() {
     super(DefaultAbilities.BLEED, true, true);

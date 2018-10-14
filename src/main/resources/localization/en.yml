@@ -24,6 +24,11 @@ Messages:
     RageSpike:
       Charging: '&eYou are now charging Rage Spike. Please stay crouched for &a%Charge% &eseconds'
       ChargeCancelled: '&cYou canceled the charge of Rage Spike'
+    SerratedStrikes:
+      Activated: '&aSerrated Strikes is now active'
+      Deactivated: '&cSerrated Strikes has deactivated'
+    TaintedBlade:
+      Activated: '&aTainted Blade has activated'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

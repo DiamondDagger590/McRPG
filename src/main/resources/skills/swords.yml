@@ -145,14 +145,19 @@ Bleed+Config:
   TierI:
     #The chance of Bleed_ occurring per tier
     ActivationChance: 10.0
+    DamageBoost: 1
   TierII:
     ActivationChance: 12.5
+    DamageBoost: 1
   TierIII:
     ActivationChance: 17.5
+    DamageBoost: 1
   TierIV:
     ActivationChance: 22.5
+    DamageBoost: 1
   TierV:
     ActivationChance: 25.0
+    DamageBoost: 1
 #How much should the damage increase when Bleed+ occurs
   BleedPlusModifier: 1
   #How this ability should be seen in the GUIS
@@ -225,14 +230,19 @@ VampireConfig:
   TierI:
 #Odds of activation per tier
     ActivationChance: 50.0
+    AmountToHeal: 1
   TierII:
     ActivationChance: 60.0
+    AmountToHeal: 1
   TierIII:
     ActivationChance: 70.0
+    AmountToHeal: 1
   TierIV:
     ActivationChance: 80.0
+    AmountToHeal: 1
   TierV:
     ActivationChance: 90.0
+    AmountToHeal: 1
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Vampire'

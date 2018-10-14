@@ -27,7 +27,7 @@ public class EditLoadoutGUI extends GUI{
   private BaseAbility replaceAbility;
   private GUIInventoryFunction buildGUIFunction;
   @Getter
-  private ArrayList<BaseAbility> abilities;
+  private ArrayList<UnlockedAbilities> abilities;
 
   public EditLoadoutGUI(McMMOPlayer player, EditType type){
     super(new GUIBuilder(player));
@@ -46,7 +46,8 @@ public class EditLoadoutGUI extends GUI{
 	  ArrayList<GUIItem> items = new ArrayList<>();
 
 	  for(int i = 0; i < player.getAbilityLoadout().size(); i++){
-		BaseAbility ability = player.getAbilityLoadout().get(i);
+		UnlockedAbilities unlockedAbilities = player.getAbilityLoadout().get(i);
+		BaseAbility ability = player.getBaseAbility(unlockedAbilities);
 
 		FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
 		String path = ability.getGenericAbility().getName() + "Config.Item.";
@@ -120,7 +121,8 @@ public class EditLoadoutGUI extends GUI{
 	  ArrayList<GUIItem> items = new ArrayList<>();
 
 	  for(int i = 0; i < player.getAbilityLoadout().size(); i++){
-		BaseAbility ability = player.getAbilityLoadout().get(i);
+		UnlockedAbilities unlockedAbilities = player.getAbilityLoadout().get(i);
+		BaseAbility ability = player.getBaseAbility(unlockedAbilities);
 
 		FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
 		String path = ability.getGenericAbility().getName() + "Config.Item.";
@@ -157,7 +159,7 @@ public class EditLoadoutGUI extends GUI{
 	this.abilities = player.getAbilityLoadout();
   }
 
-  public BaseAbility getAbilityFromSlot(int slot){
+  public UnlockedAbilities getAbilityFromSlot(int slot){
     return abilities.get(slot);
   }
 

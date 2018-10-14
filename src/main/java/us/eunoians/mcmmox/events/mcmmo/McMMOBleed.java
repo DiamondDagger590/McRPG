@@ -11,7 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcmmox.Mcmmox;
-import us.eunoians.mcmmox.abilities.Bleed;
+import us.eunoians.mcmmox.abilities.swords.Bleed;
 import us.eunoians.mcmmox.api.events.mcmmo.BleedEvent;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;

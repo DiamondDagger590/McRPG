@@ -6,8 +6,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import us.eunoians.mcmmox.Mcmmox;
-import us.eunoians.mcmmox.abilities.Bleed;
-import us.eunoians.mcmmox.abilities.DeeperWound;
+import us.eunoians.mcmmox.abilities.swords.Bleed;
+import us.eunoians.mcmmox.abilities.swords.BleedPlus;
+import us.eunoians.mcmmox.abilities.swords.DeeperWound;
+import us.eunoians.mcmmox.abilities.swords.Vampire;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -58,11 +60,38 @@ public class BleedEvent extends AbilityActivateEvent {
 	  int chance = (int) config.getDouble("DeeperWoundConfig.Tier" + Methods.convertToNumeral(user.getBaseAbility(UnlockedAbilities.DEEPER_WOUND).getCurrentTier())
 		  + ".ActivationChance") * 100;
 	  if(chance >= range){
-	    DeeperWoundEvent deeperWoundEvent = new DeeperWoundEvent(user, target, (DeeperWound) user.getBaseAbility(UnlockedAbilities.DEEPER_WOUND));
+	    DeeperWoundEvent deeperWoundEvent = new DeeperWoundEvent(user, (DeeperWound) user.getBaseAbility(UnlockedAbilities.DEEPER_WOUND));
 		Bukkit.getPluginManager().callEvent(deeperWoundEvent);
 		if(!deeperWoundEvent.isCancelled){
 		  baseDuration += deeperWoundEvent.getDurationBoost();
-		  user.getPlayer().sendMessage("Deeper Wound Activated");
+		}
+	  }
+	}
+	if(UnlockedAbilities.BLEED_PLUS.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.BLEED_PLUS)){
+	  Random ran = new Random();
+	  int range = ran.nextInt(10000);
+	  int chance = (int) config.getDouble("Bleed+Config.Tier" + Methods.convertToNumeral(user.getBaseAbility(UnlockedAbilities.BLEED_PLUS).getCurrentTier())
+		  + ".ActivationChance") * 100;
+	  if(chance >= range){
+		BleedPlusEvent bleedPlusEvent = new BleedPlusEvent(user, (BleedPlus) user.getBaseAbility(UnlockedAbilities.BLEED_PLUS));
+		Bukkit.getPluginManager().callEvent(bleedPlusEvent);
+		if(!bleedPlusEvent.isCancelled){
+		  damage += bleedPlusEvent.getDamageBoost();
+		}
+	  }
+	}
+	if(UnlockedAbilities.VAMPIRE.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.VAMPIRE)){
+	  Random ran = new Random();
+	  int range = ran.nextInt(10000);
+	  int chance = (int) config.getDouble("VampireConfig.Tier" + Methods.convertToNumeral(user.getBaseAbility(UnlockedAbilities.VAMPIRE).getCurrentTier())
+		  + ".ActivationChance") * 100;
+	  if(chance >= range){
+		VampireEvent vampireEvent = new VampireEvent(user,(Vampire) user.getBaseAbility(UnlockedAbilities.VAMPIRE));
+		Bukkit.getPluginManager().callEvent(vampireEvent);
+		if(!vampireEvent.isCancelled){
+		  if(user.getPlayer().getHealth() < 20){
+		    user.getPlayer().setHealth(user.getPlayer().getHealth() + vampireEvent.getAmountToHeal());
+		  }
 		}
 	  }
 	}

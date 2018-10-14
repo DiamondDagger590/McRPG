@@ -8,7 +8,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
-import us.eunoians.mcmmox.abilities.*;
+import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.swords.*;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
@@ -56,7 +57,7 @@ public class McMMOPlayer {
   private boolean hasBleedImmunity = false;
 
   @Getter
-  private ArrayList<BaseAbility> abilityLoadout = new ArrayList<>();
+  private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
 
   @Getter
   @Setter
@@ -186,7 +187,7 @@ public class McMMOPlayer {
 	for(String s : playerData.getStringList("AbilityLoadout")){
 	  //It has to be an unlocked ability since default ones cant be in the loadout
 	  UnlockedAbilities ability = UnlockedAbilities.fromString(s);
-	  abilityLoadout.add(getSkill(ability.getSkill()).getAbility(ability));
+	  abilityLoadout.add(ability);
 	}
 	if(playerData.contains("Cooldowns")){
 	  for(String s : playerData.getConfigurationSection("Cooldowns").getKeys(false)){
@@ -221,7 +222,7 @@ public class McMMOPlayer {
 	}
 	else{
 	  final AtomicInteger powerLevelUpdater = new AtomicInteger(0);
-	  skills.stream().forEach(skill -> powerLevelUpdater.addAndGet(skill.getCurrentLevel()));
+	  skills.forEach(skill -> powerLevelUpdater.addAndGet(skill.getCurrentLevel()));
 	  this.powerLevel = powerLevelUpdater.get();
 	}
 	return powerLevel;
@@ -335,7 +336,7 @@ public class McMMOPlayer {
 	playerData.set("DisplayType", displayType.getName());
 	playerData.set("AbilityPoints", abilityPoints);
 	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
-	playerData.set("AbilityLoadout", abilityLoadout.stream().map(ability -> ability.getGenericAbility().getName()).collect(Collectors.toList()));
+	playerData.set("AbilityLoadout", abilityLoadout.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
 	try{
 	  playerData.save(playerFile);
 	}catch(IOException e){
@@ -363,23 +364,23 @@ public class McMMOPlayer {
 	return (Player) Bukkit.getOfflinePlayer(uuid);
   }
 
-  public void addAbilityToLoadout(BaseAbility ability){
+  public void addAbilityToLoadout(UnlockedAbilities ability){
 	abilityLoadout.add(ability);
 	saveData();
   }
 
-  public boolean doesPlayerHaveAbilityInLoadout(GenericAbility ability){
-	return abilityLoadout.stream().filter(ability1 -> ability1.getGenericAbility().getName().equalsIgnoreCase(ability.getName())).findFirst().orElse(null) != null;
+  public boolean doesPlayerHaveAbilityInLoadout(UnlockedAbilities ability){
+	return abilityLoadout.stream().filter(ability1 -> ability1.getName().equalsIgnoreCase(ability.getName())).findFirst().orElse(null) != null;
   }
 
   public boolean doesPlayerHaveActiveAbilityFromSkill(Skills skill){
-	return abilityLoadout.stream().filter(ability -> ability.getGenericAbility().getSkill().equals(skill.getName()))
-		.filter(ability -> ability.getGenericAbility().getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
+	return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill.getName()))
+		.filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
   }
 
   public UnlockedAbilities getActiveAbilityForSkill(Skills skill){
-	return (UnlockedAbilities) abilityLoadout.stream().filter(ability -> ability.getGenericAbility().getSkill().equals(skill.getName()))
-		.filter(ability -> ability.getGenericAbility().getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null).getGenericAbility();
+	return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill.getName()))
+		.filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
   }
 
   @Override

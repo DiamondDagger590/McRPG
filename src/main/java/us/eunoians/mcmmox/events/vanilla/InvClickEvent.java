@@ -43,6 +43,7 @@ public class InvClickEvent implements Listener {
 	  if(e.getCurrentItem() == null) return;
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);
 	  //This gui was hardcoded so hardcoded events are fine :D
+	  //TODO if player has active skill in loadout, we need to figure out a way to make it force them to replace that ability specifically... Yet another gui?? UGH
 	  if(currentGUI instanceof AcceptAbilityGUI){
 		AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
 		int slot = e.getSlot();
@@ -56,7 +57,7 @@ public class InvClickEvent implements Listener {
 		  }
 		  if(slot == 10 && mp.getAbilityLoadout().size() < 9){
 			//If they accept and their loadout isnt full
-			mp.addAbilityToLoadout(acceptAbilityGUI.getAbility());
+			mp.addAbilityToLoadout((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
 			mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
 			acceptAbilityGUI.getAbility().setToggled(true);
 			mp.saveData();
@@ -101,7 +102,7 @@ public class InvClickEvent implements Listener {
 	  }
 	  else if(currentGUI instanceof EditLoadoutGUI){
 		EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
-		BaseAbility abilityToChange = editLoadoutGUI.getAbilityFromSlot(e.getSlot());
+		BaseAbility abilityToChange = mp.getBaseAbility(editLoadoutGUI.getAbilityFromSlot(e.getSlot()));
 		if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.TOGGLE){
 		  abilityToChange.setToggled(!abilityToChange.isToggled());
 		  if(!abilityToChange.isToggled()){
@@ -131,8 +132,8 @@ public class InvClickEvent implements Listener {
 		}
 		else{
 		  //TODO revist this later
-		  editLoadoutGUI.getAbilities().set(e.getSlot(), editLoadoutGUI.getReplaceAbility());
-		  mp.getAbilityLoadout().set(e.getSlot(), editLoadoutGUI.getReplaceAbility());
+		  editLoadoutGUI.getAbilities().set(e.getSlot(), (UnlockedAbilities) editLoadoutGUI.getReplaceAbility().getGenericAbility());
+		  mp.getAbilityLoadout().set(e.getSlot(), (UnlockedAbilities) editLoadoutGUI.getReplaceAbility().getGenericAbility());
 		  p.closeInventory();
 		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", editLoadoutGUI.getReplaceAbility().getGenericAbility().getName()));
 		}

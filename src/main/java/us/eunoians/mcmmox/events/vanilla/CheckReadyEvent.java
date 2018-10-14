@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
@@ -61,6 +62,10 @@ public class CheckReadyEvent implements Listener {
 		    return;
 		  }
 		  if(mp.doesPlayerHaveActiveAbilityFromSkill(skillType)){
+			BaseAbility ab = mp.getBaseAbility(mp.getActiveAbilityForSkill(skillType));
+			if(!ab.isToggled() || !ab.getGenericAbility().isEnabled()){
+			  return;
+			}
 		    p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 				Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", "Sword")));
 			PlayerReadyBit bit = new PlayerReadyBit(mp.getActiveAbilityForSkill(skillType), mp);
