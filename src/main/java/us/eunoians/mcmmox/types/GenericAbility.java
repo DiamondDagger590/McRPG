@@ -9,5 +9,4 @@ public interface GenericAbility {
   AbilityType getAbilityType();
 
   boolean isEnabled();
-
 }
