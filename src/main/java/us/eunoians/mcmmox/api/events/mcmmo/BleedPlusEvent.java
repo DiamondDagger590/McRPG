@@ -17,6 +17,6 @@ public class BleedPlusEvent extends AbilityActivateEvent {
     super(bleedPlus, user);
 	int tier = bleedPlus.getCurrentTier();
 	this.damageBoost = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("Bleed+Config.Tier" + Methods.convertToNumeral(tier) + ".DamageBoost");
-	this.isCancelled = bleedPlus.isToggled();
+	this.isCancelled = !bleedPlus.isToggled();
   }
 }

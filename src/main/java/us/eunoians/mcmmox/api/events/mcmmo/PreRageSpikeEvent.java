@@ -20,7 +20,7 @@ public class PreRageSpikeEvent extends AbilityActivateEvent {
   public PreRageSpikeEvent(McMMOPlayer user, RageSpike rageSpike){
     super(rageSpike, user);
     int tier = rageSpike.getCurrentTier();
-	this.isCancelled = rageSpike.isToggled();
+	this.isCancelled = !rageSpike.isToggled();
 	this.cooldown = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".Cooldown");
 	this.damage = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".Damage");
 	this.chargeTime = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".ChargeTime");

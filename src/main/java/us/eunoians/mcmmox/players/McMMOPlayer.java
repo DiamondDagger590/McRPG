@@ -443,6 +443,15 @@ public class McMMOPlayer {
 		.filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
   }
 
+  public void replaceAbility(UnlockedAbilities oldAbility, UnlockedAbilities newAbility){
+    for(int i = 0; i < abilityLoadout.size(); i++){
+      if(abilityLoadout.get(i).equals(oldAbility)){
+        abilityLoadout.set(i, newAbility);
+        return;
+	  }
+	}
+  }
+
   @Override
   public boolean equals(Object object){
 	if(object instanceof McMMOPlayer){

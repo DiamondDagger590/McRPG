@@ -21,10 +21,11 @@ public class TaintedBladeEvent extends AbilityActivateEvent {
 
   @Getter @Setter
   private int cooldown;
+
   public TaintedBladeEvent(McMMOPlayer user, TaintedBlade taintedBlade){
     super(taintedBlade, user);
 	int tier = taintedBlade.getCurrentTier();
-	this.isCancelled = taintedBlade.isToggled();
+	this.isCancelled = !taintedBlade.isToggled();
 	this.cooldown = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("TaintedBladeConfig.Tier" + Methods.convertToNumeral(tier) + ".Cooldown");
 	this.strengthDuration = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("TaintedBladeConfig.Tier" + Methods.convertToNumeral(tier) + ".StrengthDuration");
 	this.resistanceDuration = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("TaintedBladeConfig.Tier" + Methods.convertToNumeral(tier) + ".ResistanceDuration");

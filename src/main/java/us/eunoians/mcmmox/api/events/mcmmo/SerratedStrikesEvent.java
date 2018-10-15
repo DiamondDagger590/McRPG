@@ -22,7 +22,7 @@ public class SerratedStrikesEvent extends AbilityActivateEvent{
   public SerratedStrikesEvent(McMMOPlayer user, SerratedStrikes serratedStrikes){
     super(serratedStrikes, user);
 	int tier = serratedStrikes.getCurrentTier();
-	this.isCancelled = serratedStrikes.isToggled();
+	this.isCancelled = !serratedStrikes.isToggled();
 	this.cooldown = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("SerratedStrikesConfig.Tier" + Methods.convertToNumeral(tier) + ".Cooldown");
 	this.duration = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("SerratedStrikesConfig.Tier" + Methods.convertToNumeral(tier) + ".Duration");
 	this.activationRateBoost = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getDouble("SerratedStrikesConfig.Tier" + Methods.convertToNumeral(tier) + ".ActivationBoost");

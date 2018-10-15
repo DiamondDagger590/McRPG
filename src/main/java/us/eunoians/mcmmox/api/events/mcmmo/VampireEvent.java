@@ -17,6 +17,6 @@ public class VampireEvent extends AbilityActivateEvent {
     super(vampire, user);
 	int tier = vampire.getCurrentTier();
 	this.amountToHeal = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("VampireConfig.Tier" + Methods.convertToNumeral(tier) + ".AmountToHeal");
-	this.isCancelled = vampire.isToggled();
+	this.isCancelled = !vampire.isToggled();
   }
 }

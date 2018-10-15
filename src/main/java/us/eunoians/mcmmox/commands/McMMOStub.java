@@ -7,12 +7,11 @@ import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.api.util.Methods;
-import us.eunoians.mcmmox.gui.AcceptAbilityGUI;
-import us.eunoians.mcmmox.gui.GUI;
-import us.eunoians.mcmmox.gui.GUITracker;
-import us.eunoians.mcmmox.gui.HomeGUI;
+import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
+import us.eunoians.mcmmox.types.AbilityType;
+import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 public class McMMOStub implements CommandExecutor {
@@ -26,10 +25,26 @@ public class McMMOStub implements CommandExecutor {
 		McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 		if(mp.hasPendingAbility()){
 		  UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
-		  BaseAbility baseAbility = mp.getBaseAbility(ability);
-		  GUI gui = new AcceptAbilityGUI(mp, baseAbility, AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY);
-		  p.openInventory(gui.getGui().getInv());
-		  GUITracker.trackPlayer(p, gui);
+		  if(ability.getAbilityType() == AbilityType.ACTIVE){
+			BaseAbility baseAbility = mp.getBaseAbility(ability);
+		    if(mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
+		      BaseAbility oldAbility = mp.getBaseAbility(mp.getActiveAbilityForSkill(Skills.fromString(ability.getSkill())));
+			  AbilityOverrideGUI overrideGUI = new AbilityOverrideGUI(mp, oldAbility, baseAbility);
+			  p.openInventory(overrideGUI.getGui().getInv());
+			  GUITracker.trackPlayer(p, overrideGUI);
+			}
+			else{
+			  GUI gui = new AcceptAbilityGUI(mp, baseAbility, AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY);
+			  p.openInventory(gui.getGui().getInv());
+			  GUITracker.trackPlayer(p, gui);
+			}
+		  }
+		  else{
+			BaseAbility baseAbility = mp.getBaseAbility(ability);
+			GUI gui = new AcceptAbilityGUI(mp, baseAbility, AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY);
+			p.openInventory(gui.getGui().getInv());
+			GUITracker.trackPlayer(p, gui);
+		  }
 		}
 		else{
 		  GUI gui = new HomeGUI(PlayerManager.getPlayer(p.getUniqueId()));

@@ -44,6 +44,29 @@ public class InvClickEvent implements Listener {
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);
 	  //This gui was hardcoded so hardcoded events are fine :D
 	  //TODO if player has active skill in loadout, we need to figure out a way to make it force them to replace that ability specifically... Yet another gui?? UGH
+	  if(currentGUI instanceof AbilityOverrideGUI){
+	    AbilityOverrideGUI overrideGUI = (AbilityOverrideGUI) currentGUI;
+	    int slot = e.getSlot();
+	    if(slot == 16){
+	      mp.removePendingAbilityUnlock((UnlockedAbilities) overrideGUI.getReplaceAbility().getGenericAbility());
+	      mp.saveData();
+	      p.closeInventory();
+	      return;
+		}
+		else{
+		  if(slot == 10){
+		    if(mp.getCooldown(Skills.fromString(overrideGUI.getAbiltyToReplace().getGenericAbility().getSkill())) != -1){
+		      mp.removeAbilityOnCooldown((UnlockedAbilities) overrideGUI.getAbiltyToReplace().getGenericAbility());
+			}
+			mp.replaceAbility((UnlockedAbilities) overrideGUI.getAbiltyToReplace().getGenericAbility(), (UnlockedAbilities) overrideGUI.getReplaceAbility().getGenericAbility());
+		  	mp.removePendingAbilityUnlock((UnlockedAbilities) overrideGUI.getReplaceAbility().getGenericAbility());
+		  	mp.saveData();
+		  	p.closeInventory();
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", overrideGUI.getReplaceAbility().getGenericAbility().getName())));
+			return;
+		  }
+		}
+	  }
 	  if(currentGUI instanceof AcceptAbilityGUI){
 		AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
 		int slot = e.getSlot();

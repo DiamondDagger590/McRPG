@@ -17,6 +17,6 @@ public class DeeperWoundEvent extends AbilityActivateEvent{
 	super(deeperWound, user);
 	int tier = deeperWound.getCurrentTier();
 	this.durationBoost = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("DeeperWoundConfig.Tier" + Methods.convertToNumeral(tier) + ".DurationBoost");
-	this.isCancelled = deeperWound.isToggled();
+	this.isCancelled = !deeperWound.isToggled();
   }
 }

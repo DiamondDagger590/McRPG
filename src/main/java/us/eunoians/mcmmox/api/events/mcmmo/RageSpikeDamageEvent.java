@@ -16,6 +16,6 @@ public class RageSpikeDamageEvent extends AbilityActivateEvent{
     super(rageSpike, user);
     this.target = target;
     this.damage = damage;
-    this.isCancelled = rageSpike.isToggled();
+    this.isCancelled = !rageSpike.isToggled();
   }
 }
