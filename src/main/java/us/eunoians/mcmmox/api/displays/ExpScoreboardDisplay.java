@@ -25,12 +25,23 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
   @Getter
   private Scoreboard board;
 
+  /**
+   *
+   * @param player Player that the scoreboard belongs to
+   * @param skill Skill to be displayed
+   */
   public ExpScoreboardDisplay(McMMOPlayer player, Skills skill){
     super(player, DisplayType.EXP_SCOREBOARD);
     this.skill = skill;
     createScoreboard();
   }
 
+  /**
+   *
+   * @param player Player that the scoreboard belongs to
+   * @param skill Skill to be displayed
+   * @param old The old board to be stored. Useful for interactions with things like Factions
+   */
   public ExpScoreboardDisplay(McMMOPlayer player, Skills skill, Scoreboard old){
 	super(player, DisplayType.EXP_SCOREBOARD);
 	this.skill = skill;
@@ -52,6 +63,12 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 	sendUpdate(sk.getCurrentExp(), sk.getExpToLevel(), sk.getCurrentLevel());
   }
 
+  /**
+   *
+   * @param currentExp The current exp to display
+   * @param expToLevel The exp needed to display
+   * @param currentLevel The current level to display
+   */
   @Override
   public void sendUpdate(int currentExp, int expToLevel, int currentLevel){
 	FileConfiguration config = Mcmmox.getInstance().getConfig();
@@ -62,16 +79,27 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 	objective.setDisplaySlot(DisplaySlot.SIDEBAR);
   }
 
+  /**
+   * Cancel the display
+   */
   @Override
   public void cancel(){
     board = mangager.getNewScoreboard();
     player.getPlayer().setScoreboard(board);
   }
 
+  /**
+   *
+   * @return true if the player has an old baord
+   */
   public boolean hasOldScoreBoard(){
 	return oldBoard != null;
   }
 
+  /**
+   *
+   * @return The old scoreboard a player has
+   */
   public Scoreboard getOldScoreBoard(){
     return this.oldBoard;
   }

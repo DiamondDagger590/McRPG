@@ -29,32 +29,40 @@ public class McMMOBleed implements Listener {
 
   @EventHandler (priority = EventPriority.LOW)
   public void bleed(BleedEvent e){
-
+	//Get our variables
     Entity target = e.getTarget();
 	McMMOPlayer player = e.getUser();
 	Bleed bleed = e.getBleed();
+	//If the target is already targeted, cancel
 	if(isTargeted(target.getUniqueId())){
 	  e.setCancelled(true);
 	  return;
 	}
 	if(target instanceof Player){
 	  McMMOPlayer targ = PlayerManager.getPlayer(target.getUniqueId());
+	  //If bleed is unable to target cancel
 	  if(!bleed.canTarget()){
 	    e.setCancelled(true);
 	    return;
 	  }
+	  //If target has bleed immunity, cancel event
 	  if(e.isBleedImmunityEnabled()){
 	    if(targ.isHasBleedImmunity()){
 	      e.setCancelled(true);
 	      return;
 		}
 	  }
+	  //Add player to the targeted list and send them a msg
 	  addPlayerTargetedBy(player.getUuid(), targ.getUuid());
 	  targ.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Bleed.PlayerBleeding")));
 	}
 	startBleedTimer(e);
   }
 
+  /**
+   *
+   * @param uuid The uuid that needs to be removed from targeting
+   */
   public static void cancelTarget(UUID uuid){
     if(targetsBleedTasks.containsKey(uuid)){
       targetsBleedTasks.get(uuid).cancel();
@@ -66,8 +74,18 @@ public class McMMOBleed implements Listener {
 	}
   }
 
+  /**
+   *
+   * @param uuid UUID to test for
+   * @return true if they are targeted false if not
+   */
   public static boolean isTargeted(UUID uuid){ return targetsBleedTasks.containsKey(uuid);}
 
+  /**
+   *
+   * @param user The player to test for
+   * @return An array list of all entity UUID that are targeted by the user
+   */
   public static ArrayList<UUID> getPlayersTargetedBy(UUID user){
     if(playersTargeted.containsKey(user)){
       return playersTargeted.get(user);
@@ -77,10 +95,20 @@ public class McMMOBleed implements Listener {
 	}
   }
 
+  /**
+   *
+   * @param user player to add tracking for
+   * @param targets arraylist of targets to bind with the user
+   */
   public static void setPlayersTargetedBy(UUID user, ArrayList<UUID> targets){
     playersTargeted.put(user, targets);
   }
 
+  /**
+   *
+   * @param user User of bleed
+   * @param target target of bleed
+   */
   public static void addPlayerTargetedBy(UUID user, UUID target){
     if(playersTargeted.containsKey(user)){
       playersTargeted.get(user).add(target);
@@ -92,6 +120,11 @@ public class McMMOBleed implements Listener {
 	}
   }
 
+  /**
+   *
+   * @param user User of bleed
+   * @param target target of bleed
+   */
   public static void removePlayerTargeted(UUID user, UUID target){
     playersTargeted.get(user).remove(target);
     if(playersTargeted.get(user).isEmpty()){
@@ -100,8 +133,9 @@ public class McMMOBleed implements Listener {
   }
 
   private void startBleedTimer(BleedEvent e){
-    //TODO factor in players buffs
+    //Get ourselves the number of iterations
     AtomicInteger iterations = new AtomicInteger((e.getBaseDuration() / e.getFrequency()));
+    //Make us a new task
 	BukkitTask task = Bukkit.getScheduler().runTaskTimer(Mcmmox.getInstance(), () ->{
 	  Entity en = e.getTarget();
 	  //If the bleed effect is over
@@ -123,7 +157,8 @@ public class McMMOBleed implements Listener {
 		iterations.decrementAndGet();
 	    LivingEntity len = (LivingEntity) en;
 		en.getWorld().playEffect(len.getEyeLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
-		if(len.getHealth() >= e.getMinimumHealthAllowed()){
+		//If the health is greater than the health cap then we can dmg
+		if(len.getHealth() > e.getMinimumHealthAllowed()){
 		  len.damage(e.getDamage());
 		}
 	  }

@@ -8,7 +8,6 @@ public abstract class BaseAbility {
 
   @Getter
   private GenericAbility genericAbility;
-  //Transfer
   @Getter
   @Setter
   private boolean isToggled;
@@ -20,8 +19,10 @@ public abstract class BaseAbility {
   private boolean isUnlocked;
 
   /**
-   * @param genericAbility Accepts either a DefaultAbilities or UnlockedAbilities enum type
-   * @param isToggled      If the ability is toggled for the player.
+   *
+   * @param genericAbility The enum value of what ability this instance represents
+   * @param isToggled If the player has this ability toggled
+   * @param isUnlocked If the player has this ability unlocked
    */
   public BaseAbility(GenericAbility genericAbility, boolean isToggled, boolean isUnlocked) {
     this.genericAbility = genericAbility;

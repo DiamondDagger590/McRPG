@@ -25,18 +25,35 @@ public class Bleed extends BaseAbility {
     targeted = new ArrayList<>();
   }
 
+  /**
+   *
+   * @param p Player to test for
+   * @return true if the player is being targeted by this Bleed instance
+   */
   public boolean isPlayerTargeted(Player p){
     return targeted.contains(p.getUniqueId());
   }
 
+  /**
+   *
+   * @param p Player to stop tracking
+   */
   public void stopTargetingPlayer(Player p){
     targeted.remove(p.getUniqueId());
   }
 
+  /**
+   *
+   * @param p Player to start tracking
+   */
   public void startTargetingPlayer(Player p){
     targeted.add(p.getUniqueId());
   }
 
+  /**
+   *
+   * @return true if the amount of targets for bleed has nit been reached
+   */
   public boolean canTarget(){
     return targeted.size() == Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("BleedConfig.BleedCap");
   }

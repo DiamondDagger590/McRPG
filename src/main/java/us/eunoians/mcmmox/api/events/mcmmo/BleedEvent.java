@@ -42,7 +42,9 @@ public class BleedEvent extends AbilityActivateEvent {
 
   public BleedEvent(McMMOPlayer user, Entity target, Bleed bleed){
 	super(bleed, user);
+	//Get the swords config
 	FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
+	//Initialize everything
 	this.bleed = bleed;
 	isCancelled = bleed.isToggled();
 	this.target = target;
@@ -54,7 +56,9 @@ public class BleedEvent extends AbilityActivateEvent {
 	this.bleedImmunityEnabled = config.getBoolean("BleedConfig.BleedImmunityEnabled");
 	this.bleedImmunityDuration = config.getInt("BleedConfig.BleedImmunityDuration");
 
+	//If deeper wound is unlocked and is enabled. No need to check for toggle as the event will checj that
 	if(UnlockedAbilities.DEEPER_WOUND.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DEEPER_WOUND)){
+	  //Check if it should activate based on % chance
 	  Random ran = new Random();
 	  int range = ran.nextInt(10000);
 	  int chance = (int) config.getDouble("DeeperWoundConfig.Tier" + Methods.convertToNumeral(user.getBaseAbility(UnlockedAbilities.DEEPER_WOUND).getCurrentTier())
@@ -67,6 +71,7 @@ public class BleedEvent extends AbilityActivateEvent {
 		}
 	  }
 	}
+	//If bleed+ is unlocked and enabled
 	if(UnlockedAbilities.BLEED_PLUS.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.BLEED_PLUS)){
 	  Random ran = new Random();
 	  int range = ran.nextInt(10000);
@@ -80,6 +85,7 @@ public class BleedEvent extends AbilityActivateEvent {
 		}
 	  }
 	}
+	//If vampire is unlocked and enabled
 	if(UnlockedAbilities.VAMPIRE.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.VAMPIRE)){
 	  Random ran = new Random();
 	  int range = ran.nextInt(10000);
@@ -89,8 +95,14 @@ public class BleedEvent extends AbilityActivateEvent {
 		VampireEvent vampireEvent = new VampireEvent(user,(Vampire) user.getBaseAbility(UnlockedAbilities.VAMPIRE));
 		Bukkit.getPluginManager().callEvent(vampireEvent);
 		if(!vampireEvent.isCancelled){
-		  if(user.getPlayer().getHealth() < 20){
-		    user.getPlayer().setHealth(user.getPlayer().getHealth() + vampireEvent.getAmountToHeal());
+		  double userHealth = user.getPlayer().getHealth();
+		  if(userHealth < 20){
+		    if(userHealth + vampireEvent.getAmountToHeal() > 20){
+		      user.getPlayer().setHealth(20);
+			}
+			else{
+			  user.getPlayer().setHealth(userHealth + vampireEvent.getAmountToHeal());
+			}
 		  }
 		}
 	  }

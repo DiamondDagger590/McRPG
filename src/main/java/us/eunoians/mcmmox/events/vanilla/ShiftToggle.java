@@ -32,14 +32,18 @@ public class ShiftToggle implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void shiftToggle(PlayerToggleSneakEvent e){
+    //Get the player and the McMMOPlayer
     Player player = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
 	//if the player is readying. They cant be charging in this state due to the nature of the below code
 	if(mp.isReadying() && e.isSneaking()){
+	  //Fire the pre rage spike event to get and store some values
 	  PreRageSpikeEvent preEvent = new PreRageSpikeEvent(mp, (RageSpike) mp.getBaseAbility(UnlockedAbilities.RAGE_SPIKE));
+	  Bukkit.getPluginManager().callEvent(preEvent);
 	  if(e.isCancelled()){
 	    return;
 	  }
+	  //Tell the player how long they have to charge for
 	  player.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 		  Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Integer.toString(preEvent.getChargeTime()))));
 	  //Save the id of the task
@@ -50,27 +54,34 @@ public class ShiftToggle implements Listener {
 		  //voom code
 		  e.getPlayer().setVelocity(unitVector.multiply(5));
 		  e.getPlayer().setVelocity(unitVector.multiply(5));
-		  //after theyve traveled
+		  //after theyve traveled we need to iteratee 20 times (1 second)
 		  AtomicInteger count = new AtomicInteger(0);
+		  //A list of all entities hit by rage spike so we arent double hitting
 		  ArrayList<UUID> entities = new ArrayList<>();
 		  //Damage entities as we fly by
 		  new BukkitRunnable() {
 			@Override
 			public void run(){
+			  //verify that this runs 20 times
 			  if(count.incrementAndGet() == 21){
 			    cancel();
 			  }
 			  else{
+			    //get all the entities in a 2 by 2 radius
 			    for(Entity en : player.getNearbyEntities(2, 2, 2)){
+			      //if the entity is living (avoids items and such) and isnt already hit
 			      if(en instanceof LivingEntity && !entities.contains(en.getUniqueId())){
 			        LivingEntity len = (LivingEntity) en;
+			        //call the ragespike dmg event
 					RageSpikeDamageEvent event = new RageSpikeDamageEvent(mp, (RageSpike) mp.getBaseAbility(UnlockedAbilities.RAGE_SPIKE), len, preEvent.getDamage());
 					Bukkit.getPluginManager().callEvent(event);
 					if(event.isCancelled()){
 					  continue;
 					}
+					//make target go voom
 			        Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
 			        en.setVelocity(targVector.multiply(-4.3));
+			        //damage target and add them to list
 			        len.damage(event.getDamage());
 			        entities.add(en.getUniqueId());
 				  }
@@ -78,6 +89,7 @@ public class ShiftToggle implements Listener {
 			  }
 			}
 		  }.runTaskTimer(Mcmmox.getInstance(), 0, 1);
+		  //Get the time we need the cooldown to expire and add it to the McMMOPlayer
 		  Calendar cal = Calendar.getInstance();
 		  cal.add(Calendar.SECOND,
 			  preEvent.getCooldown());

@@ -46,20 +46,27 @@ public class McMMOPlayerLevelChange implements Listener {
     if(skillLeveled.getType().equals(Skills.SWORDS)){
       //Get all enabled abilites
 	  List<String> enabledAbilities = Skills.SWORDS.getEnabledAbilities();
+	  //Iterate across these bois
 	  for(String s : enabledAbilities){
+	    //Get the generic ability.
 		GenericAbility ability = skillLeveled.getGenericAbility(s);
+		//If its unlocked
 		if(ability instanceof UnlockedAbilities){
+		  //We get variables and verify that its not already unlocked
 		  UnlockedAbilities ab = (UnlockedAbilities) ability;
 		  BaseAbility base = skillLeveled.getAbility(ability);
 		  if(base.isUnlocked()){
 		    continue;
 		  }
 		  else{
+		    //Otherwise we check if they are allowed to unlock the ability
 		    if(e.getNextLevel() >= ab.getUnlockLevel()){
-		      Player p = mp.getPlayer();
-		      p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
-				  mcmmox.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
-		      p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 10, 1);
+		      if(mp.isOnline()){
+				Player p = mp.getPlayer();
+				p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
+					mcmmox.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 10, 1);
+			  }
 		      base.setUnlocked(true);
 		      base.setCurrentTier(1);
 		      mp.addPendingAbilityUnlock(ab);
@@ -75,6 +82,7 @@ public class McMMOPlayerLevelChange implements Listener {
 		}
 	  }
 	}
+	//Update their general info and scoreboards
 	if(e.getMcMMOPlayer().isOnline()){
 	  Player p = e.getMcMMOPlayer().getPlayer();
 	  p.sendMessage(message);

@@ -15,6 +15,11 @@ import java.util.UUID;
 
 public class Methods {
 
+  /**
+   *
+   * @param number The numerical representation of a tier
+   * @return The string numeral
+   */
   public static String convertToNumeral(int number) {
     switch (number) {
       case 1:
@@ -32,6 +37,11 @@ public class Methods {
     }
   }
 
+  /**
+   *
+   * @param numeral The numeral to convert
+   * @return The integer representation of the numeral
+   */
   public static int convertToNumber(String numeral) {
     switch (numeral) {
       case "I":
@@ -49,6 +59,11 @@ public class Methods {
     }
   }
 
+  /**
+   *
+   * @param s String to test
+   * @return true if the string is an int or false if not
+   */
   public static boolean isInt(String s) {
     try {
       Integer.parseInt(s);
@@ -58,15 +73,30 @@ public class Methods {
     return true;
   }
 
+  /**
+   *
+   * @param msg String to colour
+   * @return The coloured string
+   */
   public static String color(String msg) {
     return ChatColor.translateAlternateColorCodes('&', msg);
   }
 
+  /**
+   *
+   * @param minutes The number of minutes to convert
+   * @return The ticks equal to minute amount
+   */
   public static int convertMinToTicks(int minutes) {
     int ticks = minutes * 1200;
     return ticks;
   }
 
+  /**
+   *
+   * @param uuid UUID to test
+   * @return true if the player has logged in before or false if they have not
+   */
   public static boolean hasPlayerLoggedInBefore(UUID uuid) {
     OfflinePlayer targ = Bukkit.getOfflinePlayer(uuid);
     if (!(targ.isOnline() || targ.hasPlayedBefore())) {
@@ -86,6 +116,11 @@ public class Methods {
     }
   }
 
+  /**
+   *
+   * @param lore The list of strings to colour
+   * @return The list of coloured strings
+   */
   public static List<String> colorLore(List<String> lore) {
     for (int i = 0; i < lore.size(); i++) {
       String s = lore.get(i);
@@ -94,30 +129,52 @@ public class Methods {
     return lore;
   }
 
+  /**
+   *
+   * @param inv The inventory to fill
+   * @param filler The item stack to fill air slots with
+   * @param items The array list of GUIItems to put in the inventory
+   * @return
+   */
   public static Inventory fillInventory(Inventory inv, ItemStack filler, ArrayList<GUIItem> items) {
     for (GUIItem item : items) {
       inv.setItem(item.getSlot(), item.getItemStack());
     }
     for (int i = 0; i < inv.getSize(); i++) {
       ItemStack testItem = inv.getItem(i);
-      if (testItem == null) {
+      if (testItem == null && filler != null) {
         inv.setItem(i, filler);
       }
     }
     return inv;
   }
 
+  /**
+   *
+   * @return Current time in millis
+   */
   public static long getCurrentTimeInMillis() {
     Calendar cal = Calendar.getInstance();
     return cal.getTimeInMillis();
   }
 
+  /**
+   *
+   * @param type Calendar.TimeUnit
+   * @param duration How long we are adding
+   * @return The time in millis for end time
+   */
   public static long getEndTimeInMillis(int type, int duration) {
     Calendar cal = Calendar.getInstance();
     cal.add(type, duration);
     return cal.getTimeInMillis();
   }
 
+  /**
+   *
+   * @param item Item stack to test
+   * @return The Skill that the item belongs to
+   */
   public static Skills getSkillsItem(ItemStack item){
 	switch(item.getType()){
 	  case DIAMOND_SWORD: return Skills.SWORDS;

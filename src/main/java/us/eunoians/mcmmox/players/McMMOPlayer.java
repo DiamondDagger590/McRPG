@@ -272,6 +272,12 @@ public class McMMOPlayer {
 	}
   }
 
+  /**
+   * Get the cooldown of an ability (this works since a skill can only have one active ability unlocked
+   *
+   * @param skill The skill to check
+   * @return The time to end in millis or -1 if it doesnt exist
+   */
   public long getCooldown(Skills skill){
     for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()){
       if(ab.getSkill().equalsIgnoreCase(skill.getName())){
@@ -281,14 +287,26 @@ public class McMMOPlayer {
 	return -1;
   }
 
+  /**
+   *
+   * @param ability Ability to add on cooldown
+   * @param timeToEnd The end time in milis
+   */
   public void addAbilityOnCooldown(UnlockedAbilities ability, long timeToEnd){
     abilitiesOnCooldown.put(ability, timeToEnd);
   }
 
+  /**
+   *
+   * @param ability Ability to remove from array
+   */
   public void removeAbilityOnCooldown(UnlockedAbilities ability){
     abilitiesOnCooldown.remove(ability);
   }
 
+  /**
+   * Update all the cooldowns and verify if they are valid
+   */
   public void updateCooldowns(){
     ArrayList<UnlockedAbilities> toRemove = new ArrayList<>();
     for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()){
@@ -312,6 +330,9 @@ public class McMMOPlayer {
 	}
   }
 
+  /**
+   * Save players data
+   */
   public void saveData(){
 	//for(Skills type : Skills.values()){
 	Skills type = Skills.SWORDS;
@@ -344,40 +365,79 @@ public class McMMOPlayer {
 	}
   }
 
+  /**
+   *
+   * @param abilities The ability to add to the pending list
+   */
   public void addPendingAbilityUnlock(UnlockedAbilities abilities){
 	this.pendingUnlockAbilities.add(abilities);
   }
 
+  /**
+   *
+   * @param abilities The ability to remove from the pending list
+   */
   public void removePendingAbilityUnlock(UnlockedAbilities abilities){
     this.pendingUnlockAbilities.remove(abilities);
   }
 
+  /**
+   *
+   * @return true if the player has a pending ability and false if not
+   */
   public boolean hasPendingAbility(){
 	return !this.pendingUnlockAbilities.isEmpty();
   }
 
+  /**
+   *
+   * @return true if player is online false if not
+   */
   public boolean isOnline(){
 	return Bukkit.getOfflinePlayer(uuid).isOnline();
   }
 
+  /**
+   *
+   * @return Player instance of the mcmmo player. We dont safe check if they are online here
+   */
   public Player getPlayer(){
 	return (Player) Bukkit.getOfflinePlayer(uuid);
   }
 
+  /**
+   *
+   * @param ability Ability to add to the loadout
+   */
   public void addAbilityToLoadout(UnlockedAbilities ability){
 	abilityLoadout.add(ability);
 	saveData();
   }
 
+  /**
+   *
+   * @param ability Ability to check for
+   * @return true if the player has the ability in their loadout, false if not
+   */
   public boolean doesPlayerHaveAbilityInLoadout(UnlockedAbilities ability){
 	return abilityLoadout.stream().filter(ability1 -> ability1.getName().equalsIgnoreCase(ability.getName())).findFirst().orElse(null) != null;
   }
 
+  /**
+   *
+   * @param skill The skill to check if they have an active ability for
+   * @return true if the player has an active ability, false if not
+   */
   public boolean doesPlayerHaveActiveAbilityFromSkill(Skills skill){
 	return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill.getName()))
 		.filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
   }
 
+  /**
+   *
+   * @param skill Skill to get the ability for
+   * @return The UnlockedAbilities instance of the active ability belonging to the provided skill a player has, or null if they dont have any
+   */
   public UnlockedAbilities getActiveAbilityForSkill(Skills skill){
 	return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill.getName()))
 		.filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
