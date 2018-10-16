@@ -75,6 +75,20 @@ public class Methods {
 
   /**
    *
+   * @param s String to test
+   * @return true if the string is a long or false if not
+   */
+  public static boolean isLong(String s) {
+	try {
+	  Long.parseLong(s);
+	} catch (NumberFormatException nfe) {
+	  return false;
+	}
+	return true;
+  }
+
+  /**
+   *
    * @param msg String to colour
    * @return The coloured string
    */

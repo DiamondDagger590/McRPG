@@ -12,8 +12,10 @@ Messages:
       OnlyPlayers: '&cOnly players can run this command'
       HelpPrompt: '&eUse /mchelp or /mchelp <command> for proper usage'
       NotAnInt: '&cThe argument you entered is not an integer.'
+      NotALong: '&cThe argument you entered is not a long'
       NotASkill: '&cThe argument you entered is not a valid skill.'
       NotAnAbility: '&cThe argument you entered is not a valid ability'
+      NotActiveAbility: '&cThe ability you entered is not an active ability'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McDisplay:
       #%String% is the failed input
@@ -37,6 +39,13 @@ Messages:
         Ability: '&aYou removed &5%Ability% &afrom %Player%s loadout'
       Removed:
         Ability: '&5%Ability% &cwas removed from your loadout.'
+      Cooldown:
+        Set: '&aYou set %Player%s &5%Ability% &ato have a &e%Cooldown% &asecond cooldown'
+        WasSet: '&cYour &5%Ability% &cnow has a &e%Cooldown% &csecond cooldown'
+        Remove: '&aYou removed %Player%s cooldown for &5%Ability%'
+        Removed: '&aYour cooldown for &5%Ability% &awas removed'
+        Add: '&aYou added &e%Cooldown% &aseconds to %Player%s cooldown for &5%Ability%'
+        Added: '&cYour cooldown for &5%Ability% %chas &e%Cooldown% &cseconds added to it'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'

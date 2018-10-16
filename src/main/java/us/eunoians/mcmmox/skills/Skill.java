@@ -159,4 +159,12 @@ public abstract class Skill {
       currentExp = 0;
 	}
   }
+
+  public void resetSkill(){
+	for(BaseAbility baseAbility : this.getAbilities()){
+	  baseAbility.setToggled(true);
+	  baseAbility.setCurrentTier(0);
+	  baseAbility.setUnlocked(false);
+	}
+  }
 }
