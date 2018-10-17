@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 An enum that stores a type of every skill
  */
 public enum Skills {
-  SWORDS("Swords", DefaultAbilities.BLEED);
+  SWORDS("Swords", DefaultAbilities.BLEED),
+  MINING("Mining", DefaultAbilities.DOUBLE_DROP);
 
   @Getter
   private String name;

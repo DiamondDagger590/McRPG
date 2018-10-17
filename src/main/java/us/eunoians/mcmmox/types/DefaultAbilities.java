@@ -13,8 +13,8 @@ import java.util.Arrays;
  * All abilities that come default with a skill should be stored in this enum
  */
 public enum DefaultAbilities implements GenericAbility {
-  BLEED("Bleed", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG) {
-  };
+  BLEED("Bleed", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
+  DOUBLE_DROP("Double Drop", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG);
 
   @Getter
   private String name;

@@ -5,12 +5,14 @@ import com.cyr1en.mcutils.logger.Logger;
 import com.cyr1en.mcutils.utils.reflection.Initializable;
 import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
 import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
+import com.google.common.base.Charsets;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcmmox.api.displays.DisplayManager;
 import us.eunoians.mcmmox.api.util.FileManager;
+import us.eunoians.mcmmox.api.util.HiddenConfig;
 import us.eunoians.mcmmox.commands.McDisplay;
 import us.eunoians.mcmmox.commands.McMMOStub;
 import us.eunoians.mcmmox.configuration.MConfigManager;
@@ -23,9 +25,13 @@ import us.eunoians.mcmmox.events.mcmmo.McMMOPlayerLevelChange;
 import us.eunoians.mcmmox.events.vanilla.*;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
 import us.eunoians.mcmmox.players.PlayerManager;
+import us.eunoians.mcmmox.util.blockmeta.chunkmeta.ChunkManager;
+import us.eunoians.mcmmox.util.blockmeta.chunkmeta.ChunkManagerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -46,6 +52,9 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private FileManager fileManager;
   @Getter
   private DisplayManager displayManager;
+  @Getter
+  private static ChunkManager placeStore;
+
 
   @Override
   public void onEnable() {
@@ -104,10 +113,12 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
-    File folder = new File(getDataFolder(), File.separator + "PlayerData");
+	placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
+	File folder = new File(getDataFolder(), File.separator + "PlayerData");
     if(!folder.exists()){folder.mkdir();}
     displayManager = DisplayManager.getInstance();
-    PlayerManager.startSave(this);
+	HiddenConfig.getInstance();
+	PlayerManager.startSave(this);
   }
 
   @Initialize(priority = 3)
@@ -130,6 +141,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new McMMOBleed(), this);
     getServer().getPluginManager().registerEvents(new CheckReadyEvent(), this);
     getServer().getPluginManager().registerEvents(new ShiftToggle(), this);
+    getServer().getPluginManager().registerEvents(new BlockListener(this), this);
+    getServer().getPluginManager().registerEvents(new WorldListener(this), this);
   }
 
   public static Mcmmox getInstance() {
@@ -161,5 +174,10 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 
   public FileConfiguration getLangFile(){
     return FileManager.Files.fromString(getConfig().getString("Configuration.LangFile")).getFile();
+  }
+
+  public InputStreamReader getResourceAsReader(String fileName) {
+	InputStream in = getResource(fileName);
+	return in == null ? null : new InputStreamReader(in, Charsets.UTF_8);
   }
 }

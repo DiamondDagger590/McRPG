@@ -297,82 +297,81 @@ public class FileManager {
   }
 
   public enum Files {
+	CONFIG("config.yml", "config.yml"),
+	CUSTOM("custom.yml", "localization/custom.yml"),
+	ENGLISH_FILE("en.yml", "localization/en.yml"),
+	MAIN_GUI("maingui.yml", "guis/maingui.yml"),
+	MINING_CONFIG("mining.yml", "skills/mining.yml"),
+	SKILLS_GUI("skillguis.yml", "guis/skillsgui.yml"),
+	SWORDS_CONFIG("swords.yml", "skills/swords.yml");
 
-    //ENUM_NAME("FileName.yml", "FilePath.yml"),
-    MAIN_GUI("maingui.yml", "guis/maingui.yml"),
-    SKILLS_GUI("skillguis.yml", "guis/skillsgui.yml"),
-    SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
-    ENGLISH_FILE("en.yml", "localization/en.yml"),
-    CUSTOM("custom.yml", "localization/custom.yml"),
-    CONFIG("config.yml", "config.yml");
+	private String fileName;
+	private String fileLocation;
 
-    private String fileName;
-    private String fileLocation;
+	/**
+	 * The files that the server will try and load.
+	 *
+	 * @param fileName     The file name that will be in the plugin's folder.
+	 * @param fileLocation The location the file is in while in the Jar.
+	 */
+	private Files(String fileName, String fileLocation){
+	  this.fileName = fileName;
+	  this.fileLocation = fileLocation;
+	}
 
-    /**
-     * The files that the server will try and load.
-     *
-     * @param fileName     The file name that will be in the plugin's folder.
-     * @param fileLocation The location the file is in while in the Jar.
-     */
-    private Files(String fileName, String fileLocation) {
-      this.fileName = fileName;
-      this.fileLocation = fileLocation;
-    }
+	/**
+	 * Get the name of the file.
+	 *
+	 * @return The name of the file.
+	 */
+	public String getFileName(){
+	  return fileName;
+	}
 
-    /**
-     * Get the name of the file.
-     *
-     * @return The name of the file.
-     */
-    public String getFileName() {
-      return fileName;
-    }
+	/**
+	 * The location the jar it is at.
+	 *
+	 * @return The location in the jar the file is in.
+	 */
+	public String getFileLocation(){
+	  return fileLocation;
+	}
 
-    /**
-     * The location the jar it is at.
-     *
-     * @return The location in the jar the file is in.
-     */
-    public String getFileLocation() {
-      return fileLocation;
-    }
+	/**
+	 * Gets the file from the system.
+	 *
+	 * @return The file from the system.
+	 */
+	public FileConfiguration getFile(){
+	  return getInstance().getFile(this);
+	}
 
-    /**
-     * Gets the file from the system.
-     *
-     * @return The file from the system.
-     */
-    public FileConfiguration getFile() {
-      return getInstance().getFile(this);
-    }
+	public static Files fromString(String file){
+	  for(Files f : Files.values()){
+		if(f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)){
+		  return f;
+		}
+	  }
+	  return null;
+	}
 
-    public static Files fromString(String file) {
-      for (Files f : Files.values()) {
-        if (f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)) {
-          return f;
-        }
-      }
-      return null;
-    }
+	/**
+	 * Saves the file from the loaded state to the file system.
+	 */
+	public void saveFile(){
+	  getInstance().saveFile(this);
+	}
 
-    /**
-     * Saves the file from the loaded state to the file system.
-     */
-    public void saveFile() {
-      getInstance().saveFile(this);
-    }
+	/**
+	 * Overrides the loaded state file and loads the file systems file.
+	 */
+	public void reloadFile(){
+	  getInstance().reloadFile(this);
+	}
 
-    /**
-     * Overrides the loaded state file and loads the file systems file.
-     */
-    public void reloadFile() {
-      getInstance().reloadFile(this);
-    }
-
-    public static Files getSkillFile(Skills skill){
-      return fromString(skill.getName());
-    }
+	public static Files getSkillFile(Skills skill){
+	  return fromString(skill.getName());
+	}
 
   }
 

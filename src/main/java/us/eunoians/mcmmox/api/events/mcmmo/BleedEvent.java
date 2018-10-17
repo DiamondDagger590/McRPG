@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.swords.Bleed;
 import us.eunoians.mcmmox.abilities.swords.BleedPlus;
@@ -40,7 +42,7 @@ public class BleedEvent extends AbilityActivateEvent {
 
 
 
-  public BleedEvent(McMMOPlayer user, Entity target, Bleed bleed){
+  public BleedEvent(McMMOPlayer user, LivingEntity target, Bleed bleed){
 	super(bleed, user);
 	//Get the swords config
 	FileConfiguration config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
@@ -86,7 +88,7 @@ public class BleedEvent extends AbilityActivateEvent {
 	  }
 	}
 	//If vampire is unlocked and enabled
-	if(UnlockedAbilities.VAMPIRE.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.VAMPIRE)){
+	if(UnlockedAbilities.VAMPIRE.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.VAMPIRE) && target instanceof Player){
 	  Random ran = new Random();
 	  int range = ran.nextInt(10000);
 	  int chance = (int) config.getDouble("VampireConfig.Tier" + Methods.convertToNumeral(user.getBaseAbility(UnlockedAbilities.VAMPIRE).getCurrentTier())

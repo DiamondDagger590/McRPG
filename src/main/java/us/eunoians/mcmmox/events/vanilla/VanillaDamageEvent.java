@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -119,7 +120,7 @@ public class VanillaDamageEvent implements Listener {
 				  Random rand = new Random();
 				  int val = rand.nextInt(100000);
 				  if(chance >= val){
-					BleedEvent event = new BleedEvent(mp, e.getEntity(), bleed);
+					BleedEvent event = new BleedEvent(mp, (Player) e.getEntity(), bleed);
 					Bukkit.getPluginManager().callEvent(event);
 				  }
 				}
@@ -130,8 +131,8 @@ public class VanillaDamageEvent implements Listener {
 				Random rand = new Random();
 				int chance = (int) parser.getValue() * 1000;
 				int val = rand.nextInt(100000);
-				if(chance >= val){
-				  BleedEvent event = new BleedEvent(mp, e.getEntity(), bleed);
+				if(chance >= val && e.getEntity() instanceof LivingEntity){
+				  BleedEvent event = new BleedEvent(mp, (LivingEntity) e.getEntity(), bleed);
 				  Bukkit.getPluginManager().callEvent(event);
 				}
 			  }
