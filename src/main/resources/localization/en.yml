@@ -16,6 +16,7 @@ Messages:
       NotASkill: '&cThe argument you entered is not a valid skill.'
       NotAnAbility: '&cThe argument you entered is not a valid ability'
       NotActiveAbility: '&cThe ability you entered is not an active ability'
+      NotEnabledOrUnlocked: '&cThat ability is either disabled or you have yet to unlock it'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McDisplay:
       #%String% is the failed input
@@ -58,6 +59,10 @@ Messages:
       Deactivated: '&cSerrated Strikes has deactivated'
     TaintedBlade:
       Activated: '&aTainted Blade has activated'
+    RemoteTransfer:
+      FailedLink: '&cYou are unable to link to that chest'
+      NotAChest: '&cYou must be looking at a chest for this command to work'
+      Linked: '&aYou have successfully linked a chest'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

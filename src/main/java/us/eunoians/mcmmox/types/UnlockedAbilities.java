@@ -3,8 +3,8 @@ package us.eunoians.mcmmox.types;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
-import us.eunoians.mcmmox.configuration.enums.Config;
 
 import java.io.File;
 import java.util.Arrays;
@@ -13,12 +13,18 @@ import java.util.Arrays;
  * An enum of every ability that can be unlocked
  */
 public enum UnlockedAbilities implements GenericAbility {
-  BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, Config.SWORDS_CONFIG),
-  DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, Config.SWORDS_CONFIG),
-  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, Config.SWORDS_CONFIG),
-  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, Config.SWORDS_CONFIG),
-  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, Config.SWORDS_CONFIG),
-  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Config.SWORDS_CONFIG);
+  BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
+  DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
+  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
+  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
+  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
+  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
+  RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
+  BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
+  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG);
 
   @Getter
   private String name;
@@ -26,7 +32,7 @@ public enum UnlockedAbilities implements GenericAbility {
   private String skill;
   @Getter
   private AbilityType abilityType;
-  private Config configType;
+  private FileManager.Files file;
 
   /**
    * @param name
@@ -34,11 +40,11 @@ public enum UnlockedAbilities implements GenericAbility {
    * @param type
    * @param config
    */
-  UnlockedAbilities(String name, String skill, AbilityType type, Config config){
+  UnlockedAbilities(String name, String skill, AbilityType type, FileManager.Files config){
 	this.name = name;
 	this.skill = skill;
 	this.abilityType = type;
-	this.configType = config;
+	this.file = config;
   }
 //TODO FIX FILES HERE BOI
 

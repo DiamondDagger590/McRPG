@@ -7,16 +7,13 @@ import us.eunoians.mcmmox.types.Skills;
 
 import java.util.HashMap;
 
-/*
-A class representation of the swords skill
- */
-public class Swords extends Skill {
+public class Mining extends Skill {
 
   /**
    * @param currentLevel The current level of the players swords skill
    * @param currentExp   The current exp amount of the players swords skill
    */
-  public Swords(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map, McMMOPlayer player) {
-    super(Skills.SWORDS, map, currentLevel, currentExp, player);
+  public Mining(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map, McMMOPlayer player) {
+	super(Skills.MINING, map, currentLevel, currentExp, player);
   }
 }

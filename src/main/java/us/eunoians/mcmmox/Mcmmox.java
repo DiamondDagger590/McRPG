@@ -14,6 +14,7 @@ import us.eunoians.mcmmox.api.displays.DisplayManager;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.HiddenConfig;
 import us.eunoians.mcmmox.commands.McDisplay;
+import us.eunoians.mcmmox.commands.McLink;
 import us.eunoians.mcmmox.commands.McMMOStub;
 import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.GeneralConfig;
@@ -143,6 +144,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new ShiftToggle(), this);
     getServer().getPluginManager().registerEvents(new BlockListener(this), this);
     getServer().getPluginManager().registerEvents(new WorldListener(this), this);
+    getServer().getPluginManager().registerEvents(new McLink(), this);
+    getServer().getPluginManager().registerEvents(new BreakEvent(), this);
   }
 
   public static Mcmmox getInstance() {

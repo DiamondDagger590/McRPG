@@ -3,12 +3,14 @@ package us.eunoians.mcmmox.players;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.mining.*;
 import us.eunoians.mcmmox.abilities.swords.*;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Skill;
@@ -71,6 +73,14 @@ public class McMMOPlayer {
   @Setter
   private PlayerReadyBit readyingAbilityBit = null;
 
+  @Getter
+  @Setter
+  private boolean isLinkedToRemoteTransfer = false;
+
+  @Getter
+  @Setter
+  private Location remoteTransferLocation = null;
+
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -108,6 +118,7 @@ public class McMMOPlayer {
 	  playerData.set("AbilityPoints", 0);
 	  playerData.set("PendingAbilitiesUnlocked.placeholder", null);
 	  playerData.set("AbilityLoadout.placeholder", null);
+	  playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
 	  try{
 		playerData.save(playerFile);
 	  }catch(IOException e){
@@ -182,6 +193,58 @@ public class McMMOPlayer {
 		Swords swords = new Swords(playerData.getInt("Swords.Level"),
 			playerData.getInt("Swords.CurrentExp"), abilityMap, this);
 		skills.add(swords);
+	  }
+	  else if(skill.equals(Skills.MINING)){
+	    //Initialize DoubleDrops
+		DoubleDrop doubleDrop = new DoubleDrop();
+		doubleDrop.setToggled(playerData.getBoolean("Mining.DoubleDrop.IsToggled"));
+
+		//Initialize RicherOres
+		RicherOres richerOres = new RicherOres();
+		richerOres.setToggled(playerData.getBoolean("Mining.RicherOres.IsToggled"));
+		richerOres.setCurrentTier(playerData.getInt("Mining.RicherOres.Tier"));
+		if(playerData.getInt("Mining.RicherOres.Tier") != 0){
+		  richerOres.setUnlocked(true);
+		}
+
+		//Initialize ItsATriple
+		ItsATriple itsATriple = new ItsATriple();
+		itsATriple.setToggled(playerData.getBoolean("Mining.ItsATriple.IsToggled"));
+		itsATriple.setCurrentTier(playerData.getInt("Mining.ItsATriple.Tier"));
+		if(playerData.getInt("Mining.ItsATriple.Tier") != 0){
+		  itsATriple.setUnlocked(true);
+		}
+
+		//Initialize RemoteTransfer
+		RemoteTransfer remoteTransfer = new RemoteTransfer();
+		remoteTransfer.setToggled(playerData.getBoolean("Mining.RemoteTransfer.IsToggled"));
+		remoteTransfer.setCurrentTier(playerData.getInt("Mining.RemoteTransfer.Tier"));
+		if(playerData.getInt("Mining.RemoteTransfer.Tier") != 0){
+		  remoteTransfer.setUnlocked(true);
+		}
+
+		//Initialize SuperBreaker
+		SuperBreaker superBreaker = new SuperBreaker();
+		superBreaker.setToggled(playerData.getBoolean("Mining.SuperBreaker.IsToggled"));
+		superBreaker.setCurrentTier(playerData.getInt("Mining.SuperBreaker.Tier"));
+		if(playerData.getInt("Mining.SuperBreaker.Tier") != 0){
+		  superBreaker.setUnlocked(true);
+		}
+
+		//Initialize BlastMining
+		BlastMining blastMining = new BlastMining();
+		blastMining.setToggled(playerData.getBoolean("Mining.BlastMining.IsToggled"));
+		blastMining.setCurrentTier(playerData.getInt("Mining.BlastMining.Tier"));
+		if(playerData.getInt("Mining.BlastMining.Tier") != 0){
+		  blastMining.setUnlocked(true);
+		}
+
+		abilityMap.put(DefaultAbilities.DOUBLE_DROP, doubleDrop);
+		abilityMap.put(UnlockedAbilities.RICHER_ORES, richerOres);
+		abilityMap.put(UnlockedAbilities.ITS_A_TRIPLE, itsATriple);
+		abilityMap.put(UnlockedAbilities.REMOTE_TRANSFER, remoteTransfer);
+		abilityMap.put(UnlockedAbilities.SUPER_BREAKER, superBreaker);
+
 	  }
 	});
 	for(String s : playerData.getStringList("AbilityLoadout")){
