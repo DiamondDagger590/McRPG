@@ -113,6 +113,6 @@ public class AcceptAbilityGUI extends GUI{
 
   public enum AcceptType{
 	ACCEPT_UPGRADE,
-	ACCEPT_ABILITY;
+	ACCEPT_ABILITY
   }
 }

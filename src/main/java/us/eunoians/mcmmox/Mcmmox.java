@@ -13,16 +13,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcmmox.api.displays.DisplayManager;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.HiddenConfig;
-import us.eunoians.mcmmox.commands.McDisplay;
-import us.eunoians.mcmmox.commands.McLink;
-import us.eunoians.mcmmox.commands.McMMOStub;
+import us.eunoians.mcmmox.api.util.RemoteTransferTracker;
+import us.eunoians.mcmmox.commands.*;
 import us.eunoians.mcmmox.configuration.MConfigManager;
 import us.eunoians.mcmmox.configuration.files.GeneralConfig;
 import us.eunoians.mcmmox.configuration.files.SwordsConfig;
-import us.eunoians.mcmmox.events.mcmmo.AbilityActivate;
-import us.eunoians.mcmmox.events.mcmmo.McMMOBleed;
-import us.eunoians.mcmmox.events.mcmmo.McMMOExpGain;
-import us.eunoians.mcmmox.events.mcmmo.McMMOPlayerLevelChange;
+import us.eunoians.mcmmox.events.mcmmo.*;
 import us.eunoians.mcmmox.events.vanilla.*;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
 import us.eunoians.mcmmox.players.PlayerManager;
@@ -55,6 +51,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private DisplayManager displayManager;
   @Getter
   private static ChunkManager placeStore;
+  @Getter
+  private RemoteTransferTracker remoteTransferTracker;
 
 
   @Override
@@ -114,6 +112,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
+    remoteTransferTracker = new RemoteTransferTracker();
 	placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
 	File folder = new File(getDataFolder(), File.separator + "PlayerData");
     if(!folder.exists()){folder.mkdir();}
@@ -126,6 +125,9 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private void initCmds() {
     getCommand("mcmmox").setExecutor(new McMMOStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
+    getCommand("mcadmin").setExecutor(new McAdmin());
+    getCommand("mclink").setExecutor(new McLink());
+    getCommand("mcunlink").setExecutor(new McUnlink());
   }
 
   @Initialize(priority = 4)
@@ -146,6 +148,8 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new WorldListener(this), this);
     getServer().getPluginManager().registerEvents(new McLink(), this);
     getServer().getPluginManager().registerEvents(new BreakEvent(), this);
+    getServer().getPluginManager().registerEvents(new AbilityUpgrade(), this);
+    getServer().getPluginManager().registerEvents(new LoadoutAdd(), this);
   }
 
   public static Mcmmox getInstance() {

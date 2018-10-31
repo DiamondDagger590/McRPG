@@ -63,7 +63,8 @@ public class McLink implements CommandExecutor, Listener {
 	  ChestLinkEvent chestLinkEvent = new ChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);
 	  Bukkit.getPluginManager().callEvent(chestLinkEvent);
 	  mp.setLinkedToRemoteTransfer(true);
-	  mp.setRemoteTransferLocation(loc);
+	  ((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(loc);
+	  Mcmmox.getInstance().getRemoteTransferTracker().addLocation(p.getUniqueId(), loc);
 	  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Linked")));
 	}
 	event.setCancelled(true);

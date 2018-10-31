@@ -31,11 +31,13 @@ Messages:
         Ability: '&aYou gave %Player% &5%Ability%'
         LoadoutFull: '&cThe players ability loadout is full'
         DoesNotHaveAbility: '&cThe player does not have %Ability%'
+        Replaced: '&aYou replaced %Player%s %Old_Ability% with %New_Ability%'
       Receive:
         AbilityPoints: '&aYou were given &e%Amount% &aability points'
         Exp: '&aYou were given &e%Amount% &aexp in &5%Skill%'
         Level: '&aYou were given &e%Amount% &alevel(s) in &5%Skill%'
         Ability: '&aYou were given &5%Ability%'
+        Replaced: '&aYour %Old_Ability% was replaced with %New_Ability%'
       Remove:
         Ability: '&aYou removed &5%Ability% &afrom %Player%s loadout'
       Removed:
@@ -63,6 +65,10 @@ Messages:
       FailedLink: '&cYou are unable to link to that chest'
       NotAChest: '&cYou must be looking at a chest for this command to work'
       Linked: '&aYou have successfully linked a chest'
+      Unlinked: '&aYou have unlinked your chest'
+      IsLinked: '&cThat chest is currently linked to %Player%'
+      AdminUnlinked: '&cSomeone has unlinked your chest'
+      ChestMissing: '&cFor some reason your chest is missing... Delinking...'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

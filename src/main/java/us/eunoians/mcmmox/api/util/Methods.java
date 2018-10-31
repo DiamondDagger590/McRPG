@@ -152,6 +152,12 @@ public class Methods {
    */
   public static Inventory fillInventory(Inventory inv, ItemStack filler, ArrayList<GUIItem> items) {
     for (GUIItem item : items) {
+      if(item.getItemStack() == null){
+        continue;
+	  }
+	  if(inv == null){
+	    Bukkit.broadcastMessage("inv");
+	  }
       inv.setItem(item.getSlot(), item.getItemStack());
     }
     for (int i = 0; i < inv.getSize(); i++) {

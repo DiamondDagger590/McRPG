@@ -1,12 +1,12 @@
 package us.eunoians.mcmmox.events.vanilla;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
 import us.eunoians.mcmmox.util.mcmmo.BlockUtils;
@@ -118,7 +119,6 @@ public class BlockListener implements Listener {
 	}
 
 	McMMOPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
-	Bukkit.broadcastMessage(Boolean.toString(Mcmmox.getPlaceStore().isTrue(blockState)));
 
         /*if (blockState.getType() == Repair.anvilMaterial && SkillType.REPAIR.getPermissions(player)) {
             mcMMOPlayer.getRepairManager().placedAnvilCheck();
@@ -144,7 +144,6 @@ public class BlockListener implements Listener {
         /*if (event instanceof FakeBlockBreakEvent) {
             return;
         }*/
-
 	BlockState blockState = event.getBlock().getState();
 	Location location = blockState.getLocation();
 /*
@@ -153,17 +152,15 @@ public class BlockListener implements Listener {
             Alchemy.brewingStandMap.get(location).cancelBrew();
         }
 */
-	Player player = event.getPlayer();
-
-	if(!PlayerManager.isPlayerStored(player.getUniqueId()) || player.getGameMode() == GameMode.CREATIVE){
+	Block block = event.getBlock();
+	Player p = event.getPlayer();
+	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
+	if(!PlayerManager.isPlayerStored(p.getUniqueId()) || p.getGameMode() == GameMode.CREATIVE){
 	  return;
 	}
-
-	McMMOPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
-	ItemStack heldItem = player.getInventory().getItemInMainHand();
 	/* Remove metadata from placed watched blocks */
-	Mcmmox.getPlaceStore().setFalse(blockState);
-	Bukkit.broadcastMessage(Boolean.toString(Mcmmox.getPlaceStore().isTrue(blockState)));
+	  Mcmmox.getPlaceStore().setFalse(blockState);
   }
 
   /**

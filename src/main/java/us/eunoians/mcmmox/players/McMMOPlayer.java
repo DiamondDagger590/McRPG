@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,6 +14,7 @@ import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.mining.*;
 import us.eunoians.mcmmox.abilities.swords.*;
 import us.eunoians.mcmmox.api.util.Methods;
+import us.eunoians.mcmmox.skills.Mining;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
 import us.eunoians.mcmmox.types.*;
@@ -77,10 +79,6 @@ public class McMMOPlayer {
   @Setter
   private boolean isLinkedToRemoteTransfer = false;
 
-  @Getter
-  @Setter
-  private Location remoteTransferLocation = null;
-
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -116,6 +114,7 @@ public class McMMOPlayer {
 	  playerData.set("DisplayType", displayType.getName());
 	  playerData.set("Cooldowns.placeholder", null);
 	  playerData.set("AbilityPoints", 0);
+	  playerData.set("RemoteTransferBlocks", null);
 	  playerData.set("PendingAbilitiesUnlocked.placeholder", null);
 	  playerData.set("AbilityLoadout.placeholder", null);
 	  playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
@@ -137,7 +136,7 @@ public class McMMOPlayer {
 	Arrays.stream(Skills.values()).forEach(skill -> {
 	  HashMap<GenericAbility, BaseAbility> abilityMap = new HashMap<>();
 	  if(skill.equals(Skills.SWORDS)){
-	    //Initialize bleed
+		//Initialize bleed
 		Bleed bleed = new Bleed();
 		bleed.setToggled(playerData.getBoolean("Swords.Bleed.IsToggled"));
 		//Initialize Deeper Wound
@@ -195,7 +194,7 @@ public class McMMOPlayer {
 		skills.add(swords);
 	  }
 	  else if(skill.equals(Skills.MINING)){
-	    //Initialize DoubleDrops
+		//Initialize DoubleDrops
 		DoubleDrop doubleDrop = new DoubleDrop();
 		doubleDrop.setToggled(playerData.getBoolean("Mining.DoubleDrop.IsToggled"));
 
@@ -222,6 +221,20 @@ public class McMMOPlayer {
 		if(playerData.getInt("Mining.RemoteTransfer.Tier") != 0){
 		  remoteTransfer.setUnlocked(true);
 		}
+		if(playerData.get("Mining.RemoteTransfer.LinkedLocation").equals(0)){
+		  remoteTransfer.setLinkedChestLocation(null);
+		}
+		else{
+		  remoteTransfer.setLinkedChestLocation((Location) playerData.get("Mining.RemoteTransfer.LinkedLocation"));
+		  setLinkedToRemoteTransfer(true);
+		}
+
+		if(playerData.contains("RemoteTransferBlocks")){
+		  for(String s : playerData.getConfigurationSection("RemoteTransferBlocks").getKeys(false)){
+			remoteTransfer.getItemsToSync().put(Material.getMaterial(s), playerData.getBoolean("RemoteTransferBlocks." + s));
+		  }
+		}
+
 
 		//Initialize SuperBreaker
 		SuperBreaker superBreaker = new SuperBreaker();
@@ -244,7 +257,11 @@ public class McMMOPlayer {
 		abilityMap.put(UnlockedAbilities.ITS_A_TRIPLE, itsATriple);
 		abilityMap.put(UnlockedAbilities.REMOTE_TRANSFER, remoteTransfer);
 		abilityMap.put(UnlockedAbilities.SUPER_BREAKER, superBreaker);
+		abilityMap.put(UnlockedAbilities.BLAST_MINING, blastMining);
 
+		Mining mining = new Mining(playerData.getInt("Mining.Level"),
+			playerData.getInt("Mining.CurrentExp"), abilityMap, this);
+		skills.add(mining);
 	  }
 	});
 	for(String s : playerData.getStringList("AbilityLoadout")){
@@ -342,42 +359,40 @@ public class McMMOPlayer {
    * @return The time to end in millis or -1 if it doesnt exist
    */
   public long getCooldown(Skills skill){
-    for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()){
-      if(ab.getSkill().equalsIgnoreCase(skill.getName())){
-        return TimeUnit.MILLISECONDS.toSeconds(abilitiesOnCooldown.get(ab) - Calendar.getInstance().getTimeInMillis());
+	for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()){
+	  if(ab.getSkill().equalsIgnoreCase(skill.getName())){
+		return TimeUnit.MILLISECONDS.toSeconds(abilitiesOnCooldown.get(ab) - Calendar.getInstance().getTimeInMillis());
 	  }
 	}
 	return -1;
   }
 
   /**
-   *
-   * @param ability Ability to add on cooldown
+   * @param ability   Ability to add on cooldown
    * @param timeToEnd The end time in milis
    */
   public void addAbilityOnCooldown(UnlockedAbilities ability, long timeToEnd){
-    abilitiesOnCooldown.put(ability, timeToEnd);
+	abilitiesOnCooldown.put(ability, timeToEnd);
   }
 
   /**
-   *
    * @param ability Ability to remove from array
    */
   public void removeAbilityOnCooldown(UnlockedAbilities ability){
-    abilitiesOnCooldown.remove(ability);
+	abilitiesOnCooldown.remove(ability);
   }
 
   /**
    * Update all the cooldowns and verify if they are valid
    */
   public void updateCooldowns(){
-    ArrayList<UnlockedAbilities> toRemove = new ArrayList<>();
-    for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()){
-      long timeToEnd = abilitiesOnCooldown.get(ability);
-      if(Calendar.getInstance().getTimeInMillis() >= timeToEnd){
-        this.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+	ArrayList<UnlockedAbilities> toRemove = new ArrayList<>();
+	for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()){
+	  long timeToEnd = abilitiesOnCooldown.get(ability);
+	  if(Calendar.getInstance().getTimeInMillis() >= timeToEnd){
+		this.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 			Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
-        toRemove.add(ability);
+		toRemove.add(ability);
 	  }
 	}
 	if(!toRemove.isEmpty()){
@@ -398,22 +413,30 @@ public class McMMOPlayer {
    */
   public void saveData(){
 	//for(Skills type : Skills.values()){
-	Skills type = Skills.SWORDS;
-	Skill skill = getSkill(type);
-	playerData.set(type.getName() + ".Level", skill.getCurrentLevel());
-	playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());
-	skill.getAbilityKeys().forEach(ability -> {
-	  if(ability instanceof DefaultAbilities){
-		playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
-	  }
-	  if(ability instanceof UnlockedAbilities){
-		playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());
-		playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
-	  }
-	  if(abilitiesOnCooldown.containsKey(ability)){
-		playerData.set("Cooldowns." + ability.getName(), this.getCooldown(ability));
-	  }
-	});
+	for(Skills type : Skills.values()){
+	  Skill skill = getSkill(type);
+	  playerData.set(type.getName() + ".Level", skill.getCurrentLevel());
+	  playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());
+	  skill.getAbilityKeys().forEach(ability -> {
+		if(ability instanceof DefaultAbilities){
+		  playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
+		}
+		if(ability instanceof UnlockedAbilities){
+		  playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());
+		  playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
+		}
+		if(abilitiesOnCooldown.containsKey(ability)){
+		  playerData.set("Cooldowns." + ability.getName(), this.getCooldown(ability));
+		}
+	  });
+	}
+	RemoteTransfer remoteTransfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
+	if(remoteTransfer.getLinkedChestLocation() != null){
+	  playerData.set("Mining.RemoteTransfer.LinkedLocation", remoteTransfer.getLinkedChestLocation());
+	}
+	else{
+	  playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
+	}
 	if(abilitiesOnCooldown.isEmpty()){
 	  playerData.set("Cooldowns.placeholder", null);
 	}
@@ -421,6 +444,11 @@ public class McMMOPlayer {
 	playerData.set("AbilityPoints", abilityPoints);
 	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
 	playerData.set("AbilityLoadout", abilityLoadout.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
+
+	RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
+	for(Material mat : transfer.getItemsToSync().keySet()){
+	  playerData.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
+	}
 	try{
 	  playerData.save(playerFile);
 	}catch(IOException e){
@@ -429,7 +457,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @param abilities The ability to add to the pending list
    */
   public void addPendingAbilityUnlock(UnlockedAbilities abilities){
@@ -437,15 +464,13 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @param abilities The ability to remove from the pending list
    */
   public void removePendingAbilityUnlock(UnlockedAbilities abilities){
-    this.pendingUnlockAbilities.remove(abilities);
+	this.pendingUnlockAbilities.remove(abilities);
   }
 
   /**
-   *
    * @return true if the player has a pending ability and false if not
    */
   public boolean hasPendingAbility(){
@@ -453,7 +478,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @return true if player is online false if not
    */
   public boolean isOnline(){
@@ -461,7 +485,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @return Player instance of the mcmmo player. We dont safe check if they are online here
    */
   public Player getPlayer(){
@@ -469,7 +492,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @param ability Ability to add to the loadout
    */
   public void addAbilityToLoadout(UnlockedAbilities ability){
@@ -478,7 +500,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @param ability Ability to check for
    * @return true if the player has the ability in their loadout, false if not
    */
@@ -487,7 +508,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @param skill The skill to check if they have an active ability for
    * @return true if the player has an active ability, false if not
    */
@@ -497,7 +517,6 @@ public class McMMOPlayer {
   }
 
   /**
-   *
    * @param skill Skill to get the ability for
    * @return The UnlockedAbilities instance of the active ability belonging to the provided skill a player has, or null if they dont have any
    */
@@ -507,10 +526,10 @@ public class McMMOPlayer {
   }
 
   public void replaceAbility(UnlockedAbilities oldAbility, UnlockedAbilities newAbility){
-    for(int i = 0; i < abilityLoadout.size(); i++){
-      if(abilityLoadout.get(i).equals(oldAbility)){
-        abilityLoadout.set(i, newAbility);
-        return;
+	for(int i = 0; i < abilityLoadout.size(); i++){
+	  if(abilityLoadout.get(i).equals(oldAbility)){
+		abilityLoadout.set(i, newAbility);
+		return;
 	  }
 	}
   }

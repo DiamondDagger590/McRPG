@@ -11,3 +11,9 @@ commands:
   mcdisplay:
     description: Allows for command based editing of display types
     aliases: [mcmmodisplay, mdisplay, mcd]
+  mcadmin:
+    description: Allows for admin commands
+  mclink:
+    description: Links a chest to a players Remote Transfer
+  mcunlink:
+    description: Unlinks a chest from a players Remote Transfer

@@ -74,7 +74,6 @@ public class WorldListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onChunkUnload(ChunkUnloadEvent event){
 	Chunk chunk = event.getChunk();
-
 	Mcmmox.getPlaceStore().chunkUnloaded(chunk.getX(), chunk.getZ(), event.getWorld());
   }
 }

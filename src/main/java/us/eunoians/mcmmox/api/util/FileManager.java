@@ -303,6 +303,7 @@ public class FileManager {
 	MAIN_GUI("maingui.yml", "guis/maingui.yml"),
 	MINING_CONFIG("mining.yml", "skills/mining.yml"),
 	SKILLS_GUI("skillguis.yml", "guis/skillsgui.yml"),
+	LOCATIONS("locations.yml", "data/locations.yml"),
 	SWORDS_CONFIG("swords.yml", "skills/swords.yml");
 
 	private String fileName;

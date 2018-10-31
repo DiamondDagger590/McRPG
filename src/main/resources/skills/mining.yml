@@ -1,0 +1,376 @@
+#Is mining enabled
+MiningEnabled: true
+#Exp equation for mining. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+#
+ExpEquation: '1000*(1.2^(power_level))'
+#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
+#Ex) Spider gives 30 exp. Deal 3 damage, get 90 exp with a wood sword
+ExpAwardedPerBlock:
+  OBSIDIAN: 50
+  STONE: 15
+  ANDESITE: 15
+  DIORITE: 15
+  GRANITE: 15
+  COAL_ORE: 23
+  DIAMOND_ORE: 75
+  EMERALD_ORE: 100
+  GOLD_ORE: 35
+  IRON_ORE: 25
+  REDSTONE_ORE: 20
+  LAPIS_ORE: 30
+#What abilities are enabled
+EnabledAbilities:
+  DoubleDrop: true
+  RicherOres: true
+  RemoteTransfer: true
+  ItsATriple: true
+  SuperBreaker: true
+  OreScanner: true
+  BlastMining: true
+#If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
+#they will be required to swap the ability instead of getting a chance at replacing it right away for free
+#Perms will be mcmmox.swords.{ability}
+UsePermsForAbilites:
+  DoubleDrop: false
+  RicherOres: false
+  RemoteTransfer: false
+  ItsATriple: false
+  SuperBreaker: false
+  OreScanner: false
+  BlastMining: false
+#At what swords level should these abilities be unlocked at
+UnlockLevelForAbility:
+  RicherOres: 50
+  RemoteTransfer: 250
+  ItsATriple: 400
+  SuperBreaker: 150
+  OreScanner: 450
+  BlastMining: 600
+#
+# DoubleDrop is the default ability that every player has. This ability will increase every time the players Mining level is increased
+#
+DoubleDropConfig:
+  #Equation for Double Drop chance. Default gives 33% at level 1000.
+  DoubleDropChanceEquation: (mining_level)*.05
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Double Drop'
+    Material: DIAMOND
+    Amount: 2
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&cYou have a &e%DoubleDrop_Chance%% &c+ &e%Chance_Boost%% &cchance'
+    - '&cof doubling drops from natural ores'
+    MenuLore:
+    - '&cThis ability has a chance of doubling ores from mining'
+#
+# Config for the ability Richer Ores
+# This passive ability increases the chance of Double Drop activating
+#
+RicherOresConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 250
+    TierIII: 450
+    TierIV: 525
+    TierV: 600
+  TierI:
+    #The chance boost from richer ores
+    ActivationBoost: 5.0
+  TierII:
+    ActivationBoost: 10.0
+  TierIII:
+    ActivationBoost: 20.0
+  TierIV:
+    ActivationBoost: 25.0
+  TierV:
+    ActivationBoost: 30.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Richer Ores'
+    Material: DIAMOND_ORE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&bYour Richer Ores gives %ActivationBoost%% bonus chance'
+    MenuLore:
+    - '&bThis ability increases the chance of Double Drop'
+#
+# Config for the ability Remote Transfer
+# This ability teleports mined items into a chest
+#
+RemoteTransferConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #When a player mines their lined chest, should it unlink or should it unlink and break
+  UnlinkAndBreakOnMine: false
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 600
+    TierIV: 725
+    TierV: 900
+  #Config for each Tier
+  TierI:
+    #The range of Remote Transfer per tier
+    Range: 50
+    #What categories the ability can transfer
+    Categories:
+    - 'Stone'
+    InvSize: 18
+  TierII:
+    Range: 75
+    Categories:
+    - 'Stone'
+    - 'TierII'
+    InvSize: 18
+  TierIII:
+    Range: 100
+    Categories:
+    - 'Stone'
+    - 'TierII'
+    - 'TierIII'
+    InvSize: 27
+  TierIV:
+    Range: 150
+    Categories:
+    - 'Stone'
+    - 'TierII'
+    - 'TierIII'
+    - 'TierIV'
+    InvSize: 36
+  TierV:
+    Range: 200
+    Categories:
+    - 'Stone'
+    - 'TierII'
+    - 'TierIII'
+    - 'TierIV'
+    InvSize: 45
+  #Define custom categories of items to be teleported using this ability. No cap to amount
+  Categories:
+    Stone:
+    - 'COBBLESTONE'
+    - 'STONE'
+    - 'ANDESITE'
+    - 'GRANITE'
+    - 'DIORITE'
+    - 'POLISHED_GRANITE'
+    - 'POLISHED_ANDESITE'
+    - 'POLISHED_DIORITE'
+    - 'MOSSY_COBBLESTONE'
+    - 'OBSIDIAN'
+    TierII:
+    - 'IRON_ORE'
+    - 'REDSTONE_ORE'
+    TierIII:
+    - 'GOLD_ORE'
+    - 'LAPIS_ORE'
+    TIERIV:
+    - 'EMERALD_ORE'
+    TIERV:
+    - 'DIAMOND_ORE'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Remote Transfer'
+    Material: CHEST_MINECART
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&bUse /mclink to link a chest'
+    - '&bCurrently linked to %Location%'
+    - '&bYour current range is %Range% blocks'
+    MenuLore:
+    - '&cThis ability transfers items mined to a linked chest'
+#
+# Config for the ability Its A Triple
+# This passive ability has a chance at tripling the drops from ores instead of doubling
+#
+ItsATripleConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 525
+    TierIII: 650
+    TierIV: 725
+    TierV: 830
+  #Config for each tier
+  TierI:
+    #Odds of activation per tier
+    ActivationChance: 3.0
+  TierII:
+    ActivationChance: 5.5
+  TierIII:
+    ActivationChance: 8.5
+  TierIV:
+    ActivationChance: 11.0
+  TierV:
+    ActivationChance: 15.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Its A Triple'
+    Material: GHAST_TEAR
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&bYou have a %ActivationChance%% chance'
+    - '&bof getting a triple drop instead of double.'
+    MenuLore:
+    - '&bThis ability turns double drops'
+    - '&cinto triple drops'
+#
+# Config for the ability Super Breaker
+# This active ability gives haste and double drop chance
+#
+SuperBreakerConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 400
+    TierIV: 525
+    TierV: 750
+  #Config for each tier
+  TierI:
+    #How much should the activation rate be boosted at each tier
+    ActivationBoost: 5.0
+    #Duration of the ability at each tier in seconds
+    Duration: 3
+    Cooldown: 180
+  TierII:
+    ActivationBoost: 7.5
+    Duration: 3
+    Cooldown: 180
+  TierIII:
+    ActivationBoost: 10.0
+    Duration: 5
+    Cooldown: 180
+  TierIV:
+    ActivationBoost: 15.0
+    Duration: 5
+    Cooldown: 180
+  TierV:
+    ActivationBoost: 20.0
+    Duration: 8
+    Cooldown: 180
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Serrated Strikes'
+    Material: GOLDEN_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&cThis ability increases the'
+    - '&c activation rate of Bleed'
+    - '&cGain %ActivationBoost%% for %Duration% seconds'
+    - '&cCooldown: %Cooldown%'
+    MenuLore:
+    - '&cIncrease activation rate of Bleed'
+RageSpikeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 475
+    TierV: 600
+  #Config for each tier
+  TierI:
+    #How long the ability takes to charge
+    ChargeTime: 5
+    #Damage dealt via collision
+    Damage: 1
+    #Cooldown in seconds
+    Cooldown: 240
+  TierII:
+    ChargeTime: 4
+    Damage: 1
+    Cooldown: 240
+  TierIII:
+    ChargeTime: 3
+    Damage: 2
+    Cooldown: 240
+  TierIV:
+    ChargeTime: 2
+    Damage: 3
+    Cooldown: 240
+  TierV:
+    ChargeTime: 1
+    Damage: 4
+    Cooldown: 240
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Rage Spike'
+    Material: IRON_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&cCharge by shifting for %ChargeTime%'
+    - '&cto dash forward'
+    - '&cDealing %Damage% damage.'
+    - '&cCooldown: %Cooldown%'
+    MenuLore:
+    - '&cThis ability dashs you forward'
+    - '&cdealing damage and knockback'
+TaintedBladeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 475
+    TierV: 600
+  #Config for each tier
+  TierI:
+    StrengthDuration: 3
+    ResistanceDuration: 3
+    HungerDuration: 3
+    #Cooldown in seconds
+    Cooldown: 240
+  TierII:
+    StrengthDuration: 4
+    ResistanceDuration: 3
+    HungerDuration: 4
+    #Cooldown in seconds
+    Cooldown: 240
+  TierIII:
+    StrengthDuration: 4
+    ResistanceDuration: 4
+    HungerDuration: 5
+    #Cooldown in seconds
+    Cooldown: 240
+  TierIV:
+    StrengthDuration: 5
+    ResistanceDuration: 5
+    HungerDuration: 5
+    #Cooldown in seconds
+    Cooldown: 240
+  TierV:
+    StrengthDuration: 6
+    ResistanceDuration: 6
+    HungerDuration: 5
+    #Cooldown in seconds
+    Cooldown: 240
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Tainted Blade'
+    Material: STONE_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&cTake %HungerDuration% seconds of hunger for'
+    - '&c%StrengthDuration% seconds of strength'
+    - '&c%ResistanceDuration% seconds or resistance'
+    - '&cCooldown: %Cooldown%'
+    MenuLore:
+    - '&cGain hunger in exchange'
+    - '&cfor Strength and Resistance'

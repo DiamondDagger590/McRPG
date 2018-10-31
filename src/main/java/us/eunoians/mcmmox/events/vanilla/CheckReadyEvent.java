@@ -43,7 +43,8 @@ public class CheckReadyEvent implements Listener {
 	}
 	//Verify that the player is in a state able to ready abilities
 	//If the slot is not their hand or they arent right clicking or the player is charging or if their gamemode isnt survival or if they are holding air
-	if(e.getHand() != EquipmentSlot.HAND || (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) || ShiftToggle.isPlayerCharging(p) || p.getGameMode() != GameMode.SURVIVAL || heldItem.getType() == Material.AIR){
+	if(e.getHand() == null || e.getHand() != EquipmentSlot.HAND || (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) || ShiftToggle.isPlayerCharging(p) || p.getGameMode() != GameMode.SURVIVAL ||
+		heldItem == null || heldItem.getType() == Material.AIR){
 	  return;
 	}
 	else{

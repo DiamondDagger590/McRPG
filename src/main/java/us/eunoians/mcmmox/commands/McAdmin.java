@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.mining.RemoteTransfer;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
@@ -102,7 +103,7 @@ public class McAdmin implements CommandExecutor {
 				mp.getSkill(skill).giveExp(amount, GainReason.COMMAND);
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
 					.replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
-				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Skill")
+				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Exp")
 					.replace("%Amount%", args[3]).replace("%Skill%", skill.getName())));
 				mp.saveData();
 				return true;
@@ -192,8 +193,15 @@ public class McAdmin implements CommandExecutor {
 				if(!baseAbility.isUnlocked()){
 				  baseAbility.setCurrentTier(1);
 				}
+				if(baseAbility.getCurrentTier() == 0){
+				  baseAbility.setCurrentTier(1);
+				}
 				baseAbility.setUnlocked(true);
 				baseAbility.setToggled(true);
+				if(baseAbility instanceof RemoteTransfer){
+				  System.out.println(baseAbility.getCurrentTier());
+				  ((RemoteTransfer) baseAbility).updateBlocks();
+				}
 				mp.getAbilityLoadout().add(ability);
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Ability").replace("%Player%", offlinePlayer.getName()).replace("%Ability%", ability.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Ability").replace("%Ability%", ability.getName())));
@@ -701,20 +709,12 @@ public class McAdmin implements CommandExecutor {
 			}
 		  }
 		  else if(args[1].equalsIgnoreCase("player")){
-			if(args.length < 4){
-			  sendHelpMessage(admin);
-			  return true;
-			}
 			if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.player"))){
 			  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
 			  return true;
 			}
 			if(Methods.hasPlayerLoggedInBefore(args[2])){
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-			  if(!UnlockedAbilities.isAbility(args[3])){
-				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
-				return true;
-			  }
 			  if(offlinePlayer.isOnline()){
 				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());

@@ -1,6 +1,7 @@
 package us.eunoians.mcmmox.events.vanilla;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -11,6 +12,10 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.PlayerInventory;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.mining.RemoteTransfer;
+import us.eunoians.mcmmox.api.events.mcmmo.AbilityAddToLoadoutEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.AbilityRemovedFromLoadoutEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.AbilityUpgradeEvent;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -43,7 +48,6 @@ public class InvClickEvent implements Listener {
 	  if(e.getCurrentItem() == null) return;
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);
 	  //This gui was hardcoded so hardcoded events are fine :D
-	  //TODO if player has active skill in loadout, we need to figure out a way to make it force them to replace that ability specifically... Yet another gui?? UGH
 	  if(currentGUI instanceof AbilityOverrideGUI){
 	    AbilityOverrideGUI overrideGUI = (AbilityOverrideGUI) currentGUI;
 	    int slot = e.getSlot();
@@ -55,6 +59,16 @@ public class InvClickEvent implements Listener {
 		}
 		else{
 		  if(slot == 10){
+		    AbilityAddToLoadoutEvent abilityAddToLoadoutEvent = new AbilityAddToLoadoutEvent(mp, overrideGUI.getReplaceAbility());
+		    Bukkit.getPluginManager().callEvent(abilityAddToLoadoutEvent);
+		    if(abilityAddToLoadoutEvent.isCancelled()){
+		      return;
+			}
+			AbilityRemovedFromLoadoutEvent abilityRemovedFromLoadoutEvent = new AbilityRemovedFromLoadoutEvent(mp, overrideGUI.getAbiltyToReplace());
+		    Bukkit.getPluginManager().callEvent(abilityRemovedFromLoadoutEvent);
+		    if(abilityRemovedFromLoadoutEvent.isCancelled()){
+		      return;
+			}
 		    if(mp.getCooldown(Skills.fromString(overrideGUI.getAbiltyToReplace().getGenericAbility().getSkill())) != -1){
 		      mp.removeAbilityOnCooldown((UnlockedAbilities) overrideGUI.getAbiltyToReplace().getGenericAbility());
 			}
@@ -80,6 +94,11 @@ public class InvClickEvent implements Listener {
 		  }
 		  if(slot == 10 && mp.getAbilityLoadout().size() < 9){
 			//If they accept and their loadout isnt full
+			AbilityAddToLoadoutEvent event = new AbilityAddToLoadoutEvent(mp, acceptAbilityGUI.getAbility());
+			Bukkit.getPluginManager().callEvent(event);
+			if(event.isCancelled()){
+			  return;
+			}
 			mp.addAbilityToLoadout((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
 			mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
 			acceptAbilityGUI.getAbility().setToggled(true);
@@ -109,6 +128,12 @@ public class InvClickEvent implements Listener {
 			return;
 		  }
 		  if(slot == 10){
+			AbilityUpgradeEvent event = new AbilityUpgradeEvent(mp, acceptAbilityGUI.getAbility(), acceptAbilityGUI.getAbility().getCurrentTier(), acceptAbilityGUI.getAbility().getCurrentTier() + 1);
+			event.setCancelled(event.getNextTier() > 5);
+			Bukkit.getPluginManager().callEvent(event);
+			if(event.isCancelled()){
+			  return;
+			}
 		    mp.setAbilityPoints(mp.getAbilityPoints() - 1);
 		    acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
 		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
@@ -123,10 +148,47 @@ public class InvClickEvent implements Listener {
 		  }
 		}
 	  }
+	  if(currentGUI instanceof RemoteTransferGUI){
+	    if(e.getCurrentItem().getType() == Material.AIR){
+	      return;
+		}
+		else{
+		  RemoteTransfer ab = (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
+		  if(e.getSlot() == e.getInventory().getSize() - 1){
+		    ab.setToggled(!ab.isToggled());
+			if(!ab.isToggled()){
+			  e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+			}
+			else{
+			  e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+			}
+			return;
+		  }
+		  else{
+		    if(e.getCurrentItem().containsEnchantment(Enchantment.DURABILITY)){
+		      ab.getItemsToSync().put(e.getCurrentItem().getType(), false);
+		      e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+		      return;
+			}
+			else{
+			  e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+			  ab.getItemsToSync().put(e.getCurrentItem().getType(), true);
+			  return;
+			}
+		  }
+		}
+	  }
 	  else if(currentGUI instanceof EditLoadoutGUI){
 		EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
 		BaseAbility abilityToChange = mp.getBaseAbility(editLoadoutGUI.getAbilityFromSlot(e.getSlot()));
 		if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.TOGGLE){
+		  if(abilityToChange.getGenericAbility() == UnlockedAbilities.REMOTE_TRANSFER){
+			RemoteTransferGUI remoteTransferGUI = new RemoteTransferGUI(mp, mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER));
+			currentGUI.setClearData(false);
+			p.openInventory(remoteTransferGUI.getGui().getInv());
+			GUITracker.replacePlayersGUI(mp, remoteTransferGUI);
+			return;
+		  }
 		  abilityToChange.setToggled(!abilityToChange.isToggled());
 		  if(!abilityToChange.isToggled()){
 			e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
