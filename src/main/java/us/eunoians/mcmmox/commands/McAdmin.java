@@ -426,7 +426,7 @@ public class McAdmin implements CommandExecutor {
 			  sendHelpMessage(admin);
 			  return true;
 			}
-			if(!UnlockedAbilities.isAbility(args[2])){
+			if(!UnlockedAbilities.isAbility(args[3])){
 			  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
 			  return true;
 			}

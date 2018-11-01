@@ -128,6 +128,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     getCommand("mcadmin").setExecutor(new McAdmin());
     getCommand("mclink").setExecutor(new McLink());
     getCommand("mcunlink").setExecutor(new McUnlink());
+    getCommand("mchelp").setExecutor(new McHelp());
   }
 
   @Initialize(priority = 4)
