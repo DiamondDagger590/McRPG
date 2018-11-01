@@ -58,7 +58,7 @@ public class BleedEvent extends AbilityActivateEvent {
 	this.bleedImmunityEnabled = config.getBoolean("BleedConfig.BleedImmunityEnabled");
 	this.bleedImmunityDuration = config.getInt("BleedConfig.BleedImmunityDuration");
 
-	//If deeper wound is unlocked and is enabled. No need to check for toggle as the event will checj that
+	//If deeper wound is unlocked and is enabled. No need to check for toggle as the event will check that
 	if(UnlockedAbilities.DEEPER_WOUND.isEnabled() && user.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DEEPER_WOUND)){
 	  //Check if it should activate based on % chance
 	  Random ran = new Random();

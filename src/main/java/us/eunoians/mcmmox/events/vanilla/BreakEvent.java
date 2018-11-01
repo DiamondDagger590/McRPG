@@ -67,7 +67,7 @@ public class BreakEvent implements Listener {
 			Bukkit.getPluginManager().callEvent(richerOresEvent);
 			if(!richerOresEvent.isCancelled()){
 			  double boost = mining.getDouble("RicherOresConfig.Tier" + Methods.convertToNumeral(richerOres.getCurrentTier()) + ".ActivationBoost");
-			  doubleDrop.setBonusChance(boost);
+			  doubleDrop.setBonusChance(doubleDrop.getBonusChance() + boost);
 			}
 		  }
 

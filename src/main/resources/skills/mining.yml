@@ -6,8 +6,7 @@ MiningEnabled: true
 # %skill_level% - The skill level of the player
 #
 ExpEquation: '1000*(1.2^(power_level))'
-#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
-#Ex) Spider gives 30 exp. Deal 3 damage, get 90 exp with a wood sword
+#How much exp should be awarded per block.
 ExpAwardedPerBlock:
   OBSIDIAN: 50
   STONE: 15
@@ -32,7 +31,7 @@ EnabledAbilities:
   BlastMining: true
 #If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
 #they will be required to swap the ability instead of getting a chance at replacing it right away for free
-#Perms will be mcmmox.swords.{ability}
+#Perms will be mcmmox.mining.{ability}
 UsePermsForAbilites:
   DoubleDrop: false
   RicherOres: false
@@ -273,7 +272,7 @@ SuperBreakerConfig:
     - '&cCooldown: %Cooldown%'
     MenuLore:
     - '&cIncrease activation rate of Bleed'
-RageSpikeConfig:
+BlastMiningConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -284,43 +283,35 @@ RageSpikeConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    #How long the ability takes to charge
-    ChargeTime: 5
-    #Damage dealt via collision
-    Damage: 1
+    #Radius of the ability (this is done to every side of the player)
+    Radius: 5
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    ChargeTime: 4
-    Damage: 1
+    Radius: 6
     Cooldown: 240
   TierIII:
-    ChargeTime: 3
-    Damage: 2
+    Radius: 7
     Cooldown: 240
   TierIV:
-    ChargeTime: 2
-    Damage: 3
+    Radius: 8
     Cooldown: 240
   TierV:
-    ChargeTime: 1
-    Damage: 4
+    Radius: 10
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Rage Spike'
-    Material: IRON_SWORD
+    DisplayName: '&4RBlast Mining'
+    Material: TNT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cCharge by shifting for %ChargeTime%'
-    - '&cto dash forward'
-    - '&cDealing %Damage% damage.'
+    - '&cMine blocks in a %Radius% radius'
+    - '&cReady your pick and place tnt'
     - '&cCooldown: %Cooldown%'
     MenuLore:
-    - '&cThis ability dashs you forward'
-    - '&cdealing damage and knockback'
-TaintedBladeConfig:
+    - '&cThis ability mines blocks around you'
+OreScannerConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -331,46 +322,40 @@ TaintedBladeConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    StrengthDuration: 3
-    ResistanceDuration: 3
-    HungerDuration: 3
+    #Radius for the plugin to scan
+    Radius: 7
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    StrengthDuration: 4
-    ResistanceDuration: 3
-    HungerDuration: 4
-    #Cooldown in seconds
+    Radius: 9
     Cooldown: 240
   TierIII:
-    StrengthDuration: 4
-    ResistanceDuration: 4
-    HungerDuration: 5
+    #Radius for the plugin to scan
+    Radius: 10
     #Cooldown in seconds
     Cooldown: 240
   TierIV:
-    StrengthDuration: 5
-    ResistanceDuration: 5
-    HungerDuration: 5
+    #Radius for the plugin to scan
+    Radius: 12
     #Cooldown in seconds
     Cooldown: 240
   TierV:
-    StrengthDuration: 6
-    ResistanceDuration: 6
-    HungerDuration: 5
+    #Radius for the plugin to scan
+    Radius: 15
     #Cooldown in seconds
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Tainted Blade'
-    Material: STONE_SWORD
+    DisplayName: '&4Ore Scanner'
+    Material: DIAMOND_ORE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cTake %HungerDuration% seconds of hunger for'
-    - '&c%StrengthDuration% seconds of strength'
-    - '&c%ResistanceDuration% seconds or resistance'
+    - '&cScan surrounding area in a'
+    - '&c%Radius% radius.'
+    - '&cDisplays amount of ores'
+    - '&cAnd points to closest valuable ore'
     - '&cCooldown: %Cooldown%'
     MenuLore:
-    - '&cGain hunger in exchange'
-    - '&cfor Strength and Resistance'
+    - '&cScan surrounding area'
+    - '&cfor gold, emerald, and diamonds'

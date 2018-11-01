@@ -23,6 +23,7 @@ public class CheckReadyEvent implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void checkReady(PlayerInteractEvent e){
+
 	Player p = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	ItemStack heldItem = e.getItem();
@@ -62,19 +63,32 @@ public class CheckReadyEvent implements Listener {
 					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
 		    return;
 		  }
-		  if(mp.doesPlayerHaveActiveAbilityFromSkill(skillType)){
-			BaseAbility ab = mp.getBaseAbility(mp.getActiveAbilityForSkill(skillType));
-			if(!ab.isToggled() || !ab.getGenericAbility().isEnabled()){
-			  return;
-			}
-		    p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-				Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", "Sword")));
-			PlayerReadyBit bit = new PlayerReadyBit(mp.getActiveAbilityForSkill(skillType), mp);
-			mp.setReadyingAbilityBit(bit);
-			mp.setReadying(true);
+		  readyHandler(p, mp, skillType);
+		}
+		else if(skillType == Skills.MINING){
+		  if(mp.getCooldown(skillType) != -1){
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+				Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
+					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
+			return;
 		  }
+		  readyHandler(p, mp, skillType);
 		}
 	  }
+	}
+  }
+
+  private void readyHandler(Player p, McMMOPlayer mp, Skills skillType){
+	if(mp.doesPlayerHaveActiveAbilityFromSkill(skillType)){
+	  BaseAbility ab = mp.getBaseAbility(mp.getActiveAbilityForSkill(skillType));
+	  if(!ab.isToggled() || !ab.getGenericAbility().isEnabled()){
+		return;
+	  }
+	  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+		  Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", "Sword")));
+	  PlayerReadyBit bit = new PlayerReadyBit(mp.getActiveAbilityForSkill(skillType), mp);
+	  mp.setReadyingAbilityBit(bit);
+	  mp.setReadying(true);
 	}
   }
 }

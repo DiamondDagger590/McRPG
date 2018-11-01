@@ -69,6 +69,15 @@ Messages:
       IsLinked: '&cThat chest is currently linked to %Player%'
       AdminUnlinked: '&cSomeone has unlinked your chest'
       ChestMissing: '&cFor some reason your chest is missing... Delinking...'
+    SuperBreaker:
+      Activated: '&aSuper breaker is now active'
+      Deactivated: '&cSuper breaker has deactivated'
+    OreScanner:
+      NothingFound: '&cNo ores were found in your scan'
+      PointingToValuable: '&cYou are now looking towards the most valuable ore'
+      DiamondsFound: '&aYour scan showed &e%Amount% &adiamond ore near you'
+      EmeraldsFound: '&aYour scan showed &e%Amount% &aemerald ore near you'
+      GoldFound: '&aYour scan showed &e%Amount% &agold ore near you'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
