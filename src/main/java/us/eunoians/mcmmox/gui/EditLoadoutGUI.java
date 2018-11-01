@@ -103,7 +103,16 @@ public class EditLoadoutGUI extends GUI {
 		abilityMeta.setLore(newLore);
 		abilityItem.setItemMeta(abilityMeta);
 		if(ability.isToggled()){
+		  newLore.add(Methods.color("&eToggled: &2&lON"));
+		  abilityMeta.setLore(newLore);
+		  abilityItem.setItemMeta(abilityMeta);
 		  abilityItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+
+		}
+		else{
+		  newLore.add(Methods.color("&eToggled: &c&lOFF"));
+		  abilityMeta.setLore(newLore);
+		  abilityItem.setItemMeta(abilityMeta);
 		}
 		items.add(new GUIItem(abilityItem, i));
 	  }

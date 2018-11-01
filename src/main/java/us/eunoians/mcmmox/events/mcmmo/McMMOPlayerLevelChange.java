@@ -30,7 +30,8 @@ public class McMMOPlayerLevelChange implements Listener {
 	//Send the player a message that they leveled up
 	String message = Methods.color(mcmmox.getPluginPrefix() +
 		mcmmox.getLangFile().getString("Messages.Players.LevelUp")
-			.replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName()));
+			.replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName())
+			.replaceAll("%Current_Level%", Integer.toString(e.getNextLevel())));
 	Skill skillLeveled = e.getSkillLeveled();
 	McMMOPlayer mp = e.getMcMMOPlayer();
 	//iterate across all levels gained
@@ -40,7 +41,8 @@ public class McMMOPlayerLevelChange implements Listener {
 		mp.setAbilityPoints(mp.getAbilityPoints() + 1);
 		//Need to fiddle with this sound
 		mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
-		mp.getPlayer().sendMessage(Methods.color(mcmmox.getPluginPrefix() + mcmmox.getLangFile().getString("Messages.Players.AbilityPointGained")));
+		mp.getPlayer().sendMessage(Methods.color(mcmmox.getPluginPrefix() + mcmmox.getLangFile().getString("Messages.Players.AbilityPointGained")
+			.replaceAll("%AbilityPoints%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
 		mp.saveData();
 	  }
 	}

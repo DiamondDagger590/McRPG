@@ -106,7 +106,6 @@ public abstract class Skill {
 	if(expEvent.isCancelled()){
 	  return;
 	}
-	Bukkit.broadcastMessage("1");
 	exp = expEvent.getExpGained();
     int oldLevel = currentLevel;
     if(exp + currentExp >= expToLevel){

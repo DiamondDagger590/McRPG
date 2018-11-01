@@ -20,10 +20,10 @@ Messages:
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       McDisplay:
-        - '&e--------------------------'
-        - '&7[&6McDisplay Command &7]&3 /mcdisplay {Skill}'
-        - '&3    -Opens your display for the skill'
-        - '&e--------------------------'
+      - '&e--------------------------'
+      - '&7[&6McDisplay Command &7]&3 /mcdisplay {Skill}'
+      - '&3    -Opens your display for the skill'
+      - '&e--------------------------'
       McAdmin1:
       - '&e--------------------------'
       - '&7[&6AbilityPoints Give Command &7]&3 /mcadmin give abilitypoints {Player} {Amount}'
@@ -127,9 +127,9 @@ Messages:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
   Players:
-    LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%'
+    LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%. Current Level: &e%Current_Level%'
     AbilityUnlocked: '&eYou just unlocked %Ability%! Open up the main menu in order to accept or deny this ability.'
-    AbilityPointGained: '&eYou just gained an ability point! Use it to upgrade the power of your abilities!'
+    AbilityPointGained: '&eAbility upgrade point gained! You have &a%Ability_Points% &eto spend'
     PlayerReady: '&7You raise your %Skill_Item%'
     PlayerUnready: '&7You lowered your %Skill_Item%'
     CooldownExpire: '&aYour cooldown for %Ability% is finished'
