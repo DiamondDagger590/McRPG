@@ -15,14 +15,22 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.mining.DoubleDrop;
+import us.eunoians.mcmmox.abilities.mining.ItsATriple;
 import us.eunoians.mcmmox.abilities.mining.RemoteTransfer;
+import us.eunoians.mcmmox.abilities.mining.RicherOres;
+import us.eunoians.mcmmox.api.events.mcmmo.DoubleDropEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.ItsATripleEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.RicherOresEvent;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
+import us.eunoians.mcmmox.types.DefaultAbilities;
 import us.eunoians.mcmmox.types.GainReason;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
+import us.eunoians.mcmmox.util.Parser;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,10 +41,12 @@ public class BreakEvent implements Listener {
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event){
 	if(!event.isCancelled()){
+
 	  Player p = event.getPlayer();
 	  Block block = event.getBlock();
 	  McMMOPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
 	  FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
+
 	  //Deal with mining
 	  if(mining.getBoolean("MiningEnabled")){
 		if(!Mcmmox.getPlaceStore().isTrue(block)){
@@ -44,6 +54,50 @@ public class BreakEvent implements Listener {
 			int expWorth = mining.getInt("ExpAwardedPerBlock." + block.getType().toString());
 
 			mp.giveExp(Skills.MINING, expWorth, GainReason.BREAK);
+		  }
+		}
+
+		int dropMultiplier = 1;
+		if(DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
+		  DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
+		  if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
+			  && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()){
+			RicherOres richerOres = (RicherOres) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES);
+			RicherOresEvent richerOresEvent = new RicherOresEvent(mp, richerOres);
+			Bukkit.getPluginManager().callEvent(richerOresEvent);
+			if(!richerOresEvent.isCancelled()){
+			  double boost = mining.getDouble("RicherOresConfig.Tier" + Methods.convertToNumeral(richerOres.getCurrentTier()) + ".ActivationBoost");
+			  doubleDrop.setBonusChance(boost);
+			}
+		  }
+
+		  Parser parser = DefaultAbilities.DOUBLE_DROP.getActivationEquation();
+		  parser.setVariable("swords_level", mp.getSkill(Skills.MINING).getCurrentLevel());
+		  parser.setVariable("power_level", mp.getPowerLevel());
+		  int chance = (int) (parser.getValue() + doubleDrop.getBonusChance()) * 1000;
+		  Random rand = new Random();
+		  int val = rand.nextInt(100000);
+		  if(chance >= val){
+			DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
+			Bukkit.getPluginManager().callEvent(doubleDropEvent);
+			if(!doubleDropEvent.isCancelled()){
+			  dropMultiplier = 2;
+			}
+		  }
+		}
+
+		if(UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
+			&& mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()){
+		  ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
+		  int chance = (int) mining.getDouble("ItsATripleConfig.Tier" + Methods.convertToNumeral(itsATriple.getCurrentTier()) + ".ActivationChance") * 1000;
+		  Random rand = new Random();
+		  int val = rand.nextInt(100000);
+		  if(chance >= val){
+			ItsATripleEvent itsATripleEvent = new ItsATripleEvent(mp, itsATriple);
+			Bukkit.getPluginManager().callEvent(itsATripleEvent);
+			if(!itsATripleEvent.isCancelled()){
+			  dropMultiplier = 3;
+			}
 		  }
 		}
 		//Check if the block is tracked by remote transfer
@@ -116,7 +170,7 @@ public class BreakEvent implements Listener {
 			//If the item needs to be transferred and is toggled for transferring
 			if(transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat)){
 			  //Apply fortune and silk touch
-			  ItemStack item = getDropsFromMaterial(mat, p.getItemInHand());
+			  ItemStack item = getDropsFromMaterial(mat, p.getItemInHand(), dropMultiplier);
 			  //Get the material of the item we are putting in the chest and the amount
 			  if(mat != Material.COBBLESTONE){
 				mat = item.getType();
@@ -180,16 +234,18 @@ public class BreakEvent implements Listener {
 		  }
 		}
 	  }
+
+
 	}
 
   }
 
-  private ItemStack getDropsFromMaterial(Material mat, ItemStack tool){
+  private ItemStack getDropsFromMaterial(Material mat, ItemStack tool, int multiplier){
 	ItemStack returnItem = new ItemStack(mat, 1);
 	Map<Enchantment, Integer> enchants = tool.getEnchantments();
 	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && FortuneBlocks.isFortunable(mat)){
 	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
-	  int dropAmount = getDropCount(mat, level, new Random());
+	  int dropAmount = getDropCount(mat, level, new Random()) * multiplier;
 	  returnItem.setAmount(dropAmount);
 	}
 	if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(mat)){

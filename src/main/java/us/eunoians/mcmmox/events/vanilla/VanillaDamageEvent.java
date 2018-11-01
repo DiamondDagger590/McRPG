@@ -85,7 +85,7 @@ public class VanillaDamageEvent implements Listener {
 			  }
 			}
 			//If we need to use tainted blade
-			else if(mp.getReadyingAbilityBit().getAbilityReady().getName() == UnlockedAbilities.TAINTED_BLADE.getName()){
+			else if(mp.getReadyingAbilityBit().getAbilityReady().getName().equalsIgnoreCase(UnlockedAbilities.TAINTED_BLADE.getName())){
 			  TaintedBladeEvent event = new TaintedBladeEvent(mp, (TaintedBlade) mp.getBaseAbility(UnlockedAbilities.TAINTED_BLADE));
 			  Bukkit.getPluginManager().callEvent(event);
 			  if(!event.isCancelled()){
@@ -129,7 +129,7 @@ public class VanillaDamageEvent implements Listener {
 				parser.setVariable("swords_level", playersSkill.getCurrentLevel());
 				parser.setVariable("power_level", mp.getPowerLevel());
 				Random rand = new Random();
-				int chance = (int) parser.getValue() * 1000;
+				int chance = (int) (parser.getValue() + bleed.getBonusChance()) * 1000;
 				int val = rand.nextInt(100000);
 				if(chance >= val && e.getEntity() instanceof LivingEntity){
 				  BleedEvent event = new BleedEvent(mp, (LivingEntity) e.getEntity(), bleed);
