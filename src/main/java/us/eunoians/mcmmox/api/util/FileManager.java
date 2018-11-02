@@ -304,7 +304,8 @@ public class FileManager {
 	MINING_CONFIG("mining.yml", "skills/mining.yml"),
 	SKILLS_GUI("skillguis.yml", "guis/skillsgui.yml"),
 	LOCATIONS("locations.yml", "data/locations.yml"),
-	SWORDS_CONFIG("swords.yml", "skills/swords.yml");
+	SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
+	UNARMED_CONFIG("unarmed.yml:", "skills/unarmed.yml");
 
 	private String fileName;
 	private String fileLocation;

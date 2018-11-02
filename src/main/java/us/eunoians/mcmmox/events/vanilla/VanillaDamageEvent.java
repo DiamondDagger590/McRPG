@@ -79,7 +79,7 @@ public class VanillaDamageEvent implements Listener {
 					cal.add(Calendar.SECOND,
 						event.getCooldown());
 					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_SHULKER_HURT, 10, 1);
-					mp.addAbilityOnCooldown(UnlockedAbilities.SERRATED_STRIKES, event.getCooldown());
+					mp.addAbilityOnCooldown(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
 				  }
 				}.runTaskLater(Mcmmox.getInstance(), event.getDuration() * 20);
 			  }
@@ -102,7 +102,7 @@ public class VanillaDamageEvent implements Listener {
 				cal.add(Calendar.SECOND,
 					event.getCooldown());
 				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SKELETON_HURT, 10, 1);
-				mp.addAbilityOnCooldown(UnlockedAbilities.TAINTED_BLADE, event.getCooldown());
+				mp.addAbilityOnCooldown(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
 			  }
 			}
 		  }

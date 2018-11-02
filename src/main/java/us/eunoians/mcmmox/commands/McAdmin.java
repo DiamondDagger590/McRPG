@@ -189,6 +189,10 @@ public class McAdmin implements CommandExecutor {
 				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.LoadoutFull")));
 				  return true;
 				}
+				if(mp.getAbilityLoadout().contains(ability)){
+				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AlreadyHave")));
+				  return true;
+				}
 				BaseAbility baseAbility = mp.getBaseAbility(ability);
 				if(!baseAbility.isUnlocked()){
 				  baseAbility.setCurrentTier(1);
@@ -483,7 +487,7 @@ public class McAdmin implements CommandExecutor {
 			  sendHelpMessage(admin);
 			  return true;
 			}
-			if(!UnlockedAbilities.isAbility(args[2])){
+			if(!UnlockedAbilities.isAbility(args[3])){
 			  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
 			  return true;
 			}
@@ -631,9 +635,9 @@ public class McAdmin implements CommandExecutor {
 				  mp.getAbilityLoadout().remove(remove);
 				}
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-				.replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
+					.replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillWasReset")
-				.replace("%Skill%", skill.getName())));
+					.replace("%Skill%", skill.getName())));
 				mp.saveData();
 				return true;
 			  }

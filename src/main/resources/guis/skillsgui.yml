@@ -5,6 +5,8 @@ Gui:
     Events:
       1:
       - 'OpenNative:SubSkillGUI:Swords'
+      3:
+      - 'OpenNative:SubSkillGUI:Mining'
     Items:
       SwordsSkill:
         Name: '&5Swords Skill'
@@ -13,6 +15,14 @@ Gui:
         - '&eClick this to view your swords information'
         - '&eCurrent Swords level: &a%Swords_Level%'
         - '&eBleed chance: &c%Bleed_Chance%%'
+        Slot: 1
+      MiningSkill:
+        Name: '&5Mining Skill'
+        Material: DIAMOND_PICKAXE
+        Lore:
+        - '&eClick this to view your mining information'
+        - '&eCurrent Mining level: &a%Mining_Level%'
+        - '&eBleed chance: &c%Double_Drop_Chance%%'
         Slot: 1
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE

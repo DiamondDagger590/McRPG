@@ -57,7 +57,7 @@ public class CheckReadyEvent implements Listener {
 	    //Get the skill from the material of the item
 		Skills skillType = Methods.getSkillsItem(heldItem);
 		if(skillType == Skills.SWORDS){
-		  if(mp.getCooldown(skillType) != -1){
+		  if(mp.getCooldown(skillType) != -1 && p.getInventory().getItemInOffHand() != null && p.getInventory().getItemInOffHand().getType() != Material.AIR){
 		    p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 				Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
 					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
@@ -84,8 +84,18 @@ public class CheckReadyEvent implements Listener {
 	  if(!ab.isToggled() || !ab.getGenericAbility().isEnabled()){
 		return;
 	  }
+	  String skill = "";
+	  if(skillType == Skills.SWORDS){
+	    skill = "Sword";
+	  }
+	  else if(skillType == Skills.MINING){
+	    skill = "Pickaxe";
+	  }
+	  else if(skillType == Skills.UNARMED){
+	    skill = "Fist";
+	  }
 	  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-		  Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", "Sword")));
+		  Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", skill)));
 	  PlayerReadyBit bit = new PlayerReadyBit(mp.getActiveAbilityForSkill(skillType), mp);
 	  mp.setReadyingAbilityBit(bit);
 	  mp.setReadying(true);

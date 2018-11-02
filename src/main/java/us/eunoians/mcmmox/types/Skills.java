@@ -14,7 +14,8 @@ An enum that stores a type of every skill
  */
 public enum Skills {
   SWORDS("Swords", DefaultAbilities.BLEED),
-  MINING("Mining", DefaultAbilities.DOUBLE_DROP);
+  MINING("Mining", DefaultAbilities.DOUBLE_DROP),
+  UNARMED("Unarmed", DefaultAbilities.STICKY_FINGERS);
 
   @Getter
   private String name;

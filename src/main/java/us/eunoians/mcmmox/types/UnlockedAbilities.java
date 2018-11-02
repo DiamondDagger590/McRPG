@@ -24,7 +24,13 @@ public enum UnlockedAbilities implements GenericAbility {
   ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
   SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
   BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG);
+  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
+  TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
+  SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
+  DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG);
 
   @Getter
   private String name;

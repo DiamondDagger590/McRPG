@@ -25,11 +25,11 @@ public class McHelp implements CommandExecutor {
 		return true;
 	  }
 	  else if(help.equalsIgnoreCase("mcadmin")){
-		String page = "";
+		String page = "1";
 		if(args.length > 1){
 		  page = args[1];
 		}
-		if(!(page.equalsIgnoreCase("2") || page.equalsIgnoreCase("3"))){
+		if(!(page.equalsIgnoreCase("2") || page.equalsIgnoreCase("3") || page.equalsIgnoreCase("1"))){
 		  return true;
 		}
 		for(String prompt : config.getStringList("Messages.Commands.McHelp.McAdmin" + page)){
@@ -37,7 +37,10 @@ public class McHelp implements CommandExecutor {
 		}
 		return true;
 	  }
+	  else{
+		return true;
+	  }
 	}
-	return false;
+	//return false;
   }
 }

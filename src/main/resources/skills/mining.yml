@@ -266,8 +266,8 @@ SuperBreakerConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cThis ability increases the'
-    - '&c activation rate of Bleed'
+    - '&cThis ability give haste and'
+    - '&cincreases activation rate of Bleed'
     - '&cGain %ActivationBoost%% for %Duration% seconds'
     - '&cCooldown: %Cooldown%'
     MenuLore:
@@ -301,7 +301,7 @@ BlastMiningConfig:
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4RBlast Mining'
+    DisplayName: '&4Blast Mining'
     Material: TNT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis

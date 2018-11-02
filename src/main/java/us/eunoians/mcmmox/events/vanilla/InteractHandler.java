@@ -40,6 +40,9 @@ public class InteractHandler implements Listener {
 	Player p = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	ItemStack heldItem = e.getItem();
+	if(heldItem == null){
+	  return;
+	}
 	if(e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_AIR){
 	  return;
 	}
@@ -92,12 +95,13 @@ public class InteractHandler implements Listener {
 			cal.add(Calendar.SECOND, blastMiningEvent.getCooldown());
 			Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			mp.setReadyingAbilityBit(null);
+			mp.setReadying(false);
 			mp.addAbilityOnCooldown(UnlockedAbilities.BLAST_MINING, cal.getTimeInMillis());
 		  }
 		}
 		return;
 	  }
-	  else if(abilityType.equals(UnlockedAbilities.SUPER_BREAKER)){
+	  else if(abilityType.equals(UnlockedAbilities.SUPER_BREAKER) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)){
 		SuperBreaker superBreaker = (SuperBreaker) ability;
 		FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 		e.setCancelled(true);
@@ -111,6 +115,7 @@ public class InteractHandler implements Listener {
 		}
 		Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 		mp.setReadyingAbilityBit(null);
+		mp.setReadying(false);
 		DoubleDrop doubleDrop = (DoubleDrop) mp.getBaseAbility(DefaultAbilities.DOUBLE_DROP);
 		doubleDrop.setBonusChance(doubleDrop.getBonusChance() + superBreakerEvent.getBoost());
 		PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, superBreakerEvent.getHasteDuration() * 20, 6);
@@ -127,12 +132,12 @@ public class InteractHandler implements Listener {
 			cal.add(Calendar.SECOND,
 				superBreakerEvent.getCooldown());
 			mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
-			mp.addAbilityOnCooldown(UnlockedAbilities.SUPER_BREAKER, superBreakerEvent.getCooldown());
+			mp.addAbilityOnCooldown(UnlockedAbilities.SUPER_BREAKER, cal.getTimeInMillis());
 		  }
 		}.runTaskLater(Mcmmox.getInstance(), superBreakerEvent.getHasteDuration() * 20);
 		return;
 	  }
-	  else if(abilityType == UnlockedAbilities.ORE_SCANNER){
+	  else if(abilityType == UnlockedAbilities.ORE_SCANNER && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)){
 		OreScanner oreScanner = (OreScanner) ability;
 		FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 		e.setCancelled(true);
@@ -145,7 +150,10 @@ public class InteractHandler implements Listener {
 		}
 		Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 		mp.setReadyingAbilityBit(null);
-		mp.addAbilityOnCooldown(UnlockedAbilities.ORE_SCANNER, oreScannerEvent.getCooldown());
+		mp.setReadying(false);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, oreScannerEvent.getCooldown());
+		mp.addAbilityOnCooldown(UnlockedAbilities.ORE_SCANNER, cal.getTimeInMillis());
 		Location goldOre = null;
 		Location emeraldOre = null;
 		Location diamondOre = null;

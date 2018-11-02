@@ -36,7 +36,7 @@ public class SkillGUI extends GUI {
 			  Parser equation = ability.getActivationEquation();
 			  equation.setVariable(skill.getName().toLowerCase() + "_level", player.getSkill(skill).getCurrentLevel());
 			  equation.setVariable("power_level", player.getPowerLevel());
-			  s = s.replaceAll("%" + ability.getName() + "_Chance%", Double.toString(equation.getValue()));
+			  s = s.replaceAll("%" + ability.getName().replaceAll(" ", "_") + "_Chance%", Double.toString(equation.getValue()));
 			}
 			lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
 				.replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));

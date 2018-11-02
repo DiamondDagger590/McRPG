@@ -13,10 +13,12 @@ import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.mining.*;
 import us.eunoians.mcmmox.abilities.swords.*;
+import us.eunoians.mcmmox.abilities.unarmed.*;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Mining;
 import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.skills.Swords;
+import us.eunoians.mcmmox.skills.Unarmed;
 import us.eunoians.mcmmox.types.*;
 
 import java.io.File;
@@ -252,16 +254,83 @@ public class McMMOPlayer {
 		  blastMining.setUnlocked(true);
 		}
 
+		//Initilize OreScanner
+		OreScanner oreScanner = new OreScanner();
+		oreScanner.setToggled(playerData.getBoolean("Mining.OreScanner.IsToggled"));
+		oreScanner.setCurrentTier(playerData.getInt("Mining.OreScanner.Tier"));
+		if(playerData.getInt("Mining.OreScanner.Tier") != 0){
+		  oreScanner.setUnlocked(true);
+		}
+
 		abilityMap.put(DefaultAbilities.DOUBLE_DROP, doubleDrop);
 		abilityMap.put(UnlockedAbilities.RICHER_ORES, richerOres);
 		abilityMap.put(UnlockedAbilities.ITS_A_TRIPLE, itsATriple);
 		abilityMap.put(UnlockedAbilities.REMOTE_TRANSFER, remoteTransfer);
 		abilityMap.put(UnlockedAbilities.SUPER_BREAKER, superBreaker);
 		abilityMap.put(UnlockedAbilities.BLAST_MINING, blastMining);
+		abilityMap.put(UnlockedAbilities.ORE_SCANNER, oreScanner);
 
 		Mining mining = new Mining(playerData.getInt("Mining.Level"),
 			playerData.getInt("Mining.CurrentExp"), abilityMap, this);
 		skills.add(mining);
+	  }
+	  else if(skill.equals(Skills.UNARMED)){
+		//Initialize Sticky Fingers
+		StickyFingers stickyFingers = new StickyFingers();
+		stickyFingers.setToggled(playerData.getBoolean("Unarmed.StickyFingers.IsToggled"));
+		//Initialize Tighter Grip
+		TighterGrip tighterGrip = new TighterGrip();
+		tighterGrip.setToggled(playerData.getBoolean("Unarmed.TighterGrip.IsToggled"));
+		tighterGrip.setCurrentTier(playerData.getInt("Unarmed.TighterGrip.Tier"));
+		if(playerData.getInt("Unarmed.TighterGrip.Tier") != 0){
+		  tighterGrip.setUnlocked(true);
+		}
+		//Initialize Disarm
+		Disarm disarm = new Disarm();
+		disarm.setToggled(playerData.getBoolean("Unarmed.Disarm.IsToggled"));
+		disarm.setCurrentTier(playerData.getInt("Unarmed.Disarm.Tier"));
+		if(playerData.getInt("Unarmed.Disarm.Tier") != 0){
+		  disarm.setUnlocked(true);
+		}
+		//Initialize Iron Arm
+		IronArm ironArm = new IronArm();
+		ironArm.setToggled(playerData.getBoolean("Unarmed.IronArm.IsToggled"));
+		ironArm.setCurrentTier(playerData.getInt("Unarmed.IronArm.Tier"));
+		if(playerData.getInt("Unarmed.IronArm.Tier") != 0){
+		  ironArm.setUnlocked(true);
+		}
+		//Initialize Berserk
+		Berserk berserk = new Berserk();
+		berserk.setToggled(playerData.getBoolean("Unarmed.Berserk.IsToggled"));
+		berserk.setCurrentTier(playerData.getInt("Unarmed.Berserk.Tier"));
+		if(playerData.getInt("Unarmed.Berserk.Tier") != 0){
+		  berserk.setUnlocked(true);
+		}
+		//Initialize Smiting Fist
+		SmitingFist smitingFist = new SmitingFist();
+		smitingFist.setToggled(playerData.getBoolean("Unarmed.SmitingFist.IsToggled"));
+		smitingFist.setCurrentTier(playerData.getInt("Unarmed.SmitingFist.Tier"));
+		if(playerData.getInt("Unarmed.SmitingFist.Tier") != 0){
+		  smitingFist.setUnlocked(true);
+		}
+		//Initialize Dense Impact
+		DenseImpact denseImpact = new DenseImpact();
+		denseImpact.setToggled(playerData.getBoolean("Unarmed.DenseImpact.IsToggled"));
+		denseImpact.setCurrentTier(playerData.getInt("Unarmed.DenseImpact.Tier"));
+		if(playerData.getInt("Unarmed.DenseImpact.Tier") != 0){
+		  denseImpact.setUnlocked(true);
+		}
+		abilityMap.put(DefaultAbilities.STICKY_FINGERS, stickyFingers);
+		abilityMap.put(UnlockedAbilities.TIGHTER_GRIP, tighterGrip);
+		abilityMap.put(UnlockedAbilities.DISARM, disarm);
+		abilityMap.put(UnlockedAbilities.IRON_ARM, ironArm);
+		abilityMap.put(UnlockedAbilities.BERSERK, berserk);
+		abilityMap.put(UnlockedAbilities.SMITING_FIST, smitingFist);
+		abilityMap.put(UnlockedAbilities.DENSE_IMPACT, denseImpact);
+		//Create skill
+		Unarmed unarmed = new Unarmed(playerData.getInt("Unarmed.Level"),
+			playerData.getInt("Unarmed.CurrentExp"), abilityMap, this);
+		skills.add(unarmed);
 	  }
 	});
 	for(String s : playerData.getStringList("AbilityLoadout")){

@@ -14,7 +14,8 @@ import java.util.Arrays;
  */
 public enum DefaultAbilities implements GenericAbility {
   BLEED("Bleed", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  DOUBLE_DROP("Double Drop", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG);
+  DOUBLE_DROP("Double Drop", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  STICKY_FINGERS("Sticky Fingers", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG);
 
   @Getter
   private String name;
