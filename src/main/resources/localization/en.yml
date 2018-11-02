@@ -124,6 +124,11 @@ Messages:
       DiamondsFound: '&aYour scan showed &e%Amount% &adiamond ore near you'
       EmeraldsFound: '&aYour scan showed &e%Amount% &aemerald ore near you'
       GoldFound: '&aYour scan showed &e%Amount% &agold ore near you'
+    StickyFingers:
+      Resisted: '&aYou resisted being disarm'
+    Disarm:
+      PlayerDisarmed: '&aYou disarmed %Player%'
+      BeenDisarmed: '&cYou have been disarmed'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

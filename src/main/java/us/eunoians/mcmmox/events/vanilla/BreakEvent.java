@@ -72,7 +72,7 @@ public class BreakEvent implements Listener {
 		  }
 
 		  Parser parser = DefaultAbilities.DOUBLE_DROP.getActivationEquation();
-		  parser.setVariable("swords_level", mp.getSkill(Skills.MINING).getCurrentLevel());
+		  parser.setVariable("mining_level", mp.getSkill(Skills.MINING).getCurrentLevel());
 		  parser.setVariable("power_level", mp.getPowerLevel());
 		  int chance = (int) (parser.getValue() + doubleDrop.getBonusChance()) * 1000;
 		  Random rand = new Random();

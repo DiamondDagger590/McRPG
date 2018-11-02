@@ -16,9 +16,9 @@ import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.swords.Bleed;
 import us.eunoians.mcmmox.abilities.swords.SerratedStrikes;
 import us.eunoians.mcmmox.abilities.swords.TaintedBlade;
-import us.eunoians.mcmmox.api.events.mcmmo.BleedEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.SerratedStrikesEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.TaintedBladeEvent;
+import us.eunoians.mcmmox.abilities.unarmed.Disarm;
+import us.eunoians.mcmmox.abilities.unarmed.IronArm;
+import us.eunoians.mcmmox.api.events.mcmmo.*;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -41,8 +41,60 @@ public class VanillaDamageEvent implements Listener {
 	if(e.getDamager() instanceof Player){
 	  Player damager = (Player) e.getDamager();
 	  McMMOPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
+	  //Deal with unarmed
 	  if(damager.getItemInHand() == null){
-		//UNARMED
+		if(!Skills.UNARMED.isEnabled()){
+		  return;
+		}
+		config = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG);
+		e.setDamage(e.getDamage() + config.getInt("BonusDamage"));
+		//Manage disarm
+		if(e.getEntity() instanceof Player && UnlockedAbilities.DISARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DISARM) && mp.getBaseAbility(UnlockedAbilities.DISARM).isToggled()){
+		  Disarm disarm = (Disarm) mp.getBaseAbility(UnlockedAbilities.DISARM);
+		  Player damagedPlayer = (Player) e.getEntity();
+		  McMMOPlayer damagedMcMMOPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
+		  if(damagedPlayer.getItemInHand() == null || damagedPlayer.getItemInHand().getType() == Material.AIR){
+		    return;
+		  }
+		  double disarmChance = config.getDouble("DisarmConfig.Tier" + Methods.convertToNumeral(disarm.getCurrentTier()) + ".ActivationChance") + disarm.getBonusChance();
+		  int chance = (int) disarmChance * 1000;
+		  Random rand = new Random();
+		  int val = rand.nextInt(100000);
+		  if(chance >= val){
+			DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcMMOPlayer, disarm, damagedPlayer.getItemInHand());
+			Bukkit.getPluginManager().callEvent(disarmEvent);
+			if(!disarmEvent.isCancelled()){
+			  int slot = damagedPlayer.getInventory().firstEmpty();
+			  int heldSlot = damagedPlayer.getInventory().getHeldItemSlot();
+			  if(slot == -1){
+			    damagedPlayer.getLocation().getWorld().dropItemNaturally(damagedPlayer.getLocation(), disarmEvent.getItemToDisarm());
+			  }
+			  else{
+				damagedPlayer.getInventory().setItem(slot, disarmEvent.getItemToDisarm());
+			  }
+			  damagedPlayer.getInventory().getItem(heldSlot).setType(Material.AIR);
+			  damager.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
+				  + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.PlayerDisarmed").replaceAll("%Player%", damagedPlayer.getDisplayName())));
+			  damagedPlayer.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.BeenDisarmed")));
+			}
+		  }
+		  return;
+		}
+		if(UnlockedAbilities.IRON_ARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.IRON_ARM) && mp.getBaseAbility(UnlockedAbilities.IRON_ARM).isToggled()){
+		  IronArm ironArm = (IronArm) mp.getBaseAbility(UnlockedAbilities.IRON_ARM);
+		  int chance = (int) config.getDouble("IronArmConfig.Tier" + Methods.convertToNumeral(ironArm.getCurrentTier()) + ".ActivationChance") * 1000;
+		  int bonusDmg = config.getInt("IronArmConfig.Tier" + Methods.convertToNumeral(ironArm.getCurrentTier()) + ".DamageBoost");
+		  Random rand = new Random();
+		  int val = rand.nextInt(100000);
+		  if(chance >= val){
+			IronArmEvent ironArmEvent = new IronArmEvent(mp, ironArm, bonusDmg);
+			Bukkit.getPluginManager().callEvent(ironArmEvent);
+			if(!ironArmEvent.isCancelled()){
+			  e.setDamage(e.getDamage() + ironArmEvent.getBonusDamage());
+			}
+		  }
+		  return;
+		}
 	  }
 	  else{
 		Material weapon = damager.getItemInHand().getType();
@@ -54,7 +106,7 @@ public class VanillaDamageEvent implements Listener {
 		  //If the player is readying for an ability
 		  if(mp.isReadying()){
 			//If we need to use serrated strikes (We can preemptively assume that its enabled as we have checked earlier on in the code)
-			if(mp.getReadyingAbilityBit().getAbilityReady().getName() == UnlockedAbilities.SERRATED_STRIKES.getName()){
+			if(mp.getReadyingAbilityBit().getAbilityReady().getName().equalsIgnoreCase(UnlockedAbilities.SERRATED_STRIKES.getName())){
 			  //call api event
 			  SerratedStrikesEvent event = new SerratedStrikesEvent(mp, (SerratedStrikes) mp.getBaseAbility(UnlockedAbilities.SERRATED_STRIKES));
 			  Bukkit.getPluginManager().callEvent(event);
@@ -89,8 +141,8 @@ public class VanillaDamageEvent implements Listener {
 			  TaintedBladeEvent event = new TaintedBladeEvent(mp, (TaintedBlade) mp.getBaseAbility(UnlockedAbilities.TAINTED_BLADE));
 			  Bukkit.getPluginManager().callEvent(event);
 			  if(!event.isCancelled()){
-			    Player p = mp.getPlayer();
-			    p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+				Player p = mp.getPlayer();
+				p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.TaintedBlade.Activated")));
 				PotionEffect strength = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, event.getStrengthDuration() * 20, 1);
 				PotionEffect resistance = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, event.getResistanceDuration() * 20, 1);

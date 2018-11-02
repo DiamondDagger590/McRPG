@@ -6,6 +6,8 @@ UnarmedEnabled: true
 # %skill_level% - The skill level of the player
 #
 ExpEquation: '1000*(1.2^(power_level))'
+#How much extra damage by default a fist should do
+BonusDamage: 2
 #How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
 #Ex) Spider gives 30 exp. Deal 3 damage, get 90 exp with a wood sword
 ExpAwardedPerMob:
@@ -97,7 +99,7 @@ UnlockLevelForAbility:
 #
 StickyFingersConfig:
   #Equation for Sticky Fingers chance. Default gives 50% at level 1000.
-  StickyFingersChanceEquation: (swords_level)*.05
+  StickyFingersChanceEquation: (unarmed_level)*.05
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Sticky Fingers'
@@ -146,7 +148,7 @@ TighterGripConfig:
 # Config for the ability Disarm
 # This ability moves a players item to their inventory or drops if inv is full
 #
-DeeperWoundConfig:
+DisarmConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
