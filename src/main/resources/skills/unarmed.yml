@@ -112,7 +112,7 @@ StickyFingersConfig:
 # Config for the ability Tighter Grip
 # This passive ability increases the damage the the default ability Bleed applies
 #
-Bleed+Config:
+TighterGripConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -122,36 +122,29 @@ Bleed+Config:
     TierIV: 325
     TierV: 500
   TierI:
-    #The chance of Bleed_ occurring per tier
-    ActivationChance: 10.0
-    DamageBoost: 1
+    #The boost to disarm resistance occurring per tier
+    GripBoost: 5.0
   TierII:
-    ActivationChance: 12.5
-    DamageBoost: 1
+    GripBoost: 10.0
   TierIII:
-    ActivationChance: 17.5
-    DamageBoost: 1
+    GripBoost: 20.0
   TierIV:
-    ActivationChance: 22.5
-    DamageBoost: 1
+    GripBoost: 30.0
   TierV:
-    ActivationChance: 25.0
-    DamageBoost: 1
-  #How much should the damage increase when Bleed+ occurs
-  BleedPlusModifier: 1
+    GripBoost: 40.0
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Bleed+'
-    Material: REDSTONE_BLOCK
+    DisplayName: '&4Tighter Grip'
+    Material: LEAD
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cYou have a %ActivationChance%% chance of Bleed+ activating'
+    - '&cGain &e%GripBoost%% &cresistance to disarm'
     MenuLore:
-    - '&cThis ability increases the damage dealt by Bleed'
+    - '&cThis ability increases resistance to being disarmed'
 #
-# Config for the ability Deeper Wound
-# This ability extends the duration of the Bleed effect
+# Config for the ability Disarm
+# This ability moves a players item to their inventory or drops if inv is full
 #
 DeeperWoundConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
@@ -165,38 +158,31 @@ DeeperWoundConfig:
   #Config for each Tier
   TierI:
     #The chance of DeeperWound occurring per tier
-    ActivationChance: 33.3
-    #How much the duration of Bleed is boosted in seconds per tier
-    DurationBoost: 2
+    ActivationChance: 1.0
   TierII:
-    ActivationChance: 40.0
-    DurationBoost: 2
+    ActivationChance: 2.0
   TierIII:
-    ActivationChance: 45.0
-    DurationBoost: 5
+    ActivationChance: 3.0
   TierIV:
-    ActivationChance: 60.0
-    DurationBoost: 6
+    ActivationChance: 5.0
   TierV:
-    ActivationChance: 75.0
-    DurationBoost: 8
+    ActivationChance: 7.5
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Deeper Wound'
-    Material: ROSE_RED
+    DisplayName: '&4Disarm'
+    Material: SKELETON_SKULL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&cYou have a &e%ActivationChance%% &cchance'
-    - '&cof Deeper Wound activating for plus'
-    -  '&e%DurationBoost% &cseconds'
+    - '&cof Disarming your opponent'
     MenuLore:
-    - '&cThis ability extends the duration of Bleed'
+    - '&cThis ability will disarm opponents'
 #
-# Config for the ability Vampire
-# This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
+# Config for the ability Iron Arm
+# This passive ability has a chance of increasing damage dealt with fist
 #
-VampireConfig:
+IronArmConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -208,37 +194,37 @@ VampireConfig:
   #Config for each tier
   TierI:
     #Odds of activation per tier
-    ActivationChance: 50.0
-    AmountToHeal: 1
+    ActivationChance: 25.0
+    DamageBoost: 1
   TierII:
-    ActivationChance: 60.0
-    AmountToHeal: 1
+    ActivationChance: 50.0
+    DamageBoost: 1
   TierIII:
-    ActivationChance: 70.0
-    AmountToHeal: 1
+    ActivationChance: 75.0
+    DamageBoost: 1
   TierIV:
-    ActivationChance: 80.0
-    AmountToHeal: 1
+    ActivationChance: 75.0
+    DamageBoost: 2
   TierV:
-    ActivationChance: 90.0
-    AmountToHeal: 1
+    ActivationChance: 100.0
+    AmountToHeal: 2
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Vampire'
-    Material: GHAST_TEAR
+    DisplayName: '&4Iron Arm'
+    Material: IRON_INGOT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&cYou have a %ActivationChance%% chance'
-    - '&cof Vampire activating'
+    - '&cof dealing +%DamageBoost% damage with fists'
     MenuLore:
-    - '&cThis ability has a chance of healing you'
-    - '&con target Bleed'
+    - '&cThis ability has a chance of dealing'
+    - '&cextra damage with fists'
 #
-# Config for the ability Serrated Strikes
-# This active ability increases the chance of applying bleed for a short time
+# Config for the ability Berserk
+# This active ability increases the chance of disarm and deals more damage
 #
-SerratedStrikesConfig:
+BerserkConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -250,40 +236,45 @@ SerratedStrikesConfig:
   #Config for each tier
   TierI:
     #How much should the activation rate be boosted at each tier
-    ActivationBoost: 5.0
-    #Duration of the ability at each tier in seconds
-    Duration: 3
+    ActivationBoost: 3.0
+    DamageBoost: 1
+    Duration: 2
     Cooldown: 180
   TierII:
-    ActivationBoost: 7.5
-    Duration: 3
+    ActivationBoost: 5
+    DamageBoost: 1
+    Duration: 2
     Cooldown: 180
   TierIII:
-    ActivationBoost: 10.0
-    Duration: 5
+    ActivationBoost: 5
+    DamageBoost: 1
+    Duration: 3
     Cooldown: 180
   TierIV:
-    ActivationBoost: 15.0
-    Duration: 5
+    ActivationBoost: 7.5
+    DamageBoost: 1
+    Duration: 4
     Cooldown: 180
   TierV:
-    ActivationBoost: 20.0
-    Duration: 8
+    ActivationBoost: 10.0
+    DamageBoost: 2
+    Duration: 5
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Serrated Strikes'
-    Material: GOLDEN_SWORD
+    DisplayName: '&4Berserk'
+    Material: CRACKED_STONE_BRICKS
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&cThis ability increases the'
-    - '&c activation rate of Bleed'
-    - '&cGain %ActivationBoost%% for %Duration% seconds'
-    - '&cCooldown: %Cooldown%'
+    - '&cactivation rate of Disarm and dmg'
+    - '&cGain &e%ActivationBoost%% &cand &e%DamageBoost%%'
+    - '&e%Duration%&c seconds'
+    - '&cCooldown: &e%Cooldown%'
     MenuLore:
-    - '&cIncrease activation rate of Bleed'
-RageSpikeConfig:
+    - '&cIncrease activation rate of Disarm and damage'
+SmitingFistConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -294,43 +285,71 @@ RageSpikeConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    #How long the ability takes to charge
-    ChargeTime: 5
-    #Damage dealt via collision
-    Damage: 1
+    #How much health the target should get as bonus
+    BonusHealth: 1
+    #Chance of igniting a foe
+    SmiteChance: 5.0
+    #How long foe should burn
+    SmiteDuration: 5
+    #If smiting should remove invis
+    RemoveInvis: true
+    #If activation should cleanse user of negative effects
+    RemovePotionEffects: false
+    #How long ability should last
+    Duration: 3
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    ChargeTime: 4
-    Damage: 1
+    BonusHealth: 1
+    SmiteChance: 10.0
+    SmiteDuration: 5
+    RemoveInvis: true
+    RemovePotionEffects: false
+    Duration: 3
     Cooldown: 240
   TierIII:
-    ChargeTime: 3
-    Damage: 2
+    BonusHealth: 2
+    SmiteChance: 15.0
+    SmiteDuration: 5
+    RemoveInvis: true
+    RemovePotionEffects: true
+    Duration: 4
     Cooldown: 240
   TierIV:
-    ChargeTime: 2
-    Damage: 3
+    BonusHealth: 3
+    SmiteChance: 20.0
+    SmiteDuration: 5
+    RemoveInvis: true
+    RemovePotionEffects: true
+    Duration: 5
     Cooldown: 240
   TierV:
-    ChargeTime: 1
-    Damage: 4
+    BonusHealth: 4
+    SmiteChance: 25.0
+    SmiteDuration: 5
+    RemoveInvis: true
+    RemovePotionEffects: true
+    Duration: 6
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Rage Spike'
-    Material: IRON_SWORD
+    DisplayName: '&4Smiting Fist'
+    Material: NETHER_STAR
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cCharge by shifting for %ChargeTime%'
-    - '&cto dash forward'
-    - '&cDealing %Damage% damage.'
-    - '&cCooldown: %Cooldown%'
+    - '&cActivate to smite opponents'
+    - '&cBonus Health: &e+%BonusHealth%'
+    - '&cSmite Chance: &e%SmiteChance%%'
+    - '&cSmite Duration: &e%SmiteDuration% sec'
+    - '&cRemove Invis: &e%RemoveInivis%'
+    - '&cRemove Debuffs: &eRemovePotionEffects%'
+    - '&cDuration: &e%Duration%'
+    - '&cCooldown: &e%Cooldown%'
     MenuLore:
-    - '&cThis ability dashs you forward'
-    - '&cdealing damage and knockback'
-TaintedBladeConfig:
+    - '&cActivate to cleanse self of debuffs'
+    - '&cgaining bonus hp and ability to smite'
+DenseImpactConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -341,46 +360,38 @@ TaintedBladeConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    StrengthDuration: 3
-    ResistanceDuration: 3
-    HungerDuration: 3
+    #Damage dealt to armor
+    ArmorDamage: 1
+    Duration: 2
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    StrengthDuration: 4
-    ResistanceDuration: 3
-    HungerDuration: 4
-    #Cooldown in seconds
+    ArmorDamage: 1
+    Duration: 3
     Cooldown: 240
   TierIII:
-    StrengthDuration: 4
-    ResistanceDuration: 4
-    HungerDuration: 5
-    #Cooldown in seconds
+    ArmorDamage: 2
+    Duration: 3
     Cooldown: 240
   TierIV:
-    StrengthDuration: 5
-    ResistanceDuration: 5
-    HungerDuration: 5
-    #Cooldown in seconds
+    ArmorDamage: 2
+    Duration: 4
     Cooldown: 240
   TierV:
-    StrengthDuration: 6
-    ResistanceDuration: 6
-    HungerDuration: 5
-    #Cooldown in seconds
+    ArmorDamage: 3
+    Duration: 4
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Tainted Blade'
-    Material: STONE_SWORD
+    DisplayName: '&4Dense Impact'
+    Material: IRON_CHESTPLATE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cTake %HungerDuration% seconds of hunger for'
-    - '&c%StrengthDuration% seconds of strength'
-    - '&c%ResistanceDuration% seconds or resistance'
+    - '&cDeal no damage in trade'
+    - '&cof dealing &5%ArmorDamage% &cdamage'
+    - '&cto armor directly'
+    - '&cDuration: &e%Duration%'
     - '&cCooldown: %Cooldown%'
     MenuLore:
-    - '&cGain hunger in exchange'
-    - '&cfor Strength and Resistance'
+    - '&cDo damage directly to armor'

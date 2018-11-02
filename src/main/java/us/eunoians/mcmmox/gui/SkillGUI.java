@@ -28,9 +28,6 @@ public class SkillGUI extends GUI {
 		  List<String> lore = new ArrayList<>();
 		  for(String s : meta.getLore()){
 			for(Skills skill : Skills.values()){
-			  if(!skill.equals(Skills.SWORDS)){
-			    continue;
-			  }
 			  s = s.replaceAll("%" + skill.getName() + "_Level%", Integer.toString(player.getSkill(skill).getCurrentLevel()));
 			  DefaultAbilities ability = DefaultAbilities.getSkillsDefaultAbility(skill.getName());
 			  Parser equation = ability.getActivationEquation();

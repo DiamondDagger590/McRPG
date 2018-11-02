@@ -55,7 +55,7 @@ public enum DefaultAbilities implements GenericAbility {
   }
 
   public Parser getActivationEquation(){
-    return new Parser(Mcmmox.getInstance().getFileManager().getFile(file).getString(name + "Config." + name + "ChanceEquation"));
+    return new Parser(Mcmmox.getInstance().getFileManager().getFile(file).getString(name.replaceAll(" ", "") + "Config." + name.replaceAll(" ", "") + "ChanceEquation"));
   }
 
 }
