@@ -287,8 +287,8 @@ SmitingFistConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    #How much health the target should get as bonus
-    BonusHealth: 1
+    #How much health the target should get as bonus. Each level is +2 hearts
+    AbsorptionLevel: 1
     #Chance of igniting a foe
     SmiteChance: 5.0
     #How long foe should burn
@@ -302,7 +302,7 @@ SmitingFistConfig:
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    BonusHealth: 1
+    AbsorptionLevel: 1
     SmiteChance: 10.0
     SmiteDuration: 5
     RemoveInvis: true
@@ -310,7 +310,7 @@ SmitingFistConfig:
     Duration: 3
     Cooldown: 240
   TierIII:
-    BonusHealth: 2
+    AbsorptionLevel: 1
     SmiteChance: 15.0
     SmiteDuration: 5
     RemoveInvis: true
@@ -318,7 +318,7 @@ SmitingFistConfig:
     Duration: 4
     Cooldown: 240
   TierIV:
-    BonusHealth: 3
+    AbsorptionLevel: 1
     SmiteChance: 20.0
     SmiteDuration: 5
     RemoveInvis: true
@@ -326,7 +326,7 @@ SmitingFistConfig:
     Duration: 5
     Cooldown: 240
   TierV:
-    BonusHealth: 4
+    AbsorptionLevel: 2
     SmiteChance: 25.0
     SmiteDuration: 5
     RemoveInvis: true

@@ -129,6 +129,16 @@ Messages:
     Disarm:
       PlayerDisarmed: '&aYou disarmed %Player%'
       BeenDisarmed: '&cYou have been disarmed'
+    Berserk:
+      Activated: '&aBerserk is now active'
+      Deactivated: '&cBerserk has deactivated'
+    SmitingFist:
+      Activated: '&aSmiting Fist is now active'
+      Deactivated: '&cSmiting Fist has deactivated'
+      Smited: '&aYou smited %Player%'
+    DenseImpact:
+      Activated: '&aDense Impact is now active'
+      Deactivated: '&cDense Impact has deactivated'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

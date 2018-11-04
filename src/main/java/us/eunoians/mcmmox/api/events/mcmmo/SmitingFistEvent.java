@@ -1,0 +1,48 @@
+package us.eunoians.mcmmox.api.events.mcmmo;
+
+import lombok.Getter;
+import lombok.Setter;
+import us.eunoians.mcmmox.abilities.unarmed.SmitingFist;
+import us.eunoians.mcmmox.players.McMMOPlayer;
+
+public class SmitingFistEvent extends AbilityActivateEvent {
+
+  @Getter
+  @Setter
+  private int absorptionLevel;
+
+  @Getter
+  @Setter
+  private double smiteChance;
+
+  @Getter
+  @Setter
+  private int smiteDuration;
+
+  @Getter
+  @Setter
+  private boolean removeInvis;
+
+  @Getter
+  @Setter
+  private boolean removeDebuffs;
+
+  @Getter
+  @Setter
+  private int duration;
+
+  @Getter
+  @Setter
+  private int cooldown;
+
+  public SmitingFistEvent(McMMOPlayer player, SmitingFist smitingFist, int absorptionLevel, double smiteChance, int smiteDuration, boolean removeInvis, boolean removeDebuffs, int duration, int cooldown){
+    super(smitingFist, player);
+    this.absorptionLevel = absorptionLevel;
+    this.smiteChance = smiteChance;
+    this.smiteDuration = smiteDuration;
+    this.removeInvis = removeInvis;
+    this.removeDebuffs = removeDebuffs;
+    this.duration = duration;
+    this.cooldown = cooldown;
+  }
+}

@@ -74,6 +74,15 @@ public class CheckReadyEvent implements Listener {
 		  }
 		  readyHandler(p, mp, skillType);
 		}
+		else if(skillType == Skills.UNARMED){
+		  if(mp.getCooldown(skillType) != -1){
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+				Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
+					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
+			return;
+		  }
+		  readyHandler(p, mp, skillType);
+		}
 	  }
 	}
   }

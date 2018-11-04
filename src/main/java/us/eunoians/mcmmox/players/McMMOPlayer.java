@@ -14,6 +14,7 @@ import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.mining.*;
 import us.eunoians.mcmmox.abilities.swords.*;
 import us.eunoians.mcmmox.abilities.unarmed.*;
+import us.eunoians.mcmmox.api.events.mcmmo.SmitingFistEvent;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.Mining;
 import us.eunoians.mcmmox.skills.Skill;
@@ -80,6 +81,22 @@ public class McMMOPlayer {
   @Getter
   @Setter
   private boolean isLinkedToRemoteTransfer = false;
+
+  @Getter
+  @Setter
+  private boolean canSmite;
+
+  @Getter
+  @Setter
+  private SmitingFistEvent smitingFistData;
+
+  @Getter
+  @Setter
+  private boolean canDenseImpact;
+
+  @Getter
+  @Setter
+  private int armourDmg;
 
   /**
    * The file configuration of the player that we get to edit.
