@@ -185,7 +185,7 @@ RemoteTransferConfig:
     - '&bCurrently linked to %Location%'
     - '&bYour current range is %Range% blocks'
     MenuLore:
-    - '&cThis ability transfers items mined to a linked chest'
+    - '&bThis ability transfers items mined to a linked chest'
 #
 # Config for the ability Its A Triple
 # This passive ability has a chance at tripling the drops from ores instead of doubling
@@ -214,15 +214,15 @@ ItsATripleConfig:
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Its A Triple'
-    Material: GHAST_TEAR
-    Amount: 1
+    Material: DIAMOND
+    Amount: 3
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&bYou have a %ActivationChance%% chance'
     - '&bof getting a triple drop instead of double.'
     MenuLore:
     - '&bThis ability turns double drops'
-    - '&cinto triple drops'
+    - '&binto triple drops'
 #
 # Config for the ability Super Breaker
 # This active ability gives haste and double drop chance
@@ -261,17 +261,17 @@ SuperBreakerConfig:
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Serrated Strikes'
-    Material: GOLDEN_SWORD
+    DisplayName: '&4Super Breaker'
+    Material: DIAMOND_PICKAXE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cThis ability give haste and'
-    - '&cincreases activation rate of Bleed'
-    - '&cGain %ActivationBoost%% for %Duration% seconds'
-    - '&cCooldown: %Cooldown%'
+    - '&bThis ability give haste and'
+    - '&bincreases activation rate of Double Drop'
+    - '&bGain %ActivationBoost%% for %Duration% seconds'
+    - '&bCooldown: %Cooldown%'
     MenuLore:
-    - '&cIncrease activation rate of Bleed'
+    - '&bGives haste and increases Double Drop'
 BlastMiningConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -306,11 +306,11 @@ BlastMiningConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cMine blocks in a %Radius% radius'
-    - '&cReady your pick and place tnt'
-    - '&cCooldown: %Cooldown%'
+    - '&bMine blocks in a %Radius% radius'
+    - '&bReady your pick and place tnt'
+    - '&bCooldown: %Cooldown%'
     MenuLore:
-    - '&cThis ability mines blocks around you'
+    - '&bThis ability mines blocks around you'
 OreScannerConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -347,15 +347,15 @@ OreScannerConfig:
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Ore Scanner'
-    Material: DIAMOND_ORE
+    Material: EMERALD_ORE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cScan surrounding area in a'
-    - '&c%Radius% radius.'
-    - '&cDisplays amount of ores'
-    - '&cAnd points to closest valuable ore'
-    - '&cCooldown: %Cooldown%'
+    - '&bScan surrounding area in a'
+    - '&b%Radius% radius.'
+    - '&bDisplays amount of ores'
+    - '&bAnd points to closest valuable ore'
+    - '&bCooldown: %Cooldown%'
     MenuLore:
-    - '&cScan surrounding area'
-    - '&cfor gold, emerald, and diamonds'
+    - '&bScan surrounding area'
+    - '&bfor gold, emerald, and diamonds'

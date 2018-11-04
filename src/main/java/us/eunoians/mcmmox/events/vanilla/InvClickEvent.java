@@ -169,6 +169,8 @@ public class InvClickEvent implements Listener {
 			  lore.add(Methods.color("&eToggled: &c&lOFF"));
 			  meta.setLore(lore);
 			  current.setItemMeta(meta);
+			  e.getInventory().setItem(e.getSlot(), current);
+			  ((Player) e.getWhoClicked()).updateInventory();
 			}
 			else{
 			  ItemStack current = e.getCurrentItem();
@@ -179,6 +181,8 @@ public class InvClickEvent implements Listener {
 			  meta.setLore(lore);
 			  current.setItemMeta(meta);
 			  e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+			  e.getInventory().setItem(e.getSlot(), current);
+			  ((Player) e.getWhoClicked()).updateInventory();
 			}
 			return;
 		  }

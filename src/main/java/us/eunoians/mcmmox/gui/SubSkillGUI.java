@@ -34,9 +34,12 @@ public class SubSkillGUI extends GUI{
 		  Methods.color("&5" + skill.getName()));
 	  ArrayList<GUIItem> items = new ArrayList<>();
 	  List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
-	  enabledAbilities.remove(skill.getDefaultAbility().getName());
+	  enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
 	  int counter = 0;
 	  for(UnlockedAbilities ab : enabledAbilities.stream().map(UnlockedAbilities::fromString).collect(Collectors.toList())){
+	    if(ab == null){
+	      continue;
+		}
 		String path = ab.getName().replaceAll(" ", "") + "Config.Item.";
 		ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
 			config.getInt(path + "Amount"));

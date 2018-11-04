@@ -29,23 +29,23 @@ public enum Skills {
   }
 
   public Parser getExpEquation(){
-	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
 	return new Parser(Mcmmox.getInstance().getFileManager().getFile(file).getString("ExpEquation"));
   }
 
   public boolean isEnabled(){
-	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
 	return Mcmmox.getInstance().getFileManager().getFile(file).getBoolean(name + "Enabled");
   }
 
   public List<String> getEnabledAbilities(){
-	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name)).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
 	return Mcmmox.getInstance().getFileManager().getFile(file).getConfigurationSection("EnabledAbilities").getKeys(false)
 		.stream().filter(ability -> file.getFile().getBoolean("EnabledAbilities." + ability)).collect(Collectors.toList());
   }
 
   public static Skills fromString(String skill){
-	return Arrays.stream(Skills.values()).filter(type -> type.getName().equalsIgnoreCase(skill)).findFirst().orElse(SWORDS);
+	return Arrays.stream(Skills.values()).filter(type -> type.getName().equalsIgnoreCase(skill)).findAny().orElse(null);
   }
 
   public static boolean isSkill(String skill){

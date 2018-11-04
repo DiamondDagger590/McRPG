@@ -7,6 +7,8 @@ Gui:
       - 'OpenNative:SubSkillGUI:Swords'
       3:
       - 'OpenNative:SubSkillGUI:Mining'
+      5:
+      - 'OpenNative:SubSkillGUI:Unarmed'
     Items:
       SwordsSkill:
         Name: '&5Swords Skill'
@@ -22,8 +24,16 @@ Gui:
         Lore:
         - '&eClick this to view your mining information'
         - '&eCurrent Mining level: &a%Mining_Level%'
-        - '&eBleed chance: &c%Double_Drop_Chance%%'
+        - '&eDouble Drop chance: &c%Double_Drop_Chance%%'
         Slot: 3
+      UnarmedSkill:
+        Name: '&5Unarmed Skill'
+        Material:
+        Lore:
+        - '&eClick this to view your mining information'
+        - '&eCurrent Unarmed level: &a%Unarmed_Level%'
+        - '&eSticky Fingers chance: &c%Sticky_Fingers_Chance%%'
+        Slot: 5
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE
       Name: ' '

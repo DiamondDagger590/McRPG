@@ -44,7 +44,7 @@ public class VanillaDamageEvent implements Listener {
 	  Player damager = (Player) e.getDamager();
 	  McMMOPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
 	  //Deal with unarmed
-	  if(damager.getItemInHand() == null){
+	  if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
 		if(!Skills.UNARMED.isEnabled()){
 		  return;
 		}
