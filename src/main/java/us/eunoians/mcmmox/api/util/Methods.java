@@ -208,6 +208,7 @@ public class Methods {
 	  case GOLDEN_PICKAXE: return Skills.MINING;
 	  case STONE_PICKAXE: return Skills.MINING;
 	  case WOODEN_PICKAXE: return Skills.MINING;
+	  case AIR: return Skills.UNARMED;
 	}
 	return null;
   }

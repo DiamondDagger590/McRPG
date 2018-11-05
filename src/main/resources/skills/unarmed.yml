@@ -341,11 +341,11 @@ SmitingFistConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&cActivate to smite opponents'
-    - '&cBonus Health: &e+%BonusHealth%'
+    - '&cAbsorbtion Level: &e%AbsorptionLevel%'
     - '&cSmite Chance: &e%SmiteChance%%'
     - '&cSmite Duration: &e%SmiteDuration% sec'
-    - '&cRemove Invis: &e%RemoveInivis%'
-    - '&cRemove Debuffs: &eRemovePotionEffects%'
+    - '&cRemove Invis: &e%RemoveInvis%'
+    - '&cRemove Debuffs: &e%RemovePotionEffects%'
     - '&cDuration: &e%Duration%'
     - '&cCooldown: &e%Cooldown%'
     MenuLore:

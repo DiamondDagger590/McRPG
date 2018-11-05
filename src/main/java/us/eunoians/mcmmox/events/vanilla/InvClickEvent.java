@@ -36,6 +36,7 @@ public class InvClickEvent implements Listener {
 
   }
 
+  @SuppressWarnings("Duplicates")
   @EventHandler
   public void invClickEvent(InventoryClickEvent e){
 	Player p = (Player) e.getWhoClicked();
@@ -163,9 +164,9 @@ public class InvClickEvent implements Listener {
 			if(!ab.isToggled()){
 			  ItemStack current = e.getCurrentItem();
 			  current.removeEnchantment(Enchantment.DURABILITY);
-			  current.getItemMeta().getLore().remove(current.getItemMeta().getLore().size() - 1);
 			  ItemMeta meta = current.getItemMeta();
 			  List<String> lore = meta.getLore();
+			  lore.remove(meta.getLore().size() - 1);
 			  lore.add(Methods.color("&eToggled: &c&lOFF"));
 			  meta.setLore(lore);
 			  current.setItemMeta(meta);
@@ -174,9 +175,9 @@ public class InvClickEvent implements Listener {
 			}
 			else{
 			  ItemStack current = e.getCurrentItem();
-			  current.getItemMeta().getLore().remove(current.getItemMeta().getLore().size());
 			  ItemMeta meta = current.getItemMeta();
 			  List<String> lore = meta.getLore();
+			  lore.remove(meta.getLore().size() - 1);
 			  lore.add(Methods.color("&eToggled: &2&lON"));
 			  meta.setLore(lore);
 			  current.setItemMeta(meta);
@@ -190,7 +191,6 @@ public class InvClickEvent implements Listener {
 			if(e.getCurrentItem().containsEnchantment(Enchantment.DURABILITY)){
 			  ab.getItemsToSync().put(e.getCurrentItem().getType(), false);
 			  e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
-
 			  return;
 			}
 			else{
@@ -217,10 +217,26 @@ public class InvClickEvent implements Listener {
 		  }
 		  abilityToChange.setToggled(!abilityToChange.isToggled());
 		  if(!abilityToChange.isToggled()){
-			e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+			ItemStack current = e.getCurrentItem();
+			current.removeEnchantment(Enchantment.DURABILITY);
+			ItemMeta meta = current.getItemMeta();
+			List<String> lore = meta.getLore();
+			lore.remove(meta.getLore().size() - 1);
+			lore.add(Methods.color("&eToggled: &c&lOFF"));
+			meta.setLore(lore);
+			current.setItemMeta(meta);
+			((Player) e.getWhoClicked()).updateInventory();
 		  }
 		  else{
+			ItemStack current = e.getCurrentItem();
+			ItemMeta meta = current.getItemMeta();
+			List<String> lore = meta.getLore();
+			lore.remove(meta.getLore().size() - 1);
+			lore.add(Methods.color("&eToggled: &2&lON"));
+			meta.setLore(lore);
+			current.setItemMeta(meta);
 			e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+			((Player) e.getWhoClicked()).updateInventory();
 		  }
 		}
 		else if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_UPGRADE){

@@ -69,7 +69,7 @@ public class EditLoadoutGUI extends GUI {
 		List<String> newLore = new ArrayList<>();
 		for(String s : abilityMeta.getLore()){
 		  for(String value : config.getConfigurationSection(ability.getGenericAbility().getName() + "Config." + tier).getKeys(false)){
-			s = s.replace("%" + value + "%", config.getString(ability.getGenericAbility().getName() + "Config." + tier + "." + value));
+			s = s.replace("%" + value + "%", config.get(ability.getGenericAbility().getName() + "Config." + tier + "." + value).toString());
 		  }
 		  newLore.add(s);
 		}

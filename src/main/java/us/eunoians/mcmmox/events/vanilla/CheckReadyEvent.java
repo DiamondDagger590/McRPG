@@ -38,14 +38,16 @@ public class CheckReadyEvent implements Listener {
 	else{
 	  type = target.getType();
 	}
+	if(heldItem == null){
+	  heldItem = new ItemStack(Material.AIR);
+	}
 	if(type == Material.CHEST || type == Material.ENDER_CHEST ||  type == Material.TRAPPED_CHEST
   		|| type == Material.BEACON){
 	  return;
 	}
 	//Verify that the player is in a state able to ready abilities
 	//If the slot is not their hand or they arent right clicking or the player is charging or if their gamemode isnt survival or if they are holding air
-	if(e.getHand() == null || e.getHand() != EquipmentSlot.HAND || (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) || ShiftToggle.isPlayerCharging(p) || p.getGameMode() != GameMode.SURVIVAL ||
-		heldItem == null || heldItem.getType() == Material.AIR){
+	if(e.getHand() == null || e.getHand() != EquipmentSlot.HAND || (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) || ShiftToggle.isPlayerCharging(p) || p.getGameMode() != GameMode.SURVIVAL){
 	  return;
 	}
 	else{
@@ -54,7 +56,7 @@ public class CheckReadyEvent implements Listener {
 		return;
 	  }
 	  else{
-	    //Get the skill from the material of the item
+		//Get the skill from the material of the item
 		Skills skillType = Methods.getSkillsItem(heldItem);
 		if(skillType == Skills.SWORDS){
 		  if(mp.getCooldown(skillType) != -1 && p.getInventory().getItemInOffHand() != null && p.getInventory().getItemInOffHand().getType() != Material.AIR){

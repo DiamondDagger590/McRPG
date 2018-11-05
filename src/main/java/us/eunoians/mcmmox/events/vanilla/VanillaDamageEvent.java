@@ -72,10 +72,12 @@ public class VanillaDamageEvent implements Listener {
 				entity.removePotionEffect(PotionEffectType.INVISIBILITY);
 			  }
 			  entity.setFireTicks(mp.getSmitingFistData().getSmiteDuration());
+			  if(entity instanceof Player){
+				mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited")));
+			  }
+			  entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 10, 1);
 			}
-			mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-				Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited")));
-			entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 10, 1);
 		  }
 		}
 		else if(mp.isCanDenseImpact()){
@@ -87,6 +89,10 @@ public class VanillaDamageEvent implements Listener {
 		  }
 		}
 		if(mp.isReadying()){
+		  if(mp.getReadyingAbilityBit() == null){
+		    mp.setReadying(false);
+		    return;
+		  }
 		  PlayerReadyBit playerReadyBit = mp.getReadyingAbilityBit();
 		  if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.BERSERK)){
 			if(UnlockedAbilities.BERSERK.isEnabled() && mp.getBaseAbility(UnlockedAbilities.BERSERK).isToggled()){
@@ -100,6 +106,7 @@ public class VanillaDamageEvent implements Listener {
 				//cancel the readying task and null the bit
 				Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 				mp.setReadyingAbilityBit(null);
+				mp.setReadying(false);
 				//get the bleed ability and set the bonus chance
 				Disarm disarm = (Disarm) mp.getSkill(Skills.UNARMED).getAbility(UnlockedAbilities.DISARM);
 				disarm.setBonusChance(event.getBonusChance());
@@ -131,7 +138,7 @@ public class VanillaDamageEvent implements Listener {
 			  //cancel the readying task and null the bit
 			  Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			  mp.setReadyingAbilityBit(null);
-
+			  mp.setReadying(false);
 			  int absorptionLevel = config.getInt("SmitingFistConfig.Tier" + Methods.convertToNumeral(smitingFist.getCurrentTier()) + ".AbsorptionLevel");
 			  double smiteChance = config.getDouble("SmitingFistConfig.Tier" + Methods.convertToNumeral(smitingFist.getCurrentTier()) + ".SmiteChance");
 			  int smiteDuration = config.getInt("SmitingFistConfig.Tier" + Methods.convertToNumeral(smitingFist.getCurrentTier()) + ".SmiteDuration");
@@ -179,6 +186,8 @@ public class VanillaDamageEvent implements Listener {
 			  int cooldown = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".Cooldown");
 			  int duration = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".Duration");
 			  int armourDmg = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".ArmorDamage");
+			  mp.setReadying(false);
+			  mp.setReadyingAbilityBit(null);
 			  DenseImpactEvent denseImpactEvent = new DenseImpactEvent(mp, denseImpact, armourDmg);
 			  Bukkit.getPluginManager().callEvent(denseImpactEvent);
 			  if(!denseImpactEvent.isCancelled()){
