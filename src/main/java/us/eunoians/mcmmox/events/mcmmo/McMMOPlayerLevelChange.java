@@ -42,7 +42,7 @@ public class McMMOPlayerLevelChange implements Listener {
 		//Need to fiddle with this sound
 		mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
 		mp.getPlayer().sendMessage(Methods.color(mcmmox.getPluginPrefix() + mcmmox.getLangFile().getString("Messages.Players.AbilityPointGained")
-			.replaceAll("%AbilityPoints%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
+			.replaceAll("%Ability_Points%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
 		mp.saveData();
 	  }
 	}

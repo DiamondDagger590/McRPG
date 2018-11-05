@@ -269,7 +269,7 @@ public class McAdmin implements CommandExecutor {
 				  ab.setToggled(true);
 				  ab.setUnlocked(true);
 				  mp.getAbilityLoadout().set(mp.getAbilityLoadout().indexOf(old), newAbility);
-				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Replaced")
+				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Replaced").replace("%Player%", offlinePlayer.getName())
 					  .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
 				  offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Replaced")
 					  .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));

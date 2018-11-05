@@ -1,5 +1,5 @@
-#Is mining enabled
-MiningEnabled: true
+#Is herbalism enabled
+HerbalismEnabled: true
 #Exp equation for mining. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -8,76 +8,69 @@ MiningEnabled: true
 ExpEquation: '1000*(1.2^(power_level))'
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
-  OBSIDIAN: 50
-  STONE: 15
-  ANDESITE: 15
-  DIORITE: 15
-  GRANITE: 15
-  COAL_ORE: 23
-  DIAMOND_ORE: 75
-  EMERALD_ORE: 100
-  GOLD_ORE: 35
-  IRON_ORE: 25
-  REDSTONE_ORE: 20
-  LAPIS_ORE: 30
-DoubleDropBlocks:
-  - 'OBSIDIAN'
-  - 'STONE'
-  - 'ANDESITE'
-  - 'DIORITE'
-  - 'GRANITE'
-  - 'COAL_ORE'
-  - 'DIAMOND_ORE'
-  - 'EMERALD_ORE'
-  - 'GOLD_ORE'
-  - 'IRON_ORE'
-  - 'REDSTONE_ORE'
-  - 'LAPIS_ORE'
+  GRASS: 5
+  TALL_GRASS: 5
+  ROSE_BUSH: 7
+  DANDELION: 7
+  POPPY: 7
+  CACTUS: 20
+  SUGAR_CANE: 20
+  VINE: 10
+  POTATOE: 7
+  BROWN_MUSHROOM: 10
+  BROWN_MUSHROOM_BLOCK: 15
+  RED_MUSHROOM: 10
+  RED_MUSHROOM_BLOCK: 15
+  MUSHROOM_STEM: 15
+  MELON: 10
+  PUMPKIN: 10
+  NETHER_WART: 10
+  WHEAT: 7
+  CARROT: 7
 #What abilities are enabled
 EnabledAbilities:
-  DoubleDrop: true
-  RicherOres: true
-  RemoteTransfer: true
-  ItsATriple: true
-  SuperBreaker: true
-  OreScanner: true
-  BlastMining: true
+  TooManyPlants: true
+  DiamondFlower: true
+  Replanting: true
+  FarmersDiet: true
+  MassHarvest: true
+  NaturesWrath: true
+  PansBlessing: true
 #If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
 #they will be required to swap the ability instead of getting a chance at replacing it right away for free
 #Perms will be mcmmox.mining.{ability}
 UsePermsForAbilites:
-  DoubleDrop: false
-  RicherOres: false
-  RemoteTransfer: false
-  ItsATriple: false
-  SuperBreaker: false
-  OreScanner: false
-  BlastMining: false
+  DiamondFlower: false
+  Replanting: false
+  FarmersDiet: false
+  MassHarvest: false
+  NaturesWrath: false
+  PansBlessing: false
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
-  RicherOres: 50
-  RemoteTransfer: 250
-  ItsATriple: 400
-  SuperBreaker: 150
-  OreScanner: 450
-  BlastMining: 600
+  DiamondFlowers: 50
+  Replanting: 250
+  FarmersDiet: 400
+  MassHarvest: 150
+  NaturesWrath: 450
+  PansBlessing: 600
 #
-# DoubleDrop is the default ability that every player has. This ability will increase every time the players Mining level is increased
+# Too Many Plants is the default ability that every player has. This ability will increase every time the players Herbalism level is increased
 #
-DoubleDropConfig:
+TooManyPlantsConfig:
   #Equation for Double Drop chance. Default gives 33% at level 1000.
-  DoubleDropChanceEquation: (mining_level)*.05
+  TooManyPlantsChanceEquation: (herbalism_level)*.05
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Double Drop'
-    Material: DIAMOND
-    Amount: 2
+    DisplayName: '&3Too Many Plants'
+    Material: GRASS
+    Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cYou have a &e%DoubleDrop_Chance%% &c+ &e%Chance_Boost%% &cchance'
+    - '&cYou have a &e%TooManyPlants_Chance%%'
     - '&cof doubling drops from natural ores'
     MenuLore:
-    - '&cThis ability has a chance of doubling ores from mining'
+    - '&cThis ability has a chance of doubling plants when harvesting'
 #
 # Config for the ability Richer Ores
 # This passive ability increases the chance of Double Drop activating

@@ -58,6 +58,7 @@ public class BreakEvent implements Listener {
 		}
 
 		int dropMultiplier = 1;
+		boolean incDrops = mining.getStringList("DoubleDropBlocks").contains(block.getType().toString());
 		if(DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
 		  DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
 		  if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
@@ -75,18 +76,20 @@ public class BreakEvent implements Listener {
 		  parser.setVariable("mining_level", mp.getSkill(Skills.MINING).getCurrentLevel());
 		  parser.setVariable("power_level", mp.getPowerLevel());
 		  int chance = (int) (parser.getValue() + doubleDrop.getBonusChance()) * 1000;
-		  Random rand = new Random();
-		  int val = rand.nextInt(100000);
-		  if(chance >= val){
-			DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
-			Bukkit.getPluginManager().callEvent(doubleDropEvent);
-			if(!doubleDropEvent.isCancelled()){
-			  dropMultiplier = 2;
+		  if(incDrops){
+			Random rand = new Random();
+			int val = rand.nextInt(100000);
+			if(chance >= val){
+			  DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
+			  Bukkit.getPluginManager().callEvent(doubleDropEvent);
+			  if(!doubleDropEvent.isCancelled()){
+				dropMultiplier = 2;
+			  }
 			}
 		  }
 		}
 
-		if(UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
+		if(incDrops && UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
 			&& mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()){
 		  ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
 		  int chance = (int) mining.getDouble("ItsATripleConfig.Tier" + Methods.convertToNumeral(itsATriple.getCurrentTier()) + ".ActivationChance") * 1000;
@@ -99,6 +102,9 @@ public class BreakEvent implements Listener {
 			  dropMultiplier = 3;
 			}
 		  }
+		}
+		if(Mcmmox.getPlaceStore().isTrue(block)){
+		  dropMultiplier = 1;
 		}
 		//Check if the block is tracked by remote transfer
 		if(block.getType() == Material.CHEST && Mcmmox.getInstance().getRemoteTransferTracker().isTracked(event.getBlock().getLocation())){

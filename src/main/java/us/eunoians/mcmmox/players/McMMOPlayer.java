@@ -482,7 +482,7 @@ public class McMMOPlayer {
 	  }
 	}
 	if(!toRemove.isEmpty()){
-	  for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()){
+	  for(UnlockedAbilities ab : toRemove){
 		playerData.set("Cooldowns." + ab.getName(), null);
 		abilitiesOnCooldown.remove(ab);
 		try{
