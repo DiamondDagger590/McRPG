@@ -8,7 +8,7 @@ import us.eunoians.mcmmox.Mcmmox;
 
 import java.util.HashSet;
 
-public class Herbalism {
+public class HerbalismMethods {
 
   public static HashSet<Block> findChorusPlant(Block target){
 	return findChorusPlant(target, new HashSet<Block>());
