@@ -300,10 +300,11 @@ public class FileManager {
 	CONFIG("config.yml", "config.yml"),
 	CUSTOM("custom.yml", "localization/custom.yml"),
 	ENGLISH_FILE("en.yml", "localization/en.yml"),
+	HERBALISM_CONFIG("herbalism.yml", "skills/herbalism.yml"),
+	LOCATIONS("locations.yml", "data/locations.yml"),
 	MAIN_GUI("maingui.yml", "guis/maingui.yml"),
 	MINING_CONFIG("mining.yml", "skills/mining.yml"),
 	SKILLS_GUI("skillguis.yml", "guis/skillsgui.yml"),
-	LOCATIONS("locations.yml", "data/locations.yml"),
 	SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
 	UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml");
 

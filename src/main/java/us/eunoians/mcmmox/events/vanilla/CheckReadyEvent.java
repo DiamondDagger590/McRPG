@@ -41,8 +41,8 @@ public class CheckReadyEvent implements Listener {
 	if(heldItem == null){
 	  heldItem = new ItemStack(Material.AIR);
 	}
-	if(type == Material.CHEST || type == Material.ENDER_CHEST ||  type == Material.TRAPPED_CHEST
-  		|| type == Material.BEACON){
+	if(type == Material.CHEST || type == Material.ENDER_CHEST || type == Material.TRAPPED_CHEST
+		|| type == Material.BEACON){
 	  return;
 	}
 	//Verify that the player is in a state able to ready abilities
@@ -58,33 +58,13 @@ public class CheckReadyEvent implements Listener {
 	  else{
 		//Get the skill from the material of the item
 		Skills skillType = Methods.getSkillsItem(heldItem);
-		if(skillType == Skills.SWORDS){
-		  if(mp.getCooldown(skillType) != -1 && p.getInventory().getItemInOffHand() != null && p.getInventory().getItemInOffHand().getType() != Material.AIR){
-		    p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-				Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
-					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
-		    return;
-		  }
-		  readyHandler(p, mp, skillType);
+		if(mp.getCooldown(skillType) != -1){
+		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+			  Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
+				  .replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
+		  return;
 		}
-		else if(skillType == Skills.MINING){
-		  if(mp.getCooldown(skillType) != -1){
-			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-				Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
-					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
-			return;
-		  }
-		  readyHandler(p, mp, skillType);
-		}
-		else if(skillType == Skills.UNARMED){
-		  if(mp.getCooldown(skillType) != -1){
-			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-				Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
-					.replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
-			return;
-		  }
-		  readyHandler(p, mp, skillType);
-		}
+		readyHandler(p, mp, skillType);
 	  }
 	}
   }
@@ -97,13 +77,16 @@ public class CheckReadyEvent implements Listener {
 	  }
 	  String skill = "";
 	  if(skillType == Skills.SWORDS){
-	    skill = "Sword";
+		skill = "Sword";
 	  }
 	  else if(skillType == Skills.MINING){
-	    skill = "Pickaxe";
+		skill = "Pickaxe";
 	  }
 	  else if(skillType == Skills.UNARMED){
-	    skill = "Fist";
+		skill = "Fist";
+	  }
+	  else if(skillType == Skills.HERBALISM){
+	    skill = "Hoe";
 	  }
 	  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 		  Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", skill)));

@@ -11,15 +11,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.herbalism.*;
 import us.eunoians.mcmmox.abilities.mining.*;
 import us.eunoians.mcmmox.abilities.swords.*;
 import us.eunoians.mcmmox.abilities.unarmed.*;
 import us.eunoians.mcmmox.api.events.mcmmo.SmitingFistEvent;
 import us.eunoians.mcmmox.api.util.Methods;
-import us.eunoians.mcmmox.skills.Mining;
-import us.eunoians.mcmmox.skills.Skill;
-import us.eunoians.mcmmox.skills.Swords;
-import us.eunoians.mcmmox.skills.Unarmed;
+import us.eunoians.mcmmox.skills.*;
 import us.eunoians.mcmmox.types.*;
 
 import java.io.File;
@@ -348,6 +346,65 @@ public class McMMOPlayer {
 		Unarmed unarmed = new Unarmed(playerData.getInt("Unarmed.Level"),
 			playerData.getInt("Unarmed.CurrentExp"), abilityMap, this);
 		skills.add(unarmed);
+	  }
+	  //Add herbalism
+	  else if(skill.equals(Skills.HERBALISM)){
+		//Initialize Too Many Plants
+		TooManyPlants tooManyPlants = new TooManyPlants();
+		tooManyPlants.setToggled(playerData.getBoolean("Herbalism.TooManyPlants.IsToggled"));
+		//Initialize Replanting
+		Replanting replanting = new Replanting();
+		replanting.setToggled(playerData.getBoolean("Herbalism.Replanting.IsToggled"));
+		replanting.setCurrentTier(playerData.getInt("Herbalism.Replanting.Tier"));
+		if(playerData.getInt("Herbalism.Replanting.Tier") != 0){
+		  replanting.setUnlocked(true);
+		}
+		//Initialize Farmers Diet
+		FarmersDiet farmersDiet = new FarmersDiet();
+		farmersDiet.setToggled(playerData.getBoolean("Herbalism.FarmersDiet.IsToggled"));
+		farmersDiet.setCurrentTier(playerData.getInt("Herbalism.FarmersDiet.Tier"));
+		if(playerData.getInt("Herbalism.FarmersDiet.Tier") != 0){
+		  farmersDiet.setUnlocked(true);
+		}
+		//Initialize Diamond Flowers
+		DiamondFlowers diamondFlowers = new DiamondFlowers();
+		diamondFlowers.setToggled(playerData.getBoolean("Herbalism.DiamondFlowers.IsToggled"));
+		diamondFlowers.setCurrentTier(playerData.getInt("Herbalism.DiamondFlowers.Tier"));
+		if(playerData.getInt("Herbalism.DiamondFlowers.Tier") != 0){
+		  diamondFlowers.setUnlocked(true);
+		}
+		//Initialize Mass Harvest
+		MassHarvest massHarvest = new MassHarvest();
+		massHarvest.setToggled(playerData.getBoolean("Herbalism.MassHarvest.IsToggled"));
+		massHarvest.setCurrentTier(playerData.getInt("Herbalism.MassHarvest.Tier"));
+		if(playerData.getInt("Herbalism.MassHarvest.Tier") != 0){
+		  massHarvest.setUnlocked(true);
+		}
+		//Initialize Pans Blessing
+		PansBlessing pansBlessing = new PansBlessing();
+		pansBlessing.setToggled(playerData.getBoolean("Herbalism.PansBlessing.IsToggled"));
+		pansBlessing.setCurrentTier(playerData.getInt("Herbalism.PansBlessing.Tier"));
+		if(playerData.getInt("Herbalism.PansBlessing.Tier") != 0){
+		  pansBlessing.setUnlocked(true);
+		}
+		//Initialize Natures Wrath
+		NaturesWrath naturesWrath = new NaturesWrath();
+		naturesWrath.setToggled(playerData.getBoolean("Herbalism.NaturesWrath.IsToggled"));
+		naturesWrath.setCurrentTier(playerData.getInt("Herbalism.NaturesWrath.Tier"));
+		if(playerData.getInt("Herbalism.NaturesWrath.Tier") != 0){
+		  naturesWrath.setUnlocked(true);
+		}
+		abilityMap.put(DefaultAbilities.TOO_MANY_PLANTS, tooManyPlants);
+		abilityMap.put(UnlockedAbilities.REPLANTING, replanting);
+		abilityMap.put(UnlockedAbilities.FARMERS_DIET, farmersDiet);
+		abilityMap.put(UnlockedAbilities.DIAMOND_FLOWERS, diamondFlowers);
+		abilityMap.put(UnlockedAbilities.MASS_HARVEST, massHarvest);
+		abilityMap.put(UnlockedAbilities.PANS_BLESSING, pansBlessing);
+		abilityMap.put(UnlockedAbilities.NATURES_WRATH, naturesWrath);
+		//Create skill
+		Herbalism herbalism = new Herbalism(playerData.getInt("Herbalism.Level"),
+			playerData.getInt("Herbalism.CurrentExp"), abilityMap, this);
+		skills.add(herbalism);
 	  }
 	});
 	for(String s : playerData.getStringList("AbilityLoadout")){

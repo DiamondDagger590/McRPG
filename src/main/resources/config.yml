@@ -29,3 +29,4 @@ Configuration:
 #This is in minutes
   SaveInterval: 1
   LangFile: 'en'
+  AutoUpdate: true

@@ -30,7 +30,7 @@ ExpAwardedPerBlock:
 #What abilities are enabled
 EnabledAbilities:
   TooManyPlants: true
-  DiamondFlower: true
+  DiamondFlowers: true
   Replanting: true
   FarmersDiet: true
   MassHarvest: true
@@ -40,7 +40,7 @@ EnabledAbilities:
 #they will be required to swap the ability instead of getting a chance at replacing it right away for free
 #Perms will be mcmmox.mining.{ability}
 UsePermsForAbilites:
-  DiamondFlower: false
+  DiamondFlowers: false
   Replanting: false
   FarmersDiet: false
   MassHarvest: false
@@ -72,10 +72,10 @@ TooManyPlantsConfig:
     MenuLore:
     - '&cThis ability has a chance of doubling plants when harvesting'
 #
-# Config for the ability Richer Ores
-# This passive ability increases the chance of Double Drop activating
+# Config for the ability Farmers Diet
+# This passive ability increases hunger and saturation restored by eating crops
 #
-RicherOresConfig:
+FramersDietConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -86,34 +86,39 @@ RicherOresConfig:
     TierV: 600
   TierI:
     #The chance boost from richer ores
-    ActivationBoost: 5.0
+    FoodRestorationBonus: 0
+    SaturationBonus: .5
   TierII:
-    ActivationBoost: 10.0
+    FoodRestorationBonus: 1
+    SaturationBonus: .5
   TierIII:
-    ActivationBoost: 20.0
+    FoodRestorationBonus: 2
+    SaturationBonus: 1
   TierIV:
-    ActivationBoost: 25.0
+    FoodRestorationBonus: 2
+    SaturationBonus: 1.5
   TierV:
-    ActivationBoost: 30.0
+    FoodRestorationBonus: 3
+    SaturationBonus: 2.5
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Richer Ores'
-    Material: DIAMOND_ORE
+    DisplayName: '&3Farmers Diet'
+    Material: CARROT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bYour Richer Ores gives %ActivationBoost%% bonus chance'
+    - '&aYour Farmers Diet gives'
+    - '&e%FoodRestorationBonus% &ahunger bonus'
+    - '&e%SaturationBonus% &asaturation bonus'
     MenuLore:
-    - '&bThis ability increases the chance of Double Drop'
+    - '&bThis ability increases the potency of crop food'
 #
-# Config for the ability Remote Transfer
-# This ability teleports mined items into a chest
+# Config for the ability Diamond Flowers
+# This ability allows for the user to find items in crops
 #
-RemoteTransferConfig:
+DiamondFlowersConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
-  #When a player mines their lined chest, should it unlink or should it unlink and break
-  UnlinkAndBreakOnMine: false
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 475
@@ -122,81 +127,197 @@ RemoteTransferConfig:
     TierV: 900
   #Config for each Tier
   TierI:
-    #The range of Remote Transfer per tier
-    Range: 50
-    #What categories the ability can transfer
+    #What categories the ability can get loot from
     Categories:
-    - 'Stone'
-    InvSize: 18
+      #Category name and chance of it being dropped. Chances don't need to add to 100%
+      Common: 1.0
   TierII:
-    Range: 75
     Categories:
-    - 'Stone'
-    - 'TierII'
-    InvSize: 18
+      Common: 1.0
+      UnCommon: 0.7
   TierIII:
-    Range: 100
     Categories:
-    - 'Stone'
-    - 'TierII'
-    - 'TierIII'
-    InvSize: 27
+      Common: 1.0
+      UnCommon: 0.7
+      Rare: 0.5
   TierIV:
-    Range: 150
     Categories:
-    - 'Stone'
-    - 'TierII'
-    - 'TierIII'
-    - 'TierIV'
-    InvSize: 36
+      Common: 1.0
+      UnCommon: 0.9
+      Rare: .7
   TierV:
-    Range: 200
     Categories:
-    - 'Stone'
-    - 'TierII'
-    - 'TierIII'
-    - 'TierIV'
-    InvSize: 45
+      Common: 1.0
+      UnCommon: 0.9
+      Rare: .7
+      Legendary: .01
   #Define custom categories of items to be teleported using this ability. No cap to amount
   Categories:
-    Stone:
-    - 'COBBLESTONE'
-    - 'STONE'
-    - 'ANDESITE'
-    - 'GRANITE'
-    - 'DIORITE'
-    - 'POLISHED_GRANITE'
-    - 'POLISHED_ANDESITE'
-    - 'POLISHED_DIORITE'
-    - 'MOSSY_COBBLESTONE'
-    - 'OBSIDIAN'
-    TierII:
-    - 'IRON_ORE'
-    - 'REDSTONE_ORE'
-    TierIII:
-    - 'GOLD_ORE'
-    - 'LAPIS_ORE'
-    TIERIV:
-    - 'EMERALD_ORE'
-    TIERV:
-    - 'DIAMOND_ORE'
+    Common:
+      MelonSeeds:
+        Exp: 30
+        DropChance: 10.0
+        MaxAmount: 3
+        MinAmount: 1
+        Material: MELON_SEEDS
+        Blocks:
+          - 'DEAD_BUSH'
+          - 'GRASS'
+      Bone:
+        Exp: 30
+        DropChance: 10.0
+        MaxAmount: 3
+        MinAmount: 1
+        Material: BONE
+        Blocks:
+          - 'GRASS'
+          - 'AZURE_BLUET'
+      PumpkinSeeds:
+        Exp: 30
+        DropChance: 10.0
+        MaxAmount: 3
+        MinAmount: 1
+        Material: PUMPKIN_SEEDS
+        Blocks:
+          - 'DEAD_BUSH'
+          - 'GRASS'
+      AcaciaSapling:
+        Exp: 40
+        DropChance: 2.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: ACACIA_SAPLING
+        Blocks:
+          - 'DEAD_BUSH'
+          - 'GRASS'
+      OakSapling:
+        Exp: 40
+        DropChance: 2.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: OAK_SAPLING
+        Blocks:
+        - 'DEAD_BUSH'
+        - 'GRASS'
+      DarkOakSapling:
+        Exp: 40
+        DropChance: 2.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: DARK_OAK_SAPLING
+        Blocks:
+        - 'DEAD_BUSH'
+        - 'GRASS'
+      BirchSapling:
+        Exp: 40
+        DropChance: 2.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: BIRCH_SAPLING
+        Blocks:
+        - 'DEAD_BUSH'
+        - 'GRASS'
+      JungleSapling:
+        Exp: 40
+        DropChance: 2.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: JUNGLE_SAPLING
+        Blocks:
+        - 'DEAD_BUSH'
+        - 'GRASS'
+    UnCommon:
+      NetherWart:
+        Exp: 30
+        DropChance: 15.0
+        MaxAmount: 2
+        MinAmount: 1
+        Material: NETHER_WART
+        Blocks:
+          - 'WHEAT'
+          - 'CARROT'
+          - 'POTATO'
+          - 'GRASS'
+      CocoaBeans:
+        Exp: 35
+        DropChance: 5.0
+        MaxAmount: 1
+        MinAmount: 1
+        Material: COCOA_BEANS
+        Blocks:
+          - 'WHEAT'
+          - 'CARROT'
+          - 'POTATO'
+          - 'GRASS'
+    Rare:
+      Apple:
+        Exp: 100
+        DropChance: 30.0
+        MaxAmount: 1
+        MinAmount: 1
+        Material: APPLE
+        Blocks:
+        - 'GRASS'
+        - 'DEAD_BUSH'
+      GoldenCarrot:
+        Exp: 150
+        DropChance: 40.0
+        MaxAmount: 5
+        MinAmount: 2
+        Material: GOLDEN_CARROT
+        Blocks:
+          - 'CARROT'
+          - 'GRASS'
+          - 'DEAD_BUSH'
+      GoldenApple:
+        Exp: 500
+        DropChance: 1.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: GOLDEN_APPLE
+        Blocks:
+          - 'GRASS'
+          - 'DEAD_BUSH'
+    Legendary:
+      Diamond:
+        Exp: 1500
+        DropChance: 50.0
+        MaxAmount: 2
+        MinAmount: 1
+        Material: DIAMOND
+        Blocks:
+          - 'DIRT'
+          - 'GRASS'
+          - 'POPPY'
+          - 'DANDELION'
+          - 'ROSE'
+      NotchApple:
+        Exp: 3000
+        DropChance: 7.5
+        MaxAmount: 1
+        MinAmount: 1
+        Material: ENCHANTED_GOLDEN_APPLE
+        Blocks:
+          - 'DIRT'
+          - 'GRASS'
+          - 'POPPY'
+          - 'DANDELION'
+          - 'ROSE'
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Remote Transfer'
-    Material: CHEST_MINECART
+    DisplayName: '&3Diamond Flowers'
+    Material: BLUE_ORCHID
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bUse /mclink to link a chest'
-    - '&bCurrently linked to %Location%'
-    - '&bYour current range is %Range% blocks'
+    - '&bDrop items from mining certain blocks'
     MenuLore:
-    - '&bThis ability transfers items mined to a linked chest'
+    - '&bThis ability drops rare items from mining certain blocks'
 #
-# Config for the ability Its A Triple
-# This passive ability has a chance at tripling the drops from ores instead of doubling
+# Config for the ability Replanting
+# This passive ability has a chance replanting crops for free and at varying stages
 #
-ItsATripleConfig:
+ReplantingConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -209,31 +330,37 @@ ItsATripleConfig:
   TierI:
     #Odds of activation per tier
     ActivationChance: 3.0
+    StageGrowthChance: 10.0
   TierII:
-    ActivationChance: 5.5
+    ActivationChance: 7.5
+    StageGrowthChance: 12.5
   TierIII:
-    ActivationChance: 8.5
-  TierIV:
-    ActivationChance: 11.0
-  TierV:
     ActivationChance: 15.0
+    StageGrowthChance: 17.5
+  TierIV:
+    ActivationChance: 25.0
+    StageGrowthChance: 25.0
+  TierV:
+    ActivationChance: 30.
+    StageGrowthChance: 33.3
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Its A Triple'
-    Material: DIAMOND
-    Amount: 3
+    DisplayName: '&3Replanting'
+    Material: DIAMOND_HOE
+    Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&bYou have a %ActivationChance%% chance'
-    - '&bof getting a triple drop instead of double.'
+    - '&bof replanting and a %StageGrowthChance%'
+    - '&bof the crop being slightly grown.'
     MenuLore:
-    - '&bThis ability turns double drops'
-    - '&binto triple drops'
+    - '&bThis ability replants crops'
+    - '&boccassionally at a higher growth level'
 #
-# Config for the ability Super Breaker
-# This active ability gives haste and double drop chance
+# Config for the ability Mass Harvest
+# This active ability harvests crops and replants in a radius
 #
-SuperBreakerConfig:
+MassHarvestConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -244,41 +371,38 @@ SuperBreakerConfig:
     TierV: 750
   #Config for each tier
   TierI:
-    #How much should the activation rate be boosted at each tier
-    ActivationBoost: 5.0
-    #Duration of the ability at each tier in seconds
-    Duration: 3
+    #Range of the ability
+    Range: 3
     Cooldown: 180
   TierII:
-    ActivationBoost: 7.5
-    Duration: 3
+    Range: 5
     Cooldown: 180
   TierIII:
-    ActivationBoost: 10.0
-    Duration: 5
+    Range: 7
     Cooldown: 180
   TierIV:
-    ActivationBoost: 15.0
-    Duration: 5
+    Range: 9
     Cooldown: 180
   TierV:
-    ActivationBoost: 20.0
-    Duration: 8
+    Range: 11
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Super Breaker'
-    Material: DIAMOND_PICKAXE
+    DisplayName: '&4Mass Harvest'
+    Material: STONE_HOE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bThis ability give haste and'
-    - '&bincreases activation rate of Double Drop'
-    - '&bGain %ActivationBoost%% for %Duration% seconds'
+    - '&bMines and replants crops in a'
+    - '&e%Range% &bblock range.'
     - '&bCooldown: %Cooldown%'
     MenuLore:
-    - '&bGives haste and increases Double Drop'
-BlastMiningConfig:
+    - '&bMines and replants crops in a radius'
+#
+# Config for the ability Natures Wrath
+# This active ability allows to eat flowers for potion effects but lose hunger
+#
+NaturesWrathConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -289,60 +413,126 @@ BlastMiningConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    #Radius of the ability (this is done to every side of the player)
+    #If strength should be enabled
+    POPPY: true
+    #If haste should be enabled
+    DANDELION: false
+    #If speed should be enabled
+    BLUE_ORCHID: false
+    #If resistance should be enabled
+    LILAC: false
+    #Level of the potion effect
+    Modifier: 1
+    #How much hunger is lost per flower (1 = 1/2 bar)
+    HungerLost: 1
+    #At how much hunger does this ability become unusable
+    HungerLimit: 14
+  TierII:
+    #If strength should be enabled
+    POPPY: true
+    #If haste should be enabled
+    DANDELION: true
+    #If speed should be enabled
+    BLUE_ORCHID: false
+    #If resistance should be enabled
+    LILAC: false
+    #Level of the potion effect
+    Modifier: 1
+    #How much hunger is lost per flower (1 = 1/2 bar)
+    HungerLost: 1
+    #At how much hunger does this ability become unusable
+    HungerLimit: 14
+  TierIII:
+    #If strength should be enabled
+    POPPY: true
+    #If haste should be enabled
+    DANDELION: true
+    #If speed should be enabled
+    BLUE_ORCHID: true
+    #If resistance should be enabled
+    LILAC: false
+    #Level of the potion effect
+    Modifier: 1
+    #How much hunger is lost per flower (1 = 1/2 bar)
+    HungerLost: 1
+    #At how much hunger does this ability become unusable
+    HungerLimit: 14
+  TierIV:
+    #If strength should be enabled
+    POPPY: true
+    #If haste should be enabled
+    DANDELION: true
+    #If speed should be enabled
+    BLUE_ORCHID: true
+    #If resistance should be enabled
+    LILAC: true
+    #Level of the potion effect
+    Modifier: 1
+    #How much hunger is lost per flower (1 = 1/2 bar)
+    HungerLost: 1
+    #At how much hunger does this ability become unusable
+    HungerLimit: 14
+  TierV:
+    #If strength should be enabled
+    POPPY: true
+    #If haste should be enabled
+    DANDELION: true
+    #If speed should be enabled
+    BLUE_ORCHID: true
+    #If resistance should be enabled
+    LILAC: true
+    #Level of the potion effect
+    Modifier: 2
+    #How much hunger is lost per flower (1 = 1/2 bar)
+    HungerLost: 2
+    #At how much hunger does this ability become unusable
+    HungerLimit: 14
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Natures Wrath'
+    Material: POPPY
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+    - '&bConsume a flower to gain a buff but lose hunger'
+    - '&bStrength: %POPPY%'
+    - '&bHaste: %DANDELION%'
+    - '&bSpeed: %BLUE_ORCHID%'
+    - '&bResistance: %LILAC%'
+    - '&bEffect Lv: %Modifier%'
+    - '&bHunger Lost: %HungerLost%'
+    MenuLore:
+    - '&bConsume flowers for buffs but lose hunger.'
+#
+# Config for the ability Pans Blessing
+# This active ability uses a bone meal to max out crops in a radius
+#
+PansBlessingConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 475
+    TierV: 600
+  #Config for each tier
+  TierI:
+    #Radius for the plugin to check
+    Radius: 3
+    #Cooldown in seconds
+    Cooldown: 240
+  TierII:
     Radius: 5
-    #Cooldown in seconds
-    Cooldown: 240
-  TierII:
-    Radius: 6
     Cooldown: 240
   TierIII:
-    Radius: 7
-    Cooldown: 240
-  TierIV:
-    Radius: 8
-    Cooldown: 240
-  TierV:
-    Radius: 10
-    Cooldown: 240
-  #How this ability should be seen in the GUIS
-  Item:
-    DisplayName: '&4Blast Mining'
-    Material: TNT
-    Amount: 1
-    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
-    PlayerLore:
-    - '&bMine blocks in a %Radius% radius'
-    - '&bReady your pick and place tnt'
-    - '&bCooldown: %Cooldown%'
-    MenuLore:
-    - '&bThis ability mines blocks around you'
-OreScannerConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
-  TierAmount: 5
-  #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
-  #Config for each tier
-  TierI:
     #Radius for the plugin to scan
     Radius: 7
     #Cooldown in seconds
     Cooldown: 240
-  TierII:
-    Radius: 9
-    Cooldown: 240
-  TierIII:
-    #Radius for the plugin to scan
-    Radius: 10
-    #Cooldown in seconds
-    Cooldown: 240
   TierIV:
     #Radius for the plugin to scan
-    Radius: 12
+    Radius: 11
     #Cooldown in seconds
     Cooldown: 240
   TierV:
@@ -352,16 +542,13 @@ OreScannerConfig:
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Ore Scanner'
-    Material: EMERALD_ORE
+    DisplayName: '&4Pans Blessing'
+    Material: BONE_MEAL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bScan surrounding area in a'
-    - '&b%Radius% radius.'
-    - '&bDisplays amount of ores'
-    - '&bAnd points to closest valuable ore'
+    - '&bUse bone meal to instantly grow crops in a radius'
+    - '&b%Radius% block radius.'
     - '&bCooldown: %Cooldown%'
     MenuLore:
-    - '&bScan surrounding area'
-    - '&bfor gold, emerald, and diamonds'
+    - '&bGrow crops in a radius to max level'

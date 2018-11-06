@@ -13,24 +13,30 @@ import java.util.Arrays;
  * An enum of every ability that can be unlocked
  */
 public enum UnlockedAbilities implements GenericAbility {
+  BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
+  BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
   BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
   DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
-  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
-  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
-  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
+  DIAMOND_FLOWERS("DiamondFlowers", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
   DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
   IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
+  ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, FileManager.Files.HERBALISM_CONFIG),
+  NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, FileManager.Files.HERBALISM_CONFIG),
+  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
+  PANS_BLESSING("PansBlessing", "Herbalism", AbilityType.ACTIVE, FileManager.Files.HERBALISM_CONFIG),
+  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
+  REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  REPLANTING("Replanting", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
+  RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
   SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
-  DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG);
+  SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
+  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
+  TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG);
 
   @Getter
   private String name;

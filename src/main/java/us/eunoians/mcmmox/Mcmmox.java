@@ -15,9 +15,6 @@ import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.HiddenConfig;
 import us.eunoians.mcmmox.api.util.RemoteTransferTracker;
 import us.eunoians.mcmmox.commands.*;
-import us.eunoians.mcmmox.configuration.MConfigManager;
-import us.eunoians.mcmmox.configuration.files.GeneralConfig;
-import us.eunoians.mcmmox.configuration.files.SwordsConfig;
 import us.eunoians.mcmmox.events.mcmmo.*;
 import us.eunoians.mcmmox.events.vanilla.*;
 import us.eunoians.mcmmox.localization.LocalizationFiles;
@@ -39,8 +36,6 @@ import java.util.List;
 public class Mcmmox extends JavaPlugin implements Initializable {
 
   private static Mcmmox instance;
-  @Getter
-  private MConfigManager mConfigManager;
   @Getter
   private PluginUpdater pluginUpdater;
   @Getter
@@ -96,7 +91,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     }
     pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcmmox/plinfo");
     pluginUpdater.setOut(true);
-    if (mConfigManager.getGeneralConfig().isAutoUpdate()) {
+    if (fileManager.getFile(FileManager.Files.CONFIG).getBoolean("Configuration.AutoUpdate")) {
       if (pluginUpdater.needsUpdate())
         pluginUpdater.update();
       else
@@ -163,14 +158,6 @@ public class Mcmmox extends JavaPlugin implements Initializable {
 
   public String getPluginPrefix() {
     return getLangFile().getString("Messages.PluginInfo.PluginPrefix");
-  }
-
-  public GeneralConfig getGeneralConfig() {
-    return mConfigManager.getGeneralConfig();
-  }
-
-  public SwordsConfig getSwordsConfig() {
-    return mConfigManager.getSwordsConfig();
   }
 
   public FileManager getFileManager() {
