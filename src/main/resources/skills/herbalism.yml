@@ -16,7 +16,7 @@ ExpAwardedPerBlock:
   CACTUS: 20
   SUGAR_CANE: 20
   VINE: 10
-  POTATOE: 7
+  POTATO: 7
   BROWN_MUSHROOM: 10
   BROWN_MUSHROOM_BLOCK: 15
   RED_MUSHROOM: 10
@@ -27,6 +27,20 @@ ExpAwardedPerBlock:
   NETHER_WART: 10
   WHEAT: 7
   CARROT: 7
+TooManyPlantsBlocks:
+  - 'CACTUS'
+  - 'SUGAR_CANE'
+  - 'POTATO'
+  - 'BROWN_MUSHROOM'
+  - 'BROWN_MUSHROOM_BLOCK'
+  - 'RED_MUSHROOM'
+  - 'RED_MUSHROOM_BLOCK'
+  - 'MUSHROOM_STEM'
+  - 'MELON'
+  - 'PUMPKIN'
+  - 'NETHER_WART'
+  - 'WHEAT'
+  - 'CARROT'
 #What abilities are enabled
 EnabledAbilities:
   TooManyPlants: true
@@ -341,18 +355,28 @@ ReplantingConfig:
     #Odds of activation per tier
     ActivationChance: 3.0
     StageGrowthChance: 10.0
+    MaxGrowthLevel: 1
+    MinGrowthLevel: 1
   TierII:
     ActivationChance: 7.5
     StageGrowthChance: 12.5
+    MaxGrowthLevel: 1
+    MinGrowthLevel: 1
   TierIII:
     ActivationChance: 15.0
     StageGrowthChance: 17.5
+    MaxGrowthLevel: 2
+    MinGrowthLevel: 1
   TierIV:
     ActivationChance: 25.0
     StageGrowthChance: 25.0
+    MaxGrowthLevel: 2
+    MinGrowthLevel: 1
   TierV:
     ActivationChance: 30.
     StageGrowthChance: 33.3
+    MaxGrowthLevel: 3
+    MinGrowthLevel: 1
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Replanting'

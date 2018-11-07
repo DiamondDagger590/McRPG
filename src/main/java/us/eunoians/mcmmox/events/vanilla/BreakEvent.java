@@ -4,8 +4,10 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -15,13 +17,15 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcmmox.Mcmmox;
+import us.eunoians.mcmmox.abilities.herbalism.DiamondFlowers;
+import us.eunoians.mcmmox.abilities.herbalism.Replanting;
+import us.eunoians.mcmmox.abilities.herbalism.TooManyPlants;
 import us.eunoians.mcmmox.abilities.mining.DoubleDrop;
 import us.eunoians.mcmmox.abilities.mining.ItsATriple;
 import us.eunoians.mcmmox.abilities.mining.RemoteTransfer;
 import us.eunoians.mcmmox.abilities.mining.RicherOres;
-import us.eunoians.mcmmox.api.events.mcmmo.DoubleDropEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.ItsATripleEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.RicherOresEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.*;
+import us.eunoians.mcmmox.api.util.DiamondFlowersData;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -46,65 +50,159 @@ public class BreakEvent implements Listener {
 	  Block block = event.getBlock();
 	  McMMOPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
 	  FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
+	  FileConfiguration herbalism = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
 
-	  //Deal with mining
-	  if(mining.getBoolean("MiningEnabled")){
+	  //Deal with herbalism
+	  if(herbalism.getBoolean("HerbalismEnabled")){
+		int dropMultiplier = 1;
 		if(!Mcmmox.getPlaceStore().isTrue(block)){
-		  if(p.getItemInHand().getType().toString().contains("PICK") && mining.contains("ExpAwardedPerBlock." + block.getType().toString())){
+		  if(herbalism.contains("ExpAwardedPerBlock." + block.getType().toString())){
 			int expWorth = mining.getInt("ExpAwardedPerBlock." + block.getType().toString());
-
-			mp.giveExp(Skills.MINING, expWorth, GainReason.BREAK);
+			mp.giveExp(Skills.HERBALISM, expWorth, GainReason.BREAK);
 		  }
 		}
-
-		int dropMultiplier = 1;
-		boolean incDrops = mining.getStringList("DoubleDropBlocks").contains(block.getType().toString());
-		if(DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
-		  DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
-		  if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
-			  && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()){
-			RicherOres richerOres = (RicherOres) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES);
-			RicherOresEvent richerOresEvent = new RicherOresEvent(mp, richerOres);
-			Bukkit.getPluginManager().callEvent(richerOresEvent);
-			if(!richerOresEvent.isCancelled()){
-			  double boost = mining.getDouble("RicherOresConfig.Tier" + Methods.convertToNumeral(richerOres.getCurrentTier()) + ".ActivationBoost");
-			  doubleDrop.setBonusChance(doubleDrop.getBonusChance() + boost);
-			}
-		  }
-
-		  Parser parser = DefaultAbilities.DOUBLE_DROP.getActivationEquation();
-		  parser.setVariable("mining_level", mp.getSkill(Skills.MINING).getCurrentLevel());
-		  parser.setVariable("power_level", mp.getPowerLevel());
-		  int chance = (int) (parser.getValue() + doubleDrop.getBonusChance()) * 1000;
-		  if(incDrops){
+		if(DefaultAbilities.TOO_MANY_PLANTS.isEnabled() && mp.getBaseAbility(DefaultAbilities.TOO_MANY_PLANTS).isToggled()){
+		  if(herbalism.getStringList("TooManyPlantsBlocks").contains(block.getType().toString())){
+			TooManyPlants tooManyPlants = (TooManyPlants) mp.getBaseAbility(DefaultAbilities.TOO_MANY_PLANTS);
+			Parser parser = DefaultAbilities.TOO_MANY_PLANTS.getActivationEquation();
+			parser.setVariable("herbalism_level", mp.getSkill(Skills.HERBALISM).getCurrentLevel());
+			parser.setVariable("power_level", mp.getPowerLevel());
+			int chance = (int) parser.getValue() * 1000;
 			Random rand = new Random();
 			int val = rand.nextInt(100000);
 			if(chance >= val){
-			  DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
-			  Bukkit.getPluginManager().callEvent(doubleDropEvent);
-			  if(!doubleDropEvent.isCancelled()){
+			  TooManyPlantsEvent tooManyPlantsEvent = new TooManyPlantsEvent(mp, tooManyPlants, block.getType());
+			  Bukkit.getPluginManager().callEvent(tooManyPlantsEvent);
+			  if(!tooManyPlantsEvent.isCancelled()){
 				dropMultiplier = 2;
 			  }
 			}
 		  }
 		}
-
-		if(incDrops && UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
-			&& mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()){
-		  ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
-		  int chance = (int) mining.getDouble("ItsATripleConfig.Tier" + Methods.convertToNumeral(itsATriple.getCurrentTier()) + ".ActivationChance") * 1000;
+		Material type = block.getType();
+		block.setType(Material.AIR);
+		event.setDropItems(false);
+		ItemStack item = getDropsFromMaterial(block.getType(), p.getItemInHand(), dropMultiplier);
+		p.getLocation().getWorld().dropItemNaturally(block.getLocation(), item);
+		if(UnlockedAbilities.REPLANTING.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.REPLANTING) && mp.getBaseAbility(UnlockedAbilities.REPLANTING).isToggled()){
+		  Replanting replanting = (Replanting) mp.getBaseAbility(UnlockedAbilities.REPLANTING);
+		  int chance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000;
 		  Random rand = new Random();
 		  int val = rand.nextInt(100000);
 		  if(chance >= val){
-			ItsATripleEvent itsATripleEvent = new ItsATripleEvent(mp, itsATriple);
-			Bukkit.getPluginManager().callEvent(itsATripleEvent);
-			if(!itsATripleEvent.isCancelled()){
-			  dropMultiplier = 3;
+			int growChance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".StageGrowthChance") * 1000;
+			int maxAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MaxGrowthLevel");
+			int minAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MinGrowthLevel");
+			boolean grow = false;
+			if(growChance >= rand.nextInt(100000)){
+			  grow = true;
+			}
+			ReplantingEvent replantingEvent = new ReplantingEvent(mp, replanting, grow, maxAge, minAge);
+			Bukkit.getPluginManager().callEvent(replantingEvent);
+			if(!replantingEvent.isCancelled()){
+			  block.setType(type);
+			  Ageable ageable = (Ageable) block.getState();
+			  ageable.setAge(0);
+			  if(replantingEvent.isDoStageGrowth()){
+			    int tier = rand.nextInt(replantingEvent.getMaxAge() - replantingEvent.getMinAge() + 1);
+			    ageable.setAge(tier);
+			  }
 			}
 		  }
 		}
-		if(Mcmmox.getPlaceStore().isTrue(block)){
-		  dropMultiplier = 1;
+		if(UnlockedAbilities.DIAMOND_FLOWERS.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DIAMOND_FLOWERS) && mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS).isToggled()){
+		  DiamondFlowers diamondFlowers = (DiamondFlowers) mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS);
+		  if(DiamondFlowersData.getDiamondFlowersData().containsKey(type)){
+		    ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
+		    Random rand = new Random();
+		    String key = "DiamondFlowersConfig.Tier" + Methods.convertToNumeral(diamondFlowers.getCurrentTier()) + ".Categories";
+		    for(String s : herbalism.getConfigurationSection(key).getKeys(false)){
+		      int chance = (int) herbalism.getDouble(key + "." + s) * 1000;
+		      int val = rand.nextInt(100000);
+		      if(chance >= val){
+		        categoriesToChooseFrom.add(s);
+			  }
+			}
+			int index = rand.nextInt(categoriesToChooseFrom.size());
+		    String catToUse = categoriesToChooseFrom.get(index);
+		    ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
+		    for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
+		      int chance = (int) diamondFlowersItem.getDropChance() * 1000;
+		      int val = rand.nextInt(100000);
+		      if(chance >= val){
+		        itemsPossible.add(diamondFlowersItem);
+			  }
+			}
+			DiamondFlowersData.DiamondFlowersItem diamondFlowersItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
+		    DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
+		    Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
+		    if(!diamondFlowersEvent.isCancelled()){
+			  mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
+			  int bonusAmount = rand.nextInt(diamondFlowersEvent.getMaxAmount() - diamondFlowersEvent.getMinAmount());
+			  ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);
+			  p.getLocation().getWorld().dropItemNaturally(p.getLocation(), itemToDrop);
+			  p.getLocation().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, p.getLocation(), 10);
+			}
+		  }
+		}
+	  }
+	  //Deal with mining
+	  if(mining.getBoolean("MiningEnabled")){
+		int dropMultiplier = 1;
+
+		if(!Mcmmox.getPlaceStore().isTrue(block)){
+		  if(p.getItemInHand().getType().toString().contains("PICK") && mining.contains("ExpAwardedPerBlock." + block.getType().toString())){
+			int expWorth = mining.getInt("ExpAwardedPerBlock." + block.getType().toString());
+			mp.giveExp(Skills.MINING, expWorth, GainReason.BREAK);
+		  }
+		  boolean incDrops = mining.getStringList("DoubleDropBlocks").contains(block.getType().toString());
+		  if(DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
+			DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
+			if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
+				&& mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()){
+			  RicherOres richerOres = (RicherOres) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES);
+			  RicherOresEvent richerOresEvent = new RicherOresEvent(mp, richerOres);
+			  Bukkit.getPluginManager().callEvent(richerOresEvent);
+			  if(!richerOresEvent.isCancelled()){
+				double boost = mining.getDouble("RicherOresConfig.Tier" + Methods.convertToNumeral(richerOres.getCurrentTier()) + ".ActivationBoost");
+				doubleDrop.setBonusChance(doubleDrop.getBonusChance() + boost);
+			  }
+			}
+
+			Parser parser = DefaultAbilities.DOUBLE_DROP.getActivationEquation();
+			parser.setVariable("mining_level", mp.getSkill(Skills.MINING).getCurrentLevel());
+			parser.setVariable("power_level", mp.getPowerLevel());
+			int chance = (int) (parser.getValue() + doubleDrop.getBonusChance()) * 1000;
+			if(incDrops){
+			  Random rand = new Random();
+			  int val = rand.nextInt(100000);
+			  if(chance >= val){
+				DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
+				Bukkit.getPluginManager().callEvent(doubleDropEvent);
+				if(!doubleDropEvent.isCancelled()){
+				  dropMultiplier = 2;
+				}
+			  }
+			}
+		  }
+
+		  if(incDrops && UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
+			  && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()){
+			ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
+			int chance = (int) mining.getDouble("ItsATripleConfig.Tier" + Methods.convertToNumeral(itsATriple.getCurrentTier()) + ".ActivationChance") * 1000;
+			Random rand = new Random();
+			int val = rand.nextInt(100000);
+			if(chance >= val){
+			  ItsATripleEvent itsATripleEvent = new ItsATripleEvent(mp, itsATriple);
+			  Bukkit.getPluginManager().callEvent(itsATripleEvent);
+			  if(!itsATripleEvent.isCancelled()){
+				dropMultiplier = 3;
+			  }
+			}
+		  }
+		  if(Mcmmox.getPlaceStore().isTrue(block)){
+			dropMultiplier = 1;
+		  }
 		}
 		//Check if the block is tracked by remote transfer
 		if(block.getType() == Material.CHEST && Mcmmox.getInstance().getRemoteTransferTracker().isTracked(event.getBlock().getLocation())){
@@ -249,7 +347,7 @@ public class BreakEvent implements Listener {
   private ItemStack getDropsFromMaterial(Material mat, ItemStack tool, int multiplier){
 	ItemStack returnItem = new ItemStack(mat, 1);
 	Map<Enchantment, Integer> enchants = tool.getEnchantments();
-	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && FortuneBlocks.isFortunable(mat)){
+	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(mat) || (Crops.isCrop(mat) && Crops.useFortune(mat)))){
 	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
 	  int dropAmount = getDropCount(mat, level, new Random()) * multiplier;
 	  returnItem.setAmount(dropAmount);
@@ -324,6 +422,45 @@ public class BreakEvent implements Listener {
 	  Material result = Objects.requireNonNull(Arrays.stream(values()).filter(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)).findFirst().orElse(null)).getSilkedMat();
 	  Bukkit.broadcastMessage(result.toString());
 	  return result;
+	}
+  }
+
+  private enum EasterEgg {
+	VERUM("HOE");
+
+	@Getter
+	private String socialStatus;
+
+	EasterEgg(String socialStatus){
+	  this.socialStatus = socialStatus;
+	}
+  }
+
+  private enum Crops {
+	POTATO(Material.POTATO, true),
+	CARROT(Material.CARROT, true),
+	CACTUS(Material.CACTUS, false),
+	SUGAR_CANE(Material.SUGAR_CANE, false),
+	BEETROOT(Material.BEETROOT, false),
+	WHEAT(Material.WHEAT, false);
+
+	@Getter
+	private Material type;
+
+	@Getter
+	private boolean useFortune;
+
+	Crops(Material type, boolean useFortune){
+	  this.type = type;
+	  this.useFortune = useFortune;
+	}
+
+	public static boolean isCrop(Material mat){
+	  return Arrays.stream(values()).anyMatch(type -> type.getType() == mat);
+	}
+
+	public static boolean useFortune(Material mat){
+	  return Arrays.stream(values()).filter(type -> type.getType() == mat).findAny().get().useFortune;
 	}
   }
 
