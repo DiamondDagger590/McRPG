@@ -1,8 +1,11 @@
 package us.eunoians.mcmmox.events.vanilla;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,13 +14,19 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.herbalism.NaturesWrath;
+import us.eunoians.mcmmox.api.events.mcmmo.NaturesWrathEvent;
+import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
 import us.eunoians.mcmmox.players.PlayerReadyBit;
 import us.eunoians.mcmmox.types.Skills;
+import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 public class CheckReadyEvent implements Listener {
 
@@ -44,6 +53,88 @@ public class CheckReadyEvent implements Listener {
 	if(type == Material.CHEST || type == Material.ENDER_CHEST || type == Material.TRAPPED_CHEST
 		|| type == Material.BEACON){
 	  return;
+	}
+	if((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && UnlockedAbilities.NATURES_WRATH.isEnabled() &&
+		mp.getAbilityLoadout().contains(UnlockedAbilities.NATURES_WRATH) && mp.getBaseAbility(UnlockedAbilities.NATURES_WRATH).isToggled()){
+	  NaturesWrath naturesWrath = (NaturesWrath) mp.getBaseAbility(UnlockedAbilities.NATURES_WRATH);
+	  FileConfiguration herbalism = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
+	  String key = "NaturesWrathConfig.Tier" + Methods.convertToNumeral(naturesWrath.getCurrentTier()) + ".";
+	  ItemStack offHand = p.getInventory().getItemInOffHand();
+	  if(offHand != null && offHand.getType() != Material.AIR){
+		Material itemType = offHand.getType();
+		if(itemType == Material.POPPY && herbalism.getBoolean(key + itemType.toString())){
+		  int hungerLost = herbalism.getInt(key + "HungerLost");
+		  int hungerLimit = herbalism.getInt(key + "HungerLimit");
+		  if(p.getFoodLevel() - hungerLost >= hungerLimit){
+			int modifier = herbalism.getInt(key + "Modifier");
+			int duration = herbalism.getInt(key + "Duration");
+			PotionEffectType effectType = PotionEffectType.INCREASE_DAMAGE;
+			NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
+			Bukkit.getPluginManager().callEvent(naturesWrathEvent);
+			if(!naturesWrathEvent.isCancelled()){
+			  p.getLocation().getWorld().spawnParticle(Particle.BLOCK_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.POPPY));
+			  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+			  p.updateInventory();
+			  p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
+			  p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier()));
+			}
+		  }
+		}
+		else if(itemType == Material.DANDELION && herbalism.getBoolean(key + itemType.toString())){
+		  int hungerLost = herbalism.getInt(key + "HungerLost");
+		  int hungerLimit = herbalism.getInt(key + "HungerLimit");
+		  if(p.getFoodLevel() - hungerLost >= hungerLimit){
+			int modifier = herbalism.getInt(key + "Modifier");
+			int duration = herbalism.getInt(key + "Duration");
+			PotionEffectType effectType = PotionEffectType.FAST_DIGGING;
+			NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
+			Bukkit.getPluginManager().callEvent(naturesWrathEvent);
+			if(!naturesWrathEvent.isCancelled()){
+			  p.getLocation().getWorld().spawnParticle(Particle.BLOCK_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.DANDELION));
+			  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+			  p.updateInventory();
+			  p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
+			  p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier()));
+			}
+		  }
+		}
+		else if(itemType == Material.BLUE_ORCHID && herbalism.getBoolean(key + itemType.toString())){
+		  int hungerLost = herbalism.getInt(key + "HungerLost");
+		  int hungerLimit = herbalism.getInt(key + "HungerLimit");
+		  if(p.getFoodLevel() - hungerLost >= hungerLimit){
+			int modifier = herbalism.getInt(key + "Modifier");
+			int duration = herbalism.getInt(key + "Duration");
+			PotionEffectType effectType = PotionEffectType.SPEED;
+			NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
+			Bukkit.getPluginManager().callEvent(naturesWrathEvent);
+			if(!naturesWrathEvent.isCancelled()){
+			  p.getLocation().getWorld().spawnParticle(Particle.BLOCK_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.BLUE_ORCHID));
+			  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+			  p.updateInventory();
+			  p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
+			  p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier()));
+			}
+		  }
+		}
+		else if(itemType == Material.LILAC && herbalism.getBoolean(key + itemType.toString())){
+		  int hungerLost = herbalism.getInt(key + "HungerLost");
+		  int hungerLimit = herbalism.getInt(key + "HungerLimit");
+		  if(p.getFoodLevel() - hungerLost >= hungerLimit){
+			int modifier = herbalism.getInt(key + "Modifier");
+			int duration = herbalism.getInt(key + "Duration");
+			PotionEffectType effectType = PotionEffectType.DAMAGE_RESISTANCE;
+			NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
+			Bukkit.getPluginManager().callEvent(naturesWrathEvent);
+			if(!naturesWrathEvent.isCancelled()){
+			  p.getLocation().getWorld().spawnParticle(Particle.BLOCK_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.LILAC));
+			  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+			  p.updateInventory();
+			  p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
+			  p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier()));
+			}
+		  }
+		}
+	  }
 	}
 	//Verify that the player is in a state able to ready abilities
 	//If the slot is not their hand or they arent right clicking or the player is charging or if their gamemode isnt survival or if they are holding air
@@ -86,7 +177,7 @@ public class CheckReadyEvent implements Listener {
 		skill = "Fist";
 	  }
 	  else if(skillType == Skills.HERBALISM){
-	    skill = "Hoe";
+		skill = "Hoe";
 	  }
 	  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 		  Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", skill)));

@@ -457,6 +457,8 @@ NaturesWrathConfig:
     LILAC: false
     #Level of the potion effect
     Modifier: 1
+    #Duration of effect
+    Duration: 3
     #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
     #At how much hunger does this ability become unusable
@@ -472,6 +474,8 @@ NaturesWrathConfig:
     LILAC: false
     #Level of the potion effect
     Modifier: 1
+    #Duration of effect
+    Duration: 3
     #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
     #At how much hunger does this ability become unusable
@@ -487,6 +491,8 @@ NaturesWrathConfig:
     LILAC: false
     #Level of the potion effect
     Modifier: 1
+    #Duration of effect
+    Duration: 3
     #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
     #At how much hunger does this ability become unusable
@@ -502,6 +508,8 @@ NaturesWrathConfig:
     LILAC: true
     #Level of the potion effect
     Modifier: 1
+    #Duration of effect
+    Duration: 3
     #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
     #At how much hunger does this ability become unusable
@@ -517,6 +525,8 @@ NaturesWrathConfig:
     LILAC: true
     #Level of the potion effect
     Modifier: 2
+    #Duration of effect
+    Duration: 3
     #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 2
     #At how much hunger does this ability become unusable
