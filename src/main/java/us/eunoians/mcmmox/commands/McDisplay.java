@@ -51,7 +51,7 @@ public class McDisplay implements CommandExecutor {
 			if(type.equals(DisplayType.EXP_SCOREBOARD)){
 			  ExpScoreboardDisplay display = new ExpScoreboardDisplay(mp, Skills.fromString(args[0]), p.getScoreboard());
 			  p.setScoreboard(display.getBoard());
-			  plugin.getDisplayManager().setGenericDisplay(display);
+			  displayManager.setGenericDisplay(display);
 			  return true;
 			}
 			else{

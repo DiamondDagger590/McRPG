@@ -128,7 +128,6 @@ public abstract class Skill {
 	  }
 	  McMMOPlayerLevelChangeEvent event = new McMMOPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
 	  Bukkit.getPluginManager().callEvent(event);
-
     }
 	else{
 	  currentExp += exp;
@@ -161,6 +160,9 @@ public abstract class Skill {
   }
 
   public void resetSkill(){
+    expToLevel = 0;
+    currentLevel = 0;
+    currentExp = 0;
 	for(BaseAbility baseAbility : this.getAbilities()){
 	  baseAbility.setToggled(true);
 	  baseAbility.setCurrentTier(0);

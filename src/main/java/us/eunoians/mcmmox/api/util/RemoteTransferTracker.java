@@ -16,31 +16,31 @@ public class RemoteTransferTracker {
 	load();
   }
 
-  public void addLocation(UUID uuid, Location loc){
+  public static void addLocation(UUID uuid, Location loc){
     locations.put(uuid, loc);
   }
 
-  public void removeLocation(UUID uuid){
+  public static void removeLocation(UUID uuid){
     locations.remove(uuid);
   }
 
-  public void removeLocation(Location loc){
+  public static void removeLocation(Location loc){
     locations.values().remove(loc);
   }
 
-  public boolean isTracked(Location loc){
+  public static boolean isTracked(Location loc){
     return locations.values().contains(loc);
   }
 
-  public boolean isTracked(UUID uuid){
+  public static boolean isTracked(UUID uuid){
     return locations.keySet().contains(uuid);
   }
 
-  public ArrayList<Location> getLocations(){
+  public static ArrayList<Location> getLocations(){
     return new ArrayList<>(locations.values());
   }
 
-  public UUID getUUID(Location loc){
+  public static UUID getUUID(Location loc){
     return locations.keySet().stream().filter(uuid -> locations.get(uuid).equals(loc)).findFirst().orElse(null);
   }
 

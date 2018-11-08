@@ -21,7 +21,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
   @Getter
   private Scoreboard oldBoard;
 
-  private static ScoreboardManager mangager = Bukkit.getScoreboardManager();
+  private static ScoreboardManager manager = Bukkit.getScoreboardManager();
   @Getter
   private Scoreboard board;
 
@@ -51,7 +51,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 
   private void createScoreboard(){
 	FileConfiguration config = Mcmmox.getInstance().getConfig();
-	board = mangager.getNewScoreboard();
+	board = manager.getNewScoreboard();
 	Objective objective = board.registerNewObjective("mcmmo", "dummy");
 	objective.setDisplayName(Methods.color(config.getString("DisplayConfig.Scoreboard.DisplayName").replaceAll("%Player%", player.getPlayer().getDisplayName())
 	.replaceAll("%Skill%", skill.getName())));
@@ -84,7 +84,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    */
   @Override
   public void cancel(){
-    board = mangager.getNewScoreboard();
+    board = manager.getNewScoreboard();
     player.getPlayer().setScoreboard(board);
   }
 

@@ -18,7 +18,7 @@ public class DisplayManager {
    * @return The GenericDisplay of a player
    */
   public GenericDisplay getDisplay(Player p){
-    return displays.stream().filter(display -> display.getPlayer().equals(p)).findFirst().orElse(null);
+    return displays.stream().filter(display -> display.getPlayer().getUuid().equals(p.getUniqueId())).findFirst().orElse(null);
   }
 
   /**
@@ -26,6 +26,10 @@ public class DisplayManager {
    * @param display GenericDisplay that the player will have
    */
   public void setGenericDisplay(GenericDisplay display){
+    GenericDisplay display1 = getDisplay(display.player.getPlayer());
+    if(display1 != null){
+      displays.remove(display1);
+	}
     displays.add(display);
   }
 
@@ -34,7 +38,7 @@ public class DisplayManager {
    * @param p Players who GenericDisplay is to be removed
    */
   public void removePlayersDisplay(Player p){
-    GenericDisplay display = displays.stream().filter(dis -> dis.getPlayer().equals(p)).findFirst().orElse(null);
+    GenericDisplay display = getDisplay(p);
     display.cancel();
     displays.remove(display);
   }
@@ -45,6 +49,6 @@ public class DisplayManager {
    * @return true if they have a display, else false
    */
   public boolean doesPlayerHaveDisplay(Player p){
-	return displays.stream().anyMatch(display -> display.getPlayer().equals(p));
+	return displays.stream().anyMatch(display -> display.getPlayer().getUuid().equals(p.getUniqueId()));
   }
 }

@@ -10,7 +10,10 @@ import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.mining.RemoteTransfer;
+import us.eunoians.mcmmox.api.displays.DisplayManager;
+import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcmmox.api.util.Methods;
+import us.eunoians.mcmmox.api.util.RemoteTransferTracker;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
 import us.eunoians.mcmmox.skills.Skill;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static us.eunoians.mcmmox.types.Skills.*;
 
+@SuppressWarnings("Duplicates")
 public class McAdmin implements CommandExecutor {
 
   @Override
@@ -100,7 +104,17 @@ public class McAdmin implements CommandExecutor {
 			  Skills skill = fromString(args[4]);
 			  if(offlinePlayer.isOnline()){
 				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-				mp.getSkill(skill).giveExp(amount, GainReason.COMMAND);
+				Skill s = mp.getSkill(skill);
+				s.giveExp(amount, GainReason.COMMAND);
+				s.updateExpToLevel();
+				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
+				Player p = (Player) offlinePlayer;
+				if(displayManager.doesPlayerHaveDisplay(p)){
+				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
+					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
+					expScoreboardDisplay.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel());
+				  }
+				}
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
 					.replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Exp")
@@ -145,7 +159,17 @@ public class McAdmin implements CommandExecutor {
 			  Skills skill = fromString(args[4]);
 			  if(offlinePlayer.isOnline()){
 				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-				mp.getSkill(skill).giveLevels(amount, true);
+				Skill s = mp.getSkill(skill);
+				s.giveLevels(amount, true);
+				s.updateExpToLevel();
+				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
+				Player p = (Player) offlinePlayer;
+				if(displayManager.doesPlayerHaveDisplay(p)){
+				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
+					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
+					expScoreboardDisplay.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel());
+				  }
+				}
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
 					.replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Level")
@@ -156,6 +180,8 @@ public class McAdmin implements CommandExecutor {
 			  else{
 				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
 				mp.getSkill(skill).giveLevels(amount, true);
+				mp.getSkill(skill).updateExpToLevel();
+
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
 					.replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
 				mp.saveData();
@@ -185,6 +211,10 @@ public class McAdmin implements CommandExecutor {
 			  UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
 				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
+				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
+				  return true;
+				}
 				if(mp.getAbilityLoadout().size() == 9){
 				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.LoadoutFull")));
 				  return true;
@@ -214,6 +244,10 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  else{
 				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
+				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
+				  return true;
+				}
 				BaseAbility baseAbility = mp.getBaseAbility(ability);
 				if(!baseAbility.isUnlocked()){
 				  baseAbility.setCurrentTier(1);
@@ -629,7 +663,15 @@ public class McAdmin implements CommandExecutor {
 				  baseAbility.setUnlocked(false);
 				  baseAbility.setCurrentTier(0);
 				  baseAbility.setToggled(true);
+				  if(baseAbility instanceof RemoteTransfer){
+					((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
+					mp.setLinkedToRemoteTransfer(false);
+					RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
+				  }
 				}
+				skill.setCurrentExp(0);
+				skill.setCurrentLevel(0);
+				skill.updateExpToLevel();
 				ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase(skill.getName())).collect(Collectors.toCollection(ArrayList::new));
 				for(UnlockedAbilities remove : toRemove){
 				  mp.getAbilityLoadout().remove(remove);
@@ -638,6 +680,14 @@ public class McAdmin implements CommandExecutor {
 					.replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillWasReset")
 					.replace("%Skill%", skill.getName())));
+				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
+				Player p = (Player) offlinePlayer;
+				if(displayManager.doesPlayerHaveDisplay(p)){
+				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
+				    ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
+				    expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				  }
+				}
 				mp.saveData();
 				return true;
 			  }
@@ -648,11 +698,22 @@ public class McAdmin implements CommandExecutor {
 				  baseAbility.setUnlocked(false);
 				  baseAbility.setCurrentTier(0);
 				  baseAbility.setToggled(true);
+				  if(baseAbility instanceof RemoteTransfer){
+					((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
+					mp.setLinkedToRemoteTransfer(false);
+					RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
+				  }
 				}
 				ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase(skill.getName())).collect(Collectors.toCollection(ArrayList::new));
 				for(UnlockedAbilities remove : toRemove){
 				  mp.getAbilityLoadout().remove(remove);
 				}
+				skill.setCurrentExp(0);
+				skill.setCurrentLevel(0);
+				mp.updatePowerLevel();
+				skill.updateExpToLevel();
+				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
+					.replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
 				mp.saveData();
 				return true;
 			  }
@@ -680,12 +741,21 @@ public class McAdmin implements CommandExecutor {
 			  UnlockedAbilities abilityEnum = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
 				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+
 				BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
 				baseAbility.setUnlocked(false);
 				baseAbility.setCurrentTier(0);
 				baseAbility.setToggled(true);
+
+				if(baseAbility instanceof RemoteTransfer){
+				  ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
+				  mp.setLinkedToRemoteTransfer(false);
+				  RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
+				}
+
 				UnlockedAbilities abilities = (UnlockedAbilities) baseAbility.getGenericAbility();
 				mp.getAbilityLoadout().remove(abilities);
+
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityReset")
 					.replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityWasReset")
@@ -695,10 +765,18 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  else{
 				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+
 				BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
 				baseAbility.setUnlocked(false);
 				baseAbility.setCurrentTier(0);
 				baseAbility.setToggled(true);
+
+				if(baseAbility instanceof RemoteTransfer){
+				  ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
+				  mp.setLinkedToRemoteTransfer(false);
+				  RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
+				}
+
 				UnlockedAbilities abilities = (UnlockedAbilities) baseAbility.getGenericAbility();
 				mp.getAbilityLoadout().remove(abilities);
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityReset")
@@ -724,13 +802,31 @@ public class McAdmin implements CommandExecutor {
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
 				mp.getAbilityLoadout().clear();
 				mp.setAbilityPoints(0);
+
 				if(mp.getReadyingAbilityBit() != null){
 				  Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 				  mp.setReadyingAbilityBit(null);
 				}
+
+				((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
+				mp.setLinkedToRemoteTransfer(false);
+				RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
+
 				mp.setReadying(false);
+				mp.setLinkedToRemoteTransfer(false);
+
+				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
+				Player p = (Player) offlinePlayer;
+				if(displayManager.doesPlayerHaveDisplay(p)){
+				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
+					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
+					Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
+					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				  }
+				}
 				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
-				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.Player")
+
+				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
 					.replace("%Player%", offlinePlayer.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerWasReset")));
 				mp.saveData();
@@ -738,13 +834,32 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  else{
 				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
+				mp.updatePowerLevel();
+				Arrays.stream(values()).forEach(s -> mp.getSkill(s).updateExpToLevel());
 				mp.getAbilityLoadout().clear();
 				mp.setAbilityPoints(0);
+
 				if(mp.getReadyingAbilityBit() != null){
 				  Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 				  mp.setReadyingAbilityBit(null);
 				}
+				((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
+				mp.setLinkedToRemoteTransfer(false);
+				RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
+
+				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
+				Player p = (Player) offlinePlayer;
+				if(displayManager.doesPlayerHaveDisplay(p)){
+				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
+					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
+					Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
+					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				  }
+				}
+				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.Player")
+					.replace("%Player%", offlinePlayer.getName())));
 				mp.setReadying(false);
 				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
 				mp.saveData();

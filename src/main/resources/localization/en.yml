@@ -78,6 +78,7 @@ Messages:
         DoesNotHaveAbility: '&cThe player does not have %Ability%'
         Replaced: '&aYou replaced %Player%s %Old_Ability% with %New_Ability%'
         AlreadyHave: '&cThe player already has that ability'
+        HasActive: '&cThe player already has an active ability for that skill'
       Receive:
         AbilityPoints: '&aYou were given &e%Amount% &aability points'
         Exp: '&aYou were given &e%Amount% &aexp in &5%Skill%'
@@ -95,6 +96,13 @@ Messages:
         Removed: '&aYour cooldown for &5%Ability% &awas removed'
         Add: '&aYou added &e%Cooldown% &aseconds to %Player%s cooldown for &5%Ability%'
         Added: '&cYour cooldown for &5%Ability% %chas &e%Cooldown% &cseconds added to it'
+      Reset:
+        SkillWasReset: '&cYour %Skill% skill was reset'
+        SkillReset: '&aYou reset %Player%s %Skill% skill'
+        AbilityWasReset: '&cYour %Ability% ability was reset'
+        AbilityReset: '&aYou reset %Player%s %Ability% ability'
+        PlayerWasReset: '&cYour McMMOx stats were reset'
+        PlayerReset: '&aYou reset %Player%s McMMOx stats'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'
