@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.api.util.DiamondFlowersData;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -59,6 +60,7 @@ public class McMMOStub implements CommandExecutor {
 			Mcmmox.getInstance().getFileManager().reloadFiles();
 			p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
 			PlayerManager.startSave(plugin);
+			DiamondFlowersData.init();
 			return true;
 		  }
 		  else{

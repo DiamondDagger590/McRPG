@@ -18,7 +18,6 @@ import us.eunoians.mcmmox.api.util.RemoteTransferTracker;
 import us.eunoians.mcmmox.commands.*;
 import us.eunoians.mcmmox.events.mcmmo.*;
 import us.eunoians.mcmmox.events.vanilla.*;
-import us.eunoians.mcmmox.localization.LocalizationFiles;
 import us.eunoians.mcmmox.players.PlayerManager;
 import us.eunoians.mcmmox.util.blockmeta.chunkmeta.ChunkManager;
 import us.eunoians.mcmmox.util.blockmeta.chunkmeta.ChunkManagerFactory;
@@ -39,8 +38,6 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private static Mcmmox instance;
   @Getter
   private PluginUpdater pluginUpdater;
-  @Getter
-  private LocalizationFiles localizationFiles;
   @Getter
   private FileManager fileManager;
   @Getter

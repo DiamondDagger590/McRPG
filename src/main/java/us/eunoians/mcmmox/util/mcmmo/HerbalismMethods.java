@@ -70,7 +70,7 @@ public class HerbalismMethods {
    * @param blockState The {@link BlockState} of the bottom block of the plant
    * @return the number of bonus drops to award from the blocks in this plant
    */
-  protected static int calculateMultiBlockPlantDrops(BlockState blockState){
+  public static int calculateMultiBlockPlantDrops(BlockState blockState){
 	Block block = blockState.getBlock();
 	Material blockType = blockState.getType();
 	int dropAmount = Mcmmox.getPlaceStore().isTrue(block) ? 0 : 1;

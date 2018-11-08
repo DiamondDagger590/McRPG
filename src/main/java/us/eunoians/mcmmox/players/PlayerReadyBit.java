@@ -33,6 +33,9 @@ public class PlayerReadyBit {
 	  else if(abilityReady.getSkill().equalsIgnoreCase("unarmed")){
 	    replaceName = "Fist";
 	  }
+	  else if(abilityReady.getSkill().equalsIgnoreCase("herbalism")){
+	    replaceName = "Hoe";
+	  }
       player.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 		  Mcmmox.getInstance().getLangFile().getString("Messages.Players.PlayerUnready").replace("%Skill_Item%", replaceName)));
 	}, Mcmmox.getInstance().getConfig().getInt("PlayerConfiguration.PlayerReadyDuration") * 20).getTaskId();

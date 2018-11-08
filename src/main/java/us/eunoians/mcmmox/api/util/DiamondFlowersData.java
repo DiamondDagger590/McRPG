@@ -24,7 +24,7 @@ public class DiamondFlowersData {
 		double dropChance = config.getDouble(key + ".DropChance");
 		int maxAmount = config.getInt(key + ".MaxAmount");
 		int minAmount = config.getInt(key + ".MinAmount");
-		Material itemMaterial = Material.getMaterial(config.getString(key + "Material"));
+		Material itemMaterial = Material.getMaterial(config.getString(key + ".Material"));
 		DiamondFlowersItem diamondFlowersItem = new DiamondFlowersItem(exp, dropChance, maxAmount, minAmount, itemMaterial);
 	    for(String block : config.getStringList(key + ".Blocks")){
 	      Material mat = Material.getMaterial(block);

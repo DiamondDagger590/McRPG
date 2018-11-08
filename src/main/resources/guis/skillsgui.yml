@@ -9,6 +9,8 @@ Gui:
       - 'OpenNative:SubSkillGUI:Mining'
       5:
       - 'OpenNative:SubSkillGUI:Unarmed'
+      7:
+      - 'OpenNative:SubSkillGUI:Herbalism'
     Items:
       SwordsSkill:
         Name: '&5Swords Skill'
@@ -28,12 +30,20 @@ Gui:
         Slot: 3
       UnarmedSkill:
         Name: '&5Unarmed Skill'
-        Material:
+        Material: PLAYER_HEAD
         Lore:
-        - '&eClick this to view your mining information'
+        - '&eClick this to view your unarmed information'
         - '&eCurrent Unarmed level: &a%Unarmed_Level%'
         - '&eSticky Fingers chance: &c%Sticky_Fingers_Chance%%'
         Slot: 5
+      HerbalismSkill:
+        Name: '&5Herbalism Skill'
+        Material: DIAMOND_HOE
+        Lore:
+        - '&eClick this to view your herbalism information'
+        - '&eCurrent Herbalism level: &a%Herbalism_Level%'
+        - '&eDouble Drop chance: &c%Too_Many_Plants_Chance%%'
+        Slot: 7
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE
       Name: ' '

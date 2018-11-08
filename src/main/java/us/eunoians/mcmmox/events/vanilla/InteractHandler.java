@@ -2,11 +2,14 @@ package us.eunoians.mcmmox.events.vanilla;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -14,14 +17,13 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
+import us.eunoians.mcmmox.abilities.herbalism.MassHarvest;
+import us.eunoians.mcmmox.abilities.herbalism.PansBlessing;
 import us.eunoians.mcmmox.abilities.mining.BlastMining;
 import us.eunoians.mcmmox.abilities.mining.DoubleDrop;
 import us.eunoians.mcmmox.abilities.mining.OreScanner;
 import us.eunoians.mcmmox.abilities.mining.SuperBreaker;
-import us.eunoians.mcmmox.api.events.mcmmo.BlastMiningEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.BlastTestEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.OreScannerEvent;
-import us.eunoians.mcmmox.api.events.mcmmo.SuperBreakerEvent;
+import us.eunoians.mcmmox.api.events.mcmmo.*;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -227,6 +229,77 @@ public class InteractHandler implements Listener {
 			  Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.DiamondsFound").replace("%Amount%", Integer.toString(diamondOreAmount))));
 		}
 		p.teleport(Methods.lookAt(p.getLocation(), lookAt));
+	  }
+	  else if(abilityType == UnlockedAbilities.MASS_HARVEST && (e.getAction() == Action.LEFT_CLICK_BLOCK)){
+		if(BreakEvent.CropType.isCrop(type)){
+		  FileConfiguration herbalism = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
+		  MassHarvest massHarvest = (MassHarvest) mp.getBaseAbility(UnlockedAbilities.MASS_HARVEST);
+		  int radius = herbalism.getInt("MassHarvestConfig.Tier" + Methods.convertToNumeral(massHarvest.getCurrentTier()) + ".Range");
+		  ItemStack breakItem = p.getItemInHand().clone();
+		  MassHarvestEvent massHarvestEvent = new MassHarvestEvent(mp, massHarvest, radius);
+		  Bukkit.getPluginManager().callEvent(massHarvestEvent);
+		  if(!massHarvestEvent.isCancelled()){
+			mp.setReadyingAbilityBit(null);
+			mp.setReadying(false);
+			e.setCancelled(true);
+			int cooldown = herbalism.getInt("MassHarvestConfig.Tier" + Methods.convertToNumeral(massHarvest.getCurrentTier()) + ".Cooldown");
+			for(int x = -1 * radius; x < radius; x++){
+			  for(int z = -1 * radius; z < radius; z++){
+				Block test = p.getLocation().add(x, 1, z).getBlock();
+				Material cropType = test.getType();
+				if(BreakEvent.CropType.isCrop(cropType)){
+				  BlockBreakEvent breakEvent = new BlockBreakEvent(test, p);
+				  Bukkit.getPluginManager().callEvent(breakEvent);
+				  if(!breakEvent.isCancelled()){
+					test.breakNaturally(breakItem);
+					test.setType(cropType);
+					Ageable ageable = (Ageable) test.getBlockData();
+					ageable.setAge(0);
+					test.setBlockData(ageable);
+				  }
+				}
+			  }
+			}
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.SECOND, cooldown);
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.MassHarvest.Activated")));
+			mp.addAbilityOnCooldown(UnlockedAbilities.MASS_HARVEST, cal.getTimeInMillis());
+		  }
+		}
+	  }
+	  else if(abilityType == UnlockedAbilities.PANS_BLESSING && e.getAction() == Action.RIGHT_CLICK_BLOCK){
+		if(heldItem.getType() == Material.BONE_MEAL){
+		  FileConfiguration herbalism = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
+		  PansBlessing pansBlessing = (PansBlessing) mp.getBaseAbility(UnlockedAbilities.PANS_BLESSING);
+		  int radius = herbalism.getInt("PansBlessingConfig.Tier" + Methods.convertToNumeral(pansBlessing.getCurrentTier()) + ".Radius");
+		  PansBlessingEvent pansBlessingEvent = new PansBlessingEvent(mp, pansBlessing, radius);
+		  Bukkit.getPluginManager().callEvent(pansBlessingEvent);
+		  if(!pansBlessingEvent.isCancelled()){
+		    mp.setReadying(false);
+		    mp.setReadyingAbilityBit(null);
+			int cooldown = herbalism.getInt("PansBlessingConfig.Tier" + Methods.convertToNumeral(pansBlessing.getCurrentTier()) + ".Cooldown");
+			for(int x = -1 * radius; x < radius; x++){
+			  for(int z = -1 * radius; z < radius; z++){
+				Block test = p.getLocation().add(x, 1, z).getBlock();
+				Material cropType = test.getType();
+				if(BreakEvent.CropType.isCrop(cropType)){
+				  Ageable ageable = (Ageable) test.getBlockData();
+				  int originalAge = ageable.getMaximumAge();
+				  ageable.setAge(ageable.getMaximumAge());
+				  BlockGrowEvent growEvent = new BlockGrowEvent(test, test.getState());
+				  if(!growEvent.isCancelled()){
+					test.setBlockData(ageable);
+					test.getLocation().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, test.getLocation(), 5);
+				  }
+				}
+			  }
+			}
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.SECOND, cooldown);
+			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.PansBlessing.Activated")));
+			mp.addAbilityOnCooldown(UnlockedAbilities.PANS_BLESSING, cal.getTimeInMillis());
+		  }
+		}
 	  }
 	}
   }

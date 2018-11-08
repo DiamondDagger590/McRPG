@@ -89,7 +89,7 @@ TooManyPlantsConfig:
 # Config for the ability Farmers Diet
 # This passive ability increases hunger and saturation restored by eating crops
 #
-FramersDietConfig:
+FarmersDietConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   FoodForFarmersDiet:
@@ -127,7 +127,7 @@ FramersDietConfig:
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Farmers Diet'
-    Material: CARROT
+    Material: DIAMOND
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
@@ -259,8 +259,8 @@ DiamondFlowersConfig:
         Material: NETHER_WART
         Blocks:
           - 'WHEAT'
-          - 'CARROT'
-          - 'POTATO'
+          - 'CARROTS'
+          - 'POTATOES'
           - 'GRASS'
       CocoaBeans:
         Exp: 35
@@ -270,8 +270,8 @@ DiamondFlowersConfig:
         Material: COCOA_BEANS
         Blocks:
           - 'WHEAT'
-          - 'CARROT'
-          - 'POTATO'
+          - 'CARROTS'
+          - 'POTATOES'
           - 'GRASS'
     Rare:
       Apple:
@@ -464,72 +464,40 @@ NaturesWrathConfig:
     #At how much hunger does this ability become unusable
     HungerLimit: 14
   TierII:
-    #If strength should be enabled
     POPPY: true
-    #If haste should be enabled
     DANDELION: true
-    #If speed should be enabled
     BLUE_ORCHID: false
-    #If resistance should be enabled
     LILAC: false
-    #Level of the potion effect
     Modifier: 1
-    #Duration of effect
     Duration: 3
-    #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
-    #At how much hunger does this ability become unusable
     HungerLimit: 14
   TierIII:
-    #If strength should be enabled
     POPPY: true
-    #If haste should be enabled
     DANDELION: true
-    #If speed should be enabled
     BLUE_ORCHID: true
-    #If resistance should be enabled
     LILAC: false
-    #Level of the potion effect
     Modifier: 1
-    #Duration of effect
     Duration: 3
-    #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
-    #At how much hunger does this ability become unusable
     HungerLimit: 14
   TierIV:
-    #If strength should be enabled
     POPPY: true
-    #If haste should be enabled
     DANDELION: true
-    #If speed should be enabled
     BLUE_ORCHID: true
-    #If resistance should be enabled
     LILAC: true
-    #Level of the potion effect
     Modifier: 1
-    #Duration of effect
     Duration: 3
-    #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 1
-    #At how much hunger does this ability become unusable
     HungerLimit: 14
   TierV:
-    #If strength should be enabled
     POPPY: true
-    #If haste should be enabled
     DANDELION: true
-    #If speed should be enabled
     BLUE_ORCHID: true
-    #If resistance should be enabled
     LILAC: true
-    #Level of the potion effect
     Modifier: 2
-    #Duration of effect
     Duration: 3
-    #How much hunger is lost per flower (1 = 1/2 bar)
     HungerLost: 2
-    #At how much hunger does this ability become unusable
     HungerLimit: 14
   #How this ability should be seen in the GUIS
   Item:

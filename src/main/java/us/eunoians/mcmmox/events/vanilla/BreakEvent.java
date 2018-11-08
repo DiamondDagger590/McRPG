@@ -35,6 +35,7 @@ import us.eunoians.mcmmox.types.GainReason;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 import us.eunoians.mcmmox.util.Parser;
+import us.eunoians.mcmmox.util.mcmmo.HerbalismMethods;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,13 +52,17 @@ public class BreakEvent implements Listener {
 	  McMMOPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
 	  FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 	  FileConfiguration herbalism = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
-
 	  //Deal with herbalism
 	  if(herbalism.getBoolean("HerbalismEnabled")){
 		int dropMultiplier = 1;
 		if(!Mcmmox.getPlaceStore().isTrue(block)){
 		  if(herbalism.contains("ExpAwardedPerBlock." + block.getType().toString())){
-			int expWorth = mining.getInt("ExpAwardedPerBlock." + block.getType().toString());
+			int expWorth = herbalism.getInt("ExpAwardedPerBlock." + block.getType().toString());
+			boolean oneBlockPlant = !(block.getType() == Material.CACTUS || block.getType() == Material.CHORUS_PLANT || block.getType() == Material.SUGAR_CANE);
+			if(!oneBlockPlant){
+			  int amount = HerbalismMethods.calculateMultiBlockPlantDrops(block.getState());
+			  expWorth *= amount;
+			}
 			mp.giveExp(Skills.HERBALISM, expWorth, GainReason.BREAK);
 		  }
 		}
@@ -80,10 +85,23 @@ public class BreakEvent implements Listener {
 		  }
 		}
 		Material type = block.getType();
-		block.setType(Material.AIR);
-		event.setDropItems(false);
-		ItemStack item = getDropsFromMaterial(block.getType(), p.getItemInHand(), dropMultiplier);
-		p.getLocation().getWorld().dropItemNaturally(block.getLocation(), item);
+		ArrayList<ItemStack> items = new ArrayList<>();
+		if(CropType.isCrop(type) && herbalism.getStringList("TooManyPlantsBlocks").contains(type.toString()) && ((Ageable) block.getBlockData()).getAge() == ((Ageable) block.getBlockData()).getMaximumAge()){
+		  items = getCropDrops(type);
+		}
+		else{
+		  if(herbalism.getStringList("TooManyPlantsBlocks").contains(type.toString())){
+			items.add(new ItemStack(type, dropMultiplier));
+		  }
+		}
+		if(!items.isEmpty()){
+		  event.setDropItems(false);
+		  block.setType(Material.AIR);
+		  for(ItemStack i : items){
+			i.setAmount(i.getAmount() * dropMultiplier);
+			block.getLocation().getWorld().dropItemNaturally(block.getLocation(), i);
+		  }
+		}
 		if(UnlockedAbilities.REPLANTING.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.REPLANTING) && mp.getBaseAbility(UnlockedAbilities.REPLANTING).isToggled()){
 		  Replanting replanting = (Replanting) mp.getBaseAbility(UnlockedAbilities.REPLANTING);
 		  int chance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000;
@@ -101,11 +119,11 @@ public class BreakEvent implements Listener {
 			Bukkit.getPluginManager().callEvent(replantingEvent);
 			if(!replantingEvent.isCancelled()){
 			  block.setType(type);
-			  Ageable ageable = (Ageable) block.getState();
+			  Ageable ageable = (Ageable) block.getBlockData();
 			  ageable.setAge(0);
 			  if(replantingEvent.isDoStageGrowth()){
-			    int tier = rand.nextInt(replantingEvent.getMaxAge() - replantingEvent.getMinAge() + 1);
-			    ageable.setAge(tier);
+				int tier = rand.nextInt(replantingEvent.getMaxAge() - replantingEvent.getMinAge() + 1);
+				ageable.setAge(tier);
 			  }
 			}
 		  }
@@ -113,35 +131,38 @@ public class BreakEvent implements Listener {
 		if(UnlockedAbilities.DIAMOND_FLOWERS.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DIAMOND_FLOWERS) && mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS).isToggled()){
 		  DiamondFlowers diamondFlowers = (DiamondFlowers) mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS);
 		  if(DiamondFlowersData.getDiamondFlowersData().containsKey(type)){
-		    ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
-		    Random rand = new Random();
-		    String key = "DiamondFlowersConfig.Tier" + Methods.convertToNumeral(diamondFlowers.getCurrentTier()) + ".Categories";
-		    for(String s : herbalism.getConfigurationSection(key).getKeys(false)){
-		      int chance = (int) herbalism.getDouble(key + "." + s) * 1000;
-		      int val = rand.nextInt(100000);
-		      if(chance >= val){
-		        categoriesToChooseFrom.add(s);
+			ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
+			Random rand = new Random();
+			String key = "DiamondFlowersConfig.Tier" + Methods.convertToNumeral(diamondFlowers.getCurrentTier()) + ".Categories";
+			for(String s : herbalism.getConfigurationSection(key).getKeys(false)){
+			  int chance = (int) herbalism.getDouble(key + "." + s) * 1000;
+			  int val = rand.nextInt(100000);
+			  if(chance >= val){
+				categoriesToChooseFrom.add(s);
 			  }
 			}
 			int index = rand.nextInt(categoriesToChooseFrom.size());
-		    String catToUse = categoriesToChooseFrom.get(index);
-		    ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
-		    for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
-		      int chance = (int) diamondFlowersItem.getDropChance() * 1000;
-		      int val = rand.nextInt(100000);
-		      if(chance >= val){
-		        itemsPossible.add(diamondFlowersItem);
+			String catToUse = categoriesToChooseFrom.get(index);
+			ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
+			while(itemsPossible.isEmpty()){
+			  for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
+				int chance = (int) diamondFlowersItem.getDropChance() * 1000;
+				int val = rand.nextInt(100000);
+				if(chance >= val){
+				  itemsPossible.add(diamondFlowersItem);
+				}
 			  }
 			}
 			DiamondFlowersData.DiamondFlowersItem diamondFlowersItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
-		    DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
-		    Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
-		    if(!diamondFlowersEvent.isCancelled()){
+			DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
+			Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
+			if(!diamondFlowersEvent.isCancelled()){
 			  mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
-			  int bonusAmount = rand.nextInt(diamondFlowersEvent.getMaxAmount() - diamondFlowersEvent.getMinAmount());
+			  int range = diamondFlowersItem.getMaxAmount() - diamondFlowersItem.getMinAmount();
+			  int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
 			  ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);
-			  p.getLocation().getWorld().dropItemNaturally(p.getLocation(), itemToDrop);
-			  p.getLocation().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, p.getLocation(), 10);
+			  p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
+			  p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
 			}
 		  }
 		}
@@ -347,7 +368,7 @@ public class BreakEvent implements Listener {
   private ItemStack getDropsFromMaterial(Material mat, ItemStack tool, int multiplier){
 	ItemStack returnItem = new ItemStack(mat, 1);
 	Map<Enchantment, Integer> enchants = tool.getEnchantments();
-	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(mat) || (Crops.isCrop(mat) && Crops.useFortune(mat)))){
+	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(mat))){
 	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
 	  int dropAmount = getDropCount(mat, level, new Random()) * multiplier;
 	  returnItem.setAmount(dropAmount);
@@ -436,32 +457,119 @@ public class BreakEvent implements Listener {
 	}
   }
 
-  private enum Crops {
-	POTATO(Material.POTATO, true),
-	CARROT(Material.CARROT, true),
-	CACTUS(Material.CACTUS, false),
-	SUGAR_CANE(Material.SUGAR_CANE, false),
-	BEETROOT(Material.BEETROOT, false),
-	WHEAT(Material.WHEAT, false);
+  //Code from sogonda
+// https://gitlab.com/Songoda/EpicFarming/blob/master/EpicFarming-Plugin/src/main/java/com/songoda/epicfarming/utils/CropType.java
+  public enum CropType {
 
-	@Getter
-	private Material type;
+	WHEAT("Wheat", Material.WHEAT, Material.WHEAT, Material.WHEAT_SEEDS),
 
-	@Getter
-	private boolean useFortune;
+	CARROT("Carrot", Material.CARROTS, Material.CARROT, Material.CARROT),
 
-	Crops(Material type, boolean useFortune){
-	  this.type = type;
-	  this.useFortune = useFortune;
+	POTATO("Potato", Material.POTATOES, Material.POTATO, Material.POTATO),
+
+	BEETROOT("Beetroot", Material.BEETROOTS, Material.BEETROOT, Material.BEETROOT_SEEDS),
+
+	WATER_MELON_STEM("Watermelon", Material.MELON_STEM, Material.MELON, Material.MELON_SEEDS),
+
+	PUMPKIN_STEM("Pumpkin", Material.PUMPKIN_STEM, Material.PUMPKIN, Material.PUMPKIN_SEEDS),
+
+	NETHER_WARTS("Nether Wart", Material.NETHER_WART_BLOCK, Material.NETHER_WART, Material.NETHER_WART);
+
+	private final String name;
+	private final Material yieldMaterial, blockMaterial, seedMaterial;
+
+	CropType(String name, Material blockMaterial, Material yieldMaterial, Material seedMaterial){
+	  this.name = name;
+	  this.blockMaterial = blockMaterial;
+	  this.seedMaterial = seedMaterial;
+	  this.yieldMaterial = yieldMaterial;
 	}
 
-	public static boolean isCrop(Material mat){
-	  return Arrays.stream(values()).anyMatch(type -> type.getType() == mat);
+
+	/**
+	 * Get the friendly name of the crop
+	 *
+	 * @return the name of the crop
+	 */
+	public String getName(){
+	  return name;
 	}
 
-	public static boolean useFortune(Material mat){
-	  return Arrays.stream(values()).filter(type -> type.getType() == mat).findAny().get().useFortune;
+	/**
+	 * Get the blockMaterial that represents this crop type
+	 *
+	 * @return the represented blockMaterial
+	 */
+	public Material getBlockMaterial(){
+	  return blockMaterial;
 	}
+
+	/**
+	 * Get the yield Material that represents this crop type
+	 *
+	 * @return the represented yieldMaterial
+	 */
+	public Material getYieldMaterial(){
+	  return yieldMaterial;
+	}
+
+	/**
+	 * Get the blockMaterial that represents the seed item for this crop type
+	 *
+	 * @return the represented seed blockMaterial
+	 */
+	public Material getSeedMaterial(){
+	  return seedMaterial;
+	}
+
+	/**
+	 * Check whether a specific blockMaterial is an enumerated crop type or not
+	 *
+	 * @param material the blockMaterial to check
+	 * @return true if it is a crop, false otherwise
+	 */
+	public static boolean isCrop(Material material){
+	  for(CropType type : values())
+		if(type.getBlockMaterial() == material) return true;
+	  return false;
+	}
+
+	/**
+	 * Check whether a specific blockMaterial is an enumerated crop type seed or not
+	 *
+	 * @param material the blockMaterial to check
+	 * @return true if it is a seed, false otherwise
+	 */
+	public static boolean isCropSeed(Material material){
+	  for(CropType type : values())
+		if(type.getSeedMaterial() == material) return true;
+	  return false;
+	}
+
+	/**
+	 * Get the crop type based on the specified blockMaterial
+	 *
+	 * @param material the crop blockMaterial
+	 * @return the respective CropType. null if none found
+	 */
+	public static CropType getCropType(Material material){
+	  for(CropType type : values())
+		if(type.getBlockMaterial() == material) return type;
+	  return null;
+	}
+
+  }
+
+  private ArrayList<ItemStack> getCropDrops(Material material){
+	Random random = new Random();
+
+	CropType cropTypeData = CropType.getCropType(material);
+
+	if(material == null || cropTypeData == null) return new ArrayList<>();
+	Material yieldMat = cropTypeData.getYieldMaterial();
+	ItemStack stack = new ItemStack(cropTypeData.getYieldMaterial(), (yieldMat != Material.WHEAT && yieldMat != Material.PUMPKIN) ? random.nextInt(2) + 2 : 1);
+	ItemStack seedStack = new ItemStack(cropTypeData.getSeedMaterial(), random.nextInt(3) + 1);
+	return new ArrayList<>(Arrays.asList(stack, seedStack));
   }
 
 }

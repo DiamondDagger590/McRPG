@@ -139,6 +139,10 @@ Messages:
     DenseImpact:
       Activated: '&aDense Impact is now active'
       Deactivated: '&cDense Impact has deactivated'
+    MassHarvest:
+      Activated: '&aMass Harvest has activated'
+    PansBlessing:
+      Activated: '&aPans Blessing has activated'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

@@ -655,7 +655,7 @@ public class McMMOPlayer {
    * @return true if the player has an active ability, false if not
    */
   public boolean doesPlayerHaveActiveAbilityFromSkill(Skills skill){
-	return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill.getName()))
+	return abilityLoadout.stream().filter(ability -> ability.getSkill().equalsIgnoreCase(skill.getName()))
 		.filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
   }
 
