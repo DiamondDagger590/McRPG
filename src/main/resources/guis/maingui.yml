@@ -3,7 +3,9 @@ Gui:
     Size: 27
     Title: '&bMain McMMOx Menu'
     Events:
+      #Slot
       10:
+        #Events bound to slot
         - 'OpenFile:settingsgui.yml:SettingsGUI'
       12:
         - 'OpenFile:skillsgui.yml:SkillGUI.yml'
@@ -12,14 +14,20 @@ Gui:
       16:
         - 'OpenNative:EditLoadoutGUI'
     Items:
+      #This it an identifier and can be anything
       PlayerSkull:
+        #Display name
         Name: '&2Your Profile'
+        #Material
         Material: PLAYER_HEAD
+        #Only used for player heads
         Owner: '%Player%'
+        #Lore of the item
         Lore:
           - '&eCurrent Power Level: &a%Power_Level%'
           - '&eClick this to view your ability loadout'
           - '&eYou can also change your personal settings'
+        #Slot its found at
         Slot: 10
       Skill_Menu:
         Name: '&cSkill Menu'
@@ -41,6 +49,7 @@ Gui:
         Lore:
           - '&eClick this to edit your ability loadout'
         Slot: 16
+    #Fills in every empty slot with this
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE
       Name: ' '

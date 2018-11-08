@@ -88,7 +88,7 @@ UsePermsForAbilites:
   DenseImpact: false
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
-  TighterGrip: 50
+  TighterGrip: 80
   Disarm: 150
   IronArm: 225
   Berserk: 300
@@ -119,10 +119,10 @@ TighterGripConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 125
-    TierIII: 225
-    TierIV: 325
-    TierV: 500
+    TierII: 150
+    TierIII: 275
+    TierIV: 400
+    TierV: 600
   TierI:
     #The boost to disarm resistance occurring per tier
     GripBoost: 5.0
@@ -189,9 +189,9 @@ IronArmConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 550
-    TierIII: 650
-    TierIV: 800
+    TierII: 400
+    TierIII: 575
+    TierIV: 700
     TierV: 900
   #Config for each tier
   TierI:
@@ -231,10 +231,10 @@ BerserkConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 425
+    TierIII: 575
+    TierIV: 700
+    TierV: 840
   #Config for each tier
   TierI:
     #How much should the activation rate be boosted at each tier
@@ -281,10 +281,10 @@ SmitingFistConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 575
+    TierIII: 700
+    TierIV: 825
+    TierV: 950
   #Config for each tier
   TierI:
     #How much health the target should get as bonus. Each level is +2 hearts
@@ -356,10 +356,10 @@ DenseImpactConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 675
+    TierIII: 760
+    TierIV: 875
+    TierV: 950
   #Config for each tier
   TierI:
     #Damage dealt to armor

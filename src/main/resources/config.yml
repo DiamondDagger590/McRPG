@@ -21,9 +21,11 @@ DisplayConfig:
       CurrentExp: '&aExp:'
       ExpNeeded: '&aExp Left:'
 PlayerConfiguration:
+  #This amount is here for the future and currently is unused
   AmountOfTotalAbilities: 9
+  #When the power level reaches a multiple of this number a point is awaded
   AbilityPointInterval: 250
-  #In seconds
+  #In seconds how long should the player stay ready for
   PlayerReadyDuration: 2
 Configuration:
 #This is in minutes
