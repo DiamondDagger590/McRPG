@@ -52,7 +52,8 @@ public class InvClickEvent implements Listener {
 	  //Cuz null errors are fun
 	  if(e.getCurrentItem() == null) return;
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);
-	  //This gui was hardcoded so hardcoded events are fine :D
+
+	  //Overriding abilities gui, used for active abilities
 	  if(currentGUI instanceof AbilityOverrideGUI){
 		AbilityOverrideGUI overrideGUI = (AbilityOverrideGUI) currentGUI;
 		int slot = e.getSlot();
@@ -86,6 +87,26 @@ public class InvClickEvent implements Listener {
 		  }
 		}
 	  }
+
+	  //Selecting what loadout to edit
+	  if(currentGUI instanceof EditLoadoutSelectGUI){
+	    EditLoadoutSelectGUI editLoadoutSelectGUI = (EditLoadoutSelectGUI) currentGUI;
+	    int slot = e.getSlot();
+	    if(slot == 10){
+	      EditDefaultAbilitiesGUI editDefaultAbilitiesGUI = new EditDefaultAbilitiesGUI(mp);
+	      currentGUI.setClearData(false);
+	      p.openInventory(editDefaultAbilitiesGUI.getGui().getInv());
+	      GUITracker.replacePlayersGUI(mp, editDefaultAbilitiesGUI);
+		}
+		else if(slot == 16){
+		  EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.TOGGLE);
+		  currentGUI.setClearData(false);
+		  p.openInventory(editLoadoutGUI.getGui().getInv());
+		  GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
+		}
+	  }
+
+	  //Dealing with ability accepting
 	  if(currentGUI instanceof AcceptAbilityGUI){
 		AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
 		int slot = e.getSlot();
@@ -119,6 +140,7 @@ public class InvClickEvent implements Listener {
 			mp.saveData();
 			EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_OVERRIDE, ability);
 			currentGUI.setClearData(false);
+			p.openInventory(editLoadoutGUI.getGui().getInv());
 			GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
 			return;
 		  }
@@ -153,6 +175,8 @@ public class InvClickEvent implements Listener {
 		  }
 		}
 	  }
+
+	  //Remote Transfer GUI
 	  if(currentGUI instanceof RemoteTransferGUI){
 		if(e.getCurrentItem().getType() == Material.AIR){
 		  return;
@@ -201,6 +225,39 @@ public class InvClickEvent implements Listener {
 		  }
 		}
 	  }
+
+	  else if(currentGUI instanceof EditDefaultAbilitiesGUI){
+		EditDefaultAbilitiesGUI editDefaultAbilitiesGUI = (EditDefaultAbilitiesGUI) currentGUI;
+		if(e.getSlot() > editDefaultAbilitiesGUI.getDefaultAbilityList().size() - 1){
+		  return;
+		}
+		BaseAbility abilityToChange = editDefaultAbilitiesGUI.getDefaultAbilityList().get(e.getSlot());
+		abilityToChange.setToggled(!abilityToChange.isToggled());
+		if(!abilityToChange.isToggled()){
+		  ItemStack current = e.getCurrentItem();
+		  current.removeEnchantment(Enchantment.DURABILITY);
+		  ItemMeta meta = current.getItemMeta();
+		  List<String> lore = meta.getLore();
+		  lore.remove(meta.getLore().size() - 1);
+		  lore.add(Methods.color("&eToggled: &c&lOFF"));
+		  meta.setLore(lore);
+		  current.setItemMeta(meta);
+		  ((Player) e.getWhoClicked()).updateInventory();
+		}
+		else{
+		  ItemStack current = e.getCurrentItem();
+		  ItemMeta meta = current.getItemMeta();
+		  List<String> lore = meta.getLore();
+		  lore.remove(meta.getLore().size() - 1);
+		  lore.add(Methods.color("&eToggled: &2&lON"));
+		  meta.setLore(lore);
+		  current.setItemMeta(meta);
+		  e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+		  ((Player) e.getWhoClicked()).updateInventory();
+		}
+		return;
+	  }
+	  //Deal with the various editloadout guis
 	  else if(currentGUI instanceof EditLoadoutGUI){
 		EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
 		if(e.getSlot() > mp.getAbilityLoadout().size() - 1){
@@ -267,7 +324,11 @@ public class InvClickEvent implements Listener {
 		mp.saveData();
 		return;
 	  }
-	  GUIEventBinder binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
+
+	  GUIEventBinder binder = null;
+	  if(currentGUI.getGui().getBoundEvents() != null){
+	    binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
+	  }
 	  if(binder == null) return;
 	  for(String eventBinder : binder.getBoundEventList()){
 		String[] events = eventBinder.split(":");
@@ -323,6 +384,13 @@ public class InvClickEvent implements Listener {
 		  GUI gui = null;
 		  if(events[1].equalsIgnoreCase("EditLoadoutGUI")){
 			gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.TOGGLE);
+			currentGUI.setClearData(false);
+			p.openInventory(gui.getGui().getInv());
+			GUITracker.replacePlayersGUI(mp, gui);
+			return;
+		  }
+		  else if(events[1].equalsIgnoreCase("EditLoadoutSelectGUI")){
+			gui = new EditLoadoutSelectGUI(mp);
 			currentGUI.setClearData(false);
 			p.openInventory(gui.getGui().getInv());
 			GUITracker.replacePlayersGUI(mp, gui);

@@ -16,7 +16,7 @@ ExpAwardedPerBlock:
   CACTUS: 20
   SUGAR_CANE: 20
   VINE: 10
-  POTATO: 7
+  POTATOES: 7
   BROWN_MUSHROOM: 10
   BROWN_MUSHROOM_BLOCK: 15
   RED_MUSHROOM: 10
@@ -26,11 +26,11 @@ ExpAwardedPerBlock:
   PUMPKIN: 10
   NETHER_WART: 10
   WHEAT: 7
-  CARROT: 7
+  CARROTS: 7
 TooManyPlantsBlocks:
   - 'CACTUS'
   - 'SUGAR_CANE'
-  - 'POTATO'
+  - 'POTATOES'
   - 'BROWN_MUSHROOM'
   - 'BROWN_MUSHROOM_BLOCK'
   - 'RED_MUSHROOM'
@@ -40,7 +40,7 @@ TooManyPlantsBlocks:
   - 'PUMPKIN'
   - 'NETHER_WART'
   - 'WHEAT'
-  - 'CARROT'
+  - 'CARROTS'
 #What abilities are enabled
 EnabledAbilities:
   TooManyPlants: true
@@ -127,7 +127,7 @@ FarmersDietConfig:
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Farmers Diet'
-    Material: DIAMOND
+    Material: CARROT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:

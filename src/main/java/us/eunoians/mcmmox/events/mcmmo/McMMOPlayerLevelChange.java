@@ -27,12 +27,14 @@ public class McMMOPlayerLevelChange implements Listener {
   @EventHandler
   public void levelChange(McMMOPlayerLevelChangeEvent e){
 	Mcmmox mcmmox = Mcmmox.getInstance();
+	e.getMcMMOPlayer().updatePowerLevel();
 	//Send the player a message that they leveled up
 	String message = Methods.color(mcmmox.getPluginPrefix() +
 		mcmmox.getLangFile().getString("Messages.Players.LevelUp")
 			.replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName())
 			.replaceAll("%Current_Level%", Integer.toString(e.getNextLevel())));
 	Skill skillLeveled = e.getSkillLeveled();
+	skillLeveled.updateExpToLevel();
 	McMMOPlayer mp = e.getMcMMOPlayer();
 	//iterate across all levels gained
 	for(int i = e.getPreviousLevel() + 1; i <= e.getNextLevel(); i++){
@@ -57,6 +59,20 @@ public class McMMOPlayerLevelChange implements Listener {
 	if(skillLeveled.getType().equals(Skills.MINING)){
 	  //Get all enabled abilites
 	  List<String> enabledAbilities = Skills.MINING.getEnabledAbilities();
+	  //Iterate across these bois
+	  addToPending(e, mcmmox, skillLeveled, mp, enabledAbilities);
+	}
+	//Do things for mining ability
+	if(skillLeveled.getType().equals(Skills.UNARMED)){
+	  //Get all enabled abilites
+	  List<String> enabledAbilities = Skills.UNARMED.getEnabledAbilities();
+	  //Iterate across these bois
+	  addToPending(e, mcmmox, skillLeveled, mp, enabledAbilities);
+	}
+	//Do things for mining ability
+	if(skillLeveled.getType().equals(Skills.HERBALISM)){
+	  //Get all enabled abilites
+	  List<String> enabledAbilities = Skills.HERBALISM.getEnabledAbilities();
 	  //Iterate across these bois
 	  addToPending(e, mcmmox, skillLeveled, mp, enabledAbilities);
 	}

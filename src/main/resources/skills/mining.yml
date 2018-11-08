@@ -65,7 +65,7 @@ UnlockLevelForAbility:
 # DoubleDrop is the default ability that every player has. This ability will increase every time the players Mining level is increased
 #
 DoubleDropConfig:
-  #Equation for Double Drop chance. Default gives 33% at level 1000.
+  #Equation for Double Drop chance. Default gives 50% at level 1000.
   DoubleDropChanceEquation: (mining_level)*.05
   #How this ability should be seen in the GUIS
   Item:

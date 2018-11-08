@@ -1,12 +1,10 @@
 package us.eunoians.mcmmox.types;
 
 import lombok.Getter;
-import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.util.Parser;
 
-import java.io.File;
 import java.util.Arrays;
 
 /**
@@ -41,8 +39,7 @@ public enum DefaultAbilities implements GenericAbility {
    */
   @Override
   public boolean isEnabled() {
-    return YamlConfiguration.loadConfiguration(new File(Mcmmox.getInstance().getDataFolder(),
-            File.separator + "Skills" + File.separator + this.skill)).getBoolean("EnabledAbilities." + name);
+    return Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(Skills.fromString(skill))).getBoolean("EnabledAbilities." + name.replace(" ", "").replace("_", ""));
   }
 
   /**

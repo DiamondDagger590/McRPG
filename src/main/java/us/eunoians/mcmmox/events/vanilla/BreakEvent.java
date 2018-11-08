@@ -28,6 +28,7 @@ import us.eunoians.mcmmox.api.events.mcmmo.*;
 import us.eunoians.mcmmox.api.util.DiamondFlowersData;
 import us.eunoians.mcmmox.api.util.FileManager;
 import us.eunoians.mcmmox.api.util.Methods;
+import us.eunoians.mcmmox.api.util.RemoteTransferTracker;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
 import us.eunoians.mcmmox.types.DefaultAbilities;
@@ -141,28 +142,30 @@ public class BreakEvent implements Listener {
 				categoriesToChooseFrom.add(s);
 			  }
 			}
-			int index = rand.nextInt(categoriesToChooseFrom.size());
-			String catToUse = categoriesToChooseFrom.get(index);
-			ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
-			while(itemsPossible.isEmpty()){
-			  for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
-				int chance = (int) diamondFlowersItem.getDropChance() * 1000;
-				int val = rand.nextInt(100000);
-				if(chance >= val){
-				  itemsPossible.add(diamondFlowersItem);
+			if(!categoriesToChooseFrom.isEmpty()){
+			  int index = rand.nextInt(categoriesToChooseFrom.size());
+			  String catToUse = categoriesToChooseFrom.get(index);
+			  ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
+			  while(itemsPossible.isEmpty()){
+				for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
+				  int chance = (int) diamondFlowersItem.getDropChance() * 1000;
+				  int val = rand.nextInt(100000);
+				  if(chance >= val){
+					itemsPossible.add(diamondFlowersItem);
+				  }
 				}
 			  }
-			}
-			DiamondFlowersData.DiamondFlowersItem diamondFlowersItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
-			DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
-			Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
-			if(!diamondFlowersEvent.isCancelled()){
-			  mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
-			  int range = diamondFlowersItem.getMaxAmount() - diamondFlowersItem.getMinAmount();
-			  int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
-			  ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);
-			  p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
-			  p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
+			  DiamondFlowersData.DiamondFlowersItem diamondFlowersItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
+			  DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
+			  Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
+			  if(!diamondFlowersEvent.isCancelled()){
+				mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
+				int range = diamondFlowersItem.getMaxAmount() - diamondFlowersItem.getMinAmount();
+				int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
+				ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);
+				p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
+				p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
+			  }
 			}
 		  }
 		}
@@ -179,24 +182,25 @@ public class BreakEvent implements Listener {
 		  boolean incDrops = mining.getStringList("DoubleDropBlocks").contains(block.getType().toString());
 		  if(DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
 			DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
+			double boost = 0;
 			if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
 				&& mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()){
 			  RicherOres richerOres = (RicherOres) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES);
 			  RicherOresEvent richerOresEvent = new RicherOresEvent(mp, richerOres);
 			  Bukkit.getPluginManager().callEvent(richerOresEvent);
 			  if(!richerOresEvent.isCancelled()){
-				double boost = mining.getDouble("RicherOresConfig.Tier" + Methods.convertToNumeral(richerOres.getCurrentTier()) + ".ActivationBoost");
-				doubleDrop.setBonusChance(doubleDrop.getBonusChance() + boost);
+				boost = mining.getDouble("RicherOresConfig.Tier" + Methods.convertToNumeral(richerOres.getCurrentTier()) + ".ActivationBoost");
 			  }
 			}
 
 			Parser parser = DefaultAbilities.DOUBLE_DROP.getActivationEquation();
 			parser.setVariable("mining_level", mp.getSkill(Skills.MINING).getCurrentLevel());
 			parser.setVariable("power_level", mp.getPowerLevel());
-			int chance = (int) (parser.getValue() + doubleDrop.getBonusChance()) * 1000;
+			int chance = (int) (parser.getValue() + doubleDrop.getBonusChance() + boost) * 1000;
 			if(incDrops){
 			  Random rand = new Random();
 			  int val = rand.nextInt(100000);
+			  Bukkit.broadcastMessage(val + " " + chance + " " + parser.getValue() + doubleDrop.getBonusChance());
 			  if(chance >= val){
 				DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
 				Bukkit.getPluginManager().callEvent(doubleDropEvent);
@@ -226,8 +230,8 @@ public class BreakEvent implements Listener {
 		  }
 		}
 		//Check if the block is tracked by remote transfer
-		if(block.getType() == Material.CHEST && Mcmmox.getInstance().getRemoteTransferTracker().isTracked(event.getBlock().getLocation())){
-		  UUID uuid = Mcmmox.getInstance().getRemoteTransferTracker().getUUID(event.getBlock().getLocation());
+		if(block.getType() == Material.CHEST && RemoteTransferTracker.isTracked(event.getBlock().getLocation())){
+		  UUID uuid = RemoteTransferTracker.getUUID(event.getBlock().getLocation());
 		  if(p.getUniqueId().equals(uuid)){
 			if(!Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG).getBoolean("RemoteTransferConfig.UnlinkAndBreakOnMine")){
 			  event.setCancelled(true);
@@ -235,7 +239,7 @@ public class BreakEvent implements Listener {
 			RemoteTransfer remoteTransfer = (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
 			remoteTransfer.setLinkedChestLocation(null);
 			mp.setLinkedToRemoteTransfer(false);
-			Mcmmox.getInstance().getRemoteTransferTracker().removeLocation(uuid);
+			RemoteTransferTracker.removeLocation(uuid);
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Unlinked")));
 		  }
 		  else{
@@ -252,7 +256,7 @@ public class BreakEvent implements Listener {
 			  }
 			  target.setLinkedToRemoteTransfer(false);
 			  ((RemoteTransfer) target.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
-			  Mcmmox.getInstance().getRemoteTransferTracker().removeLocation(uuid);
+			  RemoteTransferTracker.removeLocation(uuid);
 			  if(!Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG).getBoolean("RemoteTransferConfig.UnlinkAndBreakOnMine")){
 				event.setCancelled(true);
 			  }
@@ -295,7 +299,7 @@ public class BreakEvent implements Listener {
 			//If the item needs to be transferred and is toggled for transferring
 			if(transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat)){
 			  //Apply fortune and silk touch
-			  ItemStack item = getDropsFromMaterial(mat, p.getItemInHand(), dropMultiplier);
+			  ItemStack item = getDropsFromMaterial(block, p.getItemInHand(), dropMultiplier);
 			  //Get the material of the item we are putting in the chest and the amount
 			  if(mat != Material.COBBLESTONE){
 				mat = item.getType();
@@ -358,6 +362,16 @@ public class BreakEvent implements Listener {
 			}
 		  }
 		}
+		else{
+		  if(SilkBlocks.isSilked(block.getType()) && p.getInventory().getItemInMainHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)){
+		    event.setExpToDrop(0);
+		  }
+		  event.setDropItems(false);
+		  ItemStack itemStack = getDropsFromMaterial(block, p.getInventory().getItemInMainHand(), dropMultiplier);
+		  if(itemStack.getType() != Material.AIR){
+			p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemStack);
+		  }
+		}
 	  }
 
 
@@ -365,17 +379,22 @@ public class BreakEvent implements Listener {
 
   }
 
-  private ItemStack getDropsFromMaterial(Material mat, ItemStack tool, int multiplier){
-	ItemStack returnItem = new ItemStack(mat, 1);
+  private ItemStack getDropsFromMaterial(Block block, ItemStack tool, int multiplier){
+    if(block.getDrops(tool).isEmpty()){
+      return new ItemStack(Material.AIR);
+	}
+	ItemStack returnItem = (ItemStack) block.getDrops(tool).toArray()[0];
 	Map<Enchantment, Integer> enchants = tool.getEnchantments();
-	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(mat))){
+	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(block.getType()))){
 	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
-	  int dropAmount = getDropCount(mat, level, new Random()) * multiplier;
+	  int dropAmount = getDropCount(block.getType(), level, new Random()) * multiplier;
+	  Bukkit.broadcastMessage(dropAmount + " ");
 	  returnItem.setAmount(dropAmount);
 	}
-	if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(mat)){
-	  Material newMat = SilkBlocks.getSilkBlock(mat);
+	if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(block.getType())){
+	  Material newMat = SilkBlocks.getSilkBlock(block.getType());
 	  returnItem.setType(newMat);
+	  returnItem.setAmount(multiplier);
 	}
 
 	return returnItem;
@@ -398,21 +417,27 @@ public class BreakEvent implements Listener {
   }
 
   private enum FortuneBlocks {
-	COAL_ORE(Material.COAL),
-	DIAMOND_ORE(Material.DIAMOND),
-	EMERALD_ORE(Material.EMERALD),
-	LAPIS_ORE(Material.LAPIS_LAZULI),
-	REDSTONE_ORE(Material.REDSTONE);
+	COAL_ORE(Material.COAL, Material.COAL_ORE),
+	DIAMOND_ORE(Material.DIAMOND, Material.DIAMOND_ORE),
+	EMERALD_ORE(Material.EMERALD, Material.EMERALD_ORE),
+	LAPIS_ORE(Material.LAPIS_LAZULI, Material.LAPIS_ORE),
+	REDSTONE_ORE(Material.REDSTONE, Material.REDSTONE_ORE),
+	NETHER_ORE(Material.QUARTZ, Material.NETHER_QUARTZ_ORE);
 
 	@Getter
 	private Material material;
 
-	FortuneBlocks(Material mat){
+	@Getter
+	private Material block;
+
+	FortuneBlocks(Material mat, Material block){
+
 	  this.material = mat;
+	  this.block = block;
 	}
 
 	public static boolean isFortunable(Material mat){
-	  return (Arrays.stream(values()).anyMatch(fortuneBlocks -> fortuneBlocks.material.equals(mat)));
+	  return (Arrays.stream(values()).anyMatch(fortuneBlocks -> fortuneBlocks.block.equals(mat)));
 	}
   }
 
@@ -422,7 +447,8 @@ public class BreakEvent implements Listener {
 	EMERALD_ORE(Material.EMERALD, Material.EMERALD_ORE),
 	LAPIS_ORE(Material.LAPIS_LAZULI, Material.LAPIS_ORE),
 	REDSTONE_ORE(Material.REDSTONE, Material.REDSTONE_ORE),
-	STONE(Material.COBBLESTONE, Material.STONE);
+	STONE(Material.COBBLESTONE, Material.STONE),
+	NETHER_ORE(Material.QUARTZ, Material.NETHER_QUARTZ_ORE);
 
 	@Getter
 	private Material unsilkedMat;
@@ -436,11 +462,11 @@ public class BreakEvent implements Listener {
 	}
 
 	public static boolean isSilked(Material mat){
-	  return (Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)));
+	  return (Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.silkedMat.equals(mat)));
 	}
 
 	public static Material getSilkBlock(Material mat){
-	  Material result = Objects.requireNonNull(Arrays.stream(values()).filter(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)).findFirst().orElse(null)).getSilkedMat();
+	  Material result = Objects.requireNonNull(Arrays.stream(values()).filter(silkBlocks -> silkBlocks.silkedMat.equals(mat)).findFirst().orElse(null)).getSilkedMat();
 	  Bukkit.broadcastMessage(result.toString());
 	  return result;
 	}

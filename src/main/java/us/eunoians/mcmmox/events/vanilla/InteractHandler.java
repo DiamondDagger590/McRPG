@@ -68,7 +68,7 @@ public class InteractHandler implements Listener {
 		  FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 		  e.setCancelled(true);
 		  String key = "BlastMiningConfig.Tier" + Methods.convertToNumeral(blastMining.getCurrentTier());
-		  int radius = mining.getInt( key + ".Radius");
+		  int radius = mining.getInt(key + ".Radius");
 		  int cooldown = mining.getInt(key + ".Cooldown");
 		  boolean useBlacklist = mining.getBoolean(key + ".UseBlackList");
 		  boolean useWhiteList = mining.getBoolean(key + ".UseWhiteList");
@@ -95,13 +95,13 @@ public class InteractHandler implements Listener {
 			for(Block b : blocks){
 			  Material material = b.getType();
 			  if(material == Material.WATER || material == Material.LAVA || material.toString().contains("AIR")){
-			    continue;
+				continue;
 			  }
 			  if(useBlacklist && blackList.contains(material.toString())){
-			    continue;
+				continue;
 			  }
 			  if(useWhiteList && !whiteList.contains(material.toString())){
-			    continue;
+				continue;
 			  }
 			  BlastTestEvent breakEvent = new BlastTestEvent(b, p);
 			  if(breakEvent.isCancelled()){
@@ -255,6 +255,7 @@ public class InteractHandler implements Listener {
 		  MassHarvestEvent massHarvestEvent = new MassHarvestEvent(mp, massHarvest, radius);
 		  Bukkit.getPluginManager().callEvent(massHarvestEvent);
 		  if(!massHarvestEvent.isCancelled()){
+			Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			mp.setReadyingAbilityBit(null);
 			mp.setReadying(false);
 			e.setCancelled(true);
@@ -291,21 +292,24 @@ public class InteractHandler implements Listener {
 		  PansBlessingEvent pansBlessingEvent = new PansBlessingEvent(mp, pansBlessing, radius);
 		  Bukkit.getPluginManager().callEvent(pansBlessingEvent);
 		  if(!pansBlessingEvent.isCancelled()){
-		    mp.setReadying(false);
-		    mp.setReadyingAbilityBit(null);
+			mp.setReadying(false);
+			Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+			mp.setReadyingAbilityBit(null);
 			int cooldown = herbalism.getInt("PansBlessingConfig.Tier" + Methods.convertToNumeral(pansBlessing.getCurrentTier()) + ".Cooldown");
-			for(int x = -1 * radius; x < radius; x++){
-			  for(int z = -1 * radius; z < radius; z++){
-				Block test = p.getLocation().add(x, 1, z).getBlock();
-				Material cropType = test.getType();
-				if(BreakEvent.CropType.isCrop(cropType)){
-				  Ageable ageable = (Ageable) test.getBlockData();
-				  int originalAge = ageable.getMaximumAge();
-				  ageable.setAge(ageable.getMaximumAge());
-				  BlockGrowEvent growEvent = new BlockGrowEvent(test, test.getState());
-				  if(!growEvent.isCancelled()){
-					test.setBlockData(ageable);
-					test.getLocation().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, test.getLocation(), 5);
+			for(int x = -1 * radius; x <= radius; x++){
+			  for(int z = -1 * radius; z <= radius; z++){
+			    for(int y = -1; y <= 1; y++){
+				  Block test = p.getLocation().add(x, y, z).getBlock();
+				  Material cropType = test.getType();
+				  if(BreakEvent.CropType.isCrop(cropType)){
+					Ageable ageable = (Ageable) test.getBlockData();
+					int originalAge = ageable.getMaximumAge();
+					ageable.setAge(ageable.getMaximumAge());
+					BlockGrowEvent growEvent = new BlockGrowEvent(test, test.getState());
+					if(!growEvent.isCancelled()){
+					  test.setBlockData(ageable);
+					  test.getLocation().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, test.getLocation(), 5);
+					}
 				  }
 				}
 			  }

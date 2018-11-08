@@ -122,7 +122,7 @@ public class McMMOPlayer {
 		playerData.set(type.getName() + ".CurrentExp", 0);
 	  }
 	  for(DefaultAbilities ability : DefaultAbilities.values()){
-		playerData.set(ability.getSkill() + "." + ability.getName() + ".IsToggled", true);
+		playerData.set(ability.getSkill() + "." + ability.getName().replace(" " , "").replace("_", "") + ".IsToggled", true);
 	  }
 	  for(UnlockedAbilities ability : UnlockedAbilities.values()){
 		playerData.set(ability.getSkill() + "." + ability.getName() + ".Tier", 0);
@@ -533,8 +533,10 @@ public class McMMOPlayer {
 	for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()){
 	  long timeToEnd = abilitiesOnCooldown.get(ability);
 	  if(Calendar.getInstance().getTimeInMillis() >= timeToEnd){
-		this.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-			Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
+	    if(Bukkit.getOfflinePlayer(uuid).isOnline()){
+		  this.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+			  Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
+		}
 		toRemove.add(ability);
 	  }
 	}
@@ -562,7 +564,9 @@ public class McMMOPlayer {
 	  playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());
 	  skill.getAbilityKeys().forEach(ability -> {
 		if(ability instanceof DefaultAbilities){
-		  playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
+		  playerData.set(type.getName() + "." + ability.getName().replace(" ", "").replace("_", "") + ".IsToggled", skill.getDefaultAbility().isToggled());
+		  System.out.println(skill.getDefaultAbility().isToggled());
+		  System.out.println(playerData.getString(type.getName() + "." + ability.getName() + ".IsToggled"));
 		}
 		if(ability instanceof UnlockedAbilities){
 		  playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());

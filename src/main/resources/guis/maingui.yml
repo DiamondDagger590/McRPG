@@ -12,7 +12,7 @@ Gui:
       14:
         - 'OpenNative:UpgradeAbilityGUI'
       16:
-        - 'OpenNative:EditLoadoutGUI'
+        - 'OpenNative:EditLoadoutSelectGUI'
     Items:
       #This it an identifier and can be anything
       PlayerSkull:
