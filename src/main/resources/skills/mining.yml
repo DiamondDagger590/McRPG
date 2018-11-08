@@ -288,6 +288,18 @@ SuperBreakerConfig:
 BlastMiningConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
+  UseBlackList: true
+  UseWhiteList: false
+  BlackList:
+    - 'SPAWNER'
+    - 'END_PORTAL'
+    - 'END_PORTAL_FRAME'
+    - 'END_GATEWAY'
+    - 'CHEST'
+    - 'ENDER_CHEST'
+    - 'TRAPPED_CHEST'
+  WhiteList:
+    - 'STONE'
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 225

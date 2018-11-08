@@ -34,6 +34,7 @@ import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class InteractHandler implements Listener {
 
@@ -66,8 +67,13 @@ public class InteractHandler implements Listener {
 		  BlastMining blastMining = (BlastMining) ability;
 		  FileConfiguration mining = Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 		  e.setCancelled(true);
-		  int radius = mining.getInt("BlastMiningConfig.Tier" + Methods.convertToNumeral(blastMining.getCurrentTier()) + ".Radius");
-		  int cooldown = mining.getInt("BlastMiningConfig.Tier" + Methods.convertToNumeral(blastMining.getCurrentTier()) + ".Cooldown");
+		  String key = "BlastMiningConfig.Tier" + Methods.convertToNumeral(blastMining.getCurrentTier());
+		  int radius = mining.getInt( key + ".Radius");
+		  int cooldown = mining.getInt(key + ".Cooldown");
+		  boolean useBlacklist = mining.getBoolean(key + ".UseBlackList");
+		  boolean useWhiteList = mining.getBoolean(key + ".UseWhiteList");
+		  List<String> blackList = mining.getStringList(key + ".BlackList");
+		  List<String> whiteList = mining.getStringList(key + "WhiteList");
 		  ArrayList<Block> blocks = new ArrayList<>();
 		  for(int x = -1 * radius; x < radius; x++){
 			for(int z = -1 * radius; z < radius; z++){
@@ -87,6 +93,16 @@ public class InteractHandler implements Listener {
 			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 10, 1);
 			ItemStack pick = new ItemStack(Material.DIAMOND_PICKAXE, 1);
 			for(Block b : blocks){
+			  Material material = b.getType();
+			  if(material == Material.WATER || material == Material.LAVA || material.toString().contains("AIR")){
+			    continue;
+			  }
+			  if(useBlacklist && blackList.contains(material.toString())){
+			    continue;
+			  }
+			  if(useWhiteList && !whiteList.contains(material.toString())){
+			    continue;
+			  }
 			  BlastTestEvent breakEvent = new BlastTestEvent(b, p);
 			  if(breakEvent.isCancelled()){
 				continue;
