@@ -32,3 +32,5 @@ Configuration:
   SaveInterval: 1
   LangFile: 'en'
   AutoUpdate: true
+#Use mcmmo.{skill}.level
+  UseLevelPerms: false

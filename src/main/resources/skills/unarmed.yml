@@ -6,6 +6,7 @@ UnarmedEnabled: true
 # %skill_level% - The skill level of the player
 #
 ExpEquation: '1000*(1.2^(power_level))'
+MaxLevel: 1000
 #How much extra damage by default a fist should do
 BonusDamage: 2
 #How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
@@ -75,9 +76,8 @@ EnabledAbilities:
   Berserk: true
   SmitingFist: true
   DenseImpact: true
-#If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
-#they will be required to swap the ability instead of getting a chance at replacing it right away for free
-#Perms will be mcmmox.unarmed.{ability}
+#If perms should be used for players to unlock abilities.
+#Perms will be mcmmo.unarmed.unlock{ability} and mcmmo.unarmed.use.{ability}
 UsePermsForAbilites:
   StickyFingers: false
   TighterGrip: false

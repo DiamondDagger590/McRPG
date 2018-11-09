@@ -6,6 +6,7 @@ HerbalismEnabled: true
 # %skill_level% - The skill level of the player
 #
 ExpEquation: '1000*(1.2^(power_level))'
+MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
   GRASS: 5
@@ -50,9 +51,8 @@ EnabledAbilities:
   MassHarvest: true
   NaturesWrath: true
   PansBlessing: true
-#If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
-#they will be required to swap the ability instead of getting a chance at replacing it right away for free
-#Perms will be mcmmox.mining.{ability}
+#If perms should be used for players to unlock abilities.
+#Perms will be mcmmo.herbalism.unlock{ability} and mcmmo.herbalism.use.{ability}
 UsePermsForAbilites:
   DiamondFlowers: false
   Replanting: false

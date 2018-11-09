@@ -6,6 +6,7 @@ MiningEnabled: true
 # %skill_level% - The skill level of the player
 #
 ExpEquation: '1000*(1.2^(power_level))'
+MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
   OBSIDIAN: 50
@@ -42,9 +43,8 @@ EnabledAbilities:
   SuperBreaker: true
   OreScanner: true
   BlastMining: true
-#If perms should be used for players to unlock abilities. Please note that if you enable it after they have unlocked it
-#they will be required to swap the ability instead of getting a chance at replacing it right away for free
-#Perms will be mcmmox.mining.{ability}
+#If perms should be used for players to unlock abilities.
+#Perms will be mcmmo.mining.unlock{ability} and mcmmo.mining.use.{ability}
 UsePermsForAbilites:
   DoubleDrop: false
   RicherOres: false
