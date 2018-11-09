@@ -13,7 +13,7 @@ public class AbilityActivate implements Listener {
  @EventHandler
  public void abilityActivateEvent(AbilityActivateEvent e){
    Skills skill = Skills.fromString(e.getAbility().getGenericAbility().getSkill());
-   String abilityName = e.getAbility().getGenericAbility().getName().replace(" ", "");
+   String abilityName = e.getAbility().getGenericAbility().getName().replace(" ", "").replace("_", "").toLowerCase();
    Player p = e.getUser().getPlayer();
    if(Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".*")
 	   || p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".use.*")|| p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".unlock." + abilityName))){
