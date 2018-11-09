@@ -5,7 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,6 +33,7 @@ import us.eunoians.mcmmox.types.GainReason;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 import us.eunoians.mcmmox.util.Parser;
+import us.eunoians.mcmmox.util.mcmmo.MobHealthbarUtils;
 
 import java.util.Calendar;
 import java.util.Random;
@@ -42,6 +45,9 @@ public class VanillaDamageEvent implements Listener {
 	FileConfiguration config;
 	if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity){
 	  Player damager = (Player) e.getDamager();
+	  if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()){
+	    return;
+	  }
 	  McMMOPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
 	  //Deal with unarmed
 	  if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
@@ -220,32 +226,30 @@ public class VanillaDamageEvent implements Listener {
 		  Disarm disarm = (Disarm) mp.getBaseAbility(UnlockedAbilities.DISARM);
 		  Player damagedPlayer = (Player) e.getEntity();
 		  McMMOPlayer damagedMcMMOPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-		  if(damagedPlayer.getItemInHand() == null || damagedPlayer.getItemInHand().getType() == Material.AIR){
-			return;
-		  }
-		  double disarmChance = config.getDouble("DisarmConfig.Tier" + Methods.convertToNumeral(disarm.getCurrentTier()) + ".ActivationChance") + disarm.getBonusChance();
-		  int chance = (int) disarmChance * 1000;
-		  Random rand = new Random();
-		  int val = rand.nextInt(100000);
-		  if(chance >= val){
-			DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcMMOPlayer, disarm, damagedPlayer.getItemInHand());
-			Bukkit.getPluginManager().callEvent(disarmEvent);
-			if(!disarmEvent.isCancelled()){
-			  int slot = damagedPlayer.getInventory().firstEmpty();
-			  int heldSlot = damagedPlayer.getInventory().getHeldItemSlot();
-			  if(slot == -1){
-				damagedPlayer.getLocation().getWorld().dropItemNaturally(damagedPlayer.getLocation(), disarmEvent.getItemToDisarm());
+		  if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR){
+			double disarmChance = config.getDouble("DisarmConfig.Tier" + Methods.convertToNumeral(disarm.getCurrentTier()) + ".ActivationChance") + disarm.getBonusChance();
+			int chance = (int) disarmChance * 1000;
+			Random rand = new Random();
+			int val = rand.nextInt(100000);
+			if(chance >= val){
+			  DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcMMOPlayer, disarm, damagedPlayer.getItemInHand());
+			  Bukkit.getPluginManager().callEvent(disarmEvent);
+			  if(!disarmEvent.isCancelled()){
+				int slot = damagedPlayer.getInventory().firstEmpty();
+				int heldSlot = damagedPlayer.getInventory().getHeldItemSlot();
+				if(slot == -1){
+				  damagedPlayer.getLocation().getWorld().dropItemNaturally(damagedPlayer.getLocation(), disarmEvent.getItemToDisarm());
+				}
+				else{
+				  damagedPlayer.getInventory().setItem(slot, disarmEvent.getItemToDisarm());
+				}
+				damagedPlayer.getInventory().getItem(heldSlot).setType(Material.AIR);
+				damager.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
+					+ Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.PlayerDisarmed").replaceAll("%Player%", damagedPlayer.getDisplayName())));
+				damagedPlayer.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.BeenDisarmed")));
 			  }
-			  else{
-				damagedPlayer.getInventory().setItem(slot, disarmEvent.getItemToDisarm());
-			  }
-			  damagedPlayer.getInventory().getItem(heldSlot).setType(Material.AIR);
-			  damager.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
-				  + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.PlayerDisarmed").replaceAll("%Player%", damagedPlayer.getDisplayName())));
-			  damagedPlayer.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.BeenDisarmed")));
 			}
 		  }
-		  return;
 		}
 		if(UnlockedAbilities.IRON_ARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.IRON_ARM) && mp.getBaseAbility(UnlockedAbilities.IRON_ARM).isToggled()){
 		  IronArm ironArm = (IronArm) mp.getBaseAbility(UnlockedAbilities.IRON_ARM);
@@ -260,7 +264,6 @@ public class VanillaDamageEvent implements Listener {
 			  e.setDamage(e.getDamage() + ironArmEvent.getBonusDamage());
 			}
 		  }
-		  return;
 		}
 	  }
 	  else{
@@ -369,9 +372,9 @@ public class VanillaDamageEvent implements Listener {
 		  double dmg = e.getDamage();
 		  int expAwarded = (int) (dmg * baseExp * multiplier);
 		  mp.getSkill(Skills.SWORDS).giveExp(expAwarded, GainReason.DAMAGE);
-		  return;
 		}
 	  }
+	  handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
 	}
 	else{
 	  return;
@@ -401,5 +404,39 @@ public class VanillaDamageEvent implements Listener {
 	  }
 	  return false;
 	}
+  }
+
+  public static void handleHealthbars(Entity attacker, LivingEntity target, double damage) {
+	if (!(attacker instanceof Player)) {
+	  return;
+	}
+
+	Player player = (Player) attacker;
+
+	if (isNPCEntity(player) || isNPCEntity(target)) {
+	  return;
+	}
+
+
+	MobHealthbarUtils.handleMobHealthbars(player, target, damage);
+  }
+
+  /**
+   * Checks to see if an entity is currently invincible.
+   *
+   * @param entity The {@link LivingEntity} to check
+   * @param eventDamage The damage from the event the entity is involved in
+   * @return true if the entity is invincible, false otherwise
+   */
+  public static boolean isInvincible(LivingEntity entity, double eventDamage) {
+	/*
+	 * So apparently if you do more damage to a LivingEntity than its last damage int you bypass the invincibility.
+	 * So yeah, this is for that.
+	 */
+	return (entity.getNoDamageTicks() > entity.getMaximumNoDamageTicks() / 2.0F) && (eventDamage <= entity.getLastDamage());
+  }
+
+  private static boolean isNPCEntity(Entity entity) {
+	return (entity == null || entity.hasMetadata("NPC") || entity instanceof NPC || entity.getClass().getName().equalsIgnoreCase("cofh.entity.PlayerFake"));
   }
 }

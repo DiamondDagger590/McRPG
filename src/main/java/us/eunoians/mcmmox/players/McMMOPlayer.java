@@ -19,6 +19,7 @@ import us.eunoians.mcmmox.api.events.mcmmo.SmitingFistEvent;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.skills.*;
 import us.eunoians.mcmmox.types.*;
+import us.eunoians.mcmmox.util.mcmmo.MobHealthbarUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,10 @@ public class McMMOPlayer {
   @Getter
   @Setter
   private int armourDmg;
+
+  @Getter
+  @Setter
+  private MobHealthbarUtils.MobHealthbarType healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
 
   /**
    * The file configuration of the player that we get to edit.
@@ -565,8 +570,6 @@ public class McMMOPlayer {
 	  skill.getAbilityKeys().forEach(ability -> {
 		if(ability instanceof DefaultAbilities){
 		  playerData.set(type.getName() + "." + ability.getName().replace(" ", "").replace("_", "") + ".IsToggled", skill.getDefaultAbility().isToggled());
-		  System.out.println(skill.getDefaultAbility().isToggled());
-		  System.out.println(playerData.getString(type.getName() + "." + ability.getName() + ".IsToggled"));
 		}
 		if(ability instanceof UnlockedAbilities){
 		  playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());

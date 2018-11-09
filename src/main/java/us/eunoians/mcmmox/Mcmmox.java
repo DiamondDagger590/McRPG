@@ -46,6 +46,12 @@ public class Mcmmox extends JavaPlugin implements Initializable {
   private static ChunkManager placeStore;
   @Getter
   private RemoteTransferTracker remoteTransferTracker;
+  @Getter
+  private final String customNameKey       = "mcMMO: Custom Name";
+  @Getter
+  private final String customVisibleKey    = "mcMMO: Name Visibility";
+  @Getter
+  private boolean healthBarPluginEnabled;
 
 
   @Override
@@ -105,7 +111,11 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
-    remoteTransferTracker = new RemoteTransferTracker();
+	healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
+	if (healthBarPluginEnabled) {
+	  getLogger().info("HealthBar plugin found, Mcmmox's healthbars are automatically disabled.");
+	}
+	remoteTransferTracker = new RemoteTransferTracker();
 	placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
 	File folder = new File(getDataFolder(), File.separator + "PlayerData");
     if(!folder.exists()){folder.mkdir();}

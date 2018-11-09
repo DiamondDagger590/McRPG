@@ -4,6 +4,7 @@ author: Eunoians
 description: Some description
 main: us.eunoians.mcmmox.Mcmmox
 api-version: 1.13
+soft-depend: [Parties]
 commands:
   mcmmox:
     description: Opens the main menu for McMMOX

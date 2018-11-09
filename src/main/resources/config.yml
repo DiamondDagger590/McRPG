@@ -34,3 +34,5 @@ Configuration:
   AutoUpdate: true
 #Use mcmmo.{skill}.level
   UseLevelPerms: false
+  HealthBarEnabled: true
+  HealthBarDisplayTime: 3

@@ -233,7 +233,6 @@ public class McAdmin implements CommandExecutor {
 				baseAbility.setUnlocked(true);
 				baseAbility.setToggled(true);
 				if(baseAbility instanceof RemoteTransfer){
-				  System.out.println(baseAbility.getCurrentTier());
 				  ((RemoteTransfer) baseAbility).updateBlocks();
 				}
 				mp.getAbilityLoadout().add(ability);
@@ -1058,7 +1057,6 @@ public class McAdmin implements CommandExecutor {
 				baseAbility.setUnlocked(true);
 				baseAbility.setToggled(true);
 				if(baseAbility instanceof RemoteTransfer){
-				  System.out.println(baseAbility.getCurrentTier());
 				  ((RemoteTransfer) baseAbility).updateBlocks();
 				}
 				mp.getAbilityLoadout().add(ability);

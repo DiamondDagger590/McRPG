@@ -200,7 +200,6 @@ public class BreakEvent implements Listener {
 			if(incDrops){
 			  Random rand = new Random();
 			  int val = rand.nextInt(100000);
-			  Bukkit.broadcastMessage(val + " " + chance + " " + parser.getValue() + doubleDrop.getBonusChance());
 			  if(chance >= val){
 				DoubleDropEvent doubleDropEvent = new DoubleDropEvent(mp, doubleDrop);
 				Bukkit.getPluginManager().callEvent(doubleDropEvent);
@@ -388,7 +387,6 @@ public class BreakEvent implements Listener {
 	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(block.getType()))){
 	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
 	  int dropAmount = getDropCount(block.getType(), level, new Random()) * multiplier;
-	  Bukkit.broadcastMessage(dropAmount + " ");
 	  returnItem.setAmount(dropAmount);
 	}
 	if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(block.getType())){
@@ -467,7 +465,6 @@ public class BreakEvent implements Listener {
 
 	public static Material getSilkBlock(Material mat){
 	  Material result = Objects.requireNonNull(Arrays.stream(values()).filter(silkBlocks -> silkBlocks.silkedMat.equals(mat)).findFirst().orElse(null)).getSilkedMat();
-	  Bukkit.broadcastMessage(result.toString());
 	  return result;
 	}
   }
