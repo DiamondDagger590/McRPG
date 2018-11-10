@@ -235,15 +235,25 @@ public class VanillaDamageEvent implements Listener {
 			  DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcMMOPlayer, disarm, damagedPlayer.getItemInHand());
 			  Bukkit.getPluginManager().callEvent(disarmEvent);
 			  if(!disarmEvent.isCancelled()){
-				int slot = damagedPlayer.getInventory().firstEmpty();
+				int slot = -1;
+				for(int i = 8; i < 36; i++){
+				  ItemStack item = damagedPlayer.getInventory().getItem(i);
+				  if(item == null || item.getType() == Material.AIR){
+				    slot = i;
+				    break;
+				  }
+				}
 				int heldSlot = damagedPlayer.getInventory().getHeldItemSlot();
+				if(damagedPlayer.getInventory().getItem(heldSlot) == null){
+				  return;
+				}
 				if(slot == -1){
 				  damagedPlayer.getLocation().getWorld().dropItemNaturally(damagedPlayer.getLocation(), disarmEvent.getItemToDisarm());
 				}
 				else{
 				  damagedPlayer.getInventory().setItem(slot, disarmEvent.getItemToDisarm());
 				}
-				damagedPlayer.getInventory().getItem(heldSlot).setType(Material.AIR);
+				damagedPlayer.getInventory().setItem(heldSlot, new ItemStack(Material.AIR));
 				damager.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
 					+ Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.PlayerDisarmed").replaceAll("%Player%", damagedPlayer.getDisplayName())));
 				damagedPlayer.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Disarm.BeenDisarmed")));

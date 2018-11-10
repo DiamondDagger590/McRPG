@@ -11,6 +11,7 @@ import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class EditLoadoutSelectGUI extends GUI {
 
@@ -36,6 +37,13 @@ public class EditLoadoutSelectGUI extends GUI {
 	  ItemStack replaceAbilties = new ItemStack(Material.CRAFTING_TABLE, 1);
 	  ItemMeta replaceMeta = replaceAbilties.getItemMeta();
 	  replaceMeta.setDisplayName(Methods.color("&bReplace Abilities"));
+	  if(player.getEndTimeForReplaceCooldown() != 0){
+	    ArrayList<String> lore = new ArrayList<>();
+		Calendar temp = Calendar.getInstance();
+		temp.setTimeInMillis(player.getEndTimeForReplaceCooldown());
+	    lore.add(Methods.color(convertMillis(temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis())));
+	    replaceMeta.setLore(lore);
+	  }
 	  replaceAbilties.setItemMeta(replaceMeta);
 	  items.add(new GUIItem(replaceAbilties, 13));
 
@@ -55,4 +63,15 @@ public class EditLoadoutSelectGUI extends GUI {
 	this.getGui().setBuildGUIFunction(buildGUIFunction);
 	this.getGui().rebuildGUI();
   }
+
+  public static String convertMillis(long milliseconds){
+	long seconds, minutes, hours;
+	seconds = milliseconds / 1000;
+	minutes = seconds / 60;
+	seconds = seconds % 60;
+	hours = minutes / 60;
+	minutes = minutes % 60;
+	return(Methods.color("&eCooldown Remaining: " + hours + "h : " + minutes + "m : " + seconds + "s"));
+  }
+
 }

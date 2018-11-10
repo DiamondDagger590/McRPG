@@ -60,6 +60,10 @@ public class InteractHandler implements Listener {
 
 	if(mp.isReadying()){
 	  PlayerReadyBit bit = mp.getReadyingAbilityBit();
+	  if(bit == null){
+	    mp.setReadying(false);
+	    return;
+	  }
 	  UnlockedAbilities abilityType = bit.getAbilityReady();
 	  BaseAbility ability = mp.getSkill(abilityType.getSkill()).getAbility(abilityType);
 	  if(abilityType == UnlockedAbilities.BLAST_MINING){

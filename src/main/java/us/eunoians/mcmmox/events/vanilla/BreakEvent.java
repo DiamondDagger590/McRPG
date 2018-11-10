@@ -382,7 +382,11 @@ public class BreakEvent implements Listener {
     if(block.getDrops(tool).isEmpty()){
       return new ItemStack(Material.AIR);
 	}
-	ItemStack returnItem = (ItemStack) block.getDrops(tool).toArray()[0];
+	Collection<ItemStack> itemStacks = block.getDrops(tool);
+    if(itemStacks.size() == 0){
+      return new ItemStack(Material.AIR);
+	}
+	ItemStack returnItem = (ItemStack) itemStacks.toArray()[0];
 	Map<Enchantment, Integer> enchants = tool.getEnchantments();
 	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(block.getType()))){
 	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);

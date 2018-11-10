@@ -33,7 +33,7 @@ public class Methods {
 
   }
 
-  public final static String convertToNumeral(int number){
+  public static String convertToNumeral(int number){
 	int l = map.floorKey(number);
 	if(number == l){
 	  return map.get(number);

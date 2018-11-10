@@ -304,6 +304,7 @@ public class FileManager {
 	LOCATIONS("locations.yml", "data/locations.yml"),
 	MAIN_GUI("maingui.yml", "guis/maingui.yml"),
 	MINING_CONFIG("mining.yml", "skills/mining.yml"),
+	REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
 	SKILLS_GUI("skillguis.yml", "guis/skillsgui.yml"),
 	SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
 	UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml");

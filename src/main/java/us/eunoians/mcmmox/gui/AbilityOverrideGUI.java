@@ -16,6 +16,7 @@ import us.eunoians.mcmmox.players.McMMOPlayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class AbilityOverrideGUI extends GUI {
 
@@ -54,7 +55,9 @@ public class AbilityOverrideGUI extends GUI {
 		  config.getInt(path + "Amount"));
 	  ItemMeta abilityMeta = abilityItem.getItemMeta();
 	  abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName")));
-	  abilityMeta.setLore(Methods.colorLore(Arrays.asList("&eAbility to be replaced")));
+	  List<String> lore = config.getStringList(path + "MenuLore");
+	  lore.add(0, "&eAbility to be replaced");
+	  abilityMeta.setLore(Methods.colorLore(lore));
 	  abilityItem.setItemMeta(abilityMeta);
 	  items.add(new GUIItem(abilityItem, 4));
 
@@ -62,8 +65,9 @@ public class AbilityOverrideGUI extends GUI {
 	  ItemStack abilityItem1 = new ItemStack(Material.getMaterial(config.getString(path1 + "Material")),
 		  config.getInt(path1 + "Amount"));
 	  ItemMeta abilityMeta1 = abilityItem1.getItemMeta();
-	  abilityMeta1.setDisplayName(Methods.color(config.getString(path1 + "DisplayName")));
-	  abilityMeta1.setLore(Methods.colorLore(Arrays.asList("&eAbility to replace with")));
+	  List<String> lore1 = config.getStringList(path1 + "MenuLore");
+	  lore1.add(0, "&eAbility to be replace with");
+	  abilityMeta1.setLore(Methods.colorLore(lore1));
 	  abilityItem1.setItemMeta(abilityMeta1);
 	  items.add(new GUIItem(abilityItem1, 22));
 

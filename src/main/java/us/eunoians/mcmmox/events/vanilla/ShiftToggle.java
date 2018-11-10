@@ -36,7 +36,7 @@ public class ShiftToggle implements Listener {
     Player player = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
 	//if the player is readying. They cant be charging in this state due to the nature of the below code
-	if(mp.isReadying() && e.isSneaking() && mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.RAGE_SPIKE){
+	if(mp.isReadying() && e.isSneaking() && mp.getReadyingAbilityBit() != null && mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.RAGE_SPIKE){
 	  //Fire the pre rage spike event to get and store some values
 	  PreRageSpikeEvent preEvent = new PreRageSpikeEvent(mp, (RageSpike) mp.getBaseAbility(UnlockedAbilities.RAGE_SPIKE));
 	  Bukkit.getPluginManager().callEvent(preEvent);

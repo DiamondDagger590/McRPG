@@ -22,9 +22,11 @@ import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
+import us.eunoians.mcmmox.types.AbilityType;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class InvClickEvent implements Listener {
@@ -90,13 +92,22 @@ public class InvClickEvent implements Listener {
 
 	  //Selecting what loadout to edit
 	  if(currentGUI instanceof EditLoadoutSelectGUI){
-	    EditLoadoutSelectGUI editLoadoutSelectGUI = (EditLoadoutSelectGUI) currentGUI;
 	    int slot = e.getSlot();
 	    if(slot == 10){
 	      EditDefaultAbilitiesGUI editDefaultAbilitiesGUI = new EditDefaultAbilitiesGUI(mp);
 	      currentGUI.setClearData(false);
 	      p.openInventory(editDefaultAbilitiesGUI.getGui().getInv());
 	      GUITracker.replacePlayersGUI(mp, editDefaultAbilitiesGUI);
+		}
+		else if(slot == 13){
+		  if(mp.getEndTimeForReplaceCooldown() != 0){
+		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+		    return;
+		  }
+		  ReplaceSkillsGUI replaceSkillsGUI = new ReplaceSkillsGUI(mp);
+		  currentGUI.setClearData(false);
+		  p.openInventory(replaceSkillsGUI.getGui().getInv());
+		  GUITracker.replacePlayersGUI(mp, replaceSkillsGUI);
 		}
 		else if(slot == 16){
 		  EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.TOGGLE);
@@ -165,9 +176,16 @@ public class InvClickEvent implements Listener {
 			acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
 			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
 			mp.saveData();
-			p.closeInventory();
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
 				.replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
+			if(mp.getAbilityPoints() > 0){
+			  GUI gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
+			  currentGUI.setClearData(false);
+			  p.openInventory(gui.getGui().getInv());
+			  GUITracker.replacePlayersGUI(mp, gui);
+			  return;
+			}
+			p.closeInventory();
 			return;
 		  }
 		  else{
@@ -176,6 +194,40 @@ public class InvClickEvent implements Listener {
 		}
 	  }
 
+	  if(currentGUI instanceof SelectReplaceGUI){
+		SelectReplaceGUI selectReplaceGUI = (SelectReplaceGUI) currentGUI;
+		if(e.getSlot() == 8){
+		  currentGUI.setClearData(false);
+		  ReplaceSkillsGUI replaceSkillsGUI = new ReplaceSkillsGUI(mp);
+		  p.openInventory(replaceSkillsGUI.getGui().getInv());
+		  GUITracker.replacePlayersGUI(mp, replaceSkillsGUI);
+		  return;
+		}
+		if(e.getSlot() > selectReplaceGUI.getAbilities().size() - 1){
+		  return;
+		}
+		else if(!mp.getBaseAbility(selectReplaceGUI.getAbilities().get(e.getSlot())).isUnlocked()){
+		  return;
+		}
+		BaseAbility baseAbility = mp.getBaseAbility(selectReplaceGUI.getAbilities().get(e.getSlot()));
+		if(mp.getAbilityLoadout().size() < 9){
+		  AbilityAddToLoadoutEvent event = new AbilityAddToLoadoutEvent(mp, baseAbility);
+		  Bukkit.getPluginManager().callEvent(event);
+		  if(event.isCancelled()){
+			return;
+		  }
+		  mp.addAbilityToLoadout(selectReplaceGUI.getAbilities().get(e.getSlot()));
+		  mp.saveData();
+		  return;
+		}
+		else{
+		  EditLoadoutGUI editLoadoutGUI = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_REPLACE, baseAbility);
+		  currentGUI.setClearData(false);
+		  p.openInventory(editLoadoutGUI.getGui().getInv());
+		  GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
+		}
+		return;
+	  }
 	  //Remote Transfer GUI
 	  if(currentGUI instanceof RemoteTransferGUI){
 		if(e.getCurrentItem().getType() == Material.AIR){
@@ -315,11 +367,29 @@ public class InvClickEvent implements Listener {
 		  }
 		}
 		else{
-		  //TODO revist this later
+		  if(editLoadoutGUI.getReplaceAbility().getGenericAbility().getAbilityType() == AbilityType.ACTIVE){
+		    for(int i = 0; i < mp.getAbilityLoadout().size(); i++){
+		      UnlockedAbilities unlockedAbilities = mp.getAbilityLoadout().get(i);
+			  if(e.getSlot() != i && unlockedAbilities.getAbilityType() == AbilityType.ACTIVE && unlockedAbilities.getSkill().equalsIgnoreCase(editLoadoutGUI.getReplaceAbility().getGenericAbility().getSkill())){
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+				p.closeInventory();
+				p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.HasActive")));
+				return;
+			  }
+			}
+		  }
 		  editLoadoutGUI.getAbilities().set(e.getSlot(), (UnlockedAbilities) editLoadoutGUI.getReplaceAbility().getGenericAbility());
 		  mp.getAbilityLoadout().set(e.getSlot(), (UnlockedAbilities) editLoadoutGUI.getReplaceAbility().getGenericAbility());
+		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", editLoadoutGUI.getReplaceAbility().getGenericAbility().getName())));
+		  if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_REPLACE){
+			int cooldown = Mcmmox.getInstance().getConfig().getInt("Configuration.ReplaceAbilityCooldown");
+			if(cooldown != 0){
+			  Calendar cal = Calendar.getInstance();
+			  cal.add(Calendar.MINUTE, cooldown);
+			  mp.setEndTimeForReplaceCooldown(cal.getTimeInMillis());
+			}
+		  }
 		  p.closeInventory();
-		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()) + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", editLoadoutGUI.getReplaceAbility().getGenericAbility().getName()));
 		}
 		mp.saveData();
 		return;
@@ -410,6 +480,14 @@ public class InvClickEvent implements Listener {
 		  else if(events[1].equalsIgnoreCase("SubSkillGUI")){
 			Skills skill = Skills.fromString(events[2]);
 			gui = new SubSkillGUI(mp, skill);
+			currentGUI.setClearData(false);
+			p.openInventory(gui.getGui().getInv());
+			GUITracker.replacePlayersGUI(mp, gui);
+			return;
+		  }
+		  else if(events[1].equalsIgnoreCase("SelectReplaceGUI")){
+			Skills skill = Skills.fromString(events[2]);
+			gui = new SelectReplaceGUI(mp, skill);
 			currentGUI.setClearData(false);
 			p.openInventory(gui.getGui().getInv());
 			GUITracker.replacePlayersGUI(mp, gui);

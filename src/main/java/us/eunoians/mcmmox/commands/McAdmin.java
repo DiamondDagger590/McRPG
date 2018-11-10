@@ -849,15 +849,17 @@ public class McAdmin implements CommandExecutor {
 				RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
 
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
-				Player p = (Player) offlinePlayer;
-				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
-					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				if(offlinePlayer.isOnline()){
+				  Player p = (Player) offlinePlayer;
+				  if(displayManager.doesPlayerHaveDisplay(p)){
+					if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
+					  ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
+					  Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
+					  expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+					}
 				  }
 				}
-				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.Player")
+				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
 					.replace("%Player%", offlinePlayer.getName())));
 				mp.setReadying(false);
 				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
@@ -1593,6 +1595,7 @@ public class McAdmin implements CommandExecutor {
 
 				mp.setReadying(false);
 				mp.setLinkedToRemoteTransfer(false);
+				mp.resetCooldowns();
 
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;

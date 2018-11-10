@@ -59,12 +59,12 @@ public class EditLoadoutGUI extends GUI {
 		abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName") + " " + tier));
 		abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
 		ArrayList<String> lore = (ArrayList) abilityMeta.getLore();
-		for(String s : config.getConfigurationSection(ability.getGenericAbility().getName() + "Config." + tier).getKeys(false)){
+		/*for(String s : config.getConfigurationSection(ability.getGenericAbility().getName() + "Config." + tier).getKeys(false)){
 		  for(int j = 0; j < lore.size(); j++){
 			String l = lore.get(j).replace("%" + s + "%", config.getString(ability.getGenericAbility().getName() + "Config." + tier + "." + s));
 			lore.set(j, l);
 		  }
-		}
+		}*/
 		abilityMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		List<String> newLore = new ArrayList<>();
 		for(String s : abilityMeta.getLore()){
@@ -134,7 +134,7 @@ public class EditLoadoutGUI extends GUI {
 	this.replaceAbility = replaceAbility;
 	buildGUIFunction = (GUIBuilder builder) -> {
 	  String invName;
-	  if(editType == EditType.ABILITY_OVERRIDE){
+	  if(editType == EditType.ABILITY_OVERRIDE || editType == EditType.ABILITY_REPLACE){
 		invName = "&eOverride an ability with " + replaceAbility.getGenericAbility().getName();
 	  }
 	  else if(editType == EditType.ABILITY_UPGRADE){
@@ -194,6 +194,7 @@ public class EditLoadoutGUI extends GUI {
   public enum EditType {
 	TOGGLE,
 	ABILITY_OVERRIDE,
-	ABILITY_UPGRADE
+	ABILITY_UPGRADE,
+	ABILITY_REPLACE
   }
 }

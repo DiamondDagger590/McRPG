@@ -39,10 +39,12 @@ public class AcceptAbilityGUI extends GUI{
 		Inventory inv = Bukkit.createInventory(null, 27,
 			Methods.color("&eAccept/Decline &5" + ability.getGenericAbility().getName()));
 		ArrayList<GUIItem> items = new ArrayList<>();
+		String path = ability.getGenericAbility().getName() + "Config.Item.";
 
 		ItemStack confirmItem = new ItemStack(Material.LIME_CONCRETE, 1);
 		ItemMeta confirmMeta = confirmItem.getItemMeta();
 		confirmMeta.setDisplayName(Methods.color("&aAccept this ability"));
+		confirmMeta.setLore(Methods.colorLore(config.getStringList(path + "MenuLore")));
 		confirmItem.setItemMeta(confirmMeta);
 		items.add(new GUIItem(confirmItem, 10));
 
@@ -53,7 +55,6 @@ public class AcceptAbilityGUI extends GUI{
 		denyItem.setItemMeta(denyMeta);
 		items.add(new GUIItem(denyItem, 16));
 
-		String path = ability.getGenericAbility().getName() + "Config.Item.";
 		ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
 			config.getInt(path + "Amount"));
 		ItemMeta abilityMeta = abilityItem.getItemMeta();

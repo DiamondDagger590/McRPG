@@ -30,7 +30,7 @@ Messages:
       - '&3    -Opens your display for the skill'
       - '&7[&6Exp Give Command &7]&3 /mcadmin give exp {Player} {Amount} {Skill}'
       - '&3    -Give a player exp in a skill'
-      - '&7[&6Level Give Command &7]&3 /mcadmin give level {Player} {Amount}'
+      - '&7[&6Level Give Command &7]&3 /mcadmin give level {Player} {Amount} {Skill}'
       - '&3    -Give a player levels in a skill'
       - '&7[&6Ability Give Command &7]&3 /mcadmin give ability {Player} {Ability}'
       - '&3    -Give a player an ability'
@@ -40,7 +40,7 @@ Messages:
       - '&e--------------------------'
       McAdmin2:
       - '&e--------------------------'
-      - '&7[&6Ability Remove Command &7]&3 /mcadmin remove {Player} {Amount}'
+      - '&7[&6Ability Remove Command &7]&3 /mcadmin remove {Player} {Ability}'
       - '&3    -Removes an ability from a player'
       - '&7[&6View Loadout Command &7]&3 /mcadmin view loadout {Player}'
       - '&3    -Views a players ability loadout'
@@ -154,6 +154,7 @@ Messages:
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
+    HasActive: '&cYou already have an active ability for that skill'
   Players:
     LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%. Current Level: &e%Current_Level%'
     AbilityUnlocked: '&eYou just unlocked %Ability%! Open up the main menu in order to accept or deny this ability.'
@@ -162,3 +163,4 @@ Messages:
     PlayerUnready: '&7You lowered your %Skill_Item%'
     CooldownExpire: '&aYour cooldown for %Ability% is finished'
     CooldownActive: '&cYour %Skill% ability is on cooldown for &e%Time% &cseconds'
+    ReplaceCooldownExpire: '&aYour cooldown for ability replacing is over'

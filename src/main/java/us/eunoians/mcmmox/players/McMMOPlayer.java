@@ -101,6 +101,10 @@ public class McMMOPlayer {
   @Setter
   private MobHealthbarUtils.MobHealthbarType healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
 
+  @Getter
+  @Setter
+  private long endTimeForReplaceCooldown;
+
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -140,6 +144,7 @@ public class McMMOPlayer {
 	  playerData.set("PendingAbilitiesUnlocked.placeholder", null);
 	  playerData.set("AbilityLoadout.placeholder", null);
 	  playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
+	  playerData.set("ReplaceAbilityCooldown.placeholder", null);
 	  try{
 		playerData.save(playerFile);
 	  }catch(IOException e){
@@ -420,13 +425,21 @@ public class McMMOPlayer {
 	if(playerData.contains("Cooldowns")){
 	  for(String s : playerData.getConfigurationSection("Cooldowns").getKeys(false)){
 		UnlockedAbilities ab = UnlockedAbilities.fromString(s);
-		long cooldown = playerData.getLong("Cooldowns." + s);
+		int cooldown = playerData.getInt("Cooldowns." + s);
 		if(cooldown <= 0){
 		  continue;
 		}
 		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.SECOND, (int) cooldown);
+		cal.add(Calendar.SECOND, cooldown);
 		abilitiesOnCooldown.put(ab, cal.getTimeInMillis());
+	  }
+	}
+	if(playerData.contains("ReplaceAbilityCooldown")){
+	  int cooldown = playerData.getInt("ReplaceAbilityCooldown");
+	  if(cooldown > 0){
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.SECOND, cooldown);
+		this.endTimeForReplaceCooldown = cal.getTimeInMillis();
 	  }
 	}
 	updatePowerLevel();
@@ -549,13 +562,29 @@ public class McMMOPlayer {
 	  for(UnlockedAbilities ab : toRemove){
 		playerData.set("Cooldowns." + ab.getName(), null);
 		abilitiesOnCooldown.remove(ab);
-		try{
-		  playerData.save(playerFile);
-		}catch(IOException e){
-		  e.printStackTrace();
-		}
 	  }
 	}
+	long timeToEnd = this.endTimeForReplaceCooldown;
+	if(timeToEnd != 0 && Calendar.getInstance().getTimeInMillis() >= timeToEnd){
+	  playerData.set("ReplaceAbilityCooldown", null);
+	  this.endTimeForReplaceCooldown = 0;
+	  if(Bukkit.getOfflinePlayer(uuid).isOnline()){
+		this.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
+			Mcmmox.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
+	  }
+	}
+	try{
+	  playerData.save(playerFile);
+	}catch(IOException e){
+	  e.printStackTrace();
+	}
+  }
+
+  public void resetCooldowns(){
+    abilitiesOnCooldown.clear();
+    endTimeForReplaceCooldown = 0;
+	playerData.set("Cooldowns.placeholder", null);
+	playerData.set("ReplaceAbilityCooldown.void", null);
   }
 
   /**
@@ -575,10 +604,20 @@ public class McMMOPlayer {
 		  playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());
 		  playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
 		}
+		Calendar cal = Calendar.getInstance();
 		if(abilitiesOnCooldown.containsKey(ability)){
-		  playerData.set("Cooldowns." + ability.getName(), this.getCooldown(ability));
+		  Calendar temp = Calendar.getInstance();
+		  temp.setTimeInMillis(this.getCooldown(ability));
+		  int seconds = (int) (temp.getTimeInMillis() - cal.getTimeInMillis() )/ 1000;
+		  playerData.set("Cooldowns." + ability.getName(), seconds);
 		}
 	  });
+	}
+	if(endTimeForReplaceCooldown  != 0){
+	  Calendar temp = Calendar.getInstance();
+	  temp.setTimeInMillis(endTimeForReplaceCooldown);
+	  int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis() )/ 1000;
+	  playerData.set("ReplaceAbilityCooldown", seconds);
 	}
 	RemoteTransfer remoteTransfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
 	if(remoteTransfer.getLinkedChestLocation() != null){

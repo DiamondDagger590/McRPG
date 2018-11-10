@@ -30,9 +30,10 @@ PlayerConfiguration:
 Configuration:
 #This is in minutes
   SaveInterval: 1
+  ReplaceAbilityCooldown: 1440
   LangFile: 'en'
   AutoUpdate: true
 #Use mcmmo.{skill}.level
   UseLevelPerms: false
   HealthBarEnabled: true
-  HealthBarDisplayTime: 3
+  HealthBarDisplayTime: 5

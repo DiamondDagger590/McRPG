@@ -128,7 +128,8 @@ BleedConfig:
     PlayerLore:
       - '&cYou have a %Bleed_Chance%% chance of inflicting bleed'
     MenuLore:
-      - '&cThis ability has a chance of causing damage over time to a target'
+      - '&cThis ability has a chance of'
+      - '&ccausing damage over time to a target'
 #
 # Config for the ability Bleed+
 # This passive ability increases the damage the the default ability Bleed applies
@@ -335,7 +336,7 @@ RageSpikeConfig:
     Cooldown: 240
   TierV:
     ChargeTime: 1
-    Damage: 4
+    Damage: 3
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
@@ -362,33 +363,33 @@ TaintedBladeConfig:
     TierV: 600
   #Config for each tier
   TierI:
-    StrengthDuration: 3
-    ResistanceDuration: 3
+    StrengthDuration: 5
+    ResistanceDuration: 5
     HungerDuration: 3
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    StrengthDuration: 4
-    ResistanceDuration: 3
+    StrengthDuration: 6
+    ResistanceDuration: 6
     HungerDuration: 4
     #Cooldown in seconds
     Cooldown: 240
   TierIII:
-    StrengthDuration: 4
-    ResistanceDuration: 4
+    StrengthDuration: 7
+    ResistanceDuration: 7
     HungerDuration: 5
     #Cooldown in seconds
     Cooldown: 240
   TierIV:
-    StrengthDuration: 5
-    ResistanceDuration: 5
-    HungerDuration: 5
+    StrengthDuration: 8
+    ResistanceDuration: 8
+    HungerDuration: 6
     #Cooldown in seconds
     Cooldown: 240
   TierV:
-    StrengthDuration: 6
-    ResistanceDuration: 6
-    HungerDuration: 5
+    StrengthDuration: 10
+    ResistanceDuration: 10
+    HungerDuration: 7
     #Cooldown in seconds
     Cooldown: 240
   #How this ability should be seen in the GUIS

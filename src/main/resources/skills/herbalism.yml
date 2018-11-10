@@ -84,7 +84,8 @@ TooManyPlantsConfig:
     - '&cYou have a &e%TooManyPlants_Chance%%'
     - '&cof doubling drops from natural ores'
     MenuLore:
-    - '&cThis ability has a chance of doubling plants when harvesting'
+    - '&cThis ability has a chance of'
+    - '&cdoubling plants when harvesting'
 #
 # Config for the ability Farmers Diet
 # This passive ability increases hunger and saturation restored by eating crops
@@ -448,11 +449,11 @@ NaturesWrathConfig:
   #Config for each tier
   TierI:
     #If strength should be enabled
-    POPPY: true
+    POPPY: false
     #If haste should be enabled
     DANDELION: false
     #If speed should be enabled
-    BLUE_ORCHID: false
+    BLUE_ORCHID: true
     #If resistance should be enabled
     LILAC: false
     #Level of the potion effect
@@ -464,7 +465,7 @@ NaturesWrathConfig:
     #At how much hunger does this ability become unusable
     HungerLimit: 14
   TierII:
-    POPPY: true
+    POPPY: false
     DANDELION: true
     BLUE_ORCHID: false
     LILAC: false
@@ -473,10 +474,10 @@ NaturesWrathConfig:
     HungerLost: 1
     HungerLimit: 14
   TierIII:
-    POPPY: true
+    POPPY: false
     DANDELION: true
     BLUE_ORCHID: true
-    LILAC: false
+    LILAC: true
     Modifier: 1
     Duration: 3
     HungerLost: 1
