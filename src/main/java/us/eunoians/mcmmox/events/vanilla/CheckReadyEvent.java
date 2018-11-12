@@ -163,6 +163,17 @@ public class CheckReadyEvent implements Listener {
 		if(skillType == null){
 		  return;
 		}
+		if(p.getInventory().getItemInOffHand().getType() == Material.POPPY || p.getInventory().getItemInOffHand().getType() == Material.DANDELION
+			|| p.getInventory().getItemInOffHand().getType() == Material.LILAC || p.getInventory().getItemInOffHand().getType() == Material.BLUE_ORCHID){
+		  if(UnlockedAbilities.NATURES_WRATH.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.NATURES_WRATH) && mp.getBaseAbility(UnlockedAbilities.NATURES_WRATH).isToggled()){
+		    if(!playersToIgnore.contains(p.getUniqueId())){
+		      return;
+			}
+		  }
+		}
+		if(Mcmmox.getInstance().getConfig().getBoolean("Configuration.RequireEmptyOffHand") && p.getInventory().getItemInOffHand().getType() != Material.AIR){
+		  return;
+		}
 		if(mp.getCooldown(skillType) != -1){
 		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 			  Mcmmox.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())

@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.unarmed.StickyFingers;
@@ -23,7 +24,7 @@ import java.util.Random;
 
 public class DisarmHandler implements Listener {
 
-  @EventHandler
+  @EventHandler (priority = EventPriority.HIGH)
   public void disarmHandler(DisarmEvent e){
 	McMMOPlayer target = e.getTarget();
 	StickyFingers stickyFingers = (StickyFingers) target.getBaseAbility(DefaultAbilities.STICKY_FINGERS);
@@ -56,8 +57,12 @@ public class DisarmHandler implements Listener {
 		  targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 10, 1);
 		  targ.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
 		  + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
+		  return;
 		}
 	  }
 	}
+	e.getTarget().getPlayer().setCanPickupItems(false);
+	Bukkit.getScheduler().runTaskLater(Mcmmox.getInstance(), () -> e.getTarget().getPlayer().setCanPickupItems(true), Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG)
+	.getInt("DisarmConfig.CancelPickupDuration") * 20);
   }
 }

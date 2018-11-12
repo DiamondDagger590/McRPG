@@ -6,12 +6,15 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
-import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
+import us.eunoians.mcmmox.api.displays.ExpDisplayType;
 import us.eunoians.mcmmox.api.displays.GenericDisplay;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerExpGainEvent;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
 import us.eunoians.mcmmox.players.McMMOPlayer;
-import us.eunoians.mcmmox.types.*;
+import us.eunoians.mcmmox.types.DefaultAbilities;
+import us.eunoians.mcmmox.types.GainReason;
+import us.eunoians.mcmmox.types.GenericAbility;
+import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.util.Parser;
 
 import java.util.Collection;
@@ -137,10 +140,10 @@ public abstract class Skill {
 	  return ;
 	}
 	GenericDisplay display = Mcmmox.getInstance().getDisplayManager().getDisplay(player.getPlayer());
-	if(display.getType().equals(DisplayType.EXP_SCOREBOARD)){
-	  ExpScoreboardDisplay expBoard = (ExpScoreboardDisplay) display;
-	  if(expBoard.getSkill().equals(this.getType())){
-		expBoard.sendUpdate(currentExp, expToLevel, currentLevel);
+	if(display instanceof ExpDisplayType){
+	  ExpDisplayType expDisplayType = (ExpDisplayType) display;
+	  if(expDisplayType.getSkill().equals(this.getType())){
+		expDisplayType.sendUpdate(currentExp, expToLevel, currentLevel, exp);
 	  }
 	}
   }
@@ -168,5 +171,6 @@ public abstract class Skill {
 	  baseAbility.setCurrentTier(0);
 	  baseAbility.setUnlocked(false);
 	}
+	updateExpToLevel();
   }
 }

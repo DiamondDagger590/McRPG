@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 public enum DisplayType {
   BOSS_BAR("BossBar"),
   ACTION_BAR("ActionBar"),
-  EXP_SCOREBOARD("Scoreboard");
+  SCOREBOARD("Scoreboard");
 
   @Getter
   private String name;

@@ -97,6 +97,7 @@ public class SelectReplaceGUI extends GUI{
 		}
 		else{
 		  newLore.add(Methods.color("&bNot Unlocked!"));
+		  abilityItem.setType(Material.RED_STAINED_GLASS_PANE);
 		}
 		abilities.add(ab);
 		abilityMeta.setLore(newLore);

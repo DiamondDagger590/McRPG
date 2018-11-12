@@ -5,7 +5,7 @@ UnarmedEnabled: true
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
 #
-ExpEquation: '1000*(1.2^(power_level))'
+ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much extra damage by default a fist should do
 BonusDamage: 2
@@ -88,11 +88,11 @@ UsePermsForAbilites:
   DenseImpact: false
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
-  TighterGrip: 80
-  Disarm: 150
-  IronArm: 225
-  Berserk: 300
-  SmitingFist: 450
+  TighterGrip: 50
+  Disarm: 200
+  IronArm: 400
+  Berserk: 250
+  SmitingFist: 350
   DenseImpact: 600
 #
 # Sticky Fingers is the default ability that every player has. This ability will increase every time the players Unarmed level is increased
@@ -102,14 +102,14 @@ StickyFingersConfig:
   StickyFingersChanceEquation: (unarmed_level)*.05
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Sticky Fingers'
+    DisplayName: '&1Sticky Fingers'
     Material: SLIME_BALL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cYou have a %Sticky_Fingers_Chance%% chance of resisting disarm'
+    - '&9You have a &e%Sticky_Fingers_Chance%% &9chance of resisting disarm'
     MenuLore:
-    - '&cThis ability resists being disarmed'
+    - '&9This ability resists being disarmed'
 #
 # Config for the ability Tighter Grip
 # This passive ability increases the damage the the default ability Bleed applies
@@ -119,10 +119,10 @@ TighterGripConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 150
-    TierIII: 275
-    TierIV: 400
-    TierV: 600
+    TierII: 175
+    TierIII: 300
+    TierIV: 425
+    TierV: 650
   TierI:
     #The boost to disarm resistance occurring per tier
     GripBoost: 5.0
@@ -141,25 +141,27 @@ TighterGripConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cGain &e%GripBoost%% &cresistance to disarm'
+    - '&9Gain &e%GripBoost%% &9resistance to disarm'
     MenuLore:
-    - '&cThis ability increases resistance to being disarmed'
+    - '&9This ability increases resistance to being disarmed'
 #
 # Config for the ability Disarm
 # This ability moves a players item to their inventory or drops if inv is full
 #
 DisarmConfig:
+  #In seconds how long can a disarmed player not pickup items
+  CancelPickupDuration: 3
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 300
+    TierII: 350
     TierIII: 450
-    TierIV: 600
-    TierV: 750
+    TierIV: 575
+    TierV: 700
   #Config for each Tier
   TierI:
-    #The chance of DeeperWound occurring per tier
+    #The chance of Disarm occurring per tier
     ActivationChance: 1.0
   TierII:
     ActivationChance: 2.0
@@ -171,15 +173,15 @@ DisarmConfig:
     ActivationChance: 7.5
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Disarm'
+    DisplayName: '&1Disarm'
     Material: SKELETON_SKULL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cYou have a &e%ActivationChance%% &cchance'
-    - '&cof Disarming your opponent'
+    - '&9You have a &e%ActivationChance%% &9chance'
+    - '&9of Disarming your opponent'
     MenuLore:
-    - '&cThis ability will disarm opponents'
+    - '&9This ability will disarm opponents'
 #
 # Config for the ability Iron Arm
 # This passive ability has a chance of increasing damage dealt with fist
@@ -189,9 +191,9 @@ IronArmConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 400
-    TierIII: 575
-    TierIV: 700
+    TierII: 525
+    TierIII: 650
+    TierIV: 775
     TierV: 900
   #Config for each tier
   TierI:
@@ -212,16 +214,16 @@ IronArmConfig:
     AmountToHeal: 2
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Iron Arm'
+    DisplayName: '&1Iron Arm'
     Material: IRON_INGOT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cYou have a %ActivationChance%% chance'
-    - '&cof dealing +%DamageBoost% damage with fists'
+    - '&9You have a &e%ActivationChance%% &9chance'
+    - '&9of dealing +&e%DamageBoost% &9damage with fists'
     MenuLore:
-    - '&cThis ability has a chance of dealing'
-    - '&cextra damage with fists'
+    - '&9This ability has a chance of dealing'
+    - '&9extra damage with fists'
 #
 # Config for the ability Berserk
 # This active ability increases the chance of disarm and deals more damage
@@ -231,10 +233,10 @@ BerserkConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 425
-    TierIII: 575
-    TierIV: 700
-    TierV: 840
+    TierII: 350
+    TierIII: 450
+    TierIV: 550
+    TierV: 650
   #Config for each tier
   TierI:
     #How much should the activation rate be boosted at each tier
@@ -264,27 +266,27 @@ BerserkConfig:
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Berserk'
+    DisplayName: '&1Berserk'
     Material: CRACKED_STONE_BRICKS
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cThis ability increases the'
-    - '&cactivation rate of Disarm and dmg'
-    - '&cGain &e%ActivationBoost%% &cand &e%DamageBoost%%'
-    - '&e%Duration%&c seconds'
-    - '&cCooldown: &e%Cooldown%'
+    - '&9This ability increases the'
+    - '&9activation rate of Disarm and dmg'
+    - '&9Gain &e%ActivationBoost%% &9and &e%DamageBoost%%'
+    - '&e%Duration%&9 seconds'
+    - '&9Cooldown: &e%Cooldown%'
     MenuLore:
-    - '&cIncrease activation rate of Disarm and damage'
+    - '&9Increase activation rate of Disarm and damage'
 SmitingFistConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 575
-    TierIII: 700
-    TierIV: 825
-    TierV: 950
+    TierII: 475
+    TierIII: 600
+    TierIV: 725
+    TierV: 850
   #Config for each tier
   TierI:
     #How much health the target should get as bonus. Each level is +2 hearts
@@ -300,7 +302,7 @@ SmitingFistConfig:
     #How long ability should last
     Duration: 3
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 160
   TierII:
     AbsorptionLevel: 1
     SmiteChance: 10.0
@@ -308,7 +310,7 @@ SmitingFistConfig:
     RemoveInvis: true
     RemovePotionEffects: false
     Duration: 3
-    Cooldown: 240
+    Cooldown: 160
   TierIII:
     AbsorptionLevel: 1
     SmiteChance: 15.0
@@ -316,7 +318,7 @@ SmitingFistConfig:
     RemoveInvis: true
     RemovePotionEffects: true
     Duration: 4
-    Cooldown: 240
+    Cooldown: 160
   TierIV:
     AbsorptionLevel: 1
     SmiteChance: 20.0
@@ -324,7 +326,7 @@ SmitingFistConfig:
     RemoveInvis: true
     RemovePotionEffects: true
     Duration: 5
-    Cooldown: 240
+    Cooldown: 160
   TierV:
     AbsorptionLevel: 2
     SmiteChance: 25.0
@@ -332,68 +334,68 @@ SmitingFistConfig:
     RemoveInvis: true
     RemovePotionEffects: true
     Duration: 6
-    Cooldown: 240
+    Cooldown: 160
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Smiting Fist'
+    DisplayName: '&1Smiting Fist'
     Material: NETHER_STAR
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cActivate to smite opponents'
-    - '&cAbsorbtion Level: &e%AbsorptionLevel%'
-    - '&cSmite Chance: &e%SmiteChance%%'
-    - '&cSmite Duration: &e%SmiteDuration% sec'
-    - '&cRemove Invis: &e%RemoveInvis%'
-    - '&cRemove Debuffs: &e%RemovePotionEffects%'
-    - '&cDuration: &e%Duration%'
-    - '&cCooldown: &e%Cooldown%'
+    - '&9Activate to smite opponents'
+    - '&9Absorbtion Level: &e%AbsorptionLevel%'
+    - '&9Smite Chance: &e%SmiteChance%%'
+    - '&9Smite Duration: &e%SmiteDuration% sec'
+    - '&9Remove Invis: &e%RemoveInvis%'
+    - '&9Remove Debuffs: &e%RemovePotionEffects%'
+    - '&9Duration: &e%Duration%'
+    - '&9Cooldown: &e%Cooldown%'
     MenuLore:
-    - '&cActivate to cleanse self of debuffs'
-    - '&cgaining bonus hp and ability to smite'
+    - '&9Activate to cleanse self of debuffs'
+    - '&9gaining bonus hp and ability to smite'
 DenseImpactConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 675
-    TierIII: 760
-    TierIV: 875
-    TierV: 950
+    TierII: 700
+    TierIII: 800
+    TierIV: 900
+    TierV: 1000
   #Config for each tier
   TierI:
     #Damage dealt to armor
     ArmorDamage: 1
     Duration: 2
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 200
   TierII:
     ArmorDamage: 1
     Duration: 3
-    Cooldown: 240
+    Cooldown: 200
   TierIII:
     ArmorDamage: 2
     Duration: 3
-    Cooldown: 240
+    Cooldown: 200
   TierIV:
     ArmorDamage: 2
     Duration: 4
-    Cooldown: 240
+    Cooldown: 200
   TierV:
     ArmorDamage: 3
     Duration: 4
-    Cooldown: 240
+    Cooldown: 200
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Dense Impact'
+    DisplayName: '&1Dense Impact'
     Material: IRON_CHESTPLATE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cDeal no damage in trade'
-    - '&cof dealing &5%ArmorDamage% &cdamage'
-    - '&cto armor directly'
-    - '&cDuration: &e%Duration%'
-    - '&cCooldown: %Cooldown%'
+    - '&9Deal no damage in trade'
+    - '&9of dealing &5%ArmorDamage% &9damage'
+    - '&9to armor directly'
+    - '&9Duration: &e%Duration%'
+    - '&9Cooldown: %Cooldown%'
     MenuLore:
-    - '&cDo damage directly to armor'
+    - '&9Do damage directly to armor'

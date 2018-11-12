@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.Inventory;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 
 public class BreakEvent implements Listener {
 
-  @EventHandler
+  @EventHandler (priority = EventPriority.HIGHEST)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event){
 	if(!event.isCancelled()){
@@ -85,6 +86,9 @@ public class BreakEvent implements Listener {
 			}
 		  }
 		}
+		if(Mcmmox.getPlaceStore().isTrue(block)){
+		  dropMultiplier = 1;
+		}
 		Material type = block.getType();
 		ArrayList<ItemStack> items = new ArrayList<>();
 		if(CropType.isCrop(type) && herbalism.getStringList("TooManyPlantsBlocks").contains(type.toString()) && ((Ageable) block.getBlockData()).getAge() == ((Ageable) block.getBlockData()).getMaximumAge()){
@@ -92,7 +96,7 @@ public class BreakEvent implements Listener {
 		}
 		else{
 		  if(herbalism.getStringList("TooManyPlantsBlocks").contains(type.toString())){
-			items.add(new ItemStack(type, dropMultiplier));
+			items.add(new ItemStack(type, 1));
 		  }
 		}
 		if(!items.isEmpty()){
@@ -105,66 +109,72 @@ public class BreakEvent implements Listener {
 		}
 		if(UnlockedAbilities.REPLANTING.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.REPLANTING) && mp.getBaseAbility(UnlockedAbilities.REPLANTING).isToggled()){
 		  Replanting replanting = (Replanting) mp.getBaseAbility(UnlockedAbilities.REPLANTING);
-		  int chance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000;
-		  Random rand = new Random();
-		  int val = rand.nextInt(100000);
-		  if(chance >= val){
-			int growChance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".StageGrowthChance") * 1000;
-			int maxAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MaxGrowthLevel");
-			int minAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MinGrowthLevel");
-			boolean grow = false;
-			if(growChance >= rand.nextInt(100000)){
-			  grow = true;
-			}
-			ReplantingEvent replantingEvent = new ReplantingEvent(mp, replanting, grow, maxAge, minAge);
-			Bukkit.getPluginManager().callEvent(replantingEvent);
-			if(!replantingEvent.isCancelled()){
-			  block.setType(type);
-			  Ageable ageable = (Ageable) block.getBlockData();
-			  ageable.setAge(0);
-			  if(replantingEvent.isDoStageGrowth()){
-				int tier = rand.nextInt(replantingEvent.getMaxAge() - replantingEvent.getMinAge() + 1);
-				ageable.setAge(tier);
+		  if(!Mcmmox.getPlaceStore().isTrue(block) && CropType.isCrop(block.getType()) || CropType.isCropSeed(block.getType())){
+			{
+			  int chance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000;
+			  Random rand = new Random();
+			  int val = rand.nextInt(100000);
+			  if(chance >= val){
+				int growChance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".StageGrowthChance") * 1000;
+				int maxAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MaxGrowthLevel");
+				int minAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MinGrowthLevel");
+				boolean grow = false;
+				if(growChance >= rand.nextInt(100000)){
+				  grow = true;
+				}
+				ReplantingEvent replantingEvent = new ReplantingEvent(mp, replanting, grow, maxAge, minAge);
+				Bukkit.getPluginManager().callEvent(replantingEvent);
+				if(!replantingEvent.isCancelled()){
+				  block.setType(type);
+				  Ageable ageable = (Ageable) block.getBlockData();
+				  ageable.setAge(0);
+				  if(replantingEvent.isDoStageGrowth()){
+					int tier = rand.nextInt(replantingEvent.getMaxAge() - replantingEvent.getMinAge() + 1);
+					ageable.setAge(tier);
+				  }
+				}
 			  }
 			}
 		  }
 		}
 		if(UnlockedAbilities.DIAMOND_FLOWERS.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DIAMOND_FLOWERS) && mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS).isToggled()){
 		  DiamondFlowers diamondFlowers = (DiamondFlowers) mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS);
-		  if(DiamondFlowersData.getDiamondFlowersData().containsKey(type)){
-			ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
-			Random rand = new Random();
-			String key = "DiamondFlowersConfig.Tier" + Methods.convertToNumeral(diamondFlowers.getCurrentTier()) + ".Categories";
-			for(String s : herbalism.getConfigurationSection(key).getKeys(false)){
-			  int chance = (int) herbalism.getDouble(key + "." + s) * 1000;
-			  int val = rand.nextInt(100000);
-			  if(chance >= val){
-				categoriesToChooseFrom.add(s);
-			  }
-			}
-			if(!categoriesToChooseFrom.isEmpty()){
-			  int index = rand.nextInt(categoriesToChooseFrom.size());
-			  String catToUse = categoriesToChooseFrom.get(index);
-			  ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
-			  while(itemsPossible.isEmpty()){
-				for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
-				  int chance = (int) diamondFlowersItem.getDropChance() * 1000;
-				  int val = rand.nextInt(100000);
-				  if(chance >= val){
-					itemsPossible.add(diamondFlowersItem);
-				  }
+		  if(!Mcmmox.getPlaceStore().isTrue(block)){
+			if(DiamondFlowersData.getDiamondFlowersData().containsKey(type)){
+			  ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
+			  Random rand = new Random();
+			  String key = "DiamondFlowersConfig.Tier" + Methods.convertToNumeral(diamondFlowers.getCurrentTier()) + ".Categories";
+			  for(String s : herbalism.getConfigurationSection(key).getKeys(false)){
+				int chance = (int) herbalism.getDouble(key + "." + s) * 1000;
+				int val = rand.nextInt(100000);
+				if(chance >= val){
+				  categoriesToChooseFrom.add(s);
 				}
 			  }
-			  DiamondFlowersData.DiamondFlowersItem diamondFlowersItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
-			  DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
-			  Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
-			  if(!diamondFlowersEvent.isCancelled()){
-				mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
-				int range = diamondFlowersItem.getMaxAmount() - diamondFlowersItem.getMinAmount();
-				int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
-				ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);
-				p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
-				p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
+			  if(!categoriesToChooseFrom.isEmpty()){
+				int index = rand.nextInt(categoriesToChooseFrom.size());
+				String catToUse = categoriesToChooseFrom.get(index);
+				ArrayList<DiamondFlowersData.DiamondFlowersItem> itemsPossible = new ArrayList<>();
+				while(itemsPossible.isEmpty()){
+				  for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
+					int chance = (int) diamondFlowersItem.getDropChance() * 1000;
+					int val = rand.nextInt(100000);
+					if(chance >= val){
+					  itemsPossible.add(diamondFlowersItem);
+					}
+				  }
+				}
+				DiamondFlowersData.DiamondFlowersItem diamondFlowersItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
+				DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
+				Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
+				if(!diamondFlowersEvent.isCancelled()){
+				  mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
+				  int range = diamondFlowersItem.getMaxAmount() - diamondFlowersItem.getMinAmount();
+				  int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
+				  ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);
+				  p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
+				  p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
+				}
 			  }
 			}
 		  }
@@ -363,7 +373,7 @@ public class BreakEvent implements Listener {
 		}
 		else{
 		  if(SilkBlocks.isSilked(block.getType()) && p.getInventory().getItemInMainHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)){
-		    event.setExpToDrop(0);
+			event.setExpToDrop(0);
 		  }
 		  event.setDropItems(false);
 		  ItemStack itemStack = getDropsFromMaterial(block, p.getInventory().getItemInMainHand(), dropMultiplier);
@@ -379,12 +389,12 @@ public class BreakEvent implements Listener {
   }
 
   private ItemStack getDropsFromMaterial(Block block, ItemStack tool, int multiplier){
-    if(block.getDrops(tool).isEmpty()){
-      return new ItemStack(Material.AIR);
+	if(block.getDrops(tool).isEmpty()){
+	  return new ItemStack(Material.AIR);
 	}
 	Collection<ItemStack> itemStacks = block.getDrops(tool);
-    if(itemStacks.size() == 0){
-      return new ItemStack(Material.AIR);
+	if(itemStacks.size() == 0){
+	  return new ItemStack(Material.AIR);
 	}
 	ItemStack returnItem = (ItemStack) itemStacks.toArray()[0];
 	Map<Enchantment, Integer> enchants = tool.getEnchantments();

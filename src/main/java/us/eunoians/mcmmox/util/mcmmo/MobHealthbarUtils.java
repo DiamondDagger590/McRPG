@@ -1,5 +1,6 @@
 package us.eunoians.mcmmox.util.mcmmo;
 
+import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -10,6 +11,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
+
+import java.util.Arrays;
 
 
 public final class MobHealthbarUtils {
@@ -54,10 +57,10 @@ public final class MobHealthbarUtils {
 	if (profile.getMobHealthbarType() == null) {
 	  profile.setMobHealthbarType(Config.getInstance().getMobHealthbarDefault());
 	}
-
-	if (profile.getMobHealthbarType() == MobHealthbarType.DISABLED) {
+*/
+	if (mp.getHealthbarType() == MobHealthbarType.DISABLED) {
 	  return;
-	}*/
+	}
 
 	String oldName = target.getCustomName();
 
@@ -170,9 +173,20 @@ public final class MobHealthbarUtils {
   }
 
   public enum MobHealthbarType {
-	HEARTS,
-	BAR,
-	DISABLED;
+	HEARTS("Hearts"),
+	BAR("Bar"),
+	DISABLED("Disabled");
+
+	@Getter
+	String name;
+
+	MobHealthbarType(String name){
+	  this.name = name;
+	}
+
+	public static MobHealthbarType fromString(String type){
+	  return Arrays.stream(values()).filter(healthbarType -> healthbarType.getName().equalsIgnoreCase(type)).findFirst().orElse(null);
+	}
   }
 
   public static String getPrettyEntityTypeString(EntityType entity) {

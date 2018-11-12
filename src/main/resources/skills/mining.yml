@@ -5,7 +5,7 @@ MiningEnabled: true
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
 #
-ExpEquation: '1000*(1.2^(power_level))'
+ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
@@ -56,10 +56,10 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   RicherOres: 50
-  RemoteTransfer: 250
+  RemoteTransfer: 200
   ItsATriple: 400
-  SuperBreaker: 150
-  OreScanner: 450
+  SuperBreaker: 250
+  OreScanner: 350
   BlastMining: 600
 #
 # DoubleDrop is the default ability that every player has. This ability will increase every time the players Mining level is increased
@@ -74,10 +74,10 @@ DoubleDropConfig:
     Amount: 2
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&cYou have a &e%DoubleDrop_Chance%% &c+ &e%Chance_Boost%% &cchance'
-    - '&cof doubling drops from natural ores'
+    - '&bYou have a &e%DoubleDrop_Chance%% &b+&e%Chance_Boost%% &bchance'
+    - '&bof doubling drops from natural ores'
     MenuLore:
-    - '&cThis ability has a chance of doubling ores from mining'
+    - '&bThis ability has a chance of doubling ores from mining'
 #
 # Config for the ability Richer Ores
 # This passive ability increases the chance of Double Drop activating
@@ -87,9 +87,9 @@ RicherOresConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 250
-    TierIII: 450
-    TierIV: 525
+    TierII: 175
+    TierIII: 300
+    TierIV: 425
     TierV: 600
   TierI:
     #The chance boost from richer ores
@@ -109,7 +109,8 @@ RicherOresConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bYour Richer Ores gives %ActivationBoost%% bonus chance'
+    - '&bYour Richer Ores gives &e%ActivationBoost%%'
+    - '&bbonus chance for Double Drop'
     MenuLore:
     - '&bThis ability increases the chance of Double Drop'
 #
@@ -123,10 +124,10 @@ RemoteTransferConfig:
   UnlinkAndBreakOnMine: false
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
+    TierII: 400
     TierIII: 600
-    TierIV: 725
-    TierV: 900
+    TierIV: 800
+    TierV: 1000
   #Config for each Tier
   TierI:
     #The range of Remote Transfer per tier
@@ -195,8 +196,8 @@ RemoteTransferConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&bUse /mclink to link a chest'
-    - '&bCurrently linked to %Location%'
-    - '&bYour current range is %Range% blocks'
+    - '&bCurrently linked to &e%Location%'
+    - '&bYour current range is &e%Range% &bblocks'
     MenuLore:
     - '&bThis ability transfers items mined to a linked chest'
 #
@@ -210,8 +211,8 @@ ItsATripleConfig:
   TierUpgrade:
     TierII: 525
     TierIII: 650
-    TierIV: 725
-    TierV: 830
+    TierIV: 800
+    TierV: 950
   #Config for each tier
   TierI:
     #Odds of activation per tier
@@ -231,7 +232,7 @@ ItsATripleConfig:
     Amount: 3
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bYou have a %ActivationChance%% chance'
+    - '&bYou have a &e%ActivationChance%% &bchance'
     - '&bof getting a triple drop instead of double.'
     MenuLore:
     - '&bThis ability turns double drops'
@@ -245,10 +246,10 @@ SuperBreakerConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 275
-    TierIII: 400
-    TierIV: 525
-    TierV: 750
+    TierII: 350
+    TierIII: 450
+    TierIV: 550
+    TierV: 650
   #Config for each tier
   TierI:
     #How much should the activation rate be boosted at each tier
@@ -281,8 +282,8 @@ SuperBreakerConfig:
     PlayerLore:
     - '&bThis ability give haste and'
     - '&bincreases activation rate of Double Drop'
-    - '&bGain %ActivationBoost%% for %Duration% seconds'
-    - '&bCooldown: %Cooldown%'
+    - '&bGain &e%ActivationBoost%% &bfor &e%Duration% &bseconds'
+    - '&bCooldown: &e%Cooldown%'
     MenuLore:
     - '&bGives haste and increases Double Drop'
 BlastMiningConfig:
@@ -302,10 +303,10 @@ BlastMiningConfig:
     - 'STONE'
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 700
+    TierIII: 800
+    TierIV: 900
+    TierV: 1000
   #Config for each tier
   TierI:
     #Radius of the ability (this is done to every side of the player)
@@ -333,7 +334,7 @@ BlastMiningConfig:
     PlayerLore:
     - '&bMine blocks in a %Radius% radius'
     - '&bReady your pick and place tnt'
-    - '&bCooldown: %Cooldown%'
+    - '&bCooldown: &e%Cooldown%'
     MenuLore:
     - '&bThis ability mines blocks around you'
 OreScannerConfig:
@@ -341,34 +342,34 @@ OreScannerConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 475
+    TierIII: 600
+    TierIV: 725
+    TierV: 850
   #Config for each tier
   TierI:
     #Radius for the plugin to scan
     Radius: 7
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 120
   TierII:
     Radius: 9
-    Cooldown: 240
+    Cooldown: 120
   TierIII:
     #Radius for the plugin to scan
     Radius: 10
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 120
   TierIV:
     #Radius for the plugin to scan
     Radius: 12
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 120
   TierV:
     #Radius for the plugin to scan
     Radius: 15
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 120
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Ore Scanner'
@@ -380,7 +381,7 @@ OreScannerConfig:
     - '&b%Radius% radius.'
     - '&bDisplays amount of ores'
     - '&bAnd points to closest valuable ore'
-    - '&bCooldown: %Cooldown%'
+    - '&bCooldown: &e%Cooldown%'
     MenuLore:
     - '&bScan surrounding area'
     - '&bfor gold, emerald, and diamonds'

@@ -3,6 +3,7 @@ package us.eunoians.mcmmox.events.vanilla;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,10 +18,13 @@ public class PlayerLogoutEvent implements Listener {
 
   private static HashMap<UUID, BukkitTask> playerLogOutTasks = new HashMap<>();
 
-  @EventHandler
+  @EventHandler (priority = EventPriority.MONITOR)
   public void logout(PlayerQuitEvent e){
     Player p = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	if(Mcmmox.getInstance().getDisplayManager().doesPlayerHaveDisplay(p)){
+	  Mcmmox.getInstance().getDisplayManager().removePlayersDisplay(p);
+	}
 	if(ShiftToggle.isPlayerCharging(p)){
 	  ShiftToggle.removePlayerCharging(p);
 	}

@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -23,12 +24,16 @@ import us.eunoians.mcmmox.gui.*;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.players.PlayerManager;
 import us.eunoians.mcmmox.types.AbilityType;
+import us.eunoians.mcmmox.types.DisplayType;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
+import us.eunoians.mcmmox.util.mcmmo.MobHealthbarUtils;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+@SuppressWarnings("SuspiciousMethodCalls")
 public class InvClickEvent implements Listener {
 
   private FileConfiguration config;
@@ -39,7 +44,7 @@ public class InvClickEvent implements Listener {
   }
 
   @SuppressWarnings("Duplicates")
-  @EventHandler
+  @EventHandler (priority = EventPriority.HIGHEST)
   public void invClickEvent(InventoryClickEvent e){
 	Player p = (Player) e.getWhoClicked();
 	//If this is a gui
@@ -115,6 +120,70 @@ public class InvClickEvent implements Listener {
 		  p.openInventory(editLoadoutGUI.getGui().getInv());
 		  GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
 		}
+	  }
+
+	  if(currentGUI instanceof SettingsGUI){
+	    if(e.getSlot() == 1){
+	      ItemStack displayItem = new ItemStack(Material.BLAZE_ROD);
+		  ItemMeta displayMeta = displayItem.getItemMeta();
+		  if(mp.getDisplayType() == DisplayType.ACTION_BAR){
+			displayItem.setType(Material.SIGN);
+			displayMeta.setDisplayName(Methods.color("&bDisplay Type: &5Score Board"));
+			mp.setDisplayType(DisplayType.SCOREBOARD);
+		  }
+		  else if(mp.getDisplayType() == DisplayType.SCOREBOARD){
+			displayItem.setType(Material.DRAGON_HEAD);
+			displayMeta.setDisplayName(Methods.color("&bDisplay Type: &5Boss Bar"));
+			mp.setDisplayType(DisplayType.BOSS_BAR);
+		  }
+		  else if(mp.getDisplayType() == DisplayType.BOSS_BAR){
+			displayMeta.setDisplayName(Methods.color("&bDisplay Type: &5Action Bar"));
+			mp.setDisplayType(DisplayType.ACTION_BAR);
+		  }
+		  displayMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to change your display type", "&eWhen using /mcdisplay {skill}")));
+		  displayItem.setItemMeta(displayMeta);
+		  currentGUI.getGui().getInv().setItem(e.getSlot(), displayItem);
+		  p.updateInventory();
+		}
+		else if(e.getSlot() == 3){
+		  ItemStack itemPickup = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+		  ItemMeta itemPickupMeta = itemPickup.getItemMeta();
+		  if(!mp.isKeepHandEmpty()){
+			itemPickupMeta.setDisplayName(Methods.color("&aKeep Hand Empty Enabled"));
+		  }
+		  else{
+			itemPickup.setType(Material.RED_STAINED_GLASS_PANE);
+			itemPickupMeta.setDisplayName(Methods.color("&cKeep Hand Empty Disabled"));
+		  }
+		  mp.setKeepHandEmpty(!mp.isKeepHandEmpty());
+		  itemPickupMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to change", "&eif items should go into your empty hand")));
+		  itemPickup.setItemMeta(itemPickupMeta);
+		  currentGUI.getGui().getInv().setItem(e.getSlot(), itemPickup);
+		  p.updateInventory();
+		}
+		else if(e.getSlot() == 5){
+		  MobHealthbarUtils.MobHealthbarType healthbarType = mp.getHealthbarType();
+		  ItemStack healthItem = new ItemStack(Material.BUBBLE_CORAL_BLOCK);
+		  ItemMeta healthMeta = healthItem.getItemMeta();
+		  if(healthbarType == MobHealthbarUtils.MobHealthbarType.DISABLED){
+			healthMeta.setDisplayName(Methods.color("&5Mob Health Display: &3Bar"));
+			mp.setHealthbarType(MobHealthbarUtils.MobHealthbarType.BAR);
+		  }
+		  else if(healthbarType == MobHealthbarUtils.MobHealthbarType.HEARTS){
+			healthItem.setType(Material.DEAD_FIRE_CORAL_BLOCK);
+			healthMeta.setDisplayName(Methods.color("&5Mob Health Display: &3Disabled"));
+			mp.setHealthbarType(MobHealthbarUtils.MobHealthbarType.DISABLED);
+		  }
+		  else if(healthbarType == MobHealthbarUtils.MobHealthbarType.BAR){
+			healthItem.setType(Material.FIRE_CORAL_BLOCK);
+			healthMeta.setDisplayName(Methods.color("&5Mob Health Display: &3Hearts"));
+			mp.setHealthbarType(MobHealthbarUtils.MobHealthbarType.HEARTS);
+		  }
+		  healthItem.setItemMeta(healthMeta);
+		  currentGUI.getGui().getInv().setItem(e.getSlot(), healthItem);
+		  p.updateInventory();
+		}
+		return;
 	  }
 
 	  //Dealing with ability accepting
@@ -211,6 +280,9 @@ public class InvClickEvent implements Listener {
 		}
 		BaseAbility baseAbility = mp.getBaseAbility(selectReplaceGUI.getAbilities().get(e.getSlot()));
 		if(mp.getAbilityLoadout().size() < 9){
+		  if(mp.getAbilityLoadout().contains(baseAbility.getGenericAbility())){
+		    return;
+		  }
 		  AbilityAddToLoadoutEvent event = new AbilityAddToLoadoutEvent(mp, baseAbility);
 		  Bukkit.getPluginManager().callEvent(event);
 		  if(event.isCancelled()){
@@ -218,6 +290,7 @@ public class InvClickEvent implements Listener {
 		  }
 		  mp.addAbilityToLoadout(selectReplaceGUI.getAbilities().get(e.getSlot()));
 		  mp.saveData();
+		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", baseAbility.getGenericAbility().getName())));
 		  return;
 		}
 		else{
@@ -465,6 +538,13 @@ public class InvClickEvent implements Listener {
 			p.openInventory(gui.getGui().getInv());
 			GUITracker.replacePlayersGUI(mp, gui);
 			return;
+		  }
+		  else if(events[1].equalsIgnoreCase("SettingsGUI")){
+		    gui = new SettingsGUI(mp);
+		    currentGUI.setClearData(false);
+		    p.openInventory(gui.getGui().getInv());
+		    GUITracker.replacePlayersGUI(mp, gui);
+		    return;
 		  }
 		  else if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
 			if(mp.getAbilityPoints() == 0){

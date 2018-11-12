@@ -67,7 +67,7 @@ public class McMMOPlayer {
 
   @Getter
   @Setter
-  private DisplayType displayType = DisplayType.EXP_SCOREBOARD;
+  private DisplayType displayType = DisplayType.SCOREBOARD;
 
   @Getter
   @Setter
@@ -105,6 +105,10 @@ public class McMMOPlayer {
   @Setter
   private long endTimeForReplaceCooldown;
 
+  @Getter
+  @Setter
+  private boolean keepHandEmpty = false;
+
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -138,6 +142,8 @@ public class McMMOPlayer {
 		playerData.set(ability.getSkill() + "." + ability.getName() + ".IsToggled", true);
 	  }
 	  playerData.set("DisplayType", displayType.getName());
+	  playerData.set("HealthType", healthbarType.getName());
+	  playerData.set("KeepHandEmpty", keepHandEmpty);
 	  playerData.set("Cooldowns.placeholder", null);
 	  playerData.set("AbilityPoints", 0);
 	  playerData.set("RemoteTransferBlocks", null);
@@ -151,6 +157,8 @@ public class McMMOPlayer {
 		e.printStackTrace();
 	  }
 	}
+	this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(playerData.getString("HealthType"));
+	this.keepHandEmpty = playerData.getBoolean("KeepHandEmpty");
 	this.displayType = DisplayType.fromString(playerData.getString("DisplayType"));
 	this.abilityPoints = playerData.getInt("AbilityPoints");
 	ArrayList<UnlockedAbilities> list = new ArrayList<>();
@@ -548,6 +556,9 @@ public class McMMOPlayer {
    */
   public void updateCooldowns(){
 	ArrayList<UnlockedAbilities> toRemove = new ArrayList<>();
+	if(abilitiesOnCooldown.isEmpty() && endTimeForReplaceCooldown == 0){
+	  return;
+	}
 	for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()){
 	  long timeToEnd = abilitiesOnCooldown.get(ability);
 	  if(Calendar.getInstance().getTimeInMillis() >= timeToEnd){
@@ -630,6 +641,7 @@ public class McMMOPlayer {
 	  playerData.set("Cooldowns.placeholder", null);
 	}
 	playerData.set("DisplayType", displayType.getName());
+	playerData.set("KeepHandEmpty", keepHandEmpty);
 	playerData.set("AbilityPoints", abilityPoints);
 	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
 	playerData.set("AbilityLoadout", abilityLoadout.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));

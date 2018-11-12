@@ -22,14 +22,6 @@ public abstract class GenericDisplay {
   }
 
   /**
-   * A method all children must have. Updates display w/ new info
-   * @param currentExp
-   * @param expToLevel
-   * @param currentLevel
-   */
-  public void sendUpdate(int currentExp, int expToLevel, int currentLevel){}
-
-  /**
    * A method all children must have. Cancels display
    */
   public void cancel(){}

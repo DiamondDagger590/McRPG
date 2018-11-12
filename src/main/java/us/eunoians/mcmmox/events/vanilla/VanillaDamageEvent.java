@@ -10,6 +10,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -40,7 +41,7 @@ import java.util.Random;
 
 public class VanillaDamageEvent implements Listener {
 
-  @EventHandler
+  @EventHandler (priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e){
 	FileConfiguration config;
 	if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity){
@@ -90,7 +91,7 @@ public class VanillaDamageEvent implements Listener {
 		  if(e.getEntity() instanceof Player){
 		    Player damaged = (Player) e.getEntity();
 		    for(ItemStack armour : damaged.getInventory().getArmorContents()){
-		      armour.setDurability((short) (armour.getDurability() - mp.getArmourDmg()));
+		      armour.setDurability((short) (armour.getDurability() + mp.getArmourDmg()));
 			}
 		  }
 		}
@@ -193,6 +194,7 @@ public class VanillaDamageEvent implements Listener {
 			  int duration = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".Duration");
 			  int armourDmg = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".ArmorDamage");
 			  mp.setReadying(false);
+			  Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			  mp.setReadyingAbilityBit(null);
 			  DenseImpactEvent denseImpactEvent = new DenseImpactEvent(mp, denseImpact, armourDmg);
 			  Bukkit.getPluginManager().callEvent(denseImpactEvent);
@@ -236,7 +238,7 @@ public class VanillaDamageEvent implements Listener {
 			  Bukkit.getPluginManager().callEvent(disarmEvent);
 			  if(!disarmEvent.isCancelled()){
 				int slot = -1;
-				for(int i = 8; i < 36; i++){
+				for(int i = 9; i < 36; i++){
 				  ItemStack item = damagedPlayer.getInventory().getItem(i);
 				  if(item == null || item.getType() == Material.AIR){
 				    slot = i;
@@ -326,7 +328,7 @@ public class VanillaDamageEvent implements Listener {
 					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.TaintedBlade.Activated")));
 				PotionEffect strength = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, event.getStrengthDuration() * 20, 1);
 				PotionEffect resistance = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, event.getResistanceDuration() * 20, 1);
-				PotionEffect hunger = new PotionEffect(PotionEffectType.HUNGER, event.getHungerDuration() * 20, 2);
+				PotionEffect hunger = new PotionEffect(PotionEffectType.HUNGER, event.getHungerDuration() * 20, 3);
 				p.addPotionEffect(strength);
 				p.addPotionEffect(resistance);
 				p.addPotionEffect(hunger);

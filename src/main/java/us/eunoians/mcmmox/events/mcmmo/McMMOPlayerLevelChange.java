@@ -5,26 +5,27 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
-import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
-import us.eunoians.mcmmox.api.displays.GenericDisplay;
+import us.eunoians.mcmmox.api.displays.DisplayManager;
+import us.eunoians.mcmmox.api.displays.ExpDisplayType;
 import us.eunoians.mcmmox.api.events.mcmmo.AbilityUnlockEvent;
 import us.eunoians.mcmmox.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
 import us.eunoians.mcmmox.skills.Skill;
-import us.eunoians.mcmmox.types.DisplayType;
 import us.eunoians.mcmmox.types.GenericAbility;
 import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class McMMOPlayerLevelChange implements Listener {
 
-  @EventHandler
+  @EventHandler (priority = EventPriority.NORMAL)
   public void levelChange(McMMOPlayerLevelChangeEvent e){
 	Mcmmox mcmmox = Mcmmox.getInstance();
 	e.getMcMMOPlayer().updatePowerLevel();
@@ -85,11 +86,12 @@ public class McMMOPlayerLevelChange implements Listener {
 	  if(!Mcmmox.getInstance().getDisplayManager().doesPlayerHaveDisplay(e.getMcMMOPlayer().getPlayer())){
 		return;
 	  }
-	  GenericDisplay display = Mcmmox.getInstance().getDisplayManager().getDisplay(e.getMcMMOPlayer().getPlayer());
-	  if(display.getType().equals(DisplayType.EXP_SCOREBOARD)){
-		ExpScoreboardDisplay exp = (ExpScoreboardDisplay) display;
-		if(exp.getSkill().equals(e.getSkillLeveled().getType())){
-		  ((ExpScoreboardDisplay) display).sendUpdate(e.getSkillLeveled().getCurrentExp(), e.getSkillLeveled().getExpToLevel(), e.getSkillLeveled().getCurrentLevel());
+	  DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
+	  if(displayManager.doesPlayerHaveDisplay(p)){
+		if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+		  ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+		  Skill skill = mp.getSkill(expDisplayType.getSkill());
+		  expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
 		}
 	  }
 	}

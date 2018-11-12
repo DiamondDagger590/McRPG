@@ -20,20 +20,42 @@ DisplayConfig:
       CurrentLevel: '&aCurrent Level:'
       CurrentExp: '&aExp:'
       ExpNeeded: '&aExp Left:'
+  BossBar:
+    DisplayName: '&5%Skill%: &e%Exp_To_Level%'
+    Color:
+      Swords: 'Red'
+      Mining: 'Blue'
+      Unarmed: 'White'
+      Herbalism: 'Green'
+  ActionBar:
+    Swords:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Mining:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Unarmed:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Herbalism:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
 PlayerConfiguration:
   #This amount is here for the future and currently is unused
   AmountOfTotalAbilities: 9
   #When the power level reaches a multiple of this number a point is awaded
-  AbilityPointInterval: 250
+  AbilityPointInterval: 200
   #In seconds how long should the player stay ready for
   PlayerReadyDuration: 2
 Configuration:
 #This is in minutes
   SaveInterval: 1
+#This is in minutes
   ReplaceAbilityCooldown: 1440
+#Require an empty offhand to use abilities
+  RequireEmptyOffHand: false
   LangFile: 'en'
+#Unused
   AutoUpdate: true
 #Use mcmmo.{skill}.level
   UseLevelPerms: false
+#Allow Health bars
   HealthBarEnabled: true
+#Display time in seconds
   HealthBarDisplayTime: 5

@@ -14,7 +14,7 @@ import us.eunoians.mcmmox.skills.Skill;
 import us.eunoians.mcmmox.types.DisplayType;
 import us.eunoians.mcmmox.types.Skills;
 
-public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBase{
+public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBase, ExpDisplayType{
 
   @Getter
   private Skills skill;
@@ -31,7 +31,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    * @param skill Skill to be displayed
    */
   public ExpScoreboardDisplay(McMMOPlayer player, Skills skill){
-    super(player, DisplayType.EXP_SCOREBOARD);
+    super(player, DisplayType.SCOREBOARD);
     this.skill = skill;
     createScoreboard();
   }
@@ -43,7 +43,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    * @param old The old board to be stored. Useful for interactions with things like Factions
    */
   public ExpScoreboardDisplay(McMMOPlayer player, Skills skill, Scoreboard old){
-	super(player, DisplayType.EXP_SCOREBOARD);
+	super(player, DisplayType.SCOREBOARD);
 	this.skill = skill;
 	oldBoard = old;
 	createScoreboard();
@@ -60,7 +60,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 	  String value = Methods.color(config.getString("DisplayConfig.Scoreboard.Lines." + key));
 	  objective.getScore(value).setScore(0);
 	  });
-	sendUpdate(sk.getCurrentExp(), sk.getExpToLevel(), sk.getCurrentLevel());
+	sendUpdate(sk.getCurrentExp(), sk.getExpToLevel(), sk.getCurrentLevel(), 0);
   }
 
   /**
@@ -70,7 +70,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    * @param currentLevel The current level to display
    */
   @Override
-  public void sendUpdate(int currentExp, int expToLevel, int currentLevel){
+  public void sendUpdate(int currentExp, int expToLevel, int currentLevel, int expGained){
 	FileConfiguration config = Mcmmox.getInstance().getConfig();
 	Objective objective = board.getObjective("mcmmo");
 	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentExp"))).setScore(currentExp);

@@ -159,6 +159,7 @@ public class Mcmmox extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new DisarmHandler(), this);
     getServer().getPluginManager().registerEvents(new PlayerNomNomEvent(), this);
     getServer().getPluginManager().registerEvents(new AbilityUnlock(), this);
+	getServer().getPluginManager().registerEvents(new PickupEvent(), this);
   }
 
   public static Mcmmox getInstance() {

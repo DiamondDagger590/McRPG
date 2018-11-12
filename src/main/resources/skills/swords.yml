@@ -5,7 +5,7 @@ SwordsEnabled: true
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
 #
-ExpEquation: '1000*(1.2^(power_level))'
+ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #If different materials of swords should give more exp. WOOD_SWORD: 1.0 means 100% of default exp
 MaterialBonus:
@@ -94,11 +94,11 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   Bleed+: 50
-  SerratedStrikes: 150
-  DeeperWound: 225
-  RageSpike: 300
-  Vampire: 450
-  TaintedBlade: 600
+  SerratedStrikes: 350
+  DeeperWound: 250
+  RageSpike: 150
+  Vampire: 400
+  TaintedBlade: 425
 #
 # Bleed is the default ability that every player has. This ability will increase every time the players Swords level is increased
 #
@@ -126,7 +126,8 @@ BleedConfig:
     Amount: 1
 #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cYou have a %Bleed_Chance%% chance of inflicting bleed'
+      - '&cYou have a &e%Bleed_Chance%% &cchance of inflicting bleed'
+      - '&cDealing damage over time'
     MenuLore:
       - '&cThis ability has a chance of'
       - '&ccausing damage over time to a target'
@@ -139,10 +140,10 @@ Bleed+Config:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 125
-    TierIII: 225
-    TierIV: 325
-    TierV: 500
+    TierII: 175
+    TierIII: 300
+    TierIV: 425
+    TierV: 650
   TierI:
     #The chance of Bleed_ occurring per tier
     ActivationChance: 10.0
@@ -168,7 +169,8 @@ Bleed+Config:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cYou have a %ActivationChance%% chance of Bleed+ activating'
+      - '&cYou have a &e%ActivationChance%% &cchance of Bleed+ activating'
+      - '&cDamage Boost: &e%DamageBoost%'
     MenuLore:
       - '&cThis ability increases the damage dealt by Bleed'
 #
@@ -180,10 +182,10 @@ DeeperWoundConfig:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 300
+    TierII: 350
     TierIII: 450
-    TierIV: 600
-    TierV: 750
+    TierIV: 575
+    TierV: 700
 #Config for each Tier
   TierI:
 #The chance of DeeperWound occurring per tier
@@ -211,7 +213,7 @@ DeeperWoundConfig:
     PlayerLore:
       - '&cYou have a &e%ActivationChance%% &cchance'
       - '&cof Deeper Wound activating for plus'
-      -  '&e%DurationBoost% &cseconds'
+      - '&e%DurationBoost% &cseconds'
     MenuLore:
       - '&cThis ability extends the duration of Bleed'
 #
@@ -224,9 +226,9 @@ VampireConfig:
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 550
-    TierIII: 650
-    TierIV: 800
-    TierV: 900
+    TierIII: 700
+    TierIV: 850
+    TierV: 1000
 #Config for each tier
   TierI:
 #Odds of activation per tier
@@ -251,8 +253,9 @@ VampireConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cYou have a %ActivationChance%% chance'
+      - '&cYou have a &e%ActivationChance%% &cchance'
       - '&cof Vampire activating'
+      - '&cAmount Healed: &e%AmountToHeal%'
     MenuLore:
       - '&cThis ability has a chance of healing you'
       - '&con target Bleed'
@@ -265,33 +268,33 @@ SerratedStrikesConfig:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 475
+    TierIII: 600
+    TierIV: 725
+    TierV: 850
 #Config for each tier
   TierI:
 #How much should the activation rate be boosted at each tier
     ActivationBoost: 5.0
 #Duration of the ability at each tier in seconds
     Duration: 3
-    Cooldown: 180
+    Cooldown: 120
   TierII:
     ActivationBoost: 7.5
     Duration: 3
-    Cooldown: 180
+    Cooldown: 120
   TierIII:
     ActivationBoost: 10.0
     Duration: 5
-    Cooldown: 180
+    Cooldown: 120
   TierIV:
     ActivationBoost: 15.0
     Duration: 5
-    Cooldown: 180
+    Cooldown: 120
   TierV:
     ActivationBoost: 20.0
     Duration: 8
-    Cooldown: 180
+    Cooldown: 120
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Serrated Strikes'
@@ -301,8 +304,8 @@ SerratedStrikesConfig:
     PlayerLore:
       - '&cThis ability increases the'
       - '&c activation rate of Bleed'
-      - '&cGain %ActivationBoost%% for %Duration% seconds'
-      - '&cCooldown: %Cooldown%'
+      - '&cGain &e%ActivationBoost%% &cfor &e%Duration% &cseconds'
+      - '&cCooldown: &e%Cooldown%'
     MenuLore:
       - '&cIncrease activation rate of Bleed'
 RageSpikeConfig:
@@ -310,10 +313,10 @@ RageSpikeConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 300
+    TierIII: 450
+    TierIV: 550
+    TierV: 650
   #Config for each tier
   TierI:
     #How long the ability takes to charge
@@ -321,23 +324,23 @@ RageSpikeConfig:
     #Damage dealt via collision
     Damage: 1
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 140
   TierII:
     ChargeTime: 4
     Damage: 1
-    Cooldown: 240
+    Cooldown: 140
   TierIII:
     ChargeTime: 3
     Damage: 2
-    Cooldown: 240
+    Cooldown: 140
   TierIV:
     ChargeTime: 2
     Damage: 3
-    Cooldown: 240
+    Cooldown: 140
   TierV:
     ChargeTime: 1
     Damage: 3
-    Cooldown: 240
+    Cooldown: 140
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Rage Spike'
@@ -345,10 +348,10 @@ RageSpikeConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cCharge by shifting for %ChargeTime%'
+      - '&cCharge by shifting for &e%ChargeTime%'
       - '&cto dash forward'
-      - '&cDealing %Damage% damage.'
-      - '&cCooldown: %Cooldown%'
+      - '&cDealing &e%Damage% &cdamage.'
+      - '&cCooldown: &e%Cooldown%'
     MenuLore:
       - '&cThis ability dashs you forward'
       - '&cdealing damage and knockback'
@@ -357,41 +360,41 @@ TaintedBladeConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 475
-    TierV: 600
+    TierII: 550
+    TierIII: 675
+    TierIV: 800
+    TierV: 950
   #Config for each tier
   TierI:
     StrengthDuration: 5
     ResistanceDuration: 5
-    HungerDuration: 3
+    HungerDuration: 7
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 160
   TierII:
     StrengthDuration: 6
     ResistanceDuration: 6
-    HungerDuration: 4
+    HungerDuration: 8
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 160
   TierIII:
     StrengthDuration: 7
     ResistanceDuration: 7
-    HungerDuration: 5
+    HungerDuration: 9
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 160
   TierIV:
     StrengthDuration: 8
     ResistanceDuration: 8
-    HungerDuration: 6
+    HungerDuration: 10
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 160
   TierV:
     StrengthDuration: 10
     ResistanceDuration: 10
-    HungerDuration: 7
+    HungerDuration: 12
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 160
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Tainted Blade'
@@ -399,10 +402,10 @@ TaintedBladeConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cTake %HungerDuration% seconds of hunger for'
-      - '&c%StrengthDuration% seconds of strength'
-      - '&c%ResistanceDuration% seconds or resistance'
-      - '&cCooldown: %Cooldown%'
+      - '&cTake &e%HungerDuration% &cseconds of hunger for'
+      - '&e%StrengthDuration% &cseconds of strength'
+      - '&e%ResistanceDuration% &Cseconds or resistance'
+      - '&cCooldown: &e%Cooldown%'
     MenuLore:
       - '&cGain hunger in exchange'
       - '&cfor Strength and Resistance'

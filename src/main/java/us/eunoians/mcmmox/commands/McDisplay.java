@@ -7,6 +7,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.displays.DisplayManager;
+import us.eunoians.mcmmox.api.displays.ExpActionBar;
+import us.eunoians.mcmmox.api.displays.ExpBossbarDisplay;
 import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.players.McMMOPlayer;
@@ -47,18 +49,12 @@ public class McDisplay implements CommandExecutor {
 		  // /mcdisplay {skill}
 		  else if(Skills.isSkill(args[0])){
 			McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+			if(DisplayManager.getInstance().doesPlayerHaveDisplay(p)){
+			  DisplayManager.getInstance().getDisplay(p).cancel();
+			  DisplayManager.getInstance().removePlayersDisplay(p);
+			}
 			DisplayType type = mp.getDisplayType();
-			if(type.equals(DisplayType.EXP_SCOREBOARD)){
-			  ExpScoreboardDisplay display = new ExpScoreboardDisplay(mp, Skills.fromString(args[0]), p.getScoreboard());
-			  p.setScoreboard(display.getBoard());
-			  displayManager.setGenericDisplay(display);
-			  return true;
-			}
-			else{
-			  //TODO
-			  p.sendMessage("not added");
-			  return true;
-			}
+			return setDisplay(args, displayManager, p, mp, type);
 		  }
 		  // not those
 		  else{
@@ -84,7 +80,9 @@ public class McDisplay implements CommandExecutor {
 		  // /mcdisplay {skill} {displaytype}
 		  else if(Skills.isSkill(args[0])){
 			if(DisplayType.isDisplayType(args[1])){
-
+			  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+			  DisplayType type = DisplayType.fromString(args[1]);
+			  return setDisplay(args, displayManager, p, mp, type);
 			}
 			else{
 			  p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.McDisplay.InvalidInput").replaceAll("%String%", args[0])));
@@ -106,6 +104,25 @@ public class McDisplay implements CommandExecutor {
 	}
 	else{
 	  sender.sendMessage(Methods.color(plugin.getPluginPrefix()) + "&cConsole can not run this command.");
+	  return true;
+	}
+  }
+
+  private boolean setDisplay(String[] args, DisplayManager displayManager, Player p, McMMOPlayer mp, DisplayType type){
+	if(type.equals(DisplayType.SCOREBOARD)){
+	  ExpScoreboardDisplay display = new ExpScoreboardDisplay(mp, Skills.fromString(args[0]), p.getScoreboard());
+	  p.setScoreboard(display.getBoard());
+	  displayManager.setGenericDisplay(display);
+	  return true;
+	}
+	else if(type.equals(DisplayType.BOSS_BAR)){
+	  ExpBossbarDisplay display = new ExpBossbarDisplay(mp, Skills.fromString(args[0]));
+	  displayManager.setGenericDisplay(display);
+	  return true;
+	}
+	else{
+	  ExpActionBar display = new ExpActionBar(mp, Skills.fromString(args[0]));
+	  displayManager.setGenericDisplay(display);
 	  return true;
 	}
   }

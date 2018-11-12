@@ -6,7 +6,7 @@ Gui:
       #Slot
       10:
         #Events bound to slot
-        - 'OpenFile:settingsgui.yml:SettingsGUI'
+        - 'OpenNative:SettingsGUI'
       12:
         - 'OpenFile:skillsgui.yml:SkillGUI.yml'
       14:

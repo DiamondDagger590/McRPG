@@ -11,6 +11,7 @@ import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.abilities.BaseAbility;
 import us.eunoians.mcmmox.abilities.mining.RemoteTransfer;
 import us.eunoians.mcmmox.api.displays.DisplayManager;
+import us.eunoians.mcmmox.api.displays.ExpDisplayType;
 import us.eunoians.mcmmox.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcmmox.api.util.Methods;
 import us.eunoians.mcmmox.api.util.RemoteTransferTracker;
@@ -110,9 +111,9 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					expScoreboardDisplay.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), amount);
 				  }
 				}
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
@@ -165,9 +166,9 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					expScoreboardDisplay.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), 0);
 				  }
 				}
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
@@ -682,9 +683,9 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
 				  }
 				}
 				mp.saveData();
@@ -817,13 +818,13 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
-					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					Skill skill = mp.getSkill(expDisplayType.getSkill());
+					expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
 				  }
 				}
-				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
+				mp.setDisplayType(DisplayType.SCOREBOARD);
 
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
 					.replace("%Player%", offlinePlayer.getName())));
@@ -847,22 +848,10 @@ public class McAdmin implements CommandExecutor {
 				((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
 				mp.setLinkedToRemoteTransfer(false);
 				RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
-
-				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
-				if(offlinePlayer.isOnline()){
-				  Player p = (Player) offlinePlayer;
-				  if(displayManager.doesPlayerHaveDisplay(p)){
-					if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					  ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					  Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
-					  expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
-					}
-				  }
-				}
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
 					.replace("%Player%", offlinePlayer.getName())));
 				mp.setReadying(false);
-				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
+				mp.setDisplayType(DisplayType.SCOREBOARD);
 				mp.saveData();
 				return true;
 			  }
@@ -944,9 +933,9 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					expScoreboardDisplay.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), amount);
 				  }
 				}
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
@@ -995,9 +984,9 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					expScoreboardDisplay.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), 0);
 				  }
 				}
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
@@ -1474,7 +1463,7 @@ public class McAdmin implements CommandExecutor {
 				if(displayManager.doesPlayerHaveDisplay(p)){
 				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
 					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
 				  }
 				}
 				mp.saveData();
@@ -1600,13 +1589,13 @@ public class McAdmin implements CommandExecutor {
 				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
 				Player p = (Player) offlinePlayer;
 				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
-					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
+				  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
+					ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
+					Skill skill = mp.getSkill(expDisplayType.getSkill());
+					expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
 				  }
 				}
-				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
+				mp.setDisplayType(DisplayType.SCOREBOARD);
 
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
 					.replace("%Player%", offlinePlayer.getName())));
@@ -1630,20 +1619,10 @@ public class McAdmin implements CommandExecutor {
 				((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
 				mp.setLinkedToRemoteTransfer(false);
 				RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
-
-				DisplayManager displayManager = Mcmmox.getInstance().getDisplayManager();
-				Player p = (Player) offlinePlayer;
-				if(displayManager.doesPlayerHaveDisplay(p)){
-				  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
-					ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
-					Skill skill = mp.getSkill(expScoreboardDisplay.getSkill());
-					expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel());
-				  }
-				}
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.Player")
 					.replace("%Player%", offlinePlayer.getName())));
 				mp.setReadying(false);
-				mp.setDisplayType(DisplayType.EXP_SCOREBOARD);
+				mp.setDisplayType(DisplayType.SCOREBOARD);
 				mp.saveData();
 				return true;
 			  }

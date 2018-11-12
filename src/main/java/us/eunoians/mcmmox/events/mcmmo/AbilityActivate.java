@@ -2,6 +2,7 @@ package us.eunoians.mcmmox.events.mcmmo;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcmmox.Mcmmox;
 import us.eunoians.mcmmox.api.events.mcmmo.AbilityActivateEvent;
@@ -10,7 +11,7 @@ import us.eunoians.mcmmox.types.Skills;
 
 public class AbilityActivate implements Listener {
 
- @EventHandler
+  @EventHandler (priority = EventPriority.NORMAL)
  public void abilityActivateEvent(AbilityActivateEvent e){
    Skills skill = Skills.fromString(e.getAbility().getGenericAbility().getSkill());
    String abilityName = e.getAbility().getGenericAbility().getName().replace(" ", "").replace("_", "").toLowerCase();
