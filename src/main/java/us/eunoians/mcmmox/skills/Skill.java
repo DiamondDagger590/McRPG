@@ -134,7 +134,7 @@ public abstract class Skill {
     }
 	else{
 	  currentExp += exp;
-	  expToLevel -= exp;
+	  //expToLevel -= exp;
 	}
 	if(!Mcmmox.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())){
 	  return ;

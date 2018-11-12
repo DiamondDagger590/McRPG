@@ -74,7 +74,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 	FileConfiguration config = Mcmmox.getInstance().getConfig();
 	Objective objective = board.getObjective("mcmmo");
 	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentExp"))).setScore(currentExp);
-	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.ExpNeeded"))).setScore(expToLevel);
+	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.ExpNeeded"))).setScore(expToLevel - currentExp);
 	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentLevel"))).setScore(currentLevel);
 	objective.setDisplaySlot(DisplaySlot.SIDEBAR);
   }
