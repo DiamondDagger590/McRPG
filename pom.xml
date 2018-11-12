@@ -13,7 +13,7 @@
 
     <groupId>us.eunoians</groupId>
     <artifactId>Mcmmox</artifactId>
-    <version>0.0.2-ALPHA</version>
+    <version>1.0.0-ALPHA</version>
 
     <build>
         <plugins>
