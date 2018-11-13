@@ -368,31 +368,31 @@ TaintedBladeConfig:
   TierI:
     StrengthDuration: 5
     ResistanceDuration: 5
-    HungerDuration: 7
+    HungerDuration: 15
     #Cooldown in seconds
     Cooldown: 160
   TierII:
     StrengthDuration: 6
     ResistanceDuration: 6
-    HungerDuration: 8
+    HungerDuration: 20
     #Cooldown in seconds
     Cooldown: 160
   TierIII:
     StrengthDuration: 7
     ResistanceDuration: 7
-    HungerDuration: 9
+    HungerDuration: 30
     #Cooldown in seconds
     Cooldown: 160
   TierIV:
-    StrengthDuration: 8
-    ResistanceDuration: 8
-    HungerDuration: 10
+    StrengthDuration: 10
+    ResistanceDuration: 10
+    HungerDuration: 45
     #Cooldown in seconds
     Cooldown: 160
   TierV:
-    StrengthDuration: 10
-    ResistanceDuration: 10
-    HungerDuration: 12
+    StrengthDuration: 15
+    ResistanceDuration: 15
+    HungerDuration: 60
     #Cooldown in seconds
     Cooldown: 160
   #How this ability should be seen in the GUIS

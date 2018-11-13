@@ -164,6 +164,7 @@ RemoteTransferConfig:
     - 'TierII'
     - 'TierIII'
     - 'TierIV'
+    - 'TierV'
     InvSize: 45
   #Define custom categories of items to be teleported using this ability. No cap to amount
   Categories:
@@ -310,20 +311,20 @@ BlastMiningConfig:
   #Config for each tier
   TierI:
     #Radius of the ability (this is done to every side of the player)
-    Radius: 5
+    Radius: 4
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    Radius: 6
+    Radius: 5
     Cooldown: 240
   TierIII:
-    Radius: 7
+    Radius: 6
     Cooldown: 240
   TierIV:
-    Radius: 8
+    Radius: 7
     Cooldown: 240
   TierV:
-    Radius: 10
+    Radius: 8
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:

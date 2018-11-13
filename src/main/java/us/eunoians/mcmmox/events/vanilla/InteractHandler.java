@@ -39,7 +39,7 @@ import java.util.List;
 
 public class InteractHandler implements Listener {
 
-  @EventHandler (priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void interactHandler(PlayerInteractEvent e){
 	Player p = e.getPlayer();
 	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
@@ -62,8 +62,8 @@ public class InteractHandler implements Listener {
 	if(mp.isReadying()){
 	  PlayerReadyBit bit = mp.getReadyingAbilityBit();
 	  if(bit == null){
-	    mp.setReadying(false);
-	    return;
+		mp.setReadying(false);
+		return;
 	  }
 	  UnlockedAbilities abilityType = bit.getAbilityReady();
 	  BaseAbility ability = mp.getSkill(abilityType.getSkill()).getAbility(abilityType);
@@ -141,7 +141,7 @@ public class InteractHandler implements Listener {
 		mp.setReadying(false);
 		DoubleDrop doubleDrop = (DoubleDrop) mp.getBaseAbility(DefaultAbilities.DOUBLE_DROP);
 		doubleDrop.setBonusChance(doubleDrop.getBonusChance() + superBreakerEvent.getBoost());
-		PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, superBreakerEvent.getHasteDuration() * 20, 6);
+		PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, superBreakerEvent.getHasteDuration() * 20, 20);
 		p.addPotionEffect(effect);
 		mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 			Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Activated")));
@@ -267,17 +267,22 @@ public class InteractHandler implements Listener {
 			int cooldown = herbalism.getInt("MassHarvestConfig.Tier" + Methods.convertToNumeral(massHarvest.getCurrentTier()) + ".Cooldown");
 			for(int x = -1 * radius; x < radius; x++){
 			  for(int z = -1 * radius; z < radius; z++){
-				Block test = p.getLocation().add(x, 1, z).getBlock();
-				Material cropType = test.getType();
-				if(BreakEvent.CropType.isCrop(cropType)){
-				  BlockBreakEvent breakEvent = new BlockBreakEvent(test, p);
-				  Bukkit.getPluginManager().callEvent(breakEvent);
-				  if(!breakEvent.isCancelled()){
-					test.breakNaturally(breakItem);
-					test.setType(cropType);
-					Ageable ageable = (Ageable) test.getBlockData();
-					ageable.setAge(0);
-					test.setBlockData(ageable);
+				for(int y = -1 * 2; y < 2; y++){
+				  Block test = p.getLocation().add(x, y, z).getBlock();
+				  Material cropType = test.getType();
+				  if(BreakEvent.CropType.isCrop(cropType) || BreakEvent.CropType.isCropSeed(cropType)){
+					BlockBreakEvent breakEvent = new BlockBreakEvent(test, p);
+					Bukkit.getPluginManager().callEvent(breakEvent);
+					if(!breakEvent.isCancelled()){
+					  test.breakNaturally(breakItem);
+					  if(type == Material.PUMPKIN || type == Material.MELON){
+						break;
+					  }
+					  test.setType(cropType);
+					  Ageable ageable = (Ageable) test.getBlockData();
+					  ageable.setAge(0);
+					  test.setBlockData(ageable);
+					}
 				  }
 				}
 			  }
@@ -303,7 +308,7 @@ public class InteractHandler implements Listener {
 			int cooldown = herbalism.getInt("PansBlessingConfig.Tier" + Methods.convertToNumeral(pansBlessing.getCurrentTier()) + ".Cooldown");
 			for(int x = -1 * radius; x <= radius; x++){
 			  for(int z = -1 * radius; z <= radius; z++){
-			    for(int y = -1; y <= 1; y++){
+				for(int y = -1; y <= 1; y++){
 				  Block test = p.getLocation().add(x, y, z).getBlock();
 				  Material cropType = test.getType();
 				  if(BreakEvent.CropType.isCrop(cropType)){

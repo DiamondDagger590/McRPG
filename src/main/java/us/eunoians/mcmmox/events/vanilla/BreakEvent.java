@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 public class BreakEvent implements Listener {
 
-  @EventHandler (priority = EventPriority.HIGHEST)
+  @EventHandler (priority = EventPriority.LOW)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event){
 	if(!event.isCancelled() && event.getPlayer().getGameMode() == GameMode.SURVIVAL){
@@ -231,9 +231,9 @@ public class BreakEvent implements Listener {
 			  }
 			}
 		  }
-		  if(Mcmmox.getPlaceStore().isTrue(block)){
-			dropMultiplier = 1;
-		  }
+		}
+		if(Mcmmox.getPlaceStore().isTrue(block)){
+		  dropMultiplier = 1;
 		}
 		//Check if the block is tracked by remote transfer
 		if(block.getType() == Material.CHEST && RemoteTransferTracker.isTracked(event.getBlock().getLocation())){
@@ -303,9 +303,15 @@ public class BreakEvent implements Listener {
 		  //Iterate across dropped materials
 		  for(Material mat : itemsToDrop.stream().map(ItemStack::getType).collect(Collectors.toList())){
 			//If the item needs to be transferred and is toggled for transferring
-			if(transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat)){
-			  //Apply fortune and silk touch
-			  ItemStack item = getDropsFromMaterial(block, p.getItemInHand(), dropMultiplier);
+			//Apply fortune and silk touch
+			ItemStack item = getDropsFromMaterial(block, p.getItemInHand(), dropMultiplier);
+			mat = item.getType();
+			Material testMat = null;
+			if(SilkBlocks.isSilked(mat)){
+			  testMat = SilkBlocks.getSilkBlock(mat);
+			}
+			if((transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat)) ||
+				(testMat != null && transfer.getItemsToSync().containsKey(testMat) && transfer.getItemsToSync().get(testMat))){
 			  //Get the material of the item we are putting in the chest and the amount
 			  if(mat != Material.COBBLESTONE){
 				mat = item.getType();
@@ -359,7 +365,6 @@ public class BreakEvent implements Listener {
 				}
 			  }
 			  block2.getState().update();
-			  block.setType(Material.AIR);
 			  //Drop leftovers
 			  if(amount > 0){
 				block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(mat, amount));
@@ -446,7 +451,7 @@ public class BreakEvent implements Listener {
 	}
 
 	public static boolean isFortunable(Material mat){
-	  return (Arrays.stream(values()).anyMatch(fortuneBlocks -> fortuneBlocks.block.equals(mat)));
+	  return (Arrays.stream(values()).anyMatch(fortuneBlocks -> fortuneBlocks.material.equals(mat)) || Arrays.stream(values()).anyMatch(fortuneBlocks -> fortuneBlocks.block.equals(mat)));
 	}
   }
 
@@ -471,11 +476,18 @@ public class BreakEvent implements Listener {
 	}
 
 	public static boolean isSilked(Material mat){
-	  return (Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.silkedMat.equals(mat)));
+	  return (Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.unsilkedMat.equals(mat))) || Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.silkedMat.equals(mat));
 	}
 
 	public static Material getSilkBlock(Material mat){
-	  Material result = Objects.requireNonNull(Arrays.stream(values()).filter(silkBlocks -> silkBlocks.silkedMat.equals(mat)).findFirst().orElse(null)).getSilkedMat();
+	  SilkBlocks blocks = Arrays.stream(values()).filter(silkBlocks -> silkBlocks.silkedMat.equals(mat)).findFirst().orElse(null);
+	  if(blocks == null){
+	    blocks =  Arrays.stream(values()).filter(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)).findFirst().orElse(null);
+	    if(blocks == null){
+	      return null;
+		}
+	  }
+	  Material result = blocks.getSilkedMat();
 	  return result;
 	}
   }

@@ -103,7 +103,7 @@ public class BlockListener implements Listener {
    *
    * @param event The event to watch
    */
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event){
 	Player player = event.getPlayer();
 
@@ -139,7 +139,7 @@ public class BlockListener implements Listener {
    *
    * @param event The event to monitor
    */
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
   public void onBlockBreak(BlockBreakEvent event){
         /*if (event instanceof FakeBlockBreakEvent) {
             return;

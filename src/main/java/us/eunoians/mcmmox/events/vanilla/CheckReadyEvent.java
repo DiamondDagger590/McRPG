@@ -180,15 +180,15 @@ public class CheckReadyEvent implements Listener {
 				  .replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
 		  return;
 		}
-		readyHandler(p, mp, skillType);
+		readyHandler(p, mp, skillType, e.getClickedBlock());
 	  }
 	}
   }
 
-  private void readyHandler(Player p, McMMOPlayer mp, Skills skillType){
+  private void readyHandler(Player p, McMMOPlayer mp, Skills skillType, Block block){
 	if(mp.doesPlayerHaveActiveAbilityFromSkill(skillType)){
 	  BaseAbility ab = mp.getBaseAbility(mp.getActiveAbilityForSkill(skillType));
-	  if(!ab.isToggled() || !ab.getGenericAbility().isEnabled()){
+	  if(!ab.isToggled() || !ab.getGenericAbility().isEnabled() || ab.getGenericAbility() == UnlockedAbilities.NATURES_WRATH){
 		return;
 	  }
 	  String skill = "";
@@ -202,6 +202,9 @@ public class CheckReadyEvent implements Listener {
 		skill = "Fist";
 	  }
 	  else if(skillType == Skills.HERBALISM){
+	    if(block.getType() == Material.GRASS_BLOCK){
+	      return;
+		}
 		skill = "Hoe";
 	  }
 	  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
