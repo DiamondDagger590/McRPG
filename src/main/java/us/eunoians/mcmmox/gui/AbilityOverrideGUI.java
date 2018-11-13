@@ -65,6 +65,7 @@ public class AbilityOverrideGUI extends GUI {
 	  ItemStack abilityItem1 = new ItemStack(Material.getMaterial(config.getString(path1 + "Material")),
 		  config.getInt(path1 + "Amount"));
 	  ItemMeta abilityMeta1 = abilityItem1.getItemMeta();
+	  abilityMeta1.setDisplayName(Methods.color(config.getString(path1 + "DisplayName")));
 	  List<String> lore1 = config.getStringList(path1 + "MenuLore");
 	  lore1.add(0, "&eAbility to be replace with");
 	  abilityMeta1.setLore(Methods.colorLore(lore1));

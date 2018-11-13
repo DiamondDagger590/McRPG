@@ -15,11 +15,11 @@
 ###################################
 DisplayConfig:
   Scoreboard:
-    DisplayName: '&5%Skill%'
+    DisplayName: '&a%Skill%'
     Lines:
-      CurrentLevel: '&aCurrent Level:'
-      CurrentExp: '&aExp:'
-      ExpNeeded: '&aExp Left:'
+      CurrentLevel: '&bCurrent Level:'
+      CurrentExp: '&eExp:'
+      ExpNeeded: '&eExp Left:'
   BossBar:
     DisplayName: '&5%Skill%: &e%Exp_To_Level%'
     Color:
@@ -39,7 +39,7 @@ DisplayConfig:
 PlayerConfiguration:
   #This amount is here for the future and currently is unused
   AmountOfTotalAbilities: 9
-  #When the power level reaches a multiple of this number a point is awaded
+  #When the power level reaches a multiple of this number a point is awarded
   AbilityPointInterval: 200
   #In seconds how long should the player stay ready for
   PlayerReadyDuration: 2
@@ -50,6 +50,7 @@ Configuration:
   ReplaceAbilityCooldown: 1440
 #Require an empty offhand to use abilities
   RequireEmptyOffHand: false
+#What lang file you want
   LangFile: 'en'
 #Unused
   AutoUpdate: true

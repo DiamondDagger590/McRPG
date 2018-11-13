@@ -19,10 +19,21 @@ Messages:
       NotEnabledOrUnlocked: '&cThat ability is either disabled or you have yet to unlock it'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
+      Default:
+      - '&e--------------------------'
+      - '&7[&6McMMO Command &7]&3 /mcmmo'
+      - '&3    -Opens main McMMOx gui'
+      - '&7[&6McDisplay Command &7]&3 /mchelp mcdisplay'
+      - '&3    -Help prompt for mcdisplay'
+      - '&7[&6McAdmin Command &7]&3 /mchelp mcadmin'
+      - '&3    -Help prompt for mcadmin'
+      - '&e--------------------------'
       McDisplay:
       - '&e--------------------------'
       - '&7[&6McDisplay Command &7]&3 /mcdisplay {Skill}'
       - '&3    -Opens your display for the skill'
+      - '&7[&6McDisplay Command &7]&3 /mcdisplay clear'
+      - '&3    -Clears display'
       - '&e--------------------------'
       McAdmin1:
       - '&e--------------------------'
@@ -121,6 +132,7 @@ Messages:
       Linked: '&aYou have successfully linked a chest'
       Unlinked: '&aYou have unlinked your chest'
       IsLinked: '&cThat chest is currently linked to %Player%'
+      IsNotLinked: '&cYou are not linked to a chest'
       AdminUnlinked: '&cSomeone has unlinked your chest'
       ChestMissing: '&cFor some reason your chest is missing... Delinking...'
     SuperBreaker:

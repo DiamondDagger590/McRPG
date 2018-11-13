@@ -1,10 +1,7 @@
 package us.eunoians.mcmmox.events.vanilla;
 
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.Ageable;
@@ -47,7 +44,7 @@ public class BreakEvent implements Listener {
   @EventHandler (priority = EventPriority.HIGHEST)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event){
-	if(!event.isCancelled()){
+	if(!event.isCancelled() && event.getPlayer().getGameMode() == GameMode.SURVIVAL){
 
 	  Player p = event.getPlayer();
 	  Block block = event.getBlock();

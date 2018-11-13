@@ -13,7 +13,10 @@ public class McHelp implements CommandExecutor {
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 	Mcmmox plugin = Mcmmox.getInstance();
 	FileConfiguration config = plugin.getLangFile();
-	if(args.length < 1){
+	if(args.length == 0){
+	  for(String prompt : config.getStringList("Messages.Commands.McHelp.Default")){
+		sender.sendMessage(Methods.color(prompt));
+	  }
 	  return true;
 	}
 	else{
