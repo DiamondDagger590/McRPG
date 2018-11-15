@@ -5,6 +5,11 @@ import us.eunoians.mcmmox.util.blockmeta.ChunkletStore;
 import java.io.Serializable;
 
 /**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
+/**
  * A ChunkStore should be responsible for a 16x16xWorldHeight area of data
  */
 public interface ChunkStore extends Serializable {

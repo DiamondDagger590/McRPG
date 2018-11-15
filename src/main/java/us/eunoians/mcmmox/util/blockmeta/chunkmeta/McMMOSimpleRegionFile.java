@@ -24,6 +24,11 @@ import java.util.ArrayList;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+/**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
 public class McMMOSimpleRegionFile {
   private RandomAccessFile file;
   private final int[] dataStart = new int[1024];

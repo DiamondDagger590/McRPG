@@ -7,6 +7,11 @@ import org.bukkit.entity.Entity;
 
 import java.io.IOException;
 
+/**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
 public class NullChunkManager implements ChunkManager {
 
   @Override

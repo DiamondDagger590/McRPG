@@ -3,6 +3,11 @@ package us.eunoians.mcmmox.util.blockmeta;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+/**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
 public interface ChunkletManager {
   /**
    * Loads a specific chunklet

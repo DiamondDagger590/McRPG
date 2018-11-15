@@ -4,6 +4,11 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 /**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
+/**
  * A ChunkletManager implementation that does nothing and returns false for all checks.
  * <p>
  * Useful for turning off Chunklets without actually doing much work

@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+/**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
 public class PrimitiveExChunkletStore implements ChunkletStore, Externalizable {
   private static final long serialVersionUID = 8603603827094383873L;
 

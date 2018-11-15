@@ -25,6 +25,6 @@ public class ExpActionBar extends GenericDisplay implements ExpDisplayType, Acti
 	Skill s = player.getSkill(skill);
 	player.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Methods.color(Mcmmox.getInstance().getConfig()
 		.getString("DisplayConfig.ActionBar." + skill.getName() + ".Message").replace("%Exp_Gained%", Integer.toString(expGained))
-	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel())))));
+	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())))));
   }
 }

@@ -31,7 +31,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
   public void createBossBar(){
     Skill s = this.player.getSkill(skill);
 	String title = Methods.color(Mcmmox.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
-	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel())));
+	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())));
 	BarStyle style = BarStyle.SEGMENTED_10;
 	BarColor color = us.eunoians.mcmmox.types.BarColor.fromString(Mcmmox.getInstance().getConfig().getString("DisplayConfig.BossBar.Color." + skill.getName()));
 	Parser equation = skill.getExpEquation();
@@ -53,7 +53,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
 	double progress = s.getCurrentExp()/equation.getValue();
     expBar.setProgress(progress);
     this.expBar.setTitle(Methods.color(Mcmmox.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
-		.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel()))));
+		.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp()))));
   }
 
   @Override

@@ -10,6 +10,11 @@ import us.eunoians.mcmmox.util.blockmeta.conversion.BlockStoreConversionZDirecto
 import java.io.*;
 import java.util.*;
 
+/**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
 public class HashChunkManager implements ChunkManager {
   private HashMap<UUID, HashMap<Long, McMMOSimpleRegionFile>> regionFiles = new HashMap<UUID, HashMap<Long, McMMOSimpleRegionFile>>();
   public HashMap<String, ChunkStore> store = new HashMap<String, ChunkStore>();

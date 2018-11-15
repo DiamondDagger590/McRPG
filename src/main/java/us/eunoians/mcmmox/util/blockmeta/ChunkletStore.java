@@ -3,6 +3,11 @@ package us.eunoians.mcmmox.util.blockmeta;
 import java.io.Serializable;
 
 /**
+ * This code is not mine. It is from the original McMMO allowed for use by their license.
+ * All credit goes to the original authors as I have only changed a little to suit my needs
+ */
+
+/**
  * A ChunkletStore should be responsible for a 16x16x64 area of data
  */
 public interface ChunkletStore extends Serializable {
