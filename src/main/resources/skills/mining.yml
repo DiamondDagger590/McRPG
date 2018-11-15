@@ -285,6 +285,7 @@ SuperBreakerConfig:
     - '&bincreases activation rate of Double Drop'
     - '&bGain &e%ActivationBoost%% &bfor &e%Duration% &bseconds'
     - '&bCooldown: &e%Cooldown%'
+    - '&eActivate by readying and breaking a block'
     MenuLore:
     - '&bGives haste and increases Double Drop'
 BlastMiningConfig:
@@ -336,6 +337,7 @@ BlastMiningConfig:
     - '&bMine blocks in a %Radius% radius'
     - '&bReady your pick and place tnt'
     - '&bCooldown: &e%Cooldown%'
+    - '&eActivate by readying and placing TNT'
     MenuLore:
     - '&bThis ability mines blocks around you'
 OreScannerConfig:
@@ -383,6 +385,7 @@ OreScannerConfig:
     - '&bDisplays amount of ores'
     - '&bAnd points to closest valuable ore'
     - '&bCooldown: &e%Cooldown%'
+    - '&eActivate by readying and breaking a block'
     MenuLore:
     - '&bScan surrounding area'
     - '&bfor gold, emerald, and diamonds'

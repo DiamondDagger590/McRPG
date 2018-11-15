@@ -29,7 +29,7 @@ public class PickupEvent implements Listener {
 			break;
 		  }
 		}
-		if(slot != firstEmpty){
+		if(slot != firstEmpty && firstEmpty != -1){
 	      e.setCancelled(true);
 	      e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 5, 1);
 	      e.getPlayer().getInventory().setItem(firstEmpty, e.getItem().getItemStack());

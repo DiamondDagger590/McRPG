@@ -306,6 +306,7 @@ SerratedStrikesConfig:
       - '&c activation rate of Bleed'
       - '&cGain &e%ActivationBoost%% &cfor &e%Duration% &cseconds'
       - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
     MenuLore:
       - '&cIncrease activation rate of Bleed'
 RageSpikeConfig:
@@ -352,6 +353,8 @@ RageSpikeConfig:
       - '&cto dash forward'
       - '&cDealing &e%Damage% &cdamage.'
       - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and crouching'
+      - '&eHold crouch for the charge time'
     MenuLore:
       - '&cThis ability dashs you forward'
       - '&cdealing damage and knockback'
@@ -406,6 +409,7 @@ TaintedBladeConfig:
       - '&e%StrengthDuration% &cseconds of strength'
       - '&e%ResistanceDuration% &Cseconds or resistance'
       - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
     MenuLore:
       - '&cGain hunger in exchange'
       - '&cfor Strength and Resistance'

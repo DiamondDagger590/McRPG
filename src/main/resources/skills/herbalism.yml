@@ -335,9 +335,9 @@ DiamondFlowersConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aDrop items from mining certain blocks'
+    - '&aDrop items from harvesting certain blocks'
     MenuLore:
-    - '&aThis ability drops rare items from mining certain blocks'
+    - '&aThis ability drops rare items from harvesting certain blocks'
 #
 # Config for the ability Replanting
 # This passive ability has a chance replanting crops for free and at varying stages
@@ -431,6 +431,7 @@ MassHarvestConfig:
     - '&aMines and replants crops in a'
     - '&e%Range% &ablock range.'
     - '&aCooldown: &e%Cooldown%'
+    - '&eActivate by readying and breaking a crop'
     MenuLore:
     - '&bMines and replants crops in a radius'
 #
@@ -514,6 +515,8 @@ NaturesWrathConfig:
     - '&aResistance: &e%LILAC%'
     - '&aEffect Lv: &e%Modifier%'
     - '&aHunger Lost: &e%HungerLost%'
+    - '&eActivate by holding a flower'
+    - '&ein the offhand and eat it'
     MenuLore:
     - '&aConsume flowers for buffs but lose hunger.'
 #
@@ -563,5 +566,6 @@ PansBlessingConfig:
     - '&aUse bone meal to instantly grow crops in a radius'
     - '&a%Radius% block radius.'
     - '&aCooldown: &e%Cooldown%'
+    - '&eActivate by readying and using bone meal'
     MenuLore:
     - '&aGrow crops in a radius to max level'

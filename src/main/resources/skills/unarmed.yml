@@ -276,6 +276,7 @@ BerserkConfig:
     - '&9Gain &e%ActivationBoost%% &9and &e%DamageBoost%%'
     - '&e%Duration%&9 seconds'
     - '&9Cooldown: &e%Cooldown%'
+    - '&eActivate by readying and attacking an enemy'
     MenuLore:
     - '&9Increase activation rate of Disarm and damage'
 SmitingFistConfig:
@@ -350,6 +351,7 @@ SmitingFistConfig:
     - '&9Remove Debuffs: &e%RemovePotionEffects%'
     - '&9Duration: &e%Duration%'
     - '&9Cooldown: &e%Cooldown%'
+    - '&eActivate by readying and attacking an enemy'
     MenuLore:
     - '&9Activate to cleanse self of debuffs'
     - '&9gaining bonus hp and ability to smite'
@@ -397,5 +399,6 @@ DenseImpactConfig:
     - '&9to armor directly'
     - '&9Duration: &e%Duration%'
     - '&9Cooldown: %Cooldown%'
+    - '&eActivate by readying and attacking an enemy'
     MenuLore:
     - '&9Do damage directly to armor'
