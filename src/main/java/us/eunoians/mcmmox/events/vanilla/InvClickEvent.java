@@ -106,7 +106,7 @@ public class InvClickEvent implements Listener {
 		}
 		else if(slot == 13){
 		  if(mp.getEndTimeForReplaceCooldown() != 0){
-		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+		    p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
 		    return;
 		  }
 		  ReplaceSkillsGUI replaceSkillsGUI = new ReplaceSkillsGUI(mp);
@@ -243,7 +243,7 @@ public class InvClickEvent implements Listener {
 			}
 			mp.setAbilityPoints(mp.getAbilityPoints() - 1);
 			acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
-			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
+			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
 			mp.saveData();
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
 				.replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
@@ -288,7 +288,18 @@ public class InvClickEvent implements Listener {
 		  if(event.isCancelled()){
 			return;
 		  }
-		  mp.addAbilityToLoadout(selectReplaceGUI.getAbilities().get(e.getSlot()));
+		  boolean hasActive = false;
+		  for(int i = 0; i < mp.getAbilityLoadout().size(); i++){
+			UnlockedAbilities ab = mp.getAbilityLoadout().get(i);
+			if((ab.getAbilityType() == AbilityType.ACTIVE && baseAbility.getGenericAbility().getAbilityType() == AbilityType.ACTIVE) && ab.getSkill().equalsIgnoreCase(baseAbility.getGenericAbility().getSkill())){
+			  mp.getAbilityLoadout().set(i, (UnlockedAbilities) baseAbility.getGenericAbility());
+			  hasActive = true;
+			  break;
+			}
+		  }
+		  if(!hasActive){
+			mp.addAbilityToLoadout(selectReplaceGUI.getAbilities().get(e.getSlot()));
+		  }
 		  mp.saveData();
 		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", baseAbility.getGenericAbility().getName())));
 		  return;
@@ -425,7 +436,7 @@ public class InvClickEvent implements Listener {
 		  UnlockedAbilities unlockedAbility = (UnlockedAbilities) abilityToChange.getGenericAbility();
 		  if(abilityToChange.getCurrentTier() < 5){
 			if(unlockedAbility.tierUnlockLevel(abilityToChange.getCurrentTier() + 1) > mp.getSkill(unlockedAbility.getSkill()).getCurrentLevel()){
-			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
 			  return;
 			}
 			AcceptAbilityGUI gui = new AcceptAbilityGUI(mp, abilityToChange, AcceptAbilityGUI.AcceptType.ACCEPT_UPGRADE);
@@ -435,7 +446,7 @@ public class InvClickEvent implements Listener {
 			return;
 		  }
 		  else{
-			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
 			return;
 		  }
 		}
@@ -444,7 +455,7 @@ public class InvClickEvent implements Listener {
 		    for(int i = 0; i < mp.getAbilityLoadout().size(); i++){
 		      UnlockedAbilities unlockedAbilities = mp.getAbilityLoadout().get(i);
 			  if(e.getSlot() != i && unlockedAbilities.getAbilityType() == AbilityType.ACTIVE && unlockedAbilities.getSkill().equalsIgnoreCase(editLoadoutGUI.getReplaceAbility().getGenericAbility().getSkill())){
-				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
 				p.closeInventory();
 				p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + config.getString("Messages.Guis.HasActive")));
 				return;
@@ -548,7 +559,7 @@ public class InvClickEvent implements Listener {
 		  }
 		  else if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
 			if(mp.getAbilityPoints() == 0){
-			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 10, 1);
+			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
 			  return;
 			}
 			gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);

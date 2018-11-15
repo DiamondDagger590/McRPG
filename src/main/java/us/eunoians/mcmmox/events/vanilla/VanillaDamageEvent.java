@@ -78,12 +78,12 @@ public class VanillaDamageEvent implements Listener {
 			  if(entity.hasPotionEffect(PotionEffectType.INVISIBILITY)){
 				entity.removePotionEffect(PotionEffectType.INVISIBILITY);
 			  }
-			  entity.setFireTicks(mp.getSmitingFistData().getSmiteDuration());
+			  entity.setFireTicks(mp.getSmitingFistData().getSmiteDuration() * 20);
 			  if(entity instanceof Player){
 				mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
-					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited")));
+					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited").replace("%Player%", entity.getName())));
 			  }
-			  entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 10, 1);
+			  entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 5, 1);
 			}
 		  }
 		}
@@ -110,6 +110,7 @@ public class VanillaDamageEvent implements Listener {
 			  BerserkEvent event = new BerserkEvent(mp, (Berserk) mp.getBaseAbility(UnlockedAbilities.BERSERK), bonusChance, bonusDmg);
 			  Bukkit.getPluginManager().callEvent(event);
 			  if(!event.isCancelled()){
+				mp.getActiveAbilities().add(UnlockedAbilities.BERSERK);
 				//cancel the readying task and null the bit
 				Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 				mp.setReadyingAbilityBit(null);
@@ -121,7 +122,7 @@ public class VanillaDamageEvent implements Listener {
 				//Tell player ability started
 				mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Activated")));
-				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 10, 1);
+				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 5, 1);
 				new BukkitRunnable() {
 				  @Override
 				  public void run(){
@@ -132,7 +133,8 @@ public class VanillaDamageEvent implements Listener {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.SECOND,
 						Mcmmox.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Cooldown"));
-					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 10, 1);
+					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 5, 1);
+					mp.getActiveAbilities().add(UnlockedAbilities.BERSERK);
 					mp.addAbilityOnCooldown(UnlockedAbilities.BERSERK, cal.getTimeInMillis());
 				  }
 				}.runTaskLater(Mcmmox.getInstance(), config.getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Duration") * 20);
@@ -156,9 +158,10 @@ public class VanillaDamageEvent implements Listener {
 			  SmitingFistEvent smitingFistEvent = new SmitingFistEvent(mp, smitingFist, absorptionLevel, smiteChance, smiteDuration, removeInvis, removeDebuff, duration, cooldown);
 			  Bukkit.getPluginManager().callEvent(smitingFistEvent);
 			  if(!smitingFistEvent.isCancelled()){
+				mp.getActiveAbilities().add(UnlockedAbilities.SMITING_FIST);
 				mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Activated")));
-				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_CAST_SPELL, 10, 1);
+				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_CAST_SPELL, 5, 1);
 				mp.setSmitingFistData(smitingFistEvent);
 				mp.setCanSmite(true);
 				if(smitingFistEvent.isRemoveDebuffs()){
@@ -180,7 +183,8 @@ public class VanillaDamageEvent implements Listener {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.SECOND,
 						smitingFistEvent.getCooldown());
-					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_DEATH, 10, 1);
+					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_DEATH, 5, 1);
+					mp.getActiveAbilities().remove(UnlockedAbilities.SMITING_FIST);
 					mp.addAbilityOnCooldown(UnlockedAbilities.SMITING_FIST, cal.getTimeInMillis());
 				  }
 				}.runTaskLater(Mcmmox.getInstance(), smitingFistEvent.getDuration() * 20);
@@ -199,9 +203,10 @@ public class VanillaDamageEvent implements Listener {
 			  DenseImpactEvent denseImpactEvent = new DenseImpactEvent(mp, denseImpact, armourDmg);
 			  Bukkit.getPluginManager().callEvent(denseImpactEvent);
 			  if(!denseImpactEvent.isCancelled()){
+				mp.getActiveAbilities().add(UnlockedAbilities.DENSE_IMPACT);
 				mp.getPlayer().sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Activated")));
-				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 10, 1);
+				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 5, 1);
 				mp.setCanDenseImpact(true);
 				mp.setArmourDmg(denseImpactEvent.getArmourDmg());
 				new BukkitRunnable() {
@@ -215,7 +220,8 @@ public class VanillaDamageEvent implements Listener {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.SECOND,
 						cooldown);
-					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 10, 1);
+					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 5, 1);
+					mp.getActiveAbilities().remove(UnlockedAbilities.DENSE_IMPACT);
 					mp.addAbilityOnCooldown(UnlockedAbilities.DENSE_IMPACT, cal.getTimeInMillis());
 				  }
 				}.runTaskLater(Mcmmox.getInstance(), duration * 20);
@@ -293,6 +299,7 @@ public class VanillaDamageEvent implements Listener {
 			  SerratedStrikesEvent event = new SerratedStrikesEvent(mp, (SerratedStrikes) mp.getBaseAbility(UnlockedAbilities.SERRATED_STRIKES));
 			  Bukkit.getPluginManager().callEvent(event);
 			  if(!event.isCancelled()){
+				mp.getActiveAbilities().add(UnlockedAbilities.SERRATED_STRIKES);
 				//cancel the readying task and null the bit
 				Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 				mp.setReadyingAbilityBit(null);
@@ -312,7 +319,8 @@ public class VanillaDamageEvent implements Listener {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.SECOND,
 						event.getCooldown());
-					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_SHULKER_HURT, 10, 1);
+					mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_SHULKER_HURT, 5, 1);
+					mp.getActiveAbilities().remove(UnlockedAbilities.SERRATED_STRIKES);
 					mp.addAbilityOnCooldown(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
 				  }
 				}.runTaskLater(Mcmmox.getInstance(), event.getDuration() * 20);
@@ -323,6 +331,7 @@ public class VanillaDamageEvent implements Listener {
 			  TaintedBladeEvent event = new TaintedBladeEvent(mp, (TaintedBlade) mp.getBaseAbility(UnlockedAbilities.TAINTED_BLADE));
 			  Bukkit.getPluginManager().callEvent(event);
 			  if(!event.isCancelled()){
+				mp.getActiveAbilities().add(UnlockedAbilities.TAINTED_BLADE);
 				Player p = mp.getPlayer();
 				p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 					Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.TaintedBlade.Activated")));
@@ -335,7 +344,8 @@ public class VanillaDamageEvent implements Listener {
 				Calendar cal = Calendar.getInstance();
 				cal.add(Calendar.SECOND,
 					event.getCooldown());
-				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SKELETON_HURT, 10, 1);
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SKELETON_HURT, 5, 1);
+				mp.getActiveAbilities().remove(UnlockedAbilities.TAINTED_BLADE);
 				mp.addAbilityOnCooldown(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
 			  }
 			}
@@ -399,7 +409,8 @@ public class VanillaDamageEvent implements Listener {
 	SLOWNESS(PotionEffectType.SLOW),
 	MINING_FATIGUE(PotionEffectType.SLOW_DIGGING),
 	HUNGER(PotionEffectType.HUNGER),
-	WITHER(PotionEffectType.WITHER);
+	WITHER(PotionEffectType.WITHER),
+	POISON(PotionEffectType.POISON);
 
     @Getter
 	private PotionEffectType effectType;
@@ -410,7 +421,7 @@ public class VanillaDamageEvent implements Listener {
 
 	public static boolean isDebuff(PotionEffectType test){
       for(Debuffs debuff : values()){
-        if(debuff.getEffectType() == test){
+        if(debuff.getEffectType().equals(test)){
           return true;
 		}
 	  }

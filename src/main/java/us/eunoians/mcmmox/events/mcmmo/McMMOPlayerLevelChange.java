@@ -43,7 +43,7 @@ public class McMMOPlayerLevelChange implements Listener {
 	  if(i % mcmmox.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0){
 		mp.setAbilityPoints(mp.getAbilityPoints() + 1);
 		//Need to fiddle with this sound
-		mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 10, 1);
+		mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
 		mp.getPlayer().sendMessage(Methods.color(mcmmox.getPluginPrefix() + mcmmox.getLangFile().getString("Messages.Players.AbilityPointGained")
 			.replaceAll("%Ability_Points%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
 		mp.saveData();
@@ -82,7 +82,7 @@ public class McMMOPlayerLevelChange implements Listener {
 	  Player p = e.getMcMMOPlayer().getPlayer();
 	  p.sendMessage(message);
 	  World w = p.getWorld();
-	  w.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 1);
+	  w.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 1);
 	  if(!Mcmmox.getInstance().getDisplayManager().doesPlayerHaveDisplay(e.getMcMMOPlayer().getPlayer())){
 		return;
 	  }
@@ -121,7 +121,7 @@ public class McMMOPlayerLevelChange implements Listener {
 			  Player p = mp.getPlayer();
 			  p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
 				  mcmmox.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
-			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 10, 1);
+			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 5, 1);
 			}
 			base.setUnlocked(true);
 			base.setCurrentTier(1);

@@ -90,12 +90,13 @@ public class InteractHandler implements Listener {
 		  BlastMiningEvent blastMiningEvent = new BlastMiningEvent(mp, blastMining, blocks, cooldown);
 		  Bukkit.getPluginManager().callEvent(blastMiningEvent);
 		  if(!blastMiningEvent.isCancelled()){
+		    mp.getActiveAbilities().add(UnlockedAbilities.BLAST_MINING);
 			heldItem.setAmount(heldItem.getAmount() - 1);
 			if(heldItem.getAmount() <= 0){
 			  heldItem.setType(Material.AIR);
 			}
 			p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_HUGE, p.getLocation(), 50);
-			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 10, 1);
+			p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 1);
 			ItemStack pick = new ItemStack(Material.DIAMOND_PICKAXE, 1);
 			for(Block b : blocks){
 			  Material material = b.getType();
@@ -119,6 +120,7 @@ public class InteractHandler implements Listener {
 			Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			mp.setReadyingAbilityBit(null);
 			mp.setReadying(false);
+			mp.getActiveAbilities().remove(UnlockedAbilities.BLAST_MINING);
 			mp.addAbilityOnCooldown(UnlockedAbilities.BLAST_MINING, cal.getTimeInMillis());
 		  }
 		}
@@ -136,6 +138,7 @@ public class InteractHandler implements Listener {
 		if(superBreakerEvent.isCancelled()){
 		  return;
 		}
+		mp.getActiveAbilities().add(UnlockedAbilities.SUPER_BREAKER);
 		Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 		mp.setReadyingAbilityBit(null);
 		mp.setReadying(false);
@@ -155,6 +158,7 @@ public class InteractHandler implements Listener {
 			cal.add(Calendar.SECOND,
 				superBreakerEvent.getCooldown());
 			mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
+			mp.getActiveAbilities().remove(UnlockedAbilities.SUPER_BREAKER);
 			mp.addAbilityOnCooldown(UnlockedAbilities.SUPER_BREAKER, cal.getTimeInMillis());
 		  }
 		}.runTaskLater(Mcmmox.getInstance(), superBreakerEvent.getHasteDuration() * 20);
@@ -171,6 +175,7 @@ public class InteractHandler implements Listener {
 		if(oreScannerEvent.isCancelled()){
 		  return;
 		}
+		mp.getActiveAbilities().add(UnlockedAbilities.ORE_SCANNER);
 		Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 		mp.setReadyingAbilityBit(null);
 		mp.setReadying(false);
@@ -249,6 +254,7 @@ public class InteractHandler implements Listener {
 		  p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 			  Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.DiamondsFound").replace("%Amount%", Integer.toString(diamondOreAmount))));
 		}
+		mp.getActiveAbilities().remove(UnlockedAbilities.ORE_SCANNER);
 		p.teleport(Methods.lookAt(p.getLocation(), lookAt));
 	  }
 	  else if(abilityType == UnlockedAbilities.MASS_HARVEST && (e.getAction() == Action.LEFT_CLICK_BLOCK)){
@@ -260,6 +266,7 @@ public class InteractHandler implements Listener {
 		  MassHarvestEvent massHarvestEvent = new MassHarvestEvent(mp, massHarvest, radius);
 		  Bukkit.getPluginManager().callEvent(massHarvestEvent);
 		  if(!massHarvestEvent.isCancelled()){
+			mp.getActiveAbilities().add(UnlockedAbilities.MASS_HARVEST);
 			Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			mp.setReadyingAbilityBit(null);
 			mp.setReadying(false);
@@ -290,6 +297,7 @@ public class InteractHandler implements Listener {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND, cooldown);
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.MassHarvest.Activated")));
+			mp.getActiveAbilities().remove(UnlockedAbilities.MASS_HARVEST);
 			mp.addAbilityOnCooldown(UnlockedAbilities.MASS_HARVEST, cal.getTimeInMillis());
 		  }
 		}
@@ -302,6 +310,7 @@ public class InteractHandler implements Listener {
 		  PansBlessingEvent pansBlessingEvent = new PansBlessingEvent(mp, pansBlessing, radius);
 		  Bukkit.getPluginManager().callEvent(pansBlessingEvent);
 		  if(!pansBlessingEvent.isCancelled()){
+			mp.getActiveAbilities().add(UnlockedAbilities.PANS_BLESSING);
 			mp.setReadying(false);
 			Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
 			mp.setReadyingAbilityBit(null);
@@ -327,6 +336,7 @@ public class InteractHandler implements Listener {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND, cooldown);
 			p.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.PansBlessing.Activated")));
+			mp.getActiveAbilities().add(UnlockedAbilities.PANS_BLESSING);
 			mp.addAbilityOnCooldown(UnlockedAbilities.PANS_BLESSING, cal.getTimeInMillis());
 		  }
 		}

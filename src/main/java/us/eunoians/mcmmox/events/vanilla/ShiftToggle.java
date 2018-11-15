@@ -43,6 +43,7 @@ public class ShiftToggle implements Listener {
 	  if(e.isCancelled()){
 	    return;
 	  }
+	  mp.getActiveAbilities().add(UnlockedAbilities.RAGE_SPIKE);
 	  //Tell the player how long they have to charge for
 	  player.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 		  Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Integer.toString(preEvent.getChargeTime()))));
@@ -50,7 +51,7 @@ public class ShiftToggle implements Listener {
 	  	int id = Bukkit.getScheduler().runTaskLater(Mcmmox.getInstance(), () ->{
 		  //get vector and make them go voom
 		  Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
-		  player.getLocation().getWorld().playSound(player.getLocation(), Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 10, 1);
+		  player.getLocation().getWorld().playSound(player.getLocation(), Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 5, 1);
 		  //voom code
 		  e.getPlayer().setVelocity(unitVector.multiply(5));
 		  e.getPlayer().setVelocity(unitVector.multiply(5));
@@ -93,6 +94,7 @@ public class ShiftToggle implements Listener {
 		  Calendar cal = Calendar.getInstance();
 		  cal.add(Calendar.SECOND,
 			  preEvent.getCooldown());
+		  mp.getActiveAbilities().remove(UnlockedAbilities.RAGE_SPIKE);
 		  mp.addAbilityOnCooldown(UnlockedAbilities.RAGE_SPIKE, cal.getTimeInMillis());
 		  //self remove the task from the array
 		  playersCharging.remove(player.getUniqueId());
@@ -111,7 +113,8 @@ public class ShiftToggle implements Listener {
 	      Bukkit.getScheduler().cancelTask(playersCharging.remove(player.getUniqueId()));
 	      player.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix() +
 			  Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.ChargeCancelled")));
-	      return;
+		  mp.getActiveAbilities().remove(UnlockedAbilities.RAGE_SPIKE);
+		  return;
 		}
 	  }
 	}

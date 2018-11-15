@@ -77,7 +77,7 @@ public class CheckReadyEvent implements Listener {
 			  Bukkit.getPluginManager().callEvent(naturesWrathEvent);
 			  if(!naturesWrathEvent.isCancelled()){
 				p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.POPPY));
-				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 10, 1);
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
 				p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
 				p.updateInventory();
 				p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
@@ -96,7 +96,7 @@ public class CheckReadyEvent implements Listener {
 			  Bukkit.getPluginManager().callEvent(naturesWrathEvent);
 			  if(!naturesWrathEvent.isCancelled()){
 				p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.DANDELION));
-				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 10, 1);
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
 				p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
 				p.updateInventory();
 				p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
@@ -115,7 +115,7 @@ public class CheckReadyEvent implements Listener {
 			  Bukkit.getPluginManager().callEvent(naturesWrathEvent);
 			  if(!naturesWrathEvent.isCancelled()){
 				p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.BLUE_ORCHID));
-				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 10, 1);
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
 				p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
 				p.updateInventory();
 				p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
@@ -134,7 +134,7 @@ public class CheckReadyEvent implements Listener {
 			  Bukkit.getPluginManager().callEvent(naturesWrathEvent);
 			  if(!naturesWrathEvent.isCancelled()){
 				p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.LILAC));
-				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 10, 1);
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
 				p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
 				p.updateInventory();
 				p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
@@ -188,6 +188,9 @@ public class CheckReadyEvent implements Listener {
   private void readyHandler(Player p, McMMOPlayer mp, Skills skillType, Block block){
 	if(mp.doesPlayerHaveActiveAbilityFromSkill(skillType)){
 	  BaseAbility ab = mp.getBaseAbility(mp.getActiveAbilityForSkill(skillType));
+	  if(mp.getActiveAbilities().contains((UnlockedAbilities) ab.getGenericAbility())){
+	    return;
+	  }
 	  if(!ab.isToggled() || !ab.getGenericAbility().isEnabled() || ab.getGenericAbility() == UnlockedAbilities.NATURES_WRATH){
 		return;
 	  }

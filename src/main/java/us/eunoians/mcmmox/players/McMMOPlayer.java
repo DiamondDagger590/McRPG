@@ -109,6 +109,9 @@ public class McMMOPlayer {
   @Setter
   private boolean keepHandEmpty = false;
 
+  @Getter
+  private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
+
   /**
    * The file configuration of the player that we get to edit.
    */
@@ -618,7 +621,7 @@ public class McMMOPlayer {
 		Calendar cal = Calendar.getInstance();
 		if(abilitiesOnCooldown.containsKey(ability)){
 		  Calendar temp = Calendar.getInstance();
-		  temp.setTimeInMillis(this.getCooldown(ability));
+		  temp.setTimeInMillis(abilitiesOnCooldown.get(ability));
 		  int seconds = (int) (temp.getTimeInMillis() - cal.getTimeInMillis() )/ 1000;
 		  playerData.set("Cooldowns." + ability.getName(), seconds);
 		}

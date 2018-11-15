@@ -54,7 +54,7 @@ public class DisarmHandler implements Listener {
 		if(!stickyFingersEvent.isCancelled()){
 		  Player targ = target.getPlayer();
 		  e.setCancelled(true);
-		  targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 10, 1);
+		  targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 5, 1);
 		  targ.sendMessage(Methods.color(Mcmmox.getInstance().getPluginPrefix()
 		  + Mcmmox.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
 		  return;
