@@ -183,6 +183,22 @@ public class InvClickEvent implements Listener {
 		  currentGUI.getGui().getInv().setItem(e.getSlot(), healthItem);
 		  p.updateInventory();
 		}
+		else if(e.getSlot() == 7){
+		  ItemStack autoDenyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+		  ItemMeta autoDenyItemMeta = autoDenyItem.getItemMeta();
+		  if(!mp.isAutoDeny()){
+			autoDenyItemMeta.setDisplayName(Methods.color("&aAuto Deny New Abilities Enabled"));
+		  }
+		  else{
+			autoDenyItem.setType(Material.RED_STAINED_GLASS_PANE);
+			autoDenyItemMeta.setDisplayName(Methods.color("&cAuto Deny New Abilities Disabled"));
+		  }
+		  mp.setAutoDeny(!mp.isAutoDeny());
+		  autoDenyItemMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to change", "&eif new abilities should auto deny")));
+		  autoDenyItem.setItemMeta(autoDenyItemMeta);
+		  currentGUI.getGui().getInv().setItem(e.getSlot(), autoDenyItem);
+		  p.updateInventory();
+		}
 		return;
 	  }
 

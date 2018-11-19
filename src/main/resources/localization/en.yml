@@ -170,6 +170,7 @@ Messages:
   Players:
     LevelUp: '&eYou gained &a%Levels% &elevel(s) in %Skill%. Current Level: &e%Current_Level%'
     AbilityUnlocked: '&eYou just unlocked %Ability%! Open up the main menu in order to accept or deny this ability.'
+    AbilityUnlockedButDenied: '&eYou just unlocked %Ability%! It was auto denied however.'
     AbilityPointGained: '&eAbility upgrade point gained! You have &a%Ability_Points% &eto spend'
     PlayerReady: '&7You raise your %Skill_Item%'
     PlayerUnready: '&7You lowered your %Skill_Item%'

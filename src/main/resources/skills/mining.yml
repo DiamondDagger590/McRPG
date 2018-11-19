@@ -276,7 +276,7 @@ SuperBreakerConfig:
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Super Breaker'
+    DisplayName: '&3Super Breaker'
     Material: DIAMOND_PICKAXE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -329,7 +329,7 @@ BlastMiningConfig:
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Blast Mining'
+    DisplayName: '&3Blast Mining'
     Material: TNT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -375,7 +375,7 @@ OreScannerConfig:
     Cooldown: 120
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Ore Scanner'
+    DisplayName: '&3Ore Scanner'
     Material: EMERALD_ORE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis

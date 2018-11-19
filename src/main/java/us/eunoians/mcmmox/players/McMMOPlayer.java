@@ -110,6 +110,10 @@ public class McMMOPlayer {
   private boolean keepHandEmpty = false;
 
   @Getter
+  @Setter
+  private boolean autoDeny = false;
+
+  @Getter
   private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
 
   /**
@@ -147,6 +151,7 @@ public class McMMOPlayer {
 	  playerData.set("DisplayType", displayType.getName());
 	  playerData.set("HealthType", healthbarType.getName());
 	  playerData.set("KeepHandEmpty", keepHandEmpty);
+	  playerData.set("AutoDeny", autoDeny);
 	  playerData.set("Cooldowns.placeholder", null);
 	  playerData.set("AbilityPoints", 0);
 	  playerData.set("RemoteTransferBlocks", null);
@@ -163,6 +168,8 @@ public class McMMOPlayer {
 	this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(playerData.getString("HealthType"));
 	this.keepHandEmpty = playerData.getBoolean("KeepHandEmpty");
 	this.displayType = DisplayType.fromString(playerData.getString("DisplayType"));
+	this.autoDeny = playerData.getBoolean("AutoDeny");
+
 	this.abilityPoints = playerData.getInt("AbilityPoints");
 	ArrayList<UnlockedAbilities> list = new ArrayList<>();
 	for(String string : playerData.getStringList("PendingAbilitiesUnlocked")){
@@ -645,6 +652,7 @@ public class McMMOPlayer {
 	}
 	playerData.set("DisplayType", displayType.getName());
 	playerData.set("KeepHandEmpty", keepHandEmpty);
+	playerData.set("AutoDeny", autoDeny);
 	playerData.set("AbilityPoints", abilityPoints);
 	playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
 	playerData.set("AbilityLoadout", abilityLoadout.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));

@@ -119,13 +119,19 @@ public class McMMOPlayerLevelChange implements Listener {
 			}
 			if(mp.isOnline()){
 			  Player p = mp.getPlayer();
-			  p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
-				  mcmmox.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
-			  p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 5, 1);
+			  if(mp.isAutoDeny()){
+				p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
+					mcmmox.getLangFile().getString("Messages.Players.AbilityUnlockedButDenied").replaceAll("%Ability%", ab.getName())));
+			  }
+			  else{
+				p.sendMessage(Methods.color(mcmmox.getPluginPrefix() +
+					mcmmox.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
+				p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 5, 1);
+				mp.addPendingAbilityUnlock(ab);
+			  }
 			}
 			base.setUnlocked(true);
 			base.setCurrentTier(1);
-			mp.addPendingAbilityUnlock(ab);
 			mp.saveData();
 		  }
 		  else{

@@ -1,0 +1,5 @@
+1.0.1-ALPHA
+= Balanced Swords abilities
+= Fixed a bug with hand keeping empty setting
++ Added an Auto Deny player setting. Add this under Players section in the en.yml
+- AbilityUnlockedButDenied: '&eYou just unlocked %Ability%! It was auto denied however.'

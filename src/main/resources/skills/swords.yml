@@ -94,10 +94,10 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   Bleed+: 50
-  SerratedStrikes: 350
   DeeperWound: 250
-  RageSpike: 150
   Vampire: 400
+  RageSpike: 150
+  SerratedStrikes: 350
   TaintedBlade: 425
 #
 # Bleed is the default ability that every player has. This ability will increase every time the players Swords level is increased
@@ -146,19 +146,19 @@ Bleed+Config:
     TierV: 650
   TierI:
     #The chance of Bleed_ occurring per tier
-    ActivationChance: 10.0
+    ActivationChance: 15.0
     DamageBoost: 1
   TierII:
-    ActivationChance: 12.5
-    DamageBoost: 1
-  TierIII:
     ActivationChance: 17.5
     DamageBoost: 1
-  TierIV:
+  TierIII:
     ActivationChance: 22.5
     DamageBoost: 1
+  TierIV:
+    ActivationChance: 30.0
+    DamageBoost: 1
   TierV:
-    ActivationChance: 25.0
+    ActivationChance: 40.0
     DamageBoost: 1
 #How much should the damage increase when Bleed+ occurs
   BleedPlusModifier: 1
@@ -197,13 +197,13 @@ DeeperWoundConfig:
     DurationBoost: 2
   TierIII:
     ActivationChance: 45.0
-    DurationBoost: 5
+    DurationBoost: 3
   TierIV:
-    ActivationChance: 60.0
-    DurationBoost: 6
+    ActivationChance: 50.0
+    DurationBoost: 5
   TierV:
-    ActivationChance: 75.0
-    DurationBoost: 8
+    ActivationChance: 60.0
+    DurationBoost: 7
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Deeper Wound'
@@ -244,7 +244,7 @@ VampireConfig:
     ActivationChance: 80.0
     AmountToHeal: 1
   TierV:
-    ActivationChance: 90.0
+    ActivationChance: 100.0
     AmountToHeal: 1
   #How this ability should be seen in the GUIS
   Item:

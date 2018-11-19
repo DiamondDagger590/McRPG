@@ -136,7 +136,7 @@ TighterGripConfig:
     GripBoost: 40.0
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Tighter Grip'
+    DisplayName: '&1Tighter Grip'
     Material: SLIME_BLOCK
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis

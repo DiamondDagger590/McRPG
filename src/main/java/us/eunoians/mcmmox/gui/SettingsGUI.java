@@ -69,11 +69,24 @@ public class SettingsGUI extends GUI {
 	  healthItem.setItemMeta(healthMeta);
 	  items.add(new GUIItem(healthItem, 5));
 
+	  ItemStack autoDenyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+	  ItemMeta autoDenyItemMeta = autoDenyItem.getItemMeta();
+	  if(player.isAutoDeny()){
+		autoDenyItemMeta.setDisplayName(Methods.color("&aAuto Deny New Abilities Enabled"));
+	  }
+	  else{
+		autoDenyItem.setType(Material.RED_STAINED_GLASS_PANE);
+		autoDenyItemMeta.setDisplayName(Methods.color("&cAuto Deny New Abilities Disabled"));
+	  }
+	  autoDenyItemMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to change", "&eif new abilities should auto deny")));
+	  autoDenyItem.setItemMeta(autoDenyItemMeta);
+	  items.add(new GUIItem(autoDenyItem, 7));
+
 	  ItemStack later = new ItemStack(Material.RED_STAINED_GLASS_PANE);
 	  ItemMeta laterMeta = later.getItemMeta();
 	  laterMeta.setDisplayName(Methods.color("&cThis feature will be added later"));
 	  later.setItemMeta(laterMeta);
-	  items.add(new GUIItem(later, 7));
+	  items.add(new GUIItem(later, 10));
 
 	  ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
 	  ItemMeta fillerMeta = filler.getItemMeta();
