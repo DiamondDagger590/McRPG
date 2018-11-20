@@ -11,6 +11,8 @@ Gui:
       - 'OpenNative:SelectReplaceGUI:Unarmed'
       7:
       - 'OpenNative:SelectReplaceGUI:Herbalism'
+      53:
+      - 'OpenFile:maingui.yml:MainGUI'
     Items:
       SwordsSkill:
         Name: '&5Swords Skill'
@@ -44,6 +46,12 @@ Gui:
         - '&eCurrent Herbalism level: &a%Herbalism_Level%'
         - '&eDouble Drop chance: &c%Too_Many_Plants_Chance%%'
         Slot: 7
+      Back:
+        Name: '&bHome>>'
+        Material: BARRIER
+        Lore:
+        - '&eClick this to go home'
+        Slot: 53
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE
       Name: ' '

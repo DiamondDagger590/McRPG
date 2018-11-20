@@ -199,6 +199,12 @@ public class InvClickEvent implements Listener {
 		  currentGUI.getGui().getInv().setItem(e.getSlot(), autoDenyItem);
 		  p.updateInventory();
 		}
+		else if(e.getSlot() == 26){
+		  HomeGUI main = new HomeGUI(mp);
+		  currentGUI.setClearData(false);
+		  p.openInventory(main.getGui().getInv());
+		  GUITracker.replacePlayersGUI(mp, main);
+		}
 		return;
 	  }
 
@@ -279,8 +285,31 @@ public class InvClickEvent implements Listener {
 		}
 	  }
 
+	  else if(currentGUI instanceof SubSkillGUI){
+	    if(e.getSlot() == e.getInventory().getSize() - 1){
+	      if(GUITracker.doesPlayerHavePrevious(mp)){
+			currentGUI.setClearData(false);
+			GUI old = GUITracker.getPlayersPreviousGUI(mp);
+			old.setClearData(true);
+			p.openInventory(old.getGui().getInv());
+			GUITracker.replacePlayersGUI(mp, old);
+			return;
+		  }
+		}
+	  }
+
 	  if(currentGUI instanceof SelectReplaceGUI){
 		SelectReplaceGUI selectReplaceGUI = (SelectReplaceGUI) currentGUI;
+		if(e.getSlot() == e.getInventory().getSize() - 1){
+		  if(GUITracker.doesPlayerHavePrevious(mp)){
+			currentGUI.setClearData(false);
+			GUI old = GUITracker.getPlayersPreviousGUI(mp);
+			old.setClearData(true);
+			p.openInventory(old.getGui().getInv());
+			GUITracker.replacePlayersGUI(mp, old);
+			return;
+		  }
+		}
 		if(e.getSlot() == 8){
 		  currentGUI.setClearData(false);
 		  ReplaceSkillsGUI replaceSkillsGUI = new ReplaceSkillsGUI(mp);
@@ -605,6 +634,9 @@ public class InvClickEvent implements Listener {
 		  GUI gui = null;
 		  if(events[1].equalsIgnoreCase("skillsgui.yml")){
 			gui = new SkillGUI(mp);
+		  }
+		  else if(events[1].equalsIgnoreCase("maingui.yml")){
+		    gui = new HomeGUI(mp);
 		  }
 		  else{
 			p.sendMessage("Not added yet");

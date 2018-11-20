@@ -1,5 +1,13 @@
 1.0.1-ALPHA
 = Balanced Swords abilities
 = Fixed a bug with hand keeping empty setting
-+ Added an Auto Deny player setting. Add this under Players section in the en.yml
-- AbilityUnlockedButDenied: '&eYou just unlocked %Ability%! It was auto denied however.'
++ Added an Auto Deny player setting. Add this under Players section in the en.yml if updating from 1.0.0-ALPHAe
+** AbilityUnlockedButDenied: '&eYou just unlocked %Ability%! It was auto denied however.'
++ Added a new back item to default gui files. Delete the GUIs folder and regen them to get the back buttons.
+
+Key:
+=: Change/Fix
++: Addition
+-: Deletion
+**: Config Addition Required
+*: Config Addition Optional

@@ -8,7 +8,7 @@ Gui:
         #Events bound to slot
         - 'OpenNative:SettingsGUI'
       12:
-        - 'OpenFile:skillsgui.yml:SkillGUI.yml'
+        - 'OpenFile:skillsgui.yml:SkillGUI'
       14:
         - 'OpenNative:UpgradeAbilityGUI'
       16:

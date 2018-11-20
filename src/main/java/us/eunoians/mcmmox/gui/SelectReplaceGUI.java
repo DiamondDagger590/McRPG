@@ -112,7 +112,8 @@ public class SelectReplaceGUI extends GUI{
 	  backMeta.setDisplayName(Methods.color("&bBack>>"));
 	  backMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to go back")));
 	  back.setItemMeta(backMeta);
-	  items.add(new GUIItem(back, 8));
+	  items.add(new GUIItem(back, inv.getSize() - 1));
+
 	  ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
 	  ItemMeta fillerMeta = filler.getItemMeta();
 	  fillerMeta.setDisplayName(" ");

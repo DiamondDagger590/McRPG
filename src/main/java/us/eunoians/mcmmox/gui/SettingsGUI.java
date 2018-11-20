@@ -88,6 +88,14 @@ public class SettingsGUI extends GUI {
 	  later.setItemMeta(laterMeta);
 	  items.add(new GUIItem(later, 10));
 
+
+	  ItemStack back = new ItemStack(Material.BARRIER);
+	  ItemMeta backMeta = back.getItemMeta();
+	  backMeta.setDisplayName(Methods.color("&bBack>>"));
+	  backMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to go back")));
+	  back.setItemMeta(backMeta);
+	  items.add(new GUIItem(back, 26));
+
 	  ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
 	  ItemMeta fillerMeta = filler.getItemMeta();
 	  fillerMeta.setDisplayName(" ");

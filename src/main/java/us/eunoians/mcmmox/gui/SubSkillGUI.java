@@ -15,6 +15,7 @@ import us.eunoians.mcmmox.types.Skills;
 import us.eunoians.mcmmox.types.UnlockedAbilities;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,14 @@ public class SubSkillGUI extends GUI{
 		counter++;
 		items.add(item);
 	  }
+
+	  ItemStack back = new ItemStack(Material.BARRIER);
+	  ItemMeta backMeta = back.getItemMeta();
+	  backMeta.setDisplayName(Methods.color("&bBack>>"));
+	  backMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to go back")));
+	  back.setItemMeta(backMeta);
+	  items.add(new GUIItem(back, inv.getSize() - 1));
+
 	  ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
 	  ItemMeta fillerMeta = filler.getItemMeta();
 	  fillerMeta.setDisplayName(" ");
