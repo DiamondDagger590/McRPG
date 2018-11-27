@@ -8,9 +8,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Mcmmox" />
+        <module name="McMMOx" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="McMMOx" target="1.8" />
       <module name="Mcmmox-Maven" target="1.5" />
     </bytecodeTargetLevel>
   </component>

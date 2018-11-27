@@ -16,6 +16,12 @@
     <version>1.0.0-ALPHA</version>
 
     <build>
+        <sourceDirectory>src/</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/us/eunoians/resources/</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
