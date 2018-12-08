@@ -29,9 +29,10 @@ public class PlayerLogoutEvent implements Listener {
 	  ShiftToggle.removePlayerCharging(p);
 	}
 	BukkitTask task = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), ()->{
-		if(p.isOnline() && PlayerManager.isPlayerStored(p.getUniqueId())){
+		if(!p.isOnline() && PlayerManager.isPlayerStored(p.getUniqueId())){
 		  PlayerManager.removePlayer(p.getUniqueId());
 		}
+		playerLogOutTasks.remove(p.getUniqueId());
 	}, 5 * 1200);
 	playerLogOutTasks.put(p.getUniqueId(), task);
 

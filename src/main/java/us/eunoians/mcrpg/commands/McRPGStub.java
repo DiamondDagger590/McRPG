@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
-public class McMMOStub implements CommandExecutor {
+public class McRPGStub implements CommandExecutor {
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
@@ -56,7 +56,7 @@ public class McMMOStub implements CommandExecutor {
 	  }
 	  else if(args.length == 1){
 		if(args[0].equalsIgnoreCase("reload")){
-		  if(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo.admin.*") || p.hasPermission("mcmmo.admin.reload")){
+		  if(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.admin.*") || p.hasPermission("mcrpg.admin.reload")){
 			McRPG.getInstance().getFileManager().reloadFiles();
 			p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
 			PlayerManager.startSave(plugin);

@@ -4,6 +4,9 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
+/**
+ * Enum used for the player display settings
+ */
 public enum BarColor {
   PINK("Pink", org.bukkit.boss.BarColor.PINK),
   BLUE("Blue", org.bukkit.boss.BarColor.BLUE),

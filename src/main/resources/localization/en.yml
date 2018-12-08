@@ -1,7 +1,7 @@
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:
-    PluginPrefix: '&7[&1McMMOx&7]'
+    PluginPrefix: '&7[&1McRPGx&7]'
   #Meesages used by commands
   Commands:
     #Messages used by misc command
@@ -21,8 +21,8 @@ Messages:
     McHelp:
       Default:
       - '&e--------------------------'
-      - '&7[&6McMMO Command &7]&3 /mcmmo'
-      - '&3    -Opens main McMMOx gui'
+      - '&7[&6McRPG Command &7]&3 /mcrpg'
+      - '&3    -Opens main McRPG gui'
       - '&7[&6McDisplay Command &7]&3 /mchelp mcdisplay'
       - '&3    -Help prompt for mcdisplay'
       - '&7[&6McAdmin Command &7]&3 /mchelp mcadmin'

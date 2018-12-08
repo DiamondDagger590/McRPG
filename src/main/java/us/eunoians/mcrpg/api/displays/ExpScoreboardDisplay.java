@@ -52,7 +52,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
   private void createScoreboard(){
 	FileConfiguration config = McRPG.getInstance().getConfig();
 	board = manager.getNewScoreboard();
-	Objective objective = board.registerNewObjective("mcmmo", "dummy");
+	Objective objective = board.registerNewObjective("mcrpg", "dummy");
 	objective.setDisplayName(Methods.color(config.getString("DisplayConfig.Scoreboard.DisplayName").replaceAll("%Player%", player.getPlayer().getDisplayName())
 	.replaceAll("%Skill%", skill.getName())));
 	Skill sk = player.getSkill(skill);
@@ -72,7 +72,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
   @Override
   public void sendUpdate(int currentExp, int expToLevel, int currentLevel, int expGained){
 	FileConfiguration config = McRPG.getInstance().getConfig();
-	Objective objective = board.getObjective("mcmmo");
+	Objective objective = board.getObjective("mcrpg");
 	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentExp"))).setScore(currentExp);
 	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.ExpNeeded"))).setScore(expToLevel - currentExp);
 	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentLevel"))).setScore(currentLevel);

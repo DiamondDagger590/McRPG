@@ -6,7 +6,7 @@ main: us.eunoians.mcrpg.McRPG
 api-version: 1.13
 soft-depend: [Parties]
 commands:
-  mcmmox:
+  mcrpg:
     description: Opens the main menu for McMMOX
     aliases: [mcmmo, mmo]
   mcdisplay:

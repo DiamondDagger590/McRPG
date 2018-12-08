@@ -34,7 +34,7 @@ public class OnJoin implements Listener {
           if (Class.forName("org.spigotmc.SpigotConfig") != null) {
             BaseComponent[] textComponent = new ComponentBuilder("[")
                     .color(ChatColor.GOLD)
-                    .append("McMMOX")
+                    .append("McRPG")
                     .color(ChatColor.GREEN)
                     .append("]")
                     .color(ChatColor.GOLD)

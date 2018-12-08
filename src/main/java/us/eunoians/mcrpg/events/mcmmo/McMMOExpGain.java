@@ -15,8 +15,8 @@ public class McMMOExpGain implements Listener {
   public void expGain(McMMOPlayerExpGainEvent e){
 	Skills skill = e.getSkillGained().getType();
 	Player p = e.getMcMMOPlayer().getPlayer();
-	if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseLevelPerms") && !(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".*")
-		|| p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".level"))){
+	if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseLevelPerms") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
+		|| p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".level"))){
 	  e.setCancelled(true);
 	}
 	if(e.getSkillGained().getCurrentLevel() >= McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getInt("MaxLevel")){

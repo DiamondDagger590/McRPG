@@ -25,7 +25,7 @@ public class McDisplay implements CommandExecutor {
 	FileConfiguration config = plugin.getLangFile();
 	if(sender instanceof Player){
 	  Player p = (Player) sender;
-	  if(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo.display")){
+	  if(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.display")){
 		if(args.length == 0){
 		  p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcdisplay")));
 		  return true;

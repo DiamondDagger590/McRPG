@@ -1,5 +1,5 @@
 ##################################
-### Main Config For McMMOx ###
+### Main Config For McRPG ###
 ##################################
 #
 #Notes:
@@ -9,7 +9,7 @@
 #       - Use this link for a list of the codes: https://wiki.ess3.net/mc/
 #   - If you want a message to be blank, please leave it as ''
 #   - This plugin supports player name place holders as %Player%
-# If you receive an error when McMMOx loads, ensure that:
+# If you receive an error when McRPG loads, ensure that:
 #   - No tabs are present: YAML only allows spaces
 #   - Indents are correct: YAML hierarchy is based entirely on indentation
 ###################################

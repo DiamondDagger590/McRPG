@@ -56,63 +56,111 @@ public class McMMOPlayer {
   @Getter
   private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
 
+  /**
+   * Map of the abilities on cooldown
+   */
   private HashMap<UnlockedAbilities, Long> abilitiesOnCooldown = new HashMap<>();
 
+  /**
+   * Boolean of if the player should be immune from bleed
+   */
   @Getter
   @Setter
   private boolean hasBleedImmunity = false;
 
+  /**
+   * The players current ability loadout
+   */
   @Getter
   private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
 
+  /**
+   * The kind of display the player currently has
+   */
   @Getter
   @Setter
   private DisplayType displayType = DisplayType.SCOREBOARD;
 
+  /**
+   * If the player is readying for an active ability
+   */
   @Getter
   @Setter
   private boolean isReadying = false;
 
+  /**
+   * Contains info about what ability is being readied
+   */
   @Getter
   @Setter
   private PlayerReadyBit readyingAbilityBit = null;
 
+  /**
+   * Boolean to check if the player is linked to remote transfer
+   */
   @Getter
   @Setter
   private boolean isLinkedToRemoteTransfer = false;
 
+  /**
+   * Boolean to check if the player can smite
+   */
   @Getter
   @Setter
   private boolean canSmite;
 
+  /**
+   * Object containing info about SmitingFist
+   */
   @Getter
   @Setter
   private SmitingFistEvent smitingFistData;
 
+  /**
+   * Boolean if the player can use dense impact
+   */
   @Getter
   @Setter
   private boolean canDenseImpact;
 
+  /**
+   * How much dmg Dense Impact should do
+   */
   @Getter
   @Setter
   private int armourDmg;
 
+  /**
+   * The type of health display when a player hits a mob
+   */
   @Getter
   @Setter
   private MobHealthbarUtils.MobHealthbarType healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
 
+  /**
+   * The end time for when a players replace ability cooldown should expire
+   */
   @Getter
   @Setter
   private long endTimeForReplaceCooldown;
 
+  /**
+   * If an empty hand should be kept as such
+   */
   @Getter
   @Setter
   private boolean keepHandEmpty = false;
 
+  /**
+   * If abilities should be auto denied
+   */
   @Getter
   @Setter
   private boolean autoDeny = false;
 
+  /**
+   * Current active abilities
+   */
   @Getter
   private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
 

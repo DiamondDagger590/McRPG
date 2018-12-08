@@ -53,6 +53,9 @@ public abstract class Skill {
    */
   private HashMap<GenericAbility, BaseAbility> abilityMap;
 
+  /**
+   * Player the skill belongs to
+   */
   @Getter
   private McMMOPlayer player;
 
@@ -68,18 +71,36 @@ public abstract class Skill {
     this.expToLevel = (int) equation.getValue();
   }
 
+  /**
+   *
+   * @param ability Enum value you want to get the ability instance of
+   * @return instance of provided ability or null if invalid
+   */
   public BaseAbility getAbility(GenericAbility ability){
-	return (abilityMap.containsKey(ability))? abilityMap.get(ability) : null;
+	return abilityMap.getOrDefault(ability, null);
   }
 
+  /**
+   *
+   * @param ability The ability you want to get a GenericAbility from
+   * @return the enum value of the ability or null if invalid
+   */
   public GenericAbility getGenericAbility(String ability){
     return abilityMap.keySet().stream().filter(ab -> ab.getName().equalsIgnoreCase(ability)).findFirst().orElse(null);
   }
 
+  /**
+   *
+   * @return The default ability for this skill
+   */
   public BaseAbility getDefaultAbility(){
     return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
   }
 
+  /**
+   *
+   * @return The array of Base Abilities
+   */
   public Collection<BaseAbility> getAbilities(){
     return abilityMap.values();
   }
@@ -148,6 +169,11 @@ public abstract class Skill {
 	}
   }
 
+  /**
+   *
+   * @param levels The amount of levels to give
+   * @param resetExp If the exp should be reset on level ip
+   */
   public void giveLevels(int levels, boolean resetExp){
     int old = currentLevel;
     currentLevel += levels;

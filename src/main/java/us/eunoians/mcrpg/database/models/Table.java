@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class Table {
 
-  public static final String TABLE_PREFIX = "mcmmox_";
+  public static final String TABLE_PREFIX = "mcrpg_";
 
   private Connection connection;
   private String tableName;

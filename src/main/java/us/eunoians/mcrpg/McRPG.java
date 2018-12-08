@@ -68,7 +68,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 0)
   private void preInit() {
-    Logger.init("McMMOX");
+    Logger.init("McRPG");
     /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(
@@ -101,7 +101,7 @@ public class McRPG extends JavaPlugin implements Initializable {
       else
         Logger.info("No updates were found!");
     } else {
-      Logger.info("New version of McMMOX is available: " + pluginUpdater.getVersion());
+      Logger.info("New version of McRPG is available: " + pluginUpdater.getVersion());
       Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
     }
   }
@@ -127,7 +127,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 3)
   private void initCmds() {
-    getCommand("mcrpg").setExecutor(new McMMOStub());
+    getCommand("mcrpg").setExecutor(new McRPG());
     getCommand("mcdisplay").setExecutor(new McDisplay());
     getCommand("mcadmin").setExecutor(new McAdmin());
     getCommand("mclink").setExecutor(new McLink());

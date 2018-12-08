@@ -18,6 +18,7 @@ public enum DefaultAbilities implements GenericAbility {
 
   @Getter
   private String name;
+  //TODO fix this lmao
   @Getter
   private String skill;
   @Getter

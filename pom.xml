@@ -12,7 +12,7 @@
     </properties>
 
     <groupId>us.eunoians</groupId>
-    <artifactId>Mcmmox</artifactId>
+    <artifactId>McRPG</artifactId>
     <version>1.0.0-ALPHA</version>
 
     <build>

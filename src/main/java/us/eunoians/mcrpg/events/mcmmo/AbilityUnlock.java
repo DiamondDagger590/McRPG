@@ -16,8 +16,8 @@ public class AbilityUnlock implements Listener {
     Skills skill = Skills.fromString(event.getAbilityToUnlock().getGenericAbility().getSkill());
     String abilityName = event.getAbilityToUnlock().getGenericAbility().getName().replace(" ", "").replace("_","").toLowerCase();
     Player p = event.getMcMMOPlayer().getPlayer();
-    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcmmo.*") || p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".*")
-		|| p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".unlock.*")|| p.hasPermission("mcmmo." + skill.getName().toLowerCase() + ".unlock." + abilityName))){
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
+		|| p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".unlock.*")|| p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".unlock." + abilityName))){
       event.setCancelled(true);
 	}
   }
