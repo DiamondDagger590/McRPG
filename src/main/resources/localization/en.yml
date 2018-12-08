@@ -1,7 +1,7 @@
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:
-    PluginPrefix: '&7[&1McRPGx&7]'
+    PluginPrefix: '&7[&1McRPG&7]'
   #Meesages used by commands
   Commands:
     #Messages used by misc command
