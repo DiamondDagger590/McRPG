@@ -127,7 +127,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 3)
   private void initCmds() {
-    getCommand("mcrpg").setExecutor(new McRPG());
+    getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
     getCommand("mcadmin").setExecutor(new McAdmin());
     getCommand("mclink").setExecutor(new McLink());

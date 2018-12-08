@@ -7,7 +7,7 @@ api-version: 1.13
 soft-depend: [Parties]
 commands:
   mcrpg:
-    description: Opens the main menu for McMMOX
+    description: Opens the main menu for McRPG
     aliases: [mcmmo, mmo]
   mcdisplay:
     description: Allows for command based editing of display types

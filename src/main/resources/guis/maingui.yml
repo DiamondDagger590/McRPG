@@ -25,8 +25,7 @@ Gui:
         #Lore of the item
         Lore:
           - '&eCurrent Power Level: &a%Power_Level%'
-          - '&eClick this to view your ability loadout'
-          - '&eYou can also change your personal settings'
+          - '&eClick this to change your personal settings'
         #Slot its found at
         Slot: 10
       Skill_Menu:
