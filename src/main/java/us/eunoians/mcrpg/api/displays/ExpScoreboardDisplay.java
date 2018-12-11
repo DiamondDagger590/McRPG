@@ -9,7 +9,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.Skills;
@@ -30,7 +30,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    * @param player Player that the scoreboard belongs to
    * @param skill Skill to be displayed
    */
-  public ExpScoreboardDisplay(McMMOPlayer player, Skills skill){
+  public ExpScoreboardDisplay(McRPGPlayer player, Skills skill){
     super(player, DisplayType.SCOREBOARD);
     this.skill = skill;
     createScoreboard();
@@ -42,7 +42,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    * @param skill Skill to be displayed
    * @param old The old board to be stored. Useful for interactions with things like Factions
    */
-  public ExpScoreboardDisplay(McMMOPlayer player, Skills skill, Scoreboard old){
+  public ExpScoreboardDisplay(McRPGPlayer player, Skills skill, Scoreboard old){
 	super(player, DisplayType.SCOREBOARD);
 	this.skill = skill;
 	oldBoard = old;

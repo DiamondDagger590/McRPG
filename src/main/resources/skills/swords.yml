@@ -82,7 +82,7 @@ EnabledAbilities:
   SerratedStrikes: true
   TaintedBlade: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcmmo.swords.unlock{ability} and mcmmo.swords.use.{ability}
+#Perms will be mcrpg.swords.unlock{ability} and mcrpg.swords.use.{ability}
 UsePermsForAbilites:
   Bleed: false
   Bleed+: false

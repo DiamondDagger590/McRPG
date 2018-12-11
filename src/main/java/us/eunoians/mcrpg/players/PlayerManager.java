@@ -16,7 +16,7 @@ import java.util.UUID;
 public class PlayerManager {
 
   //Players who are currently logged on
-  private static HashMap<UUID, McMMOPlayer> players = new HashMap<>();
+  private static HashMap<UUID, McRPGPlayer> players = new HashMap<>();
   private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
   private static McRPG plugin;
   private static BukkitTask saveTask;
@@ -31,7 +31,7 @@ public class PlayerManager {
 	}
 	BukkitTask task = new BukkitRunnable() {
 	  public void run(){
-		McMMOPlayer mp = new McMMOPlayer(uuid);
+		McRPGPlayer mp = new McRPGPlayer(uuid);
 		if(mp.isOnline()){
 		  players.put(uuid, mp);
 		}
@@ -44,7 +44,7 @@ public class PlayerManager {
 	return playersFrozen.contains(uuid);
   }
 
-  public static McMMOPlayer getPlayer(UUID uuid){
+  public static McRPGPlayer getPlayer(UUID uuid){
 	return players.get(uuid);
   }
 
@@ -65,7 +65,7 @@ public class PlayerManager {
 	saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(p, PlayerManager::run, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
 	System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
 	Bukkit.getScheduler().runTaskTimer(p, () ->{
-	  for(McMMOPlayer mp : players.values()){
+	  for(McRPGPlayer mp : players.values()){
 	    if(isPlayerFrozen(mp.getUuid())){
 	      continue;
 		}
@@ -76,7 +76,7 @@ public class PlayerManager {
 
 
   private static void run(){
-	players.values().forEach(McMMOPlayer::saveData);
+	players.values().forEach(McRPGPlayer::saveData);
   }
 
   public static void saveAll(){run();}

@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
@@ -28,7 +28,7 @@ public class SelectReplaceGUI extends GUI{
 
   private GUIInventoryFunction buildGUIFunction;
 
-  public SelectReplaceGUI(McMMOPlayer player, Skills skill){
+  public SelectReplaceGUI(McRPGPlayer player, Skills skill){
 	super(new GUIBuilder(player));
 	this.abilities = new ArrayList<>();
 	buildGUIFunction = (GUIBuilder builder) -> {

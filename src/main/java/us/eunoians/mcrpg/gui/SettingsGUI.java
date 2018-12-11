@@ -6,7 +6,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
@@ -17,7 +17,7 @@ public class SettingsGUI extends GUI {
 
   private static GUIInventoryFunction function;
 
-  public SettingsGUI(McMMOPlayer player){
+  public SettingsGUI(McRPGPlayer player){
     super(new GUIBuilder(player));
     function  = (GUIBuilder guiBuilder) -> {
 	  Inventory inv = Bukkit.createInventory(null, 27, Methods.color("&eChange your settings"));

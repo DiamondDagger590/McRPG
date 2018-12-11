@@ -13,11 +13,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
-import us.eunoians.mcrpg.api.events.mcmmo.ChestLinkEvent;
-import us.eunoians.mcrpg.api.events.mcmmo.FakeChestOpenEvent;
-import us.eunoians.mcrpg.api.events.mcmmo.PreChestLinkEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.ChestLinkEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.FakeChestOpenEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.PreChestLinkEvent;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
@@ -30,7 +30,7 @@ public class McLink implements CommandExecutor, Listener {
 	}
 	else{
 	  Player p = (Player) sender;
-	  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	  McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	  Block target = p.getTargetBlock(null, 100);
 	  if(target.getType() != Material.CHEST){
 	    p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.NotAChest")));
@@ -50,7 +50,7 @@ public class McLink implements CommandExecutor, Listener {
 
   @EventHandler (priority = EventPriority.HIGHEST)
   public void fakeBlockListener(FakeChestOpenEvent event){
-    McMMOPlayer mp = PlayerManager.getPlayer(event.getPlayer().getUniqueId());
+    McRPGPlayer mp = PlayerManager.getPlayer(event.getPlayer().getUniqueId());
     Location loc = event.getClickedBlock().getLocation();
     Player p = event.getPlayer();
 	PreChestLinkEvent preChestLinkEvent = new PreChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);

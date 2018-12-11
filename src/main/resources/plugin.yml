@@ -8,7 +8,7 @@ soft-depend: [Parties]
 commands:
   mcrpg:
     description: Opens the main menu for McRPG
-    aliases: [mcmmo, mmo]
+    aliases: [mcrpg, mmo]
   mcdisplay:
     description: Allows for command based editing of display types
     aliases: [mcmmodisplay, mdisplay, mcd]

@@ -9,7 +9,7 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.api.util.DiamondFlowersData;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.gui.*;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.Skills;
@@ -23,7 +23,7 @@ public class McRPGStub implements CommandExecutor {
 	if(sender instanceof Player){
 	  Player p = (Player) sender;
 	  if(args.length == 0){
-		McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+		McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 		if(mp.hasPendingAbility()){
 		  UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
 		  if(ability.getAbilityType() == AbilityType.ACTIVE){

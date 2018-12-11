@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class PickupEvent implements Listener {
   @EventHandler (priority = EventPriority.HIGH)
   public void pickupEvent(PlayerPickupItemEvent e){
     if(e.getPlayer().getInventory().getItemInMainHand() == null || e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR){
-	  McMMOPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+	  McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
 	  if(mp.isKeepHandEmpty()){
 		int slot = e.getPlayer().getInventory().getHeldItemSlot();
 		int firstEmpty = -1;

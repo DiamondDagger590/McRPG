@@ -14,7 +14,7 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class EditLoadoutGUI extends GUI {
   @Getter
   private ArrayList<UnlockedAbilities> abilities;
 
-  public EditLoadoutGUI(McMMOPlayer player, EditType type){
+  public EditLoadoutGUI(McRPGPlayer player, EditType type){
 	super(new GUIBuilder(player));
 	this.editType = type;
 	buildGUIFunction = (GUIBuilder builder) -> {
@@ -128,7 +128,7 @@ public class EditLoadoutGUI extends GUI {
 	this.abilities = player.getAbilityLoadout();
   }
 
-  public EditLoadoutGUI(McMMOPlayer player, EditType type, BaseAbility replaceAbility){
+  public EditLoadoutGUI(McRPGPlayer player, EditType type, BaseAbility replaceAbility){
 	super(new GUIBuilder(player));
 	this.editType = type;
 	this.replaceAbility = replaceAbility;

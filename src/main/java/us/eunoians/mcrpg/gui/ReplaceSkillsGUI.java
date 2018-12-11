@@ -4,7 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.Parser;
@@ -19,13 +19,13 @@ public class ReplaceSkillsGUI extends GUI {
   private static FileManager.Files file = FileManager.Files.REPLACE_SKILLS_GUI;
 
   private static GUIPlaceHolderFunction function = (GUIBuilder guiBuilder) -> {
-	McMMOPlayer player = guiBuilder.getPlayer();
+	McRPGPlayer player = guiBuilder.getPlayer();
 	if(guiBuilder.getRawPath().equalsIgnoreCase("ReplaceSkillsGUI")){
 	  skillsPlaceHolders(guiBuilder, player);
 	}
   };
 
-  static void skillsPlaceHolders(GUIBuilder guiBuilder, McMMOPlayer player){
+  static void skillsPlaceHolders(GUIBuilder guiBuilder, McRPGPlayer player){
 	for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
 	  ItemStack item = guiBuilder.getInv().getItem(i);
 	  if(item.hasItemMeta() && item.getItemMeta().hasLore()){
@@ -51,7 +51,7 @@ public class ReplaceSkillsGUI extends GUI {
 	}
   }
 
-  public ReplaceSkillsGUI(McMMOPlayer p){
+  public ReplaceSkillsGUI(McRPGPlayer p){
 	super(new GUIBuilder("ReplaceSkillsGUI", fm.getFile(file), p));
 	this.getGui().setReplacePlaceHoldersFunction(function);
 	this.getGui().replacePlaceHolders();

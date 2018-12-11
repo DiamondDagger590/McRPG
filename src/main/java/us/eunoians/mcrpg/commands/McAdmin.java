@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.api.displays.ExpDisplayType;
 import us.eunoians.mcrpg.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DisplayType;
@@ -62,7 +62,7 @@ public class McAdmin implements CommandExecutor {
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  int amount = Integer.parseInt(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				mp.setAbilityPoints(mp.getAbilityPoints() + amount);
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.AbilityPoints").replace("%Amount%", args[3])));
@@ -70,7 +70,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				mp.setAbilityPoints(mp.getAbilityPoints() + amount);
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
 				mp.saveData();
@@ -104,7 +104,7 @@ public class McAdmin implements CommandExecutor {
 			  int amount = Integer.parseInt(args[3]);
 			  Skills skill = fromString(args[4]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill s = mp.getSkill(skill);
 				s.giveExp(amount, GainReason.COMMAND);
 				s.updateExpToLevel();
@@ -124,7 +124,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				mp.getSkill(skill).giveExp(amount, GainReason.COMMAND);
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
 					.replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
@@ -159,7 +159,7 @@ public class McAdmin implements CommandExecutor {
 			  int amount = Integer.parseInt(args[3]);
 			  Skills skill = fromString(args[4]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill s = mp.getSkill(skill);
 				s.giveLevels(amount, true);
 				s.updateExpToLevel();
@@ -179,7 +179,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				mp.getSkill(skill).giveLevels(amount, true);
 				mp.getSkill(skill).updateExpToLevel();
 
@@ -211,7 +211,7 @@ public class McAdmin implements CommandExecutor {
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
 				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
 				  return true;
@@ -243,7 +243,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
 				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
 				  return true;
@@ -289,7 +289,7 @@ public class McAdmin implements CommandExecutor {
 			  UnlockedAbilities old = UnlockedAbilities.fromString(args[2]);
 			  UnlockedAbilities newAbility = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				if(!mp.getAbilityLoadout().contains(old)){
 				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					  .replace("%Ability%", old.getName())));
@@ -311,7 +311,7 @@ public class McAdmin implements CommandExecutor {
 				}
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				if(!mp.getAbilityLoadout().contains(old)){
 				  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					  .replace("%Ability%", old.getName())));
@@ -350,7 +350,7 @@ public class McAdmin implements CommandExecutor {
 			OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
 			UnlockedAbilities ability = UnlockedAbilities.fromString(args[2]);
 			if(offlinePlayer.isOnline()){
-			  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+			  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 			  if(!mp.getAbilityLoadout().contains(ability)){
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					.replace("%Ability%", ability.getName())));
@@ -367,7 +367,7 @@ public class McAdmin implements CommandExecutor {
 			  }
 			}
 			else{
-			  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+			  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 			  if(!mp.getAbilityLoadout().contains(ability)){
 				admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					.replace("%Ability%", ability.getName())));
@@ -398,13 +398,13 @@ public class McAdmin implements CommandExecutor {
 			  if(Methods.hasPlayerLoggedInBefore(args[2])){
 				OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 				if(offlinePlayer.isOnline()){
-				  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				  admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
 				  mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(admin::sendMessage);
 				  return true;
 				}
 				else{
-				  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				  admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
 				  mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(admin::sendMessage);
 				  return true;
@@ -427,7 +427,7 @@ public class McAdmin implements CommandExecutor {
 				OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 				Skills skill = fromString(args[1]);
 				if(offlinePlayer.isOnline()){
-				  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				  Skill skillInfo = mp.getSkill(skill);
 				  admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
 				  admin.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
@@ -437,7 +437,7 @@ public class McAdmin implements CommandExecutor {
 				  return true;
 				}
 				else{
-				  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				  Skill skillInfo = mp.getSkill(skill);
 				  admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
 				  admin.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
@@ -490,7 +490,7 @@ public class McAdmin implements CommandExecutor {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.SECOND, cooldown);
 					if(offlinePlayer.isOnline()){
-					  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 					  mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
 					  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
 						  .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
@@ -500,7 +500,7 @@ public class McAdmin implements CommandExecutor {
 					  return true;
 					}
 					else{
-					  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 					  mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
 					  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
 						  .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
@@ -539,7 +539,7 @@ public class McAdmin implements CommandExecutor {
 					return true;
 				  }
 				  if(offlinePlayer.isOnline()){
-					McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+					McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 					if(mp.getCooldown(ability) == -1){
 					  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
 					  return true;
@@ -553,7 +553,7 @@ public class McAdmin implements CommandExecutor {
 					return true;
 				  }
 				  else{
-					McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+					McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 					if(mp.getCooldown(ability) == -1){
 					  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
 					  return true;
@@ -602,7 +602,7 @@ public class McAdmin implements CommandExecutor {
 					int cooldown = Integer.parseInt(args[4]);
 					Calendar cal = Calendar.getInstance();
 					if(offlinePlayer.isOnline()){
-					  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 					  long oldCooldown = mp.getCooldown(ability);
 					  cal.setTimeInMillis(oldCooldown);
 					  cal.add(Calendar.SECOND, cooldown);
@@ -615,7 +615,7 @@ public class McAdmin implements CommandExecutor {
 					  return true;
 					}
 					else{
-					  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 					  long oldCooldown = mp.getCooldown(ability);
 					  cal.setTimeInMillis(oldCooldown);
 					  cal.add(Calendar.SECOND, cooldown);
@@ -657,7 +657,7 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  Skills skillEnum = fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill skill = mp.getSkill(skillEnum);
 				for(BaseAbility baseAbility : skill.getAbilities()){
 				  baseAbility.setUnlocked(false);
@@ -692,7 +692,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				Skill skill = mp.getSkill(skillEnum);
 				for(BaseAbility baseAbility : skill.getAbilities()){
 				  baseAbility.setUnlocked(false);
@@ -740,7 +740,7 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  UnlockedAbilities abilityEnum = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 
 				BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
 				baseAbility.setUnlocked(false);
@@ -764,7 +764,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 
 				BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
 				baseAbility.setUnlocked(false);
@@ -798,7 +798,7 @@ public class McAdmin implements CommandExecutor {
 			if(Methods.hasPlayerLoggedInBefore(args[2])){
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
 				mp.getAbilityLoadout().clear();
 				mp.setAbilityPoints(0);
@@ -833,7 +833,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
 				mp.updatePowerLevel();
@@ -888,7 +888,7 @@ public class McAdmin implements CommandExecutor {
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  int amount = Integer.parseInt(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				mp.setAbilityPoints(mp.getAbilityPoints() + amount);
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
 				offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.AbilityPoints").replace("%Amount%", args[3])));
@@ -896,7 +896,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				mp.setAbilityPoints(mp.getAbilityPoints() + amount);
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
 				mp.saveData();
@@ -926,7 +926,7 @@ public class McAdmin implements CommandExecutor {
 			  int amount = Integer.parseInt(args[3]);
 			  Skills skill = fromString(args[4]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill s = mp.getSkill(skill);
 				s.giveExp(amount, GainReason.COMMAND);
 				s.updateExpToLevel();
@@ -946,7 +946,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				mp.getSkill(skill).giveExp(amount, GainReason.COMMAND);
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
 					.replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
@@ -977,7 +977,7 @@ public class McAdmin implements CommandExecutor {
 			  int amount = Integer.parseInt(args[3]);
 			  Skills skill = fromString(args[4]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill s = mp.getSkill(skill);
 				s.giveLevels(amount, true);
 				s.updateExpToLevel();
@@ -997,7 +997,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				mp.getSkill(skill).giveLevels(amount, true);
 				mp.getSkill(skill).updateExpToLevel();
 
@@ -1025,7 +1025,7 @@ public class McAdmin implements CommandExecutor {
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
 				  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
 				  return true;
@@ -1057,7 +1057,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
 				  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
 				  return true;
@@ -1099,7 +1099,7 @@ public class McAdmin implements CommandExecutor {
 			  UnlockedAbilities old = UnlockedAbilities.fromString(args[2]);
 			  UnlockedAbilities newAbility = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				if(!mp.getAbilityLoadout().contains(old)){
 				  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					  .replace("%Ability%", old.getName())));
@@ -1121,7 +1121,7 @@ public class McAdmin implements CommandExecutor {
 				}
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				if(!mp.getAbilityLoadout().contains(old)){
 				  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					  .replace("%Ability%", old.getName())));
@@ -1156,7 +1156,7 @@ public class McAdmin implements CommandExecutor {
 			OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
 			UnlockedAbilities ability = UnlockedAbilities.fromString(args[2]);
 			if(offlinePlayer.isOnline()){
-			  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+			  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 			  if(!mp.getAbilityLoadout().contains(ability)){
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					.replace("%Ability%", ability.getName())));
@@ -1173,7 +1173,7 @@ public class McAdmin implements CommandExecutor {
 			  }
 			}
 			else{
-			  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+			  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 			  if(!mp.getAbilityLoadout().contains(ability)){
 				sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
 					.replace("%Ability%", ability.getName())));
@@ -1199,13 +1199,13 @@ public class McAdmin implements CommandExecutor {
 			if(Methods.hasPlayerLoggedInBefore(args[2])){
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
 				mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(sender::sendMessage);
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
 				mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(sender::sendMessage);
 				return true;
@@ -1222,7 +1222,7 @@ public class McAdmin implements CommandExecutor {
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  Skills skill = fromString(args[1]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill skillInfo = mp.getSkill(skill);
 				sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
 				sender.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
@@ -1232,7 +1232,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				Skill skillInfo = mp.getSkill(skill);
 				sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
 				sender.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
@@ -1280,7 +1280,7 @@ public class McAdmin implements CommandExecutor {
 					Calendar cal = Calendar.getInstance();
 					cal.add(Calendar.SECOND, cooldown);
 					if(offlinePlayer.isOnline()){
-					  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 					  mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
 					  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
 						  .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
@@ -1290,7 +1290,7 @@ public class McAdmin implements CommandExecutor {
 					  return true;
 					}
 					else{
-					  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 					  mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
 					  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
 						  .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
@@ -1325,7 +1325,7 @@ public class McAdmin implements CommandExecutor {
 				}
 				else{
 				  if(offlinePlayer.isOnline()){
-					McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+					McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 					if(mp.getCooldown(ability) == -1){
 					  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
 					  return true;
@@ -1339,7 +1339,7 @@ public class McAdmin implements CommandExecutor {
 					return true;
 				  }
 				  else{
-					McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+					McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 					if(mp.getCooldown(ability) == -1){
 					  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
 					  return true;
@@ -1384,7 +1384,7 @@ public class McAdmin implements CommandExecutor {
 					int cooldown = Integer.parseInt(args[4]);
 					Calendar cal = Calendar.getInstance();
 					if(offlinePlayer.isOnline()){
-					  McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 					  long oldCooldown = mp.getCooldown(ability);
 					  cal.setTimeInMillis(oldCooldown);
 					  cal.add(Calendar.SECOND, cooldown);
@@ -1397,7 +1397,7 @@ public class McAdmin implements CommandExecutor {
 					  return true;
 					}
 					else{
-					  McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+					  McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 					  long oldCooldown = mp.getCooldown(ability);
 					  cal.setTimeInMillis(oldCooldown);
 					  cal.add(Calendar.SECOND, cooldown);
@@ -1435,7 +1435,7 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  Skills skillEnum = fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Skill skill = mp.getSkill(skillEnum);
 				for(BaseAbility baseAbility : skill.getAbilities()){
 				  baseAbility.setUnlocked(false);
@@ -1470,7 +1470,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 				Skill skill = mp.getSkill(skillEnum);
 				for(BaseAbility baseAbility : skill.getAbilities()){
 				  baseAbility.setUnlocked(false);
@@ -1514,7 +1514,7 @@ public class McAdmin implements CommandExecutor {
 			  }
 			  UnlockedAbilities abilityEnum = UnlockedAbilities.fromString(args[3]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 
 				BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
 				baseAbility.setUnlocked(false);
@@ -1538,7 +1538,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 
 				BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
 				baseAbility.setUnlocked(false);
@@ -1568,7 +1568,7 @@ public class McAdmin implements CommandExecutor {
 			if(Methods.hasPlayerLoggedInBefore(args[2])){
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  if(offlinePlayer.isOnline()){
-				McMMOPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
 				mp.getAbilityLoadout().clear();
 				mp.setAbilityPoints(0);
@@ -1604,7 +1604,7 @@ public class McAdmin implements CommandExecutor {
 				return true;
 			  }
 			  else{
-				McMMOPlayer mp = new McMMOPlayer(offlinePlayer.getUniqueId());
+				McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
 
 				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
 				mp.updatePowerLevel();

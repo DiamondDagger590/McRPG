@@ -9,7 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
 import java.util.Arrays;
@@ -54,7 +54,7 @@ public final class MobHealthbarUtils {
 	if(!p.isOnline() || !PlayerManager.isPlayerStored(p.getUniqueId())){
 	  return;
 	}
-	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 //TODO Player settings
 	/*PlayerProfile profile = UserManager.getPlayer(player).getProfile();
 
@@ -96,7 +96,7 @@ public final class MobHealthbarUtils {
 	}
   }
 
-  private static String createHealthDisplay(McMMOPlayer player, LivingEntity entity, double damage) {
+  private static String createHealthDisplay(McRPGPlayer player, LivingEntity entity, double damage) {
 	double maxHealth = entity.getMaxHealth();
 	double currentHealth = Math.max(entity.getHealth() - damage, 0);
 	double healthPercentage = (currentHealth / maxHealth) * 100.0D;

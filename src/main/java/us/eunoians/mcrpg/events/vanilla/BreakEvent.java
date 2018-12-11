@@ -22,12 +22,12 @@ import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
 import us.eunoians.mcrpg.abilities.mining.ItsATriple;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.abilities.mining.RicherOres;
-import us.eunoians.mcrpg.api.events.mcmmo.*;
+import us.eunoians.mcrpg.api.events.mcrpg.*;
 import us.eunoians.mcrpg.api.util.DiamondFlowersData;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.GainReason;
@@ -48,7 +48,7 @@ public class BreakEvent implements Listener {
 
 	  Player p = event.getPlayer();
 	  Block block = event.getBlock();
-	  McMMOPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
+	  McRPGPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
 	  FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 	  FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
 	  //Deal with herbalism
@@ -251,14 +251,14 @@ public class BreakEvent implements Listener {
 		  else{
 			//TODO will need to add support for admins to remove these such as towny mayors
 			if(p.hasPermission("mcadmin.*") || p.hasPermission("mcadmin.unlink")){
-			  McMMOPlayer target;
+			  McRPGPlayer target;
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
 			  if(offlinePlayer.isOnline()){
 				target = PlayerManager.getPlayer(uuid);
 				target.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.AdminUnlinked")));
 			  }
 			  else{
-				target = new McMMOPlayer(uuid);
+				target = new McRPGPlayer(uuid);
 			  }
 			  target.setLinkedToRemoteTransfer(false);
 			  ((RemoteTransfer) target.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);

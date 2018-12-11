@@ -13,10 +13,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.swords.RageSpike;
-import us.eunoians.mcrpg.api.events.mcmmo.PreRageSpikeEvent;
-import us.eunoians.mcrpg.api.events.mcmmo.RageSpikeDamageEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.PreRageSpikeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.RageSpikeDamageEvent;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
@@ -32,9 +32,9 @@ public class ShiftToggle implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void shiftToggle(PlayerToggleSneakEvent e){
-    //Get the player and the McMMOPlayer
+    //Get the player and the McRPGPlayer
     Player player = e.getPlayer();
-	McMMOPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+	McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
 	//if the player is readying. They cant be charging in this state due to the nature of the below code
 	if(mp.isReadying() && e.isSneaking() && mp.getReadyingAbilityBit() != null && mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.RAGE_SPIKE){
 	  //Fire the pre rage spike event to get and store some values
@@ -90,7 +90,7 @@ public class ShiftToggle implements Listener {
 			  }
 			}
 		  }.runTaskTimer(McRPG.getInstance(), 0, 1);
-		  //Get the time we need the cooldown to expire and add it to the McMMOPlayer
+		  //Get the time we need the cooldown to expire and add it to the McRPGPlayer
 		  Calendar cal = Calendar.getInstance();
 		  cal.add(Calendar.SECOND,
 			  preEvent.getCooldown());

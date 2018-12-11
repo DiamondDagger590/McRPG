@@ -19,7 +19,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.util.mcmmo.BlockUtils;
 
@@ -118,13 +118,13 @@ public class BlockListener implements Listener {
 	  McRPG.getPlaceStore().setTrue(blockState);
 	}
 
-	McMMOPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
+	McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
 
         /*if (blockState.getType() == Repair.anvilMaterial && SkillType.REPAIR.getPermissions(player)) {
-            mcMMOPlayer.getRepairManager().placedAnvilCheck();
+            mcRPGPlayer.getRepairManager().placedAnvilCheck();
         }
         else if (blockState.getType() == Salvage.anvilMaterial && SkillType.SALVAGE.getPermissions(player)) {
-            mcMMOPlayer.getSalvageManager().placedAnvilCheck();
+            mcRPGPlayer.getSalvageManager().placedAnvilCheck();
         }*/
   }
 
@@ -154,7 +154,7 @@ public class BlockListener implements Listener {
 */
 	Block block = event.getBlock();
 	Player p = event.getPlayer();
-	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
 	if(!PlayerManager.isPlayerStored(p.getUniqueId()) || p.getGameMode() == GameMode.CREATIVE){
 	  return;
@@ -176,7 +176,7 @@ public class BlockListener implements Listener {
 	  return;
 	}
 
-	McMMOPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
+	McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
 	BlockState blockState = event.getBlock().getState();
 
 	/*
@@ -193,7 +193,7 @@ public class BlockListener implements Listener {
          *
          * We don't need to check permissions here because they've already been checked for the ability to even activate.
          *
-        if (mcMMOPlayer.getAbilityMode(AbilityType.TREE_FELLER) && BlockUtils.isLog(blockState) && Config.getInstance().getTreeFellerSoundsEnabled()) {
+        if (mcRPGPlayer.getAbilityMode(AbilityType.TREE_FELLER) && BlockUtils.isLog(blockState) && Config.getInstance().getTreeFellerSoundsEnabled()) {
             player.playSound(blockState.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, Misc.FIZZ_VOLUME, Misc.getFizzPitch());
         }*/
   }
@@ -212,7 +212,7 @@ public class BlockListener implements Listener {
    return;
    }
 
-   McMMOPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
+   McRPGPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
    ItemStack heldItem = player.getInventory().getItemInMainHand();
    Block block = event.getBlock();
    BlockState blockState = block.getState();

@@ -8,9 +8,9 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.api.displays.ExpDisplayType;
 import us.eunoians.mcrpg.api.displays.GenericDisplay;
-import us.eunoians.mcrpg.api.events.mcmmo.McMMOPlayerExpGainEvent;
-import us.eunoians.mcrpg.api.events.mcmmo.McMMOPlayerLevelChangeEvent;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerLevelChangeEvent;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.GenericAbility;
@@ -57,9 +57,9 @@ public abstract class Skill {
    * Player the skill belongs to
    */
   @Getter
-  private McMMOPlayer player;
+  private McRPGPlayer player;
 
-  public Skill(Skills type, HashMap<GenericAbility, BaseAbility> abilityMap, int currentLevel, int currentExp, McMMOPlayer player) {
+  public Skill(Skills type, HashMap<GenericAbility, BaseAbility> abilityMap, int currentLevel, int currentExp, McRPGPlayer player) {
     this.type = type;
     this.currentLevel = currentLevel;
     this.currentExp = currentExp;
@@ -125,7 +125,7 @@ public abstract class Skill {
    * @param gainReason The reason the player is gaining the exp
    */
   public void giveExp(int exp, GainReason gainReason){
-	McMMOPlayerExpGainEvent expEvent = new McMMOPlayerExpGainEvent(exp, this, gainReason);
+	McRPGPlayerExpGainEvent expEvent = new McRPGPlayerExpGainEvent(exp, this, gainReason);
 	Bukkit.getPluginManager().callEvent(expEvent);
 	if(expEvent.isCancelled()){
 	  return;
@@ -150,7 +150,7 @@ public abstract class Skill {
 		expToLevel = (int) parser.getValue();
 		currentExp = leftOverExp;
 	  }
-	  McMMOPlayerLevelChangeEvent event = new McMMOPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
+	  McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
 	  Bukkit.getPluginManager().callEvent(event);
     }
 	else{
@@ -177,7 +177,7 @@ public abstract class Skill {
   public void giveLevels(int levels, boolean resetExp){
     int old = currentLevel;
     currentLevel += levels;
-    McMMOPlayerLevelChangeEvent event = new McMMOPlayerLevelChangeEvent(old, currentLevel, levels, this);
+    McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(old, currentLevel, levels, this);
     Bukkit.getPluginManager().callEvent(event);
 	Parser parser = type.getExpEquation();
 	parser.setVariable("skill_level", currentLevel);

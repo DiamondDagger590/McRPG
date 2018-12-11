@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,7 +20,7 @@ public class EditLoadoutSelectGUI extends GUI {
   @Getter
   private ArrayList<BaseAbility> defaultAbilityList = new ArrayList<>();
 
-  public EditLoadoutSelectGUI(McMMOPlayer player){
+  public EditLoadoutSelectGUI(McRPGPlayer player){
 	super(new GUIBuilder(player));
 	buildGUIFunction = (GUIBuilder builder) -> {
 	  String title = Methods.color("&eSelect what to edit");

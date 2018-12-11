@@ -5,7 +5,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.Skills;
@@ -15,7 +15,7 @@ public class ExpActionBar extends GenericDisplay implements ExpDisplayType, Acti
   @Getter
   private Skills skill;
 
-  public ExpActionBar(McMMOPlayer player, Skills skill){
+  public ExpActionBar(McRPGPlayer player, Skills skill){
     super(player, DisplayType.ACTION_BAR);
     this.skill = skill;
   }

@@ -10,7 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
@@ -26,7 +26,7 @@ public class SubSkillGUI extends GUI{
 
   private GUIInventoryFunction buildGUIFunction;
 
-  public SubSkillGUI(McMMOPlayer player, Skills skill){
+  public SubSkillGUI(McRPGPlayer player, Skills skill){
     super(new GUIBuilder(player));
     this.storedSkill = skill;
 	buildGUIFunction = (GUIBuilder builder) -> {

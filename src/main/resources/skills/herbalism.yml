@@ -52,7 +52,7 @@ EnabledAbilities:
   NaturesWrath: true
   PansBlessing: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcmmo.herbalism.unlock{ability} and mcmmo.herbalism.use.{ability}
+#Perms will be mcrpg.herbalism.unlock{ability} and mcrpg.herbalism.use.{ability}
 UsePermsForAbilites:
   DiamondFlowers: false
   Replanting: false

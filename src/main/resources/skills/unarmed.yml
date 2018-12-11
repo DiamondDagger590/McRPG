@@ -77,7 +77,7 @@ EnabledAbilities:
   SmitingFist: true
   DenseImpact: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcmmo.unarmed.unlock{ability} and mcmmo.unarmed.use.{ability}
+#Perms will be mcrpg.unarmed.unlock{ability} and mcrpg.unarmed.use.{ability}
 UsePermsForAbilites:
   StickyFingers: false
   TighterGrip: false

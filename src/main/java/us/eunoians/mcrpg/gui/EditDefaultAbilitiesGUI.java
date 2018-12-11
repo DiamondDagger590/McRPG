@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.Skills;
 
@@ -25,7 +25,7 @@ public class EditDefaultAbilitiesGUI extends GUI {
   @Getter
   private ArrayList<BaseAbility> defaultAbilityList = new ArrayList<>();
 
-  public EditDefaultAbilitiesGUI(McMMOPlayer player){
+  public EditDefaultAbilitiesGUI(McRPGPlayer player){
 	super(new GUIBuilder(player));
 	buildGUIFunction = (GUIBuilder builder) -> {
 	  String title = Methods.color("&eToggle Default Abilities");

@@ -7,7 +7,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.Skills;
@@ -21,7 +21,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
   @Getter
   private Skills skill;
 
-  public ExpBossbarDisplay(McMMOPlayer player, Skills skill){
+  public ExpBossbarDisplay(McRPGPlayer player, Skills skill){
     super(player, DisplayType.BOSS_BAR);
     this.skill = skill;
     createBossBar();

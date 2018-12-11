@@ -22,10 +22,10 @@ import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.api.events.mcmmo.*;
+import us.eunoians.mcrpg.api.events.mcrpg.*;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.skills.Skill;
@@ -49,7 +49,7 @@ public class VanillaDamageEvent implements Listener {
 	  if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()){
 	    return;
 	  }
-	  McMMOPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
+	  McRPGPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
 	  //Deal with unarmed
 	  if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
 		if(!Skills.UNARMED.isEnabled()){
@@ -233,14 +233,14 @@ public class VanillaDamageEvent implements Listener {
 		if(e.getEntity() instanceof Player && UnlockedAbilities.DISARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DISARM) && mp.getBaseAbility(UnlockedAbilities.DISARM).isToggled()){
 		  Disarm disarm = (Disarm) mp.getBaseAbility(UnlockedAbilities.DISARM);
 		  Player damagedPlayer = (Player) e.getEntity();
-		  McMMOPlayer damagedMcMMOPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
+		  McRPGPlayer damagedMcRPGPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
 		  if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR){
 			double disarmChance = config.getDouble("DisarmConfig.Tier" + Methods.convertToNumeral(disarm.getCurrentTier()) + ".ActivationChance") + disarm.getBonusChance();
 			int chance = (int) disarmChance * 1000;
 			Random rand = new Random();
 			int val = rand.nextInt(100000);
 			if(chance >= val){
-			  DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcMMOPlayer, disarm, damagedPlayer.getItemInHand());
+			  DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcRPGPlayer, disarm, damagedPlayer.getItemInHand());
 			  Bukkit.getPluginManager().callEvent(disarmEvent);
 			  if(!disarmEvent.isCancelled()){
 				int slot = -1;
@@ -356,7 +356,7 @@ public class VanillaDamageEvent implements Listener {
 			  Parser parser = DefaultAbilities.BLEED.getActivationEquation();
 			  if(e.getEntity() instanceof Player){
 				Player damagedPlayer = (Player) e.getEntity();
-				McMMOPlayer dmged = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
+				McRPGPlayer dmged = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
 				if(!dmged.isHasBleedImmunity() && bleed.canTarget()){
 				  parser.setVariable("swords_level", playersSkill.getCurrentLevel());
 				  parser.setVariable("power_level", mp.getPowerLevel());

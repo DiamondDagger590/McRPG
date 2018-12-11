@@ -16,10 +16,10 @@ import org.bukkit.potion.PotionEffectType;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.herbalism.NaturesWrath;
-import us.eunoians.mcrpg.api.events.mcmmo.NaturesWrathEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.NaturesWrathEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.types.Skills;
@@ -36,7 +36,7 @@ public class CheckReadyEvent implements Listener {
   public void checkReady(PlayerInteractEvent e){
 
 	Player p = e.getPlayer();
-	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	ItemStack heldItem = e.getItem();
 	if(e.isCancelled() && e.getAction() != Action.RIGHT_CLICK_AIR){
 	  return;
@@ -185,7 +185,7 @@ public class CheckReadyEvent implements Listener {
 	}
   }
 
-  private void readyHandler(Player p, McMMOPlayer mp, Skills skillType, Block block){
+  private void readyHandler(Player p, McRPGPlayer mp, Skills skillType, Block block){
 	if(mp.doesPlayerHaveActiveAbilityFromSkill(skillType)){
 	  BaseAbility ab = mp.getBaseAbility(mp.getActiveAbilityForSkill(skillType));
 	  if(mp.getActiveAbilities().contains((UnlockedAbilities) ab.getGenericAbility())){

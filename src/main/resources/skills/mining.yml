@@ -44,7 +44,7 @@ EnabledAbilities:
   OreScanner: true
   BlastMining: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcmmo.mining.unlock{ability} and mcmmo.mining.use.{ability}
+#Perms will be mcrpg.mining.unlock{ability} and mcrpg.mining.use.{ability}
 UsePermsForAbilites:
   DoubleDrop: false
   RicherOres: false

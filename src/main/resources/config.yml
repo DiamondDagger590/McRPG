@@ -54,7 +54,7 @@ Configuration:
   LangFile: 'en'
 #Unused
   AutoUpdate: true
-#Use mcmmo.{skill}.level
+#Use mcrpg.{skill}.level
   UseLevelPerms: false
 #Allow Health bars
   HealthBarEnabled: true

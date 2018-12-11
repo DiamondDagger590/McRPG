@@ -11,7 +11,7 @@ import us.eunoians.mcrpg.api.displays.ExpActionBar;
 import us.eunoians.mcrpg.api.displays.ExpBossbarDisplay;
 import us.eunoians.mcrpg.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.Skills;
@@ -48,7 +48,7 @@ public class McDisplay implements CommandExecutor {
 		  }
 		  // /mcdisplay {skill}
 		  else if(Skills.isSkill(args[0])){
-			McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+			McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 			if(DisplayManager.getInstance().doesPlayerHaveDisplay(p)){
 			  DisplayManager.getInstance().getDisplay(p).cancel();
 			  DisplayManager.getInstance().removePlayersDisplay(p);
@@ -67,7 +67,7 @@ public class McDisplay implements CommandExecutor {
 		  if(args[0].equalsIgnoreCase("set")){
 		    if(DisplayType.isDisplayType(args[1])){
 		      DisplayType type = DisplayType.fromString(args[1]);
-		      McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+		      McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 		      mp.setDisplayType(type);
 		      p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.McDisplay.DisplayChanged").replaceAll("%DisplayType%", type.getName())));
 		      return true;
@@ -80,7 +80,7 @@ public class McDisplay implements CommandExecutor {
 		  // /mcdisplay {skill} {displaytype}
 		  else if(Skills.isSkill(args[0])){
 			if(DisplayType.isDisplayType(args[1])){
-			  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+			  McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 			  DisplayType type = DisplayType.fromString(args[1]);
 			  return setDisplay(args, displayManager, p, mp, type);
 			}
@@ -108,7 +108,7 @@ public class McDisplay implements CommandExecutor {
 	}
   }
 
-  private boolean setDisplay(String[] args, DisplayManager displayManager, Player p, McMMOPlayer mp, DisplayType type){
+  private boolean setDisplay(String[] args, DisplayManager displayManager, Player p, McRPGPlayer mp, DisplayType type){
 	if(type.equals(DisplayType.SCOREBOARD)){
 	  ExpScoreboardDisplay display = new ExpScoreboardDisplay(mp, Skills.fromString(args[0]), p.getScoreboard());
 	  p.setScoreboard(display.getBoard());

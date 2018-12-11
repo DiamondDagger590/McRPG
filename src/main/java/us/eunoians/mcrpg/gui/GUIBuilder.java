@@ -13,7 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class GUIBuilder {
 	@Getter @Setter
 	private ArrayList<GUIItem> items;
 	@Getter
-	private McMMOPlayer player;
+	private McRPGPlayer player;
 
 	@Getter @Setter
 	private GUIPlaceHolderFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
@@ -118,7 +118,7 @@ public class GUIBuilder {
 	 * @param guiPath
 	 * @param player
 	 */
-	public GUIBuilder(String fileName, String guiPath, McMMOPlayer player) {
+	public GUIBuilder(String fileName, String guiPath, McRPGPlayer player) {
 		this.player = player;
 		File f = new File(McRPG.getInstance().getDataFolder(), File.separator + "guis" + File.separator + fileName);
    		this.config = YamlConfiguration.loadConfiguration(f);
@@ -134,7 +134,7 @@ public class GUIBuilder {
 	 * @param config
 	 * @param player
 	 */
-	public GUIBuilder(String guiPath, FileConfiguration config, McMMOPlayer player) {
+	public GUIBuilder(String guiPath, FileConfiguration config, McRPGPlayer player) {
 		this.player = player;
 		this.rawPath = guiPath;
 		this.config = config;
@@ -143,7 +143,7 @@ public class GUIBuilder {
 		this.boundEvents = bindEventsFunction.bindEvents(this);
 	}
 
-	public GUIBuilder(McMMOPlayer player){
+	public GUIBuilder(McRPGPlayer player){
 	  this.player = player;
 	}
 

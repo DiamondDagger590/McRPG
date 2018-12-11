@@ -15,9 +15,9 @@ public class PlayerReadyBit {
   private int endTaskID;
 
   @Getter
-  private McMMOPlayer player;
+  private McRPGPlayer player;
 
-  public PlayerReadyBit(UnlockedAbilities abilityReady, McMMOPlayer player){
+  public PlayerReadyBit(UnlockedAbilities abilityReady, McRPGPlayer player){
     this.abilityReady = abilityReady;
     this.player = player;
     endTaskID = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () ->{

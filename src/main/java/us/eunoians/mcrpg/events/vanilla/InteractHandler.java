@@ -24,10 +24,10 @@ import us.eunoians.mcrpg.abilities.mining.BlastMining;
 import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
 import us.eunoians.mcrpg.abilities.mining.OreScanner;
 import us.eunoians.mcrpg.abilities.mining.SuperBreaker;
-import us.eunoians.mcrpg.api.events.mcmmo.*;
+import us.eunoians.mcrpg.api.events.mcrpg.*;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -42,7 +42,7 @@ public class InteractHandler implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void interactHandler(PlayerInteractEvent e){
 	Player p = e.getPlayer();
-	McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	ItemStack heldItem = e.getItem();
 	if(heldItem == null){
 	  return;

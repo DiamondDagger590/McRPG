@@ -16,12 +16,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
-import us.eunoians.mcrpg.api.events.mcmmo.AbilityAddToLoadoutEvent;
-import us.eunoians.mcrpg.api.events.mcmmo.AbilityRemovedFromLoadoutEvent;
-import us.eunoians.mcrpg.api.events.mcmmo.AbilityUpgradeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.AbilityAddToLoadoutEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.AbilityRemovedFromLoadoutEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.AbilityUpgradeEvent;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.gui.*;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.DisplayType;
@@ -55,7 +55,7 @@ public class InvClickEvent implements Listener {
 	  if(e.getClickedInventory() instanceof PlayerInventory){
 		return;
 	  }
-	  McMMOPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+	  McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	  //Cuz null errors are fun
 	  if(e.getCurrentItem() == null) return;
 	  GUI currentGUI = GUITracker.getPlayersGUI(p);

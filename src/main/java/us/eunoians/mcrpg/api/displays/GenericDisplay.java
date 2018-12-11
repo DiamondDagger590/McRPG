@@ -1,13 +1,13 @@
 package us.eunoians.mcrpg.api.displays;
 
 import lombok.Getter;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.DisplayType;
 
 public abstract class GenericDisplay {
 
   @Getter
-  protected McMMOPlayer player;
+  protected McRPGPlayer player;
   @Getter
   protected DisplayType type;
 
@@ -16,7 +16,7 @@ public abstract class GenericDisplay {
    * @param player The player the generic type belongs to
    * @param type The type of display this is
    */
-  public GenericDisplay(McMMOPlayer player, DisplayType type){
+  public GenericDisplay(McRPGPlayer player, DisplayType type){
     this.player = player;
     this.type = type;
   }

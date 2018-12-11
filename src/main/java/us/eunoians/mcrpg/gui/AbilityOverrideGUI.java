@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +27,7 @@ public class AbilityOverrideGUI extends GUI {
 
   private GUIInventoryFunction buildGUIFunction;
 
-  public AbilityOverrideGUI(McMMOPlayer player, BaseAbility abiltyToReplace, BaseAbility replaceAbility){
+  public AbilityOverrideGUI(McRPGPlayer player, BaseAbility abiltyToReplace, BaseAbility replaceAbility){
 	super(new GUIBuilder(player));
 	this.abiltyToReplace = abiltyToReplace;
 	this.replaceAbility = replaceAbility;

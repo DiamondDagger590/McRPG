@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 
 /*
 This class is a static class that keeps track of a players current gui
@@ -22,7 +22,7 @@ public class GUITracker {
     return result;
   }
 
-  public static boolean isPlayerTracked(McMMOPlayer p) {
+  public static boolean isPlayerTracked(McRPGPlayer p) {
     boolean result = false;
     if (guiTracker.containsKey(p.getUuid())) {
       result = true;
@@ -39,7 +39,7 @@ public class GUITracker {
   }
 
 
-  public static boolean doesPlayerHavePrevious(McMMOPlayer p) {
+  public static boolean doesPlayerHavePrevious(McRPGPlayer p) {
     if (guiTracker.containsKey(p.getUuid())) {
       if (guiTracker.get(p.getUuid()).hasPreviousGUI()) {
         return true;
@@ -67,7 +67,7 @@ public class GUITracker {
   }
 
 
-  public static void stopTrackingPlayer(McMMOPlayer p) {
+  public static void stopTrackingPlayer(McRPGPlayer p) {
     guiTracker.remove(p.getUuid());
   }
 
@@ -80,7 +80,7 @@ public class GUITracker {
   }
 
 
-  public static GUI getPlayersGUI(McMMOPlayer p) {
+  public static GUI getPlayersGUI(McRPGPlayer p) {
     return guiTracker.get(p.getUuid()).getCurrentGUI();
   }
 
@@ -93,7 +93,7 @@ public class GUITracker {
   }
 
 
-  public static GUI getPlayersPreviousGUI(McMMOPlayer p) {
+  public static GUI getPlayersPreviousGUI(McRPGPlayer p) {
     return guiTracker.get(p.getUuid()).getPreviousGUI();
   }
 
@@ -105,7 +105,7 @@ public class GUITracker {
     return guiTracker.get(p).getPreviousGUI();
   }
 
-  public static GUI replacePlayersGUI(McMMOPlayer p, GUI newGUI) {
+  public static GUI replacePlayersGUI(McRPGPlayer p, GUI newGUI) {
     setPlayersCurrentGUI(p.getUuid(), newGUI, true);
     return newGUI;
   }
@@ -120,7 +120,7 @@ public class GUITracker {
     return newGUI;
   }
 
-  public static void trackPlayer(McMMOPlayer p, GUI gui) {
+  public static void trackPlayer(McRPGPlayer p, GUI gui) {
     GUITrackerBit bit = new GUITrackerBit(gui);
     guiTracker.put(p.getUuid(), bit);
   }

@@ -1,0 +1,18 @@
+package us.eunoians.mcrpg.events.mcrpg;
+
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
+import us.eunoians.mcrpg.api.events.mcrpg.AbilityUpgradeEvent;
+
+public class AbilityUpgrade implements Listener {
+
+  @EventHandler (priority = EventPriority.NORMAL)
+  public void abilityUpgrade(AbilityUpgradeEvent event){
+    if(!event.isCancelled() && event.getAbilityUpgrading() instanceof RemoteTransfer){
+	  ((RemoteTransfer) event.getAbilityUpgrading()).updateBlocks();
+	  event.getMcRPGPlayer().saveData();
+	}
+  }
+}

@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.gui;
 import lombok.Getter;
 import lombok.Setter;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.List;
 
@@ -51,7 +51,7 @@ public abstract class GUI {
     return lore;
   }
 
-  public McMMOPlayer getPlayer() {
+  public McRPGPlayer getPlayer() {
     return gui.getPlayer();
   }
 }

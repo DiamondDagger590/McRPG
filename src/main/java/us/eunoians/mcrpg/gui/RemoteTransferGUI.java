@@ -14,7 +14,7 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.players.McMMOPlayer;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ public class RemoteTransferGUI extends GUI {
   private GUIInventoryFunction buildGUIFunction;
 
 
-  public RemoteTransferGUI(McMMOPlayer p, BaseAbility ability){
+  public RemoteTransferGUI(McRPGPlayer p, BaseAbility ability){
 	super(new GUIBuilder(p));
 	this.remoteTransfer = (RemoteTransfer) ability;
 	if(!GUITracker.isPlayerTracked(p)){
