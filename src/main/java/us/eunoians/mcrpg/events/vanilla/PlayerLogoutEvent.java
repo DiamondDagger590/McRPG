@@ -18,9 +18,9 @@ public class PlayerLogoutEvent implements Listener {
 
   private static HashMap<UUID, BukkitTask> playerLogOutTasks = new HashMap<>();
 
-  @EventHandler (priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void logout(PlayerQuitEvent e){
-    Player p = e.getPlayer();
+	Player p = e.getPlayer();
 	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
 	if(McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(p)){
 	  McRPG.getInstance().getDisplayManager().removePlayersDisplay(p);
@@ -28,11 +28,11 @@ public class PlayerLogoutEvent implements Listener {
 	if(ShiftToggle.isPlayerCharging(p)){
 	  ShiftToggle.removePlayerCharging(p);
 	}
-	BukkitTask task = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), ()->{
-		if(!p.isOnline() && PlayerManager.isPlayerStored(p.getUniqueId())){
-		  PlayerManager.removePlayer(p.getUniqueId());
-		}
-		playerLogOutTasks.remove(p.getUniqueId());
+	BukkitTask task = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
+	  if(!p.isOnline() && PlayerManager.isPlayerStored(p.getUniqueId())){
+		PlayerManager.removePlayer(p.getUniqueId());
+	  }
+	  playerLogOutTasks.remove(p.getUniqueId());
 	}, 5 * 1200);
 	playerLogOutTasks.put(p.getUniqueId(), task);
 
@@ -43,6 +43,6 @@ public class PlayerLogoutEvent implements Listener {
   }
 
   public static void cancelRemove(UUID uuid){
-    playerLogOutTasks.remove(uuid).cancel();
+	playerLogOutTasks.remove(uuid).cancel();
   }
 }

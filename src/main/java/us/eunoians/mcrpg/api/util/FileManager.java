@@ -297,6 +297,7 @@ public class FileManager {
   }
 
   public enum Files {
+    ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
 	CONFIG("config.yml", "config.yml"),
 	CUSTOM("custom.yml", "localization/custom.yml"),
 	ENGLISH_FILE("en.yml", "localization/en.yml"),

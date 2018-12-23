@@ -3,40 +3,48 @@ package us.eunoians.mcrpg.types;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 
 import java.io.File;
 import java.util.Arrays;
 
+import static us.eunoians.mcrpg.api.util.FileManager.Files;
+
 /**
  * An enum of every ability that can be unlocked
  */
 public enum UnlockedAbilities implements GenericAbility {
-  BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
-  BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
-  DIAMOND_FLOWERS("DiamondFlowers", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
-  DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
-  IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, FileManager.Files.HERBALISM_CONFIG),
-  NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, FileManager.Files.HERBALISM_CONFIG),
-  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  PANS_BLESSING("PansBlessing", "Herbalism", AbilityType.ACTIVE, FileManager.Files.HERBALISM_CONFIG),
-  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
-  REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  REPLANTING("Replanting", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
-  RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
-  SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, FileManager.Files.UNARMED_CONFIG),
-  SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, FileManager.Files.MINING_CONFIG),
-  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, FileManager.Files.SWORDS_CONFIG),
-  TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG);
+
+  BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
+  BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
+  BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
+  BLESSING_OF_APOLLO("BlessingOfApollo", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
+  BLESSING_OF_ARTEMIS("BlessingOfArtemis", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
+  COMBO("Combo", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
+  CURSE_OF_HADES("CurseOfHades", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
+  DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
+  DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
+  DIAMOND_FLOWERS("DiamondFlowers", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
+  DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
+  FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
+  IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
+  ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
+  MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
+  NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
+  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
+  PANS_BLESSING("PansBlessing", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
+  PUNCTURE("Puncture", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
+  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
+  REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
+  REPLANTING("Replanting", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
+  RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
+  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
+  SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
+  SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
+  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
+  TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
+  TIPPED_ARROWS("TippedArrows", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
+  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG);
 
   @Getter
   private String name;
@@ -44,7 +52,7 @@ public enum UnlockedAbilities implements GenericAbility {
   private String skill;
   @Getter
   private AbilityType abilityType;
-  private FileManager.Files file;
+  private Files file;
 
   /**
    * @param name
@@ -52,7 +60,7 @@ public enum UnlockedAbilities implements GenericAbility {
    * @param type
    * @param config
    */
-  UnlockedAbilities(String name, String skill, AbilityType type, FileManager.Files config){
+  UnlockedAbilities(String name, String skill, AbilityType type, Files config){
 	this.name = name;
 	this.skill = skill;
 	this.abilityType = type;
@@ -76,8 +84,7 @@ public enum UnlockedAbilities implements GenericAbility {
    */
   @Override
   public boolean isEnabled(){
-	return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(),
-		File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getBoolean("EnabledAbilities." + name);
+	return file.getFile().getBoolean("EnabledAbilities." + name);
   }
 
   /**
@@ -94,8 +101,7 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return The integer representation of when the ability is unlocked
    */
   public int getUnlockLevel(){
-	return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(),
-		File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getInt("UnlockLevelForAbility." + name);
+	return file.getFile().getInt("UnlockLevelForAbility." + name);
   }
 
   /**
@@ -114,8 +120,7 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return The max tier an ability can reach
    */
   public int getMaxTier(){
-	return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(),
-		File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getInt(name + "Config.TierAmount");
+	return file.getFile().getInt(name + "Config.TierAmount");
   }
 
   /**
@@ -125,11 +130,28 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return The level that the tier is unlocked or -1 if that tier doesnt exist
    */
   public int tierUnlockLevel(int tier){
-	return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(), File.separator + "skills" + File.separator
-		+ this.skill.toLowerCase() + ".yml")).getInt(this.name + "Config.TierUpgrade.Tier" + Methods.convertToNumeral(tier));
+	return file.getFile().getInt(this.name + "Config.TierUpgrade.Tier" + Methods.convertToNumeral(tier));
   }
 
   public static boolean isAbility(String ability){
 	return Arrays.stream(values()).anyMatch(ab -> ab.getName().equalsIgnoreCase(ability));
+  }
+
+  public String getDisplayName(){
+	char[] chars = name.toCharArray();
+	StringBuilder string = new StringBuilder();
+	boolean first = true;
+	for(char s : chars){
+	  if(!first){
+		if(Character.isUpperCase(s)){
+		  string.append(" ");
+		}
+	  }
+	  else{
+		first = false;
+	  }
+	  string.append(s);
+	}
+	return string.toString();
   }
 }
