@@ -1,3 +1,6 @@
+1.0.1-ALPHA
++ Backend work for Archery
+= Bug with a few blocks when using silk touch and shears
 Key:
 =: Change/Fix
 +: Addition

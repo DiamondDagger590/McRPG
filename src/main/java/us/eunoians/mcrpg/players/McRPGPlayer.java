@@ -208,11 +208,6 @@ public class McRPGPlayer {
 	  playerData.set("AbilityLoadout.placeholder", null);
 	  playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
 	  playerData.set("ReplaceAbilityCooldown.placeholder", null);
-	  try{
-		playerData.save(playerFile);
-	  }catch(IOException e){
-		e.printStackTrace();
-	  }
 	}
 
 	//Add in info for new skills.
@@ -239,7 +234,11 @@ public class McRPGPlayer {
 		playerData.set(ability.getSkill() + "." + ability.getName() + ".IsToggled", true);
 	  }
 	}
-
+	try{
+	  playerData.save(playerFile);
+	}catch(IOException e){
+	  e.printStackTrace();
+	}
 
 	this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(playerData.getString("HealthType"));
 	this.keepHandEmpty = playerData.getBoolean("KeepHandEmpty");
@@ -567,9 +566,10 @@ public class McRPGPlayer {
 		abilityMap.put(UnlockedAbilities.BLESSING_OF_ARTEMIS, blessingOfArtemis);
 		abilityMap.put(UnlockedAbilities.CURSE_OF_HADES, curseOfHades);
 		//Create skill
+		/*
 		Archery archery = new Archery(playerData.getInt("Archery.Level"),
 			playerData.getInt("Archery.CurrentExp"), abilityMap, this);
-		skills.add(archery);
+		skills.add(archery);*/
 	  }
 	});
 	for(String s : playerData.getStringList("AbilityLoadout")){
@@ -749,8 +749,11 @@ public class McRPGPlayer {
    * Save players data
    */
   public void saveData(){
-	//for(Skills type : Skills.values()){
 	for(Skills type : Skills.values()){
+	  //TODO remove
+	  if(type == Skills.ARCHERY){
+	    continue;
+	  }
 	  Skill skill = getSkill(type);
 	  playerData.set(type.getName() + ".Level", skill.getCurrentLevel());
 	  playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());

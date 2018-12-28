@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 public class BreakEvent implements Listener {
 
-  @EventHandler (priority = EventPriority.LOW)
+  @EventHandler(priority = EventPriority.LOW)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event){
 	if(!event.isCancelled() && event.getPlayer().getGameMode() == GameMode.SURVIVAL){
@@ -304,72 +304,74 @@ public class BreakEvent implements Listener {
 		  for(Material mat : itemsToDrop.stream().map(ItemStack::getType).collect(Collectors.toList())){
 			//If the item needs to be transferred and is toggled for transferring
 			//Apply fortune and silk touch
-			ItemStack item = getDropsFromMaterial(block, p.getItemInHand(), dropMultiplier);
-			mat = item.getType();
-			Material testMat = null;
-			if(SilkBlocks.isSilked(mat)){
-			  testMat = SilkBlocks.getSilkBlock(mat);
-			}
-			if((transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat)) ||
-				(testMat != null && transfer.getItemsToSync().containsKey(testMat) && transfer.getItemsToSync().get(testMat))){
-			  //Get the material of the item we are putting in the chest and the amount
-			  if(mat != Material.COBBLESTONE){
-				mat = item.getType();
+			ArrayList<ItemStack> items = getDropsFromMaterial(block, p.getItemInHand(), dropMultiplier);
+			for(ItemStack item : items){
+			  mat = item.getType();
+			  Material testMat = null;
+			  if(SilkBlocks.isSilked(mat)){
+				testMat = SilkBlocks.getSilkBlock(mat);
 			  }
-			  int amount = item.getAmount();
-			  //if the chest contents are full, check if there are any stacks we can increase before dropping
-			  for(int i = 0; i < inv.getSize(); i++){
-				//if the amount is no longer positive then we are done with this item
-				if(amount <= 0){
-				  break;
+			  if((transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat)) ||
+				  (testMat != null && transfer.getItemsToSync().containsKey(testMat) && transfer.getItemsToSync().get(testMat))){
+				//Get the material of the item we are putting in the chest and the amount
+				if(mat != Material.COBBLESTONE){
+				  mat = item.getType();
 				}
-				//Get the current item per iteration
-				ItemStack currentItem = inv.getItem(i);
-				//If the slot is empty
-				if(currentItem == null || currentItem.getType() == Material.AIR){
-				  ItemStack newStack = new ItemStack(mat);
-				  //if the amount is greater than a stack
-				  if(amount > 64){
-					newStack.setAmount(64);
-					amount -= 64;
-					inv.setItem(i, newStack);
-					continue;
-				  }
-				  //Otherwise just slap the item in there and break since we dont need to put it anywhere else
-				  else{
-					newStack.setAmount(amount);
-					inv.setItem(i, newStack);
-					amount = 0;
+				int amount = item.getAmount();
+				//if the chest contents are full, check if there are any stacks we can increase before dropping
+				for(int i = 0; i < inv.getSize(); i++){
+				  //if the amount is no longer positive then we are done with this item
+				  if(amount <= 0){
 					break;
 				  }
-				}
-				else if(currentItem.getType() == mat){
-				  if(currentItem.getAmount() == 64){
-					continue;
-				  }
-				  else{
-					if(currentItem.getAmount() + amount > 64){
-					  amount -= 64 - currentItem.getAmount();
-					  currentItem.setAmount(64);
+				  //Get the current item per iteration
+				  ItemStack currentItem = inv.getItem(i);
+				  //If the slot is empty
+				  if(currentItem == null || currentItem.getType() == Material.AIR){
+					ItemStack newStack = new ItemStack(mat);
+					//if the amount is greater than a stack
+					if(amount > 64){
+					  newStack.setAmount(64);
+					  amount -= 64;
+					  inv.setItem(i, newStack);
 					  continue;
 					}
+					//Otherwise just slap the item in there and break since we dont need to put it anywhere else
 					else{
-					  currentItem.setAmount(currentItem.getAmount() + amount);
+					  newStack.setAmount(amount);
+					  inv.setItem(i, newStack);
 					  amount = 0;
 					  break;
 					}
 				  }
+				  else if(currentItem.getType() == mat){
+					if(currentItem.getAmount() == 64){
+					  continue;
+					}
+					else{
+					  if(currentItem.getAmount() + amount > 64){
+						amount -= 64 - currentItem.getAmount();
+						currentItem.setAmount(64);
+						continue;
+					  }
+					  else{
+						currentItem.setAmount(currentItem.getAmount() + amount);
+						amount = 0;
+						break;
+					  }
+					}
+				  }
+				  else{
+					continue;
+				  }
 				}
-				else{
-				  continue;
+				block2.getState().update();
+				//Drop leftovers
+				if(amount > 0){
+				  block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(mat, amount));
 				}
+				event.setDropItems(false);
 			  }
-			  block2.getState().update();
-			  //Drop leftovers
-			  if(amount > 0){
-				block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(mat, amount));
-			  }
-			  event.setDropItems(false);
 			}
 		  }
 		}
@@ -378,40 +380,61 @@ public class BreakEvent implements Listener {
 			event.setExpToDrop(0);
 		  }
 		  event.setDropItems(false);
-		  ItemStack itemStack = getDropsFromMaterial(block, p.getInventory().getItemInMainHand(), dropMultiplier);
-		  if(itemStack.getType() != Material.AIR){
-			p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemStack);
+		  ArrayList<ItemStack> items = getDropsFromMaterial(block, p.getInventory().getItemInMainHand(), dropMultiplier);
+		  for(ItemStack itemStack : items){
+			if(itemStack.getType() != Material.AIR){
+			  p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemStack);
+			}
 		  }
 		}
 	  }
-
-
 	}
 
   }
 
-  private ItemStack getDropsFromMaterial(Block block, ItemStack tool, int multiplier){
-	if(block.getDrops(tool).isEmpty()){
-	  return new ItemStack(Material.AIR);
-	}
+  private ArrayList<ItemStack> getDropsFromMaterial(Block block, ItemStack tool, int multiplier){
 	Collection<ItemStack> itemStacks = block.getDrops(tool);
-	if(itemStacks.size() == 0){
-	  return new ItemStack(Material.AIR);
+	ArrayList<ItemStack> returnItems = new ArrayList<>();
+	if(tool.getType() == Material.SHEARS && canBeSheared(block.getType())){
+	  Material mat = block.getType();
+	  if(mat == Material.TALL_GRASS){
+		mat = Material.GRASS;
+	  }
+	  else if(mat == Material.TALL_SEAGRASS){
+		mat = Material.SEAGRASS;
+	  }
+	  itemStacks.clear();
+	  itemStacks.add(new ItemStack(mat));
 	}
-	ItemStack returnItem = (ItemStack) itemStacks.toArray()[0];
-	Map<Enchantment, Integer> enchants = tool.getEnchantments();
-	if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(block.getType()))){
-	  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
-	  int dropAmount = getDropCount(block.getType(), level, new Random()) * multiplier;
-	  returnItem.setAmount(dropAmount);
+	if(itemStacks.isEmpty()){
+	  Map<Enchantment, Integer> enchants = tool.getEnchantments();
+	  if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(block.getType())){
+	    returnItems.add(new ItemStack(SilkBlocks.getSilkBlock(block.getType())));
+	  }
+	  else{
+		returnItems.add(new ItemStack(Material.AIR));
+	  }
+	  return returnItems;
 	}
-	if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(block.getType())){
-	  Material newMat = SilkBlocks.getSilkBlock(block.getType());
-	  returnItem.setType(newMat);
-	  returnItem.setAmount(multiplier);
+	for(ItemStack i : itemStacks){
+	  Map<Enchantment, Integer> enchants = tool.getEnchantments();
+	  if(enchants.keySet().contains(Enchantment.LOOT_BONUS_BLOCKS) && (FortuneBlocks.isFortunable(block.getType()))){
+		int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
+		int dropAmount = getDropCount(block.getType(), level, new Random()) * multiplier;
+		i.setAmount(dropAmount);
+	  }
+	  if(enchants.keySet().contains(Enchantment.SILK_TOUCH) && SilkBlocks.isSilked(block.getType())){
+		Material newMat = SilkBlocks.getSilkBlock(block.getType());
+		if(newMat == null){
+		  returnItems.add(new ItemStack(Material.AIR));
+		  continue;
+		}
+		i.setType(newMat);
+		i.setAmount(multiplier);
+	  }
+	  returnItems.add(i);
 	}
-
-	return returnItem;
+	return returnItems;
   }
 
 
@@ -455,6 +478,44 @@ public class BreakEvent implements Listener {
 	}
   }
 
+  public boolean canBeSheared(Material mat){
+	if(mat == Material.ACACIA_LEAVES){
+	  return true;
+	}
+	if(mat == Material.BIRCH_LEAVES){
+	  return true;
+	}
+	if(mat == Material.DARK_OAK_LEAVES){
+	  return true;
+	}
+	if(mat == Material.JUNGLE_LEAVES){
+	  return true;
+	}
+	if(mat == Material.OAK_LEAVES){
+	  return true;
+	}
+	if(mat == Material.SPRUCE_LEAVES){
+	  return true;
+	}
+	if(mat == Material.GRASS){
+	  return true;
+	}
+	if(mat == Material.SEAGRASS){
+	  return true;
+	}
+	if(mat == Material.TALL_GRASS){
+	  return true;
+	}
+	if(mat == Material.TALL_SEAGRASS){
+	  return true;
+	}
+	if(mat == Material.DEAD_BUSH){
+	  return true;
+	}
+
+	return false;
+  }
+
   private enum SilkBlocks {
 	COAL_ORE(Material.COAL, Material.COAL_ORE),
 	DIAMOND_ORE(Material.DIAMOND, Material.DIAMOND_ORE),
@@ -462,7 +523,9 @@ public class BreakEvent implements Listener {
 	LAPIS_ORE(Material.LAPIS_LAZULI, Material.LAPIS_ORE),
 	REDSTONE_ORE(Material.REDSTONE, Material.REDSTONE_ORE),
 	STONE(Material.COBBLESTONE, Material.STONE),
-	NETHER_ORE(Material.QUARTZ, Material.NETHER_QUARTZ_ORE);
+	NETHER_ORE(Material.QUARTZ, Material.NETHER_QUARTZ_ORE),
+	SNOW(Material.SNOW_BLOCK, Material.SNOW_BLOCK),
+	SEA_LANTURNS(Material.SEA_LANTERN, Material.SEA_LANTERN);
 
 	@Getter
 	private Material unsilkedMat;
@@ -476,15 +539,16 @@ public class BreakEvent implements Listener {
 	}
 
 	public static boolean isSilked(Material mat){
-	  return (Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.unsilkedMat.equals(mat))) || Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.silkedMat.equals(mat));
+	  return (mat.toString().contains("GLASS") || mat.toString().contains("CORAL") || mat.toString().contains("ICE") ||
+		  Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.unsilkedMat.equals(mat))) || Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.silkedMat.equals(mat));
 	}
 
 	public static Material getSilkBlock(Material mat){
 	  SilkBlocks blocks = Arrays.stream(values()).filter(silkBlocks -> silkBlocks.silkedMat.equals(mat)).findFirst().orElse(null);
 	  if(blocks == null){
-	    blocks =  Arrays.stream(values()).filter(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)).findFirst().orElse(null);
-	    if(blocks == null){
-	      return null;
+		blocks = Arrays.stream(values()).filter(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)).findFirst().orElse(null);
+		if(blocks == null){
+		  return mat;
 		}
 	  }
 	  Material result = blocks.getSilkedMat();
@@ -492,6 +556,44 @@ public class BreakEvent implements Listener {
 	}
   }
 
+  /*
+	private enum ShearBlocks {
+	  OAK_LEAVES(Material.COAL, Material.COAL_ORE),
+	  DIAMOND_ORE(Material.DIAMOND, Material.DIAMOND_ORE),
+	  EMERALD_ORE(Material.EMERALD, Material.EMERALD_ORE),
+	  LAPIS_ORE(Material.LAPIS_LAZULI, Material.LAPIS_ORE),
+	  REDSTONE_ORE(Material.REDSTONE, Material.REDSTONE_ORE),
+	  STONE(Material.COBBLESTONE, Material.STONE),
+	  NETHER_ORE(Material.QUARTZ, Material.NETHER_QUARTZ_ORE);
+
+	  @Getter
+	  private Material unsilkedMat;
+
+	  @Getter
+	  private Material silkedMat;
+
+	  SilkBlocks(Material mat, Material silkedMat){
+		this.unsilkedMat = mat;
+		this.silkedMat = silkedMat;
+	  }
+
+	  public static boolean isSilked(Material mat){
+		return (Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.unsilkedMat.equals(mat))) || Arrays.stream(values()).anyMatch(silkBlocks -> silkBlocks.silkedMat.equals(mat));
+	  }
+
+	  public static Material getSilkBlock(Material mat){
+		SilkBlocks blocks = Arrays.stream(values()).filter(silkBlocks -> silkBlocks.silkedMat.equals(mat)).findFirst().orElse(null);
+		if(blocks == null){
+		  blocks =  Arrays.stream(values()).filter(silkBlocks -> silkBlocks.unsilkedMat.equals(mat)).findFirst().orElse(null);
+		  if(blocks == null){
+			return null;
+		  }
+		}
+		Material result = blocks.getSilkedMat();
+		return result;
+	  }
+	}
+  */
   private enum EasterEgg {
 	VERUM("HOE");
 

@@ -1,7 +1,7 @@
 name: McRPG
-version: 1.0.0-ALPHA
+version: 1.0.1-ALPHA
 author: Eunoians
-description: Some description
+description: A RPG plugin for 1.13+
 main: us.eunoians.mcrpg.McRPG
 api-version: 1.13
 soft-depend: [Parties]
