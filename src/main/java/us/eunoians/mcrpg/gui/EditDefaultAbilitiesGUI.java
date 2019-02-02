@@ -42,6 +42,9 @@ public class EditDefaultAbilitiesGUI extends GUI {
 	  ArrayList<GUIItem> items = new ArrayList<>();
 	  Skills[] skills = Skills.values();
 	  for(int i = 0; i < skills.length; i++){
+	  	if(skills[i] == Skills.ARCHERY){
+	  		continue;
+		}
 		Skill skill = player.getSkill(skills[i]);
 		BaseAbility ability = skill.getDefaultAbility();
 		defaultAbilityList.add(ability);
