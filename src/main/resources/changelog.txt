@@ -1,3 +1,5 @@
+1.0.2-ALPHA
+= Fixed block breaking bug
 1.0.1-ALPHA
 + Backend work for Archery
 = Bug with a few blocks when using silk touch and shears

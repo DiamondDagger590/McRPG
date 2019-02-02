@@ -47,9 +47,9 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter
   private RemoteTransferTracker remoteTransferTracker;
   @Getter
-  private final String customNameKey       = "mcMMO: Custom Name";
+  private final String customNameKey = "mcMMO: Custom Name";
   @Getter
-  private final String customVisibleKey    = "mcMMO: Name Visibility";
+  private final String customVisibleKey = "mcMMO: Name Visibility";
   @Getter
   private boolean healthBarPluginEnabled;
 
@@ -61,7 +61,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Override
   public void onDisable() {
-    if (!Initializer.finished())
+    if(!Initializer.finished())
       Initializer.interrupt();
     PlayerManager.shutDownManager();
   }
@@ -81,7 +81,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   // @Initialize(priority = 1)
   // Ignore sanity while in development
   private void sanity() {
-    if (ProxySelector.getDefault() == null) {
+    if(ProxySelector.getDefault() == null) {
       ProxySelector.setDefault(new ProxySelector() {
         private final List<Proxy> DIRECT_CONNECTION = Collections.unmodifiableList(Collections.singletonList(Proxy.NO_PROXY));
 
@@ -95,12 +95,13 @@ public class McRPG extends JavaPlugin implements Initializable {
     }
     pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcrpg/plinfo");
     pluginUpdater.setOut(true);
-    if (fileManager.getFile(FileManager.Files.CONFIG).getBoolean("Configuration.AutoUpdate")) {
-      if (pluginUpdater.needsUpdate())
+    if(fileManager.getFile(FileManager.Files.CONFIG).getBoolean("Configuration.AutoUpdate")) {
+      if(pluginUpdater.needsUpdate())
         pluginUpdater.update();
       else
         Logger.info("No updates were found!");
-    } else {
+    }
+    else {
       Logger.info("New version of McRPG is available: " + pluginUpdater.getVersion());
       Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
     }
@@ -111,18 +112,20 @@ public class McRPG extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
-	healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
-	if (healthBarPluginEnabled) {
-	  getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
-	}
-	remoteTransferTracker = new RemoteTransferTracker();
-	placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
-	File folder = new File(getDataFolder(), File.separator + "PlayerData");
-    if(!folder.exists()){folder.mkdir();}
+    healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
+    if(healthBarPluginEnabled) {
+      getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
+    }
+    remoteTransferTracker = new RemoteTransferTracker();
+    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
+    File folder = new File(getDataFolder(), File.separator + "PlayerData");
+    if(!folder.exists()) {
+      folder.mkdir();
+    }
     displayManager = DisplayManager.getInstance();
-	DiamondFlowersData.init();
-	HiddenConfig.getInstance();
-	PlayerManager.startSave(this);
+    DiamondFlowersData.init();
+    HiddenConfig.getInstance();
+    PlayerManager.startSave(this);
   }
 
   @Initialize(priority = 3)
@@ -159,11 +162,12 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new DisarmHandler(), this);
     getServer().getPluginManager().registerEvents(new PlayerNomNomEvent(), this);
     getServer().getPluginManager().registerEvents(new AbilityUnlock(), this);
-	getServer().getPluginManager().registerEvents(new PickupEvent(), this);
+    getServer().getPluginManager().registerEvents(new PickupEvent(), this);
+    getServer().getPluginManager().registerEvents(new DropItemEvent(), this);
   }
 
   public static McRPG getInstance() {
-    if (instance == null)
+    if(instance == null)
       throw new NullPointerException("Plugin was not initialized.");
     return instance;
   }
@@ -177,16 +181,16 @@ public class McRPG extends JavaPlugin implements Initializable {
   }
 
   @Override
-  public FileConfiguration getConfig(){
+  public FileConfiguration getConfig() {
     return fileManager.getFile(FileManager.Files.CONFIG);
   }
 
-  public FileConfiguration getLangFile(){
+  public FileConfiguration getLangFile() {
     return FileManager.Files.fromString(getConfig().getString("Configuration.LangFile")).getFile();
   }
 
   public InputStreamReader getResourceAsReader(String fileName) {
-	InputStream in = getResource(fileName);
-	return in == null ? null : new InputStreamReader(in, Charsets.UTF_8);
+    InputStream in = getResource(fileName);
+    return in == null ? null : new InputStreamReader(in, Charsets.UTF_8);
   }
 }
