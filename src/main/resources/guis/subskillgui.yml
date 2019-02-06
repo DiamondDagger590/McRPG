@@ -1,0 +1,14 @@
+Size: 9
+Title: '&5%Skill%'
+BackButton:
+  Material: BARRIER
+  DisplayName: '&bBack>>'
+  Slot: 8
+  Lore:
+    - '&eClick this to go back'
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore:
+    - ' '

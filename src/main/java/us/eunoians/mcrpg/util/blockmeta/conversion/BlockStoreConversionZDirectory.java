@@ -11,6 +11,9 @@ import us.eunoians.mcrpg.util.blockmeta.chunkmeta.PrimitiveChunkStore;
 
 import java.io.File;
 
+/**
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ */
 
 public class BlockStoreConversionZDirectory implements Runnable {
   public int taskID, cx, cz, x, y, z, y2, xPos, zPos, cxPos, czPos;

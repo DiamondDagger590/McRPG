@@ -15,7 +15,6 @@ import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,8 +30,9 @@ public class SubSkillGUI extends GUI{
     this.storedSkill = skill;
 	buildGUIFunction = (GUIBuilder builder) -> {
 	  FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(skill.getName()));
-	  Inventory inv = Bukkit.createInventory(null, 9,
-		  Methods.color("&5" + skill.getName()));
+	  FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SUBSKILL_GUI);
+	  Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
+		  Methods.color(guiConfig.getString("Title").replace("%Skill", skill.getName())));
 	  ArrayList<GUIItem> items = new ArrayList<>();
 	  List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
 	  enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
@@ -54,19 +54,19 @@ public class SubSkillGUI extends GUI{
 		items.add(item);
 	  }
 
-	  ItemStack back = new ItemStack(Material.BARRIER);
+	  ItemStack back = new ItemStack(Material.valueOf(guiConfig.getString("BackButton.Material")));
 	  ItemMeta backMeta = back.getItemMeta();
-	  backMeta.setDisplayName(Methods.color("&bBack>>"));
-	  backMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to go back")));
+	  backMeta.setDisplayName(Methods.color(guiConfig.getString("BackButton.DisplayName")));
+	  backMeta.setLore(Methods.colorLore(guiConfig.getStringList("BackButton.Lore")));
 	  back.setItemMeta(backMeta);
-	  items.add(new GUIItem(back, inv.getSize() - 1));
+	  items.add(new GUIItem(back, guiConfig.getInt("BackButton.Slot")));
 
-	  ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
+	  ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Slot"));
 	  ItemMeta fillerMeta = filler.getItemMeta();
-	  fillerMeta.setDisplayName(" ");
+	  fillerMeta.setDisplayName(Methods.color(guiConfig.getString("FillerItem.DisplayName")));
+	  fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
 	  filler.setItemMeta(fillerMeta);
-	  inv = Methods.fillInventory(inv, filler, items);
-	  return inv;
+	  return Methods.fillInventory(inv, filler, items);
 	};
 	this.getGui().setBuildGUIFunction(buildGUIFunction);
 	this.getGui().rebuildGUI();

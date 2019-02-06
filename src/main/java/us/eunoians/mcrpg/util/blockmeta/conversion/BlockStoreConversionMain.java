@@ -6,6 +6,10 @@ import us.eunoians.mcrpg.api.util.HiddenConfig;
 
 import java.io.File;
 
+/**
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ */
+
 public class BlockStoreConversionMain implements Runnable {
   private int taskID, i;
   private org.bukkit.World world;
