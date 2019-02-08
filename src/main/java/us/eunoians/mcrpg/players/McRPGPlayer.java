@@ -256,6 +256,10 @@ public class McRPGPlayer {
 	this.keepHandEmpty = playerData.getBoolean("KeepHandEmpty");
 	this.displayType = DisplayType.fromString(playerData.getString("DisplayType"));
 	this.autoDeny = playerData.getBoolean("AutoDeny");
+	if(!playerData.contains("IgnoreTips")){
+		playerData.set("IgnoreTips", false);
+	}
+	this.ignoreTips = playerData.getBoolean("IgnoreTips");
 
 	this.abilityPoints = playerData.getInt("AbilityPoints");
 	ArrayList<UnlockedAbilities> list = new ArrayList<>();
