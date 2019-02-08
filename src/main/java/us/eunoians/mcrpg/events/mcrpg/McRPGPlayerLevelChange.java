@@ -18,9 +18,11 @@ import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.GenericAbility;
 import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.TipType;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.List;
+import java.util.Random;
 
 @SuppressWarnings("ALL")
 public class McRPGPlayerLevelChange implements Listener {
@@ -50,6 +52,14 @@ public class McRPGPlayerLevelChange implements Listener {
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
         mp.saveData();
       }
+    }
+    TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
+    if(!mp.getUsedTips().contains(tipType)) {
+      List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
+      Random rand = new Random();
+      int val = rand.nextInt(possibleMessages.size());
+      mp.getPlayer().sendMessage(Methods.color(possibleMessages.get(val)));
+      mp.getUsedTips().add(tipType);
     }
     //Do things for swords ability
     if(skillLeveled.getType().equals(Skills.SWORDS)) {

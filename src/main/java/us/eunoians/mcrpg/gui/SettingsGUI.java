@@ -86,6 +86,19 @@ public class SettingsGUI extends GUI {
       autoDenyItem.setItemMeta(autoDenyItemMeta);
       items.add(new GUIItem(autoDenyItem, settingsFile.getInt("AutoDenyNewAbilities.Slot")));
 
+      ItemStack ignoreTip = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+      ItemMeta ignoreTipMeta = ignoreTip.getItemMeta();
+      if(player.isIgnoreTips()) {
+        ignoreTipMeta.setDisplayName(Methods.color(settingsFile.getString("IgnoreTips.Enabled")));
+      }
+      else {
+        ignoreTip.setType(Material.RED_STAINED_GLASS_PANE);
+        ignoreTipMeta.setDisplayName(Methods.color(settingsFile.getString("IgnoreTips.Disabled")));
+      }
+      ignoreTipMeta.setLore(Methods.colorLore(settingsFile.getStringList("IgnoreTips.Lore")));
+      ignoreTip.setItemMeta(ignoreTipMeta);
+      items.add(new GUIItem(ignoreTip, settingsFile.getInt("IgnoreTips.Slot")));
+
       ItemStack later = new ItemStack(Material.RED_STAINED_GLASS_PANE);
       ItemMeta laterMeta = later.getItemMeta();
       laterMeta.setDisplayName(Methods.color(settingsFile.getString("AddLater.DisplayName")));

@@ -799,7 +799,10 @@ public class McAdmin implements CommandExecutor {
 			  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
 			  if(offlinePlayer.isOnline()){
 				McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-				Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
+				Arrays.stream(values()).forEach(s -> {
+					//TODO more archery workaround xD
+									if(s != Skills.ARCHERY) mp.getSkill(s).resetSkill();
+								});
 				mp.getAbilityLoadout().clear();
 				mp.setAbilityPoints(0);
 

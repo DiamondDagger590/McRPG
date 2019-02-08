@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.Parser;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,11 @@ public class ReplaceSkillsGUI extends GUI {
 			Parser equation = ability.getActivationEquation();
 			equation.setVariable(skill.getName().toLowerCase() + "_level", player.getSkill(skill).getCurrentLevel());
 			equation.setVariable("power_level", player.getPowerLevel());
-			s = s.replaceAll("%" + ability.getName().replaceAll(" ", "_") + "_Chance%", Double.toString(equation.getValue()));
+			NumberFormat nf = NumberFormat.getInstance();
+			nf.setMinimumIntegerDigits(1);
+			nf.setMaximumFractionDigits(2);
+			nf.setMinimumIntegerDigits(1);
+			s = s.replaceAll("%" + ability.getName().replaceAll(" ", "_") + "_Chance%", nf.format(equation.getValue()));
 		  }
 		  lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
 			  .replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));

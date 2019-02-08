@@ -32,6 +32,7 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
+import us.eunoians.mcrpg.util.mcmmo.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -258,7 +259,7 @@ public class InteractHandler implements Listener {
 		p.teleport(Methods.lookAt(p.getLocation(), lookAt));
 	  }
 	  else if(abilityType == UnlockedAbilities.MASS_HARVEST && (e.getAction() == Action.LEFT_CLICK_BLOCK)){
-		if(BreakEvent.CropType.isCrop(type)){
+		if(ItemUtils.isCrop(type)){
 		  FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
 		  MassHarvest massHarvest = (MassHarvest) mp.getBaseAbility(UnlockedAbilities.MASS_HARVEST);
 		  int radius = herbalism.getInt("MassHarvestConfig.Tier" + Methods.convertToNumeral(massHarvest.getCurrentTier()) + ".Range");
@@ -277,7 +278,7 @@ public class InteractHandler implements Listener {
 				for(int y = -1 * 2; y < 2; y++){
 				  Block test = p.getLocation().add(x, y, z).getBlock();
 				  Material cropType = test.getType();
-				  if(BreakEvent.CropType.isCrop(cropType) || BreakEvent.CropType.isCropSeed(cropType)){
+				  if(ItemUtils.isCrop(cropType)){
 					BlockBreakEvent breakEvent = new BlockBreakEvent(test, p);
 					Bukkit.getPluginManager().callEvent(breakEvent);
 					if(!breakEvent.isCancelled()){
@@ -320,7 +321,7 @@ public class InteractHandler implements Listener {
 				for(int y = -1; y <= 1; y++){
 				  Block test = p.getLocation().add(x, y, z).getBlock();
 				  Material cropType = test.getType();
-				  if(BreakEvent.CropType.isCrop(cropType)){
+				  if(ItemUtils.isCrop(cropType)){
 					Ageable ageable = (Ageable) test.getBlockData();
 					int originalAge = ageable.getMaximumAge();
 					ageable.setAge(ageable.getMaximumAge());

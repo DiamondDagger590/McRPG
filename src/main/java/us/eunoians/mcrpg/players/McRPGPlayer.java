@@ -158,12 +158,24 @@ public class McRPGPlayer {
   @Getter
   @Setter
   private boolean autoDeny = false;
+	/**
+	 * If tips shouldnt be sent to player
+	 */
+	@Getter
+  @Setter
+  private boolean ignoreTips = false;
 
   /**
    * Current active abilities
    */
   @Getter
   private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
+
+	/**
+	 * Tips that a player has already had displayed to them
+	 */
+	@Getter
+  private HashSet<TipType> usedTips = new HashSet<>();
 
   /**
    * The file configuration of the player that we get to edit.

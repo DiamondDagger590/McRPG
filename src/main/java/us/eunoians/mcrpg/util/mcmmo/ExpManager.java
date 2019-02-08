@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 /**
  * This code is not mine. It is copyright from the original mcMMO allowed for use by their license. Modified 12/7/18
+ * This code has been modified from its source
  * It was released under the GPLv3 license
  */
 

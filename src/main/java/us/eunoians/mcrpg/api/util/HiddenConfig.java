@@ -6,8 +6,9 @@ import us.eunoians.mcrpg.McRPG;
 import java.io.InputStreamReader;
 
 /**
- * This code is not mine. It is from the original McMMO allowed for use by their license.
- * All credit goes to the original authors as I have only changed a little to suit my needs
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ * This code has been modified from it source material
+ * It was released under the GPLv3 license
  */
 
 public class HiddenConfig {

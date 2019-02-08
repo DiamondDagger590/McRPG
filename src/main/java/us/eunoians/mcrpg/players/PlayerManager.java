@@ -8,6 +8,7 @@ import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.types.TipType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class PlayerManager {
 	BukkitTask task = new BukkitRunnable() {
 	  public void run(){
 		McRPGPlayer mp = new McRPGPlayer(uuid);
+		mp.getUsedTips().add(TipType.LOGIN_TIP);
 		if(mp.isOnline()){
 		  players.put(uuid, mp);
 		}

@@ -173,6 +173,22 @@ public class InvClickEvent implements Listener {
           currentGUI.getGui().getInv().setItem(e.getSlot(), itemPickup);
           p.updateInventory();
         }
+        else if(e.getSlot() == guiConfig.getInt("IgnoreTips.Slot")) {
+          ItemStack tipItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+          ItemMeta tipItemMeta = tipItem.getItemMeta();
+          if(!mp.isIgnoreTips()) {
+            tipItemMeta.setDisplayName(Methods.color(guiConfig.getString("IgnoreTips.Enabled")));
+          }
+          else {
+            tipItem.setType(Material.RED_STAINED_GLASS_PANE);
+            tipItemMeta.setDisplayName(Methods.color(guiConfig.getString("IgnoreTips.Disabled")));
+          }
+          mp.setIgnoreTips(!mp.isIgnoreTips());
+          tipItemMeta.setLore(Methods.colorLore(guiConfig.getStringList("IgnoreTips.Lore")));
+          tipItem.setItemMeta(tipItemMeta);
+          currentGUI.getGui().getInv().setItem(e.getSlot(), tipItem);
+          p.updateInventory();
+        }
         else if(e.getSlot() == guiConfig.getInt("MobHealthDisplay.Slot")) {
           MobHealthbarUtils.MobHealthbarType healthbarType = mp.getHealthbarType();
           ItemStack healthItem = new ItemStack(Material.BUBBLE_CORAL_BLOCK);

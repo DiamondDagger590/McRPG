@@ -112,8 +112,8 @@ Messages:
         SkillReset: '&aYou reset %Player%s %Skill% skill'
         AbilityWasReset: '&cYour %Ability% ability was reset'
         AbilityReset: '&aYou reset %Player%s %Ability% ability'
-        PlayerWasReset: '&cYour McMMOx stats were reset'
-        PlayerReset: '&aYou reset %Player%s McMMOx stats'
+        PlayerWasReset: '&cYour McRPG stats were reset'
+        PlayerReset: '&aYou reset %Player%s McRPG stats'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'
@@ -177,3 +177,31 @@ Messages:
     CooldownExpire: '&aYour cooldown for %Ability% is finished'
     CooldownActive: '&cYour %Skill% ability is on cooldown for &e%Time% &cseconds'
     ReplaceCooldownExpire: '&aYour cooldown for ability replacing is over'
+  Tips:
+    LoginTips:
+      - '&7[&5McRPG Tip&7]: &aCheck out /mcrpg menu to get familiar with the plugin!'
+      - '&7[&5McRPG Tip&7]: &aAs you level up, you can earn unlocked abilities!'
+      - '&7[&5McRPG Tip&7]: &aMake sure to check your player settings in /mcrpg!'
+      - '&7[&5McRPG Tip&7]: &aAbilities can be upgraded once you reach a certain level by using an ability point!'
+      - '&7[&5McRPG Tip&7]: &aEvery time you reach a certain power level, you gain an ability point!'
+    LevelUpSwords:
+      - '&7[&5McRPG Tip&7]: &aBleed causes repeated damage for a short bit!'
+      - '&7[&5McRPG Tip&7]: &aRage spike allows you to crouch and dash forward, blasting enemies!'
+      - '&7[&5McRPG Tip&7]: &aAll bleed modifying abilities will work with Archerys Puncture!'
+    LevelUpMining:
+      - '&7[&5McRPG Tip&7]: &aDouble Drop and Its A Triple do not stack!'
+      - '&7[&5McRPG Tip&7]: &aOre Scanner checks and points you to the nearest valuable ore!'
+      - '&7[&5McRPG Tip&7]: &aUse /mclink to link a chest to your Remote Transfer!'
+      - '&7[&5McRPG Tip&7]: &aUse /mcunlink to delink your chest from Remote Transfer!'
+      - '&7[&5McRPG Tip&7]: &aBlast Mining requires you to place TNT after readying your pick!'
+    LevelUpUnarmed:
+      - '&7[&5McRPG Tip&7]: &aDense Impact makes you do 0 damage but do direct armor damage for a while!'
+      - '&7[&5McRPG Tip&7]: &aUse Smiting Fist to clean debuffs caused from abilities like Curse of Hades!'
+      - '&7[&5McRPG Tip&7]: &aDisarm will move the item into your upper inventory or if its full, it will drop the item'
+      - '&7[&5McRPG Tip&7]: &aThe damage modifier from Iron Arm does not have a 100% activation rate at lower levels'
+    LevelUpHerbalism:
+      - '&7[&5McRPG Tip&7]: &aPans Blessing requires you to bonemeal a plant after readying your hoe!'
+      - '&7[&5McRPG Tip&7]: &aMass Harvest will replant all crops it breaks!'
+      - '&7[&5McRPG Tip&7]: &aFarming sugar cane is the most effective way to level!'
+      - '&7[&5McRPG Tip&7]: &aNatures Wrath requires flowers to be in the off hand!'
+      - '&7[&5McRPG Tip&7]: &aNatures Wrath wont work if you are too hungry!'

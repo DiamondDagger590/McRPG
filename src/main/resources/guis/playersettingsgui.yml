@@ -28,10 +28,17 @@ AutoDenyNewAbilities:
   Lore:
     - '&eClick this to change'
     - '&eif new abilities should auto deny'
+IgnoreTips:
+  Enabled: '&aIgnoring tips Enabled'
+  Disabled: '&cIgnoring Tips Disabled'
+  Slot: 10
+  Lore:
+    - '&eClick this to change'
+    - '&eif tips should be ignored'
 AddLater:
   DisplayName: '&cThis feature will be added later'
   Lore: {}
-  Slot: 10
+  Slot: 12
 BackButton:
   Material: BARRIER
   DisplayName: '&bBack>>'

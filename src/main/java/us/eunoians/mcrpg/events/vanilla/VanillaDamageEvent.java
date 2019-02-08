@@ -443,7 +443,11 @@ public class VanillaDamageEvent implements Listener {
 
 	MobHealthbarUtils.handleMobHealthbars(player, target, damage);
   }
-
+/**
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ * This code has been modified from it source material
+ * It was released under the GPLv3 license
+ */
   /**
    * Checks to see if an entity is currently invincible.
    *
