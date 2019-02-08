@@ -45,8 +45,8 @@ public class ReplaceSkillsGUI extends GUI {
 			equation.setVariable("power_level", player.getPowerLevel());
 			NumberFormat nf = NumberFormat.getInstance();
 			nf.setMinimumIntegerDigits(1);
-			nf.setMaximumFractionDigits(2);
-			nf.setMinimumIntegerDigits(1);
+			nf.setMaximumFractionDigits(3);
+			nf.setMinimumFractionDigits(2);
 			s = s.replaceAll("%" + ability.getName().replaceAll(" ", "_") + "_Chance%", nf.format(equation.getValue()));
 		  }
 		  lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
