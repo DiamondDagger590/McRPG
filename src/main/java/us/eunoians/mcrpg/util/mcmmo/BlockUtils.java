@@ -8,7 +8,7 @@ import org.bukkit.block.data.BlockData;
 import java.util.HashSet;
 
 /**
- * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license. Modified 12/7/18
  */
 public final class BlockUtils {
 

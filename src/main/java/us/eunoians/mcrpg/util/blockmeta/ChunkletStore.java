@@ -3,9 +3,9 @@ package us.eunoians.mcrpg.util.blockmeta;
 import java.io.Serializable;
 
 /**
- * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license. Modified 12/7/18
+ * It was released under the GPLv3 license
  */
-
 /**
  * A ChunkletStore should be responsible for a 16x16x64 area of data
  */

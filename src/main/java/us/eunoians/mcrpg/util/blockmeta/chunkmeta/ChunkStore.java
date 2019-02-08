@@ -5,7 +5,8 @@ import us.eunoians.mcrpg.util.blockmeta.ChunkletStore;
 import java.io.Serializable;
 
 /**
- * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license. Modified 12/7/18
+ * It was released under the GPLv3 license
  */
 
 /**

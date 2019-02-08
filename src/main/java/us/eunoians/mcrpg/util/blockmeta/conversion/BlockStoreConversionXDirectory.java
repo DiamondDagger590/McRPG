@@ -7,7 +7,8 @@ import us.eunoians.mcrpg.api.util.HiddenConfig;
 import java.io.File;
 
 /**
- * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+ * This code is not mine. It is copyright from the original mcMMO allowed for use by their license. Modified 12/7/18
+ * It was released under the GPLv3 license
  */
 
 public class BlockStoreConversionXDirectory implements Runnable {
