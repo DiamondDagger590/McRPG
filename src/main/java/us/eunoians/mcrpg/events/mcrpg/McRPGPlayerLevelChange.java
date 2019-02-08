@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.events.mcrpg;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,7 +13,6 @@ import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.displays.ExpDisplayType;
 import us.eunoians.mcrpg.api.events.mcrpg.AbilityUnlockEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerLevelChangeEvent;
-import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
@@ -27,7 +25,7 @@ import java.util.List;
 @SuppressWarnings("ALL")
 public class McRPGPlayerLevelChange implements Listener {
 
-  private FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_GUI);
+  //private FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_GUI);
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void levelChange(McRPGPlayerLevelChangeEvent e) {

@@ -14,106 +14,108 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class AcceptAbilityGUI extends GUI{
+public class AcceptAbilityGUI extends GUI {
 
-  @Getter
-  private BaseAbility ability;
   @Getter
   AcceptType acceptType;
-
+  @Getter
+  private BaseAbility ability;
   private GUIInventoryFunction buildGUIFunction;
 
 
-  public AcceptAbilityGUI(McRPGPlayer p, BaseAbility ability, AcceptType acceptType){
-	super(new GUIBuilder(p));
-	this.ability = ability;
-	this.acceptType = acceptType;
-	if(!GUITracker.isPlayerTracked(p)){
-	  GUITracker.trackPlayer(p, this);
-	}
-	if(acceptType == AcceptType.ACCEPT_ABILITY){
-	  buildGUIFunction = (GUIBuilder builder) -> {
-		FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
-		Inventory inv = Bukkit.createInventory(null, 27,
-			Methods.color("&eAccept/Decline &5" + ability.getGenericAbility().getName()));
-		ArrayList<GUIItem> items = new ArrayList<>();
-		String path = ability.getGenericAbility().getName() + "Config.Item.";
+  public AcceptAbilityGUI(McRPGPlayer p, BaseAbility ability, AcceptType acceptType) {
+    super(new GUIBuilder(p));
+    this.ability = ability;
+    this.acceptType = acceptType;
+    if(!GUITracker.isPlayerTracked(p)) {
+      GUITracker.trackPlayer(p, this);
+    }
+    if(acceptType == AcceptType.ACCEPT_ABILITY) {
+      buildGUIFunction = (GUIBuilder builder) -> {
+        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+		FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ACCEPT_ABILITY_GUI);
+        Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
+                Methods.color(guiConfig.getString("Title.AcceptAbility").replace("%Ability", ability.getGenericAbility().getName())));
+        ArrayList<GUIItem> items = new ArrayList<>();
+        String path = ability.getGenericAbility().getName() + "Config.Item.";
 
-		ItemStack confirmItem = new ItemStack(Material.LIME_CONCRETE, 1);
-		ItemMeta confirmMeta = confirmItem.getItemMeta();
-		confirmMeta.setDisplayName(Methods.color("&aAccept this ability"));
-		confirmMeta.setLore(Methods.colorLore(config.getStringList(path + "MenuLore")));
-		confirmItem.setItemMeta(confirmMeta);
-		items.add(new GUIItem(confirmItem, 10));
+        ItemStack confirmItem = new ItemStack(Material.valueOf(guiConfig.getString("AcceptAbility.AcceptItem.Material")), guiConfig.getInt("AcceptAbility.AcceptItem.Amount"));
+        ItemMeta confirmMeta = confirmItem.getItemMeta();
+        confirmMeta.setDisplayName(Methods.color(guiConfig.getString("AcceptAbility.AcceptItem.DisplayName")));
+        confirmMeta.setLore(Methods.colorLore(config.getStringList(path + "MenuLore")));
+        confirmItem.setItemMeta(confirmMeta);
+        items.add(new GUIItem(confirmItem, guiConfig.getInt("AcceptAbility.AcceptItem.Slot")));
 
-		ItemStack denyItem = new ItemStack(Material.RED_CONCRETE, 1);
-		ItemMeta denyMeta = denyItem.getItemMeta();
-		denyMeta.setDisplayName(Methods.color("&cDeny this ability"));
-		denyMeta.setLore(Methods.colorLore(Arrays.asList("&cYou can replace an old ability with this one later")));
-		denyItem.setItemMeta(denyMeta);
-		items.add(new GUIItem(denyItem, 16));
+        ItemStack denyItem = new ItemStack(Material.valueOf(guiConfig.getString("AcceptAbility.DenyItem.Material")), guiConfig.getInt("AcceptAbility.DenyItem.Amount"));
+        ItemMeta denyMeta = denyItem.getItemMeta();
+        denyMeta.setDisplayName(Methods.color(guiConfig.getString("AcceptAbility.DenyItem.DisplayName")));
+        denyMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.DenyItem.Lore")));
+        denyItem.setItemMeta(denyMeta);
+        items.add(new GUIItem(denyItem, guiConfig.getInt("AcceptAbility.DenyItem.Slot")));
 
-		ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
-			config.getInt(path + "Amount"));
-		ItemMeta abilityMeta = abilityItem.getItemMeta();
-		abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName")));
-		abilityMeta.setLore(Methods.colorLore(Arrays.asList("&eConfirm if you want this ability in", "&eyour loadout. If you confirm, ", "&ethe ability will go into any empty slot.",
-			"&eOtherwise you will be asked", "&eto replace an ability you currently have")));
-		abilityItem.setItemMeta(abilityMeta);
-		items.add(new GUIItem(abilityItem, 13));
+        ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
+                config.getInt(path + "Amount"));
+        ItemMeta abilityMeta = abilityItem.getItemMeta();
+        abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName")));
+        abilityMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.AbilityItem.Lore")));
+        abilityItem.setItemMeta(abilityMeta);
+        items.add(new GUIItem(abilityItem, guiConfig.getInt("AcceptAbility.AbilityItem.Slot")));
 
-		ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
-		ItemMeta fillerMeta = filler.getItemMeta();
-		fillerMeta.setDisplayName(" ");
-		filler.setItemMeta(fillerMeta);
-		inv = Methods.fillInventory(inv, filler, items);
-		return inv;
-	  };
-	}
-	else{
-	  buildGUIFunction = (GUIBuilder builder) -> {
-		FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
-		Inventory inv = Bukkit.createInventory(null, 27,
-			Methods.color("&eUpgrade &5" + ability.getGenericAbility().getName() + " &eto Tier " + Methods.convertToNumeral(ability.getCurrentTier() + 1)));
-		ArrayList<GUIItem> items = new ArrayList<>();
+        ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("AcceptAbility.FillerItem.Material")), guiConfig.getInt("AcceptAbility.FillerItem.Amount"));
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(Methods.color(guiConfig.getString("AcceptAbility.FillerItem.DisplayName")));
+        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.FillerItem.Material")));
+        filler.setItemMeta(fillerMeta);
+        return Methods.fillInventory(inv, filler, items);
+      };
+    }
+    else {
+      buildGUIFunction = (GUIBuilder builder) -> {
+        FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ACCEPT_ABILITY_GUI);
+        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+        Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
+                Methods.color(guiConfig.getString("Title.UpgradeAbility").replace("%Ability%", ability.getGenericAbility().getName())
+                        .replace("%Tier%", Methods.convertToNumeral(ability.getCurrentTier() + 1))));
+        ArrayList<GUIItem> items = new ArrayList<>();
 
-		ItemStack confirmItem = new ItemStack(Material.LIME_CONCRETE, 1);
-		ItemMeta confirmMeta = confirmItem.getItemMeta();
-		confirmMeta.setDisplayName(Methods.color("&aAccept this upgrade"));
-		confirmItem.setItemMeta(confirmMeta);
-		items.add(new GUIItem(confirmItem, 10));
+        ItemStack confirmItem = new ItemStack(Material.valueOf(guiConfig.getString("UpgradeAbility.AcceptItem.Material")), guiConfig.getInt("UpgradeAbility.AcceptItem.Amount"));
+        ItemMeta confirmMeta = confirmItem.getItemMeta();
+        confirmMeta.setDisplayName(Methods.color(guiConfig.getString("UpgradeAbility.AcceptItem.DisplayName")));
+        confirmMeta.setLore(Methods.colorLore(guiConfig.getStringList("UpgradeAbility.AcceptItem.Lore")));
+        confirmItem.setItemMeta(confirmMeta);
+        items.add(new GUIItem(confirmItem, guiConfig.getInt("UpgradeAbility.AcceptItem.Slot")));
 
-		ItemStack denyItem = new ItemStack(Material.RED_CONCRETE, 1);
-		ItemMeta denyMeta = denyItem.getItemMeta();
-		denyMeta.setDisplayName(Methods.color("&cDeny this upgrade"));
-		denyItem.setItemMeta(denyMeta);
-		items.add(new GUIItem(denyItem, 16));
+        ItemStack denyItem = new ItemStack(Material.valueOf(guiConfig.getString("UpgradeAbility.DenyItem.Material")), guiConfig.getInt("UpgradeAbility.DenyItem.Amount"));
+        ItemMeta denyMeta = denyItem.getItemMeta();
+        denyMeta.setDisplayName(Methods.color(guiConfig.getString("UpgradeAbility.DenyItem.DisplayName")));
+        denyMeta.setLore(Methods.colorLore(guiConfig.getStringList("UpgradeAbility.DenyItem.Lore")));
+        denyItem.setItemMeta(denyMeta);
+        items.add(new GUIItem(denyItem, guiConfig.getInt("UpgradeAbility.DenyItem.Slot")));
 
-		String path = ability.getGenericAbility().getName() + "Config.Item.";
-		ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
-			config.getInt(path + "Amount"));
-		ItemMeta abilityMeta = abilityItem.getItemMeta();
-		abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName")));
-		abilityMeta.setLore(Methods.colorLore(Arrays.asList("&eUpgrade this ability by one tier.")));
-		abilityItem.setItemMeta(abilityMeta);
-		items.add(new GUIItem(abilityItem, 13));
+        String path = ability.getGenericAbility().getName() + "Config.Item.";
+        ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
+                config.getInt(path + "Amount"));
+        ItemMeta abilityMeta = abilityItem.getItemMeta();
+        abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName")));
+        abilityMeta.setLore(Methods.colorLore(guiConfig.getStringList("UpgradeAbility.AbilityItem.Lore")));
+        abilityItem.setItemMeta(abilityMeta);
+        items.add(new GUIItem(abilityItem, guiConfig.getInt("UpgradeAbility.AbilityItem.Slot")));
 
-		ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
-		ItemMeta fillerMeta = filler.getItemMeta();
-		fillerMeta.setDisplayName(" ");
-		filler.setItemMeta(fillerMeta);
-		inv = Methods.fillInventory(inv, filler, items);
-		return inv;
-	  };
-	}
-	this.getGui().setBuildGUIFunction(buildGUIFunction);
-	this.getGui().rebuildGUI();
+        ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(Methods.color(guiConfig.getString("FillerItem.DisplayName")));
+        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Material")));
+        filler.setItemMeta(fillerMeta);
+        return Methods.fillInventory(inv, filler, items);
+      };
+    }
+    this.getGui().setBuildGUIFunction(buildGUIFunction);
+    this.getGui().rebuildGUI();
   }
 
-  public enum AcceptType{
-	ACCEPT_UPGRADE,
-	ACCEPT_ABILITY
+  public enum AcceptType {
+    ACCEPT_UPGRADE,
+    ACCEPT_ABILITY
   }
 }

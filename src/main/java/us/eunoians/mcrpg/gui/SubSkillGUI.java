@@ -32,7 +32,7 @@ public class SubSkillGUI extends GUI{
 	  FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(skill.getName()));
 	  FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SUBSKILL_GUI);
 	  Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
-		  Methods.color(guiConfig.getString("Title").replace("%Skill", skill.getName())));
+		  Methods.color(guiConfig.getString("Title").replace("%Skill%", skill.getName())));
 	  ArrayList<GUIItem> items = new ArrayList<>();
 	  List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
 	  enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
@@ -61,11 +61,12 @@ public class SubSkillGUI extends GUI{
 	  back.setItemMeta(backMeta);
 	  items.add(new GUIItem(back, guiConfig.getInt("BackButton.Slot")));
 
-	  ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Slot"));
+	  ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
 	  ItemMeta fillerMeta = filler.getItemMeta();
 	  fillerMeta.setDisplayName(Methods.color(guiConfig.getString("FillerItem.DisplayName")));
 	  fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
 	  filler.setItemMeta(fillerMeta);
+
 	  return Methods.fillInventory(inv, filler, items);
 	};
 	this.getGui().setBuildGUIFunction(buildGUIFunction);

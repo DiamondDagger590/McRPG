@@ -10,16 +10,16 @@ MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
   OBSIDIAN: 50
-  STONE: 15
-  ANDESITE: 15
-  DIORITE: 15
-  GRANITE: 15
-  COAL_ORE: 23
+  STONE: 5
+  ANDESITE: 5
+  DIORITE: 5
+  GRANITE: 5
+  COAL_ORE: 10
   DIAMOND_ORE: 75
   EMERALD_ORE: 100
   GOLD_ORE: 35
-  IRON_ORE: 25
-  REDSTONE_ORE: 20
+  IRON_ORE: 20
+  REDSTONE_ORE: 25
   LAPIS_ORE: 30
 DoubleDropBlocks:
   - 'OBSIDIAN'

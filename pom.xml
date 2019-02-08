@@ -13,7 +13,7 @@
 
     <groupId>us.eunoians</groupId>
     <artifactId>McRPG</artifactId>
-    <version>1.0.3-ALPHA</version>
+    <version>1.0.4-ALPHA</version>
 
     <build>
         <plugins>

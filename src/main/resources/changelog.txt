@@ -1,3 +1,6 @@
+1.0.4-ALPHA
+= Fixed a dup glitch using keep hand empty
++ Added a lot of gui customization. Mightve forgot one but most are here.
 1.0.3-ALPHA
 = Fixed default ability toggling bug... oops
 1.0.2-ALPHA

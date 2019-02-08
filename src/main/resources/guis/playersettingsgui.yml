@@ -27,7 +27,7 @@ AutoDenyNewAbilities:
   Slot: 7
   Lore:
     - '&eClick this to change'
-    - 'eif new abilities should auto deny'
+    - '&eif new abilities should auto deny'
 AddLater:
   DisplayName: '&cThis feature will be added later'
   Lore: {}
@@ -37,10 +37,9 @@ BackButton:
   DisplayName: '&bBack>>'
   Slot: 26
   Lore:
-    - 'eClick this to go back'
+    - '&eClick this to go back'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1
   DisplayName: ' '
-  Lore:
-    - ' '
+  Lore: {}

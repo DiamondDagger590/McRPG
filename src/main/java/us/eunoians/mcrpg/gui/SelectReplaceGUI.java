@@ -17,111 +17,112 @@ import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SelectReplaceGUI extends GUI{
+public class SelectReplaceGUI extends GUI {
 
   @Getter
   private ArrayList<UnlockedAbilities> abilities;
 
   private GUIInventoryFunction buildGUIFunction;
 
-  public SelectReplaceGUI(McRPGPlayer player, Skills skill){
-	super(new GUIBuilder(player));
-	this.abilities = new ArrayList<>();
-	buildGUIFunction = (GUIBuilder builder) -> {
-	  FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill));
-	  Inventory inv = Bukkit.createInventory(null, 9,
-		  Methods.color("&5" + skill.getName()));
-	  ArrayList<GUIItem> items = new ArrayList<>();
-	  List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
-	  enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
-	  int counter = 0;
-	  for(UnlockedAbilities ab : enabledAbilities.stream().map(UnlockedAbilities::fromString).collect(Collectors.toList())){
-		if(ab == null){
-		  continue;
-		}
-		BaseAbility baseAbility = player.getBaseAbility(ab);
-		String tier = "";
-		if(baseAbility.isUnlocked()){
-		  tier = Methods.convertToNumeral(baseAbility.getCurrentTier());
-		}
-		String path = ab.getName().replaceAll(" ", "") + "Config.Item.";
+  public SelectReplaceGUI(McRPGPlayer player, Skills skill) {
+    super(new GUIBuilder(player));
+    this.abilities = new ArrayList<>();
+    buildGUIFunction = (GUIBuilder builder) -> {
+      FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill));
+      FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SELECT_REPLACE_SKILLS_GUI);
+      Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
+              Methods.color(guiConfig.getString("Title").replace("%Skill%", skill.getName())));
+      ArrayList<GUIItem> items = new ArrayList<>();
+      List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
+      enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
+      int counter = 0;
+      for(UnlockedAbilities ab : enabledAbilities.stream().map(UnlockedAbilities::fromString).collect(Collectors.toList())) {
+        if(ab == null) {
+          continue;
+        }
+        BaseAbility baseAbility = player.getBaseAbility(ab);
+        String tier = "";
+        if(baseAbility.isUnlocked()) {
+          tier = Methods.convertToNumeral(baseAbility.getCurrentTier());
+        }
+        String path = ab.getName().replaceAll(" ", "") + "Config.Item.";
 
-		ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
-			config.getInt(path + "Amount"));
+        ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
+                config.getInt(path + "Amount"));
 
-		ItemMeta abilityMeta = abilityItem.getItemMeta();
+        ItemMeta abilityMeta = abilityItem.getItemMeta();
 
-		abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName") + " " + tier));
+        abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName") + " " + tier));
 
-		abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
-		ArrayList<String> lore = (ArrayList) abilityMeta.getLore();
-		List<String> newLore = new ArrayList<>();
-		for(String s : abilityMeta.getLore()){
-		  if(baseAbility.getCurrentTier() != 0){
-			for(String value : config.getConfigurationSection(ab.getName() + "Config.Tier" + Methods.convertToNumeral(baseAbility.getCurrentTier())).getKeys(false)){
-			  s = s.replace("%" + value + "%", config.get(ab.getName() + "Config.Tier" + Methods.convertToNumeral(baseAbility.getCurrentTier()) + "." + value).toString());
-			}
-			newLore.add(s);
-		  }
-		}
-		if(baseAbility instanceof RemoteTransfer){
-		  List<String> newNewLore = new ArrayList<>();
-		  RemoteTransfer remoteTransfer = (RemoteTransfer) baseAbility;
-		  if(remoteTransfer.getLinkedChestLocation() == null){
-			for(String s : newLore){
-			  s = s.replace("%Location%", "None");
-			  newNewLore.add(s);
-			}
-		  }
-		  else{
-			for(String s : newLore){
-			  s = s.replace("%Location%", "X:" + remoteTransfer.getLinkedChestLocation().getBlockX() + " Y:" + remoteTransfer.getLinkedChestLocation().getBlockY()
-				  + " Z:" + remoteTransfer.getLinkedChestLocation().getBlockZ());
-			  newNewLore.add(s);
-			}
-		  }
-		  newLore = newNewLore;
-		}
-		if(player.getBaseAbility(ab).isUnlocked()){
-		  newLore.add(Methods.color("&aUnlocked!"));
-		  if(player.getAbilityLoadout().contains(ab)){
-		    newLore.add(Methods.color("&aCurrently in loadout"));
-		  }
-		  else{
-			newLore.add(Methods.color("&cNot in loadout"));
-		  }
-		}
-		else{
-		  newLore.add(Methods.color("&bNot Unlocked!"));
-		  abilityItem.setType(Material.RED_STAINED_GLASS_PANE);
-		}
-		abilities.add(ab);
-		abilityMeta.setLore(newLore);
-		abilityItem.setItemMeta(abilityMeta);
-		GUIItem item = new GUIItem(abilityItem, counter);
-		counter++;
-		items.add(item);
-	  }
+        abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
+        List<String> lore = abilityMeta.getLore();
+        List<String> newLore = new ArrayList<>();
+        for(String s : abilityMeta.getLore()) {
+          if(baseAbility.getCurrentTier() != 0) {
+            for(String value : config.getConfigurationSection(ab.getName() + "Config.Tier" + Methods.convertToNumeral(baseAbility.getCurrentTier())).getKeys(false)) {
+              s = s.replace("%" + value + "%", config.get(ab.getName() + "Config.Tier" + Methods.convertToNumeral(baseAbility.getCurrentTier()) + "." + value).toString());
+            }
+            newLore.add(s);
+          }
+        }
+        if(baseAbility instanceof RemoteTransfer) {
+          List<String> newNewLore = new ArrayList<>();
+          RemoteTransfer remoteTransfer = (RemoteTransfer) baseAbility;
+          if(remoteTransfer.getLinkedChestLocation() == null) {
+            for(String s : newLore) {
+              s = s.replace("%Location%", guiConfig.getString("RemoteTransfer.NoLocation"));
+              newNewLore.add(s);
+            }
+          }
+          else {
+            for(String s : newLore) {
+              s = s.replace("%Location%", "X:" + remoteTransfer.getLinkedChestLocation().getBlockX() + " Y:" + remoteTransfer.getLinkedChestLocation().getBlockY()
+                      + " Z:" + remoteTransfer.getLinkedChestLocation().getBlockZ());
+              newNewLore.add(s);
+            }
+          }
+          newLore = newNewLore;
+        }
+        if(player.getBaseAbility(ab).isUnlocked()) {
+          newLore.add(Methods.color(guiConfig.getString("Ability.IsUnlocked")));
+          if(player.getAbilityLoadout().contains(ab)) {
+            newLore.add(Methods.color(guiConfig.getString("Ability.IsInLoadout")));
+          }
+          else {
+            newLore.add(Methods.color(guiConfig.getString("Ability.IsNotInLoadout")));
+          }
+        }
+        else {
+          newLore.add(Methods.color(guiConfig.getString("Ability.IsNotUnlocked")));
+          abilityItem.setType(Material.valueOf(guiConfig.getString("Ability.NotUnlockedMaterial")));
+        }
+        abilities.add(ab);
+        abilityMeta.setLore(newLore);
+        abilityItem.setItemMeta(abilityMeta);
+        GUIItem item = new GUIItem(abilityItem, counter);
+        counter++;
+        items.add(item);
+      }
 
-	  ItemStack back = new ItemStack(Material.BARRIER);
-	  ItemMeta backMeta = back.getItemMeta();
-	  backMeta.setDisplayName(Methods.color("&bBack>>"));
-	  backMeta.setLore(Methods.colorLore(Arrays.asList("&eClick this to go back")));
-	  back.setItemMeta(backMeta);
-	  items.add(new GUIItem(back, inv.getSize() - 1));
+      ItemStack back = new ItemStack(Material.valueOf(guiConfig.getString("BackButton.Material")));
+      ItemMeta backMeta = back.getItemMeta();
+      backMeta.setDisplayName(Methods.color(guiConfig.getString("BackButton.DisplayName")));
+      backMeta.setLore(Methods.colorLore(guiConfig.getStringList("BackButton.Lore")));
+      back.setItemMeta(backMeta);
+      items.add(new GUIItem(back, guiConfig.getInt("BackButton.Slot")));
 
-	  ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
-	  ItemMeta fillerMeta = filler.getItemMeta();
-	  fillerMeta.setDisplayName(" ");
-	  filler.setItemMeta(fillerMeta);
-	  inv = Methods.fillInventory(inv, filler, items);
-	  return inv;
-	};
-	this.getGui().setBuildGUIFunction(buildGUIFunction);
-	this.getGui().rebuildGUI();
+      ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
+      ItemMeta fillerMeta = filler.getItemMeta();
+      fillerMeta.setDisplayName(guiConfig.getString("FillerItem.DisplayName"));
+      fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
+      filler.setItemMeta(fillerMeta);
+
+      return Methods.fillInventory(inv, filler, items);
+    };
+    this.getGui().setBuildGUIFunction(buildGUIFunction);
+    this.getGui().rebuildGUI();
   }
 }

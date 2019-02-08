@@ -10,5 +10,4 @@ FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1
   DisplayName: ' '
-  Lore:
-    - ' '
+  Lore: {}
