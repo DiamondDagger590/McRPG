@@ -15,62 +15,62 @@ MaterialBonus:
   IRON_SWORD: 1.25
   DIAMOND_SWORD: 1.3
 #How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
-#Ex) Spider gives 30 exp. Deal 3 damage, get 90 exp with a wood sword
+#Ex) Spider gives 50 exp. Deal 3 damage, get 150 exp with a wood sword
 ExpAwardedPerMob:
   OTHER: 5
   BAT: 5
-  BLAZE: 50
-  CAVE_SPIDER: 35
-  SPIDER: 30
-  CHICKEN: 5
-  COW: 7
-  MUSROOM_COW: 15
-  PIG: 7
-  SHEEP: 7
-  RABBIT: 7
-  COD: 7
-  TROPICAL_FISH: 7
-  SALMON: 7
-  PUFFERFISH: 7
-  DOLPHIN: 15
-  SQUID: 7
-  TURTLE: 10
-  DONKEY: 10
-  MULE: 10
-  HORSE: 10
-  LLAMA: 10
-  CREEPER: 40
-  GUARDIAN: 50
-  ELDER_GUARDIAN: 90
-  ENDER_DRAGON: 90
-  ENDERMAN: 55
-  SHULKER: 60
-  EVOKER: 80
-  VEX: 7
-  ILLUSIONER: 70
-  IRON_GOLEM: 10
-  SLIME: 15
-  MAGMA_CUBE: 20
-  OCELOT: 10
-  PARROT: 12
-  WOLF: 10
-  PHANTOM: 50
-  PLAYER: 20
-  POLAR_BEAR: 12
-  SILVERFISH: 10
-  ENDERMITE: 12
-  SKELETON: 40
-  STRAY: 45
-  WITHER_SKELETON: 50
-  SKELETON_HORSE: 30
-  SNOWMAN: 5
+  BLAZE: 200
+  CAVE_SPIDER: 75
+  SPIDER: 50
+  CHICKEN: 15
+  COW: 15
+  MUSROOM_COW: 30
+  PIG: 15
+  SHEEP: 15
+  RABBIT: 15
+  COD: 15
+  TROPICAL_FISH: 15
+  SALMON: 15
+  PUFFERFISH: 15
+  DOLPHIN: 200
+  SQUID: 15
+  TURTLE: 100
+  DONKEY: 125
+  MULE: 125
+  HORSE: 125
+  LLAMA: 100
+  CREEPER: 175
+  GUARDIAN: 250
+  ELDER_GUARDIAN: 350
+  ENDER_DRAGON: 400
+  ENDERMAN: 250
+  SHULKER: 300
+  EVOKER: 375
+  VEX: 15
+  ILLUSIONER: 150
+  IRON_GOLEM: 75
+  SLIME: 40
+  MAGMA_CUBE: 80
+  OCELOT: 15
+  PARROT: 15
+  WOLF: 15
+  PHANTOM: 125
+  PLAYER: 100
+  POLAR_BEAR: 75
+  SILVERFISH: 50
+  ENDERMITE: 50
+  SKELETON: 100
+  STRAY: 125
+  WITHER_SKELETON: 200
+  SKELETON_HORSE: 80
+  SNOWMAN: 15
   VILLAGER: 15
-  WITCH: 45
-  ZOMBIE: 35
-  ZOMBIE_VILLAGER: 35
-  DROWNED: 40
-  PIG_ZOMBIE: 50
-  HUSK: 40
+  WITCH: 200
+  ZOMBIE: 100
+  ZOMBIE_VILLAGER: 115
+  DROWNED: 115
+  PIG_ZOMBIE: 200
+  HUSK: 125
   ZOMBIE_HORSE: 20
 #What abilities are enabled
 EnabledAbilities:
@@ -407,7 +407,7 @@ TaintedBladeConfig:
     PlayerLore:
       - '&cTake &e%HungerDuration% &cseconds of hunger for'
       - '&e%StrengthDuration% &cseconds of strength'
-      - '&e%ResistanceDuration% &Cseconds or resistance'
+      - '&e%ResistanceDuration% &Cseconds of resistance'
       - '&cCooldown: &e%Cooldown%'
       - '&eActivate by readying and attacking an enemy'
     MenuLore:

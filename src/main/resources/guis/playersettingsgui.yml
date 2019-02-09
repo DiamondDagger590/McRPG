@@ -23,7 +23,7 @@ MobHealthDisplay:
   Lore: {}
 AutoDenyNewAbilities:
   Enabled: '&aAuto Deny New Abilities Enabled'
-  Disabled: 'cAuto Deny New Abilities Disabled'
+  Disabled: '&cAuto Deny New Abilities Disabled'
   Slot: 7
   Lore:
     - '&eClick this to change'

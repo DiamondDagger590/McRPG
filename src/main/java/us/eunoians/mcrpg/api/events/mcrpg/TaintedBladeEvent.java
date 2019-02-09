@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.AbilityEventType;
 
 public class TaintedBladeEvent extends AbilityActivateEvent {
 
@@ -23,7 +24,7 @@ public class TaintedBladeEvent extends AbilityActivateEvent {
   private int cooldown;
 
   public TaintedBladeEvent(McRPGPlayer user, TaintedBlade taintedBlade){
-    super(taintedBlade, user);
+    super(taintedBlade, user, AbilityEventType.COMBAT);
 	int tier = taintedBlade.getCurrentTier();
 	this.isCancelled = !taintedBlade.isToggled();
 	this.cooldown = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("TaintedBladeConfig.Tier" + Methods.convertToNumeral(tier) + ".Cooldown");

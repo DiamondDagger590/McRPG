@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import us.eunoians.mcrpg.abilities.mining.OreScanner;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.AbilityEventType;
 
 public class OreScannerEvent extends AbilityActivateEvent {
 
@@ -11,7 +12,7 @@ public class OreScannerEvent extends AbilityActivateEvent {
   @Setter
   private int cooldown;
   public OreScannerEvent(McRPGPlayer player, OreScanner oreScanner, int cooldown){
-    super(oreScanner, player);
+    super(oreScanner, player, AbilityEventType.RECREATIONAL);
     this.cooldown = cooldown;
   }
 }

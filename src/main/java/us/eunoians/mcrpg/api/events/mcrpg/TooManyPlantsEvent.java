@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.bukkit.Material;
 import us.eunoians.mcrpg.abilities.herbalism.TooManyPlants;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.AbilityEventType;
 
 public class TooManyPlantsEvent extends AbilityActivateEvent {
 
@@ -11,7 +12,7 @@ public class TooManyPlantsEvent extends AbilityActivateEvent {
   private Material plantType;
 
   public TooManyPlantsEvent(McRPGPlayer player, TooManyPlants tooManyPlants, Material plantType){
-    super(tooManyPlants, player);
+    super(tooManyPlants, player, AbilityEventType.RECREATIONAL);
     this.plantType = plantType;
   }
 }

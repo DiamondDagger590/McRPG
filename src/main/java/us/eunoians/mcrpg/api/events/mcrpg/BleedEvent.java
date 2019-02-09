@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.abilities.swords.Vampire;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.AbilityEventType;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.Random;
@@ -43,7 +44,7 @@ public class BleedEvent extends AbilityActivateEvent {
 
 
   public BleedEvent(McRPGPlayer user, LivingEntity target, Bleed bleed){
-	super(bleed, user);
+	super(bleed, user, AbilityEventType.COMBAT);
 	//Get the swords config
 	FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
 	//Initialize everything

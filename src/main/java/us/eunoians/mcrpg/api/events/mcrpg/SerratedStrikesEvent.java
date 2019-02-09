@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.AbilityEventType;
 
 public class SerratedStrikesEvent extends AbilityActivateEvent{
 
@@ -20,7 +21,7 @@ public class SerratedStrikesEvent extends AbilityActivateEvent{
   private int cooldown;
 
   public SerratedStrikesEvent(McRPGPlayer user, SerratedStrikes serratedStrikes){
-    super(serratedStrikes, user);
+    super(serratedStrikes, user, AbilityEventType.COMBAT);
 	int tier = serratedStrikes.getCurrentTier();
 	this.isCancelled = !serratedStrikes.isToggled();
 	this.cooldown = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("SerratedStrikesConfig.Tier" + Methods.convertToNumeral(tier) + ".Cooldown");

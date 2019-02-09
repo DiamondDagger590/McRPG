@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import us.eunoians.mcrpg.abilities.herbalism.DiamondFlowers;
 import us.eunoians.mcrpg.api.util.DiamondFlowersData;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.AbilityEventType;
 
 public class DiamondFlowersEvent extends AbilityActivateEvent {
 
@@ -26,7 +27,7 @@ public class DiamondFlowersEvent extends AbilityActivateEvent {
   private Material material;
 
   public DiamondFlowersEvent(McRPGPlayer player, DiamondFlowers diamondFlowers, DiamondFlowersData.DiamondFlowersItem item){
-    super(diamondFlowers, player);
+    super(diamondFlowers, player, AbilityEventType.RECREATIONAL);
     this.exp = item.getExp();
     this.maxAmount = item.getMaxAmount();
     this.minAmount = item.getMinAmount();
