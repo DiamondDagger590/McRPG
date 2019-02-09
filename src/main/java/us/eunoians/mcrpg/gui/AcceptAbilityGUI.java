@@ -62,10 +62,10 @@ public class AcceptAbilityGUI extends GUI {
         abilityItem.setItemMeta(abilityMeta);
         items.add(new GUIItem(abilityItem, guiConfig.getInt("AcceptAbility.AbilityItem.Slot")));
 
-        ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("AcceptAbility.FillerItem.Material")), guiConfig.getInt("AcceptAbility.FillerItem.Amount"));
+        ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
         ItemMeta fillerMeta = filler.getItemMeta();
-        fillerMeta.setDisplayName(Methods.color(guiConfig.getString("AcceptAbility.FillerItem.DisplayName")));
-        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.FillerItem.Material")));
+        fillerMeta.setDisplayName(Methods.color(guiConfig.getString("FillerItem.DisplayName")));
+        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Material")));
         filler.setItemMeta(fillerMeta);
         return Methods.fillInventory(inv, filler, items);
       };

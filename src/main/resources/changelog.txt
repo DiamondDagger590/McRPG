@@ -1,3 +1,5 @@
+1.0.5.1-ALPHA
+= The gui update messed up a file and this corrects the wrong path. Nothing required by users for this.
 1.0.5-ALPHA
 + Added tips for players as they log in
 + Added player setting to toggle the tips on and off
