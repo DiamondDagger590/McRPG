@@ -13,7 +13,7 @@
 
     <groupId>us.eunoians</groupId>
     <artifactId>McRPG</artifactId>
-    <version>1.0.5.1-ALPHA</version>
+    <version>1.0.5.2-ALPHA</version>
 
     <build>
         <plugins>
@@ -42,6 +42,10 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -57,6 +61,13 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--Papi PlaceHolder-->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.8.7</version>
             <scope>provided</scope>
         </dependency>
         <!--MCUtils-->

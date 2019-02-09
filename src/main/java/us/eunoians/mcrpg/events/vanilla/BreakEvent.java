@@ -230,7 +230,7 @@ public class BreakEvent implements Listener {
             remoteTransfer.setLinkedChestLocation(null);
             mp.setLinkedToRemoteTransfer(false);
             RemoteTransferTracker.removeLocation(uuid);
-            p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Unlinked")));
+            p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Unlinked")));
           }
           else {
             //TODO will need to add support for admins to remove these such as towny mayors
@@ -253,7 +253,7 @@ public class BreakEvent implements Listener {
             }
             else {
               event.setCancelled(true);
-              p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.IsLinked")
+              p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.IsLinked")
                       .replace("%Player%", Bukkit.getOfflinePlayer(uuid).getName())));
               return;
             }

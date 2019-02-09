@@ -46,7 +46,7 @@ public abstract class GUI {
   protected List<String> colorLore(List<String> lore) {
     for (int i = 0; i < lore.size(); i++) {
       String s = lore.get(i);
-      lore.set(i, Methods.color(s));
+      lore.set(i, Methods.color(gui.getPlayer().getPlayer(), s));
     }
     return lore;
   }

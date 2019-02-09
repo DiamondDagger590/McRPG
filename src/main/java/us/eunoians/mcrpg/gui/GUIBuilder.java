@@ -58,7 +58,7 @@ public class GUIBuilder {
 	@Getter @Setter
 	private GUIInventoryFunction buildGUIFunction = (GUIBuilder builder) -> {
 	  Inventory inv = Bukkit.createInventory(null, config.getInt(path + "Size"),
-		  Methods.color(config.getString(path + "Title")));
+		  Methods.color(player.getPlayer(), config.getString(path + "Title")));
 	  items = new ArrayList<>();
 	  for (String itemName : config.getConfigurationSection(path + "Items").getKeys(false)) {
 		ItemStack item;
@@ -69,7 +69,7 @@ public class GUIBuilder {
 		  SkullMeta sm = (SkullMeta) meta;
 		  sm.setOwningPlayer(player.getOfflineMcMMOPlayer());
 		}
-		meta.setDisplayName(Methods.color(config.getString(path + "Items." + itemName + ".Name")));
+		meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "Items." + itemName + ".Name")));
 		if (config.contains(path + "Items." + itemName + ".Lore")) {
 		  List<String> lore = config.getStringList(path + "Items." + itemName + ".Lore");
 		  lore = Methods.colorLore(lore);
@@ -87,7 +87,7 @@ public class GUIBuilder {
 	  Material fillerType = Material.getMaterial(config.getString(path + "FillerItem.Material"));
 	  filler = new ItemStack(fillerType, 1);
 	  ItemMeta meta = filler.getItemMeta();
-	  meta.setDisplayName(Methods.color(config.getString(path + "FillerItem.Name")));
+	  meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "FillerItem.Name")));
 	  filler.setItemMeta(meta);
 	  if (config.contains(path + "FillerItem.Lore")) {
 		List<String> lore = config.getStringList(path + "FillerItem.Lore");
@@ -95,8 +95,7 @@ public class GUIBuilder {
 		meta.setLore(lore);
 		filler.setItemMeta(meta);
 	  }
-	  inv = Methods.fillInventory(inv, filler, items);
-	  return inv;
+	  return Methods.fillInventory(inv, filler, items);
 	};
 
 	@Getter @Setter
@@ -106,7 +105,7 @@ public class GUIBuilder {
 		return binder;
 	  }
 	  for (String slotString : config.getConfigurationSection(path + "Events").getKeys(false)) {
-		GUIEventBinder boundEvent = new GUIEventBinder(Integer.parseInt(slotString), (ArrayList) config.getStringList(path + "Events." + slotString));
+		GUIEventBinder boundEvent = new GUIEventBinder(Integer.parseInt(slotString), config.getStringList(path + "Events." + slotString));
 		binder.add(boundEvent);
 	  }
 	  return binder;

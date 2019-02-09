@@ -175,7 +175,7 @@ public class CheckReadyEvent implements Listener {
 		  return;
 		}
 		if(mp.getCooldown(skillType) != -1){
-		  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		  p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
 				  .replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
 		  return;
@@ -210,7 +210,7 @@ public class CheckReadyEvent implements Listener {
 		}
 		skill = "Hoe";
 	  }
-	  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+	  p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
 		  McRPG.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", skill)));
 	  PlayerReadyBit bit = new PlayerReadyBit(mp.getActiveAbilityForSkill(skillType), mp);
 	  mp.setReadyingAbilityBit(bit);

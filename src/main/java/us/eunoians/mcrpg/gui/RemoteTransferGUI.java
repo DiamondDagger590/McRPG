@@ -40,7 +40,7 @@ public class RemoteTransferGUI extends GUI {
       FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(remoteTransfer.getGenericAbility().getSkill()));
       FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.REMOTE_TRANSFER_GUI);
       Inventory inv = Bukkit.createInventory(null, config.getInt("RemoteTransferConfig.Tier" + Methods.convertToNumeral(remoteTransfer.getCurrentTier()) + ".InvSize"),
-              Methods.color(guiConfig.getString("Title")));
+              Methods.color(getPlayer().getPlayer(), guiConfig.getString("Title")));
       ArrayList<GUIItem> items = new ArrayList<>();
       HashMap<Material, Boolean> itemsToSync = remoteTransfer.getItemsToSync();
       int counter = 0;
@@ -78,7 +78,7 @@ public class RemoteTransferGUI extends GUI {
       ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
               config.getInt(path + "Amount"));
       ItemMeta abilityMeta = abilityItem.getItemMeta();
-      abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName")));
+      abilityMeta.setDisplayName(Methods.color(p.getPlayer(), config.getString(path + "DisplayName")));
       abilityMeta.setLore(Methods.colorLore(guiConfig.getStringList("ToggleAbilityLore")));
       abilityMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
       abilityItem.setItemMeta(abilityMeta);
@@ -90,7 +90,7 @@ public class RemoteTransferGUI extends GUI {
 
       ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
       ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(guiConfig.getString("FillerItem.DisplayName"));
+      fillerMeta.setDisplayName(Methods.color(p.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
       fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
       filler.setItemMeta(fillerMeta);
 

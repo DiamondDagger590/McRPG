@@ -34,7 +34,7 @@ public class SelectReplaceGUI extends GUI {
       FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill));
       FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SELECT_REPLACE_SKILLS_GUI);
       Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
-              Methods.color(guiConfig.getString("Title").replace("%Skill%", skill.getName())));
+              Methods.color(player.getPlayer(), guiConfig.getString("Title").replace("%Skill%", skill.getName())));
       ArrayList<GUIItem> items = new ArrayList<>();
       List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
       enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
@@ -55,7 +55,7 @@ public class SelectReplaceGUI extends GUI {
 
         ItemMeta abilityMeta = abilityItem.getItemMeta();
 
-        abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName") + " " + tier));
+        abilityMeta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "DisplayName") + " " + tier));
 
         abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
         List<String> lore = abilityMeta.getLore();
@@ -87,16 +87,16 @@ public class SelectReplaceGUI extends GUI {
           newLore = newNewLore;
         }
         if(player.getBaseAbility(ab).isUnlocked()) {
-          newLore.add(Methods.color(guiConfig.getString("Ability.IsUnlocked")));
+          newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsUnlocked")));
           if(player.getAbilityLoadout().contains(ab)) {
-            newLore.add(Methods.color(guiConfig.getString("Ability.IsInLoadout")));
+            newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsInLoadout")));
           }
           else {
-            newLore.add(Methods.color(guiConfig.getString("Ability.IsNotInLoadout")));
+            newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsNotInLoadout")));
           }
         }
         else {
-          newLore.add(Methods.color(guiConfig.getString("Ability.IsNotUnlocked")));
+          newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsNotUnlocked")));
           abilityItem.setType(Material.valueOf(guiConfig.getString("Ability.NotUnlockedMaterial")));
         }
         abilities.add(ab);
@@ -109,7 +109,7 @@ public class SelectReplaceGUI extends GUI {
 
       ItemStack back = new ItemStack(Material.valueOf(guiConfig.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
-      backMeta.setDisplayName(Methods.color(guiConfig.getString("BackButton.DisplayName")));
+      backMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("BackButton.DisplayName")));
       backMeta.setLore(Methods.colorLore(guiConfig.getStringList("BackButton.Lore")));
       back.setItemMeta(backMeta);
       items.add(new GUIItem(back, guiConfig.getInt("BackButton.Slot")));

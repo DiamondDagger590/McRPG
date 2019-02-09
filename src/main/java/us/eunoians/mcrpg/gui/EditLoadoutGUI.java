@@ -38,10 +38,10 @@ public class EditLoadoutGUI extends GUI {
       //FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
       String title = "";
       if(type == EditType.TOGGLE) {
-        title = Methods.color(guiConfig.getString("Title.Toggle"));
+        title = Methods.color(player.getPlayer(), guiConfig.getString("Title.Toggle"));
       }
       else if(type == EditType.ABILITY_UPGRADE) {
-        title = Methods.color(guiConfig.getString("Title.Upgrade").replace("%AbilityPoints%", Integer.toString(player.getAbilityPoints())));
+        title = Methods.color(player.getPlayer(), guiConfig.getString("Title.Upgrade").replace("%AbilityPoints%", Integer.toString(player.getAbilityPoints())));
       }
       Inventory inv = Bukkit.createInventory(null, 9,
               title);
@@ -57,7 +57,7 @@ public class EditLoadoutGUI extends GUI {
                 config.getInt(path + "Amount"));
         ItemMeta abilityMeta = abilityItem.getItemMeta();
         String tier = "Tier" + Methods.convertToNumeral(ability.getCurrentTier());
-        abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName") + " " + tier));
+        abilityMeta.setDisplayName(Methods.color(player.getPlayer(),config.getString(path + "DisplayName") + " " + tier));
         abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
         List<String> lore = abilityMeta.getLore();
 		/*for(String s : config.getConfigurationSection(ability.getGenericAbility().getName() + "Config." + tier).getKeys(false)){
@@ -95,14 +95,14 @@ public class EditLoadoutGUI extends GUI {
         if(type == EditType.ABILITY_UPGRADE) {
           if(ability.getCurrentTier() == 5) {
             for(String s : guiConfig.getStringList("AbilityItem.MaxedLore")){
-              newLore.add(Methods.color(s));
+              newLore.add(Methods.color(player.getPlayer(), s));
             }
           }
           else {
             for(String s : guiConfig.getStringList("AbilityItem.LevelPromptLore")){
               s = s.replace("%Level%", Integer.toString(((UnlockedAbilities) ability.getGenericAbility()).tierUnlockLevel(ability.getCurrentTier() + 1)));
               s = s.replace("%Tier%", Methods.convertToNumeral(ability.getCurrentTier() + 1));
-              newLore.add(Methods.color(s));
+              newLore.add(Methods.color(player.getPlayer(), s));
             }
           }
         }
@@ -110,7 +110,7 @@ public class EditLoadoutGUI extends GUI {
         abilityItem.setItemMeta(abilityMeta);
         if(ability.isToggled()) {
           for(String s : guiConfig.getStringList("AbilityItem.ToggledOnLore")){
-            newLore.add(Methods.color(s));
+            newLore.add(Methods.color(player.getPlayer(), s));
           }
           abilityMeta.setLore(newLore);
           abilityItem.setItemMeta(abilityMeta);
@@ -119,7 +119,7 @@ public class EditLoadoutGUI extends GUI {
         }
         else {
           for(String s : guiConfig.getStringList("AbilityItem.ToggledOffLore")){
-            newLore.add(Methods.color(s));
+            newLore.add(Methods.color(player.getPlayer(), s));
           }
           abilityMeta.setLore(newLore);
           abilityItem.setItemMeta(abilityMeta);
@@ -129,7 +129,7 @@ public class EditLoadoutGUI extends GUI {
 
       ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
       ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(guiConfig.getString("FillerItem.DisplayName"));
+      fillerMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
       fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
       filler.setItemMeta(fillerMeta);
 
@@ -157,7 +157,7 @@ public class EditLoadoutGUI extends GUI {
       }
       //FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
       Inventory inv = Bukkit.createInventory(null, 9,
-              Methods.color(invName));
+              Methods.color(player.getPlayer(), invName));
       ArrayList<GUIItem> items = new ArrayList<>();
 
       for(int i = 0; i < player.getAbilityLoadout().size(); i++) {
@@ -170,7 +170,7 @@ public class EditLoadoutGUI extends GUI {
                 config.getInt(path + "Amount"));
         ItemMeta abilityMeta = abilityItem.getItemMeta();
         String tier = "Tier" + Methods.convertToNumeral(ability.getCurrentTier());
-        abilityMeta.setDisplayName(Methods.color(config.getString(path + "DisplayName") + " " + tier));
+        abilityMeta.setDisplayName(Methods.color(player.getPlayer(),config.getString(path + "DisplayName") + " " + tier));
         abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "Lore")));
         abilityMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         List<String> newLore = new ArrayList<>();

@@ -53,11 +53,11 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 	FileConfiguration config = McRPG.getInstance().getConfig();
 	board = manager.getNewScoreboard();
 	Objective objective = board.registerNewObjective("mcrpg", "dummy");
-	objective.setDisplayName(Methods.color(config.getString("DisplayConfig.Scoreboard.DisplayName").replaceAll("%Player%", player.getPlayer().getDisplayName())
+	objective.setDisplayName(Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.DisplayName").replaceAll("%Player%", player.getPlayer().getDisplayName())
 	.replaceAll("%Skill%", skill.getName())));
 	Skill sk = player.getSkill(skill);
 	config.getConfigurationSection("DisplayConfig.Scoreboard.Lines").getKeys(false).stream().forEach(key ->{
-	  String value = Methods.color(config.getString("DisplayConfig.Scoreboard.Lines." + key));
+	  String value = Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.Lines." + key));
 	  objective.getScore(value).setScore(0);
 	  });
 	sendUpdate(sk.getCurrentExp(), sk.getExpToLevel(), sk.getCurrentLevel(), 0);
@@ -73,9 +73,9 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
   public void sendUpdate(int currentExp, int expToLevel, int currentLevel, int expGained){
 	FileConfiguration config = McRPG.getInstance().getConfig();
 	Objective objective = board.getObjective("mcrpg");
-	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentExp"))).setScore(currentExp);
-	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.ExpNeeded"))).setScore(expToLevel - currentExp);
-	objective.getScore(Methods.color(config.getString("DisplayConfig.Scoreboard.Lines.CurrentLevel"))).setScore(currentLevel);
+	objective.getScore(Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.Lines.CurrentExp"))).setScore(currentExp);
+	objective.getScore(Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.Lines.ExpNeeded"))).setScore(expToLevel - currentExp);
+	objective.getScore(Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.Lines.CurrentLevel"))).setScore(currentLevel);
 	objective.setDisplaySlot(DisplaySlot.SIDEBAR);
   }
 

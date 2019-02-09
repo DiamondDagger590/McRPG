@@ -1,3 +1,6 @@
+1.0.5.2-ALPHA
++ Added Papi Placeholder support
+= Fixed a bug with ignoring player tip ignoring
 1.0.5.1-ALPHA
 = The gui update messed up a file and this corrects the wrong path. Nothing required by users for this.
 1.0.5-ALPHA

@@ -23,20 +23,20 @@ public class SettingsGUI extends GUI {
     super(new GUIBuilder(player));
     function = (GUIBuilder guiBuilder) -> {
       FileConfiguration settingsFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SETTINGS_GUI);
-      Inventory inv = Bukkit.createInventory(null, settingsFile.getInt("Size"), Methods.color(settingsFile.getString("Title")));
+      Inventory inv = Bukkit.createInventory(null, settingsFile.getInt("Size"), Methods.color(player.getPlayer(), settingsFile.getString("Title")));
       ArrayList<GUIItem> items = new ArrayList<>();
       ItemStack displayItem = new ItemStack(Material.BLAZE_ROD);
       ItemMeta displayMeta = displayItem.getItemMeta();
       if(player.getDisplayType() == DisplayType.SCOREBOARD) {
         displayItem.setType(Material.SIGN);
-        displayMeta.setDisplayName(Methods.color(settingsFile.getString("ChangeDisplaySettings.ScoreBoard")));
+        displayMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("ChangeDisplaySettings.ScoreBoard")));
       }
       else if(player.getDisplayType() == DisplayType.BOSS_BAR) {
         displayItem.setType(Material.DRAGON_HEAD);
-        displayMeta.setDisplayName(Methods.color(settingsFile.getString("ChangeDisplaySettings.BossBar")));
+        displayMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("ChangeDisplaySettings.BossBar")));
       }
       else if(player.getDisplayType() == DisplayType.ACTION_BAR) {
-        displayMeta.setDisplayName(Methods.color(settingsFile.getString("ChangeDisplaySettings.ActionBar")));
+        displayMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("ChangeDisplaySettings.ActionBar")));
       }
       displayMeta.setLore(Methods.colorLore(settingsFile.getStringList("ChangeDisplaySettings.Lore")));
       displayItem.setItemMeta(displayMeta);
@@ -45,11 +45,11 @@ public class SettingsGUI extends GUI {
       ItemStack itemPickup = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
       ItemMeta itemPickupMeta = itemPickup.getItemMeta();
       if(player.isKeepHandEmpty()) {
-        itemPickupMeta.setDisplayName(Methods.color(settingsFile.getString("KeepHandEmpty.Enabled")));
+        itemPickupMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("KeepHandEmpty.Enabled")));
       }
       else {
         itemPickup.setType(Material.RED_STAINED_GLASS_PANE);
-        itemPickupMeta.setDisplayName(Methods.color(settingsFile.getString("KeepHandEmpty.Disabled")));
+        itemPickupMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("KeepHandEmpty.Disabled")));
       }
       itemPickupMeta.setLore(Methods.colorLore(settingsFile.getStringList("KeepHandEmpty.Lore")));
       itemPickup.setItemMeta(itemPickupMeta);
@@ -59,15 +59,15 @@ public class SettingsGUI extends GUI {
       ItemStack healthItem = new ItemStack(Material.BUBBLE_CORAL_BLOCK);
       ItemMeta healthMeta = healthItem.getItemMeta();
       if(healthbarType == MobHealthbarUtils.MobHealthbarType.BAR) {
-        healthMeta.setDisplayName(Methods.color(settingsFile.getString("MobHealthDisplay.Bar")));
+        healthMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("MobHealthDisplay.Bar")));
       }
       else if(healthbarType == MobHealthbarUtils.MobHealthbarType.DISABLED) {
         healthItem.setType(Material.DEAD_FIRE_CORAL_BLOCK);
-        healthMeta.setDisplayName(Methods.color(settingsFile.getString("MobHealthDisplay.Disabled")));
+        healthMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("MobHealthDisplay.Disabled")));
       }
       else if(healthbarType == MobHealthbarUtils.MobHealthbarType.HEARTS) {
         healthItem.setType(Material.FIRE_CORAL_BLOCK);
-        healthMeta.setDisplayName(Methods.color(settingsFile.getString("MobHealthDisplay.Hearts")));
+        healthMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("MobHealthDisplay.Hearts")));
       }
       healthMeta.setLore(Methods.colorLore(settingsFile.getStringList("MobHealthDisplay.Lore")));
       healthItem.setItemMeta(healthMeta);
@@ -76,11 +76,11 @@ public class SettingsGUI extends GUI {
       ItemStack autoDenyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
       ItemMeta autoDenyItemMeta = autoDenyItem.getItemMeta();
       if(player.isAutoDeny()) {
-        autoDenyItemMeta.setDisplayName(Methods.color(settingsFile.getString("AutoDenyNewAbilities.Enabled")));
+        autoDenyItemMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AutoDenyNewAbilities.Enabled")));
       }
       else {
         autoDenyItem.setType(Material.RED_STAINED_GLASS_PANE);
-        autoDenyItemMeta.setDisplayName(Methods.color(settingsFile.getString("AutoDenyNewAbilities.Disabled")));
+        autoDenyItemMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AutoDenyNewAbilities.Disabled")));
       }
       autoDenyItemMeta.setLore(Methods.colorLore(settingsFile.getStringList("AutoDenyNewAbilities.Lore")));
       autoDenyItem.setItemMeta(autoDenyItemMeta);
@@ -89,11 +89,11 @@ public class SettingsGUI extends GUI {
       ItemStack ignoreTip = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
       ItemMeta ignoreTipMeta = ignoreTip.getItemMeta();
       if(player.isIgnoreTips()) {
-        ignoreTipMeta.setDisplayName(Methods.color(settingsFile.getString("IgnoreTips.Enabled")));
+        ignoreTipMeta.setDisplayName(Methods.color(player.getPlayer(),settingsFile.getString("IgnoreTips.Enabled")));
       }
       else {
         ignoreTip.setType(Material.RED_STAINED_GLASS_PANE);
-        ignoreTipMeta.setDisplayName(Methods.color(settingsFile.getString("IgnoreTips.Disabled")));
+        ignoreTipMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("IgnoreTips.Disabled")));
       }
       ignoreTipMeta.setLore(Methods.colorLore(settingsFile.getStringList("IgnoreTips.Lore")));
       ignoreTip.setItemMeta(ignoreTipMeta);
@@ -101,7 +101,7 @@ public class SettingsGUI extends GUI {
 
       ItemStack later = new ItemStack(Material.RED_STAINED_GLASS_PANE);
       ItemMeta laterMeta = later.getItemMeta();
-      laterMeta.setDisplayName(Methods.color(settingsFile.getString("AddLater.DisplayName")));
+      laterMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AddLater.DisplayName")));
       laterMeta.setLore(Methods.colorLore(settingsFile.getStringList("AddLater.Lore")));
       later.setItemMeta(laterMeta);
       items.add(new GUIItem(later, settingsFile.getInt("AddLater.Slot")));
@@ -109,14 +109,14 @@ public class SettingsGUI extends GUI {
 
       ItemStack back = new ItemStack(Material.valueOf(settingsFile.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
-      backMeta.setDisplayName(Methods.color(settingsFile.getString("BackButton.DisplayName")));
+      backMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("BackButton.DisplayName")));
       backMeta.setLore(Methods.colorLore(settingsFile.getStringList("BackButton.Lore")));
       back.setItemMeta(backMeta);
       items.add(new GUIItem(back, settingsFile.getInt("BackButton.Slot")));
 
       ItemStack filler = new ItemStack(Material.valueOf(settingsFile.getString("FillerItem.Material")), settingsFile.getInt("FillerItem.Amount"));
       ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(settingsFile.getString("FillerItem.DisplayName"));
+      fillerMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("FillerItem.DisplayName")));
       fillerMeta.setLore(Methods.colorLore(settingsFile.getStringList("FillerItem.Lore")));
       filler.setItemMeta(fillerMeta);
 

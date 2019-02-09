@@ -3,24 +3,21 @@ package us.eunoians.mcrpg.gui;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GUIEventBinder {
 
+  private static ArrayList<String> defaultEvents;
   private int slot;
   @Getter
-  private ArrayList<String> boundEventList;
-  private static ArrayList<String> defaultEvents;
+  private List<String> boundEventList;
   //If we feel the API could use the addition in the future
   //private static ArrayList<String> externalEvents;
 
 
-  public GUIEventBinder(int slot, ArrayList<String> boundEventList) {
+  public GUIEventBinder(int slot, List<String> boundEventList) {
     this.slot = slot;
     this.boundEventList = boundEventList;
-  }
-
-  public int getSlot() {
-    return slot;
   }
 
   public static void loadGUIEventBinder() {
@@ -33,6 +30,10 @@ public class GUIEventBinder {
 
   public static ArrayList<String> getDefaultEvents() {
     return (ArrayList<String>) defaultEvents.clone();
+  }
+
+  public int getSlot() {
+    return slot;
   }
 
 

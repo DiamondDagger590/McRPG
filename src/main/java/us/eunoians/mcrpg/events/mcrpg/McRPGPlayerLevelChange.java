@@ -34,7 +34,7 @@ public class McRPGPlayerLevelChange implements Listener {
     McRPG mcRPG = McRPG.getInstance();
     e.getMcMMOPlayer().updatePowerLevel();
     //Send the player a message that they leveled up
-    String message = Methods.color(mcRPG.getPluginPrefix() +
+    String message = Methods.color(e.getMcMMOPlayer().getPlayer(), mcRPG.getPluginPrefix() +
             mcRPG.getLangFile().getString("Messages.Players.LevelUp")
                     .replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName())
                     .replaceAll("%Current_Level%", Integer.toString(e.getNextLevel())));
@@ -48,17 +48,17 @@ public class McRPGPlayerLevelChange implements Listener {
         mp.setAbilityPoints(mp.getAbilityPoints() + 1);
         //Need to fiddle with this sound
         mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
-        mp.getPlayer().sendMessage(Methods.color(mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
+        mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
         mp.saveData();
       }
     }
     TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
-    if(!mp.getUsedTips().contains(tipType)) {
+    if(!mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
       List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
       Random rand = new Random();
       int val = rand.nextInt(possibleMessages.size());
-      mp.getPlayer().sendMessage(Methods.color(possibleMessages.get(val)));
+      mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
       mp.getUsedTips().add(tipType);
     }
     //Do things for swords ability
@@ -132,11 +132,11 @@ public class McRPGPlayerLevelChange implements Listener {
             if(mp.isOnline()) {
               Player p = mp.getPlayer();
               if(mp.isAutoDeny()) {
-                p.sendMessage(Methods.color(mcRPG.getPluginPrefix() +
+                p.sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() +
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlockedButDenied").replaceAll("%Ability%", ab.getName())));
               }
               else {
-                p.sendMessage(Methods.color(mcRPG.getPluginPrefix() +
+                p.sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() +
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 5, 1);
                 mp.addPendingAbilityUnlock(ab);

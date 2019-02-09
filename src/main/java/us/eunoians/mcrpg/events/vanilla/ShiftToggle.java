@@ -45,7 +45,7 @@ public class ShiftToggle implements Listener {
 	  }
 	  mp.getActiveAbilities().add(UnlockedAbilities.RAGE_SPIKE);
 	  //Tell the player how long they have to charge for
-	  player.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+	  player.sendMessage(Methods.color(player,McRPG.getInstance().getPluginPrefix() +
 		  McRPG.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Integer.toString(preEvent.getChargeTime()))));
 	  //Save the id of the task
 	  	int id = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () ->{
@@ -111,7 +111,7 @@ public class ShiftToggle implements Listener {
 	  if(isPlayerCharging(player)){
 	    if(!e.isSneaking()){
 	      Bukkit.getScheduler().cancelTask(playersCharging.remove(player.getUniqueId()));
-	      player.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+	      player.sendMessage(Methods.color(player,McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.ChargeCancelled")));
 		  mp.getActiveAbilities().remove(UnlockedAbilities.RAGE_SPIKE);
 		  return;

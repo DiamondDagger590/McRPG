@@ -54,7 +54,7 @@ public class BleedHandler implements Listener {
 	  }
 	  //Add player to the targeted list and send them a msg
 	  addPlayerTargetedBy(player.getUuid(), targ.getUuid());
-	  targ.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Bleed.PlayerBleeding")));
+	  targ.getPlayer().sendMessage(Methods.color(player.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Bleed.PlayerBleeding")));
 	}
 	startBleedTimer(e);
   }
@@ -141,16 +141,16 @@ public class BleedHandler implements Listener {
 	  //If the bleed effect is over
 	  if(iterations.get() == 0 || en.isDead() || ((en instanceof  Player) && !((Player)en).isOnline())){
 		if(en instanceof Player && ((Player)en).isOnline()){
-		  en.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix()
+		  en.sendMessage(Methods.color(((Player) en), McRPG.getInstance().getPluginPrefix()
 			  + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Bleed.BleedingStopped")));
 		  McRPGPlayer targ = PlayerManager.getPlayer(e.getTarget().getUniqueId());
 		  if(e.isBleedImmunityEnabled()){
 			startBleedImmunityTimer(targ, e.getBleedImmunityDuration());
 		  }
 		}
-		cancelTarget(e.getTarget().getUniqueId());
+		cancelTarget(en.getUniqueId());
 		if(en instanceof Player){
-		  removePlayerTargeted(e.getUser().getUuid(), e.getTarget().getUniqueId());
+		  removePlayerTargeted(e.getUser().getUuid(), en.getUniqueId());
 		}
 	  }
 	  else{

@@ -28,21 +28,21 @@ public class EditLoadoutSelectGUI extends GUI {
     super(new GUIBuilder(player));
     buildGUIFunction = (GUIBuilder builder) -> {
       FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EDIT_LOADOUT_SELECT_GUI);
-      String title = Methods.color(guiConfig.getString("Title"));
+      String title = Methods.color(player.getPlayer(), guiConfig.getString("Title"));
       Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
               title);
       ArrayList<GUIItem> items = new ArrayList<>();
 
       ItemStack defaultAbilities = new ItemStack(Material.valueOf(guiConfig.getString("DefaultAbilitiesItem.Material")), guiConfig.getInt("DefaultAbilitiesItem.Amount"));
       ItemMeta defaultMeta = defaultAbilities.getItemMeta();
-      defaultMeta.setDisplayName(Methods.color(guiConfig.getString("DefaultAbilitiesItem.DisplayName")));
+      defaultMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("DefaultAbilitiesItem.DisplayName")));
       defaultMeta.setLore(Methods.colorLore(guiConfig.getStringList("DefaultAbilitiesItem.Lore")));
       defaultAbilities.setItemMeta(defaultMeta);
       items.add(new GUIItem(defaultAbilities, guiConfig.getInt("DefaultAbilitiesItem.Slot")));
 
       ItemStack replaceAbilities = new ItemStack(Material.valueOf(guiConfig.getString("ReplaceAbilitiesItem.Material")), guiConfig.getInt("ReplaceAbilitiesItem.Amount"));
       ItemMeta replaceMeta = replaceAbilities.getItemMeta();
-      replaceMeta.setDisplayName(Methods.color(guiConfig.getString("ReplaceAbilitiesItem.DisplayName")));
+      replaceMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("ReplaceAbilitiesItem.DisplayName")));
       ArrayList<String> lore = new ArrayList<>();
       if(player.getEndTimeForReplaceCooldown() != 0) {
         Calendar temp = Calendar.getInstance();
@@ -59,21 +59,21 @@ public class EditLoadoutSelectGUI extends GUI {
 
       ItemStack unlockedAbilities = new ItemStack(Material.valueOf(guiConfig.getString("UnlockedAbilitiesItem.Material")), guiConfig.getInt("UnlockedAbilitiesItem.Amount"));
       ItemMeta unlockedMeta = unlockedAbilities.getItemMeta();
-      unlockedMeta.setDisplayName(Methods.color(guiConfig.getString("UnlockedAbilitiesItem.DisplayName")));
+      unlockedMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("UnlockedAbilitiesItem.DisplayName")));
       unlockedMeta.setLore(Methods.colorLore(guiConfig.getStringList("UnlockedAbilitiesItem.Lore")));
       unlockedAbilities.setItemMeta(unlockedMeta);
       items.add(new GUIItem(unlockedAbilities, guiConfig.getInt("UnlockedAbilitiesItem.Slot")));
 
       ItemStack back = new ItemStack(Material.valueOf(guiConfig.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
-      backMeta.setDisplayName(Methods.color(guiConfig.getString("BackButton.DisplayName")));
+      backMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("BackButton.DisplayName")));
       backMeta.setLore(Methods.colorLore(guiConfig.getStringList("BackButton.Lore")));
       back.setItemMeta(backMeta);
       items.add(new GUIItem(back, guiConfig.getInt("BackButton.Slot")));
 
       ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
       ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(guiConfig.getString("FillerItem.DisplayName"));
+      fillerMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
       fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
       filler.setItemMeta(fillerMeta);
 

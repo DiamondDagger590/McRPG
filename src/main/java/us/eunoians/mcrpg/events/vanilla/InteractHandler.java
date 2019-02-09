@@ -147,13 +147,13 @@ public class InteractHandler implements Listener {
 		doubleDrop.setBonusChance(doubleDrop.getBonusChance() + superBreakerEvent.getBoost());
 		PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, superBreakerEvent.getHasteDuration() * 20, 20);
 		p.addPotionEffect(effect);
-		mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		mp.getPlayer().sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 			McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Activated")));
 		new BukkitRunnable() {
 		  @Override
 		  public void run(){
 			doubleDrop.setBonusChance(0);
-			mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+			mp.getPlayer().sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 				McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Deactivated")));
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND,
@@ -231,28 +231,28 @@ public class InteractHandler implements Listener {
 		  }
 		}
 		if(diamondOre == null && goldOre == null && emeraldOre == null){
-		  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		  p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.NothingFound")));
 		  return;
 		}
 		else{
-		  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		  p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.PointingToValuable")));
 		}
 		Location lookAt = null;
 		if(goldOre != null){
 		  lookAt = goldOre;
-		  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		  p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.GoldFound").replace("%Amount%", Integer.toString(goldOreAmount))));
 		}
 		if(emeraldOre != null){
 		  lookAt = emeraldOre;
-		  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		  p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.EmeraldsFound").replace("%Amount%", Integer.toString(emeraldOreAmount))));
 		}
 		if(diamondOre != null){
 		  lookAt = diamondOre;
-		  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+		  p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
 			  McRPG.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.DiamondsFound").replace("%Amount%", Integer.toString(diamondOreAmount))));
 		}
 		mp.getActiveAbilities().remove(UnlockedAbilities.ORE_SCANNER);

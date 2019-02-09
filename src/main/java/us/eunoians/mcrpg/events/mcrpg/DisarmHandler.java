@@ -55,7 +55,7 @@ public class DisarmHandler implements Listener {
 		  Player targ = target.getPlayer();
 		  e.setCancelled(true);
 		  targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 5, 1);
-		  targ.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix()
+		  targ.sendMessage(Methods.color(targ,McRPG.getInstance().getPluginPrefix()
 		  + McRPG.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
 		  return;
 		}

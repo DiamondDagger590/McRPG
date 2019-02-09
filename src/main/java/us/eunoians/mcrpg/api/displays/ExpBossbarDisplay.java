@@ -30,7 +30,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
   @Override
   public void createBossBar(){
     Skill s = this.player.getSkill(skill);
-	String title = Methods.color(McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
+	String title = Methods.color(player.getPlayer(), McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
 	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())));
 	BarStyle style = BarStyle.SEGMENTED_10;
 	BarColor color = us.eunoians.mcrpg.types.BarColor.fromString(McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.Color." + skill.getName()));
@@ -52,7 +52,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
 	equation.setVariable("power_level", player.getPowerLevel());
 	double progress = s.getCurrentExp()/equation.getValue();
     expBar.setProgress(progress);
-    this.expBar.setTitle(Methods.color(McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
+    this.expBar.setTitle(Methods.color(player.getPlayer(), McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
 		.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp()))));
   }
 

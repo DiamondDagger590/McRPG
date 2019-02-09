@@ -296,7 +296,7 @@ public class InvClickEvent implements Listener {
             acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
             mp.saveData();
-            p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
                     .replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
             if(mp.getAbilityPoints() > 0) {
               GUI gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
@@ -407,7 +407,7 @@ public class InvClickEvent implements Listener {
               ItemMeta meta = current.getItemMeta();
               List<String> lore = meta.getLore();
               lore.remove(meta.getLore().size() - 1);
-              lore.add(Methods.color(guiConfig.getString("ToggledOff")));
+              lore.add(Methods.color(p, guiConfig.getString("ToggledOff")));
               meta.setLore(lore);
               current.setItemMeta(meta);
               e.getInventory().setItem(e.getSlot(), current);
@@ -418,7 +418,7 @@ public class InvClickEvent implements Listener {
               ItemMeta meta = current.getItemMeta();
               List<String> lore = meta.getLore();
               lore.remove(meta.getLore().size() - 1);
-              lore.add(Methods.color(guiConfig.getString("ToggledOn")));
+              lore.add(Methods.color(p, guiConfig.getString("ToggledOn")));
               meta.setLore(lore);
               current.setItemMeta(meta);
               e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);

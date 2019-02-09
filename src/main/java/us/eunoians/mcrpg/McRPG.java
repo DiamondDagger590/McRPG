@@ -11,10 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
-import us.eunoians.mcrpg.api.util.DiamondFlowersData;
-import us.eunoians.mcrpg.api.util.FileManager;
-import us.eunoians.mcrpg.api.util.HiddenConfig;
-import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.commands.*;
 import us.eunoians.mcrpg.events.mcrpg.*;
 import us.eunoians.mcrpg.events.vanilla.*;
@@ -52,6 +49,10 @@ public class McRPG extends JavaPlugin implements Initializable {
   private final String customVisibleKey = "mcMMO: Name Visibility";
   @Getter
   private boolean healthBarPluginEnabled;
+  @Getter
+  private boolean mvdwEnabled;
+  @Getter
+  private boolean papiEnabled;
 
 
   @Override
@@ -107,6 +108,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     }
   }
 
+  @SuppressWarnings("Duplicates")
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
     //localizationFiles = new LocalizationFiles(this, true);
@@ -115,6 +117,11 @@ public class McRPG extends JavaPlugin implements Initializable {
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     if(healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
+    }
+    if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
+      papiEnabled = true;
+      getLogger().info("Papi PlaceholderAPI found... registering hooks");
+      new McRPGPlaceHolders().register();
     }
     remoteTransferTracker = new RemoteTransferTracker();
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
