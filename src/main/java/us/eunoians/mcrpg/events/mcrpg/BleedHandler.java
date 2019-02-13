@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
-import us.eunoians.mcrpg.api.events.mcrpg.BleedEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;

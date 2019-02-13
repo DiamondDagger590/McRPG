@@ -1,6 +1,6 @@
 #Is herbalism enabled
 HerbalismEnabled: true
-#Exp equation for mining. Allowed placeholders are:
+#Exp equation for herbalism. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
@@ -79,9 +79,9 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   DiamondFlowers: 400
-  Replanting: 200
+  Replanting: 125
   FarmersDiet: 50
-  MassHarvest: 275
+  MassHarvest: 225
   NaturesWrath: 500
   PansBlessing: 350
 #

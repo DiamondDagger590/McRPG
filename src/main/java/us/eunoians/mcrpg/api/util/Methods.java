@@ -1,13 +1,12 @@
 package us.eunoians.mcrpg.api.util;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.gui.GUIItem;
 import us.eunoians.mcrpg.types.Skills;
@@ -231,6 +230,8 @@ public class Methods {
         return Skills.HERBALISM;
       case WOODEN_HOE:
         return Skills.HERBALISM;
+      case BOW:
+        return Skills.ARCHERY;
       case AIR:
         return Skills.UNARMED;
     }
@@ -272,5 +273,20 @@ public class Methods {
     loc.setPitch(loc.getPitch() * 180f / (float) Math.PI);
 
     return loc;
+  }
+
+  public static void setMetadata(Entity e, String key, Object value) {
+    e.setMetadata(key, new FixedMetadataValue(McRPG.getInstance(), value));
+
+  }
+
+  public static String locToString(Location loc) {
+    return loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ() + ":" + loc.getWorld().getName();
+  }
+
+  public static Location stringToLoc(String loc) {
+    String[] args = loc.split(":");
+    World w = Bukkit.getWorld(args[3]);
+    return new Location(w, Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
   }
 }

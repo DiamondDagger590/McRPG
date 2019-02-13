@@ -12,7 +12,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.herbalism.FarmersDiet;
-import us.eunoians.mcrpg.api.events.mcrpg.FarmersDietEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.herbalism.FarmersDietEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;

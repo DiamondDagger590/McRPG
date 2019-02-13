@@ -21,12 +21,13 @@ DisplayConfig:
       CurrentExp: '&eExp:'
       ExpNeeded: '&eExp Left:'
   BossBar:
-    DisplayName: '&5%Skill%: &e%Exp_To_Level%'
+    DisplayName: '&5Lv.&e%Current_Level% &7- &5%Skill%: &e%Exp_To_Level%'
     Color:
       Swords: 'Red'
       Mining: 'Blue'
       Unarmed: 'White'
       Herbalism: 'Green'
+      Archery: 'Pink'
   ActionBar:
     Swords:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
@@ -35,6 +36,8 @@ DisplayConfig:
     Unarmed:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
     Herbalism:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Archery:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
 PlayerConfiguration:
   #This amount is here for the future and currently is unused

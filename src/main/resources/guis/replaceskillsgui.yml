@@ -4,53 +4,63 @@ Gui:
     Title: '&bMcMMOx Skills Menu'
     Events:
       1:
-      - 'OpenNative:SelectReplaceGUI:Swords'
+        - 'OpenNative:SelectReplaceGUI:Swords'
       3:
-      - 'OpenNative:SelectReplaceGUI:Mining'
+        - 'OpenNative:SelectReplaceGUI:Mining'
       5:
-      - 'OpenNative:SelectReplaceGUI:Unarmed'
+        - 'OpenNative:SelectReplaceGUI:Unarmed'
       7:
-      - 'OpenNative:SelectReplaceGUI:Herbalism'
+        - 'OpenNative:SelectReplaceGUI:Herbalism'
+      10:
+        - 'OpenNative:SelectReplaceGUI:Archery'
       53:
-      - 'OpenFile:maingui.yml:MainGUI'
+        - 'OpenFile:maingui.yml:MainGUI'
     Items:
       SwordsSkill:
         Name: '&5Swords Skill'
         Material: DIAMOND_SWORD
         Lore:
-        - '&eClick this to view swords abilities'
-        - '&eCurrent Swords level: &a%Swords_Level%'
-        - '&eBleed chance: &c%Bleed_Chance%%'
+          - '&eClick this to view swords abilities'
+          - '&eCurrent Swords level: &a%Swords_Level%'
+          - '&eBleed chance: &c%Bleed_Chance%%'
         Slot: 1
       MiningSkill:
         Name: '&5Mining Skill'
         Material: DIAMOND_PICKAXE
         Lore:
-        - '&eClick this to view your mining abilities'
-        - '&eCurrent Mining level: &a%Mining_Level%'
-        - '&eDouble Drop chance: &c%Double_Drop_Chance%%'
+          - '&eClick this to view your mining abilities'
+          - '&eCurrent Mining level: &a%Mining_Level%'
+          - '&eDouble Drop chance: &c%Double_Drop_Chance%%'
         Slot: 3
       UnarmedSkill:
         Name: '&5Unarmed Skill'
         Material: PLAYER_HEAD
         Lore:
-        - '&eClick this to view your unarmed abilities'
-        - '&eCurrent Unarmed level: &a%Unarmed_Level%'
-        - '&eSticky Fingers chance: &c%Sticky_Fingers_Chance%%'
+          - '&eClick this to view your unarmed abilities'
+          - '&eCurrent Unarmed level: &a%Unarmed_Level%'
+          - '&eSticky Fingers chance: &c%Sticky_Fingers_Chance%%'
         Slot: 5
       HerbalismSkill:
         Name: '&5Herbalism Skill'
         Material: DIAMOND_HOE
         Lore:
-        - '&eClick this to view your herbalism abilities'
-        - '&eCurrent Herbalism level: &a%Herbalism_Level%'
-        - '&eDouble Drop chance: &c%Too_Many_Plants_Chance%%'
+          - '&eClick this to view your herbalism abilities'
+          - '&eCurrent Herbalism level: &a%Herbalism_Level%'
+          - '&eDouble Drop chance: &c%Too_Many_Plants_Chance%%'
         Slot: 7
+      ArcherySkill:
+        Name: '&5Archery Skill'
+        Material: BOW
+        Lore:
+          - '&eClick this to view your archery abilities'
+          - '&eCurrent Archery level: &a%Archery_Level%'
+          - '&eDaze chance: &c%Daze_Chance%%'
+        Slot: 10
       Back:
         Name: '&bHome>>'
         Material: BARRIER
         Lore:
-        - '&eClick this to go home'
+          - '&eClick this to go home'
         Slot: 53
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE

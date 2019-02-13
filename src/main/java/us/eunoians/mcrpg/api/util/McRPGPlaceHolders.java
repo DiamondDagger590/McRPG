@@ -46,17 +46,17 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
       return Integer.toString(mp.getPowerLevel());
     }
     else if(identifier.contains("_level")){
-      Skills skill = Skills.fromString(args[1]);
+      Skills skill = Skills.fromString(args[0]);
       return Integer.toString(mp.getSkill(skill).getCurrentLevel());
     }
-    else if(identifier.contains("_exp")){
-      Skills skill = Skills.fromString(args[1]);
-      return Integer.toString(mp.getSkill(skill).getCurrentExp());
-    }
     else if(identifier.contains("_exp_needed")){
-      Skills skill = Skills.fromString(args[1]);
+      Skills skill = Skills.fromString(args[0]);
       return Integer.toString(mp.getSkill(skill).getExpToLevel());
     }
-    return null;
+    else if(identifier.contains("_exp")){
+      Skills skill = Skills.fromString(args[0]);
+      return Integer.toString(mp.getSkill(skill).getCurrentExp());
+    }
+    return "";
   }
 }

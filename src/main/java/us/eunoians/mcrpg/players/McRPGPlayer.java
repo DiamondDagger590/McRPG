@@ -16,7 +16,7 @@ import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
 import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.api.events.mcrpg.SmitingFistEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.skills.*;
 import us.eunoians.mcrpg.types.*;
@@ -68,6 +68,10 @@ public class McRPGPlayer {
   @Getter
   @Setter
   private boolean hasBleedImmunity = false;
+
+  @Getter
+  @Setter
+  private boolean hasDazeImmunity = false;
 
   /**
    * The players current ability loadout
@@ -563,7 +567,7 @@ public class McRPGPlayer {
 		//Initialize Blessing of Artemis
 		BlessingOfArtemis blessingOfArtemis = new BlessingOfArtemis();
 		blessingOfArtemis.setToggled(playerData.getBoolean("Archery.BlessingOfArtemis.IsToggled"));
-		blessingOfArtemis.setCurrentTier(playerData.getInt("Herbalism.BlessingOfArtemis.Tier"));
+		blessingOfArtemis.setCurrentTier(playerData.getInt("Archery.BlessingOfArtemis.Tier"));
 		if(playerData.getInt("Archery.BlessingOfArtemis.Tier") != 0){
 		  blessingOfArtemis.setUnlocked(true);
 		}
@@ -581,11 +585,9 @@ public class McRPGPlayer {
 		abilityMap.put(UnlockedAbilities.BLESSING_OF_APOLLO, blessingOfApollo);
 		abilityMap.put(UnlockedAbilities.BLESSING_OF_ARTEMIS, blessingOfArtemis);
 		abilityMap.put(UnlockedAbilities.CURSE_OF_HADES, curseOfHades);
-		//Create skill
-		/*
 		Archery archery = new Archery(playerData.getInt("Archery.Level"),
 			playerData.getInt("Archery.CurrentExp"), abilityMap, this);
-		skills.add(archery);*/
+		skills.add(archery);
 	  }
 	});
 	for(String s : playerData.getStringList("AbilityLoadout")){
@@ -766,10 +768,6 @@ public class McRPGPlayer {
    */
   public void saveData(){
 	for(Skills type : Skills.values()){
-	  //TODO remove
-	  if(type == Skills.ARCHERY){
-	    continue;
-	  }
 	  Skill skill = getSkill(type);
 	  playerData.set(type.getName() + ".Level", skill.getCurrentLevel());
 	  playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());

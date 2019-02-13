@@ -455,11 +455,7 @@ public class InvClickEvent implements Listener {
             return;
           }
         }
-        if(e.getSlot() > editDefaultAbilitiesGUI.getDefaultAbilityList().size() - 1 || e.getSlot() == 0) {
-          return;
-        }
-        //TODO cuz i havent finished archery... ^^ and remove the +1
-        BaseAbility abilityToChange = editDefaultAbilitiesGUI.getDefaultAbilityList().get(e.getSlot() -1);
+        BaseAbility abilityToChange = editDefaultAbilitiesGUI.getDefaultAbilityList().get(e.getSlot());
         abilityToChange.setToggled(!abilityToChange.isToggled());
         if(!abilityToChange.isToggled()) {
           ItemStack current = e.getCurrentItem();

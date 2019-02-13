@@ -36,7 +36,7 @@ public class AcceptAbilityGUI extends GUI {
         FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
 		FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ACCEPT_ABILITY_GUI);
         Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
-                Methods.color(p.getPlayer(), guiConfig.getString("Title.AcceptAbility").replace("%Ability", ability.getGenericAbility().getName())));
+                Methods.color(p.getPlayer(), guiConfig.getString("Title.AcceptAbility").replace("%Ability%", ability.getGenericAbility().getName())));
         ArrayList<GUIItem> items = new ArrayList<>();
         String path = ability.getGenericAbility().getName() + "Config.Item.";
 

@@ -34,7 +34,7 @@ public class AbilityOverrideGUI extends GUI {
 	  FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(abiltyToReplace.getGenericAbility().getSkill()));
 		FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ABILITY_OVERRIDE_GUI);
 		Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
-		  Methods.color(player.getPlayer(), guiConfig.getString("Title").replace("%OldAbility", abiltyToReplace.getGenericAbility().getName())
+		  Methods.color(player.getPlayer(), guiConfig.getString("Title").replace("%OldAbility%", abiltyToReplace.getGenericAbility().getName())
 						  .replace("%NewAbility%", replaceAbility.getGenericAbility().getName())));
 	  ArrayList<GUIItem> items = new ArrayList<>();
 

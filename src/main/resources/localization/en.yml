@@ -163,6 +163,23 @@ Messages:
       Activated: '&aMass Harvest has activated'
     PansBlessing:
       Activated: '&aPans Blessing has activated'
+    BlessingOfArtemis:
+      Activated: '&aThe goddess of the hunt has blessed you with invisibility young hunter.'
+      Hit: '&cA blessed hunter has struck you'
+    BlessingOfApollo:
+      Activated: '&aThe sun god has blessed you with his fiery power'
+      Hit: '&cThe power of the sun god has struck you'
+    CurseOfHades:
+      Activated: '&aThe god of the dead has cursed your arrow with hells power'
+      Hit: '&cThe power of hell has entered your body'
+    Daze:
+      Hit: '&cThe sudden strike of the arrow has left you confused'
+    TippedArrows:
+      Hit: '&cYou were stuck with a potion tipped arrow'
+    Puncture:
+      Hit: '&cYour lungs were punctured and you are now Bleeding'
+    Combo:
+      Hit: '&cBeing hit by a combo has dealt extra damage to you'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
@@ -205,3 +222,9 @@ Messages:
       - '&7[&5McRPG Tip&7]: &aFarming sugar cane is the most effective way to level!'
       - '&7[&5McRPG Tip&7]: &aNatures Wrath requires flowers to be in the off hand!'
       - '&7[&5McRPG Tip&7]: &aNatures Wrath wont work if you are too hungry!'
+    LevelUpArchery:
+      - '&7[&5McRPG Tip&7]: &aThe further you shoot your target the more exp you will gain!'
+      - '&7[&5McRPG Tip&7]: &aCombo has a delay as to how often it activates to prevent bow spamming!'
+      - '&7[&5McRPG Tip&7]: &aPuncture can inflict Bleed and use all modifiers from your Swords skill!'
+      - '&7[&5McRPG Tip&7]: &aBlessing of Artemis is good for a sneaky surprise!'
+      - '&7[&5McRPG Tip&7]: &aReady your bow by attacking air before you shoot to activate abilities!'

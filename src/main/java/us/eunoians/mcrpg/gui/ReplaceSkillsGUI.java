@@ -34,10 +34,6 @@ public class ReplaceSkillsGUI extends GUI {
 		List<String> lore = new ArrayList<>();
 		for(String s : meta.getLore()){
 		  for(Skills skill : Skills.values()){
-		    //TODO remove this
-		    if(skill == Skills.ARCHERY){
-		      continue;
-			}
 			s = s.replaceAll("%" + skill.getName() + "_Level%", Integer.toString(player.getSkill(skill).getCurrentLevel()));
 			DefaultAbilities ability = DefaultAbilities.getSkillsDefaultAbility(skill.getName());
 			Parser equation = ability.getActivationEquation();

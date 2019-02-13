@@ -171,6 +171,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new AbilityUnlock(), this);
     getServer().getPluginManager().registerEvents(new PickupEvent(), this);
     getServer().getPluginManager().registerEvents(new DropItemEvent(), this);
+    getServer().getPluginManager().registerEvents(new ShootEvent(), this);
   }
 
   public static McRPG getInstance() {

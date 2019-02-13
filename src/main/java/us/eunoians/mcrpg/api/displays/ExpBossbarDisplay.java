@@ -31,7 +31,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
   public void createBossBar(){
     Skill s = this.player.getSkill(skill);
 	String title = Methods.color(player.getPlayer(), McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
-	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())));
+	.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())).replace("%Current_Level%", Integer.toString(s.getCurrentLevel())));
 	BarStyle style = BarStyle.SEGMENTED_10;
 	BarColor color = us.eunoians.mcrpg.types.BarColor.fromString(McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.Color." + skill.getName()));
 	Parser equation = skill.getExpEquation();

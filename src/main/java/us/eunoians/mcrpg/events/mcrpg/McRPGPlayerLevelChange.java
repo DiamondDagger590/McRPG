@@ -82,10 +82,17 @@ public class McRPGPlayerLevelChange implements Listener {
       //Iterate across these bois
       addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
     }
-    //Do things for mining ability
+    //Do things for herbalism ability
     if(skillLeveled.getType().equals(Skills.HERBALISM)) {
       //Get all enabled abilites
       List<String> enabledAbilities = Skills.HERBALISM.getEnabledAbilities();
+      //Iterate across these bois
+      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
+    }
+    //Do things for archery ability
+    if(skillLeveled.getType().equals(Skills.ARCHERY)) {
+      //Get all enabled abilites
+      List<String> enabledAbilities = Skills.ARCHERY.getEnabledAbilities();
       //Iterate across these bois
       addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
     }
