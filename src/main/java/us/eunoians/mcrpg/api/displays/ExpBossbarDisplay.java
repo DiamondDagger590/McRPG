@@ -53,7 +53,7 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
 	double progress = s.getCurrentExp()/equation.getValue();
     expBar.setProgress(progress);
     this.expBar.setTitle(Methods.color(player.getPlayer(), McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getName())
-		.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp()))));
+		.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())).replace("%Current_Level%", Integer.toString(currentLevel))));
   }
 
   @Override

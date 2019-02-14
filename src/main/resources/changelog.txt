@@ -1,3 +1,6 @@
+1.1.1-ALPHA
+= Fixed issue with boss bar display not replacing placeholders when exp is gained
+
 1.1.0-ALPHA
 Note: All config changes can be made by deleting their files and letting them regen
 + Added Archery and 7 new abilities bringing current total to 35! Coming from mcMMO is Daze however it no
