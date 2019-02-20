@@ -1,11 +1,14 @@
 package us.eunoians.mcrpg.api.util;
 
+import de.articdive.enum_to_yaml.EnumConfiguration;
+import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.IOUtil;
+import us.eunoians.mcrpg.util.configuration.ConfigEnum;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +45,8 @@ public class FileManager {
    * @param plugin The plugin this is getting loading for.
    */
   public FileManager setup(Plugin plugin) {
+    //Auto gen some configs
+    EnumConfiguration config = new EnumConfigurationBuilder(new File(Files.CONFIG.getFileLocation()), ConfigEnum.class).build();
     prefix = "[" + plugin.getName() + "] ";
     this.plugin = plugin;
     if (!plugin.getDataFolder().exists()) {

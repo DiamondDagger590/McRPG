@@ -6,6 +6,8 @@ import com.cyr1en.mcutils.utils.reflection.Initializable;
 import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
 import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
 import com.google.common.base.Charsets;
+import de.articdive.enum_to_yaml.EnumConfiguration;
+import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
