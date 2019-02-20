@@ -45,9 +45,9 @@ ExpAwardedPerBlock:
   ORANGE_TERRACOTTA: 25
   MOSSY_COBBLESTONE: 15
   COBBLESTONE: 15
-  ICE: 40
-  PACKED_ICE: 100
-  BLUE_ICE: 200
+  ICE: 5
+  PACKED_ICE: 7
+  BLUE_ICE: 15
 DoubleDropBlocks:
   - 'OBSIDIAN'
   - 'STONE'
@@ -61,6 +61,8 @@ DoubleDropBlocks:
   - 'IRON_ORE'
   - 'REDSTONE_ORE'
   - 'LAPIS_ORE'
+  - 'NETHER_QUARTZ_ORE'
+  - 'GLOWSTONE'
 #What abilities are enabled
 EnabledAbilities:
   DoubleDrop: true
@@ -83,11 +85,11 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   RicherOres: 50
-  RemoteTransfer: 200
+  RemoteTransfer: 125
   ItsATriple: 400
-  SuperBreaker: 250
+  SuperBreaker: 225
   OreScanner: 350
-  BlastMining: 600
+  BlastMining: 500
 #
 # DoubleDrop is the default ability that every player has. This ability will increase every time the players Mining level is increased
 #
@@ -114,10 +116,10 @@ RicherOresConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 175
-    TierIII: 300
-    TierIV: 425
-    TierV: 600
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
   TierI:
     #The chance boost from richer ores
     ActivationBoost: 5.0
@@ -151,10 +153,10 @@ RemoteTransferConfig:
   UnlinkAndBreakOnMine: false
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 400
-    TierIII: 600
-    TierIV: 800
-    TierV: 1000
+    TierII: 200
+    TierIII: 325
+    TierIV: 450
+    TierV: 600
   #Config for each Tier
   TierI:
     #The range of Remote Transfer per tier
@@ -239,8 +241,8 @@ ItsATripleConfig:
   TierUpgrade:
     TierII: 525
     TierIII: 650
-    TierIV: 800
-    TierV: 950
+    TierIV: 775
+    TierV: 925
   #Config for each tier
   TierI:
     #Odds of activation per tier
@@ -332,10 +334,10 @@ BlastMiningConfig:
     - 'STONE'
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 700
-    TierIII: 800
-    TierIV: 900
-    TierV: 1000
+    TierII: 600
+    TierIII: 700
+    TierIV: 800
+    TierV: 900
   #Config for each tier
   TierI:
     #Radius of the ability (this is done to every side of the player)

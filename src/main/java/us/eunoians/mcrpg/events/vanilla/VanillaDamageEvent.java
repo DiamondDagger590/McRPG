@@ -59,6 +59,11 @@ public class VanillaDamageEvent implements Listener {
   }
 
   /**
+   * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+   * Modified by  * This code has been modified from it source material
+   * It was released under the GPLv3 license
+   */
+  /**
    * Checks to see if an entity is currently invincible.
    *
    * @param entity      The {@link LivingEntity} to check
@@ -72,6 +77,7 @@ public class VanillaDamageEvent implements Listener {
      */
     return (entity.getNoDamageTicks() > entity.getMaximumNoDamageTicks() / 2.0F) && (eventDamage <= entity.getLastDamage());
   }
+  //End mcMMO code
 
   private static boolean isNPCEntity(Entity entity) {
     return (entity == null || entity.hasMetadata("NPC") || entity instanceof NPC || entity.getClass().getName().equalsIgnoreCase("cofh.entity.PlayerFake"));
@@ -108,8 +114,12 @@ public class VanillaDamageEvent implements Listener {
           baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
         }
         double dmg = e.getDamage();
-        int expAwarded = (int) (dmg * baseExp);
-        mp.getSkill(Skills.UNARMED).giveExp(expAwarded, GainReason.DAMAGE);
+        double mobSpawnValue = 1.0;
+        if(e.getEntity().hasMetadata("ExpModifier")){
+          mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
+        }
+        int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
+        mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
         if(mp.isCanSmite()) {
           if(!(e.getEntity().getFireTicks() > 0)) {
             LivingEntity entity = (LivingEntity) e.getEntity();
@@ -170,8 +180,10 @@ public class VanillaDamageEvent implements Listener {
                   public void run() {
                     //Undo all the things that berserk did and set it on cooldown
                     disarm.setBonusChance(0);
-                    mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                            McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Deactivated")));
+                    if(mp.getPlayer().isOnline()) {
+                      mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Deactivated")));
+                    }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Cooldown"));
@@ -220,8 +232,10 @@ public class VanillaDamageEvent implements Listener {
                     //Undo all the things that smiting fist did and set it on cooldown
                     mp.setCanSmite(false);
                     mp.setSmitingFistData(null);
-                    mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                            McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Deactivated")));
+                    if(mp.getPlayer().isOnline()) {
+                      mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Deactivated")));
+                    }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             smitingFistEvent.getCooldown());
@@ -257,8 +271,10 @@ public class VanillaDamageEvent implements Listener {
                     //Undo all the things that dense impact did and set it on cooldown
                     mp.setCanDenseImpact(false);
                     mp.setArmourDmg(0);
-                    mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                            McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Deactivated")));
+                    if(mp.getPlayer().isOnline()) {
+                      mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Deactivated")));
+                    }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             cooldown);
@@ -356,8 +372,10 @@ public class VanillaDamageEvent implements Listener {
                   public void run() {
                     //Undo all the things that serrated strikes did and set it on cooldown
                     bleed.setBonusChance(0);
-                    mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                            McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Deactivated")));
+                    if(mp.getPlayer().isOnline()) {
+                      mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Deactivated")));
+                    }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             event.getCooldown());
@@ -434,8 +452,12 @@ public class VanillaDamageEvent implements Listener {
             baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
           }
           double dmg = e.getDamage();
-          int expAwarded = (int) (dmg * baseExp * multiplier);
-          mp.getSkill(Skills.SWORDS).giveExp(expAwarded, GainReason.DAMAGE);
+          double mobSpawnValue = 1.0;
+          if(e.getEntity().hasMetadata("ExpModifier")){
+            mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
+          }
+          int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
+          mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
         }
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
@@ -466,8 +488,12 @@ public class VanillaDamageEvent implements Listener {
         }
         Parser parser = new Parser(config.getString("DistanceBonus"));
         parser.setVariable("block_distance", distance);
-        int expAwarded = (int) (dmg * baseExp + (dmg * baseExp * parser.getValue()));
-        mp.getSkill(Skills.ARCHERY).giveExp(expAwarded, GainReason.DAMAGE);
+        double mobSpawnValue = 1.0;
+        if(e.getEntity().hasMetadata("ExpModifier")){
+          mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
+        }
+        int expAwarded = (int) ((dmg * baseExp + (dmg * baseExp * parser.getValue())) * mobSpawnValue);
+        mp.getSkill(Skills.ARCHERY).giveExp(mp, expAwarded, GainReason.DAMAGE);
 
         //Handle the hp bars when dealing with archery
         handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());

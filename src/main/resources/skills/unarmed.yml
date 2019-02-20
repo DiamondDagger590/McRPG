@@ -89,7 +89,7 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   TighterGrip: 50
-  Disarm: 200
+  Disarm: 150
   IronArm: 400
   Berserk: 275
   SmitingFist: 350
@@ -155,9 +155,9 @@ DisarmConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 450
-    TierIV: 575
+    TierII: 275
+    TierIII: 400
+    TierIV: 550
     TierV: 700
   #Config for each Tier
   TierI:

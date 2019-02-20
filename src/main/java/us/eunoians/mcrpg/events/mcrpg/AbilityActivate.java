@@ -15,7 +15,7 @@ public class AbilityActivate implements Listener {
  public void abilityActivateEvent(AbilityActivateEvent e){
    Skills skill = Skills.fromString(e.getAbility().getGenericAbility().getSkill());
    String abilityName = e.getAbility().getGenericAbility().getName().replace(" ", "").replace("_", "").toLowerCase();
-   Player p = e.getUser().getPlayer();
+   Player p = e.getMcRPGPlayer().getPlayer();
    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
 	   || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".use.*")|| p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".unlock." + abilityName))){
 	 e.setCancelled(true);

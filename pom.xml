@@ -13,7 +13,7 @@
 
     <groupId>us.eunoians</groupId>
     <artifactId>McRPG</artifactId>
-    <version>1.1.1-ALPHA</version>
+    <version>1.1.2-ALPHA</version>
 
     <build>
         <plugins>
@@ -46,6 +46,10 @@
             <id>placeholderapi</id>
             <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
+        <repository>
+            <id>EnumToYAML</id>
+            <url>https://nexus.articdive.de/repository/maven-snapshots/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -77,12 +81,12 @@
             <version>9d852add79</version>
             <scope>compile</scope>
         </dependency>
-        <!--Parties-->
+        <!--EnumToYaml-->
         <dependency>
-            <groupId>com.github.AlessioDP.Parties</groupId>
-            <artifactId>parties-api</artifactId>
-            <version>2.4.1</version>
-            <scope>provided</scope>
+            <groupId>de.articdive</groupId>
+            <artifactId>EnumToYAML</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

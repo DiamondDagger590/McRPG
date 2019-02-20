@@ -1,3 +1,7 @@
+1.1.2-ALPHA
++Added option to change the worth of mobs from spawners and mob eggs
+= Moved many ability events from the API to organize them better, should not break compatibility with QuestCreator
+
 1.1.1-ALPHA
 = Fixed issue with boss bar display not replacing placeholders when exp is gained
 

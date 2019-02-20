@@ -124,8 +124,8 @@ public abstract class Skill {
    * @param exp The exp gained
    * @param gainReason The reason the player is gaining the exp
    */
-  public void giveExp(int exp, GainReason gainReason){
-	McRPGPlayerExpGainEvent expEvent = new McRPGPlayerExpGainEvent(exp, this, gainReason);
+  public void giveExp(McRPGPlayer player, int exp, GainReason gainReason){
+	McRPGPlayerExpGainEvent expEvent = new McRPGPlayerExpGainEvent(player, exp, this, gainReason);
 	Bukkit.getPluginManager().callEvent(expEvent);
 	if(expEvent.isCancelled()){
 	  return;
@@ -150,7 +150,7 @@ public abstract class Skill {
 		expToLevel = (int) parser.getValue();
 		currentExp = leftOverExp;
 	  }
-	  McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(oldLevel, currentLevel, amountOfLevels, this);
+	  McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, oldLevel, currentLevel, amountOfLevels, this);
 	  Bukkit.getPluginManager().callEvent(event);
     }
 	else{
@@ -174,10 +174,10 @@ public abstract class Skill {
    * @param levels The amount of levels to give
    * @param resetExp If the exp should be reset on level ip
    */
-  public void giveLevels(int levels, boolean resetExp){
+  public void giveLevels(McRPGPlayer player, int levels, boolean resetExp){
     int old = currentLevel;
     currentLevel += levels;
-    McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(old, currentLevel, levels, this);
+    McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, old, currentLevel, levels, this);
     Bukkit.getPluginManager().callEvent(event);
 	Parser parser = type.getExpEquation();
 	parser.setVariable("skill_level", currentLevel);

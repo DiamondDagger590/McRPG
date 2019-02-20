@@ -1,22 +1,14 @@
 package us.eunoians.mcrpg.api.events.mcrpg;
 
 import lombok.Getter;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.AbilityEventType;
 
-public class AbilityActivateEvent extends Event implements Cancellable {
-
-  private static final HandlerList handlers = new HandlerList();
-  protected boolean isCancelled;
+public class AbilityActivateEvent extends PlayerModifiedEvent {
 
   @Getter
   private BaseAbility ability;
-  @Getter
-  private McRPGPlayer user;
   @Getter
   private AbilityEventType eventType;
 
@@ -26,29 +18,8 @@ public class AbilityActivateEvent extends Event implements Cancellable {
    * @param player The user
    */
   public AbilityActivateEvent(BaseAbility ability, McRPGPlayer player, AbilityEventType eventType){
+    super(player);
     this.ability = ability;
-    this.user = player;
-    this.isCancelled = isCancelled();
     this.eventType = eventType;
-  }
-
-
-  @Override
-  public boolean isCancelled(){
-	return isCancelled;
-  }
-
-  @Override
-  public void setCancelled(boolean isCancelled){
-	this.isCancelled = isCancelled;
-  }
-
-  @Override
-  public HandlerList getHandlers(){
-	return handlers;
-  }
-
-  public static HandlerList getHandlerList() {
-    return handlers;
   }
 }

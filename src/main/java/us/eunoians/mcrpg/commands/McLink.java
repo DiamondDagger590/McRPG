@@ -24,49 +24,55 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 public class McLink implements CommandExecutor, Listener {
 
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    if(!(sender instanceof Player)){
+    if(!(sender instanceof Player)) {
       sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Utility.OnlyPlayers")));
       return true;
-	}
-	else{
-	  Player p = (Player) sender;
-	  McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
-	  Block target = p.getTargetBlock(null, 100);
-	  if(target.getType() != Material.CHEST){
-	    p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.NotAChest")));
-	  	return true;
-	  }
-	  else if(!mp.getAbilityLoadout().contains(UnlockedAbilities.REMOTE_TRANSFER) || !mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() || !UnlockedAbilities.REMOTE_TRANSFER.isEnabled()){
-	    p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Utility.NotEnabledOrUnlocked")));
-	    return true;
-	  }
-	  else{
-		FakeChestOpenEvent openEvent = new FakeChestOpenEvent(p, target.getLocation());
-		Bukkit.getPluginManager().callEvent(openEvent);
-		return true;
-	  }
-	}
+    }
+    else {
+      Player p = (Player) sender;
+      //Disabled Worlds
+      String world = p.getWorld().getName();
+      if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+              McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)) {
+        return true;
+      }
+      McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+      Block target = p.getTargetBlock(null, 100);
+      if(target.getType() != Material.CHEST) {
+        p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.NotAChest")));
+        return true;
+      }
+      else if(!mp.getAbilityLoadout().contains(UnlockedAbilities.REMOTE_TRANSFER) || !mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() || !UnlockedAbilities.REMOTE_TRANSFER.isEnabled()) {
+        p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Utility.NotEnabledOrUnlocked")));
+        return true;
+      }
+      else {
+        FakeChestOpenEvent openEvent = new FakeChestOpenEvent(p, target.getLocation());
+        Bukkit.getPluginManager().callEvent(openEvent);
+        return true;
+      }
+    }
   }
 
-  @EventHandler (priority = EventPriority.HIGHEST)
-  public void fakeBlockListener(FakeChestOpenEvent event){
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void fakeBlockListener(FakeChestOpenEvent event) {
     McRPGPlayer mp = PlayerManager.getPlayer(event.getPlayer().getUniqueId());
     Location loc = event.getClickedBlock().getLocation();
     Player p = event.getPlayer();
-	PreChestLinkEvent preChestLinkEvent = new PreChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);
-	preChestLinkEvent.setCancelled(event.isCancelled());
-	Bukkit.getPluginManager().callEvent(preChestLinkEvent);
-	if(preChestLinkEvent.isCancelled()){
-	  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + preChestLinkEvent.getErrorMessage()));
-	}
-	else{
-	  ChestLinkEvent chestLinkEvent = new ChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);
-	  Bukkit.getPluginManager().callEvent(chestLinkEvent);
-	  mp.setLinkedToRemoteTransfer(true);
-	  ((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(loc);
-	  McRPG.getInstance().getRemoteTransferTracker().addLocation(p.getUniqueId(), loc);
-	  p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Linked")));
-	}
-	event.setCancelled(true);
+    PreChestLinkEvent preChestLinkEvent = new PreChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);
+    preChestLinkEvent.setCancelled(event.isCancelled());
+    Bukkit.getPluginManager().callEvent(preChestLinkEvent);
+    if(preChestLinkEvent.isCancelled()) {
+      p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + preChestLinkEvent.getErrorMessage()));
+    }
+    else {
+      ChestLinkEvent chestLinkEvent = new ChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);
+      Bukkit.getPluginManager().callEvent(chestLinkEvent);
+      mp.setLinkedToRemoteTransfer(true);
+      ((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(loc);
+      McRPG.getInstance().getRemoteTransferTracker().addLocation(p.getUniqueId(), loc);
+      p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Linked")));
+    }
+    event.setCancelled(true);
   }
 }

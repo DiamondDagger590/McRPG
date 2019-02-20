@@ -31,7 +31,7 @@ public class BleedHandler implements Listener {
   public void bleed(BleedEvent e){
 	//Get our variables
     Entity target = e.getTarget();
-	McRPGPlayer player = e.getUser();
+	McRPGPlayer player = e.getMcRPGPlayer();
 	Bleed bleed = e.getBleed();
 	//If the target is already targeted, cancel
 	if(isTargeted(target.getUniqueId())){
@@ -150,7 +150,7 @@ public class BleedHandler implements Listener {
 		}
 		cancelTarget(en.getUniqueId());
 		if(en instanceof Player){
-		  removePlayerTargeted(e.getUser().getUuid(), en.getUniqueId());
+		  removePlayerTargeted(e.getMcRPGPlayer().getUuid(), en.getUniqueId());
 		}
 	  }
 	  else{

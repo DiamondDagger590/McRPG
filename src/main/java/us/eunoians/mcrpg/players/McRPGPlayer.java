@@ -667,7 +667,7 @@ public class McRPGPlayer {
   }
 
   public void giveExp(Skills skill, int exp, GainReason reason){
-	getSkill(skill).giveExp(exp, reason);
+	getSkill(skill).giveExp(this, exp, reason);
   }
 
   /**

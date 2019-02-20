@@ -152,7 +152,7 @@ public class BreakEvent implements Listener {
                 DiamondFlowersEvent diamondFlowersEvent = new DiamondFlowersEvent(mp, diamondFlowers, diamondFlowersItem);
                 Bukkit.getPluginManager().callEvent(diamondFlowersEvent);
                 if(!diamondFlowersEvent.isCancelled()) {
-                  mp.getSkill(Skills.HERBALISM).giveExp(diamondFlowersEvent.getExp(), GainReason.BONUS);
+                  mp.getSkill(Skills.HERBALISM).giveExp(mp, diamondFlowersEvent.getExp(), GainReason.BONUS);
                   int range = diamondFlowersItem.getMaxAmount() - diamondFlowersItem.getMinAmount();
                   int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
                   ItemStack itemToDrop = new ItemStack(diamondFlowersEvent.getMaterial(), diamondFlowersEvent.getMinAmount() + bonusAmount);

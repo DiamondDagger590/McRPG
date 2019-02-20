@@ -13,6 +13,29 @@
 #   - No tabs are present: YAML only allows spaces
 #   - Indents are correct: YAML hierarchy is based entirely on indentation
 ###################################
+Configuration:
+  DisabledWorlds:
+    - 'test'
+  #This is in minutes
+  SaveInterval: 1
+  #This is in minutes
+  ReplaceAbilityCooldown: 1440
+  #Require an empty offhand to use abilities
+  RequireEmptyOffHand: false
+  #What lang file you want
+  LangFile: 'en'
+  #Unused
+  AutoUpdate: true
+  #Use mcrpg.{skill}.level
+  UseLevelPerms: false
+  #Allow Health bars
+  HealthBarEnabled: true
+  #Display time in seconds
+  HealthBarDisplayTime: 5
+  #Modify the exp worth of mobs from spawners and eggs
+  ModifySpawnExp:
+    MobsFromSpawner: 0.5
+    MobsFromEggs: 0.5
 DisplayConfig:
   Scoreboard:
     DisplayName: '&a%Skill%'
@@ -46,20 +69,3 @@ PlayerConfiguration:
   AbilityPointInterval: 200
   #In seconds how long should the player stay ready for
   PlayerReadyDuration: 2
-Configuration:
-#This is in minutes
-  SaveInterval: 1
-#This is in minutes
-  ReplaceAbilityCooldown: 1440
-#Require an empty offhand to use abilities
-  RequireEmptyOffHand: false
-#What lang file you want
-  LangFile: 'en'
-#Unused
-  AutoUpdate: true
-#Use mcrpg.{skill}.level
-  UseLevelPerms: false
-#Allow Health bars
-  HealthBarEnabled: true
-#Display time in seconds
-  HealthBarDisplayTime: 5
