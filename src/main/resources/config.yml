@@ -16,6 +16,26 @@
 Configuration:
   DisabledWorlds:
     - 'test'
+#Add to auto updater
+  WorldGuardSupport:
+    TestRegion:
+      World: 'test'
+      RegionName: 'also_test'
+      McRPGLimiters:
+        BanEntry:
+          - 'skill_level(mining) >= 100'
+          - 'power_level < 50'
+        BanAction:
+          - 'Break:COAL_ORE:skill_level(mining) > 100'
+          - 'Break:DIAMOND_ORE:ability_tier(ItsATriple) > 3'
+          - 'Attack:PLAYER:skill_difference(mining) > 100'
+          - 'Attack:PLAYER:power_level_difference < 25'
+          - 'Attack:PLAYER:power_level > 50'
+          - 'Attack:ZOMBIE:skill_level(swords) < 50'
+          - 'ExpGain:Swords:skill_level(swords) > 50'
+          - 'AbilityActivate:Daze:power_level < 100'
+          - 'AbilityActivate:Swords:power_level < 100'
+          - 'AbilityActivate:All:ability_tier(self) < 3'
   #This is in minutes
   SaveInterval: 1
   #This is in minutes

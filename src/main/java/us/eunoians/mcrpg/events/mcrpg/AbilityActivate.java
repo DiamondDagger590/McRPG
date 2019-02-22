@@ -1,5 +1,12 @@
 package us.eunoians.mcrpg.events.mcrpg;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,6 +26,16 @@ public class AbilityActivate implements Listener {
    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
 	   || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".use.*")|| p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".unlock." + abilityName))){
 	 e.setCancelled(true);
+   }
+   else if(McRPG.getInstance().isWorldGuardEnabled()){
+     RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+     Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
+     RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+     assert manager != null;
+     ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+     for(ProtectedRegion region : set){
+
+     }
    }
  }
 }

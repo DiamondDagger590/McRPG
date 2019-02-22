@@ -6,8 +6,6 @@ import com.cyr1en.mcutils.utils.reflection.Initializable;
 import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
 import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
 import com.google.common.base.Charsets;
-import de.articdive.enum_to_yaml.EnumConfiguration;
-import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -45,16 +43,19 @@ public class McRPG extends JavaPlugin implements Initializable {
   private static ChunkManager placeStore;
   @Getter
   private RemoteTransferTracker remoteTransferTracker;
+  //Needed to support McMMO's Healthbars
   @Getter
   private final String customNameKey = "mcMMO: Custom Name";
   @Getter
   private final String customVisibleKey = "mcMMO: Name Visibility";
   @Getter
-  private boolean healthBarPluginEnabled;
+  private boolean healthBarPluginEnabled = false;
   @Getter
-  private boolean mvdwEnabled;
+  private boolean mvdwEnabled = false;
   @Getter
-  private boolean papiEnabled;
+  private boolean papiEnabled = false;
+  @Getter
+  private boolean worldGuardEnabled = false;
 
 
   @Override
@@ -124,6 +125,9 @@ public class McRPG extends JavaPlugin implements Initializable {
       papiEnabled = true;
       getLogger().info("Papi PlaceholderAPI found... registering hooks");
       new McRPGPlaceHolders().register();
+    }
+    if(Bukkit.getPluginManager().isPluginEnabled("WorldGuard")){
+      worldGuardEnabled = true;
     }
     remoteTransferTracker = new RemoteTransferTracker();
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager

@@ -194,6 +194,13 @@ Messages:
     CooldownExpire: '&aYour cooldown for %Ability% is finished'
     CooldownActive: '&cYour %Skill% ability is on cooldown for &e%Time% &cseconds'
     ReplaceCooldownExpire: '&aYour cooldown for ability replacing is over'
+#Add these to auto updater
+  WorldGuard:
+    InvalidActionType: '&cThere is a faulty action type in your config... canceling initiation of %path%'
+    InvalidMaterial: '&cYou provided a faulty material in your config... canceling initiation of %path%'
+    InvalidEntity: '&cYou provided a faulty entity in your config... canceling initiation of %path%'
+    InvalidSkillParameter: '&cYou provided a faulty skill parameter in your config... canceling initiation of %path%'
+    InvalidAbilityParameter: '&cYou provided a faulty ability parameter in your config... canceling initiation of %path%'
   Tips:
     LoginTips:
       - '&7[&5McRPG Tip&7]: &aCheck out /mcrpg menu to get familiar with the plugin!'

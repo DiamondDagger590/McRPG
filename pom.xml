@@ -13,7 +13,7 @@
 
     <groupId>us.eunoians</groupId>
     <artifactId>McRPG</artifactId>
-    <version>1.1.2-ALPHA</version>
+    <version>1.1.3-ALPHA</version>
 
     <build>
         <plugins>
@@ -49,6 +49,10 @@
         <repository>
             <id>EnumToYAML</id>
             <url>https://nexus.articdive.de/repository/maven-snapshots/</url>
+        </repository>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
         </repository>
     </repositories>
 
@@ -87,6 +91,19 @@
             <artifactId>EnumToYAML</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <!--WorldGuard-->
+        <dependency>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-core</artifactId>
+            <version>7.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-legacy</artifactId>
+            <version>7.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
