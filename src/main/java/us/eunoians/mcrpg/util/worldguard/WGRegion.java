@@ -29,9 +29,12 @@ public class WGRegion {
   private HashMap<String, List<String>> abilityExpressions = new HashMap<>();
   @Getter
   private List<String> enterExpressions;
+  @Getter
+  private double expMultiplier;
 
   public WGRegion(String key) {
     FileConfiguration config = McRPG.getInstance().getConfig();
+    expMultiplier = config.getDouble(key + "RegionExpMultiplier");
     enterExpressions = config.getStringList(key + "McRPGLimiters.BanEntry");
     List<String> actionExpressions = config.getStringList(key + "McRPGLimiters.BanAction");
     for(String s : actionExpressions) {

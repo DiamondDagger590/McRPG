@@ -21,6 +21,7 @@ Configuration:
     TestRegion:
       World: 'test'
       RegionName: 'also_test'
+      RegionExpMultiplier: 1.5
       McRPGLimiters:
         BanEntry:
           - 'skill_level(mining) >= 100'

@@ -1,7 +1,10 @@
 package us.eunoians.mcrpg.util.worldguard;
 
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
+import us.eunoians.mcrpg.McRPG;
 
 import java.util.HashMap;
 
@@ -11,4 +14,31 @@ public class WGSupportManager {
   private HashMap<World, HashMap<String, WGRegion>> regionManager = new HashMap<>();
 
 
+  public WGSupportManager(McRPG plugin){
+    FileConfiguration config = plugin.getConfig();
+
+    for(String s : config.getConfigurationSection("Configuration.WorldGuardSupport").getKeys(false)){
+      if(s.equals("TestRegion")){
+        continue;
+      }
+      String key = "Configuration.WorldGuardSupport." + s + ".";
+      World w = Bukkit.getWorld(config.getString(key + "World"));
+      String regionName = config.getString(key + "RegionName");
+      WGRegion region = new WGRegion(key);
+      if(w != null){
+        if(regionManager.containsKey(w)){
+          regionManager.get(w).put(regionName, region);
+        }
+        else{
+          HashMap<String, WGRegion> map = new HashMap<>();
+          map.put(regionName, region);
+          regionManager.put(w, map);
+        }
+      }
+    }
+  }
+
+  public boolean isWorldTracker(World w){
+    return regionManager.containsKey(w);
+  }
 }

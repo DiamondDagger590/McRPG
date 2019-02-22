@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.events.vanilla.*;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
+import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +57,8 @@ public class McRPG extends JavaPlugin implements Initializable {
   private boolean papiEnabled = false;
   @Getter
   private boolean worldGuardEnabled = false;
+  @Getter
+  private WGSupportManager wgSupportManager;
 
 
   @Override
@@ -128,6 +131,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     }
     if(Bukkit.getPluginManager().isPluginEnabled("WorldGuard")){
       worldGuardEnabled = true;
+      wgSupportManager = new WGSupportManager(this);
     }
     remoteTransferTracker = new RemoteTransferTracker();
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
