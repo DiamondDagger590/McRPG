@@ -1,6 +1,8 @@
 1.1.2-ALPHA
-+Added option to change the worth of mobs from spawners and mob eggs
++ AUTO UPDATING CONFIGS!
+*Added option to change the worth of mobs from spawners and mob eggs
 = Moved many ability events from the API to organize them better, should not break compatibility with QuestCreator
+= Rebalanced some things with unarmed and mining. (Ice was broken AF!) Changed levels for abilities. Regenerate files for new info!
 
 1.1.1-ALPHA
 = Fixed issue with boss bar display not replacing placeholders when exp is gained

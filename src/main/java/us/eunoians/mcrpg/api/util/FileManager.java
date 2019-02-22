@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.IOUtil;
 import us.eunoians.mcrpg.util.configuration.ConfigEnum;
+import us.eunoians.mcrpg.util.configuration.LangEnum;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +47,8 @@ public class FileManager {
    */
   public FileManager setup(Plugin plugin) {
     //Auto gen some configs
-    EnumConfiguration config = new EnumConfigurationBuilder(new File(Files.CONFIG.getFileLocation()), ConfigEnum.class).build();
+    EnumConfiguration config = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "config.yml"), ConfigEnum.class).build();
+    EnumConfiguration enConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "localization" + File.separator + "en.yml"), LangEnum.class).build();
     prefix = "[" + plugin.getName() + "] ";
     this.plugin = plugin;
     if (!plugin.getDataFolder().exists()) {

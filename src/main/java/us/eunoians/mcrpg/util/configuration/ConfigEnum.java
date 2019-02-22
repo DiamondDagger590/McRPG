@@ -16,7 +16,7 @@ public enum ConfigEnum implements ConfigurationEnum {
           "###################################"),
   DISABLED_WORLDS("Configuration.DisabledWorlds", Collections.singletonList("test"), "# What worlds should be disabled"),
   SAVE_INTERVAL("Configuration.SaveInterval", 1, "#This is how often the plugin saves player data (async) in minutes"),
-  REPLACE_ABILITY_COOLDOWN("Configuration.", 1440, "#How long the cooldown for replacing an ability should be in minutes"),
+  REPLACE_ABILITY_COOLDOWN("Configuration.ReplaceAbilityCooldown", 1440, "#How long the cooldown for replacing an ability should be in minutes"),
   REQUIRE_EMPTY_OFF_HAND("Configuration.RequireEmptyOffHand", false, "#Should a player be required to have an empty offhand to use abilities"),
   LANG_FILE("Configuration.LangFile", "en", "#What lang file you want to use. Do not include the .yml"),
   AUTO_UPDATE("Configuration.AutoUpdate", true, "#Currently unused"),
