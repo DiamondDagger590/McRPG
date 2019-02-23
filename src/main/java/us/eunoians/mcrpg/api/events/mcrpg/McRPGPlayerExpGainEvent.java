@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.events.mcrpg;
 
 import lombok.Getter;
+import lombok.Setter;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.GainReason;
@@ -8,6 +9,7 @@ import us.eunoians.mcrpg.types.GainReason;
 public class McRPGPlayerExpGainEvent extends PlayerModifiedEvent {
 
   @Getter
+  @Setter
   private int expGained;
   @Getter
   private Skill skillGained;
@@ -21,7 +23,7 @@ public class McRPGPlayerExpGainEvent extends PlayerModifiedEvent {
     this.gainType = gainType;
   }
 
-  public McRPGPlayer getMcMMOPlayer(){
+  public McRPGPlayer getMcRPGPlayer(){
     return skillGained.getPlayer();
   }
 }

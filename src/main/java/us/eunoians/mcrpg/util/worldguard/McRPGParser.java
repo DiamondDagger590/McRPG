@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.util.worldguard;
 public class McRPGParser {
 
 
-  protected boolean evaluate(String sign, int first, int second) {
+  public boolean evaluate(String sign, int first, int second) {
     boolean result = false;
     switch(sign) {
       case ">":

@@ -1,5 +1,11 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -38,10 +44,11 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.Parser;
 import us.eunoians.mcrpg.util.mcmmo.HerbalismMethods;
 import us.eunoians.mcrpg.util.mcmmo.ItemUtils;
+import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
+import us.eunoians.mcrpg.util.worldguard.WGRegion;
+import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class BreakEvent implements Listener {
 
@@ -53,6 +60,29 @@ public class BreakEvent implements Listener {
       Player p = event.getPlayer();
       Block block = event.getBlock();
       McRPGPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
+      if(McRPG.getInstance().isWorldGuardEnabled()) {
+        WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
+        if(wgSupportManager.isWorldTracker(event.getBlock().getWorld())) {
+          RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+          Location loc = event.getBlock().getLocation();
+          RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+          HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
+          assert manager != null;
+          ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+          for(ProtectedRegion region : set) {
+            if(regions.containsKey(region.getId()) && regions.get(region.getId()).getBreakExpressions().containsKey(event.getBlock().getType())) {
+              List<String> expressions = regions.get(region.getId()).getBreakExpressions().get(event.getBlock().getType());
+              for(String s : expressions){
+                ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mp);
+                if(actionLimiterParser.evaluateExpression()){
+                  event.setCancelled(true);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
       FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
       FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
       //Deal with herbalism
@@ -179,7 +209,7 @@ public class BreakEvent implements Listener {
             DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
             double boost = 0;
             if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
-                    && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()) {
+              && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()) {
               RicherOres richerOres = (RicherOres) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES);
               RicherOresEvent richerOresEvent = new RicherOresEvent(mp, richerOres);
               Bukkit.getPluginManager().callEvent(richerOresEvent);
@@ -206,7 +236,7 @@ public class BreakEvent implements Listener {
           }
 
           if(incDrops && UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
-                  && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()) {
+            && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()) {
             ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
             double chance = (double) mining.getDouble("ItsATripleConfig.Tier" + Methods.convertToNumeral(itsATriple.getCurrentTier()) + ".ActivationChance") * 1000;
             Random rand = new Random();
@@ -235,7 +265,7 @@ public class BreakEvent implements Listener {
             remoteTransfer.setLinkedChestLocation(null);
             mp.setLinkedToRemoteTransfer(false);
             RemoteTransferTracker.removeLocation(uuid);
-            p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Unlinked")));
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Unlinked")));
           }
           else {
             //TODO will need to add support for admins to remove these such as towny mayors
@@ -258,15 +288,15 @@ public class BreakEvent implements Listener {
             }
             else {
               event.setCancelled(true);
-              p.sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.IsLinked")
-                      .replace("%Player%", Bukkit.getOfflinePlayer(uuid).getName())));
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.IsLinked")
+                .replace("%Player%", Bukkit.getOfflinePlayer(uuid).getName())));
               return;
             }
           }
         }
 
         else if(UnlockedAbilities.REMOTE_TRANSFER.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.REMOTE_TRANSFER)
-                && mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() && mp.isLinkedToRemoteTransfer()) {
+          && mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() && mp.isLinkedToRemoteTransfer()) {
           RemoteTransfer transfer = (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
           int tier = transfer.getCurrentTier();
           int range = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG).getInt("RemoteTransferConfig.Tier" + Methods.convertToNumeral(tier) + ".Range");

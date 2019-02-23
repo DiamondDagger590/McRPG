@@ -1,5 +1,11 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,10 +42,11 @@ import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.Parser;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
+import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
+import us.eunoians.mcrpg.util.worldguard.WGRegion;
+import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
-import java.util.Calendar;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class VanillaDamageEvent implements Listener {
 
@@ -98,6 +105,45 @@ public class VanillaDamageEvent implements Listener {
         return;
       }
       McRPGPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
+      //Deal with world guard
+      if(McRPG.getInstance().isWorldGuardEnabled()){
+        WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
+
+        if(wgSupportManager.isWorldTracker(damager.getWorld())){
+          RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+          Location loc = damager.getLocation();
+          RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+          HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
+          assert manager != null;
+          ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+          for(ProtectedRegion region : set) {
+            if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())) {
+              List<String> expressions = regions.get(region.getId()).getAttackExpressions().get(e.getEntity().getType());
+              for(String s : expressions) {
+                if(s.contains("difference")) {
+                  if(!(e.getEntity() instanceof Player)) {
+                    continue;
+                  }
+                  else {
+                    ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mp, PlayerManager.getPlayer(e.getEntity().getUniqueId()));
+                    if(actionLimiterParser.evaluateExpression()) {
+                      e.setCancelled(true);
+                      return;
+                    }
+                  }
+                }
+                else {
+                  ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mp);
+                  if(actionLimiterParser.evaluateExpression()) {
+                    e.setCancelled(true);
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       //Deal with unarmed
       if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR) {
         if(!Skills.UNARMED.isEnabled()) {
