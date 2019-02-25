@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.util.configuration;
 
 import de.articdive.enum_to_yaml.interfaces.ConfigurationEnum;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 public enum ConfigEnum implements ConfigurationEnum {
@@ -15,6 +16,25 @@ public enum ConfigEnum implements ConfigurationEnum {
           "#   - No tabs are present: YAML only allows spaces", "#   - Indents are correct: YAML hierarchy is based entirely on indentation",
           "###################################"),
   DISABLED_WORLDS("Configuration.DisabledWorlds", Collections.singletonList("test"), "# What worlds should be disabled"),
+  WORLD_GUARD_COMMENT("Configuration.WorldGuardSupport.TestRegion", "", "    #Due to the nature of the auto updating config, if you delete this info, it will auto gen back. However it is never loaded"),
+  WORLD_GUARD_WORLD("Configuration.WorldGuardSupport.TestRegion.World", "test", "#What world the region is in"),
+  WORLD_GUARD_REGION_NAME("Configuration.WorldGuardSupport.TestRegion.RegionName", "also_test", "#What the name of the region is"),
+  WORLD_GUARD_MCRPG_LIMITER_COMMENT("Configuration.WorldGuardSupport.TestRegion.McRPGLimiters", "", "#The area to put limiter scripts"),
+  WORLD_GUARD_LIMITERS_BAN_ENTRY("Configuration.WorldGuardSupport.TestRegion.McRPGLimiters.BanEntry", Arrays.asList("skill_level(mining) >= 100", "power_level < 50"),
+          "#If any of these conditions return to be true, then the player is banned from entering the region", "#Can accept: skill_level(skill_name) and power_level as the front end of the expression",
+          "#A space is required between the comparator which can be >, <, >= or <=", "#The last number is what the initial condition needs to be compared to"),
+  WORLD_GUARD_LIMITERS_BAN_ACTION("Configuration.WorldGuardSupport.TestRegion.McRPGLimiters.BanAction", Arrays.asList("Break:COAL_ORE:skill_level(mining) > 100",
+          "Break:DIAMOND_ORE:ability_tier(ItsATriple) > 3", "Attack:PLAYER:skill_difference(mining) > 100", "Attack:PLAYER:power_level_difference < 25",
+          "Attack:PLAYER:power_level > 50", "Attack:ZOMBIE:skill_level(swords) < 50", "ExpGain:Swords:skill_level(swords) > 50",
+          "AbilityActivate:Daze:power_level < 100", "AbilityActivate:Swords:power_level < 100" , "AbilityActivate:All:ability_tier(self) < 3"),
+          "#If any of these conditions return to be true, then the action in that region will be blocked", "#The first parameter can be Break, Attack, ExpGain, and AbilityActivate",
+          "#For Break, the second parameter must be a block material", "#", "#For Attack, the second parameter must be a entity type",
+          "#Attack has two unique expressions:", "#skill_difference(skill_name) will return the difference between the skill levels when the player is attacked",
+          "#power_level_difference returns the difference in power levels", "#", "#For ExpGain, the second parameter can either be a skill or it can be the word All",
+          "#All can only be used with the expression skill_level(self)", "#", "#For AbilityActivate, the second parameter can either be a skill, ability or the word All.",
+          "#All can only be used with the expression ability_tier(all)", "#", "#General allowed expressions are:",
+          "#skill_level(skill_name)", "#ability_tier(ability_name)", "#power_level", "#A space is required between the comparator which can be >, <, >= or <=",
+          "#The last parameter must be an int"),
   SAVE_INTERVAL("Configuration.SaveInterval", 1, "#This is how often the plugin saves player data (async) in minutes"),
   REPLACE_ABILITY_COOLDOWN("Configuration.ReplaceAbilityCooldown", 1440, "#How long the cooldown for replacing an ability should be in minutes"),
   REQUIRE_EMPTY_OFF_HAND("Configuration.RequireEmptyOffHand", false, "#Should a player be required to have an empty offhand to use abilities"),
