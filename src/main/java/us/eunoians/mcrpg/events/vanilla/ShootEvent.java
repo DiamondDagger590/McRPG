@@ -2,6 +2,9 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
@@ -11,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.archery.*;
 import us.eunoians.mcrpg.api.events.mcrpg.archery.*;
@@ -29,7 +33,7 @@ import java.util.*;
 public class ShootEvent implements Listener {
 
   @Getter
-  private static HashMap<UUID, TippedArrowsData> tippedArrowsDataMap = new HashMap<>();
+  private static HashMap<UUID, BukkitTask> arrowTasks = new HashMap<>();
 
   @EventHandler
   public static void shootEvent(EntityShootBowEvent e) {
@@ -67,6 +71,9 @@ public class ShootEvent implements Listener {
               mp.setReadying(false);
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
               mp.setReadyingAbilityBit(null);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WOLF_GROWL, 2, 2);
+              p.getLocation().getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getEyeLocation(), 1);
+              trackArrowParticles(arrow, Particle.SMOKE_NORMAL);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Activated")));
             }
           }
@@ -89,6 +96,8 @@ public class ShootEvent implements Listener {
               mp.setReadying(false);
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
               mp.setReadyingAbilityBit(null);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 2, 2);
+              trackArrowParticles(arrow, Particle.FLAME);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Activated")));
             }
           }
@@ -119,6 +128,8 @@ public class ShootEvent implements Listener {
               mp.setReadying(false);
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
               mp.setReadyingAbilityBit(null);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+              trackArrowParticles(arrow, Particle.SQUID_INK);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CurseOfHades.Activated")));
             }
           }
@@ -208,5 +219,12 @@ public class ShootEvent implements Listener {
         return;
       }
     }
+  }
+
+  public static void trackArrowParticles(Arrow arrow, Particle p){
+    BukkitTask task = Bukkit.getScheduler().runTaskTimer(McRPG.getInstance(), ()-> {
+      arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 2);
+    }, 10, 15);
+    arrowTasks.put(arrow.getUniqueId(), task);
   }
 }
