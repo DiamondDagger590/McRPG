@@ -38,7 +38,7 @@ public class WGRegion {
     enterExpressions = config.getStringList(key + "McRPGLimiters.BanEntry");
     List<String> actionExpressions = config.getStringList(key + "McRPGLimiters.BanAction");
     for(String s : actionExpressions) {
-      String[] info = s.split(":");
+      String[] info = s.split("-");
       ActionParserType type = ActionParserType.fromString(info[0]);
       if(type == null) {
         Bukkit.getConsoleSender().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
