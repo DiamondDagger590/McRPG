@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.api.util;
 
-import de.articdive.enum_to_yaml.EnumConfiguration;
 import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -47,8 +46,12 @@ public class FileManager {
    */
   public FileManager setup(Plugin plugin) {
     //Auto gen some configs
-    EnumConfiguration config = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "config.yml"), ConfigEnum.class).build();
-    EnumConfiguration enConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "localization" + File.separator + "en.yml"), LangEnum.class).build();
+    EnumConfigurationBuilder config = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "config.yml"), ConfigEnum.class);
+    EnumConfigurationBuilder enConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "localization" + File.separator + "en.yml"), LangEnum.class);
+    config.setWidth(100000);
+    enConfig.setWidth(100000);
+    config.build();
+    enConfig.build();
     prefix = "[" + plugin.getName() + "] ";
     this.plugin = plugin;
     if (!plugin.getDataFolder().exists()) {

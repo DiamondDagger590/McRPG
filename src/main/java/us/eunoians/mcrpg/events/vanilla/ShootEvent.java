@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Effect;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,7 +19,6 @@ import us.eunoians.mcrpg.abilities.archery.*;
 import us.eunoians.mcrpg.api.events.mcrpg.archery.*;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.api.util.TippedArrowsData;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -223,7 +221,13 @@ public class ShootEvent implements Listener {
 
   public static void trackArrowParticles(Arrow arrow, Particle p){
     BukkitTask task = Bukkit.getScheduler().runTaskTimer(McRPG.getInstance(), ()-> {
-      arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 2);
+      if(arrow.isValid()) {
+        arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 2);
+      }
+      else{
+        arrowTasks.remove(arrow.getUniqueId()).cancel();
+        return;
+      }
     }, 10, 15);
     arrowTasks.put(arrow.getUniqueId(), task);
   }
