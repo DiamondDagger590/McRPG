@@ -17,11 +17,11 @@ public class WGSupportManager {
   public WGSupportManager(McRPG plugin){
     FileConfiguration config = plugin.getConfig();
 
-    for(String s : config.getConfigurationSection("Configuration.WorldGuardSupport").getKeys(false)){
+    for(String s : config.getConfigurationSection("WorldGuardSupport").getKeys(false)){
       if(s.equals("TestRegion")){
         continue;
       }
-      String key = "Configuration.WorldGuardSupport." + s + ".";
+      String key = "WorldGuardSupport." + s + ".";
       World w = Bukkit.getWorld(config.getString(key + "World"));
       String regionName = config.getString(key + "RegionName");
       WGRegion region = new WGRegion(key);

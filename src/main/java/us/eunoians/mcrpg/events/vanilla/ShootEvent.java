@@ -222,7 +222,7 @@ public class ShootEvent implements Listener {
   public static void trackArrowParticles(Arrow arrow, Particle p){
     BukkitTask task = Bukkit.getScheduler().runTaskTimer(McRPG.getInstance(), ()-> {
       if(arrow.isValid()) {
-        arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 2);
+        arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 4);
       }
       else{
         arrowTasks.remove(arrow.getUniqueId()).cancel();
