@@ -7,6 +7,7 @@ import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
 import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
 import com.google.common.base.Charsets;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,6 +59,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter
   private boolean worldGuardEnabled = false;
   @Getter
+  @Setter
   private WGSupportManager wgSupportManager;
 
 

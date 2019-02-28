@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
+import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
 public class McRPGStub implements CommandExecutor {
 
@@ -68,6 +69,7 @@ public class McRPGStub implements CommandExecutor {
             p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
             PlayerManager.startSave(plugin);
             DiamondFlowersData.init();
+            McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
             return true;
           }
           else {
