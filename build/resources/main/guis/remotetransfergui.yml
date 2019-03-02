@@ -1,0 +1,13 @@
+Title: '&eRemote Transfer Settings'
+ToggleLore:
+  - '&eToggle if this block should'
+  - '&ebe teleported by Remote Transfer'
+ToggleAbilityLore:
+  - '&eToggle this ability'
+ToggledOff: '&eToggled: &c&lOFF'
+ToggledOn: '&eToggled: &2&lON'
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore: {}

@@ -1,0 +1,150 @@
+1.1.3-ALPHA
++ World Guard Scripting Support
++ Archery sounds and particles
+
+1.1.2-ALPHA
++ AUTO UPDATING CONFIGS!
+*Added option to change the worth of mobs from spawners and mob eggs
+= Moved many ability events from the API to organize them better, should not break compatibility with QuestCreator
+= Rebalanced some things with unarmed and mining. (Ice was broken AF!) Changed levels for abilities. Regenerate files for new info!
+
+1.1.1-ALPHA
+= Fixed issue with boss bar display not replacing placeholders when exp is gained
+
+1.1.0-ALPHA
+Note: All config changes can be made by deleting their files and letting them regen
++ Added Archery and 7 new abilities bringing current total to 35! Coming from mcMMO is Daze however it no
+longer does extra damage, rather gives blindness, nausea and makes them look away. Puncture can inflict Bleed
+and all modifiers from the Swords skill if you have any. Combo does more damage for consecutive shots. Tipped Arrows
+allows normal arrows to deal a potion effect. Blessing Of Artemis will deal extra damage and give user invis. Blessing
+of Apollo will give fire res, ignite target and burn away their buffs. Curse of Hades will deal many debuffs.
+
+* Skills have been rebalanced for default exp values. Please consult github for new files or let the default files regen
+
+** ReplaceSkillsGUI.yml needs the following
+    Under Events: put
+      10:
+        - 'OpenNative:SelectReplaceGUI:Archery'
+    Under Items: put
+          ArcherySkill:
+            Name: '&5Archery Skill'
+            Material: BOW
+            Lore:
+              - '&eClick this to view your archery abilities'
+              - '&eCurrent Archery level: &a%Archery_Level%'
+              - '&eDaze chance: &c%Daze_Chance%%'
+            Slot: 10
+* in config.yml BossBar.DisplayName now accepts %Current_Level%. New default is
+    DisplayName: '&5Lv.&e%Current_Level% &7- &5%Skill%: &e%Exp_To_Level%'
+
+** In config.yml under BossBar.Color add
+      Archery: 'Pink'
+
+** In config.yml under ActionBar add
+    Archery:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+
+** Replace archery.yml with the current version: https://github.com/Eunoians/McRPG/blob/master/src/main/resources/skills/archery.yml
+
+** In skillsgui.yml add the following
+    Under Events: put
+          10:
+            - 'OpenNative:SubSkillGUI:Archery'
+    Under Items: put
+          ArcherySkill:
+            Name: '&5Archery Skill'
+            Material: BOW
+            Lore:
+              - '&eClick this to view your archery information'
+              - '&eCurrent Archery level: &a%Archery_Level%'
+              - '&eDaze chance: &c%Daze_Chance%%'
+            Slot: 10
+
+** In the en.yml add
+    Under Messages.Abilities
+        BlessingOfArtemis:
+          Activated: '&aThe goddess of the hunt has blessed you with invisibility young hunter.'
+          Hit: '&cA blessed hunter has struck you'
+        BlessingOfApollo:
+          Activated: '&aThe sun god has blessed you with his fiery power'
+          Hit: '&cThe power of the sun god has struck you'
+        CurseOfHades:
+          Activated: '&aThe god of the dead has cursed your arrow with hells power'
+          Hit: '&cThe power of hell has entered your body'
+        Daze:
+          Hit: '&cThe sudden strike of the arrow has left you confused'
+        TippedArrows:
+          Hit: '&cYou were stuck with a potion tipped arrow'
+        Puncture:
+          Hit: '&cYour lungs were punctured and you are now Bleeding'
+        Combo:
+          Hit: '&cBeing hit by a combo has dealt extra damage to you'
+    Under Messages.Tips
+        LevelUpArchery:
+          - '&7[&5McRPG Tip&7]: &aThe further you shoot your target the more exp you will gain!'
+          - '&7[&5McRPG Tip&7]: &aCombo has a delay as to how often it activates to prevent bow spamming!'
+          - '&7[&5McRPG Tip&7]: &aPuncture can inflict Bleed and use all modifiers from your Swords skill!'
+          - '&7[&5McRPG Tip&7]: &aBlessing of Artemis is good for a sneaky surprise!'
+          - '&7[&5McRPG Tip&7]: &aReady your bow by attacking air before you shoot to activate abilities!'
+
+1.0.5.2-ALPHA
++ Added Papi Placeholder support
+= Fixed a bug with ignoring player tip ignoring
+1.0.5.1-ALPHA
+= The gui update messed up a file and this corrects the wrong path. Nothing required by users for this.
+1.0.5-ALPHA
++ Added tips for players as they log in
++ Added player setting to toggle the tips on and off
+*** Add in the en.yml under Messages:
+  Tips:
+    LoginTips:
+      - '&7[&5McRPG Tip&7]: &aCheck out /mcrpg menu to get familiar with the plugin!'
+      - '&7[&5McRPG Tip&7]: &aAs you level up, you can earn unlocked abilities!'
+      - '&7[&5McRPG Tip&7]: &aMake sure to check your player settings in /mcrpg!'
+      - '&7[&5McRPG Tip&7]: &aAbilities can be upgraded once you reach a certain level by using an ability point!'
+      - '&7[&5McRPG Tip&7]: &aEvery time you reach a certain power level, you gain an ability point!'
+    LevelUpSwords:
+      - '&7[&5McRPG Tip&7]: &aBleed causes repeated damage for a short bit!'
+      - '&7[&5McRPG Tip&7]: &aRage spike allows you to crouch and dash forward, blasting enemies!'
+      - '&7[&5McRPG Tip&7]: &aAll bleed modifying abilities will work with Archerys Puncture!'
+    LevelUpMining:
+      - '&7[&5McRPG Tip&7]: &aDouble Drop and Its A Triple do not stack!'
+      - '&7[&5McRPG Tip&7]: &aOre Scanner checks and points you to the nearest valuable ore!'
+      - '&7[&5McRPG Tip&7]: &aUse /mclink to link a chest to your Remote Transfer!'
+      - '&7[&5McRPG Tip&7]: &aUse /mcunlink to delink your chest from Remote Transfer!'
+      - '&7[&5McRPG Tip&7]: &aBlast Mining requires you to place TNT after readying your pick!'
+    LevelUpUnarmed:
+      - '&7[&5McRPG Tip&7]: &aDense Impact makes you do 0 damage but do direct armor damage for a while!'
+      - '&7[&5McRPG Tip&7]: &aUse Smiting Fist to clean debuffs caused from abilities like Curse of Hades!'
+      - '&7[&5McRPG Tip&7]: &aDisarm will move the item into your upper inventory or if its full, it will drop the item'
+      - '&7[&5McRPG Tip&7]: &aThe damage modifier from Iron Arm does not have a 100% activation rate at lower levels'
+    LevelUpHerbalism:
+      - '&7[&5McRPG Tip&7]: &aPans Blessing requires you to bonemeal a plant after readying your hoe!'
+      - '&7[&5McRPG Tip&7]: &aMass Harvest will replant all crops it breaks!'
+      - '&7[&5McRPG Tip&7]: &aFarming sugar cane is the most effective way to level!'
+      - '&7[&5McRPG Tip&7]: &aNatures Wrath requires flowers to be in the off hand!'
+      - '&7[&5McRPG Tip&7]: &aNatures Wrath wont work if you are too hungry!'
+*** Add in the playersettingsgui.yml and change the slot of the AddLater to 12
+IgnoreTips:
+  Enabled: '&aIgnoring tips Enabled'
+  Disabled: '&cIgnoring Tips Disabled'
+  Slot: 10
+  Lore:
+    - '&eClick this to change'
+    - '&eif tips should be ignored'
+1.0.4-ALPHA
+= Fixed a dup glitch using keep hand empty
++ Added a lot of gui customization. Mightve forgot one but most are here.
+1.0.3-ALPHA
+= Fixed default ability toggling bug... oops
+1.0.2-ALPHA
+= Fixed block breaking bug
+1.0.1-ALPHA
++ Backend work for Archery
+= Bug with a few blocks when using silk touch and shears
+Key:
+=: Change/Fix
++: Addition
+-: Deletion
+**: Config Addition Required
+*: Config Addition Optional

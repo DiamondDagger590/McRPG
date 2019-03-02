@@ -1,0 +1,52 @@
+Size: 27
+Title: '&eChange your settings'
+ChangeDisplaySettings:
+  ScoreBoard: '&bDisplay Type: &5Score Board'
+  BossBar: '&bDisplay Type: &5Boss Bar'
+  ActionBar: '&bDisplay Type: &5Action Bar'
+  Slot: 1
+  Lore:
+    - '&eClick this to change your display type'
+    - '&eWhen using /mcdisplay {skill}'
+KeepHandEmpty:
+  Enabled: '&aKeep Hand Empty Enabled'
+  Disabled: '&cKeep Hand Empty Disabled'
+  Slot: 3
+  Lore:
+    - '&eClick this to change'
+    - '&eif items should go into your empty hand'
+MobHealthDisplay:
+  Bar: '&5Mob Health Display: &3Bar'
+  Hearts: '&5Mob Health Display: &3Hearts'
+  None: '&5Mob Health Display: &3Disabled'
+  Slot: 5
+  Lore: {}
+AutoDenyNewAbilities:
+  Enabled: '&aAuto Deny New Abilities Enabled'
+  Disabled: '&cAuto Deny New Abilities Disabled'
+  Slot: 7
+  Lore:
+    - '&eClick this to change'
+    - '&eif new abilities should auto deny'
+IgnoreTips:
+  Enabled: '&aIgnoring tips Enabled'
+  Disabled: '&cIgnoring Tips Disabled'
+  Slot: 10
+  Lore:
+    - '&eClick this to change'
+    - '&eif tips should be ignored'
+AddLater:
+  DisplayName: '&cThis feature will be added later'
+  Lore: {}
+  Slot: 12
+BackButton:
+  Material: BARRIER
+  DisplayName: '&bBack>>'
+  Slot: 26
+  Lore:
+    - '&eClick this to go back'
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore: {}

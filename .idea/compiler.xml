@@ -13,8 +13,13 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="com.rocket.projectrocket.API.main" target="1.8" />
+      <module name="com.rocket.projectrocket.API.test" target="1.8" />
+      <module name="com.rocket.projectrocket.Commons.main" target="1.8" />
+      <module name="com.rocket.projectrocket.Commons.test" target="1.8" />
       <module name="McMMOx" target="1.8" />
       <module name="Mcmmox-Maven" target="1.5" />
+      <module name="McRPG" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -1,0 +1,47 @@
+Size: 27
+Title:
+  AcceptAbility: '&eAccept/Decline &5%Ability%'
+  UpgradeAbility: '&eUpgrade &5%Ability% &eto Tier %Tier%'
+AcceptAbility:
+  AcceptItem:
+    Material: LIME_CONCRETE
+    Amount: 1
+    DisplayName: '&aAccept this ability'
+    Slot: 10
+  DenyItem:
+    Material: RED_CONCRETE
+    Amount: 1
+    DisplayName: '&cDeny this ability'
+    Lore:
+      - '&cYou can replace an old ability with this one later'
+    Slot: 16
+  AbilityItem:
+    Lore:
+      - '&eConfirm if you want this ability in'
+      - '&eyour loadout. If you confirm, '
+      - '&ethe ability will go into any empty slot.'
+      - '&eOtherwise you will be asked'
+      - '&eto replace an ability you currently have'
+    Slot: 13
+UpgradeAbility:
+  AcceptItem:
+    Material: LIME_CONCRETE
+    Amount: 1
+    DisplayName: '&aAccept this upgrade'
+    Lore: {}
+    Slot: 10
+  DenyItem:
+    Material: RED_CONCRETE
+    Amount: 1
+    DisplayName: '&cDeny this upgrade'
+    Lore: {}
+    Slot: 16
+  AbilityItem:
+    Lore:
+      - '&eUpgrade this ability by one tier.'
+    Slot: 13
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore: {}

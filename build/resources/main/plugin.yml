@@ -1,0 +1,22 @@
+name: McRPG
+version: 1.1.3-ALPHA
+author: Eunoians
+description: A RPG plugin for 1.13+
+main: us.eunoians.mcrpg.McRPG
+api-version: 1.13
+soft-depend: [PlaceholderAPI, WorldGuard]
+commands:
+  mcrpg:
+    description: Opens the main menu for McRPG
+    aliases: [mcrpg, mmo]
+  mcdisplay:
+    description: Allows for command based editing of display types
+    aliases: [mcmmodisplay, mdisplay, mcd]
+  mcadmin:
+    description: Allows for admin commands
+  mclink:
+    description: Links a chest to a players Remote Transfer
+  mcunlink:
+    description: Unlinks a chest from a players Remote Transfer
+  mchelp:
+    description: Displays help info for commands

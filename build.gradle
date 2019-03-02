@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+}
+
+def versionObj = new Version(major: 1, minor: 1, patch: 3, state: 'APLHA')
+
+group 'com.rocket.projectrocket'
+version = "${versionObj.toString()}"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+    mavenLocal()
+    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'http://repo.extendedclip.com/content/repositories/placeholderapi/'}
+    maven { url 'https://nexus.articdive.de/repository/maven-public/'}
+    maven { url 'http://maven.sk89q.com/repo/'}
+    maven { url 'https://nexus.wesjd.net/repository/thirdparty/' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+dependencies {
+
+    compile 'com.github.CyR1en:McUtils:master-SNAPSHOT'
+    compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
+
+    compileOnly 'me.clip:placeholderapi:2.9.2'
+    compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
+    compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        expand 'pluginVersion': version
+        include 'plugin.yml'
+    }
+}
+
+shadowJar {
+    archiveName = "McRPG-${version}.jar"
+    relocate 'com.zaxxer.hikari', 'com.cyr1en.projectrocket.hikari'
+}
+
+artifacts {
+    archives shadowJar
+}
+
+lombok {
+    version = "1.18.4"
+    sha256 = ""
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+class Version {
+
+    String major, minor, patch, state, full
+
+    String getFullVersion() {
+        full = "$major.$minor.$patch-$state"
+        return full
+    }
+
+    String toString() {
+        getFullVersion()
+    }
+}

@@ -1,0 +1,54 @@
+Gui:
+  MainGUI:
+    Size: 27
+    Title: '&bMain McRPG Menu'
+    Events:
+      #Slot
+      10:
+        #Events bound to slot
+        - 'OpenNative:SettingsGUI'
+      12:
+        - 'OpenFile:skillsgui.yml:SkillGUI'
+      14:
+        - 'OpenNative:UpgradeAbilityGUI'
+      16:
+        - 'OpenNative:EditLoadoutSelectGUI'
+    Items:
+      #This it an identifier and can be anything
+      PlayerSkull:
+        #Display name
+        Name: '&2Your Profile'
+        #Material
+        Material: PLAYER_HEAD
+        #Only used for player heads
+        Owner: '%Player%'
+        #Lore of the item
+        Lore:
+          - '&eCurrent Power Level: &a%Power_Level%'
+          - '&eClick this to change your personal settings'
+        #Slot its found at
+        Slot: 10
+      Skill_Menu:
+        Name: '&cSkill Menu'
+        Material: DIAMOND_SWORD
+        Lore:
+          - '&eClick this to view information '
+          - '&eabout all of your skills'
+        Slot: 12
+      Upgrade_Abilities:
+        Name: '&5Upgrade Abilities'
+        Material: NETHER_STAR
+        Lore:
+          - '&eClick this to upgrade your abilities'
+          - '&eYou have &a%Ability_Points% &eto spend'
+        Slot: 14
+      Ability_Loadout:
+        Name: '&bEdit Ability Loadout'
+        Material: COMPASS
+        Lore:
+          - '&eClick this to edit your ability loadout'
+        Slot: 16
+    #Fills in every empty slot with this
+    FillerItem:
+      Material: GRAY_STAINED_GLASS_PANE
+      Name: ' '

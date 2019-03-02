@@ -1,0 +1,119 @@
+##################################
+### Main Config For McRPG ###
+##################################
+#
+#Notes:
+#    Do not use ' or " in messages as I have not yet added support for these icons.
+#   - Do not remove any lines as that will throw errors
+#   - This plugin only supports Minecraft color codes. Ex) &eHello World&7!
+#       - Use this link for a list of the codes: https://wiki.ess3.net/mc/
+#   - If you want a message to be blank, please leave it as ''
+#   - This plugin supports player name place holders as %Player%
+# If you receive an error when McRPG loads, ensure that:
+#   - No tabs are present: YAML only allows spaces
+#   - Indents are correct: YAML hierarchy is based entirely on indentation
+###################################
+Configuration:
+  DisabledWorlds:
+    - 'test'
+  WorldGuardSupport:
+    #Due to the nature of the auto updating config, if you delete this info, it will auto gen back. However it is never loaded
+    TestRegion:
+      #What world the region is in
+      World: 'test'
+      #What the name of the region is
+      RegionName: 'also_test'
+      #The area to put limiter scripts
+      McRPGLimiters:
+        #If any of these conditions return to be true, then the player is banned from entering the region
+        #Can accept: skill_level(skill_name) and power_level as the front end of the expression
+        #A space is required between the comparator which can be >, <, >= or <=
+        #The last number is what the initial condition needs to be compared to
+        BanEntry:
+          - 'skill_level(mining) >= 100'
+          - 'power_level < 50'
+        #If any of these conditions return to be true, then the action in that region will be blocked
+        #The first parameter can be Break, Attack, ExpGain, and AbilityActivate
+        #For Break, the second parameter must be a block material
+        #
+        #For Attack, the second parameter must be a entity type
+        #Attack has two unique expressions:
+        #skill_difference(skill_name) will return the difference between the skill levels when the player is attacked
+        #power_level_difference returns the difference in power levels
+        #
+        #For ExpGain, the second parameter can either be a skill or it can be the word All
+        #All can only be used with the expression skill_level(self)
+        #
+        #For AbilityActivate, the second parameter can either be a skill, ability or the word All.
+        #All can only be used with the expression ability_tier(all)
+        #
+        #General allowed expressions are:
+        #skill_level(skill_name)
+        #ability_tier(ability_name)
+        #power_level
+        #A space is required between the comparator which can be >, <, >= or <=
+        #The last parameter must be an int
+        BanAction:
+          - 'Break-COAL_ORE-skill_level(mining) > 100'
+          - 'Break-DIAMOND_ORE-ability_tier(ItsATriple) > 3'
+          - 'Attack-PLAYER-skill_difference(mining) > 100'
+          - 'Attack-PLAYER-power_level_difference < 25'
+          - 'Attack-PLAYER-power_level > 50'
+          - 'Attack-ZOMBIE-skill_level(swords) < 50'
+          - 'ExpGain-Swords-skill_level(swords) > 50'
+          - 'AbilityActivate-Daze-power_level < 100'
+          - 'AbilityActivate-Swords-power_level < 100'
+          - 'AbilityActivate-All-ability_tier(self) < 3'
+  #This is in minutes
+  SaveInterval: 1
+  #This is in minutes
+  ReplaceAbilityCooldown: 1440
+  #Require an empty offhand to use abilities
+  RequireEmptyOffHand: false
+  #What lang file you want
+  LangFile: 'en'
+  #Unused
+  AutoUpdate: true
+  #Use mcrpg.{skill}.level
+  UseLevelPerms: false
+  #Allow Health bars
+  HealthBarEnabled: true
+  #Display time in seconds
+  HealthBarDisplayTime: 5
+  #Modify the exp worth of mobs from spawners and eggs
+  ModifySpawnExp:
+    MobsFromSpawner: 0.5
+    MobsFromEggs: 0.5
+DisplayConfig:
+  Scoreboard:
+    DisplayName: '&a%Skill%'
+    Lines:
+      CurrentLevel: '&bCurrent Level:'
+      CurrentExp: '&eExp:'
+      ExpNeeded: '&eExp Left:'
+  BossBar:
+    DisplayName: '&5Lv.&e%Current_Level% &7- &5%Skill%: &e%Exp_To_Level%'
+    Color:
+      Swords: 'Red'
+      Mining: 'Blue'
+      Unarmed: 'White'
+      Herbalism: 'Green'
+      Archery: 'Pink'
+  ActionBar:
+    Swords:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Mining:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Unarmed:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Herbalism:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Archery:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+PlayerConfiguration:
+  #This amount is here for the future and currently is unused
+  AmountOfTotalAbilities: 9
+  #When the power level reaches a multiple of this number a point is awarded
+  AbilityPointInterval: 200
+  #In seconds how long should the player stay ready for
+  PlayerReadyDuration: 2
