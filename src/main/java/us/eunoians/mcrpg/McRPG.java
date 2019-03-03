@@ -32,6 +32,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
+//:>
 public class McRPG extends JavaPlugin implements Initializable {
 
   private static McRPG instance;
