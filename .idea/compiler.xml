@@ -9,7 +9,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Mcmmox" />
         <module name="McMMOx" />
-        <module name="McRPG" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

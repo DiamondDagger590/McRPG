@@ -20,7 +20,7 @@ build:
   coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
-      - /build/libs/*.jar
+      - build/libs/*.jar
     expire_in: 1 week
 
 after_script:
