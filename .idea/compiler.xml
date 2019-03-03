@@ -7,7 +7,6 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Mcmmox" />
         <module name="McMMOx" />
       </profile>
     </annotationProcessing>
@@ -17,6 +16,7 @@
       <module name="com.rocket.projectrocket.Commons.main" target="1.8" />
       <module name="com.rocket.projectrocket.Commons.test" target="1.8" />
       <module name="McMMOx" target="1.8" />
+      <module name="Mcmmox" target="1.8" />
       <module name="Mcmmox-Maven" target="1.5" />
       <module name="McRPG" target="1.8" />
     </bytecodeTargetLevel>
