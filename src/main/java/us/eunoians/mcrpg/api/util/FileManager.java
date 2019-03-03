@@ -320,6 +320,7 @@ public class FileManager {
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),
+    REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
     SELECT_REPLACE_SKILLS_GUI("selectreplaceskillsgui.yml", "guis/selectreplaceskillsgui.yml"),

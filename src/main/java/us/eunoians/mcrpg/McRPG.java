@@ -3,6 +3,7 @@ package us.eunoians.mcrpg;
 import com.cyr1en.mcutils.PluginUpdater;
 import com.cyr1en.mcutils.logger.Logger;
 import com.cyr1en.mcutils.utils.reflection.Initializable;
+import com.cyr1en.mcutils.utils.reflection.annotation.Ignore;
 import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
 import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
 import com.google.common.base.Charsets;
@@ -32,9 +33,10 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
+//:>
 public class McRPG extends JavaPlugin implements Initializable {
 
-  private static McRPG instance;
+  @Ignore private static McRPG instance;
   @Getter
   private PluginUpdater pluginUpdater;
   @Getter
