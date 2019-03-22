@@ -6,9 +6,9 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 5, state: 'APLHA')
+def versionObj = new Version(major: 1, minor: 1, patch: 3, state: 'APLHA')
 
-group 'us.eunoians'
+group 'com.rocket.projectrocket'
 version = "${versionObj.toString()}"
 
 sourceCompatibility = 1.8
@@ -30,7 +30,8 @@ repositories {
 
 dependencies {
 
-    compile 'com.github.CyR1en:McUtils:1.6.3'
+    compile 'com.github.CyR1en:FlatDB:1.0.1'
+    compile 'com.github.CyR1en:McUtils:1.6.2'
     compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
 
     compileOnly 'me.clip:placeholderapi:2.9.2'
