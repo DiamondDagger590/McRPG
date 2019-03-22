@@ -30,7 +30,8 @@ repositories {
 
 dependencies {
 
-    compile 'com.github.CyR1en:McUtils:master-SNAPSHOT'
+    compile 'com.github.CyR1en:FlatDB:1.0.1'
+    compile 'com.github.CyR1en:McUtils:1.6.2'
     compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
 
     compileOnly 'me.clip:placeholderapi:2.9.2'
