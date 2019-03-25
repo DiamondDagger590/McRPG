@@ -1,6 +1,7 @@
 #Will need to be increased in relation to how many slots are possible for the ability loadout
 Size: 9
 Title: '&5%Skill%'
+BackButtonDestination: 'maingui.yml:MainGUI'
 RemoteTransfer:
 #Replaces the location var in the statement
   NoLocation: 'None'

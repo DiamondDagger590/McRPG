@@ -59,11 +59,11 @@ public class McAdmin implements CommandExecutor {
             }
             if(Methods.hasPlayerLoggedInBefore(args[2])) {
               if(!Methods.isInt(args[3])) {
-                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
               if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.points"))) {
-                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
@@ -79,20 +79,51 @@ public class McAdmin implements CommandExecutor {
               else {
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.setAbilityPoints(mp.getAbilityPoints() + amount);
-                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
             else {
-              admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
           else if(args[1].equalsIgnoreCase("exp")) {
+            //If the command does not include the skill parameter
             if(args.length < 5) {
-              sendHelpMessage(admin);
-              return true;
+              if(args.length < 4) {
+                sendHelpMessage(admin);
+                return true;
+              }
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.exp"))) {
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
+                return true;
+              }
+              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+                if(!Methods.isInt(args[3])) {
+                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                  return true;
+                }
+                else {
+                  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+                  if(offlinePlayer.isOnline()) {
+                    McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    admin.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableExp").replace("%Amount%", args[3]).replace("%Player%", ((Player) offlinePlayer).getDisplayName())));
+                    ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableExp").replace("%Amount%", args[3])));
+                    return true;
+                  }
+                  else {
+                    McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    admin.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableExp").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
+                    return true;
+                  }
+                }
+              }
             }
             if(Methods.hasPlayerLoggedInBefore(args[2])) {
               if(!Methods.isInt(args[3])) {
@@ -146,8 +177,38 @@ public class McAdmin implements CommandExecutor {
           }
           else if(args[1].equalsIgnoreCase("level")) {
             if(args.length < 5) {
-              sendHelpMessage(admin);
-              return true;
+              if(args.length < 4) {
+                sendHelpMessage(admin);
+                return true;
+              }
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.level"))) {
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
+                return true;
+              }
+              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+                if(!Methods.isInt(args[3])) {
+                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                  return true;
+                }
+                else {
+                  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+                  if(offlinePlayer.isOnline()) {
+                    McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    admin.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableLevels").replace("%Amount%", args[3]).replace("%Player%", ((Player) offlinePlayer).getDisplayName())));
+                    ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableLevels").replace("%Amount%", args[3])));
+                    return true;
+                  }
+                  else {
+                    McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    admin.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableLevels").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
+                    return true;
+                  }
+                }
+              }
             }
             if(Methods.hasPlayerLoggedInBefore(args[2])) {
               if(!Methods.isInt(args[3])) {
@@ -437,9 +498,9 @@ public class McAdmin implements CommandExecutor {
                   McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                   Skill skillInfo = mp.getSkill(skill);
                   admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
-                  admin.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
-                  admin.sendMessage(Methods.color("&eCurrent Exp: " + Integer.toString(skillInfo.getCurrentExp())));
-                  admin.sendMessage(Methods.color("&eExp To Level: " + Integer.toString(skillInfo.getExpToLevel())));
+                  admin.sendMessage(Methods.color("&eCurrent Level: " + skillInfo.getCurrentLevel()));
+                  admin.sendMessage(Methods.color("&eCurrent Exp: " + skillInfo.getCurrentExp()));
+                  admin.sendMessage(Methods.color("&eExp To Level: " + skillInfo.getExpToLevel()));
                   skillInfo.getAbilities().stream().map(ability -> Methods.color("&e" + ability.getGenericAbility().getName() + ": Unlocked-" + ability.isUnlocked() + " Tier-" + ability.getCurrentTier())).forEach(admin::sendMessage);
                   return true;
                 }
@@ -447,9 +508,9 @@ public class McAdmin implements CommandExecutor {
                   McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                   Skill skillInfo = mp.getSkill(skill);
                   admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
-                  admin.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
-                  admin.sendMessage(Methods.color("&eCurrent Exp: " + Integer.toString(skillInfo.getCurrentExp())));
-                  admin.sendMessage(Methods.color("&eExp To Level: " + Integer.toString(skillInfo.getExpToLevel())));
+                  admin.sendMessage(Methods.color("&eCurrent Level: " + skillInfo.getCurrentLevel()));
+                  admin.sendMessage(Methods.color("&eCurrent Exp: " + skillInfo.getCurrentExp()));
+                  admin.sendMessage(Methods.color("&eExp To Level: " + skillInfo.getExpToLevel()));
                   skillInfo.getAbilities().stream().map(ability -> Methods.color("&e" + ability.getGenericAbility().getName() + ": Unlocked-" + ability.isUnlocked() + " Tier-" + ability.getCurrentTier())).forEach(admin::sendMessage);
                   return true;
                 }
@@ -920,8 +981,34 @@ public class McAdmin implements CommandExecutor {
           }
           else if(args[1].equalsIgnoreCase("exp")) {
             if(args.length < 5) {
-              sendHelpMessage(sender);
-              return true;
+              if(args.length < 4) {
+                sendHelpMessage(sender);
+                return true;
+              }
+              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+                if(!Methods.isInt(args[3])) {
+                  sender.sendMessage(Methods.color( plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                  return true;
+                }
+                else {
+                  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+                  if(offlinePlayer.isOnline()) {
+                    McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    sender.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableExp").replace("%Amount%", args[3]).replace("%Player%", ((Player) offlinePlayer).getDisplayName())));
+                    ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableExp").replace("%Amount%", args[3])));
+                    return true;
+                  }
+                  else {
+                    McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    sender.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableExp").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
+                    return true;
+                  }
+                }
+              }
             }
             if(Methods.hasPlayerLoggedInBefore(args[2])) {
               if(!Methods.isInt(args[3])) {
@@ -971,8 +1058,34 @@ public class McAdmin implements CommandExecutor {
           }
           else if(args[1].equalsIgnoreCase("level")) {
             if(args.length < 5) {
-              sendHelpMessage(sender);
-              return true;
+              if(args.length < 4) {
+                sendHelpMessage(sender);
+                return true;
+              }
+              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+                if(!Methods.isInt(args[3])) {
+                  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                  return true;
+                }
+                else {
+                  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+                  if(offlinePlayer.isOnline()) {
+                    McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    sender.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableLevels").replace("%Amount%", args[3]).replace("%Player%", ((Player) offlinePlayer).getDisplayName())));
+                    ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableLevels").replace("%Amount%", args[3])));
+                    return true;
+                  }
+                  else {
+                    McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                    mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
+                    mp.saveData();
+                    sender.sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.RedeemableLevels").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
+                    return true;
+                  }
+                }
+              }
             }
             if(Methods.hasPlayerLoggedInBefore(args[2])) {
               if(!Methods.isInt(args[3])) {
@@ -1235,9 +1348,9 @@ public class McAdmin implements CommandExecutor {
                 McRPGPlayer mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                 Skill skillInfo = mp.getSkill(skill);
                 sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
-                sender.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
-                sender.sendMessage(Methods.color("&eCurrent Exp: " + Integer.toString(skillInfo.getCurrentExp())));
-                sender.sendMessage(Methods.color("&eExp To Level: " + Integer.toString(skillInfo.getExpToLevel())));
+                sender.sendMessage(Methods.color("&eCurrent Level: " + skillInfo.getCurrentLevel()));
+                sender.sendMessage(Methods.color("&eCurrent Exp: " + skillInfo.getCurrentExp()));
+                sender.sendMessage(Methods.color("&eExp To Level: " + skillInfo.getExpToLevel()));
                 skillInfo.getAbilities().stream().map(ability -> Methods.color("&e" + ability.getGenericAbility().getName() + ": Unlocked-" + ability.isUnlocked() + " Tier-" + ability.getCurrentTier())).forEach(sender::sendMessage);
                 return true;
               }
@@ -1245,9 +1358,9 @@ public class McAdmin implements CommandExecutor {
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 Skill skillInfo = mp.getSkill(skill);
                 sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
-                sender.sendMessage(Methods.color("&eCurrent Level: " + Integer.toString(skillInfo.getCurrentLevel())));
-                sender.sendMessage(Methods.color("&eCurrent Exp: " + Integer.toString(skillInfo.getCurrentExp())));
-                sender.sendMessage(Methods.color("&eExp To Level: " + Integer.toString(skillInfo.getExpToLevel())));
+                sender.sendMessage(Methods.color("&eCurrent Level: " + skillInfo.getCurrentLevel()));
+                sender.sendMessage(Methods.color("&eCurrent Exp: " + skillInfo.getCurrentExp()));
+                sender.sendMessage(Methods.color("&eExp To Level: " + skillInfo.getExpToLevel()));
                 skillInfo.getAbilities().stream().map(ability -> Methods.color("&e" + ability.getGenericAbility().getName() + ": Unlocked-" + ability.isUnlocked() + " Tier-" + ability.getCurrentTier())).forEach(sender::sendMessage);
                 return true;
               }

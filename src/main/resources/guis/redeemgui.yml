@@ -64,7 +64,7 @@ Guis:
       Material: STAINED_GLASS_PANE
       Data: 7
       Name: ' '
-  LevlesAmountGUI:
+  LevelsAmountGUI:
     Size: 9
     Title: '&bSelect the amount of levels'
     Events:

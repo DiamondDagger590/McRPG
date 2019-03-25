@@ -7,6 +7,7 @@ public enum GainReason {
   KILL,
   MOVE,
   OTHER,
+  REDEEM,
   BONUS
 
 }

@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.skills.*;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
@@ -55,7 +56,7 @@ public class McRPGPlayer {
    * The abilities a player has unlocked and has not yet accepted or denied. Whenever a player next opens the mcrpg main gui they should be forced to go through these
    */
   @Getter
-  private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
+  private ArrayList<UnlockedAbilities> pendingUnlockAbilities;
 
   /**
    * Map of the abilities on cooldown
@@ -167,7 +168,7 @@ public class McRPGPlayer {
    */
   @Getter
   @Setter
-  private boolean ignoreTips = false;
+  private boolean ignoreTips;
 
   /**
    * Current active abilities
@@ -183,11 +184,21 @@ public class McRPGPlayer {
 
   @Getter
   @Setter
-  private int redeemableExp = 0;
+  private int redeemableExp;
 
   @Getter
   @Setter
-  private int redeemableLevels = 0;
+  private int redeemableLevels;
+
+  @Getter
+  @Setter
+  private boolean listenForCustomExpInput = false;
+
+  @Getter
+  @Setter
+  private RedeemBit redeemBit;
+
+
 
   /**
    * The file configuration of the player that we get to edit.

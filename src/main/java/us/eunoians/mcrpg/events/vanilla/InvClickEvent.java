@@ -332,6 +332,8 @@ public class InvClickEvent implements Listener {
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SELECT_REPLACE_SKILLS_GUI);
         SelectReplaceGUI selectReplaceGUI = (SelectReplaceGUI) currentGUI;
         if(e.getSlot() == guiConfig.getInt("BackButton.Slot")) {
+          GUIItem item = currentGUI.getGui().getItems().get(currentGUI.getGui().getItems().size() - 2);
+          //TODO custom back button
           if(GUITracker.doesPlayerHavePrevious(mp)) {
             currentGUI.setClearData(false);
             GUI old = GUITracker.getPlayersPreviousGUI(mp);

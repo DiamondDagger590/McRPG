@@ -17,6 +17,7 @@ Messages:
       NotAnAbility: '&cThe argument you entered is not a valid ability'
       NotActiveAbility: '&cThe ability you entered is not an active ability'
       NotEnabledOrUnlocked: '&cThat ability is either disabled or you have yet to unlock it'
+      UnexpectedError: '&cAn unexpected error occurred, please try again.'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       Default:
@@ -84,6 +85,8 @@ Messages:
         AbilityPoints: '&aYou gave %Player% &e%Amount% &aability points'
         Exp: '&aYou gave %Player% &e%Amount% &aexp in &5%Skill%'
         Level: '&aYou gave %Player% &e%Amount% &alevel(s) in &5%Skill%'
+        RedeemableExp: '&aYou gave %Player% %Amount% redeemable exp'
+        RedeemableLevels: '&aYou gave %Player% %Amount% redeemable levels'
         Ability: '&aYou gave %Player% &5%Ability%'
         LoadoutFull: '&cThe players ability loadout is full'
         DoesNotHaveAbility: '&cThe player does not have %Ability%'
@@ -94,6 +97,8 @@ Messages:
         AbilityPoints: '&aYou were given &e%Amount% &aability points'
         Exp: '&aYou were given &e%Amount% &aexp in &5%Skill%'
         Level: '&aYou were given &e%Amount% &alevel(s) in &5%Skill%'
+        RedeemableExp: '&aYou were given %Amount% redeemable exp'
+        RedeemableLevels: '&aYou were given %Amount% redeemable levels'
         Ability: '&aYou were given &5%Ability%'
         Replaced: '&aYour %Old_Ability% was replaced with %New_Ability%'
       Remove:
@@ -114,6 +119,11 @@ Messages:
         AbilityReset: '&aYou reset %Player%s %Ability% ability'
         PlayerWasReset: '&cYour McRPG stats were reset'
         PlayerReset: '&aYou reset %Player%s McRPG stats'
+  CustomRedeem:
+    NotEnoughExp: '&cYou do not have enough redeemable exp to do that.'
+    RedeemedExp: '&You redeemed %Amount% exp into %Skill%'
+    NotEnoughLevels: '&cYou do not have enough redeemable levels to do that.'
+    RedeemedLevels: '&You redeemed %Amount% levels into %Skill%'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'
@@ -194,7 +204,6 @@ Messages:
     CooldownExpire: '&aYour cooldown for %Ability% is finished'
     CooldownActive: '&cYour %Skill% ability is on cooldown for &e%Time% &cseconds'
     ReplaceCooldownExpire: '&aYour cooldown for ability replacing is over'
-#Add these to auto updater
   WorldGuard:
     InvalidActionType: '&cThere is a faulty action type in your config... canceling initiation of %path%'
     InvalidMaterial: '&cYou provided a faulty material in your config... canceling initiation of %path%'

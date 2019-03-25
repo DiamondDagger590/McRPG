@@ -84,6 +84,9 @@ Configuration:
   ModifySpawnExp:
     MobsFromSpawner: 0.5
     MobsFromEggs: 0.5
+  Redeeming:
+    #If when players redeem levels, should this reset the amount of exp needed to level up
+    RedeemLevelsResetExp: true
 DisplayConfig:
   Scoreboard:
     DisplayName: '&a%Skill%'
