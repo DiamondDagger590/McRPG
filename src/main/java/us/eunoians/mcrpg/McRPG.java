@@ -1,11 +1,11 @@
 package us.eunoians.mcrpg;
 
 import com.cyr1en.mcutils.PluginUpdater;
+import com.cyr1en.mcutils.initializers.Initializable;
+import com.cyr1en.mcutils.initializers.annotation.Ignore;
+import com.cyr1en.mcutils.initializers.annotation.Initialize;
+import com.cyr1en.mcutils.initializers.annotation.process.Initializer;
 import com.cyr1en.mcutils.logger.Logger;
-import com.cyr1en.mcutils.utils.reflection.Initializable;
-import com.cyr1en.mcutils.utils.reflection.annotation.Ignore;
-import com.cyr1en.mcutils.utils.reflection.annotation.Initialize;
-import com.cyr1en.mcutils.utils.reflection.annotation.process.Initializer;
 import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,7 +40,8 @@ import java.util.List;
  */
 public class McRPG extends JavaPlugin implements Initializable {
 
-  @Ignore private static McRPG instance;
+  @Ignore
+  private static McRPG instance;
   @Getter
   private PluginUpdater pluginUpdater;
   @Getter
@@ -201,10 +202,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   public String getPluginPrefix() {
     return getLangFile().getString("Messages.PluginInfo.PluginPrefix");
-  }
-
-  public FileManager getFileManager() {
-    return fileManager;
   }
 
   @Override
