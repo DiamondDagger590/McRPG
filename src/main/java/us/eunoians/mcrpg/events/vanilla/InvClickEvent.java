@@ -634,7 +634,7 @@ public class InvClickEvent implements Listener {
             if(redeemType == RedeemType.EXP) {
               mp.giveExp(skill, amount, GainReason.REDEEM);
               mp.setRedeemableExp(mp.getRedeemableExp() - amount);
-              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.RedeemedExp")
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
@@ -642,7 +642,7 @@ public class InvClickEvent implements Listener {
             else {
               mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
-              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.RedeemedLevels")
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
@@ -651,22 +651,25 @@ public class InvClickEvent implements Listener {
           else if(events[1].equalsIgnoreCase("custom")) {
             mp.setListenForCustomExpInput(true);
             mp.setRedeemBit(new RedeemBit(redeemType, skill));
-            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("")));
+            p.closeInventory();
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.Listening")));
             return;
           }
           else if(events[1].equalsIgnoreCase("all")){
             if(redeemType == RedeemType.EXP){
               mp.giveExp(skill, mp.getRedeemableExp(), GainReason.REDEEM);
-              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.RedeemedExp")
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableExp()))));
               mp.setRedeemableExp(0);
+              p.closeInventory();
               return;
             }
             else{
               mp.getSkill(skill).giveLevels(mp, mp.getRedeemableLevels(), McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
-              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.RedeemedLevels")
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableLevels()))));
               mp.setRedeemableLevels(0);
+              p.closeInventory();
               return;
             }
           }

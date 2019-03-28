@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,12 +21,12 @@ public class McRedeem implements CommandExecutor {
       Player p = (Player) sender;
       // /mcredeem %skill%
       if(args.length < 1){
-        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcredeem")));
+        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcredeem")));
         return true;
       }
       else{
         if(!Skills.isSkill(args[0])){
-          p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.Utility.NotASkill")));
+          p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.NotASkill")));
           return true;
         }
         else{

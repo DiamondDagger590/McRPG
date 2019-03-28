@@ -290,6 +290,8 @@ public class McRPGPlayer {
     if(!playerData.contains("RedeemableLevels")){
       playerData.set("RedeemableLevels", 0);
     }
+    this.redeemableExp = playerData.getInt("RedeemableExp");
+    this.redeemableLevels = playerData.getInt("RedeemableLevels");
     this.ignoreTips = playerData.getBoolean("IgnoreTips");
     this.redeemableExp = playerData.getInt("RedeemableExp");
     this.redeemableLevels = playerData.getInt("RedeemableLevelse");
@@ -832,6 +834,8 @@ public class McRPGPlayer {
     if(abilitiesOnCooldown.isEmpty()) {
       playerData.set("Cooldowns.placeholder", null);
     }
+    playerData.set("RedeemableExp", redeemableExp);
+    playerData.set("RedeemableLevels", redeemableLevels);
     playerData.set("DisplayType", displayType.getName());
     playerData.set("KeepHandEmpty", keepHandEmpty);
     playerData.set("AutoDeny", autoDeny);

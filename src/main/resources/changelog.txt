@@ -1,5 +1,7 @@
-
-
+1.1.4
++ Added redeemable exp
+= Fixed a bug with tips where it assumed you had some already
+= Fixed a broken path in tips for the auto config updater
 
 
 1.1.3-ALPHA

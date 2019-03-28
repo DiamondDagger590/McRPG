@@ -162,6 +162,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getCommand("mclink").setExecutor(new McLink());
     getCommand("mcunlink").setExecutor(new McUnlink());
     getCommand("mchelp").setExecutor(new McHelp());
+    getCommand("mcredeem").setExecutor(new McRedeem());
   }
 
   @Initialize(priority = 4)
@@ -192,6 +193,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new DropItemEvent(), this);
     getServer().getPluginManager().registerEvents(new ShootEvent(), this);
     getServer().getPluginManager().registerEvents(new ArrowHitEvent(), this);
+    getServer().getPluginManager().registerEvents(new ChatEvent(), this);
   }
 
   public static McRPG getInstance() {

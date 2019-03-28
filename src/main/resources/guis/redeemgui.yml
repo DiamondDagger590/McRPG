@@ -1,14 +1,16 @@
-Guis:
+Gui:
   RedeemGUI:
     Size: 9
     Title: '&bSelect which type'
     Events:
-      4: 'Open:ExpAmountGUI'
-      6: 'Open:LevelAmountGUI'
+      2:
+      - 'Open:ExpAmountGUI'
+      6:
+      - 'Open:LevelAmountGUI'
     Items:
       Exp:
         Name: '&aExp'
-        Material: EXP_BOTTLE
+        Material: EXPERIENCE_BOTTLE
         Lore:
           - '&eYou have %ExpAmount% exp redeem'
         Slot: 2
@@ -19,113 +21,127 @@ Guis:
           - '&eYou have %LevelAmount% levels to redeem'
         Slot: 6
     FillerItem:
-      Material: STAINED_GLASS_PANE
-      Data: 7
+      Material: GRAY_STAINED_GLASS_PANE
       Name: ' '
   ExpAmountGUI:
     Size: 9
     Title: '&bSelect the amount of exp'
     Events:
-      0: 'Redeem:100'
-      3: 'Redeem:500'
-      6: 'Redeem:1000'
-      7: 'Redeem:Custom'
-      8: 'Open:AllGUI'
+      0:
+      - 'Redeem:100'
+      2:
+      - 'Redeem:500'
+      4:
+      - 'Redeem:1000'
+      6:
+        - 'Open:AllGUI'
+      8:
+        - 'Redeem:Custom'
     Items:
       100:
         Name: '&c&lRedeem 100 Exp'
-        Material: STAINED_GLASS_PANE
-        Data: 5
+        Material: LIME_STAINED_GLASS_PANE
         Lore:
           - '&eRedeem 100 exp'
         Slot: 0
       500:
         Name: '&c&lRedeem 500 Exp'
-        Material: STAINED_GLASS_PANE
-        Data: 5
+        Material: LIME_STAINED_GLASS_PANE
         Lore:
           - '&eRedeem 500 exp'
-        Slot: 3
+        Slot: 2
       1000:
         Name: '&c&lRedeem 1000 Exp'
-        Material: STAINED_GLASS_PANE
-        Data: 5
+        Material: LIME_STAINED_GLASS_PANE
         Lore:
           - '&eRedeem 1000 exp'
+        Slot: 4
+      All:
+        Name: '&c&lRedeem All Exp'
+        Material: PURPLE_STAINED_GLASS_PANE
+        Lore:
+          - '&eRedeem all your exp'
         Slot: 6
       Custom:
-        Name: '&c&lUser input amount'
-        Material: STAINED_GLASS_PANE
-        Data: 15
+        Name: '&c&lUser Input Amount'
+        Material: BLUE_STAINED_GLASS_PANE
         Lore:
-          - '&eRedeem an amount based on user input'
-        Slot: 7
+          - '&eType in chat how much exp to redeem'
+        Slot: 8
     FillerItem:
-      Material: STAINED_GLASS_PANE
-      Data: 7
+      Material: GRAY_STAINED_GLASS_PANE
       Name: ' '
-  LevelsAmountGUI:
+  LevelAmountGUI:
     Size: 9
     Title: '&bSelect the amount of levels'
     Events:
-      0: 'Redeem:1'
-      3: 'Redeem:5'
-      6: 'Redeem:10'
-      7: 'Redeem:Custom'
-      8: 'Open:AllGUI'
+      0:
+      - 'Redeem:1'
+      2:
+      - 'Redeem:5'
+      4:
+      - 'Redeem:10'
+      6:
+        - 'Open:AllGUI'
+      8:
+        - 'Redeem:Custom'
     Items:
       100:
         Name: '&c&lRedeem 1 Levels'
-        Material: STAINED_GLASS_PANE
-        Data: 5
+        Material: LIME_STAINED_GLASS_PANE
         Lore:
           - '&eRedeem 1 level'
         Slot: 0
       500:
         Name: '&c&lRedeem 5 Levels'
-        Material: STAINED_GLASS_PANE
-        Data: 5
+        Material: LIME_STAINED_GLASS_PANE
         Lore:
           - '&eRedeem 5 levels'
-        Slot: 3
+        Slot: 2
       1000:
         Name: '&c&lRedeem 10 Levels'
-        Material: STAINED_GLASS_PANE
-        Data: 5
+        Material: LIME_STAINED_GLASS_PANE
         Lore:
           - '&eRedeem 10 levels'
+        Slot: 4
+      All:
+        Name: '&c&lRedeem All Exp'
+        Material: PURPLE_STAINED_GLASS_PANE
+        Lore:
+          - '&eRedeem all your exp'
         Slot: 6
       Custom:
-        Name: '&c&lUser input amount'
-        Material: STAINED_GLASS_PANE
-        Data: 15
+        Name: '&c&lUser Input Amount'
+        Material: BLUE_STAINED_GLASS_PANE
         Lore:
-          - '&eRedeem an amount based on user input'
-        Slot: 7
+          - '&eType in chat how much exp to redeem'
+        Slot: 8
     FillerItem:
-      Material: STAINED_GLASS_PANE
-      Data: 7
+      Material: GRAY_STAINED_GLASS_PANE
       Name: ' '
   AllGUI:
     Size: 27
     Title: '&bAre you sure?'
     Events:
-      14: 'Close'
-      26: 'Back'
-      12: 'Redeem:All'
+      14:
+      - 'Close'
+      26:
+      - 'Back'
+      11:
+      - 'Redeem:All'
     Items:
       Confirm:
         Name: '&aConfirm'
         Material: EMERALD_BLOCK
         Lore:
           - '&eClick this to confirm the action'
-        Slot: 12
+        Slot: 11
       Deny:
         Name: '&cDeny'
         Material: REDSTONE_BLOCK
         Lore:
           - '&eClick this to cancel the action'
-        Slot: 14
+        Slot: 15
       Back:
         Name: '&bBack>>'
         Material: BARRIER
@@ -133,6 +149,5 @@ Guis:
           - '&eClick this to go back'
         Slot: 26
     FillerItem:
-      Material: STAINED_GLASS_PANE
-      Data: 7
+      Material: GRAY_STAINED_GLASS_PANE
       Name: ' '

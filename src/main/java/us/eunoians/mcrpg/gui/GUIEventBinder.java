@@ -21,7 +21,7 @@ public class GUIEventBinder {
   }
 
   public static void loadGUIEventBinder() {
-    defaultEvents = new ArrayList<String>();
+    defaultEvents = new ArrayList<>();
     defaultEvents.add("Close");
     defaultEvents.add("Open");
     defaultEvents.add("Back");

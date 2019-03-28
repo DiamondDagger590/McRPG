@@ -138,6 +138,7 @@ Messages:
     RedeemedExp: '&You redeemed %Amount% exp into %Skill%'
     NotEnoughLevels: '&cYou do not have enough redeemable levels to do that.'
     RedeemedLevels: '&You redeemed %Amount% levels into %Skill%'
+    Listening: '&ePlease type in chat the amount you would like to redeem'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'

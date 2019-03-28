@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 5, state: 'APLHA')
+def versionObj = new Version(major: 1, minor: 1, patch: 4, state: 'APLHA')
 
 group 'com.rocket.projectrocket'
 version = "${versionObj.toString()}"
@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
 
-    compile 'com.github.CyR1en:McUtils:master-SNAPSHOT'
+    compile 'com.github.CyR1en:McUtils:1.6.3'
     compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
 
     compileOnly 'me.clip:placeholderapi:2.9.2'

@@ -25,38 +25,38 @@ public class ChatEvent implements Listener {
       mp.setListenForCustomExpInput(false);
       String[] args = e.getMessage().split(" ");
       if(args.length != 1){
-        e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.Commands.Utility.NotAnInt")));
+        e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.NotAnInt")));
         return;
       }
       else{
         if(Methods.isInt(args[0])){
           if(mp.getRedeemBit() == null){
-            e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.Commands.Utility.UnexpectedError")));
+            e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.UnexpectedError")));
             return;
           }
           RedeemBit redeemBit = mp.getRedeemBit();
           int amount = Integer.parseInt(args[0]);
           if(redeemBit.getRedeemType() == RedeemType.EXP){
             if(mp.getRedeemableExp() < amount){
-              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.NotEnoughExp")));
+              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.NotEnoughExp")));
               return;
             }
             else{
               mp.getSkill(redeemBit.getSkill()).giveExp(mp, amount, GainReason.REDEEM);
-              mp.setRedeemableExp(mp.getRedeemableLevels() - amount);
-              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.RedeemedExp")
+              mp.setRedeemableExp(mp.getRedeemableExp() - amount);
+              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
                       .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
               return;
             }
           }
           else{
             if(mp.getRedeemableLevels() < amount){
-              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.NotEnoughLevels")));
+              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.NotEnoughLevels")));
               return;            }
             else{
               mp.getSkill(redeemBit.getSkill()).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.RedeemLevelsResetExp"));
               mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
-              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.CustomRedeem.RedeemedLevels")
+              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
                       .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
               return;
             }
