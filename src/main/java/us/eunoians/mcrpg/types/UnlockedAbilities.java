@@ -23,14 +23,19 @@ public enum UnlockedAbilities implements GenericAbility {
   COMBO("Combo", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   CURSE_OF_HADES("CurseOfHades", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
   DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
+  DEMETERS_SHRINE("DemetersShrine", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
   DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
   DIAMOND_FLOWERS("DiamondFlowers", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
   DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
+  DRYADS_GIFT("DryadsGift", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
   FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
+  HEAVY_SWING("HeavySwing", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
+  HESPERIDES_APPLES("HesperidesApples", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
   IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
   ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
   MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
   NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
+  NYMPHS_VITALITY("NymphsVitality", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
   ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
   PANS_BLESSING("PansBlessing", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
   PUNCTURE("Puncture", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
@@ -42,6 +47,7 @@ public enum UnlockedAbilities implements GenericAbility {
   SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
   SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
   TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
+  TEMPORAL_HARVEST("TemporalHarvest", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
   TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
   TIPPED_ARROWS("TippedArrows", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG);
@@ -60,11 +66,11 @@ public enum UnlockedAbilities implements GenericAbility {
    * @param type
    * @param config
    */
-  UnlockedAbilities(String name, String skill, AbilityType type, Files config){
-	this.name = name;
-	this.skill = skill;
-	this.abilityType = type;
-	this.file = config;
+  UnlockedAbilities(String name, String skill, AbilityType type, Files config) {
+    this.name = name;
+    this.skill = skill;
+    this.abilityType = type;
+    this.file = config;
   }
 //TODO FIX FILES HERE BOI
 
@@ -73,8 +79,8 @@ public enum UnlockedAbilities implements GenericAbility {
    *
    * @return true if the ability if passive and false if it is active
    */
-  public boolean isPassiveAbility(){
-	return abilityType.equals(AbilityType.PASSIVE);
+  public boolean isPassiveAbility() {
+    return abilityType.equals(AbilityType.PASSIVE);
   }
 
   /**
@@ -83,16 +89,16 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return ture if the ability is enabled or false if the ability is disabled
    */
   @Override
-  public boolean isEnabled(){
-	return file.getFile().getBoolean("EnabledAbilities." + name);
+  public boolean isEnabled() {
+    return file.getFile().getBoolean("EnabledAbilities." + name);
   }
 
   /**
    * @param ability The name of the ability you want the instance of
    * @return The instance of the unlocked ability if a correct name is provided or null if the ability provided does not exist
    */
-  public static UnlockedAbilities fromString(String ability){
-	return Arrays.stream(UnlockedAbilities.values()).filter(ab -> ab.getName().equalsIgnoreCase(ability)).findAny().orElse(null);
+  public static UnlockedAbilities fromString(String ability) {
+    return Arrays.stream(UnlockedAbilities.values()).filter(ab -> ab.getName().equalsIgnoreCase(ability)).findAny().orElse(null);
   }
 
   /**
@@ -100,8 +106,8 @@ public enum UnlockedAbilities implements GenericAbility {
    *
    * @return The integer representation of when the ability is unlocked
    */
-  public int getUnlockLevel(){
-	return file.getFile().getInt("UnlockLevelForAbility." + name);
+  public int getUnlockLevel() {
+    return file.getFile().getInt("UnlockLevelForAbility." + name);
   }
 
   /**
@@ -109,9 +115,9 @@ public enum UnlockedAbilities implements GenericAbility {
    *
    * @return true if the permission system is meant to be used for this ability or false if not
    */
-  public boolean usePerm(){
-	return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(),
-		File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getBoolean("UsePermsForAbility." + name);
+  public boolean usePerm() {
+    return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(),
+            File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getBoolean("UsePermsForAbility." + name);
   }
 
   /**
@@ -119,8 +125,8 @@ public enum UnlockedAbilities implements GenericAbility {
    *
    * @return The max tier an ability can reach
    */
-  public int getMaxTier(){
-	return file.getFile().getInt(name + "Config.TierAmount");
+  public int getMaxTier() {
+    return file.getFile().getInt(name + "Config.TierAmount");
   }
 
   /**
@@ -129,29 +135,29 @@ public enum UnlockedAbilities implements GenericAbility {
    * @param tier The tier you want to check
    * @return The level that the tier is unlocked or -1 if that tier doesnt exist
    */
-  public int tierUnlockLevel(int tier){
-	return file.getFile().getInt(this.name + "Config.TierUpgrade.Tier" + Methods.convertToNumeral(tier));
+  public int tierUnlockLevel(int tier) {
+    return file.getFile().getInt(this.name + "Config.TierUpgrade.Tier" + Methods.convertToNumeral(tier));
   }
 
-  public static boolean isAbility(String ability){
-	return Arrays.stream(values()).anyMatch(ab -> ab.getName().equalsIgnoreCase(ability));
+  public static boolean isAbility(String ability) {
+    return Arrays.stream(values()).anyMatch(ab -> ab.getName().equalsIgnoreCase(ability));
   }
 
-  public String getDisplayName(){
-	char[] chars = name.toCharArray();
-	StringBuilder string = new StringBuilder();
-	boolean first = true;
-	for(char s : chars){
-	  if(!first){
-		if(Character.isUpperCase(s)){
-		  string.append(" ");
-		}
-	  }
-	  else{
-		first = false;
-	  }
-	  string.append(s);
-	}
-	return string.toString();
+  public String getDisplayName() {
+    char[] chars = name.toCharArray();
+    StringBuilder string = new StringBuilder();
+    boolean first = true;
+    for(char s : chars) {
+      if(!first) {
+        if(Character.isUpperCase(s)) {
+          string.append(" ");
+        }
+      }
+      else {
+        first = false;
+      }
+      string.append(s);
+    }
+    return string.toString();
   }
 }

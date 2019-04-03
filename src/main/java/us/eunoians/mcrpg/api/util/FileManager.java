@@ -329,7 +329,8 @@ public class FileManager {
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
-    UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml");
+    UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
+    WOODCUTTING_CONFIG("woodcutting.yml", "skills/woordcutting.yml");
 
     private String fileName;
     private String fileLocation;

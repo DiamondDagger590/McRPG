@@ -17,7 +17,8 @@ public enum Skills {
   HERBALISM("Herbalism", DefaultAbilities.TOO_MANY_PLANTS),
   MINING("Mining", DefaultAbilities.DOUBLE_DROP),
   SWORDS("Swords", DefaultAbilities.BLEED),
-  UNARMED("Unarmed", DefaultAbilities.STICKY_FINGERS);
+  UNARMED("Unarmed", DefaultAbilities.STICKY_FINGERS),
+  WOODCUTTING("Woodcutting", DefaultAbilities.EXTRA_LUMBER);
 
   @Getter
   private String name;
