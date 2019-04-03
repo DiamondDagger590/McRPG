@@ -84,10 +84,12 @@ ExtraLumberConfig:
     MenuLore:
       - '&bThis ability has a chance of doubling wood harvested'
 #
-# Config for the ability Richer Ores
-# This passive ability increases the chance of Double Drop activating
+# Config for the ability Heavy Swing
+# This passive ability has a chance for AOE harvesting of wood
 #
-RicherOresConfig:
+HeavySwingConfig:
+  #Should the ability activate for placed blocks as well as natural
+  AllowForPlacedBlocks: false
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -97,36 +99,40 @@ RicherOresConfig:
     TierIV: 375
     TierV: 500
   TierI:
-    #The chance boost from richer ores
-    ActivationBoost: 5.0
+    #The activation chance
+    ActivationChance: 30
+    #The radius of the square
+    Radius: 1
   TierII:
-    ActivationBoost: 10.0
+    ActivationChance: 45
+    Radius: 1
   TierIII:
-    ActivationBoost: 20.0
+    ActivationChance: 60
+    Radius: 1
   TierIV:
-    ActivationBoost: 25.0
+    ActivationChance: 75
+    Radius: 2
   TierV:
-    ActivationBoost: 30.0
+    ActivationChance: 100
+    Radius: 2
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Richer Ores'
-    Material: DIAMOND_ORE
+    DisplayName: '&3Heavy Swing'
+    Material: ANVIL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bYour Richer Ores gives &e%ActivationBoost%%'
-      - '&bbonus chance for Double Drop'
+      - '&bYou have a &e%ActivationChance%% &bchance of mining a'
+      - '&e%Range% &bblock square around what you mined.'
     MenuLore:
-      - '&bThis ability increases the chance of Double Drop'
+      - '&bThis ability lets you mine wood in a square'
 #
-# Config for the ability Remote Transfer
-# This ability teleports mined items into a chest
+# Config for the ability Dryads Gift
+# This ability will give vanilla exp when mining wood
 #
-RemoteTransferConfig:
+DraydsGiftrConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
-  #When a player mines their lined chest, should it unlink or should it unlink and break
-  UnlinkAndBreakOnMine: false
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 200
@@ -135,82 +141,38 @@ RemoteTransferConfig:
     TierV: 600
   #Config for each Tier
   TierI:
-    #The range of Remote Transfer per tier
-    Range: 50
-    #What categories the ability can transfer
-    Categories:
-      - 'Stone'
-    InvSize: 18
+    #The chance of this ability activating
+    ActivationChance: 10
+    #The amount of exp to be dropped
+    ExpDropped: 10
   TierII:
-    Range: 75
-    Categories:
-      - 'Stone'
-      - 'TierII'
-    InvSize: 18
+    ActivationChance: 15
+    ExpDropped: 15
   TierIII:
-    Range: 100
-    Categories:
-      - 'Stone'
-      - 'TierII'
-      - 'TierIII'
-    InvSize: 27
+    ActivationChance: 20
+    ExpDropped: 20
   TierIV:
-    Range: 150
-    Categories:
-      - 'Stone'
-      - 'TierII'
-      - 'TierIII'
-      - 'TierIV'
-    InvSize: 36
+    ActivationChance: 25
+    ExpDropped: 25
   TierV:
-    Range: 200
-    Categories:
-      - 'Stone'
-      - 'TierII'
-      - 'TierIII'
-      - 'TierIV'
-      - 'TierV'
-    InvSize: 45
-  #Define custom categories of items to be teleported using this ability. No cap to amount
-  Categories:
-    Stone:
-      - 'COBBLESTONE'
-      - 'STONE'
-      - 'ANDESITE'
-      - 'GRANITE'
-      - 'DIORITE'
-      - 'POLISHED_GRANITE'
-      - 'POLISHED_ANDESITE'
-      - 'POLISHED_DIORITE'
-      - 'MOSSY_COBBLESTONE'
-      - 'OBSIDIAN'
-    TierII:
-      - 'IRON_ORE'
-      - 'REDSTONE_ORE'
-    TierIII:
-      - 'GOLD_ORE'
-      - 'LAPIS_ORE'
-    TIERIV:
-      - 'EMERALD_ORE'
-    TIERV:
-      - 'DIAMOND_ORE'
+    ActivationChance: 30
+    ExpDropped: 25
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Remote Transfer'
-    Material: CHEST_MINECART
+    DisplayName: '&3Dryads Gift'
+    Material: OAK_SAPLING
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bUse /mclink to link a chest'
-      - '&bCurrently linked to &e%Location%'
-      - '&bYour current range is &e%Range% &bblocks'
+      - '&bYou have a &e%ActivationChance%% &bchance of'
+      - '&bmined wood dropping %e%ExpDropped% exp'
     MenuLore:
-      - '&bThis ability transfers items mined to a linked chest'
+      - '&bThis ability drops exp when wood is mined'
 #
-# Config for the ability Its A Triple
-# This passive ability has a chance at tripling the drops from ores instead of doubling
+# Config for the ability Nymphs Vitality
+# This passive ability regenerates hunger while in a forest
 #
-ItsATripleConfig:
+NymphsVitalityConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -221,28 +183,28 @@ ItsATripleConfig:
     TierV: 925
   #Config for each tier
   TierI:
-    #Odds of activation per tier
-    ActivationChance: 3.0
+    #How far can hunger be depleted
+    MinimumHunger: 8
   TierII:
-    ActivationChance: 5.5
+    MinimumHunger: 9
   TierIII:
-    ActivationChance: 8.5
+    MinimumHunger: 10
   TierIV:
-    ActivationChance: 11.0
+    MinimumHunger: 12
   TierV:
-    ActivationChance: 15.0
+    MinimumHunger: 14
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Its A Triple'
-    Material: DIAMOND
-    Amount: 3
+    DisplayName: '&3Nymphs Vitality'
+    Material: ACACIA_SAPLING
+    Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bYou have a &e%ActivationChance%% &bchance'
-      - '&bof getting a triple drop instead of double.'
+      - '&bWhen in a forest based biome, your'
+      - '&bhunger cant go below &eMinimumHunger%&b.'
     MenuLore:
-      - '&bThis ability turns double drops'
-      - '&binto triple drops'
+      - '&bThis ability regenerates hunger'
+      - '&bwhile in forests'
 #
 # Config for the ability Super Breaker
 # This active ability gives haste and double drop chance
