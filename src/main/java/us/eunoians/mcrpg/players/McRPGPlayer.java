@@ -58,7 +58,7 @@ public class McRPGPlayer {
    * The abilities a player has unlocked and has not yet accepted or denied. Whenever a player next opens the mcrpg main gui they should be forced to go through these
    */
   @Getter
-  private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
+  private ArrayList<UnlockedAbilities> pendingUnlockAbilities;
 
   /**
    * Map of the abilities on cooldown
