@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.database.tables;
 
-import com.google.common.collect.ImmutableList;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -30,10 +29,9 @@ public class LoadOutTableGenerator {
     addAnnotationToField(tableCtClass, "id", "com.cyr1en.flatdb.annotations.Column", "autoIncrement", true);
     addAnnotationToField(tableCtClass, "id", "com.cyr1en.flatdb.annotations.Column", "primaryKey", true);
 
-    ImmutableList.Builder<FieldData> builder = new ImmutableList.Builder<>();
     for (int i = 1; i <= loadOutSize; i++) {
       FieldData fieldData = FieldData.of("private", "String", "slot" + i);
-      builder.add(fieldData);
+      tableCtClass.addField(CtField.make(fieldData.get(), tableCtClass));
       addAnnotationToField(tableCtClass, fieldData.getFieldName(), "com.cyr1en.flatdb.annotations.Column");
     }
   }
@@ -79,12 +77,9 @@ public class LoadOutTableGenerator {
   }
 
   private static class FieldData {
-    @Getter
-    private String accessModifier;
-    @Getter
-    private String type;
-    @Getter
-    private String fieldName;
+    @Getter private String accessModifier;
+    @Getter private String type;
+    @Getter private String fieldName;
 
     public FieldData(String accessModifier, String type, String fieldName) {
       this.accessModifier = accessModifier;
