@@ -206,10 +206,10 @@ NymphsVitalityConfig:
       - '&bThis ability regenerates hunger'
       - '&bwhile in forests'
 #
-# Config for the ability Super Breaker
-# This active ability gives haste and double drop chance
+# Config for the ability Temporal Harvest
+# This active ability drops wood, saplings and apples when you break a sapling
 #
-SuperBreakerConfig:
+TemporalHarvestConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -220,41 +220,65 @@ SuperBreakerConfig:
     TierV: 650
   #Config for each tier
   TierI:
-    #How much should the activation rate be boosted at each tier
-    ActivationBoost: 5.0
-    #Duration of the ability at each tier in seconds
-    Duration: 3
+    #The upper range on the amount of wood that can be dropped
+    WoodMaxDrop: 20
+    #The lower range on the amount of wood that can be dropped
+    WoodMinDrop: 5
+    #The lower range on the amount of saplings that can be dropped
+    SaplingsMinDrop: 1
+    #The upper range on the amount of saplings that can be dropped
+    SaplingsMaxDrop: 2
+    #The upper range on the amount of apples that can be dropped
+    AppleMaxDrop: 1
+    #The lower range on the amount of apples that can be dropped
+    AppleMinDrop: 0
+    #The cooldown in seconds for this ability
     Cooldown: 180
   TierII:
-    ActivationBoost: 7.5
-    Duration: 3
+    WoodMaxDrop: 30
+    WoodMinDrop: 10
+    SaplingsMinDrop: 2
+    SaplingsMaxDrop: 5
+    AppleMaxDrop: 2
+    AppleMinDrop: 1
     Cooldown: 180
   TierIII:
-    ActivationBoost: 10.0
-    Duration: 5
+    WoodMaxDrop: 40
+    WoodMinDrop: 15
+    SaplingsMinDrop: 3
+    SaplingsMaxDrop: 6
+    AppleMaxDrop: 2
+    AppleMinDrop: 2
     Cooldown: 180
   TierIV:
-    ActivationBoost: 15.0
-    Duration: 5
+    WoodMaxDrop: 50
+    WoodMinDrop: 25
+    SaplingsMinDrop: 5
+    SaplingsMaxDrop: 8
+    AppleMaxDrop: 3
+    AppleMinDrop: 2
     Cooldown: 180
   TierV:
-    ActivationBoost: 20.0
-    Duration: 8
+    WoodMaxDrop: 64
+    WoodMinDrop: 30
+    SaplingsMinDrop: 7
+    SaplingsMaxDrop: 10
+    AppleMaxDrop: 5
+    AppleMinDrop: 3
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Super Breaker'
-    Material: DIAMOND_PICKAXE
+    DisplayName: '&3Temporal Harvest'
+    Material: CLOCK
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bThis ability give haste and'
-      - '&bincreases activation rate of Double Drop'
-      - '&bGain &e%ActivationBoost%% &bfor &e%Duration% &bseconds'
+      - '&bThis ability allows you to mine'
+      - '&ba sapling for wood, saplings, and apples'
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and breaking a block'
     MenuLore:
-      - '&bGives haste and increases Double Drop'
+      - '&bGives tree drops by mining a sapling'
 BlastMiningConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
