@@ -129,6 +129,44 @@ public class McRPGDb {
                 isVampireToggled.toString(), isRageSpikeToggled.toString(), isSerratedStrikesToggled.toString(), isTaintedBladeToggled.toString(), bleedPlusTier.toString(), deeperWoundTier.toString(),
                 vampireTier.toString(), rageSpikeTier.toString(), serratedStrikesTier.toString(), taintedBladeTier.toString(), rageSpikeCooldown.toString(), serratedStrikesCooldown.toString(), taintedBladeCooldown.toString());
 
+        //Convert Mining table
+        currentExp = config.getInt("Mining.CurrentExp");
+        level = config.getInt("Mining.Level");
+        Boolean isDoubleDropToggled = config.getBoolean("Mining.DoubleDrop.IsToggled");
+        Boolean isRicherOresToggled = config.getBoolean("Mining.RicherOres.IsToggled");
+        Boolean isRemoteTransferToggled = config.getBoolean("Mining.RemoteTransfer.IsToggled");
+        Boolean isITsATripleToggled = config.getBoolean("Mining.ItsATriple.IsToggled");
+        Boolean isSuperBreakerToggled = config.getBoolean("Mining.SuperBreaker.IsToggled");
+        Boolean isBlastMiningToggled = config.getBoolean("Mining.BlastMining.IsToggled");
+        Boolean isOreScannerToggled = config.getBoolean("Mining.OreScanner.IsToggled");
+        Integer richerOresTier = config.getInt("Mining.RicherOres.Tier");
+        Integer remoteTransferTier = config.getInt("Mining.RemoteTransfer.Tier");
+        Integer itsATripleTier = config.getInt("Mining.ItsATriple.Tier");
+        Integer superBreakerTier = config.getInt("Mining.SuperBreaker.Tier");
+        Integer blastMiningTier = config.getInt("Mining.BlastMining.Tier");
+        Integer oreScannerTier = config.getInt("Mining.OreScanner.Tier");
+        Long superBreakerCooldown = 0L;
+        if(config.contains("Cooldowns.SuperBreaker")){
+          superBreakerCooldown = config.getLong("Cooldowns.SuperBreaker");
+        }
+        Long blastMiningCooldown = 0L;
+        if(config.contains("Cooldowns.BlastMining")){
+          blastMiningCooldown = config.getLong("Cooldowns.BlastMining");
+        }
+        Long oreScannerCooldown = 0L;
+        if(config.contains("Cooldowns.OreScanner")){
+          oreScannerCooldown = config.getLong("Cooldowns.OreScanner");
+        }
+
+        query = "INSERT INTO mcrpg_mining_data (uuid, current_exp, level, is_double_drop_toggled, is_richer_ores_toggled, " +
+                "is_remote_transfer_toggled, is_its_a_triple_toggled, is_super_breaker_toggled, is_blast_mining_toggled, " +
+                "is_ore_scanner_toggled, richer_ores_tier, remote_transfer_tier, its_a_triple_tier, super_breaker_tier, " +
+                "blast_mining_tier, ore_scanner_tier, super_break_cooldown, blast_mining_cooldown, ore_scanner_cooldown) " +
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
+
+        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isDoubleDropToggled.toString(), isRicherOresToggled.toString(), isRemoteTransferToggled.toString(),
+                isITsATripleToggled.toString(), isSuperBreakerToggled.toString(), isBlastMiningToggled.toString(), isOreScannerToggled.toString(), richerOresTier.toString(), remoteTransferTier.toString(),
+                itsATripleTier.toString(), superBreakerTier.toString(), blastMiningTier.toString(), oreScannerTier.toString(), superBreakerCooldown.toString(), blastMiningCooldown.toString(), oreScannerCooldown.toString());
 
         playersProccessed++;
       }
