@@ -10,22 +10,22 @@ public class HerbalismTable {
   private int current_exp;
   @Column private int level;
 
-  @Column private boolean is_too_many_plants_toggled;
-  @Column private boolean is_farmers_diet_toggled;
-  @Column private boolean is_diamond_flowers_toggled;
-  @Column private boolean is_replanting_toggled;
-  @Column private boolean is_mass_harvest_toggled;
-  @Column private boolean is_natures_wrath_toggled;
-  @Column private boolean is_pans_blessing_toggled;
+  @Column(defaultValue = "true") private boolean is_too_many_plants_toggled;
+  @Column(defaultValue = "true") private boolean is_farmers_diet_toggled;
+  @Column(defaultValue = "true") private boolean is_diamond_flowers_toggled;
+  @Column(defaultValue = "true") private boolean is_replanting_toggled;
+  @Column(defaultValue = "true") private boolean is_mass_harvest_toggled;
+  @Column(defaultValue = "true") private boolean is_natures_wrath_toggled;
+  @Column(defaultValue = "true") private boolean is_pans_blessing_toggled;
 
-  @Column private boolean farmers_diet_tier;
-  @Column private boolean diamond_flowers_tier;
-  @Column private boolean replanting_tier;
-  @Column private boolean mass_harvest_tier;
-  @Column private boolean natures_wrath_tier;
-  @Column private boolean pans_blessing_tier;
+  @Column private int farmers_diet_tier;
+  @Column private int diamond_flowers_tier;
+  @Column private int replanting_tier;
+  @Column private int mass_harvest_tier;
+  @Column private int natures_wrath_tier;
+  @Column private int pans_blessing_tier;
 
-  @Column private long mass_harvest_cooldowns;
-  @Column private long natures_wrath_cooldowns;
-  @Column private long pans_blessing_cooldowns;
+  @Column private long mass_harvest_cooldown;
+  @Column private long natures_wrath_cooldown;
+  @Column private long pans_blessing_cooldown;
 }
