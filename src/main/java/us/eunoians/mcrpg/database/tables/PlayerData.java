@@ -8,7 +8,7 @@ public class PlayerData {
   @Column(autoIncrement = true) private int id;
   @Column(primaryKey = true) private String uuid;
   @Column int ability_points;
-  @Column String remote_transfer_location;
+  @Column(defaultValue = "0") String remote_transfer_location;
   @Column int redeemable_exp;
   @Column int redeemable_levels;
 }

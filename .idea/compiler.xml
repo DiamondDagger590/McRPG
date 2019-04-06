@@ -18,7 +18,6 @@
       <module name="McMMOx" target="1.8" />
       <module name="Mcmmox" target="1.8" />
       <module name="Mcmmox-Maven" target="1.5" />
-      <module name="McRPG" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
