@@ -50,7 +50,6 @@ processResources {
 
 shadowJar {
     archiveName = "McRPG-${version}.jar"
-    relocate 'com.zaxxer.hikari', 'com.cyr1en.projectrocket.hikari'
 }
 
 artifacts {

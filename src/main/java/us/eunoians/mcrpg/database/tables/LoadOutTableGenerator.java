@@ -29,6 +29,7 @@ public class LoadOutTableGenerator {
     addAnnotationToField(tableCtClass, "id", "com.cyr1en.flatdb.annotations.Column", "autoIncrement", true);
     addAnnotationToField(tableCtClass, "id", "com.cyr1en.flatdb.annotations.Column", "primaryKey", true);
 
+
     for (int i = 1; i <= loadOutSize; i++) {
       FieldData fieldData = FieldData.of("private", "String", "slot" + i);
       tableCtClass.addField(CtField.make(fieldData.get(), tableCtClass));
