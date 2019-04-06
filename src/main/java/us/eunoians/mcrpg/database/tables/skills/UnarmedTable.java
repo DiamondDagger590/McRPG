@@ -9,13 +9,13 @@ public class UnarmedTable {
   @Column private int current_exp;
   @Column private int level;
 
-  @Column(defaultValue = "true") private boolean is_sticky_fingers_toggled;
-  @Column(defaultValue = "true") private boolean is_tighter_grip_toggled;
-  @Column(defaultValue = "true") private boolean is_disarm_toggled;
-  @Column(defaultValue = "true") private boolean is_iron_arm_toggled;
-  @Column(defaultValue = "true") private boolean is_bersek_toggled;
-  @Column(defaultValue = "true") private boolean is_smiting_fist_toggled;
-  @Column(defaultValue = "true") private boolean is_dense_impact_toggled;
+  @Column(defaultValue = "1") private boolean is_sticky_fingers_toggled;
+  @Column(defaultValue = "1") private boolean is_tighter_grip_toggled;
+  @Column(defaultValue = "1") private boolean is_disarm_toggled;
+  @Column(defaultValue = "1") private boolean is_iron_arm_toggled;
+  @Column(defaultValue = "1") private boolean is_bersek_toggled;
+  @Column(defaultValue = "1") private boolean is_smiting_fist_toggled;
+  @Column(defaultValue = "1") private boolean is_dense_impact_toggled;
 
   @Column private int tighter_grip_tier;
   @Column private int disarm_tier;
