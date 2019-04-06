@@ -168,6 +168,46 @@ public class McRPGDb {
                 isITsATripleToggled.toString(), isSuperBreakerToggled.toString(), isBlastMiningToggled.toString(), isOreScannerToggled.toString(), richerOresTier.toString(), remoteTransferTier.toString(),
                 itsATripleTier.toString(), superBreakerTier.toString(), blastMiningTier.toString(), oreScannerTier.toString(), superBreakerCooldown.toString(), blastMiningCooldown.toString(), oreScannerCooldown.toString());
 
+        //Convert Unarmed table
+        currentExp = config.getInt("Unarmed.CurrentExp");
+        level = config.getInt("Unarmed.Level");
+        Boolean isStickyFingersToggled = config.getBoolean("Unarmed.StickyFingers.IsToggled");
+        Boolean isTighterGripToggled = config.getBoolean("Unarmed.TighterGrip.IsToggled");
+        Boolean isDisarmToggled = config.getBoolean("Unarmed.Disarm.IsToggled");
+        Boolean isIronArmToggled = config.getBoolean("Unarmed.IronArm.IsToggled");
+        Boolean isBerserkToggled = config.getBoolean("Unarmed.Berserk.IsToggled");
+        Boolean isSmitingFistToggled = config.getBoolean("Unarmed.SmitingFist.IsToggled");
+        Boolean isDenseImpactToggled = config.getBoolean("Unarmed.DenseImpact.IsToggled");
+        Integer tighterGripTier = config.getInt("Unarmed.TighterGrip.Tier");
+        Integer disarmTier = config.getInt("Unarmed.Disarm.Tier");
+        Integer ironArmTier = config.getInt("Unarmed.IronArm.Tier");
+        Integer berserkTier = config.getInt("Unarmed.Berserk.Tier");
+        Integer smitingFistTier = config.getInt("Unarmed.SmitingFist.Tier");
+        Integer denseImpactTier = config.getInt("Unarmed.DenseImpact.Tier");
+        Long berserkCooldown = 0L;
+        if(config.contains("Cooldowns.Berserk")){
+          berserkCooldown = config.getLong("Cooldowns.Berserk");
+        }
+        Long smitingFistCooldown = 0L;
+        if(config.contains("Cooldowns.SmitingFist")){
+          smitingFistCooldown = config.getLong("Cooldowns.SmitingFist");
+        }
+        Long denseImpactCooldown = 0L;
+        if(config.contains("Cooldowns.DenseImpact")){
+          denseImpactCooldown = config.getLong("Cooldowns.DenseImpact");
+        }
+
+        query = "INSERT INTO mcrpg_unarmed_data (uuid, current_exp, level, is_sticky_fingers_toggled, is_tighter_grip_toggled, " +
+                "is_disarm_toggled, is_iron_arm_toggled, is_berserk_toggled, is_smiting_fist_toggled, " +
+                "is_dense_impact_toggled, tighter_grip_tier, disarm_tier, iron_arm_tier, berserk_tier, " +
+                "smiting_fist_tier, dense_impact_tier, berserk_cooldown, smiting_fist_cooldown, dense_impact_cooldown) " +
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
+
+        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isStickyFingersToggled.toString(), isTighterGripToggled.toString(), isDisarmToggled.toString(),
+                isIronArmToggled.toString(), isBerserkToggled.toString(), isSmitingFistToggled.toString(), isDenseImpactToggled.toString(), tighterGripTier.toString(), disarmTier.toString(),
+                ironArmTier.toString(), berserkTier.toString(), smitingFistTier.toString(), denseImpactTier.toString(), berserkCooldown.toString(), smitingFistCooldown.toString(), denseImpactCooldown.toString());
+
+
         playersProccessed++;
       }
     }
