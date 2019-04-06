@@ -11,13 +11,13 @@ public class SwordsTable {
   @Column private int current_exp;
   @Column private int level;
 
-  @Column(defaultValue = "true") private boolean is_bleed_toggled;
-  @Column(defaultValue = "true") private boolean is_bleed_plus_toggled;
-  @Column(defaultValue = "true") private boolean is_deeper_wound_toggled;
-  @Column(defaultValue = "true") private boolean is_vampire_toggled;
-  @Column(defaultValue = "true") private boolean is_rage_spike_toggled;
-  @Column(defaultValue = "true") private boolean is_serrated_strikes_toggled;
-  @Column(defaultValue = "true") private boolean is_tainted_blade_toggled;
+  @Column(defaultValue = "1") private boolean is_bleed_toggled;
+  @Column(defaultValue = "1") private boolean is_bleed_plus_toggled;
+  @Column(defaultValue = "1") private boolean is_deeper_wound_toggled;
+  @Column(defaultValue = "1") private boolean is_vampire_toggled;
+  @Column(defaultValue = "1") private boolean is_rage_spike_toggled;
+  @Column(defaultValue = "1") private boolean is_serrated_strikes_toggled;
+  @Column(defaultValue = "1") private boolean is_tainted_blade_toggled;
 
   @Column private int bleed_plus_tier;
   @Column private int deeper_wound_tier;

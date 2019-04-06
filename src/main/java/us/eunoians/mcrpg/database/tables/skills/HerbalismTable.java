@@ -10,13 +10,13 @@ public class HerbalismTable {
   private int current_exp;
   @Column private int level;
 
-  @Column(defaultValue = "true") private boolean is_too_many_plants_toggled;
-  @Column(defaultValue = "true") private boolean is_farmers_diet_toggled;
-  @Column(defaultValue = "true") private boolean is_diamond_flowers_toggled;
-  @Column(defaultValue = "true") private boolean is_replanting_toggled;
-  @Column(defaultValue = "true") private boolean is_mass_harvest_toggled;
-  @Column(defaultValue = "true") private boolean is_natures_wrath_toggled;
-  @Column(defaultValue = "true") private boolean is_pans_blessing_toggled;
+  @Column(defaultValue = "1") private boolean is_too_many_plants_toggled;
+  @Column(defaultValue = "1") private boolean is_farmers_diet_toggled;
+  @Column(defaultValue = "1") private boolean is_diamond_flowers_toggled;
+  @Column(defaultValue = "1") private boolean is_replanting_toggled;
+  @Column(defaultValue = "1") private boolean is_mass_harvest_toggled;
+  @Column(defaultValue = "1") private boolean is_natures_wrath_toggled;
+  @Column(defaultValue = "1") private boolean is_pans_blessing_toggled;
 
   @Column private int farmers_diet_tier;
   @Column private int diamond_flowers_tier;
