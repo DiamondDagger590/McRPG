@@ -10,13 +10,13 @@ public class ArcheryTable {
   private int current_exp;
   @Column private int level;
 
-  @Column(defaultValue = "true") private boolean is_daze_toggled;
-  @Column(defaultValue = "true") private boolean is_puncture_toggled;
-  @Column(defaultValue = "true") private boolean is_tipped_arrows_toggled;
-  @Column(defaultValue = "true") private boolean is_combo_toggled;
-  @Column(defaultValue = "true") private boolean is_blessing_of_artemis_toggled;
-  @Column(defaultValue = "true") private boolean is_blessing_of_apollo_toggled;
-  @Column(defaultValue = "true") private boolean is_curse_of_hades_toggled;
+  @Column(defaultValue = "1") private boolean is_daze_toggled;
+  @Column(defaultValue = "1") private boolean is_puncture_toggled;
+  @Column(defaultValue = "1") private boolean is_tipped_arrows_toggled;
+  @Column(defaultValue = "1") private boolean is_combo_toggled;
+  @Column(defaultValue = "1") private boolean is_blessing_of_artemis_toggled;
+  @Column(defaultValue = "1") private boolean is_blessing_of_apollo_toggled;
+  @Column(defaultValue = "1") private boolean is_curse_of_hades_toggled;
 
 
   @Column private int puncture_tier;
