@@ -19,6 +19,7 @@ Messages:
       NotEnabledOrUnlocked: '&cThat ability is either disabled or you have yet to unlock it'
       PlayerFolderDoesntExist: '&cThe player folder does not exist... possibly already been converted?'
       BeginningConversion: '&aYour conversion is beginning... please prevent player log in while this process is going on. There are %FileAmount% of files to process'
+      ConversionComplete: '&aConverted %Amount% players in %Seconds% seconds'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       Default:
