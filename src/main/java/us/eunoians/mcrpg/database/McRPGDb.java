@@ -93,6 +93,7 @@ public class McRPGDb {
         query += ")";
         database.executeQuery(query);
 
+        //TODO convert pending abilities but waiting on Ethan
         //Convert Swords table
         Integer currentExp = config.getInt("Swords.CurrentExp");
         Integer level = config.getInt("Swords.Level");
@@ -207,9 +208,89 @@ public class McRPGDb {
                 isIronArmToggled.toString(), isBerserkToggled.toString(), isSmitingFistToggled.toString(), isDenseImpactToggled.toString(), tighterGripTier.toString(), disarmTier.toString(),
                 ironArmTier.toString(), berserkTier.toString(), smitingFistTier.toString(), denseImpactTier.toString(), berserkCooldown.toString(), smitingFistCooldown.toString(), denseImpactCooldown.toString());
 
+        //Convert Herbalism table
+        currentExp = config.getInt("Herbalism.CurrentExp");
+        level = config.getInt("Herbalism.Level");
+        Boolean isTooManyPlantsToggled = config.getBoolean("Herbalism.TooManyPlants.IsToggled");
+        Boolean isFarmersDietToggled = config.getBoolean("Herbalism.FarmersDiet.IsToggled");
+        Boolean isDiamondFlowersToggled = config.getBoolean("Herbalism.DiamondFlowers.IsToggled");
+        Boolean isReplantingToggled = config.getBoolean("Herbalism.Replanting.IsToggled");
+        Boolean isMassHarvestToggled = config.getBoolean("Herbalism.MassHarvest.IsToggled");
+        Boolean isNaturesWrathToggled = config.getBoolean("Herbalism.NaturesWrath.IsToggled");
+        Boolean isPansBlessingToggled = config.getBoolean("Herbalism.PansBlessing.IsToggled");
+        Integer farmersDietTier = config.getInt("Herbalism.FarmersDiet.Tier");
+        Integer diamondFlowersTier = config.getInt("Herbalism.DiamondFlowers.Tier");
+        Integer replantingTier = config.getInt("Herbalism.Replanting.Tier");
+        Integer massHarvestTier = config.getInt("Herbalism.MassHarvest.Tier");
+        Integer naturesWrathTier = config.getInt("Herbalism.NaturesWrath.Tier");
+        Integer pansBlessingTier = config.getInt("Herbalism.DenseImpact.Tier");
+        Long massHarvestCooldown = 0L;
+        if(config.contains("Cooldowns.MassHarvest")){
+          massHarvestCooldown = config.getLong("Cooldowns.MassHarvest");
+        }
+        Long naturesWrathCooldown = 0L;
+        if(config.contains("Cooldowns.NaturesWrath")){
+          naturesWrathCooldown = config.getLong("Cooldowns.NaturesWrath");
+        }
+        Long pansBlessingCooldown = 0L;
+        if(config.contains("Cooldowns.PansBlessing")){
+          pansBlessingCooldown = config.getLong("Cooldowns.PansBlessing");
+        }
 
+        query = "INSERT INTO mcrpg_herbalism_data (uuid, current_exp, level, is_too_many_plants_toggled, is_farmers_diet_toggled, " +
+                "is_diamond_flowers_toggled, is_replanting_toggled, is_mass_harvest_toggled, is_natures_wrath_toggled, " +
+                "is_pans_blessing_toggled, famers_diet_tier, diamond_flowers_tier, replanting_tier, mass_harvest_tier, " +
+                "natures_wrath_tier, pans_blessing_tier, mass_harvest_cooldown, natures_wrath_cooldown, pans_blessing_cooldown) " +
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
+
+        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isTooManyPlantsToggled.toString(), isFarmersDietToggled.toString(), isDiamondFlowersToggled.toString(),
+                isReplantingToggled.toString(), isMassHarvestToggled.toString(), isNaturesWrathToggled.toString(), isPansBlessingToggled.toString(), farmersDietTier.toString(), diamondFlowersTier.toString(),
+                replantingTier.toString(), massHarvestTier.toString(), naturesWrathTier.toString(), pansBlessingTier.toString(), massHarvestCooldown.toString(), naturesWrathCooldown.toString(), pansBlessingCooldown.toString());
+
+        //Convert Archery table
+        currentExp = config.getInt("Archery.CurrentExp");
+        level = config.getInt("Archery.Level");
+        Boolean isDazedToggled = config.getBoolean("Archery.Daze.IsToggled");
+        Boolean isPunctureToggled = config.getBoolean("Archery.Puncture.IsToggled");
+        Boolean isTippedArrowsToggled = config.getBoolean("Archery.TippedArrows.IsToggled");
+        Boolean isComboToggled = config.getBoolean("Archery.Combo.IsToggled");
+        Boolean isBlessingOfArtemisToggled = config.getBoolean("Archery.BlessingOfArtemis.IsToggled");
+        Boolean isBlessingOfApolloToggled = config.getBoolean("Archery.BlessingOfApollo.IsToggled");
+        Boolean isCurseOfHadesToggled = config.getBoolean("Archery.CurseOfHades.IsToggled");
+        Integer punctureTier = config.getInt("Archery.Puncture.Tier");
+        Integer tippedArrowsTier = config.getInt("Archery.TippedArrows.Tier");
+        Integer comboTier = config.getInt("Archery.Combo.Tier");
+        Integer blessingOfArtemisTier = config.getInt("Archery.BlessingOfArtemis.Tier");
+        Integer blessingOfApolloTier = config.getInt("Archery.BlessingOfApollo.Tier");
+        Integer curseOfHadesTier = config.getInt("Archery.CurseOfHades.Tier");
+        Long blessingOfArtemisCooldown = 0L;
+        if(config.contains("Cooldowns.BlessingOfArtemis")){
+          blessingOfArtemisCooldown = config.getLong("Cooldowns.BlessingOfArtemis");
+        }
+        Long blessingOfApolloCooldown = 0L;
+        if(config.contains("Cooldowns.BlessingOfApollo")){
+          blessingOfApolloCooldown = config.getLong("Cooldowns.BlessingOfApollo");
+        }
+        Long curseOfHadesCooldown = 0L;
+        if(config.contains("Cooldowns.CurseOfHades")){
+          curseOfHadesCooldown = config.getLong("Cooldowns.CurseOfHades");
+        }
+
+        query = "INSERT INTO mcrpg_archery_data (uuid, current_exp, level, is_daze_toggled, is_puncture_toggled, " +
+                "is_tipped_arrows_toggled, is_combo_toggled, is_blessing_of_artemis_toggled, is_blessing_of_apollo_toggled, " +
+                "is_curse_of_hades_toggled, puncture_tier, tipped_arrows_tier, combo_tier, blessing_of_artemis_tier, " +
+                "blessing_of_apollo_tier, pans_blessing_tier, mass_harvest_cooldown, natures_wrath_cooldown, pans_blessing_cooldown) " +
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
+
+        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isDazedToggled.toString(), isPunctureToggled.toString(), isTippedArrowsToggled.toString(),
+                isComboToggled.toString(), isBlessingOfArtemisToggled.toString(), isBlessingOfApolloToggled.toString(), isCurseOfHadesToggled.toString(), punctureTier.toString(), tippedArrowsTier.toString(),
+                comboTier.toString(), blessingOfArtemisTier.toString(), blessingOfApolloTier.toString(), curseOfHadesTier.toString(), blessingOfArtemisCooldown.toString(), blessingOfApolloCooldown.toString(), curseOfHadesCooldown.toString());
         playersProccessed++;
       }
     }
+    long diff = cal.getTimeInMillis() - beginTime;
+    int sec = (int) diff/1000;
+    Bukkit.getConsoleSender().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.ConversionComplete").replace("%Amount%", Integer.toString(playersProccessed)
+    .replace("%Seconds%", Integer.toString(sec)))));
   }
 }
