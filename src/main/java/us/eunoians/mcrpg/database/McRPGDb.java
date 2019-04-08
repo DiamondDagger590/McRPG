@@ -2,10 +2,11 @@ package us.eunoians.mcrpg.database;
 
 import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
+import com.cyr1en.flatdb.util.FastStrings;
+import com.google.common.collect.ImmutableMap;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.intellij.lang.annotations.Language;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.database.tables.LoadOutTableGenerator;
@@ -15,9 +16,10 @@ import us.eunoians.mcrpg.database.tables.skills.*;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.List;
-import java.util.UUID;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
 
 public class McRPGDb {
 
@@ -45,55 +47,51 @@ public class McRPGDb {
   }
 
 
-  public void convertLegacyToFlatDB(){
+  public void convertLegacyToFlatDB() {
     File playerFolder = new File(instance.getDataFolder(), File.separator + "PlayerData");
-    if(!playerFolder.exists()){
+    if (!playerFolder.exists()) {
       Bukkit.getConsoleSender().sendMessage(Methods.color(instance.getPluginPrefix() + instance.getLangFile().getString("Messages.Utility.PlayerFolderDoesntExist")));
       return;
     }
     File[] playerFiles = playerFolder.listFiles();
     int playersProccessed = 0;
-    Calendar cal = Calendar.getInstance();
-    long beginTime = cal.getTimeInMillis();
-    if(playerFiles != null) {
+    Instant start = Instant.now();
+    if (playerFiles != null) {
       Bukkit.getConsoleSender().sendMessage(Methods.color(instance.getPluginPrefix() + instance.getLangFile().getString("Messages.Utility.BeginningConversion")
               .replace("%FileAmount%", Integer.toString(playerFiles.length))));
-      for(File f : playerFiles) {
+      LegacyDataConverter converter = new LegacyDataConverter();
+      for (File f : playerFiles) {
         FileConfiguration config = YamlConfiguration.loadConfiguration(f);
-        //Convert the player data table
+
         UUID uuid = UUID.fromString(f.getName().replace(".yml", ""));
-        Integer abilityPoints = config.getInt("AbilityPoints");
-        String remoteTransferLocation = config.getString("Mining.RemoteTransfer.LinkedLocation");
-        Integer redeemableExp = config.getInt("RedeemableExp");
-        Integer redeemableLevels = config.getInt("RedeemableLevels");
-        @Language("SQL") String query = "INSERT INTO mcrpg_player_data (uuid, ability_points, remote_transfer_location, redeemable_exp, redeemable_levels) " +
-                "VALUES (%s, %s, %s, %s, %s)";
-        database.executeQuery(query, uuid.toString(), abilityPoints.toString(), remoteTransferLocation, redeemableExp.toString(), redeemableLevels.toString());
+        //Convert the player data table
+        ImmutableMap.Builder<String, String> dataBuilder = new ImmutableMap.Builder<>();
+        dataBuilder.put("uuid", uuid.toString());
+        dataBuilder.put("ability_points", Integer.toString(config.getInt("AbilityPoints")));
+        dataBuilder.put("remote_transfer_location", config.getString("Mining.RemoteTransfer.LinkedLocation"));
+        dataBuilder.put("redeemable_exp", Integer.toString(config.getInt("RedeemableExp")));
+        dataBuilder.put("redeemable_levels", Integer.toString(config.getInt("RedeemableLevels")));
+        converter.convert("mcrpg_player_data", dataBuilder.build());
 
         //Convert player settings table
-        Boolean ignoreTips = config.getBoolean("IgnoreTips");
-        Boolean keepHandEmpty = config.getBoolean("KeepHandEmpty");
-        String healthBarType = config.getString("HealthType");
-        String displayType = config.getString("DisplayType");
-        Boolean autoDeny = config.getBoolean("AutoDeny");
-        query = "INSERT INTO mcrpg_player_settings (uuid, keep_hand, ignore_tips, auto_deny, display_type, health_type) " +
-                "VALUES (%s, %s, %s, %s, %s, %s)";
-        database.executeQuery(query, uuid.toString(), keepHandEmpty.toString(), ignoreTips.toString(), autoDeny.toString(), displayType, healthBarType);
+        dataBuilder = new ImmutableMap.Builder<>();
+        dataBuilder.put("uiid", uuid.toString());
+        dataBuilder.put("keep_hand", String.valueOf(config.getBoolean("KeepHandEmpty")));
+        dataBuilder.put("ignore_tips", String.valueOf(config.getBoolean("IgnoreTips")));
+        dataBuilder.put("auto_deny", String.valueOf(config.getBoolean("AutoDeny")));
+        dataBuilder.put("display_type", config.getString("DisplayType"));
+        dataBuilder.put("health_type", config.getString("HealthType"));
+        converter.convert("mcrpg_player_settings", dataBuilder.build());
 
-        //Convert ability loadout table
-        List<String> abilityLoadout = config.getStringList("AbilityLoadout");
-        query = "INSERT INTO mcrpg_player_loadout (uuid";
-        for(int i = 1; i <= abilityLoadout.size(); i++){
-          query += ", " + i;
+        //Convert ability load out table
+        List<String> abilityLoadOut = config.getStringList("AbilityLoadout");
+        dataBuilder = new ImmutableMap.Builder<>();
+        for (int i = 1; i <= abilityLoadOut.size(); i++) {
+          dataBuilder.put("slot" + i, abilityLoadOut.get(i));
         }
-        query += ") VALUES (";
-        for(String s : abilityLoadout) {
-          query += ", " + s;
-        }
-        query += ")";
-        database.executeQuery(query);
+        converter.convert("mcrpg_player_loadout", dataBuilder.build());
 
-        //TODO convert pending abilities but waiting on Ethan
+        //TODO convert pending abilities but waiting on Ethan.... Waiting for what? -Ethan
         //Convert Swords table
         Integer currentExp = config.getInt("Swords.CurrentExp");
         Integer level = config.getInt("Swords.Level");
@@ -111,18 +109,18 @@ public class McRPGDb {
         Integer serratedStrikesTier = config.getInt("Swords.SerratedStrikes.Tier");
         Integer taintedBladeTier = config.getInt("Swords.TaintedBlade.Tier");
         Long rageSpikeCooldown = 0L;
-        if(config.contains("Cooldowns.RageSpike")){
+        if (config.contains("Cooldowns.RageSpike")) {
           rageSpikeCooldown = config.getLong("Cooldowns.RageSpike");
         }
         Long serratedStrikesCooldown = 0L;
-        if(config.contains("Cooldowns.SerratedStrikes")){
+        if (config.contains("Cooldowns.SerratedStrikes")) {
           serratedStrikesCooldown = config.getLong("Cooldowns.SerratedStrikes");
         }
         Long taintedBladeCooldown = 0L;
-        if(config.contains("Cooldowns.TaintedBlade")){
+        if (config.contains("Cooldowns.TaintedBlade")) {
           taintedBladeCooldown = config.getLong("Cooldowns.TaintedBlade");
         }
-        query = "INSERT INTO mcrpg_swords_data (uuid, current_exp, level, is_bleed_toggled, is_bleed_plus_toggled, is_deeper_wound_toggled, " +
+        String query = "INSERT INTO mcrpg_swords_data (uuid, current_exp, level, is_bleed_toggled, is_bleed_plus_toggled, is_deeper_wound_toggled, " +
                 "is_vampire_toggled, is_rage_spike_toggled, is_serrated_strikes_toggled, is_tainted_blade_toggled, bleed_plus_tier, " +
                 "deeper_wound_tier, vampire_tier, rage_spike_tier, serrated_strikes_tier, tainted_blade_tier, rage_spike_cooldown, serrated_strikes_cooldown, tainted_blade_cooldown) " +
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
@@ -147,18 +145,17 @@ public class McRPGDb {
         Integer blastMiningTier = config.getInt("Mining.BlastMining.Tier");
         Integer oreScannerTier = config.getInt("Mining.OreScanner.Tier");
         Long superBreakerCooldown = 0L;
-        if(config.contains("Cooldowns.SuperBreaker")){
+        if (config.contains("Cooldowns.SuperBreaker")) {
           superBreakerCooldown = config.getLong("Cooldowns.SuperBreaker");
         }
         Long blastMiningCooldown = 0L;
-        if(config.contains("Cooldowns.BlastMining")){
+        if (config.contains("Cooldowns.BlastMining")) {
           blastMiningCooldown = config.getLong("Cooldowns.BlastMining");
         }
         Long oreScannerCooldown = 0L;
-        if(config.contains("Cooldowns.OreScanner")){
+        if (config.contains("Cooldowns.OreScanner")) {
           oreScannerCooldown = config.getLong("Cooldowns.OreScanner");
         }
-
         query = "INSERT INTO mcrpg_mining_data (uuid, current_exp, level, is_double_drop_toggled, is_richer_ores_toggled, " +
                 "is_remote_transfer_toggled, is_its_a_triple_toggled, is_super_breaker_toggled, is_blast_mining_toggled, " +
                 "is_ore_scanner_toggled, richer_ores_tier, remote_transfer_tier, its_a_triple_tier, super_breaker_tier, " +
@@ -186,15 +183,15 @@ public class McRPGDb {
         Integer smitingFistTier = config.getInt("Unarmed.SmitingFist.Tier");
         Integer denseImpactTier = config.getInt("Unarmed.DenseImpact.Tier");
         Long berserkCooldown = 0L;
-        if(config.contains("Cooldowns.Berserk")){
+        if (config.contains("Cooldowns.Berserk")) {
           berserkCooldown = config.getLong("Cooldowns.Berserk");
         }
         Long smitingFistCooldown = 0L;
-        if(config.contains("Cooldowns.SmitingFist")){
+        if (config.contains("Cooldowns.SmitingFist")) {
           smitingFistCooldown = config.getLong("Cooldowns.SmitingFist");
         }
         Long denseImpactCooldown = 0L;
-        if(config.contains("Cooldowns.DenseImpact")){
+        if (config.contains("Cooldowns.DenseImpact")) {
           denseImpactCooldown = config.getLong("Cooldowns.DenseImpact");
         }
 
@@ -225,15 +222,15 @@ public class McRPGDb {
         Integer naturesWrathTier = config.getInt("Herbalism.NaturesWrath.Tier");
         Integer pansBlessingTier = config.getInt("Herbalism.DenseImpact.Tier");
         Long massHarvestCooldown = 0L;
-        if(config.contains("Cooldowns.MassHarvest")){
+        if (config.contains("Cooldowns.MassHarvest")) {
           massHarvestCooldown = config.getLong("Cooldowns.MassHarvest");
         }
         Long naturesWrathCooldown = 0L;
-        if(config.contains("Cooldowns.NaturesWrath")){
+        if (config.contains("Cooldowns.NaturesWrath")) {
           naturesWrathCooldown = config.getLong("Cooldowns.NaturesWrath");
         }
         Long pansBlessingCooldown = 0L;
-        if(config.contains("Cooldowns.PansBlessing")){
+        if (config.contains("Cooldowns.PansBlessing")) {
           pansBlessingCooldown = config.getLong("Cooldowns.PansBlessing");
         }
 
@@ -248,49 +245,64 @@ public class McRPGDb {
                 replantingTier.toString(), massHarvestTier.toString(), naturesWrathTier.toString(), pansBlessingTier.toString(), massHarvestCooldown.toString(), naturesWrathCooldown.toString(), pansBlessingCooldown.toString());
 
         //Convert Archery table
-        currentExp = config.getInt("Archery.CurrentExp");
-        level = config.getInt("Archery.Level");
-        Boolean isDazedToggled = config.getBoolean("Archery.Daze.IsToggled");
-        Boolean isPunctureToggled = config.getBoolean("Archery.Puncture.IsToggled");
-        Boolean isTippedArrowsToggled = config.getBoolean("Archery.TippedArrows.IsToggled");
-        Boolean isComboToggled = config.getBoolean("Archery.Combo.IsToggled");
-        Boolean isBlessingOfArtemisToggled = config.getBoolean("Archery.BlessingOfArtemis.IsToggled");
-        Boolean isBlessingOfApolloToggled = config.getBoolean("Archery.BlessingOfApollo.IsToggled");
-        Boolean isCurseOfHadesToggled = config.getBoolean("Archery.CurseOfHades.IsToggled");
-        Integer punctureTier = config.getInt("Archery.Puncture.Tier");
-        Integer tippedArrowsTier = config.getInt("Archery.TippedArrows.Tier");
-        Integer comboTier = config.getInt("Archery.Combo.Tier");
-        Integer blessingOfArtemisTier = config.getInt("Archery.BlessingOfArtemis.Tier");
-        Integer blessingOfApolloTier = config.getInt("Archery.BlessingOfApollo.Tier");
-        Integer curseOfHadesTier = config.getInt("Archery.CurseOfHades.Tier");
-        Long blessingOfArtemisCooldown = 0L;
-        if(config.contains("Cooldowns.BlessingOfArtemis")){
-          blessingOfArtemisCooldown = config.getLong("Cooldowns.BlessingOfArtemis");
-        }
-        Long blessingOfApolloCooldown = 0L;
-        if(config.contains("Cooldowns.BlessingOfApollo")){
-          blessingOfApolloCooldown = config.getLong("Cooldowns.BlessingOfApollo");
-        }
-        Long curseOfHadesCooldown = 0L;
-        if(config.contains("Cooldowns.CurseOfHades")){
-          curseOfHadesCooldown = config.getLong("Cooldowns.CurseOfHades");
-        }
+        dataBuilder = new ImmutableMap.Builder<>();
+        dataBuilder.put("uuid", uuid.toString());
+        dataBuilder.put("current_xp", Integer.toString(config.getInt("Archery.CurrentExp")));
+        dataBuilder.put("level", Integer.toString(config.getInt("Archery.Level")));
+        dataBuilder.put("is_daze_toggled", Boolean.toString(config.getBoolean("Archery.Daze.IsToggled")));
+        dataBuilder.put("is_puncture_toggled", Boolean.toString(config.getBoolean("Archery.Puncture.IsToggled")));
+        dataBuilder.put("is_tipped_arrows_toggled", Boolean.toString(config.getBoolean("Archery.TippedArrows.IsToggled")));
+        dataBuilder.put("is_blessing_of_artemis_toggled", Boolean.toString(config.getBoolean("Archery.BlessingOfArtemis.IsToggled")));
+        dataBuilder.put("is_blessing_of_apollo_toggled", Boolean.toString(config.getBoolean("Archery.BlessingOfApollo.IsToggled")));
+        dataBuilder.put("is_curse_of_hades_toggled", Boolean.toString(config.getBoolean("Archery.CurseOfHades.IsToggled")));
 
-        query = "INSERT INTO mcrpg_archery_data (uuid, current_exp, level, is_daze_toggled, is_puncture_toggled, " +
-                "is_tipped_arrows_toggled, is_combo_toggled, is_blessing_of_artemis_toggled, is_blessing_of_apollo_toggled, " +
-                "is_curse_of_hades_toggled, puncture_tier, tipped_arrows_tier, combo_tier, blessing_of_artemis_tier, " +
-                "blessing_of_apollo_tier, pans_blessing_tier, mass_harvest_cooldown, natures_wrath_cooldown, pans_blessing_cooldown) " +
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
+        dataBuilder.put("puncture_tier", Integer.toString(config.getInt("Archery.Puncture.Tier")));
+        dataBuilder.put("tipped_arrows_tier", Integer.toString(config.getInt("Archery.TippedArrows.Tier")));
+        dataBuilder.put("combo_tier", Integer.toString(config.getInt("Archery.Combo.Tier")));
+        dataBuilder.put("blessing_of_artemis_tier", Integer.toString(config.getInt("Archery.BlessingOfArtemis.Tier")));
+        dataBuilder.put("blessing_of_apollo_tier", Integer.toString(config.getInt("Archery.BlessingOfApollo.Tier")));
+        dataBuilder.put("curse_of_hades_tier", Integer.toString(config.getInt("Archery.CurseOfHades.Tier")));
 
-        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isDazedToggled.toString(), isPunctureToggled.toString(), isTippedArrowsToggled.toString(),
-                isComboToggled.toString(), isBlessingOfArtemisToggled.toString(), isBlessingOfApolloToggled.toString(), isCurseOfHadesToggled.toString(), punctureTier.toString(), tippedArrowsTier.toString(),
-                comboTier.toString(), blessingOfArtemisTier.toString(), blessingOfApolloTier.toString(), curseOfHadesTier.toString(), blessingOfArtemisCooldown.toString(), blessingOfApolloCooldown.toString(), curseOfHadesCooldown.toString());
+        Long blessingOfArtemisCooldown = config.contains("Cooldowns.BlessingOfArtemis") ? config.getLong("Cooldowns.BlessingOfArtemis") : 0L;
+        Long blessingOfApolloCooldown = config.contains("Cooldowns.BlessingOfApollo") ? config.getLong("Cooldowns.BlessingOfApollo") : 0L;
+        Long curseOfHadesCooldown =config.contains("Cooldowns.CurseOfHades") ? config.getLong("Cooldowns.CurseOfHades") : 0L;
+        dataBuilder.put("blessing_of_artemis_cooldown", Long.toString(blessingOfArtemisCooldown));
+        dataBuilder.put("blessing_of_apollo_cooldown", Long.toString(blessingOfApolloCooldown));
+        dataBuilder.put("curse_of_hades_cooldown", Long.toString(curseOfHadesCooldown));
+        converter.convert("mcrpg_archery_data", dataBuilder.build());
+
         playersProccessed++;
       }
     }
-    long diff = cal.getTimeInMillis() - beginTime;
-    int sec = (int) diff/1000;
+    long diffInSec = Duration.between(start, Instant.now()).getSeconds();
     Bukkit.getConsoleSender().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.ConversionComplete").replace("%Amount%", Integer.toString(playersProccessed)
-    .replace("%Seconds%", Integer.toString(sec)))));
+            .replace("%Seconds%", Long.toString(diffInSec)))));
+  }
+
+  private class LegacyDataConverter {
+
+    private Function<String, String> prepareValuesFunc;
+
+    public LegacyDataConverter() {
+      prepareValuesFunc = s -> {
+        if (s.equals("true") || s.equals("false"))
+          return Boolean.getBoolean(s) ? "1" : "0";
+        if (FastStrings.isNumeric(s))
+          return s;
+        return "'" + s + "'";
+      };
+    }
+
+    private String buildSql(String tableName, Map<String, String> data) {
+      Set<String> keys = data.keySet();
+      String joinedKeys = FastStrings.join(keys.toArray(), ", ");
+      String joinedValues = FastStrings.join(data.values().stream().map(prepareValuesFunc).distinct().toArray(), ", ");
+      return String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, joinedKeys, joinedValues);
+    }
+
+    public void convert(String tableName, Map<String, String> data) {
+      String sql = buildSql(tableName, data);
+      database.executeUpdate(sql);
+    }
   }
 }
