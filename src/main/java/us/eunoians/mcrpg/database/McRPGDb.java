@@ -33,10 +33,10 @@ public class McRPGDb {
 
   public McRPGDb(McRPG plugin) {
     this.instance = plugin;
+    Class generated = new LoadOutTableGenerator(9).asClass();
     DatabaseBuilder dbBuilder = new DatabaseBuilder();
     dbBuilder.setDatabasePrefix("mcrpg_");
     dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
-    dbBuilder.appendTable(new LoadOutTableGenerator(9).asClass());
     dbBuilder.appendTable(PlayerData.class);
     dbBuilder.appendTable(PlayerSetting.class);
     dbBuilder.appendTable(ArcheryTable.class);
@@ -44,11 +44,13 @@ public class McRPGDb {
     dbBuilder.appendTable(MiningTable.class);
     dbBuilder.appendTable(SwordsTable.class);
     dbBuilder.appendTable(UnarmedTable.class);
+    dbBuilder.appendTable(generated);
     try {
       database = dbBuilder.build();
     } catch (SQLException e) {
       e.printStackTrace();
     }
+    Bukkit.getLogger().info("Does generated table exist?: " + database.tableExists("mcrpg_loadout_table"));
   }
 
 

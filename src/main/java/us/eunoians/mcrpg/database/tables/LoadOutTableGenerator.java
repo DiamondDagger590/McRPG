@@ -8,6 +8,7 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.BooleanMemberValue;
+import javassist.bytecode.annotation.StringMemberValue;
 import lombok.Getter;
 
 public class LoadOutTableGenerator {
