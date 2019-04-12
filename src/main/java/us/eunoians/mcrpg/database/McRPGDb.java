@@ -36,7 +36,6 @@ public class McRPGDb {
     DatabaseBuilder dbBuilder = new DatabaseBuilder();
     dbBuilder.setDatabasePrefix("mcrpg_");
     dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
-    //dbBuilder.appendTable(Loadout.class);
     dbBuilder.appendTable(new LoadOutTableGenerator(9).asClass());
     dbBuilder.appendTable(PlayerData.class);
     dbBuilder.appendTable(PlayerSetting.class);
