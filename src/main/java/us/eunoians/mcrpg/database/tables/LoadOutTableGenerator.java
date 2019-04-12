@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables;
 
+import com.cyr1en.flatdb.annotations.Table;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -8,8 +9,10 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.BooleanMemberValue;
+import javassist.bytecode.annotation.StringMemberValue;
 import lombok.Getter;
 
+@Table(nameOverride = "loadout")
 public class LoadOutTableGenerator {
 
   private CtClass tableCtClass;
@@ -26,8 +29,9 @@ public class LoadOutTableGenerator {
     tableCtClass.addField(CtField.make(FieldData.of("private", "String", "id").get(), tableCtClass));
     tableCtClass.addField(CtField.make(FieldData.of("private", "String", "uuid").get(), tableCtClass));
 
+    addAnnotationToClass(tableCtClass, "Table", "loadout");
     addAnnotationToField(tableCtClass, "id", "com.cyr1en.flatdb.annotations.Column", "autoIncrement", true);
-    addAnnotationToField(tableCtClass, "id", "com.cyr1en.flatdb.annotations.Column", "primaryKey", true);
+    addAnnotationToField(tableCtClass, "uuid", "com.cyr1en.flatdb.annotations.Column", "primaryKey", true);
 
 
     for (int i = 1; i <= loadOutSize; i++) {
@@ -37,14 +41,14 @@ public class LoadOutTableGenerator {
     }
   }
 
-  private void addAnnotationToClass(CtClass ctClass, String annotationName) {
+  private void addAnnotationToClass(CtClass ctClass, String annotationName, String tableName) {
     ClassFile classFile = ctClass.getClassFile();
     ConstPool constpool = classFile.getConstPool();
 
     AnnotationsAttribute annotationsAttribute = new AnnotationsAttribute(constpool, AnnotationsAttribute.visibleTag);
     Annotation annotation = new Annotation(annotationName, constpool);
-    annotationsAttribute.setAnnotation(annotation);
-
+    annotation.addMemberValue("nameOverride", new StringMemberValue(tableName, constpool));
+    annotationsAttribute.addAnnotation(annotation);
     ctClass.getClassFile().addAttribute(annotationsAttribute);
   }
 

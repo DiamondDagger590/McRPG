@@ -209,8 +209,10 @@ public class McRPGPlayer {
 
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
+    //Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     this.playerFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "PlayerData" + File.separator + uuid.toString() + ".yml");
     this.playerData = YamlConfiguration.loadConfiguration(playerFile);
+    //database.executeQuery("SELECT * from mcrpg_player_data")
     boolean isNew = false;
     if(!playerFile.exists()) {
       isNew = true;

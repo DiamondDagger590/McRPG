@@ -4,6 +4,7 @@ import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
 import com.cyr1en.flatdb.util.FastStrings;
 import com.google.common.collect.ImmutableMap;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,12 +19,16 @@ import java.io.File;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class McRPGDb {
 
   private McRPG instance;
+  @Getter
   private Database database;
 
   public McRPGDb(McRPG plugin) {
@@ -31,6 +36,7 @@ public class McRPGDb {
     DatabaseBuilder dbBuilder = new DatabaseBuilder();
     dbBuilder.setDatabasePrefix("mcrpg_");
     dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
+    //dbBuilder.appendTable(Loadout.class);
     dbBuilder.appendTable(new LoadOutTableGenerator(9).asClass());
     dbBuilder.appendTable(PlayerData.class);
     dbBuilder.appendTable(PlayerSetting.class);
@@ -49,7 +55,7 @@ public class McRPGDb {
 
   public void convertLegacyToFlatDB() {
     File playerFolder = new File(instance.getDataFolder(), File.separator + "PlayerData");
-    if (!playerFolder.exists()) {
+    if(!playerFolder.exists()){
       Bukkit.getConsoleSender().sendMessage(Methods.color(instance.getPluginPrefix() + instance.getLangFile().getString("Messages.Utility.PlayerFolderDoesntExist")));
       return;
     }
@@ -57,7 +63,7 @@ public class McRPGDb {
     int playersProccessed = 0;
     Instant start = Instant.now();
     if (playerFiles != null) {
-      Bukkit.getConsoleSender().sendMessage(Methods.color(instance.getPluginPrefix() + instance.getLangFile().getString("Messages.Utility.BeginningConversion")
+      Bukkit.getConsoleSender().sendMessage(Methods.color(instance.getPluginPrefix() + instance.getLangFile().getString("Messages.Commands.Utility.BeginningConversion")
               .replace("%FileAmount%", Integer.toString(playerFiles.length))));
       LegacyDataConverter converter = new LegacyDataConverter();
       for (File f : playerFiles) {
@@ -66,16 +72,16 @@ public class McRPGDb {
         UUID uuid = UUID.fromString(f.getName().replace(".yml", ""));
         //Convert the player data table
         ImmutableMap.Builder<String, String> dataBuilder = new ImmutableMap.Builder<>();
-        dataBuilder.put("uuid", uuid.toString());
-        dataBuilder.put("ability_points", Integer.toString(config.getInt("AbilityPoints")));
-        dataBuilder.put("remote_transfer_location", config.getString("Mining.RemoteTransfer.LinkedLocation"));
-        dataBuilder.put("redeemable_exp", Integer.toString(config.getInt("RedeemableExp")));
-        dataBuilder.put("redeemable_levels", Integer.toString(config.getInt("RedeemableLevels")));
-        converter.convert("mcrpg_player_data", dataBuilder.build());
+          dataBuilder.put("uuid", uuid.toString());
+          dataBuilder.put("ability_points", Integer.toString(config.getInt("AbilityPoints")));
+          dataBuilder.put("remote_transfer_location", config.getString("Mining.RemoteTransfer.LinkedLocation"));
+          dataBuilder.put("redeemable_exp", Integer.toString(config.getInt("RedeemableExp")));
+          dataBuilder.put("redeemable_levels", Integer.toString(config.getInt("RedeemableLevels")));
+          converter.convert("mcrpg_player_data", dataBuilder.build());
 
         //Convert player settings table
         dataBuilder = new ImmutableMap.Builder<>();
-        dataBuilder.put("uiid", uuid.toString());
+        dataBuilder.put("uuid", uuid.toString());
         dataBuilder.put("keep_hand", String.valueOf(config.getBoolean("KeepHandEmpty")));
         dataBuilder.put("ignore_tips", String.valueOf(config.getBoolean("IgnoreTips")));
         dataBuilder.put("auto_deny", String.valueOf(config.getBoolean("AutoDeny")));
@@ -87,11 +93,10 @@ public class McRPGDb {
         List<String> abilityLoadOut = config.getStringList("AbilityLoadout");
         dataBuilder = new ImmutableMap.Builder<>();
         for (int i = 1; i <= abilityLoadOut.size(); i++) {
-          dataBuilder.put("slot" + i, abilityLoadOut.get(i));
+          dataBuilder.put("slot" + i, abilityLoadOut.get(i-1));
         }
-        converter.convert("mcrpg_player_loadout", dataBuilder.build());
+        converter.convert("mcrpg_loadout", dataBuilder.build());
 
-        //TODO convert pending abilities but waiting on Ethan.... Waiting for what? -Ethan
         //Convert Swords table
         Integer currentExp = config.getInt("Swords.CurrentExp");
         Integer level = config.getInt("Swords.Level");
@@ -124,9 +129,13 @@ public class McRPGDb {
                 "is_vampire_toggled, is_rage_spike_toggled, is_serrated_strikes_toggled, is_tainted_blade_toggled, bleed_plus_tier, " +
                 "deeper_wound_tier, vampire_tier, rage_spike_tier, serrated_strikes_tier, tainted_blade_tier, rage_spike_cooldown, serrated_strikes_cooldown, tainted_blade_cooldown) " +
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
-        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isBleedToggled.toString(), isBleedPlusToggled.toString(), isDeeperWoundToggled.toString(),
-                isVampireToggled.toString(), isRageSpikeToggled.toString(), isSerratedStrikesToggled.toString(), isTaintedBladeToggled.toString(), bleedPlusTier.toString(), deeperWoundTier.toString(),
-                vampireTier.toString(), rageSpikeTier.toString(), serratedStrikesTier.toString(), taintedBladeTier.toString(), rageSpikeCooldown.toString(), serratedStrikesCooldown.toString(), taintedBladeCooldown.toString());
+        try {
+          database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isBleedToggled.toString(), isBleedPlusToggled.toString(), isDeeperWoundToggled.toString(),
+                  isVampireToggled.toString(), isRageSpikeToggled.toString(), isSerratedStrikesToggled.toString(), isTaintedBladeToggled.toString(), bleedPlusTier.toString(), deeperWoundTier.toString(),
+                  vampireTier.toString(), rageSpikeTier.toString(), serratedStrikesTier.toString(), taintedBladeTier.toString(), rageSpikeCooldown.toString(), serratedStrikesCooldown.toString(), taintedBladeCooldown.toString()));
+        } catch(SQLException e) {
+          e.printStackTrace();
+        }
 
         //Convert Mining table
         currentExp = config.getInt("Mining.CurrentExp");
@@ -162,9 +171,13 @@ public class McRPGDb {
                 "blast_mining_tier, ore_scanner_tier, super_break_cooldown, blast_mining_cooldown, ore_scanner_cooldown) " +
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
 
-        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isDoubleDropToggled.toString(), isRicherOresToggled.toString(), isRemoteTransferToggled.toString(),
-                isITsATripleToggled.toString(), isSuperBreakerToggled.toString(), isBlastMiningToggled.toString(), isOreScannerToggled.toString(), richerOresTier.toString(), remoteTransferTier.toString(),
-                itsATripleTier.toString(), superBreakerTier.toString(), blastMiningTier.toString(), oreScannerTier.toString(), superBreakerCooldown.toString(), blastMiningCooldown.toString(), oreScannerCooldown.toString());
+        try {
+          database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isDoubleDropToggled.toString(), isRicherOresToggled.toString(), isRemoteTransferToggled.toString(),
+                  isITsATripleToggled.toString(), isSuperBreakerToggled.toString(), isBlastMiningToggled.toString(), isOreScannerToggled.toString(), richerOresTier.toString(), remoteTransferTier.toString(),
+                  itsATripleTier.toString(), superBreakerTier.toString(), blastMiningTier.toString(), oreScannerTier.toString(), superBreakerCooldown.toString(), blastMiningCooldown.toString(), oreScannerCooldown.toString()));
+        } catch(SQLException e) {
+          e.printStackTrace();
+        }
 
         //Convert Unarmed table
         currentExp = config.getInt("Unarmed.CurrentExp");
@@ -201,9 +214,13 @@ public class McRPGDb {
                 "smiting_fist_tier, dense_impact_tier, berserk_cooldown, smiting_fist_cooldown, dense_impact_cooldown) " +
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
 
-        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isStickyFingersToggled.toString(), isTighterGripToggled.toString(), isDisarmToggled.toString(),
-                isIronArmToggled.toString(), isBerserkToggled.toString(), isSmitingFistToggled.toString(), isDenseImpactToggled.toString(), tighterGripTier.toString(), disarmTier.toString(),
-                ironArmTier.toString(), berserkTier.toString(), smitingFistTier.toString(), denseImpactTier.toString(), berserkCooldown.toString(), smitingFistCooldown.toString(), denseImpactCooldown.toString());
+        try {
+          database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isStickyFingersToggled.toString(), isTighterGripToggled.toString(), isDisarmToggled.toString(),
+                  isIronArmToggled.toString(), isBerserkToggled.toString(), isSmitingFistToggled.toString(), isDenseImpactToggled.toString(), tighterGripTier.toString(), disarmTier.toString(),
+                  ironArmTier.toString(), berserkTier.toString(), smitingFistTier.toString(), denseImpactTier.toString(), berserkCooldown.toString(), smitingFistCooldown.toString(), denseImpactCooldown.toString()));
+        } catch(SQLException e) {
+          e.printStackTrace();
+        }
 
         //Convert Herbalism table
         currentExp = config.getInt("Herbalism.CurrentExp");
@@ -236,18 +253,22 @@ public class McRPGDb {
 
         query = "INSERT INTO mcrpg_herbalism_data (uuid, current_exp, level, is_too_many_plants_toggled, is_farmers_diet_toggled, " +
                 "is_diamond_flowers_toggled, is_replanting_toggled, is_mass_harvest_toggled, is_natures_wrath_toggled, " +
-                "is_pans_blessing_toggled, famers_diet_tier, diamond_flowers_tier, replanting_tier, mass_harvest_tier, " +
+                "is_pans_blessing_toggled, farmers_diet_tier, diamond_flowers_tier, replanting_tier, mass_harvest_tier, " +
                 "natures_wrath_tier, pans_blessing_tier, mass_harvest_cooldown, natures_wrath_cooldown, pans_blessing_cooldown) " +
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
 
-        database.executeQuery(query, uuid.toString(), currentExp.toString(), level.toString(), isTooManyPlantsToggled.toString(), isFarmersDietToggled.toString(), isDiamondFlowersToggled.toString(),
-                isReplantingToggled.toString(), isMassHarvestToggled.toString(), isNaturesWrathToggled.toString(), isPansBlessingToggled.toString(), farmersDietTier.toString(), diamondFlowersTier.toString(),
-                replantingTier.toString(), massHarvestTier.toString(), naturesWrathTier.toString(), pansBlessingTier.toString(), massHarvestCooldown.toString(), naturesWrathCooldown.toString(), pansBlessingCooldown.toString());
+        try {
+          database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isTooManyPlantsToggled.toString(), isFarmersDietToggled.toString(), isDiamondFlowersToggled.toString(),
+                  isReplantingToggled.toString(), isMassHarvestToggled.toString(), isNaturesWrathToggled.toString(), isPansBlessingToggled.toString(), farmersDietTier.toString(), diamondFlowersTier.toString(),
+                  replantingTier.toString(), massHarvestTier.toString(), naturesWrathTier.toString(), pansBlessingTier.toString(), massHarvestCooldown.toString(), naturesWrathCooldown.toString(), pansBlessingCooldown.toString()));
+        } catch(SQLException e) {
+          e.printStackTrace();
+        }
 
         //Convert Archery table
         dataBuilder = new ImmutableMap.Builder<>();
         dataBuilder.put("uuid", uuid.toString());
-        dataBuilder.put("current_xp", Integer.toString(config.getInt("Archery.CurrentExp")));
+        dataBuilder.put("current_exp", Integer.toString(config.getInt("Archery.CurrentExp")));
         dataBuilder.put("level", Integer.toString(config.getInt("Archery.Level")));
         dataBuilder.put("is_daze_toggled", Boolean.toString(config.getBoolean("Archery.Daze.IsToggled")));
         dataBuilder.put("is_puncture_toggled", Boolean.toString(config.getBoolean("Archery.Puncture.IsToggled")));
@@ -275,8 +296,8 @@ public class McRPGDb {
       }
     }
     long diffInSec = Duration.between(start, Instant.now()).getSeconds();
-    Bukkit.getConsoleSender().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.ConversionComplete").replace("%Amount%", Integer.toString(playersProccessed)
-            .replace("%Seconds%", Long.toString(diffInSec)))));
+    Bukkit.getConsoleSender().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.ConversionComplete").replace("%Amount%", Integer.toString(playersProccessed))
+            .replace("%Seconds%", Long.toString(diffInSec))));
   }
 
   private class LegacyDataConverter {
@@ -296,7 +317,7 @@ public class McRPGDb {
     private String buildSql(String tableName, Map<String, String> data) {
       Set<String> keys = data.keySet();
       String joinedKeys = FastStrings.join(keys.toArray(), ", ");
-      String joinedValues = FastStrings.join(data.values().stream().map(prepareValuesFunc).distinct().toArray(), ", ");
+      String joinedValues = FastStrings.join(data.values().stream().map(prepareValuesFunc).toArray(), ", ");
       return String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, joinedKeys, joinedValues);
     }
 
