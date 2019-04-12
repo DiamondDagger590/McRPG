@@ -18,5 +18,7 @@ commands:
     description: Links a chest to a players Remote Transfer
   mcunlink:
     description: Unlinks a chest from a players Remote Transfer
+  mcconvert:
+    description: Converts flatfile to SQL
   mchelp:
     description: Displays help info for commands

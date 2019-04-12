@@ -6,6 +6,9 @@ import com.cyr1en.flatdb.annotations.Table;
 @Table(nameOverride = "herbalism_data")
 public class HerbalismTable {
 
+  @Column(autoIncrement = true) private int id;
+  @Column(primaryKey = true) private String uuid;
+
   @Column
   private int current_exp;
   @Column private int level;

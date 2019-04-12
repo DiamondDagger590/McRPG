@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 3, state: 'APLHA')
+def versionObj = new Version(major: 1, minor: 1, patch: 6, state: 'APLHA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -33,7 +33,6 @@ dependencies {
     compile 'com.github.CyR1en:McUtils:1.6.2'
     compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
     compile group: 'javassist', name: 'javassist', version: '3.12.1.GA'
-
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
