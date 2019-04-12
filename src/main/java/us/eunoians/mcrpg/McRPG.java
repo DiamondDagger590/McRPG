@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.commands.*;
+import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.mcrpg.*;
 import us.eunoians.mcrpg.events.vanilla.*;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -32,6 +33,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Ignore private static McRPG instance;
   @Getter private PluginUpdater pluginUpdater;
   @Getter private FileManager fileManager;
+  @Getter private McRPGDb mcRPGDb;
   @Getter private DisplayManager displayManager;
   @Getter private static ChunkManager placeStore;
   @Getter private RemoteTransferTracker remoteTransferTracker;
@@ -75,6 +77,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
+    this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     if(healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
@@ -90,7 +93,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     }
     remoteTransferTracker = new RemoteTransferTracker();
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
-    File folder = new File(getDataFolder(), File.separator + "PlayerData");
+    File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
     if(!folder.exists()) {
       folder.mkdir();
     }
@@ -108,6 +111,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getCommand("mclink").setExecutor(new McLink());
     getCommand("mcunlink").setExecutor(new McUnlink());
     getCommand("mchelp").setExecutor(new McHelp());
+    getCommand("mcconvert").setExecutor(new McConvert());
   }
 
   @Initialize(priority = 4)
@@ -148,10 +152,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   public String getPluginPrefix() {
     return getLangFile().getString("Messages.PluginInfo.PluginPrefix");
-  }
-
-  public FileManager getFileManager() {
-    return fileManager;
   }
 
   @Override
