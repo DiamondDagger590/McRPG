@@ -30,9 +30,9 @@ repositories {
 
 dependencies {
     compile 'com.github.CyR1en:FlatDB:1.0.5'
-    compile 'com.github.CyR1en:McUtils:1.6.2'
+    compile 'com.github.CyR1en:McUtils:1.6.10'
     compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
-    compile group: 'javassist', name: 'javassist', version: '3.12.1.GA'
+    compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
