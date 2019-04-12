@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.database;
 import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
 import com.cyr1en.flatdb.util.FastStrings;
+import com.cyr1en.mcutils.logger.Logger;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -10,19 +11,19 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.database.tables.LoadOutTableGenerator;
+import us.eunoians.mcrpg.database.tables.LoadoutInstrumentation;
 import us.eunoians.mcrpg.database.tables.PlayerData;
 import us.eunoians.mcrpg.database.tables.PlayerSetting;
 import us.eunoians.mcrpg.database.tables.skills.*;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 public class McRPGDb {
@@ -33,7 +34,9 @@ public class McRPGDb {
 
   public McRPGDb(McRPG plugin) {
     this.instance = plugin;
-    Class generated = new LoadOutTableGenerator(9).asClass();
+
+    Class generated = new LoadoutInstrumentation(instance, 9).instrument();
+    printClass(generated);
     DatabaseBuilder dbBuilder = new DatabaseBuilder();
     dbBuilder.setDatabasePrefix("mcrpg_");
     dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
@@ -50,13 +53,36 @@ public class McRPGDb {
     } catch (SQLException e) {
       e.printStackTrace();
     }
-    Bukkit.getLogger().info("Does generated table exist?: " + database.tableExists("mcrpg_loadout_table"));
+    listAllTable();
+    Bukkit.getLogger().info("Does generated table exist?: " + database.tableExists("mcrpg_loadout"));
   }
 
+  private void printClass(Class c) {
+    Logger.info("Class Annotations: " + Arrays.toString(c.getDeclaredAnnotations()));
+
+    for (Field field : c.getDeclaredFields()) {
+      String name = field.getName();
+      Logger.info("Field: " + name);
+      Logger.info("Annotations: %s", Arrays.toString(field.getAnnotations()));
+    }
+
+  }
+
+  private void listAllTable() {
+    try {
+      DatabaseMetaData meta = database.getMetaData().orElse(null);
+      if (meta == null) return;
+      ResultSet rs = meta.getTables(null, null, null, new String[]{"TABLE"});
+      while (rs.next())
+        Bukkit.getLogger().info(rs.getString("TABLE_NAME"));
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
 
   public void convertLegacyToFlatDB() {
     File playerFolder = new File(instance.getDataFolder(), File.separator + "PlayerData");
-    if(!playerFolder.exists()){
+    if (!playerFolder.exists()) {
       Bukkit.getConsoleSender().sendMessage(Methods.color(instance.getPluginPrefix() + instance.getLangFile().getString("Messages.Utility.PlayerFolderDoesntExist")));
       return;
     }
@@ -73,12 +99,12 @@ public class McRPGDb {
         UUID uuid = UUID.fromString(f.getName().replace(".yml", ""));
         //Convert the player data table
         ImmutableMap.Builder<String, String> dataBuilder = new ImmutableMap.Builder<>();
-          dataBuilder.put("uuid", uuid.toString());
-          dataBuilder.put("ability_points", Integer.toString(config.getInt("AbilityPoints")));
-          dataBuilder.put("remote_transfer_location", config.getString("Mining.RemoteTransfer.LinkedLocation"));
-          dataBuilder.put("redeemable_exp", Integer.toString(config.getInt("RedeemableExp")));
-          dataBuilder.put("redeemable_levels", Integer.toString(config.getInt("RedeemableLevels")));
-          converter.convert("mcrpg_player_data", dataBuilder.build());
+        dataBuilder.put("uuid", uuid.toString());
+        dataBuilder.put("ability_points", Integer.toString(config.getInt("AbilityPoints")));
+        dataBuilder.put("remote_transfer_location", config.getString("Mining.RemoteTransfer.LinkedLocation"));
+        dataBuilder.put("redeemable_exp", Integer.toString(config.getInt("RedeemableExp")));
+        dataBuilder.put("redeemable_levels", Integer.toString(config.getInt("RedeemableLevels")));
+        converter.convert("mcrpg_player_data", dataBuilder.build());
 
         //Convert player settings table
         dataBuilder = new ImmutableMap.Builder<>();
@@ -94,7 +120,7 @@ public class McRPGDb {
         List<String> abilityLoadOut = config.getStringList("AbilityLoadout");
         dataBuilder = new ImmutableMap.Builder<>();
         for (int i = 1; i <= abilityLoadOut.size(); i++) {
-          dataBuilder.put("slot" + i, abilityLoadOut.get(i-1));
+          dataBuilder.put("slot" + i, abilityLoadOut.get(i - 1));
         }
         converter.convert("mcrpg_loadout", dataBuilder.build());
 
@@ -134,7 +160,7 @@ public class McRPGDb {
           database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isBleedToggled.toString(), isBleedPlusToggled.toString(), isDeeperWoundToggled.toString(),
                   isVampireToggled.toString(), isRageSpikeToggled.toString(), isSerratedStrikesToggled.toString(), isTaintedBladeToggled.toString(), bleedPlusTier.toString(), deeperWoundTier.toString(),
                   vampireTier.toString(), rageSpikeTier.toString(), serratedStrikesTier.toString(), taintedBladeTier.toString(), rageSpikeCooldown.toString(), serratedStrikesCooldown.toString(), taintedBladeCooldown.toString()));
-        } catch(SQLException e) {
+        } catch (SQLException e) {
           e.printStackTrace();
         }
 
@@ -176,7 +202,7 @@ public class McRPGDb {
           database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isDoubleDropToggled.toString(), isRicherOresToggled.toString(), isRemoteTransferToggled.toString(),
                   isITsATripleToggled.toString(), isSuperBreakerToggled.toString(), isBlastMiningToggled.toString(), isOreScannerToggled.toString(), richerOresTier.toString(), remoteTransferTier.toString(),
                   itsATripleTier.toString(), superBreakerTier.toString(), blastMiningTier.toString(), oreScannerTier.toString(), superBreakerCooldown.toString(), blastMiningCooldown.toString(), oreScannerCooldown.toString()));
-        } catch(SQLException e) {
+        } catch (SQLException e) {
           e.printStackTrace();
         }
 
@@ -219,7 +245,7 @@ public class McRPGDb {
           database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isStickyFingersToggled.toString(), isTighterGripToggled.toString(), isDisarmToggled.toString(),
                   isIronArmToggled.toString(), isBerserkToggled.toString(), isSmitingFistToggled.toString(), isDenseImpactToggled.toString(), tighterGripTier.toString(), disarmTier.toString(),
                   ironArmTier.toString(), berserkTier.toString(), smitingFistTier.toString(), denseImpactTier.toString(), berserkCooldown.toString(), smitingFistCooldown.toString(), denseImpactCooldown.toString()));
-        } catch(SQLException e) {
+        } catch (SQLException e) {
           e.printStackTrace();
         }
 
@@ -262,7 +288,7 @@ public class McRPGDb {
           database.getConnection().createStatement().execute(String.format(query, "'" + uuid.toString() + "'", currentExp.toString(), level.toString(), isTooManyPlantsToggled.toString(), isFarmersDietToggled.toString(), isDiamondFlowersToggled.toString(),
                   isReplantingToggled.toString(), isMassHarvestToggled.toString(), isNaturesWrathToggled.toString(), isPansBlessingToggled.toString(), farmersDietTier.toString(), diamondFlowersTier.toString(),
                   replantingTier.toString(), massHarvestTier.toString(), naturesWrathTier.toString(), pansBlessingTier.toString(), massHarvestCooldown.toString(), naturesWrathCooldown.toString(), pansBlessingCooldown.toString()));
-        } catch(SQLException e) {
+        } catch (SQLException e) {
           e.printStackTrace();
         }
 
@@ -287,7 +313,7 @@ public class McRPGDb {
 
         Long blessingOfArtemisCooldown = config.contains("Cooldowns.BlessingOfArtemis") ? config.getLong("Cooldowns.BlessingOfArtemis") : 0L;
         Long blessingOfApolloCooldown = config.contains("Cooldowns.BlessingOfApollo") ? config.getLong("Cooldowns.BlessingOfApollo") : 0L;
-        Long curseOfHadesCooldown =config.contains("Cooldowns.CurseOfHades") ? config.getLong("Cooldowns.CurseOfHades") : 0L;
+        Long curseOfHadesCooldown = config.contains("Cooldowns.CurseOfHades") ? config.getLong("Cooldowns.CurseOfHades") : 0L;
         dataBuilder.put("blessing_of_artemis_cooldown", Long.toString(blessingOfArtemisCooldown));
         dataBuilder.put("blessing_of_apollo_cooldown", Long.toString(blessingOfApolloCooldown));
         dataBuilder.put("curse_of_hades_cooldown", Long.toString(curseOfHadesCooldown));
