@@ -29,8 +29,7 @@ import java.util.function.Function;
 public class McRPGDb {
 
   private McRPG instance;
-  @Getter
-  private Database database;
+  @Getter private Database database;
 
   public McRPGDb(McRPG plugin) {
     this.instance = plugin;
@@ -101,7 +100,6 @@ public class McRPGDb {
         ImmutableMap.Builder<String, String> dataBuilder = new ImmutableMap.Builder<>();
         dataBuilder.put("uuid", uuid.toString());
         dataBuilder.put("ability_points", Integer.toString(config.getInt("AbilityPoints")));
-        dataBuilder.put("remote_transfer_location", config.getString("Mining.RemoteTransfer.LinkedLocation"));
         dataBuilder.put("redeemable_exp", Integer.toString(config.getInt("RedeemableExp")));
         dataBuilder.put("redeemable_levels", Integer.toString(config.getInt("RedeemableLevels")));
         converter.convert("mcrpg_player_data", dataBuilder.build());
@@ -126,7 +124,7 @@ public class McRPGDb {
 
         //Convert Swords table
         Integer currentExp = config.getInt("Swords.CurrentExp");
-        Integer level = config.getInt("Swords.Level");
+        Integer level = config.getInt("Swords.current_level");
         Boolean isBleedToggled = config.getBoolean("Swords.Bleed.IsToggled");
         Boolean isBleedPlusToggled = config.getBoolean("Swords.Bleed+.IsToggled");
         Boolean isDeeperWoundToggled = config.getBoolean("Swords.DeeperWound.IsToggled");
@@ -152,7 +150,7 @@ public class McRPGDb {
         if (config.contains("Cooldowns.TaintedBlade")) {
           taintedBladeCooldown = config.getLong("Cooldowns.TaintedBlade");
         }
-        String query = "INSERT INTO mcrpg_swords_data (uuid, current_exp, level, is_bleed_toggled, is_bleed_plus_toggled, is_deeper_wound_toggled, " +
+        String query = "INSERT INTO mcrpg_swords_data (uuid, current_exp, current_level, is_bleed_toggled, is_bleed_plus_toggled, is_deeper_wound_toggled, " +
                 "is_vampire_toggled, is_rage_spike_toggled, is_serrated_strikes_toggled, is_tainted_blade_toggled, bleed_plus_tier, " +
                 "deeper_wound_tier, vampire_tier, rage_spike_tier, serrated_strikes_tier, tainted_blade_tier, rage_spike_cooldown, serrated_strikes_cooldown, tainted_blade_cooldown) " +
                 "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)";
@@ -192,7 +190,7 @@ public class McRPGDb {
         if (config.contains("Cooldowns.OreScanner")) {
           oreScannerCooldown = config.getLong("Cooldowns.OreScanner");
         }
-        query = "INSERT INTO mcrpg_mining_data (uuid, current_exp, level, is_double_drop_toggled, is_richer_ores_toggled, " +
+        query = "INSERT INTO mcrpg_mining_data (uuid, current_exp, current_level, is_double_drop_toggled, is_richer_ores_toggled, " +
                 "is_remote_transfer_toggled, is_its_a_triple_toggled, is_super_breaker_toggled, is_blast_mining_toggled, " +
                 "is_ore_scanner_toggled, richer_ores_tier, remote_transfer_tier, its_a_triple_tier, super_breaker_tier, " +
                 "blast_mining_tier, ore_scanner_tier, super_break_cooldown, blast_mining_cooldown, ore_scanner_cooldown) " +
@@ -235,7 +233,7 @@ public class McRPGDb {
           denseImpactCooldown = config.getLong("Cooldowns.DenseImpact");
         }
 
-        query = "INSERT INTO mcrpg_unarmed_data (uuid, current_exp, level, is_sticky_fingers_toggled, is_tighter_grip_toggled, " +
+        query = "INSERT INTO mcrpg_unarmed_data (uuid, current_exp, current_level, is_sticky_fingers_toggled, is_tighter_grip_toggled, " +
                 "is_disarm_toggled, is_iron_arm_toggled, is_berserk_toggled, is_smiting_fist_toggled, " +
                 "is_dense_impact_toggled, tighter_grip_tier, disarm_tier, iron_arm_tier, berserk_tier, " +
                 "smiting_fist_tier, dense_impact_tier, berserk_cooldown, smiting_fist_cooldown, dense_impact_cooldown) " +
@@ -278,7 +276,7 @@ public class McRPGDb {
           pansBlessingCooldown = config.getLong("Cooldowns.PansBlessing");
         }
 
-        query = "INSERT INTO mcrpg_herbalism_data (uuid, current_exp, level, is_too_many_plants_toggled, is_farmers_diet_toggled, " +
+        query = "INSERT INTO mcrpg_herbalism_data (uuid, current_exp, current_level, is_too_many_plants_toggled, is_farmers_diet_toggled, " +
                 "is_diamond_flowers_toggled, is_replanting_toggled, is_mass_harvest_toggled, is_natures_wrath_toggled, " +
                 "is_pans_blessing_toggled, farmers_diet_tier, diamond_flowers_tier, replanting_tier, mass_harvest_tier, " +
                 "natures_wrath_tier, pans_blessing_tier, mass_harvest_cooldown, natures_wrath_cooldown, pans_blessing_cooldown) " +
@@ -296,7 +294,7 @@ public class McRPGDb {
         dataBuilder = new ImmutableMap.Builder<>();
         dataBuilder.put("uuid", uuid.toString());
         dataBuilder.put("current_exp", Integer.toString(config.getInt("Archery.CurrentExp")));
-        dataBuilder.put("level", Integer.toString(config.getInt("Archery.Level")));
+        dataBuilder.put("current_level", Integer.toString(config.getInt("Archery.Level")));
         dataBuilder.put("is_daze_toggled", Boolean.toString(config.getBoolean("Archery.Daze.IsToggled")));
         dataBuilder.put("is_puncture_toggled", Boolean.toString(config.getBoolean("Archery.Puncture.IsToggled")));
         dataBuilder.put("is_tipped_arrows_toggled", Boolean.toString(config.getBoolean("Archery.TippedArrows.IsToggled")));
@@ -319,10 +317,12 @@ public class McRPGDb {
         dataBuilder.put("curse_of_hades_cooldown", Long.toString(curseOfHadesCooldown));
         converter.convert("mcrpg_archery_data", dataBuilder.build());
 
+        f.delete();
         playersProccessed++;
       }
     }
     long diffInSec = Duration.between(start, Instant.now()).getSeconds();
+    playerFolder.delete();
     Bukkit.getConsoleSender().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.ConversionComplete").replace("%Amount%", Integer.toString(playersProccessed))
             .replace("%Seconds%", Long.toString(diffInSec))));
   }

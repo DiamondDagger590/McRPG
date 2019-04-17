@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.mining.ChestLinkEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.FakeChestOpenEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.PreChestLinkEvent;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
@@ -70,7 +71,7 @@ public class McLink implements CommandExecutor, Listener {
       Bukkit.getPluginManager().callEvent(chestLinkEvent);
       mp.setLinkedToRemoteTransfer(true);
       ((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(loc);
-      McRPG.getInstance().getRemoteTransferTracker().addLocation(p.getUniqueId(), loc);
+      RemoteTransferTracker.addLocation(p.getUniqueId(), loc);
       p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.Linked")));
     }
     event.setCancelled(true);
