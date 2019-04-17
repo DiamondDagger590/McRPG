@@ -7,8 +7,8 @@ import com.cyr1en.flatdb.annotations.Table;
 public class PlayerData {
   @Column(autoIncrement = true) private int id;
   @Column(primaryKey = true) private String uuid;
-  @Column int ability_points;
-  @Column(defaultValue = "0") String remote_transfer_location;
-  @Column int redeemable_exp;
-  @Column int redeemable_levels;
+  @Column(defaultValue = "0") int ability_points;
+  @Column(defaultValue = "0") int replace_ability_cooldown;
+  @Column(defaultValue = "0") int redeemable_exp;
+  @Column(defaultValue = "0") int redeemable_levels;
 }

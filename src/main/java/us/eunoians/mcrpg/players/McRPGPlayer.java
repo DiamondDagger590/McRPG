@@ -1,14 +1,15 @@
 package us.eunoians.mcrpg.players;
 
+import com.cyr1en.flatdb.Database;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.intellij.lang.annotations.Language;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
@@ -18,16 +19,18 @@ import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.skills.*;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class McRPGPlayer {
 
@@ -55,7 +58,7 @@ public class McRPGPlayer {
    * The abilities a player has unlocked and has not yet accepted or denied. Whenever a player next opens the mcrpg main gui they should be forced to go through these
    */
   @Getter
-  private ArrayList<UnlockedAbilities> pendingUnlockAbilities;
+  private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
 
   /**
    * Map of the abilities on cooldown
@@ -189,451 +192,595 @@ public class McRPGPlayer {
   @Setter
   private int redeemableLevels = 0;
 
-  /**
-   * The file configuration of the player that we get to edit.
-   */
-  //TODO Migrate these to a database manager instead of here. These are just here for white box testing
-  private FileConfiguration playerData;
-  private File playerFile;
-
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
-    //Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
-    this.playerFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "PlayerData" + File.separator + uuid.toString() + ".yml");
-    this.playerData = YamlConfiguration.loadConfiguration(playerFile);
-    //database.executeQuery("SELECT * from mcrpg_player_data")
-    boolean isNew = false;
-    if(!playerFile.exists()) {
-      isNew = true;
-      try {
-        playerFile.createNewFile();
-      } catch(IOException e) {
-        e.printStackTrace();
-      }
-    }
+    Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
+    Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
+
+
+    boolean isNew = !playerDataSet.isPresent();
     if(isNew) {
       for(Skills type : Skills.values()) {
-        playerData.set(type.getName() + ".Level", 0);
-        playerData.set(type.getName() + ".CurrentExp", 0);
+        @Language("SQL") String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
+        database.executeQuery(query);
       }
-      for(DefaultAbilities ability : DefaultAbilities.values()) {
-        playerData.set(ability.getSkill() + "." + ability.getName().replace(" ", "").replace("_", "") + ".IsToggled", true);
-      }
-      for(UnlockedAbilities ability : UnlockedAbilities.values()) {
-        playerData.set(ability.getSkill() + "." + ability.getName() + ".Tier", 0);
-        playerData.set(ability.getSkill() + "." + ability.getName() + ".IsToggled", true);
-      }
-      playerData.set("DisplayType", displayType.getName());
-      playerData.set("HealthType", healthbarType.getName());
-      playerData.set("KeepHandEmpty", keepHandEmpty);
-      playerData.set("AutoDeny", autoDeny);
-      playerData.set("Cooldowns.placeholder", null);
-      playerData.set("AbilityPoints", 0);
-      playerData.set("RemoteTransferBlocks", null);
-      playerData.set("PendingAbilitiesUnlocked.placeholder", null);
-      playerData.set("AbilityLoadout.placeholder", null);
-      playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
-      playerData.set("ReplaceAbilityCooldown.placeholder", null);
-      playerData.set("RedeemableExp", 0);
-      playerData.set("RedeemableLevels", 0);
+      @Language("SQL") String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
+      database.executeQuery(query);
+      query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES (`" + uuid.toString() + "`)";
+      database.executeQuery(query);
+      query = "INSERT INTO MCRPG_LOADOUT (UUID) VALUES ('" + uuid.toString() + "')";
+      database.executeQuery(query);
+      playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
     }
+    playerDataSet.ifPresent(resultSet -> {
+      try {
+        if(resultSet.next()) {
+          System.out.println(resultSet.toString());
+          this.abilityPoints = resultSet.getInt("ability_points");
+          this.redeemableExp = resultSet.getInt("redeemable_exp");
+          this.redeemableLevels = resultSet.getInt("redeemable_levels");
+          int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
+          if(replaceCooldown > 0) {
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.SECOND, replaceCooldown);
+            this.endTimeForReplaceCooldown = cal.getTimeInMillis();
+          }
+        }
+      } catch(SQLException e) {
+        e.printStackTrace();
+      }
+    });
 
-    //Add in info for new skills.
-    //TODO make this better in the future. Quick and dirty solution for now
-    for(Skills type : Skills.values()) {
-      if(!playerData.contains(type.getName() + ".Level")) {
-        playerData.set(type.getName() + ".Level", 0);
-      }
-      if(!playerData.contains(type.getName() + ".CurrentExp")) {
-        playerData.set(type.getName() + ".CurrentExp", 0);
-      }
-    }
-    for(DefaultAbilities ability : DefaultAbilities.values()) {
-      if(!playerData.contains((ability.getSkill() + "." + ability.getName().replace(" ", "")
-              .replace("_", "") + ".IsToggled"))) {
-        playerData.set(ability.getSkill() + "." + ability.getName().replace(" ", "").replace("_", "") + ".IsToggled", true);
-      }
-    }
-    for(UnlockedAbilities ability : UnlockedAbilities.values()) {
-      if(!playerData.contains(ability.getSkill() + "." + ability.getName() + ".Tier")) {
-        playerData.set(ability.getSkill() + "." + ability.getName() + ".Tier", 0);
-      }
-      if(!playerData.contains(ability.getSkill() + "." + ability.getName() + ".IsToggled")) {
-        playerData.set(ability.getSkill() + "." + ability.getName() + ".IsToggled", true);
-      }
-    }
-    try {
-      playerData.save(playerFile);
-    } catch(IOException e) {
-      e.printStackTrace();
-    }
+    final Optional<ResultSet> settingsSet = database.executeQuery("SELECT * FROM mcrpg_player_settings WHERE uuid = '" + uuid.toString() + "'");
+    settingsSet.ifPresent(rs -> {
+      try {
+        if(rs.next()) {
 
-    this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(playerData.getString("HealthType"));
-    this.keepHandEmpty = playerData.getBoolean("KeepHandEmpty");
-    this.displayType = DisplayType.fromString(playerData.getString("DisplayType"));
-    this.autoDeny = playerData.getBoolean("AutoDeny");
-    if(!playerData.contains("IgnoreTips")) {
-      playerData.set("IgnoreTips", false);
-    }
-    if(!playerData.contains("RedeemableExp")){
-      playerData.set("RedeemableExp", 0);
-    }
-    if(!playerData.contains("RedeemableLevels")){
-      playerData.set("RedeemableLevels", 0);
-    }
-    this.ignoreTips = playerData.getBoolean("IgnoreTips");
-    this.redeemableExp = playerData.getInt("RedeemableExp");
-    this.redeemableLevels = playerData.getInt("RedeemableLevelse");
-    this.abilityPoints = playerData.getInt("AbilityPoints");
-    ArrayList<UnlockedAbilities> list = new ArrayList<>();
-    for(String string : playerData.getStringList("PendingAbilitiesUnlocked")) {
-      UnlockedAbilities unlockedAbilities = UnlockedAbilities.fromString(string);
-      list.add(unlockedAbilities);
-    }
-    this.pendingUnlockAbilities = list;
+          this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(rs.getString("health_type"));
+          this.keepHandEmpty = rs.getBoolean("keep_hand");
+          this.displayType = DisplayType.fromString(rs.getString("display_type"));
+          this.autoDeny = rs.getBoolean("auto_deny");
+          this.ignoreTips = rs.getBoolean("ignore_tips");
+        }
+      } catch(SQLException e) {
+        e.printStackTrace();
+      }
+    });
+
     //Initialize skills
     Arrays.stream(Skills.values()).forEach(skill -> {
       HashMap<GenericAbility, BaseAbility> abilityMap = new HashMap<>();
-      if(skill.equals(Skills.SWORDS)) {
-        //Initialize bleed
-        Bleed bleed = new Bleed();
-        bleed.setToggled(playerData.getBoolean("Swords.Bleed.IsToggled"));
-        //Initialize Deeper Wound
-        DeeperWound deeperWound = new DeeperWound();
-        deeperWound.setToggled(playerData.getBoolean("Swords.DeeperWound.IsToggled"));
-        deeperWound.setCurrentTier(playerData.getInt("Swords.DeeperWound.Tier"));
-        if(playerData.getInt("Swords.DeeperWound.Tier") != 0) {
-          deeperWound.setUnlocked(true);
-        }
-        //Initialize Bleed+
-        BleedPlus bleedPlus = new BleedPlus();
-        bleedPlus.setToggled(playerData.getBoolean("Swords.Bleed+.IsToggled"));
-        bleedPlus.setCurrentTier(playerData.getInt("Swords.Bleed+.Tier"));
-        if(playerData.getInt("Swords.Bleed+.Tier") != 0) {
-          bleedPlus.setUnlocked(true);
-        }
-        //Initialize Vampire
-        Vampire vampire = new Vampire();
-        vampire.setToggled(playerData.getBoolean("Swords.Vampire.IsToggled"));
-        vampire.setCurrentTier(playerData.getInt("Swords.Vampire.Tier"));
-        if(playerData.getInt("Swords.Vampire.Tier") != 0) {
-          vampire.setUnlocked(true);
-        }
-        //Initialize Serrated Strikes
-        SerratedStrikes serratedStrikes = new SerratedStrikes();
-        serratedStrikes.setToggled(playerData.getBoolean("Swords.SerratedStrikes.IsToggled"));
-        serratedStrikes.setCurrentTier(playerData.getInt("Swords.SerratedStrikes.Tier"));
-        if(playerData.getInt("Swords.SerratedStrikes.Tier") != 0) {
-          serratedStrikes.setUnlocked(true);
-        }
-        //Initialize Rage Spike
-        RageSpike rageSpike = new RageSpike();
-        rageSpike.setToggled(playerData.getBoolean("Swords.RageSpike.IsToggled"));
-        rageSpike.setCurrentTier(playerData.getInt("Swords.RageSpike.Tier"));
-        if(playerData.getInt("Swords.RageSpike.Tier") != 0) {
-          rageSpike.setUnlocked(true);
-        }
-        //Initialize Tainted Blade
-        TaintedBlade taintedBlade = new TaintedBlade();
-        taintedBlade.setToggled(playerData.getBoolean("Swords.TaintedBlade.IsToggled"));
-        taintedBlade.setCurrentTier(playerData.getInt("Swords.TaintedBlade.Tier"));
-        if(playerData.getInt("Swords.TaintedBlade.Tier") != 0) {
-          taintedBlade.setUnlocked(true);
-        }
-        abilityMap.put(DefaultAbilities.BLEED, bleed);
-        abilityMap.put(UnlockedAbilities.DEEPER_WOUND, deeperWound);
-        abilityMap.put(UnlockedAbilities.BLEED_PLUS, bleedPlus);
-        abilityMap.put(UnlockedAbilities.VAMPIRE, vampire);
-        abilityMap.put(UnlockedAbilities.SERRATED_STRIKES, serratedStrikes);
-        abilityMap.put(UnlockedAbilities.RAGE_SPIKE, rageSpike);
-        abilityMap.put(UnlockedAbilities.TAINTED_BLADE, taintedBlade);
-        //Create skill
-        Swords swords = new Swords(playerData.getInt("Swords.Level"),
-                playerData.getInt("Swords.CurrentExp"), abilityMap, this);
-        skills.add(swords);
+      Optional<ResultSet> skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
+      if(!skillSet.isPresent()){
+        @Language("SQL") String query = "INSERT INTO mcrpg_" + skill.getName().toLowerCase() + "_data (uuid) VALUES (`" + uuid.toString() + "`)";
+        database.executeQuery(query);
+        skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
       }
-      //Init mining
-      else if(skill.equals(Skills.MINING)) {
-        //Initialize DoubleDrops
-        DoubleDrop doubleDrop = new DoubleDrop();
-        doubleDrop.setToggled(playerData.getBoolean("Mining.DoubleDrop.IsToggled"));
+      skillSet.ifPresent(rs -> {
+        try {
+          if(skill.equals(Skills.SWORDS)) {
+            //Initialize bleed
+            Bleed bleed = new Bleed();
+            bleed.setToggled(rs.getBoolean("is_bleed_toggled"));
+            //Initialize Deeper Wound
+            DeeperWound deeperWound = new DeeperWound();
+            deeperWound.setToggled(rs.getBoolean("is_deeper_wound_toggled"));
+            deeperWound.setCurrentTier(rs.getInt("deeper_wound_tier"));
+            if(deeperWound.getCurrentTier() != 0) {
+              deeperWound.setUnlocked(true);
+            }
+            //Initialize Bleed+
+            BleedPlus bleedPlus = new BleedPlus();
+            bleedPlus.setToggled(rs.getBoolean("is_bleed_plus_toggled"));
+            bleedPlus.setCurrentTier(rs.getInt("bleed_plus_tier"));
+            if(bleedPlus.getCurrentTier() != 0) {
+              bleedPlus.setUnlocked(true);
+            }
+            //Initialize Vampire
+            Vampire vampire = new Vampire();
+            vampire.setToggled(rs.getBoolean("is_vampire_toggled"));
+            vampire.setCurrentTier(rs.getInt("vampire_tier"));
+            if(vampire.getCurrentTier() != 0) {
+              vampire.setUnlocked(true);
+            }
+            //Initialize Serrated Strikes
+            SerratedStrikes serratedStrikes = new SerratedStrikes();
+            serratedStrikes.setToggled(rs.getBoolean("is_serrated_strikes_toggled"));
+            serratedStrikes.setCurrentTier(rs.getInt("serrated_strikes_tier"));
+            if(serratedStrikes.getCurrentTier() != 0) {
+              serratedStrikes.setUnlocked(true);
+            }
+            //Initialize Rage Spike
+            RageSpike rageSpike = new RageSpike();
+            rageSpike.setToggled(rs.getBoolean("is_rage_spike_toggled"));
+            rageSpike.setCurrentTier(rs.getInt("rage_spike_tier"));
+            if(rageSpike.getCurrentTier() != 0) {
+              rageSpike.setUnlocked(true);
+            }
+            //Initialize Tainted Blade
+            TaintedBlade taintedBlade = new TaintedBlade();
+            taintedBlade.setToggled(rs.getBoolean("is_tainted_blade_toggled"));
+            taintedBlade.setCurrentTier(rs.getInt("tainted_blade_tier"));
+            if(taintedBlade.getCurrentTier() != 0) {
+              taintedBlade.setUnlocked(true);
+            }
 
-        //Initialize RicherOres
-        RicherOres richerOres = new RicherOres();
-        richerOres.setToggled(playerData.getBoolean("Mining.RicherOres.IsToggled"));
-        richerOres.setCurrentTier(playerData.getInt("Mining.RicherOres.Tier"));
-        if(playerData.getInt("Mining.RicherOres.Tier") != 0) {
-          richerOres.setUnlocked(true);
-        }
+            int serratedStrikesCooldown = rs.getInt("serrated_strikes_cooldown");
+            int rageSpikeCooldown = rs.getInt("rage_spike_cooldown");
+            int taintedBladeCooldown = rs.getInt("tainted_blade_cooldown");
+            if(serratedStrikesCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, serratedStrikesCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
+            }
+            if(rageSpikeCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, rageSpikeCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.RAGE_SPIKE, cal.getTimeInMillis());
+            }
+            if(taintedBladeCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, taintedBladeCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
+            }
 
-        //Initialize ItsATriple
-        ItsATriple itsATriple = new ItsATriple();
-        itsATriple.setToggled(playerData.getBoolean("Mining.ItsATriple.IsToggled"));
-        itsATriple.setCurrentTier(playerData.getInt("Mining.ItsATriple.Tier"));
-        if(playerData.getInt("Mining.ItsATriple.Tier") != 0) {
-          itsATriple.setUnlocked(true);
-        }
+            if(rs.getBoolean("is_deeper_wound_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DEEPER_WOUND);
+            }
+            if(rs.getBoolean("is_bleed_plus_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BLEED_PLUS);
+            }
+            if(rs.getBoolean("is_vampire_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.VAMPIRE);
+            }
+            if(rs.getBoolean("is_serrated_strikes_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SERRATED_STRIKES);
+            }
+            if(rs.getBoolean("is_rage_spike_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.RAGE_SPIKE);
+            }
+            if(rs.getBoolean("is_tainted_blade_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.TAINTED_BLADE);
+            }
 
-        //Initialize RemoteTransfer
-        RemoteTransfer remoteTransfer = new RemoteTransfer();
-        remoteTransfer.setToggled(playerData.getBoolean("Mining.RemoteTransfer.IsToggled"));
-        remoteTransfer.setCurrentTier(playerData.getInt("Mining.RemoteTransfer.Tier"));
-        if(playerData.getInt("Mining.RemoteTransfer.Tier") != 0) {
-          remoteTransfer.setUnlocked(true);
-        }
-        if(playerData.get("Mining.RemoteTransfer.LinkedLocation").equals(0)) {
-          remoteTransfer.setLinkedChestLocation(null);
-        }
-        else {
-          remoteTransfer.setLinkedChestLocation((Location) playerData.get("Mining.RemoteTransfer.LinkedLocation"));
-          setLinkedToRemoteTransfer(true);
-        }
-
-        if(playerData.contains("RemoteTransferBlocks")) {
-          for(String s : playerData.getConfigurationSection("RemoteTransferBlocks").getKeys(false)) {
-            remoteTransfer.getItemsToSync().put(Material.getMaterial(s), playerData.getBoolean("RemoteTransferBlocks." + s));
+            abilityMap.put(DefaultAbilities.BLEED, bleed);
+            abilityMap.put(UnlockedAbilities.DEEPER_WOUND, deeperWound);
+            abilityMap.put(UnlockedAbilities.BLEED_PLUS, bleedPlus);
+            abilityMap.put(UnlockedAbilities.VAMPIRE, vampire);
+            abilityMap.put(UnlockedAbilities.SERRATED_STRIKES, serratedStrikes);
+            abilityMap.put(UnlockedAbilities.RAGE_SPIKE, rageSpike);
+            abilityMap.put(UnlockedAbilities.TAINTED_BLADE, taintedBlade);
+            //Create skill
+            Swords swords = new Swords(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(swords);
           }
-        }
+          //Init mining
+          else if(skill.equals(Skills.MINING)) {
+            //Initialize DoubleDrops
+            DoubleDrop doubleDrop = new DoubleDrop();
+            doubleDrop.setToggled(rs.getBoolean("is_double_drop_toggled"));
+
+            //Initialize RicherOres
+            RicherOres richerOres = new RicherOres();
+            richerOres.setToggled(rs.getBoolean("is_richer_ores_toggled"));
+            richerOres.setCurrentTier(rs.getInt("richer_ores_tier"));
+            if(richerOres.getCurrentTier() != 0) {
+              richerOres.setUnlocked(true);
+            }
+
+            //Initialize ItsATriple
+            ItsATriple itsATriple = new ItsATriple();
+            itsATriple.setToggled(rs.getBoolean("is_its_a_triple_toggled"));
+            itsATriple.setCurrentTier(rs.getInt("its_a_triple_tier"));
+            if(itsATriple.getCurrentTier() != 0) {
+              itsATriple.setUnlocked(true);
+            }
+
+            //Initialize RemoteTransfer
+            RemoteTransfer remoteTransfer = new RemoteTransfer();
+            remoteTransfer.setToggled(rs.getBoolean("is_remote_transfer_toggled"));
+            remoteTransfer.setCurrentTier(rs.getInt("remote_transfer_tier"));
+            if(remoteTransfer.getCurrentTier() != 0) {
+              remoteTransfer.setUnlocked(true);
+            }
+            if(RemoteTransferTracker.isTracked(uuid)){
+              remoteTransfer.setLinkedChestLocation(RemoteTransferTracker.getLocation(uuid));
+            }
+            File file = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
+            FileConfiguration remoteTransferFile = YamlConfiguration.loadConfiguration(file);
+            if(remoteTransferFile.contains("RemoteTransferBlocks")) {
+              for(String s : remoteTransferFile.getConfigurationSection("RemoteTransferBlocks").getKeys(false)) {
+                remoteTransfer.getItemsToSync().put(Material.getMaterial(s), remoteTransferFile.getBoolean("RemoteTransferBlocks." + s));
+              }
+            }
+            remoteTransfer.updateBlocks();
 
 
-        //Initialize SuperBreaker
-        SuperBreaker superBreaker = new SuperBreaker();
-        superBreaker.setToggled(playerData.getBoolean("Mining.SuperBreaker.IsToggled"));
-        superBreaker.setCurrentTier(playerData.getInt("Mining.SuperBreaker.Tier"));
-        if(playerData.getInt("Mining.SuperBreaker.Tier") != 0) {
-          superBreaker.setUnlocked(true);
-        }
+            //Initialize SuperBreaker
+            SuperBreaker superBreaker = new SuperBreaker();
+            superBreaker.setToggled(rs.getBoolean("is_super_breaker_toggled"));
+            superBreaker.setCurrentTier(rs.getInt("super_breaker_tier"));
+            if(superBreaker.getCurrentTier() != 0) {
+              superBreaker.setUnlocked(true);
+            }
 
-        //Initialize BlastMining
-        BlastMining blastMining = new BlastMining();
-        blastMining.setToggled(playerData.getBoolean("Mining.BlastMining.IsToggled"));
-        blastMining.setCurrentTier(playerData.getInt("Mining.BlastMining.Tier"));
-        if(playerData.getInt("Mining.BlastMining.Tier") != 0) {
-          blastMining.setUnlocked(true);
-        }
+            //Initialize BlastMining
+            BlastMining blastMining = new BlastMining();
+            blastMining.setToggled(rs.getBoolean("is_blast_mining_toggled"));
+            blastMining.setCurrentTier(rs.getInt("blast_mining_tier"));
+            if(blastMining.getCurrentTier() != 0) {
+              blastMining.setUnlocked(true);
+            }
 
-        //Initilize OreScanner
-        OreScanner oreScanner = new OreScanner();
-        oreScanner.setToggled(playerData.getBoolean("Mining.OreScanner.IsToggled"));
-        oreScanner.setCurrentTier(playerData.getInt("Mining.OreScanner.Tier"));
-        if(playerData.getInt("Mining.OreScanner.Tier") != 0) {
-          oreScanner.setUnlocked(true);
-        }
+            //Initilize OreScanner
+            OreScanner oreScanner = new OreScanner();
+            oreScanner.setToggled(rs.getBoolean("is_ore_scanner_toggled"));
+            oreScanner.setCurrentTier(rs.getInt("ore_scanner_tier"));
+            if(oreScanner.getCurrentTier() != 0) {
+              oreScanner.setUnlocked(true);
+            }
 
-        abilityMap.put(DefaultAbilities.DOUBLE_DROP, doubleDrop);
-        abilityMap.put(UnlockedAbilities.RICHER_ORES, richerOres);
-        abilityMap.put(UnlockedAbilities.ITS_A_TRIPLE, itsATriple);
-        abilityMap.put(UnlockedAbilities.REMOTE_TRANSFER, remoteTransfer);
-        abilityMap.put(UnlockedAbilities.SUPER_BREAKER, superBreaker);
-        abilityMap.put(UnlockedAbilities.BLAST_MINING, blastMining);
-        abilityMap.put(UnlockedAbilities.ORE_SCANNER, oreScanner);
+            int superBreakerCooldown = rs.getInt("super_break_cooldown");
+            int blastMiningCooldown = rs.getInt("blast_mining_cooldown");
+            int oreScannerCooldown = rs.getInt("ore_scanner_cooldown");
+            if(superBreakerCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, superBreakerCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.SUPER_BREAKER, cal.getTimeInMillis());
+            }
+            if(blastMiningCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, blastMiningCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.BLAST_MINING, cal.getTimeInMillis());
+            }
+            if(oreScannerCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, oreScannerCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.ORE_SCANNER, cal.getTimeInMillis());
+            }
+            abilityMap.put(DefaultAbilities.DOUBLE_DROP, doubleDrop);
+            abilityMap.put(UnlockedAbilities.RICHER_ORES, richerOres);
+            abilityMap.put(UnlockedAbilities.ITS_A_TRIPLE, itsATriple);
+            abilityMap.put(UnlockedAbilities.REMOTE_TRANSFER, remoteTransfer);
+            abilityMap.put(UnlockedAbilities.SUPER_BREAKER, superBreaker);
+            abilityMap.put(UnlockedAbilities.BLAST_MINING, blastMining);
+            abilityMap.put(UnlockedAbilities.ORE_SCANNER, oreScanner);
 
-        Mining mining = new Mining(playerData.getInt("Mining.Level"),
-                playerData.getInt("Mining.CurrentExp"), abilityMap, this);
-        skills.add(mining);
-      }
-      //Init unarmed
-      else if(skill.equals(Skills.UNARMED)) {
-        //Initialize Sticky Fingers
-        StickyFingers stickyFingers = new StickyFingers();
-        stickyFingers.setToggled(playerData.getBoolean("Unarmed.StickyFingers.IsToggled"));
-        //Initialize Tighter Grip
-        TighterGrip tighterGrip = new TighterGrip();
-        tighterGrip.setToggled(playerData.getBoolean("Unarmed.TighterGrip.IsToggled"));
-        tighterGrip.setCurrentTier(playerData.getInt("Unarmed.TighterGrip.Tier"));
-        if(playerData.getInt("Unarmed.TighterGrip.Tier") != 0) {
-          tighterGrip.setUnlocked(true);
+            if(rs.getBoolean("is_richer_ores_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.RICHER_ORES);
+            }
+            if(rs.getBoolean("is_its_a_triple_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.ITS_A_TRIPLE);
+            }
+            if(rs.getBoolean("is_remote_transfer_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.REMOTE_TRANSFER);
+            }
+            if(rs.getBoolean("is_super_breaker_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SUPER_BREAKER);
+            }
+            if(rs.getBoolean("is_blast_mining_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BLAST_MINING);
+            }
+            if(rs.getBoolean("is_ore_scanner_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.ORE_SCANNER);
+            }
+            Mining mining = new Mining(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(mining);
+          }
+          //Init unarmed
+          else if(skill.equals(Skills.UNARMED)) {
+            //Initialize Sticky Fingers
+            StickyFingers stickyFingers = new StickyFingers();
+            stickyFingers.setToggled(rs.getBoolean("is_sticky_fingers_toggled"));
+
+            //Initialize Tighter Grip
+            TighterGrip tighterGrip = new TighterGrip();
+            tighterGrip.setToggled(rs.getBoolean("is_tighter_grip_toggled"));
+            tighterGrip.setCurrentTier(rs.getInt("tighter_grip_tier"));
+            if(tighterGrip.getCurrentTier() != 0) {
+              tighterGrip.setUnlocked(true);
+            }
+
+            //Initialize Disarm
+            Disarm disarm = new Disarm();
+            disarm.setToggled(rs.getBoolean("is_disarm_toggled"));
+            disarm.setCurrentTier(rs.getInt("disarm_tier"));
+            if(disarm.getCurrentTier() != 0) {
+              disarm.setUnlocked(true);
+            }
+            //Initialize Iron Arm
+            IronArm ironArm = new IronArm();
+            ironArm.setToggled(rs.getBoolean("is_iron_arm_toggled"));
+            ironArm.setCurrentTier(rs.getInt("iron_arm_tier"));
+            if(ironArm.getCurrentTier() != 0) {
+              ironArm.setUnlocked(true);
+            }
+            //Initialize Berserk
+            Berserk berserk = new Berserk();
+            berserk.setToggled(rs.getBoolean("is_berserk_toggled"));
+            berserk.setCurrentTier(rs.getInt("berserk_tier"));
+            if(berserk.getCurrentTier() != 0) {
+              berserk.setUnlocked(true);
+            }
+            //Initialize Smiting Fist
+            SmitingFist smitingFist = new SmitingFist();
+            smitingFist.setToggled(rs.getBoolean("is_smiting_fist_toggled"));
+            smitingFist.setCurrentTier(rs.getInt("smiting_fist_tier"));
+            if(smitingFist.getCurrentTier() != 0) {
+              smitingFist.setUnlocked(true);
+            }
+            //Initialize Dense Impact
+            DenseImpact denseImpact = new DenseImpact();
+            denseImpact.setToggled(rs.getBoolean("is_dense_impact_toggled"));
+            denseImpact.setCurrentTier(rs.getInt("dense_impact_tier"));
+            if(denseImpact.getCurrentTier() != 0) {
+              denseImpact.setUnlocked(true);
+            }
+            int berserkCooldown = rs.getInt("berserk_cooldown");
+            int smitingFistCooldown = rs.getInt("smiting_fist_cooldown");
+            int denseImpactCooldown = rs.getInt("dense_impact_cooldown");
+
+            if(berserkCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, berserkCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.BERSERK, cal.getTimeInMillis());
+            }
+            if(smitingFistCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, smitingFistCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.SMITING_FIST, cal.getTimeInMillis());
+            }
+            if(denseImpactCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, denseImpactCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.DENSE_IMPACT, cal.getTimeInMillis());
+            }
+            abilityMap.put(DefaultAbilities.STICKY_FINGERS, stickyFingers);
+            abilityMap.put(UnlockedAbilities.TIGHTER_GRIP, tighterGrip);
+            abilityMap.put(UnlockedAbilities.DISARM, disarm);
+            abilityMap.put(UnlockedAbilities.IRON_ARM, ironArm);
+            abilityMap.put(UnlockedAbilities.BERSERK, berserk);
+            abilityMap.put(UnlockedAbilities.SMITING_FIST, smitingFist);
+            abilityMap.put(UnlockedAbilities.DENSE_IMPACT, denseImpact);
+
+            if(rs.getBoolean("is_tighter_grip_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.TIGHTER_GRIP);
+            }
+            if(rs.getBoolean("is_disarm_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DISARM);
+            }
+            if(rs.getBoolean("is_iron_arm_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.IRON_ARM);
+            }
+            if(rs.getBoolean("is_berserk_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BERSERK);
+            }
+            if(rs.getBoolean("is_smiting_fist_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SMITING_FIST);
+            }
+            if(rs.getBoolean("is_dense_impact_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DENSE_IMPACT);
+            }
+            //Create skill
+            Unarmed unarmed = new Unarmed(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(unarmed);
+          }
+          //Add herbalism
+          else if(skill.equals(Skills.HERBALISM)) {
+            //Initialize Too Many Plants
+            TooManyPlants tooManyPlants = new TooManyPlants();
+            tooManyPlants.setToggled(rs.getBoolean("is_too_many_plants_toggled"));
+            //Initialize Replanting
+            Replanting replanting = new Replanting();
+            replanting.setToggled(rs.getBoolean("is_replanting_toggled"));
+            replanting.setCurrentTier(rs.getInt("replanting_tier"));
+            if(replanting.getCurrentTier() != 0) {
+              replanting.setUnlocked(true);
+            }
+            //Initialize Farmers Diet
+            FarmersDiet farmersDiet = new FarmersDiet();
+            farmersDiet.setToggled(rs.getBoolean("is_farmers_diet_toggled"));
+            farmersDiet.setCurrentTier(rs.getInt("farmers_diet_tier"));
+            if(farmersDiet.getCurrentTier() != 0) {
+              farmersDiet.setUnlocked(true);
+            }
+            //Initialize Diamond Flowers
+            DiamondFlowers diamondFlowers = new DiamondFlowers();
+            diamondFlowers.setToggled(rs.getBoolean("is_diamond_flowers_toggled"));
+            diamondFlowers.setCurrentTier(rs.getInt("diamond_flowers_tier"));
+            if(diamondFlowers.getCurrentTier() != 0) {
+              diamondFlowers.setUnlocked(true);
+            }
+            //Initialize Mass Harvest
+            MassHarvest massHarvest = new MassHarvest();
+            massHarvest.setToggled(rs.getBoolean("is_mass_harvest_toggled"));
+            massHarvest.setCurrentTier(rs.getInt("mass_harvest_tier"));
+            if(massHarvest.getCurrentTier() != 0) {
+              massHarvest.setUnlocked(true);
+            }
+            //Initialize Pans Blessing
+            PansBlessing pansBlessing = new PansBlessing();
+            pansBlessing.setToggled(rs.getBoolean("is_pans_blessing_toggled"));
+            pansBlessing.setCurrentTier(rs.getInt("pans_blessing_tier"));
+            if(pansBlessing.getCurrentTier() != 0) {
+              pansBlessing.setUnlocked(true);
+            }
+            //Initialize Natures Wrath
+            NaturesWrath naturesWrath = new NaturesWrath();
+            naturesWrath.setToggled(rs.getBoolean("is_natures_wrath_toggled"));
+            naturesWrath.setCurrentTier(rs.getInt("natures_wrath_tier"));
+            if(naturesWrath.getCurrentTier() != 0) {
+              naturesWrath.setUnlocked(true);
+            }
+
+            int massHarvestCooldown = rs.getInt("mass_harvest_cooldown");
+            int pansBlessingCooldown = rs.getInt("pans_blessing_cooldown");
+            //We dont need to care about natures wrath cooldown since its an instantaneous ability. Leaving supporting code in just in case
+            if(massHarvestCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, massHarvestCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.MASS_HARVEST, cal.getTimeInMillis());
+            }
+            if(pansBlessingCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, pansBlessingCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.PANS_BLESSING, cal.getTimeInMillis());
+            }
+
+            if(rs.getBoolean("is_replanting_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.REPLANTING);
+            }
+            if(rs.getBoolean("is_farmers_diet_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.FARMERS_DIET);
+            }
+            if(rs.getBoolean("is_diamond_flowers_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DIAMOND_FLOWERS);
+            }
+            if(rs.getBoolean("is_mass_harvest_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.MASS_HARVEST);
+            }
+            if(rs.getBoolean("is_pans_blessing_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.PANS_BLESSING);
+            }
+            if(rs.getBoolean("is_natures_wrath_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.NATURES_WRATH);
+            }
+            abilityMap.put(DefaultAbilities.TOO_MANY_PLANTS, tooManyPlants);
+            abilityMap.put(UnlockedAbilities.REPLANTING, replanting);
+            abilityMap.put(UnlockedAbilities.FARMERS_DIET, farmersDiet);
+            abilityMap.put(UnlockedAbilities.DIAMOND_FLOWERS, diamondFlowers);
+            abilityMap.put(UnlockedAbilities.MASS_HARVEST, massHarvest);
+            abilityMap.put(UnlockedAbilities.PANS_BLESSING, pansBlessing);
+            abilityMap.put(UnlockedAbilities.NATURES_WRATH, naturesWrath);
+            //Create skill
+            Herbalism herbalism = new Herbalism(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(herbalism);
+          }
+          //init archery
+          else if(skill.equals(Skills.ARCHERY)) {
+            //Initialize Daze
+            Daze daze = new Daze();
+            daze.setToggled(rs.getBoolean("is_daze_toggled"));
+            //Initialize Combo
+            Combo combo = new Combo();
+            combo.setToggled(rs.getBoolean("is_combo_toggled"));
+            combo.setCurrentTier(rs.getInt("combo_tier"));
+            if(combo.getCurrentTier() != 0) {
+              combo.setUnlocked(true);
+            }
+            //Initialize Puncture
+            Puncture puncture = new Puncture();
+            puncture.setToggled(rs.getBoolean("is_puncture_toggled"));
+            puncture.setCurrentTier(rs.getInt("puncture_tier"));
+            if(puncture.getCurrentTier() != 0) {
+              puncture.setUnlocked(true);
+            }
+            //Initialize Tipped Arrows
+            TippedArrows tippedArrows = new TippedArrows();
+            tippedArrows.setToggled(rs.getBoolean("is_tipped_arrows_toggled"));
+            tippedArrows.setCurrentTier(rs.getInt("tipped_arrows_tier"));
+            if(tippedArrows.getCurrentTier() != 0) {
+              tippedArrows.setUnlocked(true);
+            }
+            //Initialize Blessing of Apollo
+            BlessingOfApollo blessingOfApollo = new BlessingOfApollo();
+            blessingOfApollo.setToggled(rs.getBoolean("is_blessing_of_apollo_toggled"));
+            blessingOfApollo.setCurrentTier(rs.getInt("blessing_of_apollo_tier"));
+            if(blessingOfApollo.getCurrentTier() != 0) {
+              blessingOfApollo.setUnlocked(true);
+            }
+            //Initialize Blessing of Artemis
+            BlessingOfArtemis blessingOfArtemis = new BlessingOfArtemis();
+            blessingOfArtemis.setToggled(rs.getBoolean("is_blessing_of_artemis_toggled"));
+            blessingOfArtemis.setCurrentTier(rs.getInt("blessing_of_artemis_tier"));
+            if(blessingOfArtemis.getCurrentTier() != 0) {
+              blessingOfArtemis.setUnlocked(true);
+            }
+            //Initialize Curse of Hades
+            CurseOfHades curseOfHades = new CurseOfHades();
+            curseOfHades.setToggled(rs.getBoolean("is_curse_of_hades_toggled"));
+            curseOfHades.setCurrentTier(rs.getInt("curse_of_hades_tier"));
+            if(curseOfHades.getCurrentTier() != 0) {
+              curseOfHades.setUnlocked(true);
+            }
+
+            int blessingOfApolloCooldown = rs.getInt("blessing_of_apollo_cooldown");
+            int blessingOfArtemisCooldown = rs.getInt("blessing_of_artemis_cooldown");
+            int curseOfHadesCooldown = rs.getInt("curse_of_hades_cooldown");
+
+            if(blessingOfApolloCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, blessingOfApolloCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.BLESSING_OF_APOLLO, cal.getTimeInMillis());
+            }
+            if(blessingOfArtemisCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, blessingOfArtemisCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.BLESSING_OF_ARTEMIS, cal.getTimeInMillis());
+            }
+            if(curseOfHadesCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, curseOfHadesCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.CURSE_OF_HADES, cal.getTimeInMillis());
+            }
+
+            if(rs.getBoolean("is_combo_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.COMBO);
+            }
+            if(rs.getBoolean("is_puncture_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.PUNCTURE);
+            }
+            if(rs.getBoolean("is_tipped_arrows_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.TIPPED_ARROWS);
+            }
+            if(rs.getBoolean("is_blessing_of_apollo_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BLESSING_OF_APOLLO);
+            }
+            if(rs.getBoolean("is_blessing_of_artemis_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BLESSING_OF_ARTEMIS);
+            }
+            if(rs.getBoolean("is_curse_of_hades_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CURSE_OF_HADES);
+            }
+            abilityMap.put(DefaultAbilities.DAZE, daze);
+            abilityMap.put(UnlockedAbilities.COMBO, combo);
+            abilityMap.put(UnlockedAbilities.PUNCTURE, puncture);
+            abilityMap.put(UnlockedAbilities.TIPPED_ARROWS, tippedArrows);
+            abilityMap.put(UnlockedAbilities.BLESSING_OF_APOLLO, blessingOfApollo);
+            abilityMap.put(UnlockedAbilities.BLESSING_OF_ARTEMIS, blessingOfArtemis);
+            abilityMap.put(UnlockedAbilities.CURSE_OF_HADES, curseOfHades);
+            Archery archery = new Archery(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(archery);
+          }
+        } catch(SQLException e) {
+          e.printStackTrace();
         }
-        //Initialize Disarm
-        Disarm disarm = new Disarm();
-        disarm.setToggled(playerData.getBoolean("Unarmed.Disarm.IsToggled"));
-        disarm.setCurrentTier(playerData.getInt("Unarmed.Disarm.Tier"));
-        if(playerData.getInt("Unarmed.Disarm.Tier") != 0) {
-          disarm.setUnlocked(true);
+      });
+    });
+
+
+
+    final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
+    loadoutSet.ifPresent(rs -> {
+      try {
+        for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("Configuration.PlayerConfiguration.AmountOfTotalAbilities"); i++) {
+          //It has to be an unlocked ability since default ones cant be in the loadout
+          String s = rs.getString("Slot" + i);
+          if(s == null || s.equalsIgnoreCase("")) {
+            continue;
+          }
+          UnlockedAbilities ability = UnlockedAbilities.fromString(s);
+          abilityLoadout.add(ability);
         }
-        //Initialize Iron Arm
-        IronArm ironArm = new IronArm();
-        ironArm.setToggled(playerData.getBoolean("Unarmed.IronArm.IsToggled"));
-        ironArm.setCurrentTier(playerData.getInt("Unarmed.IronArm.Tier"));
-        if(playerData.getInt("Unarmed.IronArm.Tier") != 0) {
-          ironArm.setUnlocked(true);
-        }
-        //Initialize Berserk
-        Berserk berserk = new Berserk();
-        berserk.setToggled(playerData.getBoolean("Unarmed.Berserk.IsToggled"));
-        berserk.setCurrentTier(playerData.getInt("Unarmed.Berserk.Tier"));
-        if(playerData.getInt("Unarmed.Berserk.Tier") != 0) {
-          berserk.setUnlocked(true);
-        }
-        //Initialize Smiting Fist
-        SmitingFist smitingFist = new SmitingFist();
-        smitingFist.setToggled(playerData.getBoolean("Unarmed.SmitingFist.IsToggled"));
-        smitingFist.setCurrentTier(playerData.getInt("Unarmed.SmitingFist.Tier"));
-        if(playerData.getInt("Unarmed.SmitingFist.Tier") != 0) {
-          smitingFist.setUnlocked(true);
-        }
-        //Initialize Dense Impact
-        DenseImpact denseImpact = new DenseImpact();
-        denseImpact.setToggled(playerData.getBoolean("Unarmed.DenseImpact.IsToggled"));
-        denseImpact.setCurrentTier(playerData.getInt("Unarmed.DenseImpact.Tier"));
-        if(playerData.getInt("Unarmed.DenseImpact.Tier") != 0) {
-          denseImpact.setUnlocked(true);
-        }
-        abilityMap.put(DefaultAbilities.STICKY_FINGERS, stickyFingers);
-        abilityMap.put(UnlockedAbilities.TIGHTER_GRIP, tighterGrip);
-        abilityMap.put(UnlockedAbilities.DISARM, disarm);
-        abilityMap.put(UnlockedAbilities.IRON_ARM, ironArm);
-        abilityMap.put(UnlockedAbilities.BERSERK, berserk);
-        abilityMap.put(UnlockedAbilities.SMITING_FIST, smitingFist);
-        abilityMap.put(UnlockedAbilities.DENSE_IMPACT, denseImpact);
-        //Create skill
-        Unarmed unarmed = new Unarmed(playerData.getInt("Unarmed.Level"),
-                playerData.getInt("Unarmed.CurrentExp"), abilityMap, this);
-        skills.add(unarmed);
-      }
-      //Add herbalism
-      else if(skill.equals(Skills.HERBALISM)) {
-        //Initialize Too Many Plants
-        TooManyPlants tooManyPlants = new TooManyPlants();
-        tooManyPlants.setToggled(playerData.getBoolean("Herbalism.TooManyPlants.IsToggled"));
-        //Initialize Replanting
-        Replanting replanting = new Replanting();
-        replanting.setToggled(playerData.getBoolean("Herbalism.Replanting.IsToggled"));
-        replanting.setCurrentTier(playerData.getInt("Herbalism.Replanting.Tier"));
-        if(playerData.getInt("Herbalism.Replanting.Tier") != 0) {
-          replanting.setUnlocked(true);
-        }
-        //Initialize Farmers Diet
-        FarmersDiet farmersDiet = new FarmersDiet();
-        farmersDiet.setToggled(playerData.getBoolean("Herbalism.FarmersDiet.IsToggled"));
-        farmersDiet.setCurrentTier(playerData.getInt("Herbalism.FarmersDiet.Tier"));
-        if(playerData.getInt("Herbalism.FarmersDiet.Tier") != 0) {
-          farmersDiet.setUnlocked(true);
-        }
-        //Initialize Diamond Flowers
-        DiamondFlowers diamondFlowers = new DiamondFlowers();
-        diamondFlowers.setToggled(playerData.getBoolean("Herbalism.DiamondFlowers.IsToggled"));
-        diamondFlowers.setCurrentTier(playerData.getInt("Herbalism.DiamondFlowers.Tier"));
-        if(playerData.getInt("Herbalism.DiamondFlowers.Tier") != 0) {
-          diamondFlowers.setUnlocked(true);
-        }
-        //Initialize Mass Harvest
-        MassHarvest massHarvest = new MassHarvest();
-        massHarvest.setToggled(playerData.getBoolean("Herbalism.MassHarvest.IsToggled"));
-        massHarvest.setCurrentTier(playerData.getInt("Herbalism.MassHarvest.Tier"));
-        if(playerData.getInt("Herbalism.MassHarvest.Tier") != 0) {
-          massHarvest.setUnlocked(true);
-        }
-        //Initialize Pans Blessing
-        PansBlessing pansBlessing = new PansBlessing();
-        pansBlessing.setToggled(playerData.getBoolean("Herbalism.PansBlessing.IsToggled"));
-        pansBlessing.setCurrentTier(playerData.getInt("Herbalism.PansBlessing.Tier"));
-        if(playerData.getInt("Herbalism.PansBlessing.Tier") != 0) {
-          pansBlessing.setUnlocked(true);
-        }
-        //Initialize Natures Wrath
-        NaturesWrath naturesWrath = new NaturesWrath();
-        naturesWrath.setToggled(playerData.getBoolean("Herbalism.NaturesWrath.IsToggled"));
-        naturesWrath.setCurrentTier(playerData.getInt("Herbalism.NaturesWrath.Tier"));
-        if(playerData.getInt("Herbalism.NaturesWrath.Tier") != 0) {
-          naturesWrath.setUnlocked(true);
-        }
-        abilityMap.put(DefaultAbilities.TOO_MANY_PLANTS, tooManyPlants);
-        abilityMap.put(UnlockedAbilities.REPLANTING, replanting);
-        abilityMap.put(UnlockedAbilities.FARMERS_DIET, farmersDiet);
-        abilityMap.put(UnlockedAbilities.DIAMOND_FLOWERS, diamondFlowers);
-        abilityMap.put(UnlockedAbilities.MASS_HARVEST, massHarvest);
-        abilityMap.put(UnlockedAbilities.PANS_BLESSING, pansBlessing);
-        abilityMap.put(UnlockedAbilities.NATURES_WRATH, naturesWrath);
-        //Create skill
-        Herbalism herbalism = new Herbalism(playerData.getInt("Herbalism.Level"),
-                playerData.getInt("Herbalism.CurrentExp"), abilityMap, this);
-        skills.add(herbalism);
-      }
-      //init archery
-      else if(skill.equals(Skills.ARCHERY)) {
-        //Initialize Daze
-        Daze daze = new Daze();
-        daze.setToggled(playerData.getBoolean("Archery.Daze.IsToggled"));
-        //Initialize Combo
-        Combo combo = new Combo();
-        combo.setToggled(playerData.getBoolean("Archery.Combo.IsToggled"));
-        combo.setCurrentTier(playerData.getInt("Archery.Combo.Tier"));
-        if(playerData.getInt("Archery.Combo.Tier") != 0) {
-          combo.setUnlocked(true);
-        }
-        //Initialize Puncture
-        Puncture puncture = new Puncture();
-        puncture.setToggled(playerData.getBoolean("Archery.Puncture.IsToggled"));
-        puncture.setCurrentTier(playerData.getInt("Archery.Puncture.Tier"));
-        if(playerData.getInt("Archery.Puncture.Tier") != 0) {
-          puncture.setUnlocked(true);
-        }
-        //Initialize Tipped Arrows
-        TippedArrows tippedArrows = new TippedArrows();
-        tippedArrows.setToggled(playerData.getBoolean("Archery.TippedArrows.IsToggled"));
-        tippedArrows.setCurrentTier(playerData.getInt("Archery.TippedArrows.Tier"));
-        if(playerData.getInt("Archery.TippedArrows.Tier") != 0) {
-          tippedArrows.setUnlocked(true);
-        }
-        //Initialize Blessing of Apollo
-        BlessingOfApollo blessingOfApollo = new BlessingOfApollo();
-        blessingOfApollo.setToggled(playerData.getBoolean("Archery.BlessingOfApollo.IsToggled"));
-        blessingOfApollo.setCurrentTier(playerData.getInt("Archery.BlessingOfApollo.Tier"));
-        if(playerData.getInt("Archery.BlessingOfApollo.Tier") != 0) {
-          blessingOfApollo.setUnlocked(true);
-        }
-        //Initialize Blessing of Artemis
-        BlessingOfArtemis blessingOfArtemis = new BlessingOfArtemis();
-        blessingOfArtemis.setToggled(playerData.getBoolean("Archery.BlessingOfArtemis.IsToggled"));
-        blessingOfArtemis.setCurrentTier(playerData.getInt("Archery.BlessingOfArtemis.Tier"));
-        if(playerData.getInt("Archery.BlessingOfArtemis.Tier") != 0) {
-          blessingOfArtemis.setUnlocked(true);
-        }
-        //Initialize Curse of Hades
-        CurseOfHades curseOfHades = new CurseOfHades();
-        curseOfHades.setToggled(playerData.getBoolean("Archery.CurseOfHades.IsToggled"));
-        curseOfHades.setCurrentTier(playerData.getInt("Archery.CurseOfHades.Tier"));
-        if(playerData.getInt("Archery.CurseOfHades.Tier") != 0) {
-          curseOfHades.setUnlocked(true);
-        }
-        abilityMap.put(DefaultAbilities.DAZE, daze);
-        abilityMap.put(UnlockedAbilities.COMBO, combo);
-        abilityMap.put(UnlockedAbilities.PUNCTURE, puncture);
-        abilityMap.put(UnlockedAbilities.TIPPED_ARROWS, tippedArrows);
-        abilityMap.put(UnlockedAbilities.BLESSING_OF_APOLLO, blessingOfApollo);
-        abilityMap.put(UnlockedAbilities.BLESSING_OF_ARTEMIS, blessingOfArtemis);
-        abilityMap.put(UnlockedAbilities.CURSE_OF_HADES, curseOfHades);
-        Archery archery = new Archery(playerData.getInt("Archery.Level"),
-                playerData.getInt("Archery.CurrentExp"), abilityMap, this);
-        skills.add(archery);
+      } catch(SQLException e) {
+        e.printStackTrace();
       }
     });
-    for(String s : playerData.getStringList("AbilityLoadout")) {
-      //It has to be an unlocked ability since default ones cant be in the loadout
-      UnlockedAbilities ability = UnlockedAbilities.fromString(s);
-      abilityLoadout.add(ability);
-    }
-    if(playerData.contains("Cooldowns")) {
-      for(String s : playerData.getConfigurationSection("Cooldowns").getKeys(false)) {
-        UnlockedAbilities ab = UnlockedAbilities.fromString(s);
-        int cooldown = playerData.getInt("Cooldowns." + s);
-        if(cooldown <= 0) {
-          continue;
-        }
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.SECOND, cooldown);
-        abilitiesOnCooldown.put(ab, cal.getTimeInMillis());
-      }
-    }
-    if(playerData.contains("ReplaceAbilityCooldown")) {
-      int cooldown = playerData.getInt("ReplaceAbilityCooldown");
-      if(cooldown > 0) {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.SECOND, cooldown);
-        this.endTimeForReplaceCooldown = cal.getTimeInMillis();
-      }
-    }
     updatePowerLevel();
     for(Skill s : skills) {
       s.updateExpToLevel();
@@ -753,91 +900,114 @@ public class McRPGPlayer {
         toRemove.add(ability);
       }
     }
+    Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     if(!toRemove.isEmpty()) {
       for(UnlockedAbilities ab : toRemove) {
-        playerData.set("Cooldowns." + ab.getName(), null);
+        database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().toLowerCase() + "_data SET "
+                + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
         abilitiesOnCooldown.remove(ab);
       }
     }
     long timeToEnd = this.endTimeForReplaceCooldown;
     if(timeToEnd != 0 && Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
-      playerData.set("ReplaceAbilityCooldown", null);
       this.endTimeForReplaceCooldown = 0;
       if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
         this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
       }
-    }
-    try {
-      playerData.save(playerFile);
-    } catch(IOException e) {
-      e.printStackTrace();
+      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
     }
   }
 
   public void resetCooldowns() {
+    Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
+    for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()) {
+      long timeToEnd = abilitiesOnCooldown.get(ability);
+      if(Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
+        if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
+          this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+                  McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
+        }
+        database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
+                + "_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+
+      }
+    }
     abilitiesOnCooldown.clear();
     endTimeForReplaceCooldown = 0;
-    playerData.set("Cooldowns.placeholder", null);
-    playerData.set("ReplaceAbilityCooldown.void", null);
+    database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+    if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
+      this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
+              McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
+    }
   }
 
   /**
    * Save players data
    */
   public void saveData() {
+    Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     for(Skills type : Skills.values()) {
       Skill skill = getSkill(type);
-      playerData.set(type.getName() + ".Level", skill.getCurrentLevel());
-      playerData.set(type.getName() + ".CurrentExp", skill.getCurrentExp());
-      skill.getAbilityKeys().forEach(ability -> {
+      @Language("SQL") String query = "UPDATE mcrpg_" + skill.getName().toLowerCase() + "_data SET current_level = " + skill.getCurrentLevel() + ", current_exp = " + skill.getCurrentExp();
+      for(GenericAbility ability : skill.getAbilityKeys()) {
         if(ability instanceof DefaultAbilities) {
-          playerData.set(type.getName() + "." + ability.getName().replace(" ", "").replace("_", "") + ".IsToggled", skill.getDefaultAbility().isToggled());
+          query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_toggled = " + Methods.convertBool(skill.getAbility(ability).isToggled());
         }
         if(ability instanceof UnlockedAbilities) {
-          playerData.set(type.getName() + "." + ability.getName() + ".Tier", skill.getAbility(ability).getCurrentTier());
-          playerData.set(type.getName() + "." + ability.getName() + ".IsToggled", skill.getAbility(ability).isToggled());
+          query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_toggled = " + Methods.convertBool(skill.getAbility(ability).isToggled());
+          query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = " + Methods.convertBool(pendingUnlockAbilities.contains(ability));
+          query += ", " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_tier = " + skill.getAbility(ability).getCurrentTier();
         }
         Calendar cal = Calendar.getInstance();
         if(abilitiesOnCooldown.containsKey(ability)) {
           Calendar temp = Calendar.getInstance();
           temp.setTimeInMillis(abilitiesOnCooldown.get(ability));
           int seconds = (int) (temp.getTimeInMillis() - cal.getTimeInMillis()) / 1000;
-          playerData.set("Cooldowns." + ability.getName(), seconds);
+          query += ", " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = " + seconds;
         }
-      });
+      }
+      query += " WHERE uuid = `" + this.uuid.toString() + "`";
+      database.executeUpdate(query);
     }
     if(endTimeForReplaceCooldown != 0) {
       Calendar temp = Calendar.getInstance();
       temp.setTimeInMillis(endTimeForReplaceCooldown);
       int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
-      playerData.set("ReplaceAbilityCooldown", seconds);
+      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = `" + uuid.toString() + "`");
     }
-    RemoteTransfer remoteTransfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
-    if(remoteTransfer.getLinkedChestLocation() != null) {
-      playerData.set("Mining.RemoteTransfer.LinkedLocation", remoteTransfer.getLinkedChestLocation());
+    @Language("SQL") String query = "UPDATE mcrpg_player_settings SET keep_hand = " + Methods.convertBool(keepHandEmpty)
+            + ", ignore_tips = " + Methods.convertBool(ignoreTips) + " auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = `" + displayType.getName() +
+            "`, health_type = `" + healthbarType.getName() + "` WHERE uuid = `" + uuid.toString() + "`";
+    database.executeQuery(query);
+    for(UnlockedAbilities ability : pendingUnlockAbilities){
+      query = "UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
+              " WHERE uuid = `" + uuid.toString() + "`";
+      database.executeQuery(query);
     }
-    else {
-      playerData.set("Mining.RemoteTransfer.LinkedLocation", 0);
+    @Language("SQL") String loadoutQuery = "UPDATE mcrpg_player_loadout SET";
+    for(int i = 1; i <= abilityLoadout.size(); i++) {
+      if(i != 1){
+        loadoutQuery += ",";
+      }
+      loadoutQuery += " Slot" + i + " = `" + abilityLoadout.get(i - 1).getName() + "`";
+
     }
-    if(abilitiesOnCooldown.isEmpty()) {
-      playerData.set("Cooldowns.placeholder", null);
-    }
-    playerData.set("DisplayType", displayType.getName());
-    playerData.set("KeepHandEmpty", keepHandEmpty);
-    playerData.set("AutoDeny", autoDeny);
-    playerData.set("AbilityPoints", abilityPoints);
-    playerData.set("PendingAbilitiesUnlocked", pendingUnlockAbilities.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
-    playerData.set("AbilityLoadout", abilityLoadout.stream().map(UnlockedAbilities::getName).collect(Collectors.toList()));
+    loadoutQuery += " WHERE uuid = ``" + uuid.toString() + "`";
+    database.executeQuery(loadoutQuery);
 
     RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
-    for(Material mat : transfer.getItemsToSync().keySet()) {
-      playerData.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
-    }
-    try {
-      playerData.save(playerFile);
-    } catch(IOException e) {
-      e.printStackTrace();
+    if(transfer.isUnlocked()) {
+      File remoteTransferFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
+      FileConfiguration data = YamlConfiguration.loadConfiguration(remoteTransferFile);
+      for(Material mat : transfer.getItemsToSync().keySet()) {
+        data.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
+      }
+      try {
+        data.save(remoteTransferFile);
+      } catch(IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 
