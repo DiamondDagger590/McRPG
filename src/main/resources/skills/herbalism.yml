@@ -78,12 +78,12 @@ UsePermsForAbilites:
   PansBlessing: false
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
-  DiamondFlowers: 400
-  Replanting: 125
+  DiamondFlowers: 250
+  Replanting: 150
   FarmersDiet: 50
-  MassHarvest: 225
-  NaturesWrath: 500
-  PansBlessing: 350
+  MassHarvest: 200
+  NaturesWrath: 300
+  PansBlessing: 100
 #
 # Too Many Plants is the default ability that every player has. This ability will increase every time the players Herbalism level is increased
 #
@@ -121,10 +121,10 @@ FarmersDietConfig:
     - 'BREAD'
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 175
-    TierIII: 300
-    TierIV: 425
-    TierV: 650
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
   TierI:
     #The chance boost from richer ores
     FoodRestorationBonus: 0
@@ -162,10 +162,10 @@ DiamondFlowersConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 550
-    TierIII: 700
-    TierIV: 850
-    TierV: 1000
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
   #Config for each Tier
   TierI:
     #What categories the ability can get loot from
@@ -363,10 +363,10 @@ ReplantingConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 450
-    TierIV: 600
-    TierV: 750
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
   #Config for each tier
   TierI:
     #Odds of activation per tier
@@ -416,10 +416,10 @@ MassHarvestConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 400
-    TierIII: 525
+    TierII: 350
+    TierIII: 500
     TierIV: 650
-    TierV: 775
+    TierV: 800
   #Config for each tier
   TierI:
     #Range of the ability
@@ -460,8 +460,8 @@ NaturesWrathConfig:
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 475
-    TierIII: 600
-    TierIV: 725
+    TierIII: 650
+    TierIV: 825
     TierV: 1000
   #Config for each tier
   TierI:
@@ -544,10 +544,10 @@ PansBlessingConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 450
-    TierIII: 575
-    TierIV: 700
-    TierV: 850
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
   #Config for each tier
   TierI:
     #Radius for the plugin to check

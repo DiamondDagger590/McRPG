@@ -90,11 +90,11 @@ UsePermsForAbilites:
 #At what archery level should these abilities be unlocked at
 UnlockLevelForAbility:
   Puncture: 50
-  TippedArrows: 250
-  Combo: 400
-  BlessingOfArtemis: 150
-  BlessingOfApollo: 350
-  CurseOfHades: 425
+  TippedArrows: 150
+  Combo: 250
+  BlessingOfArtemis: 100
+  BlessingOfApollo: 200
+  CurseOfHades: 300
 #
 # Daze is the default ability that every player has. This ability will increase every time the players Archery level is increased
 #
@@ -128,10 +128,10 @@ PunctureConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 175
-    TierIII: 300
-    TierIV: 425
-    TierV: 650
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
   TierI:
     #The chance of Puncture occurring per tier
     ActivationChance: 4.0
@@ -162,8 +162,8 @@ TippedArrowsConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 450
+    TierII: 275
+    TierIII: 425
     TierIV: 575
     TierV: 700
   #Config for each Tier
@@ -214,10 +214,10 @@ ComboConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 550
-    TierIII: 700
-    TierIV: 850
-    TierV: 1000
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
   #Config for each tier
   TierI:
     #How long in between shots will this ability wait
@@ -263,10 +263,10 @@ BlessingOfArtemisConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
-    TierIII: 600
-    TierIV: 725
-    TierV: 850
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
   #Config for each tier
   TierI:
     #How long should invis last for in seconds
@@ -311,10 +311,10 @@ BlessingOfApolloConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 300
-    TierIII: 450
-    TierIV: 550
-    TierV: 650
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
   #Config for each tier
   TierI:
     #How long should the player get fire resistance for
@@ -357,10 +357,10 @@ CurseOfHadesConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 550
-    TierIII: 675
-    TierIV: 800
-    TierV: 950
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
   #Config for each tier
   TierI:
     WitherDuration: 5

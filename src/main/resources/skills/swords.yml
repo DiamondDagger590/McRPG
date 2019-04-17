@@ -94,11 +94,11 @@ UsePermsForAbilites:
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
   Bleed+: 50
-  DeeperWound: 250
-  Vampire: 400
-  RageSpike: 150
-  SerratedStrikes: 350
-  TaintedBlade: 425
+  DeeperWound: 150
+  Vampire: 250
+  RageSpike: 100
+  SerratedStrikes: 200
+  TaintedBlade: 300
 #
 # Bleed is the default ability that every player has. This ability will increase every time the players Swords level is increased
 #
@@ -140,10 +140,10 @@ Bleed+Config:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 175
-    TierIII: 300
-    TierIV: 425
-    TierV: 650
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
   TierI:
     #The chance of Bleed_ occurring per tier
     ActivationChance: 15.0
@@ -182,8 +182,8 @@ DeeperWoundConfig:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 450
+    TierII: 275
+    TierIII: 425
     TierIV: 575
     TierV: 700
 #Config for each Tier
@@ -225,10 +225,10 @@ VampireConfig:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 550
-    TierIII: 700
-    TierIV: 850
-    TierV: 1000
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
 #Config for each tier
   TierI:
 #Odds of activation per tier
@@ -268,10 +268,10 @@ SerratedStrikesConfig:
   TierAmount: 5
 #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
-    TierIII: 600
-    TierIV: 725
-    TierV: 850
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
 #Config for each tier
   TierI:
 #How much should the activation rate be boosted at each tier
@@ -314,9 +314,9 @@ RageSpikeConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 300
-    TierIII: 450
-    TierIV: 550
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
     TierV: 650
   #Config for each tier
   TierI:
@@ -363,10 +363,10 @@ TaintedBladeConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 550
-    TierIII: 675
-    TierIV: 800
-    TierV: 950
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
   #Config for each tier
   TierI:
     StrengthDuration: 5
