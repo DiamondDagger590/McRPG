@@ -197,25 +197,38 @@ public class McRPGPlayer {
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
 
-
-    boolean isNew = !playerDataSet.isPresent();
+    boolean isNew = false;
+    try {
+      if(playerDataSet.isPresent()) {
+        isNew = !playerDataSet.get().next();
+      }
+      else {
+        isNew = true;
+      }
+    } catch(SQLException e) {
+      e.printStackTrace();
+    }
     if(isNew) {
       for(Skills type : Skills.values()) {
         @Language("SQL") String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
-        database.executeQuery(query);
+        database.executeUpdate(query);
       }
       @Language("SQL") String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
-      database.executeQuery(query);
-      query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES (`" + uuid.toString() + "`)";
-      database.executeQuery(query);
+      database.executeUpdate(query);
+      query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES ('" + uuid.toString() + "')";
+      database.executeUpdate(query);
       query = "INSERT INTO MCRPG_LOADOUT (UUID) VALUES ('" + uuid.toString() + "')";
-      database.executeQuery(query);
+      database.executeUpdate(query);
       playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
+      try {
+        playerDataSet.get().next();
+      } catch(SQLException e) {
+        e.printStackTrace();
+      }
     }
     playerDataSet.ifPresent(resultSet -> {
       try {
-        if(resultSet.next()) {
-          System.out.println(resultSet.toString());
+        //if(resultSet.next()) {
           this.abilityPoints = resultSet.getInt("ability_points");
           this.redeemableExp = resultSet.getInt("redeemable_exp");
           this.redeemableLevels = resultSet.getInt("redeemable_levels");
@@ -224,7 +237,7 @@ public class McRPGPlayer {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND, replaceCooldown);
             this.endTimeForReplaceCooldown = cal.getTimeInMillis();
-          }
+          //}
         }
       } catch(SQLException e) {
         e.printStackTrace();
@@ -235,7 +248,6 @@ public class McRPGPlayer {
     settingsSet.ifPresent(rs -> {
       try {
         if(rs.next()) {
-
           this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(rs.getString("health_type"));
           this.keepHandEmpty = rs.getBoolean("keep_hand");
           this.displayType = DisplayType.fromString(rs.getString("display_type"));
@@ -251,13 +263,19 @@ public class McRPGPlayer {
     Arrays.stream(Skills.values()).forEach(skill -> {
       HashMap<GenericAbility, BaseAbility> abilityMap = new HashMap<>();
       Optional<ResultSet> skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
-      if(!skillSet.isPresent()){
-        @Language("SQL") String query = "INSERT INTO mcrpg_" + skill.getName().toLowerCase() + "_data (uuid) VALUES (`" + uuid.toString() + "`)";
-        database.executeQuery(query);
-        skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
+      try {
+        if(!skillSet.isPresent() || !skillSet.get().next()) {
+          @Language("SQL") String query = "INSERT INTO mcrpg_" + skill.getName().toLowerCase() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
+          database.executeUpdate(query);
+          skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
+          skillSet.get().next();
+        }
+      } catch(SQLException e) {
+        e.printStackTrace();
       }
       skillSet.ifPresent(rs -> {
         try {
+          //if(rs.next()) {
           if(skill.equals(Skills.SWORDS)) {
             //Initialize bleed
             Bleed bleed = new Bleed();
@@ -383,8 +401,9 @@ public class McRPGPlayer {
             remoteTransfer.setCurrentTier(rs.getInt("remote_transfer_tier"));
             if(remoteTransfer.getCurrentTier() != 0) {
               remoteTransfer.setUnlocked(true);
+              remoteTransfer.updateBlocks();
             }
-            if(RemoteTransferTracker.isTracked(uuid)){
+            if(RemoteTransferTracker.isTracked(uuid)) {
               remoteTransfer.setLinkedChestLocation(RemoteTransferTracker.getLocation(uuid));
             }
             File file = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
@@ -394,7 +413,6 @@ public class McRPGPlayer {
                 remoteTransfer.getItemsToSync().put(Material.getMaterial(s), remoteTransferFile.getBoolean("RemoteTransferBlocks." + s));
               }
             }
-            remoteTransfer.updateBlocks();
 
 
             //Initialize SuperBreaker
@@ -757,6 +775,7 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(archery);
           }
+          //}
         } catch(SQLException e) {
           e.printStackTrace();
         }
@@ -764,18 +783,19 @@ public class McRPGPlayer {
     });
 
 
-
     final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
     loadoutSet.ifPresent(rs -> {
       try {
-        for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("Configuration.PlayerConfiguration.AmountOfTotalAbilities"); i++) {
-          //It has to be an unlocked ability since default ones cant be in the loadout
-          String s = rs.getString("Slot" + i);
-          if(s == null || s.equalsIgnoreCase("")) {
-            continue;
+        if(rs.next()) {
+          for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("Configuration.PlayerConfiguration.AmountOfTotalAbilities"); i++) {
+            //It has to be an unlocked ability since default ones cant be in the loadout
+            String s = rs.getString("Slot" + i);
+            if(s == null || s.equalsIgnoreCase("")) {
+              continue;
+            }
+            UnlockedAbilities ability = UnlockedAbilities.fromString(s);
+            abilityLoadout.add(ability);
           }
-          UnlockedAbilities ability = UnlockedAbilities.fromString(s);
-          abilityLoadout.add(ability);
         }
       } catch(SQLException e) {
         e.printStackTrace();
@@ -967,34 +987,37 @@ public class McRPGPlayer {
           query += ", " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = " + seconds;
         }
       }
-      query += " WHERE uuid = `" + this.uuid.toString() + "`";
+      query += " WHERE uuid = '" + this.uuid.toString() + "'";
       database.executeUpdate(query);
     }
     if(endTimeForReplaceCooldown != 0) {
       Calendar temp = Calendar.getInstance();
       temp.setTimeInMillis(endTimeForReplaceCooldown);
       int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
-      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = `" + uuid.toString() + "`");
+      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = '" + uuid.toString() + "'");
     }
+    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + " WHERE uuid = '" + uuid.toString() + "'");
     @Language("SQL") String query = "UPDATE mcrpg_player_settings SET keep_hand = " + Methods.convertBool(keepHandEmpty)
-            + ", ignore_tips = " + Methods.convertBool(ignoreTips) + " auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = `" + displayType.getName() +
-            "`, health_type = `" + healthbarType.getName() + "` WHERE uuid = `" + uuid.toString() + "`";
-    database.executeQuery(query);
-    for(UnlockedAbilities ability : pendingUnlockAbilities){
+            + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
+            "', health_type = '" + healthbarType.getName() + "' WHERE uuid = '" + uuid.toString() + "'";
+    database.executeUpdate(query);
+    for(UnlockedAbilities ability : pendingUnlockAbilities) {
       query = "UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
-              " WHERE uuid = `" + uuid.toString() + "`";
-      database.executeQuery(query);
+              " WHERE uuid = '" + uuid.toString() + "'";
+      database.executeUpdate(query);
     }
-    @Language("SQL") String loadoutQuery = "UPDATE mcrpg_player_loadout SET";
+    @Language("SQL") String loadoutQuery = "UPDATE mcrpg_loadout SET";
     for(int i = 1; i <= abilityLoadout.size(); i++) {
-      if(i != 1){
+      if(i != 1) {
         loadoutQuery += ",";
       }
-      loadoutQuery += " Slot" + i + " = `" + abilityLoadout.get(i - 1).getName() + "`";
+      loadoutQuery += " Slot" + i + " = '" + abilityLoadout.get(i - 1).getName() + "'";
 
     }
-    loadoutQuery += " WHERE uuid = ``" + uuid.toString() + "`";
-    database.executeQuery(loadoutQuery);
+    loadoutQuery += " WHERE uuid = '" + uuid.toString() + "'";
+    if(abilityLoadout.size()>0) {
+      database.executeUpdate(loadoutQuery);
+    }
 
     RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
     if(transfer.isUnlocked()) {
