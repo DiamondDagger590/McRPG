@@ -17,7 +17,9 @@ Messages:
       NotAnAbility: '&cThe argument you entered is not a valid ability'
       NotActiveAbility: '&cThe ability you entered is not an active ability'
       NotEnabledOrUnlocked: '&cThat ability is either disabled or you have yet to unlock it'
-      UnexpectedError: '&cAn unexpected error occurred, please try again.'
+      PlayerFolderDoesntExist: '&cThe player folder does not exist... possibly already been converted?'
+      BeginningConversion: '&aYour conversion is beginning... please prevent player log in while this process is going on. There are %FileAmount% of files to process'
+      ConversionComplete: '&aConverted %Amount% players in %Seconds% seconds'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       Default:

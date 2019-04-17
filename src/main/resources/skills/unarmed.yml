@@ -90,10 +90,10 @@ UsePermsForAbilites:
 UnlockLevelForAbility:
   TighterGrip: 50
   Disarm: 150
-  IronArm: 400
-  Berserk: 275
-  SmitingFist: 350
-  DenseImpact: 600
+  IronArm: 250
+  Berserk: 100
+  SmitingFist: 200
+  DenseImpact: 300
 #
 # Sticky Fingers is the default ability that every player has. This ability will increase every time the players Unarmed level is increased
 #
@@ -119,10 +119,10 @@ TighterGripConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 175
-    TierIII: 300
-    TierIV: 425
-    TierV: 650
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
   TierI:
     #The boost to disarm resistance occurring per tier
     GripBoost: 5.0
@@ -156,8 +156,8 @@ DisarmConfig:
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 275
-    TierIII: 400
-    TierIV: 550
+    TierIII: 425
+    TierIV: 575
     TierV: 700
   #Config for each Tier
   TierI:
@@ -191,10 +191,10 @@ IronArmConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 525
-    TierIII: 650
-    TierIV: 775
-    TierV: 900
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
   #Config for each tier
   TierI:
     #Odds of activation per tier
@@ -233,9 +233,9 @@ BerserkConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 450
-    TierIV: 550
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
     TierV: 650
   #Config for each tier
   TierI:
@@ -284,10 +284,10 @@ SmitingFistConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
-    TierIII: 600
-    TierIV: 725
-    TierV: 850
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
   #Config for each tier
   TierI:
     #How much health the target should get as bonus. Each level is +2 hearts
@@ -360,9 +360,9 @@ DenseImpactConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 700
-    TierIII: 800
-    TierIV: 900
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
     TierV: 1000
   #Config for each tier
   TierI:

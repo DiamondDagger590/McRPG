@@ -20,6 +20,8 @@ public class RemoteTransferTracker {
     locations.put(uuid, loc);
   }
 
+  public static Location getLocation(UUID uuid) { return locations.getOrDefault(uuid, null);}
+
   public static void removeLocation(UUID uuid){
     locations.remove(uuid);
   }

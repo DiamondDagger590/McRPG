@@ -201,33 +201,21 @@ public class Methods {
   public static Skills getSkillsItem(ItemStack item) {
     switch(item.getType()) {
       case DIAMOND_SWORD:
-        return Skills.SWORDS;
       case IRON_SWORD:
-        return Skills.SWORDS;
       case GOLDEN_SWORD:
-        return Skills.SWORDS;
       case STONE_SWORD:
-        return Skills.SWORDS;
       case WOODEN_SWORD:
         return Skills.SWORDS;
       case DIAMOND_PICKAXE:
-        return Skills.MINING;
       case IRON_PICKAXE:
-        return Skills.MINING;
       case GOLDEN_PICKAXE:
-        return Skills.MINING;
       case STONE_PICKAXE:
-        return Skills.MINING;
       case WOODEN_PICKAXE:
         return Skills.MINING;
       case DIAMOND_HOE:
-        return Skills.HERBALISM;
       case IRON_HOE:
-        return Skills.HERBALISM;
       case GOLDEN_HOE:
-        return Skills.HERBALISM;
       case STONE_HOE:
-        return Skills.HERBALISM;
       case WOODEN_HOE:
         return Skills.HERBALISM;
       case BOW:
@@ -288,5 +276,32 @@ public class Methods {
     String[] args = loc.split(":");
     World w = Bukkit.getWorld(args[3]);
     return new Location(w, Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+  }
+
+  public static String convertNameToSQL(String name){
+    StringBuilder returnVal = new StringBuilder();
+    boolean first = true;
+    for(String s : name.split("")){
+      if(first){
+        returnVal.append(s.toLowerCase());
+        first = false;
+      }
+      else{
+        if(Character.isUpperCase(s.charAt(0))){
+          returnVal.append("_");
+        }
+        returnVal.append(s.toLowerCase());
+      }
+    }
+    return returnVal.toString();
+  }
+
+  public static String convertBool(Boolean bool){
+    if(bool){
+      return "1";
+    }
+    else{
+      return "0";
+    }
   }
 }

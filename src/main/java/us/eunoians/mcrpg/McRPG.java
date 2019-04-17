@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.commands.*;
+import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.mcrpg.*;
 import us.eunoians.mcrpg.events.vanilla.*;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -23,15 +24,8 @@ import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * :>
@@ -40,34 +34,21 @@ import java.util.List;
  */
 public class McRPG extends JavaPlugin implements Initializable {
 
-  @Ignore
-  private static McRPG instance;
-  @Getter
-  private PluginUpdater pluginUpdater;
-  @Getter
-  private FileManager fileManager;
-  @Getter
-  private DisplayManager displayManager;
-  @Getter
-  private static ChunkManager placeStore;
-  @Getter
-  private RemoteTransferTracker remoteTransferTracker;
+  @Ignore private static McRPG instance;
+  @Getter private PluginUpdater pluginUpdater;
+  @Getter private FileManager fileManager;
+  @Getter private McRPGDb mcRPGDb;
+  @Getter private DisplayManager displayManager;
+  @Getter private static ChunkManager placeStore;
+  @Getter private RemoteTransferTracker remoteTransferTracker;
   //Needed to support McMMO's Healthbars
-  @Getter
-  private final String customNameKey = "mcMMO: Custom Name";
-  @Getter
-  private final String customVisibleKey = "mcMMO: Name Visibility";
-  @Getter
-  private boolean healthBarPluginEnabled = false;
-  @Getter
-  private boolean mvdwEnabled = false;
-  @Getter
-  private boolean papiEnabled = false;
-  @Getter
-  private boolean worldGuardEnabled = false;
-  @Getter
-  @Setter
-  private WGSupportManager wgSupportManager;
+  @Getter private final String customNameKey = "mcMMO: Custom Name";
+  @Getter private final String customVisibleKey = "mcMMO: Name Visibility";
+  @Getter private boolean healthBarPluginEnabled = false;
+  @Getter private boolean mvdwEnabled = false;
+  @Getter private boolean papiEnabled = false;
+  @Getter private boolean worldGuardEnabled = false;
+  @Getter @Setter private WGSupportManager wgSupportManager;
 
 
   @Override
@@ -94,41 +75,13 @@ public class McRPG extends JavaPlugin implements Initializable {
     //Locale.init(mConfigManager);
   }
 
-  // @Initialize(priority = 1)
-  // Ignore sanity while in development
-  private void sanity() {
-    if(ProxySelector.getDefault() == null) {
-      ProxySelector.setDefault(new ProxySelector() {
-        private final List<Proxy> DIRECT_CONNECTION = Collections.unmodifiableList(Collections.singletonList(Proxy.NO_PROXY));
-
-        public void connectFailed(URI arg0, SocketAddress arg1, IOException arg2) {
-        }
-
-        public List<Proxy> select(URI uri) {
-          return DIRECT_CONNECTION;
-        }
-      });
-    }
-    pluginUpdater = new PluginUpdater(this, "https://contents.cyr1en.com/mcrpg/plinfo");
-    pluginUpdater.setOut(true);
-    if(fileManager.getFile(FileManager.Files.CONFIG).getBoolean("Configuration.AutoUpdate")) {
-      if(pluginUpdater.needsUpdate())
-        pluginUpdater.update();
-      else
-        Logger.info("No updates were found!");
-    }
-    else {
-      Logger.info("New version of McRPG is available: " + pluginUpdater.getVersion());
-      Logger.info("Click to download new version: " + pluginUpdater.getDownloadURL());
-    }
-  }
-
   @SuppressWarnings("Duplicates")
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
+    this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     if(healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
@@ -144,7 +97,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     }
     remoteTransferTracker = new RemoteTransferTracker();
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
-    File folder = new File(getDataFolder(), File.separator + "PlayerData");
+    File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
     if(!folder.exists()) {
       folder.mkdir();
     }
@@ -162,7 +115,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getCommand("mclink").setExecutor(new McLink());
     getCommand("mcunlink").setExecutor(new McUnlink());
     getCommand("mchelp").setExecutor(new McHelp());
-    getCommand("mcredeem").setExecutor(new McRedeem());
+    getCommand("mcconvert").setExecutor(new McConvert());
   }
 
   @Initialize(priority = 4)
