@@ -36,5 +36,5 @@ public class HerbalismTable {
   @Column(defaultValue = "0") private boolean is_replanting_pending;
   @Column(defaultValue = "0") private boolean is_mass_harvest_pending;
   @Column(defaultValue = "0") private boolean is_natures_wrath_pending;
-  @Column(defaultValue = "0") private boolean isPans_blessing_pending;
+  @Column(defaultValue = "0") private boolean is_pans_blessing_pending;
 }

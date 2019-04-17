@@ -35,7 +35,6 @@ public class McRPGDb {
     this.instance = plugin;
 
     Class generated = new LoadoutInstrumentation(instance, 9).instrument();
-    printClass(generated);
     DatabaseBuilder dbBuilder = new DatabaseBuilder();
     dbBuilder.setDatabasePrefix("mcrpg_");
     dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
@@ -52,8 +51,6 @@ public class McRPGDb {
     } catch (SQLException e) {
       e.printStackTrace();
     }
-    listAllTable();
-    Bukkit.getLogger().info("Does generated table exist?: " + database.tableExists("mcrpg_loadout"));
   }
 
   private void printClass(Class c) {
