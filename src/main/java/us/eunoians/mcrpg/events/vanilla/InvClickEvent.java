@@ -21,13 +21,11 @@ import us.eunoians.mcrpg.api.events.mcrpg.AbilityRemovedFromLoadoutEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.AbilityUpgradeEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.gui.*;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
-import us.eunoians.mcrpg.types.AbilityType;
-import us.eunoians.mcrpg.types.DisplayType;
-import us.eunoians.mcrpg.types.Skills;
-import us.eunoians.mcrpg.types.UnlockedAbilities;
+import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
 import java.util.Calendar;
@@ -121,7 +119,7 @@ public class InvClickEvent implements Listener {
           p.openInventory(editLoadoutGUI.getGui().getInv());
           GUITracker.replacePlayersGUI(mp, editLoadoutGUI);
         }
-        else if(slot == guiConfig.getInt("BackButton.Slot")){
+        else if(slot == guiConfig.getInt("BackButton.Slot")) {
           if(GUITracker.doesPlayerHavePrevious(mp)) {
             currentGUI.setClearData(false);
             GUI old = GUITracker.getPlayersPreviousGUI(mp);
@@ -332,6 +330,8 @@ public class InvClickEvent implements Listener {
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SELECT_REPLACE_SKILLS_GUI);
         SelectReplaceGUI selectReplaceGUI = (SelectReplaceGUI) currentGUI;
         if(e.getSlot() == guiConfig.getInt("BackButton.Slot")) {
+          //GUIItem item = currentGUI.getGui().getItems().get(currentGUI.getGui().getItems().size() - 2);
+          //TODO custom back button
           if(GUITracker.doesPlayerHavePrevious(mp)) {
             currentGUI.setClearData(false);
             GUI old = GUITracker.getPlayersPreviousGUI(mp);
@@ -441,11 +441,10 @@ public class InvClickEvent implements Listener {
           }
         }
       }
-
       else if(currentGUI instanceof EditDefaultAbilitiesGUI) {
         EditDefaultAbilitiesGUI editDefaultAbilitiesGUI = (EditDefaultAbilitiesGUI) currentGUI;
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EDIT_DEFAULT_ABILITIES_GUI);
-        if(e.getSlot() == guiConfig.getInt("BackButton.Slot")){
+        if(e.getSlot() == guiConfig.getInt("BackButton.Slot")) {
           if(GUITracker.doesPlayerHavePrevious(mp)) {
             currentGUI.setClearData(false);
             GUI old = GUITracker.getPlayersPreviousGUI(mp);
@@ -617,14 +616,99 @@ public class InvClickEvent implements Listener {
             continue;
           }
         }
+        else if(event.equalsIgnoreCase("Redeem")) {
+          Skills skill = null;
+          RedeemType redeemType = null;
+          if(currentGUI instanceof AmountGUI) {
+            AmountGUI amountGUI = (AmountGUI) currentGUI;
+            skill = amountGUI.getSkill();
+            redeemType = amountGUI.getType();
+          }
+          else if(currentGUI instanceof AllGUI){
+            AllGUI allGUI = (AllGUI) currentGUI;
+            skill = allGUI.getRedeemBit().getSkill();
+            redeemType = allGUI.getRedeemBit().getRedeemType();
+          }
+          if(Methods.isInt(events[1])) {
+            int amount = Integer.parseInt(events[1]);
+            if(redeemType == RedeemType.EXP) {
+              mp.giveExp(skill, amount, GainReason.REDEEM);
+              mp.setRedeemableExp(mp.getRedeemableExp() - amount);
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
+                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
+              p.closeInventory();
+              return;
+            }
+            else {
+              mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
+              mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
+                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
+              p.closeInventory();
+              return;
+            }
+          }
+          else if(events[1].equalsIgnoreCase("custom")) {
+            mp.setListenForCustomExpInput(true);
+            mp.setRedeemBit(new RedeemBit(redeemType, skill));
+            p.closeInventory();
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.Listening")));
+            return;
+          }
+          else if(events[1].equalsIgnoreCase("all")){
+            if(redeemType == RedeemType.EXP){
+              mp.giveExp(skill, mp.getRedeemableExp(), GainReason.REDEEM);
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
+                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableExp()))));
+              mp.setRedeemableExp(0);
+              p.closeInventory();
+              return;
+            }
+            else{
+              mp.getSkill(skill).giveLevels(mp, mp.getRedeemableLevels(), McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
+                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableLevels()))));
+              mp.setRedeemableLevels(0);
+              p.closeInventory();
+              return;
+            }
+          }
+        }
         else if(event.equalsIgnoreCase("Open")) {
+          if(currentGUI instanceof AmountGUI) {
+            if(events[1].equalsIgnoreCase("AllGUI")) {
+              AmountGUI amountGUI = (AmountGUI) currentGUI;
+              AllGUI allGUI = new AllGUI(mp, new RedeemBit(amountGUI.getType(), amountGUI.getSkill()));
+              currentGUI.setClearData(false);
+              p.openInventory(allGUI.getGui().getInv());
+              GUITracker.replacePlayersGUI(p, allGUI);
+              return;
+            }
+          }
+          if(currentGUI instanceof RedeemStoredGUI) {
+            RedeemStoredGUI redeemStoredGUI = (RedeemStoredGUI) currentGUI;
+            if(events[1].equalsIgnoreCase("ExpAmountGUI")) {
+              AmountGUI gui = new AmountGUI(mp, RedeemType.EXP, redeemStoredGUI.getSkill());
+              redeemStoredGUI.setClearData(false);
+              p.openInventory(gui.getGui().getInv());
+              GUITracker.replacePlayersGUI(p, gui);
+              return;
+            }
+            else if(events[1].equalsIgnoreCase("LevelAmountGUI")) {
+              AmountGUI gui = new AmountGUI(mp, RedeemType.LEVEL, redeemStoredGUI.getSkill());
+              redeemStoredGUI.setClearData(false);
+              p.openInventory(gui.getGui().getInv());
+              GUITracker.replacePlayersGUI(p, gui);
+              return;
+            }
+          }
           GUITracker.stopTrackingPlayer(p);
           p.closeInventory();
           p.sendMessage(Methods.color("&cThis has yet to be implemented"));
           return;
         }
         else if(event.equalsIgnoreCase("OpenNative")) {
-          GUI gui = null;
+          GUI gui;
           if(events[1].equalsIgnoreCase("EditLoadoutGUI")) {
             gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.TOGGLE);
             currentGUI.setClearData(false);

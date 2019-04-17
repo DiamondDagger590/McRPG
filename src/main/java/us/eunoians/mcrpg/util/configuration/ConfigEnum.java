@@ -46,6 +46,7 @@ public enum ConfigEnum implements ConfigurationEnum {
   MODIFY_MOB_EXP_PARENT("Configuration.ModifySpawnExp", "", "#Modify the exp worth of mobs from spawners and eggs"),
   MODIFY_SPAWNER_MOB_EXP("Configuration.ModifySpawnExp.MobsFromSpawner", 0.5),
   MODIFY_EGG_MOB_EXP("Configuration.ModifySpawnExp.MobsFromEggs", 0.5),
+  REDEEM_LEVELS_RESET_EXP("Configuration.Redeeming.RedeemLevelsResetExp", true, "#If when players redeem levels, should this reset the amount of exp needed to level up."),
   DISPLAY_CONFIG_PARENT("DisplayConfig", "", "#Use this to configure how various displays show up"),
   SCOREBOARD_DISPLAY_NAME("DisplayConfig.Scoreboard.DisplayName", "&a%Skill%"),
   SCOREBOARD_LINES_CURRENT_LEVEL("DisplayConfig.Scoreboard.Lines.CurrentLevel", "&bCurrent Level:"),

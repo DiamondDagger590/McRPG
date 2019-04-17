@@ -27,7 +27,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-//:>
+/**
+ * :>
+ *
+ * - CyRien
+ */
 public class McRPG extends JavaPlugin implements Initializable {
 
   @Ignore private static McRPG instance;
@@ -142,6 +146,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new DropItemEvent(), this);
     getServer().getPluginManager().registerEvents(new ShootEvent(), this);
     getServer().getPluginManager().registerEvents(new ArrowHitEvent(), this);
+    getServer().getPluginManager().registerEvents(new ChatEvent(), this);
   }
 
   public static McRPG getInstance() {

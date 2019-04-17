@@ -29,7 +29,6 @@ public class McRPGStub implements CommandExecutor {
               McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)) {
         return true;
       }
-
       if(args.length == 0) {
         McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
         if(mp.hasPendingAbility()) {

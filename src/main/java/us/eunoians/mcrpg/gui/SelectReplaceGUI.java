@@ -58,7 +58,6 @@ public class SelectReplaceGUI extends GUI {
         abilityMeta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "DisplayName") + " " + tier));
 
         abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
-        List<String> lore = abilityMeta.getLore();
         List<String> newLore = new ArrayList<>();
         for(String s : abilityMeta.getLore()) {
           if(baseAbility.getCurrentTier() != 0) {
@@ -107,6 +106,7 @@ public class SelectReplaceGUI extends GUI {
         items.add(item);
       }
 
+      //TODO custom back button
       ItemStack back = new ItemStack(Material.valueOf(guiConfig.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
       backMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("BackButton.DisplayName")));

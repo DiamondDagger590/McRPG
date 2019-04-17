@@ -4,6 +4,8 @@ import lombok.Getter;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.RedeemType;
+import us.eunoians.mcrpg.types.Skills;
 
 public class AmountGUI extends GUI {
 
@@ -12,22 +14,14 @@ public class AmountGUI extends GUI {
   private static FileManager.Files file = FileManager.Files.REDEEM_GUI;
 
   @Getter
-  private AmountGUIType type;
+  private RedeemType type;
 
-  public AmountGUI(McRPGPlayer player, AmountGUIType type){
+  @Getter
+  private Skills skill;
+
+  public AmountGUI(McRPGPlayer player, RedeemType type, Skills skill) {
     super(new GUIBuilder(type.getName() + "AmountGUI", fm.getFile(file), player));
     this.type = type;
-  }
-
-  public enum AmountGUIType{
-    EXP("Exp"),
-    LEVEL("Level");
-
-    @Getter
-    private String name;
-
-    AmountGUIType(String name){
-      this.name = name;
-    }
+    this.skill = skill;
   }
 }

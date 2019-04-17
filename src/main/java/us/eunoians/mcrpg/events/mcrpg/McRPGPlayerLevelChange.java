@@ -56,10 +56,12 @@ public class McRPGPlayerLevelChange implements Listener {
     TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
     if(!mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
       List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
-      Random rand = new Random();
-      int val = rand.nextInt(possibleMessages.size());
-      mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
-      mp.getUsedTips().add(tipType);
+      if(possibleMessages.size() > 0) {
+        Random rand = new Random();
+        int val = rand.nextInt(possibleMessages.size());
+        mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+        mp.getUsedTips().add(tipType);
+      }
     }
     //Do things for swords ability
     if(skillLeveled.getType().equals(Skills.SWORDS)) {

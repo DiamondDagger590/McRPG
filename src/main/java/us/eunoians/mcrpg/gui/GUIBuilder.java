@@ -55,7 +55,8 @@ public class GUIBuilder {
 		}
 	};
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	private GUIInventoryFunction buildGUIFunction = (GUIBuilder builder) -> {
 	  Inventory inv = Bukkit.createInventory(null, config.getInt(path + "Size"),
 		  Methods.color(player.getPlayer(), config.getString(path + "Title")));
@@ -100,9 +101,9 @@ public class GUIBuilder {
 
 	@Getter @Setter
 	private GUIBindEventFunction bindEventsFunction = (GUIBuilder builder) -> {
-	  ArrayList<GUIEventBinder> binder = new ArrayList<GUIEventBinder>();
+	  ArrayList<GUIEventBinder> binder = new ArrayList<>();
 	  if (!config.contains(path + "Events")) {
-		return binder;
+		  return binder;
 	  }
 	  for (String slotString : config.getConfigurationSection(path + "Events").getKeys(false)) {
 		GUIEventBinder boundEvent = new GUIEventBinder(Integer.parseInt(slotString), config.getStringList(path + "Events." + slotString));

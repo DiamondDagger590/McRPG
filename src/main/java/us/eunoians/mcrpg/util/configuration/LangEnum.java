@@ -160,30 +160,30 @@ public enum LangEnum implements ConfigurationEnum {
             "&7[&5McRPG Tip&7]: &aPuncture can inflict Bleed and use all modifiers from your Swords skill!", "&7[&5McRPG Tip&7]: &aBlessing of Artemis is good for a sneaky surprise!",
             "&7[&5McRPG Tip&7]: &aReady your bow by attacking air before you shoot to activate abilities!"));
 
-    private String path;
-    private Object defaultValue;
-    private String[] comments;
+  private String path;
+  private Object defaultValue;
+  private String[] comments;
 
 
-    LangEnum(String path, Object defaultValue, String... comments) {
-        this.path = path;
-        this.defaultValue = defaultValue;
-        this.comments = comments;
-    }
+  LangEnum(String path, Object defaultValue, String... comments) {
+    this.path = path;
+    this.defaultValue = defaultValue;
+    this.comments = comments;
+  }
 
 
-    @Override
-    public String getPath() {
-        return path;
-    }
+  @Override
+  public String getPath() {
+    return path;
+  }
 
-    @Override
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
+  @Override
+  public Object getDefaultValue() {
+    return defaultValue;
+  }
 
-    @Override
-    public String[] getComments() {
-        return comments;
-    }
+  @Override
+  public String[] getComments() {
+    return comments;
+  }
 }
