@@ -59,7 +59,7 @@ public class McRPGPlayer {
    * The abilities a player has unlocked and has not yet accepted or denied. Whenever a player next opens the mcrpg main gui they should be forced to go through these
    */
   @Getter
-  private ArrayList<UnlockedAbilities> pendingUnlockAbilities;
+  private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
 
   /**
    * Map of the abilities on cooldown
@@ -798,10 +798,10 @@ public class McRPGPlayer {
     loadoutSet.ifPresent(rs -> {
       try {
         if(rs.next()) {
-          for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("Configuration.PlayerConfiguration.AmountOfTotalAbilities"); i++) {
+          for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities"); i++) {
             //It has to be an unlocked ability since default ones cant be in the loadout
             String s = rs.getString("Slot" + i);
-            if(s == null || s.equalsIgnoreCase("")) {
+            if(s == null || s.equalsIgnoreCase("null")) {
               continue;
             }
             UnlockedAbilities ability = UnlockedAbilities.fromString(s);

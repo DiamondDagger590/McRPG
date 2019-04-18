@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg;
 
+import com.cyr1en.javen.Javen;
+import com.cyr1en.javen.annotation.Lib;
 import com.cyr1en.mcutils.PluginUpdater;
 import com.cyr1en.mcutils.initializers.Initializable;
 import com.cyr1en.mcutils.initializers.annotation.Ignore;
@@ -26,12 +28,12 @@ import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-/**
- * :>
- *
- * - CyRien
- */
+@Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
+@Lib(group = "com.github.CyR1en", name = "FlatDB", version = "1.0.5")
+@Lib(group = "org.javassist", name = "javassist", version = "3.21.0-GA")
 public class McRPG extends JavaPlugin implements Initializable {
 
   @Ignore private static McRPG instance;
@@ -50,15 +52,19 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private boolean worldGuardEnabled = false;
   @Getter @Setter private WGSupportManager wgSupportManager;
 
-
   @Override
   public void onEnable() {
+    Path path = Paths.get(getDataFolder().getAbsolutePath() + "/libs");
+    Javen javen = new Javen(path);
+    javen.addRepository("jitPack", "https://jitpack.io");
+    javen.addClassLoader(this.getClass().getClassLoader());
+    javen.loadDependencies();
     Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
   }
 
   @Override
   public void onDisable() {
-    if(!Initializer.finished())
+    if (!Initializer.finished())
       Initializer.interrupt();
     PlayerManager.shutDownManager();
   }
@@ -83,22 +89,22 @@ public class McRPG extends JavaPlugin implements Initializable {
     fileManager = FileManager.getInstance().setup(this);
     this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
-    if(healthBarPluginEnabled) {
+    if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
-    if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
+    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       papiEnabled = true;
       getLogger().info("Papi PlaceholderAPI found... registering hooks");
       new McRPGPlaceHolders().register();
     }
-    if(Bukkit.getPluginManager().isPluginEnabled("WorldGuard")){
+    if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
       worldGuardEnabled = true;
       wgSupportManager = new WGSupportManager(this);
     }
     remoteTransferTracker = new RemoteTransferTracker();
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
-    if(!folder.exists()) {
+    if (!folder.exists()) {
       folder.mkdir();
     }
     displayManager = DisplayManager.getInstance();
@@ -150,7 +156,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   }
 
   public static McRPG getInstance() {
-    if(instance == null)
+    if (instance == null)
       throw new NullPointerException("Plugin was not initialized.");
     return instance;
   }
