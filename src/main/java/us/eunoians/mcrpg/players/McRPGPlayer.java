@@ -798,10 +798,10 @@ public class McRPGPlayer {
     loadoutSet.ifPresent(rs -> {
       try {
         if(rs.next()) {
-          for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("Configuration.PlayerConfiguration.AmountOfTotalAbilities"); i++) {
+          for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities"); i++) {
             //It has to be an unlocked ability since default ones cant be in the loadout
             String s = rs.getString("Slot" + i);
-            if(s == null || s.equalsIgnoreCase("")) {
+            if(s == null || s.equalsIgnoreCase("null")) {
               continue;
             }
             UnlockedAbilities ability = UnlockedAbilities.fromString(s);
