@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 
 import java.util.HashMap;
 
@@ -15,7 +16,7 @@ public class WGSupportManager {
 
 
   public WGSupportManager(McRPG plugin){
-    FileConfiguration config = plugin.getConfig();
+    FileConfiguration config = plugin.getFileManager().getFile(FileManager.Files.WORLDGUARD_CONFIG);
 
     for(String s : config.getConfigurationSection("WorldGuardSupport").getKeys(false)){
       if(s.equals("TestRegion")){

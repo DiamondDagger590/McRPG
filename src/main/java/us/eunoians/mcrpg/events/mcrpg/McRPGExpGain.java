@@ -6,6 +6,8 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,16 +16,23 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.players.PlayerManager;
+import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
 import us.eunoians.mcrpg.util.worldguard.WGRegion;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class McRPGExpGain implements Listener {
+
+  @Getter
+  private static HashMap<UUID, Double> demetersShrineMultipliers = new HashMap<>();
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void expGain(McRPGPlayerExpGainEvent e) {
@@ -89,5 +98,23 @@ public class McRPGExpGain implements Listener {
       }
       e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
     }
+    if(e.getGainType() == GainReason.BREAK && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
+      Skills type = e.getSkillGained().getType();
+      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING) {
+        e.setExpGained((int) (e.getExpGained() * demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid())));
+      }
+    }
+  }
+
+  public static void addDemetersShrineEffect(UUID uuid, double multiplier, int duration){
+    demetersShrineMultipliers.put(uuid, multiplier);
+    Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
+      demetersShrineMultipliers.remove(uuid);
+      if(Bukkit.getOfflinePlayer(uuid).isOnline()){
+        if(PlayerManager.isPlayerStored(uuid)){
+          PlayerManager.getPlayer(uuid).getActiveAbilities().remove(UnlockedAbilities.DEMETERS_SHRINE);
+        }
+      }
+    }, duration * 20);
   }
 }

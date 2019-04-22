@@ -206,7 +206,8 @@ public class CheckReadyEvent implements Listener {
       if(mp.getActiveAbilities().contains(ab.getGenericAbility())) {
         return;
       }
-      if(!ab.isToggled() || !ab.getGenericAbility().isEnabled() || ab.getGenericAbility() == UnlockedAbilities.NATURES_WRATH) {
+      if(!ab.isToggled() || !ab.getGenericAbility().isEnabled() || ab.getGenericAbility() == UnlockedAbilities.NATURES_WRATH
+      || ab.getGenericAbility() == UnlockedAbilities.DEMETERS_SHRINE || ab.getGenericAbility() == UnlockedAbilities.HESPERIDES_APPLES) {
         return;
       }
       String skill = "";
@@ -227,6 +228,14 @@ public class CheckReadyEvent implements Listener {
       }
       else if(skillType == Skills.ARCHERY) {
         skill = "Bow";
+      }
+      else if(skillType == Skills.WOODCUTTING){
+        //To deal with bark stripping
+        if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG).getBoolean("CrouchForReady") &&
+        !p.isSneaking() && block.getType().toString().contains("LOG") && !block.getType().toString().contains("STRIPPED")){
+          return;
+        }
+        skill = "AXE";
       }
       p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
               McRPG.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", skill)));

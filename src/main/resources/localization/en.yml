@@ -2,7 +2,10 @@ Messages:
   #Messages relating to the general plugin information
   PluginInfo:
     PluginPrefix: '&7[&1McRPG&7]'
-  #Meesages used by commands
+  #MEssages that dont fit anywhere
+  Misc:
+    PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
+  #Messages used by commands
   Commands:
     #Messages used by misc command
     Utility:
@@ -19,6 +22,7 @@ Messages:
       NotEnabledOrUnlocked: '&cThat ability is either disabled or you have yet to unlock it'
       PlayerFolderDoesntExist: '&cThe player folder does not exist... possibly already been converted?'
       BeginningConversion: '&aYour conversion is beginning... please prevent player log in while this process is going on. There are %FileAmount% of files to process'
+      ObtainedRedeemableExp: '&aYou have received %Amount% redeemable exp. Use /mcredeem <skill> to use it!'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       Default:
@@ -182,6 +186,13 @@ Messages:
       Hit: '&cYour lungs were punctured and you are now Bleeding'
     Combo:
       Hit: '&cBeing hit by a combo has dealt extra damage to you'
+    DemetersShrine:
+      Activated: '&aReceive &e%Multiplier% exp &afor &e%Duration% minutes on all collection skills'
+      StillOnCooldown: '&aYour Demeters Shrine is still on cooldown!'
+    TemporalHarvest:
+      Activated: '&aYour axe cuts through time, harvesting the saplings future.'
+    HesperidesApples:
+      Activated: '&aThe apple you ate still contained bits of power from Hesperides Garden. It will be a bit before you can handle it again.'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
@@ -196,7 +207,6 @@ Messages:
     CooldownExpire: '&aYour cooldown for %Ability% is finished'
     CooldownActive: '&cYour %Skill% ability is on cooldown for &e%Time% &cseconds'
     ReplaceCooldownExpire: '&aYour cooldown for ability replacing is over'
-#Add these to auto updater
   WorldGuard:
     InvalidActionType: '&cThere is a faulty action type in your config... canceling initiation of %path%'
     InvalidMaterial: '&cYou provided a faulty material in your config... canceling initiation of %path%'
@@ -237,3 +247,9 @@ Messages:
       - '&7[&5McRPG Tip&7]: &aPuncture can inflict Bleed and use all modifiers from your Swords skill!'
       - '&7[&5McRPG Tip&7]: &aBlessing of Artemis is good for a sneaky surprise!'
       - '&7[&5McRPG Tip&7]: &aReady your bow by attacking air before you shoot to activate abilities!'
+    LevelUpWoodcutting:
+      - '&7[&5McRPG Tip&7]: &aHeavy Swing will mine surrounding wood and leaves of the same type!'
+      - '&7[&5McRPG Tip&7]: &aHeavy Swing only works on natural blocks so no need to worry about it ruining your builds!'
+      - '&7[&5McRPG Tip&7]: &aToss a sapling into a block of water surrounded by gold blocks to activate Demeters Shrine!'
+      - '&7[&5McRPG Tip&7]: &aMoving in a forest will activate Nymphs Vitality!'
+      - '&7[&5McRPG Tip&7]: &aReady your axe and mine a sapling in order to harvest the trees future self using Temporal Harvest!'

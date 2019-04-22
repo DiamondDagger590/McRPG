@@ -8,6 +8,8 @@ public enum LangEnum implements ConfigurationEnum {
 
     PLUGIN_INFO_HEADER("Messages.PluginInfo", "", "#Messages relating to the general plugin information"),
     PLUGIN_PREFIX("Messages.PluginInfo.PluginPrefix", "&7[&1McRPG&7]"),
+    MISC_HEADER("Messages.Misc", "", "#Messages that dont fit anywhere"),
+    MISC_SUMMONED_GUARDIAN("Messages.Misc.PoseidonsGuardianSummoned", "&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward"),
     COMMANDS_HEADER("Messages.Commands", "", "#Messages used by commands"),
     COMMANDS_UTILITY_HEADER("Messages.Commands.Utility", "", "#Messages used by misc commands"),
     NO_PERMS("Messages.Commands.Utility.NoPerms", "&cYou do not have the permissions to execute that command."),
@@ -23,11 +25,17 @@ public enum LangEnum implements ConfigurationEnum {
     NOT_ENABLED_OR_UNLOCKED("Messages.Commands.Utility.NotEnabledOrUnlocked", "&cThat ability is either disabled or you have yet to unlock it."),
     PLAYER_FOLDER_DOESNT_EXIST("Messages.Commands.Utility.PlayerFolderDoesntExist", "&cThe player folder does not exist... possibly already been converted?"),
     BEGINNING_CONVERSION("Messages.Commands.Utility.BeginningConversion", "&aYour conversion is beginning... please prevent player log in while this process is going on. There are %FileAmount% of files to process."),
+    RECEIVED_REDEEMABLE_EXP("Messages.Commands.Utility.ObtainedRedeemableExp", "&aYou have received %Amount% redeemable exp. Use /mcredeem <skill> to use it!"),
     CONVERSION_COMPLETE("Messages.Commands.Utility.ConversionComplete", "&aConverted %Amount% players in %Seconds% seconds."),
     RELOADED_FILES("Messages.Commands.ReloadFiles", "&aYou have successfully reloaded all files for this plugin."),
     MCHELP_DEFAULT("Messages.Commands.McHelp.Default", Arrays.asList("&e--------------------------", "&7[&6McRPG Command &7]&3 /mcrpg",
             "&3    -Opens main McRPG gui", "&7[&6McDisplay Command &7]&3 /mchelp mcdisplay", "&3    -Help prompt for mcdisplay.",
             "&7[&6McAdmin Command &7]&3 /mchelp mcadmin", "&3    -Help prompt for mcadmin.", "&e--------------------------")),
+    WORLDGUARD_INVALID_ACTION("Messages.WorldGuard.InvalidActionType", "&cThere is a faulty action type in your config... canceling initiation of %path%"),
+    WORLDGUARD_INVALID_MATERIAL("Messages.WorldGuard.InvalidMaterial", "&cYou provided a faulty material in your config... canceling initiation of %path%"),
+    WORLDGUARD_INVALID_ENTITY("Messages.WorldGuard.InvalidEntity", "&cYou provided a faulty entity in your config... canceling initiation of %path%"),
+    WORLDGUARD_INVALID_SKILL("Messages.WorldGuard.InvalidSkillParameter", "&cYou provided a faulty skill parameter in your config... canceling initiation of %path%"),
+    WORLDGUARD_INVALID_ABILITY("Messages.WorldGuard.InvalidAbilityParameter", "&cYou provided a faulty ability parameter in your config... canceling initiation of %path%"),
     MCHELP_MCDISPLAY("Messages.Commands.McHelp.McDisplay", Arrays.asList("&e--------------------------", "&7[&6McDisplay Command &7]&3 /mcdisplay {Skill}",
             "&3    -Opens your display for the skill.", "&7[&6McDisplay Command &7]&3 /mcdisplay clear", "&3    -Clears display.",
             "&e--------------------------")),
@@ -125,6 +133,10 @@ public enum LangEnum implements ConfigurationEnum {
     ABILITIES_TIPPED_ARROWS_HIT("Messages.Abilities.TippedArrows.Hit", "&cYou were stuck with a potion tipped arrow."),
     ABILITIES_PUNCTURE_HIT("Messages.Abilities.Puncture.Hit", "&cYour lungs were punctured and you are now Bleeding."),
     ABILITIES_COMBO_HIT("Messages.Abilities.Combo.Hit", "&cBeing hit by a combo has dealt extra damage to you."),
+    ABILITIES_DEMETERS_SHRINE_ACTIVATED("Messages.Abilities.DemetersShrine.Activated", "&aReceive &e%Multiplier% exp &afor &e%Duration% minutes on all collection skills."),
+    ABILITIES_DEMETERS_SHRINE_ON_COOLDOWN("Messages.Abilities.DemetersShrine.StillOnCooldown", "&aYour Demeters Shrine is still on cooldown!"),
+    ABILITIES_TEMPORAL_HARVEST_ACTIVATED("Messages.Abilities.TemporalHarvest.Activated", "&aYour axe cuts through time, harvesting the saplings future."),
+    ABILITIES_HESPERIDES_APPLES_ACTIVATED("Messages.Abilities.HesperidesApples.Activated", "&aThe apple you ate still contained bits of power from Hesperides Garden. It will be a bit before you can handle it again."),
     GUIS_ACCEPTED_ABILITY("Messages.Guis.AcceptedAbility", "&aThe ability %Ability% has been added to your loadout!"),
     GUIS_UPGRADED_ABILITY("Messages.Guis.UpgradedAbility", "&aThe ability %Ability% has been upgraded to %Tier%!"),
     GUIS_HAS_ACTIVE("Messages.Guis.HasActive", "&cYou already have an active ability for that skill."),
@@ -158,7 +170,11 @@ public enum LangEnum implements ConfigurationEnum {
     TIPS_LEVEL_UP_ARCHERY("Messages.Tips.LevelUpArchery", Arrays.asList("&7[&5McRPG Tip&7]: &aThe further you shoot your target the more exp you will gain!",
             "&7[&5McRPG Tip&7]: &aCombo has a delay as to how often it activates to prevent bow spamming!",
             "&7[&5McRPG Tip&7]: &aPuncture can inflict Bleed and use all modifiers from your Swords skill!", "&7[&5McRPG Tip&7]: &aBlessing of Artemis is good for a sneaky surprise!",
-            "&7[&5McRPG Tip&7]: &aReady your bow by attacking air before you shoot to activate abilities!"));
+            "&7[&5McRPG Tip&7]: &aReady your bow by attacking air before you shoot to activate abilities!")),
+    TIPS_LEVEL_UP_WOODCUTTING("Messages.Tips.LevelUpWoodcutting", Arrays.asList("&7[&5McRPG Tip&7]: &aHeavy Swing will mine surrounding wood and leaves of the same type!",
+            "&7[&5McRPG Tip&7]: &aHeavy Swing only works on natural blocks so no need to worry about it ruining your builds!",
+            "&7[&5McRPG Tip&7]: &aToss a sapling into a block of water surrounded by gold blocks to activate Demeters Shrine!", "&7[&5McRPG Tip&7]: &aMoving in a forest will activate Nymphs Vitality!",
+            "&7[&5McRPG Tip&7]: &aReady your axe and mine a sapling in order to harvest the trees future self using Temporal Harvest!"));
 
     private String path;
     private Object defaultValue;

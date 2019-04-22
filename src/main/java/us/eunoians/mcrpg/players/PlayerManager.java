@@ -20,7 +20,7 @@ public class PlayerManager {
   private static McRPG plugin;
   private static BukkitTask saveTask;
 
-  public static void addMcMMOPlayer(Player player, boolean freeze) {
+  public static void addMcRPGPlayer(Player player, boolean freeze) {
     if(players.containsKey(player.getUniqueId())) {
       return;
     }

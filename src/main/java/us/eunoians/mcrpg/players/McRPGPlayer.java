@@ -4,6 +4,7 @@ import com.cyr1en.flatdb.Database;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,6 +18,7 @@ import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
 import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
+import us.eunoians.mcrpg.abilities.woodcutting.*;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
@@ -201,10 +203,19 @@ public class McRPGPlayer {
   @Setter
   private RedeemBit redeemBit;
 
+  @Getter
+  @Setter
+  private double guardianSummonChance;
+
+  @Getter
+  @Setter
+  private Location lastFishCaughtLoc = null;
+
 
 
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
+    this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
 
@@ -787,6 +798,104 @@ public class McRPGPlayer {
             skills.add(archery);
           }
           //}
+          //init woodcutting
+          else if(skill.equals(Skills.WOODCUTTING)) {
+            //Initialize Extra Lumber
+            ExtraLumber extraLumber = new ExtraLumber();
+            extraLumber.setToggled(rs.getBoolean("is_extra_lumber_toggled"));
+            //Initialize Heavy Swing
+            HeavySwing heavySwing = new HeavySwing();
+            heavySwing.setToggled(rs.getBoolean("is_heavy_swing_toggled"));
+            heavySwing.setCurrentTier(rs.getInt("heavy_swing_tier"));
+            if(heavySwing.getCurrentTier() != 0) {
+              heavySwing.setUnlocked(true);
+            }
+            //Initialize Nymphs Vitality
+            NymphsVitality nymphsVitality = new NymphsVitality();
+            nymphsVitality.setToggled(rs.getBoolean("is_nymphs_vitality_toggled"));
+            nymphsVitality.setCurrentTier(rs.getInt("nymphs_vitality_tier"));
+            if(nymphsVitality.getCurrentTier() != 0) {
+              nymphsVitality.setUnlocked(true);
+            }
+            //Initialize Dryads Gift
+            DryadsGift dryadsGift = new DryadsGift();
+            dryadsGift.setToggled(rs.getBoolean("is_dryads_gift_toggled"));
+            dryadsGift.setCurrentTier(rs.getInt("dryads_gift_tier"));
+            if(dryadsGift.getCurrentTier() != 0) {
+              dryadsGift.setUnlocked(true);
+            }
+            //Initialize Hesperides Apples
+            HesperidesApples hesperidesApples = new HesperidesApples();
+            hesperidesApples.setToggled(rs.getBoolean("is_hesperides_apples_toggled"));
+            hesperidesApples.setCurrentTier(rs.getInt("hesperides_apples_tier"));
+            if(hesperidesApples.getCurrentTier() != 0) {
+              hesperidesApples.setUnlocked(true);
+            }
+            //Initialize Temporal Harvest
+            TemporalHarvest temporalHarvest = new TemporalHarvest();
+            temporalHarvest.setToggled(rs.getBoolean("is_temporal_harvest_toggled"));
+            temporalHarvest.setCurrentTier(rs.getInt("temporal_harvest_tier"));
+            if(temporalHarvest.getCurrentTier() != 0) {
+              temporalHarvest.setUnlocked(true);
+            }
+            //Initialize Demeters Shrine
+            DemetersShrine demetersShrine = new DemetersShrine();
+            demetersShrine.setToggled(rs.getBoolean("is_demeters_shrine_toggled"));
+            demetersShrine.setCurrentTier(rs.getInt("demeters_shrine_tier"));
+            if(demetersShrine.getCurrentTier() != 0) {
+              demetersShrine.setUnlocked(true);
+            }
+
+            int hesperidesApplesCooldown = rs.getInt("hesperides_apples_cooldown");
+            int temporalHarvestCooldown = rs.getInt("temporal_harvest_cooldown");
+            int demetersShrineCooldown = rs.getInt("demeters_shrine_cooldown");
+
+            if(hesperidesApplesCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, hesperidesApplesCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.HESPERIDES_APPLES, cal.getTimeInMillis());
+            }
+            if(temporalHarvestCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, temporalHarvestCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.TEMPORAL_HARVEST, cal.getTimeInMillis());
+            }
+            if(demetersShrineCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, demetersShrineCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.DEMETERS_SHRINE, cal.getTimeInMillis());
+            }
+
+            if(rs.getBoolean("is_dryads_gift_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DRYADS_GIFT);
+            }
+            if(rs.getBoolean("is_heavy_swing_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.HEAVY_SWING);
+            }
+            if(rs.getBoolean("is_nymphs_vitality_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.NYMPHS_VITALITY);
+            }
+            if(rs.getBoolean("is_hesperides_apples_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.HESPERIDES_APPLES);
+            }
+            if(rs.getBoolean("is_temporal_harvest_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.TEMPORAL_HARVEST);
+            }
+            if(rs.getBoolean("is_demeters_shrine_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DEMETERS_SHRINE);
+            }
+            abilityMap.put(DefaultAbilities.EXTRA_LUMBER, extraLumber);
+            abilityMap.put(UnlockedAbilities.HEAVY_SWING, heavySwing);
+            abilityMap.put(UnlockedAbilities.NYMPHS_VITALITY, nymphsVitality);
+            abilityMap.put(UnlockedAbilities.DRYADS_GIFT, dryadsGift);
+            abilityMap.put(UnlockedAbilities.HESPERIDES_APPLES, hesperidesApples);
+            abilityMap.put(UnlockedAbilities.TEMPORAL_HARVEST, temporalHarvest);
+            abilityMap.put(UnlockedAbilities.DEMETERS_SHRINE, demetersShrine);
+            Woodcutting woodcutting = new Woodcutting(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(woodcutting);
+          }
+
         } catch(SQLException e) {
           e.printStackTrace();
         }
@@ -859,6 +968,11 @@ public class McRPGPlayer {
     return skills.stream().filter(n -> n.getName().equalsIgnoreCase(skill.getName())).findFirst().orElse(null);
   }
 
+  /**
+   *
+   * @param ability The GenericAbility enum value you are searching for
+   * @return The BaseAbility of the provided enum value
+   */
   public BaseAbility getBaseAbility(GenericAbility ability) {
     return getSkill(ability.getSkill()).getAbility(ability);
   }
@@ -907,10 +1021,10 @@ public class McRPGPlayer {
   }
 
   /**
-   * @param ability Ability to remove from array
+   * @param ability Ability to remove from cooldows
    */
   public void removeAbilityOnCooldown(UnlockedAbilities ability) {
-    abilitiesOnCooldown.remove(ability);
+    abilitiesOnCooldown.replace(ability, 0L);
   }
 
   /**
@@ -930,12 +1044,15 @@ public class McRPGPlayer {
         }
         toRemove.add(ability);
       }
+      else if(timeToEnd == 0L){
+        toRemove.add(ability);
+      }
     }
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     if(!toRemove.isEmpty()) {
       for(UnlockedAbilities ab : toRemove) {
         database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().toLowerCase() + "_data SET "
-                + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+                + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
         abilitiesOnCooldown.remove(ab);
       }
     }
@@ -946,10 +1063,13 @@ public class McRPGPlayer {
         this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
       }
-      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
     }
   }
 
+  /**
+   * Reset all cooldowns to be 0
+   */
   public void resetCooldowns() {
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()) {
@@ -1114,6 +1234,11 @@ public class McRPGPlayer {
             .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
   }
 
+  /**
+   *
+   * @param oldAbility Old ability to be replaced
+   * @param newAbility Ability to replace with
+   */
   public void replaceAbility(UnlockedAbilities oldAbility, UnlockedAbilities newAbility) {
     for(int i = 0; i < abilityLoadout.size(); i++) {
       if(abilityLoadout.get(i).equals(oldAbility)) {
@@ -1121,6 +1246,14 @@ public class McRPGPlayer {
         return;
       }
     }
+  }
+
+  public void giveRedeemableExp(int exp){
+    this.redeemableExp += exp;
+  }
+
+  public void giveRedeemableLevels(int levels){
+    this.redeemableLevels += levels;
   }
 
   @Override

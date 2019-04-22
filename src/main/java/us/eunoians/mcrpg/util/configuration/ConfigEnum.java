@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.util.configuration;
 
 import de.articdive.enum_to_yaml.interfaces.ConfigurationEnum;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 public enum ConfigEnum implements ConfigurationEnum {
@@ -16,25 +15,6 @@ public enum ConfigEnum implements ConfigurationEnum {
           "#   - No tabs are present: YAML only allows spaces", "#   - Indents are correct: YAML hierarchy is based entirely on indentation",
           "###################################"),
   DISABLED_WORLDS("Configuration.DisabledWorlds", Collections.singletonList("test"), "#What worlds should be disabled"),
-  WORLD_GUARD_COMMENT("WorldGuardSupport..TestRegion", "", "#Due to the nature of the auto updating config, this can't be deleted", "#It will auto gen back. However it is never loaded"),
-  WORLD_GUARD_WORLD("WorldGuardSupport.TestRegion.World", "test", "#What world the region is in"),
-  WORLD_GUARD_REGION_NAME("WorldGuardSupport.TestRegion.RegionName", "also_test", "#What the name of the region is"),
-  WORLD_GUARD_MCRPG_LIMITER_COMMENT("WorldGuardSupport.TestRegion.McRPGLimiters", "", "#The area to put limiter scripts"),
-  WORLD_GUARD_LIMITERS_BAN_ENTRY("WorldGuardSupport.TestRegion.McRPGLimiters.BanEntry", Arrays.asList("skill_level(mining) >= 100", "power_level < 50"),
-          "#If any of these conditions return to be true, then the player is banned from entering the region", "#Can accept: skill_level(skill_name) and power_level as the front end of the expression",
-          "#A space is required between the comparator which can be >, <, >= or <=", "#The last number is what the initial condition needs to be compared to"),
-  WORLD_GUARD_LIMITERS_BAN_ACTION("WorldGuardSupport.TestRegion.McRPGLimiters.BanAction", Arrays.asList("Break-COAL_ORE-skill_level(mining) > 100",
-          "Break-DIAMOND_ORE-ability_tier(ItsATriple) > 3", "Attack-PLAYER-skill_difference(mining) > 100", "Attack-PLAYER-power_level_difference < 25",
-          "Attack-PLAYER-power_level > 50", "Attack-ZOMBIE-skill_level(swords) < 50", "ExpGain-Swords-skill_level(swords) > 50",
-          "AbilityActivate-Daze-power_level < 100", "AbilityActivate-Swords-power_level < 100" , "AbilityActivate-All-ability_tier(self) < 3"),
-          "#If any of these conditions return to be true, then the action in that region will be blocked", "#The first parameter can be Break, Attack, ExpGain, and AbilityActivate",
-          "#For Break, the second parameter must be a block material", "#", "#For Attack, the second parameter must be a entity type",
-          "#Attack has two unique expressions:", "#skill_difference(skill_name) will return the difference between the skill levels when the player is attacked",
-          "#power_level_difference returns the difference in power levels", "#", "#For ExpGain, the second parameter can either be a skill or it can be the word All",
-          "#All can only be used with the expression skill_level(self)", "#", "#For AbilityActivate, the second parameter can either be a skill, ability or the word All.",
-          "#All can only be used with the expression ability_tier(all)", "#", "#General allowed expressions are:",
-          "#skill_level(skill_name)", "#ability_tier(ability_name)", "#power_level", "#A space is required between the comparator which can be >, <, >= or <=",
-          "#The last parameter must be an int"),
   SAVE_INTERVAL("Configuration.SaveInterval", 1, "#This is how often the plugin saves player data (async) in minutes"),
   REPLACE_ABILITY_COOLDOWN("Configuration.ReplaceAbilityCooldown", 1440, "#How long the cooldown for replacing an ability should be in minutes"),
   REQUIRE_EMPTY_OFF_HAND("Configuration.RequireEmptyOffHand", false, "#Should a player be required to have an empty offhand to use abilities"),
@@ -58,15 +38,28 @@ public enum ConfigEnum implements ConfigurationEnum {
   BOSSBAR_COLOR_UNARMED("DisplayConfig.BossBar.Color.Unarmed", "White"),
   BOSSBAR_COLOR_HERBALISM("DisplayConfig.BossBar.Color.Herbalism", "Green"),
   BOSSBAR_COLOR_ARCHERY("DisplayConfig.BossBar.Color.Archery", "Pink"),
+  BOSSBAR_COLOR_WOODCUTTING("DisplayConfig.BossBar.Color.Woodcutting", "Green"),
   ACTIONBAR_SWORDS_MESSAGE("DisplayConfig.ActionBar.Swords.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'"),
   ACTIONBAR_MINING_MESSAGE("DisplayConfig.ActionBar.Mining.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'"),
   ACTIONBAR_UNARMED_MESSAGE("DisplayConfig.ActionBar.Unarmed.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'"),
   ACTIONBAR_HERBALISM_MESSAGE("DisplayConfig.ActionBar.Herbalism.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'"),
   ACTIONBAR_ARCHERY_MESSAGE("DisplayConfig.ActionBar.Archery.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'"),
+  ACTIONBAR_WOODCUTTING_MESSAGE("DisplayConfig.ActionBar.Woodcutting.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'"),
   PLAYER_CONFIGURATION_AMOUNT_OF_TOTAL_ABILITIES("PlayerConfiguration.AmountOfTotalAbilities", 9, "#This amount is how many ability slots are in the players loadout", "#Currently unused"),
   PLAYER_CONFIGURATION_ABILITY_POINT_INTERVAL("PlayerConfiguration.AbilityPointInterval", 100, "#When the power level reaches a multiple of this number an ability point is awarded"),
-  PLAYER_CONFIGURATION_PLAYER_READY_DURATION("PlayerConfiguration.PlayerReadyDuration", 2, "#How many seconds a player should stay ready for")  ;
-
+  PLAYER_CONFIGURATION_PLAYER_READY_DURATION("PlayerConfiguration.PlayerReadyDuration", 2, "#How many seconds a player should stay ready for"),
+  PLAYER_CONFIGURATION_GUARDIAN_DEFAULT_CHANCE("PoseidonsGuardian.DefaultSummonChance", 5.0, "#What summoning chance should players start with."),
+  PLAYER_CONFIGURATION_GUARDIAN_RANGE("PoseidonsGuardian.Range", 2, "    #If the distance between the last fish caught and the next one caught is less than or equal to this value, increase the summoning chance."),
+  PLAYER_CONFIGURATION_GUARDIAN_MAX_CHANCE("PoseidonsGuardian.MaxChance", 60.0, "#The max summoning chance that a player can have for the guardian."),
+  PLAYER_CONFIGURATION_GUARDIAN_MIN_CHANCE("PoseidonsGuardian.MinChance", 5.0, "#The min summoning chance that a player can have for the guardian."),
+  PLAYER_CONFIGURATION_GUARDIAN_INCREASE("PoseidonsGuardian.WithinRangeIncrease", 2.0, "#How much should the summon chance increase if the fish caught is inside of the range."),
+  PLAYER_CONFIGURATION_GUARDIAN_DECREASE("PoseidonsGuardian.OutsideRangeDecrease", 1.0, "#How much should the summon chance decrease if the fish caught is outside of the range."),
+  PLAYER_CONFIGURATION_GUARDIAN_TYPE("PoseidonsGuardian.GuardianType", "DROWNED", "#What type of entity should the guardian be."),
+  PLAYER_CONFIGURATION_GUARDIAN_HEALTH("PoseidonsGuardian.Health", 150, "#How much health should the guardian have."),
+  PLAYER_CONFIGURATION_GUARDIAN_WEAPON("PoseidonsGuardian.Weapon", "IRON_SWORD", "#What weapon should the guardian have."),
+  PLAYER_CONFIGURATION_GUARDIAN_ENCHANTED("PoseidonsGuardian.Enchanted", false, "#Should the weapon be enchanted."),
+  PLAYER_CONFIGURATION_GUARDIAN_ENCHANTS("PoseidonsGuardian.Enchants", Collections.singletonList("DAMAGE_ALL:1"), "#What enchantments should be on the weapon."),
+  PLAYER_CONFIGURATION_GUARDIAN_EXP("PoseidonsGuardian.RedeemableExpReward", 5000, "#How much redeemable exp should the player get when killing the guardian.");
   private String path;
   private Object defaultValue;
   private String[] comments;

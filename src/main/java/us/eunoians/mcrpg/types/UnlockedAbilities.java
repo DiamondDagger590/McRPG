@@ -98,6 +98,9 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return The instance of the unlocked ability if a correct name is provided or null if the ability provided does not exist
    */
   public static UnlockedAbilities fromString(String ability) {
+    if(ability.contains("bleed") && ability.contains("plus")){
+      return BLEED_PLUS;
+    }
     return Arrays.stream(UnlockedAbilities.values()).filter(ab -> ab.getName().equalsIgnoreCase(ability)).findAny().orElse(null);
   }
 

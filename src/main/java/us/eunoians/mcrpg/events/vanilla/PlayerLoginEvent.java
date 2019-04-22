@@ -16,7 +16,7 @@ public class PlayerLoginEvent implements Listener {
       PlayerLogoutEvent.cancelRemove(p.getUniqueId());
     }
     else {
-      PlayerManager.addMcMMOPlayer(e.getPlayer(), true);
+      PlayerManager.addMcRPGPlayer(e.getPlayer(), true);
     }
   }
 }

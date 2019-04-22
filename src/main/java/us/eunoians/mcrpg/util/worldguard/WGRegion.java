@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.ActionParserType;
 import us.eunoians.mcrpg.types.Skills;
@@ -33,7 +34,7 @@ public class WGRegion {
   private double expMultiplier;
 
   public WGRegion(String key) {
-    FileConfiguration config = McRPG.getInstance().getConfig();
+    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WORLDGUARD_CONFIG);
     expMultiplier = config.getDouble(key + "RegionExpMultiplier");
     enterExpressions = config.getStringList(key + "McRPGLimiters.BanEntry");
     List<String> actionExpressions = config.getStringList(key + "McRPGLimiters.BanAction");

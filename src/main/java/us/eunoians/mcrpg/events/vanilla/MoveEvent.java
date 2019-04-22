@@ -8,14 +8,23 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.woodcutting.NymphsVitality;
+import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.NymphsVitalityEvent;
+import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.worldguard.EntryLimiterParser;
 import us.eunoians.mcrpg.util.worldguard.WGRegion;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
@@ -30,8 +39,25 @@ public class MoveEvent implements Listener {
     if (PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())) {
       e.setCancelled(true);
     }
+    McRPGPlayer player = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    if(player.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&
+            UnlockedAbilities.NYMPHS_VITALITY.isEnabled() && player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY).isToggled()){
+      Biome biome = e.getPlayer().getLocation().getBlock().getBiome();
+      FileConfiguration woodCuttingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG);
+      if(woodCuttingConfig.getStringList("NymphsVitalityConfig.Biomes").contains(biome.name())){
+        NymphsVitality nymphsVitality = (NymphsVitality) player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY);
+        int minHunger = woodCuttingConfig.getInt("NymphsVitalityConfig.Tier" + Methods.convertToNumeral(nymphsVitality.getCurrentTier()) + ".MinimumHunger");
+        Player p = e.getPlayer();
+        if(p.getFoodLevel() < minHunger){
+          NymphsVitalityEvent nymphsVitalityEvent = new NymphsVitalityEvent(player, nymphsVitality, p.getFoodLevel() + 1, p.getFoodLevel());
+          Bukkit.getPluginManager().callEvent(nymphsVitalityEvent);
+          if(!nymphsVitalityEvent.isCancelled()) {
+            p.setFoodLevel(nymphsVitalityEvent.getNewHunger());
+          }
+        }
+      }
+    }
     if(McRPG.getInstance().isWorldGuardEnabled()){
-      McRPGPlayer player = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
       WGSupportManager supportManager = McRPG.getInstance().getWgSupportManager();
       World w = e.getTo().getWorld();
       if(!supportManager.isWorldTracker(w)){

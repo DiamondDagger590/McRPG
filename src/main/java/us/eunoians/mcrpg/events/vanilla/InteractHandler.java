@@ -84,7 +84,7 @@ public class InteractHandler implements Listener {
 		  boolean useBlacklist = mining.getBoolean(key + ".UseBlackList");
 		  boolean useWhiteList = mining.getBoolean(key + ".UseWhiteList");
 		  List<String> blackList = mining.getStringList(key + ".BlackList");
-		  List<String> whiteList = mining.getStringList(key + "WhiteList");
+		  List<String> whiteList = mining.getStringList(key + ".WhiteList");
 		  ArrayList<Block> blocks = new ArrayList<>();
 		  for(int x = -1 * radius; x < radius; x++){
 			for(int z = -1 * radius; z < radius; z++){
@@ -116,6 +116,7 @@ public class InteractHandler implements Listener {
 				continue;
 			  }
 			  BlastTestEvent breakEvent = new BlastTestEvent(b, p);
+			  Bukkit.getPluginManager().callEvent(breakEvent);
 			  if(breakEvent.isCancelled()){
 				continue;
 			  }

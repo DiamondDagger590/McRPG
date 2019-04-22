@@ -1,3 +1,9 @@
+1.2.0-ALPHA
++ Added Woodcutting Skill.
++ Added Posiedons Guardian for anti afk fishing
+= Fixed a few SQL bugs that slipped through
+= Moved WorldGuard support from config to wg_support.yml
+
 1.1.6-ALPHA
 + Converted from .yml to SQL. Plugin size notably increased due to the library being used. This shouldn't have any notable effect on performance
 + Added a /mcconvert command (console only) to convert data from any prior versions to the new one. Please make sure no one logs on during conversion

@@ -330,7 +330,8 @@ public class FileManager {
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
-    WOODCUTTING_CONFIG("woodcutting.yml", "skills/woordcutting.yml");
+    WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
+    WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml");
 
     private String fileName;
     private String fileLocation;

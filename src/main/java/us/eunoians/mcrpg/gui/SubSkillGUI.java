@@ -42,6 +42,7 @@ public class SubSkillGUI extends GUI{
 	      continue;
 		}
 		String path = ab.getName().replaceAll(" ", "") + "Config.Item.";
+	    Bukkit.broadcastMessage((config.getString(path + "Material")));
 		ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
 			config.getInt(path + "Amount"));
 		ItemMeta abilityMeta = abilityItem.getItemMeta();

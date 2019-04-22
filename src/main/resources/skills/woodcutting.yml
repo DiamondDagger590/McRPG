@@ -1,5 +1,7 @@
 #Is woodcutting enabled
 WoodcuttingEnabled: true
+#Require player to crouch for ability activation when facing a wood block
+CrouchForReady: false
 #Exp equation for woodcutting. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -61,11 +63,11 @@ UsePermsForAbilites:
 #At what woodcutting level should these abilities be unlocked at
 UnlockLevelForAbility:
   HeavySwing: 50
-  DryadsGift: 125
-  NymphsVitality: 400
-  TemporalHarvest: 225
-  HesperidesApples: 350
-  DemetersShrine: 500
+  DryadsGift: 150
+  NymphsVitality: 250
+  HesperidesApples: 100
+  TemporalHarvest: 200
+  DemetersShrine: 300
 #
 # Extra Lumber is the default ability that every player has. This ability will increase every time the players Woodcutting level is increased
 #
@@ -123,39 +125,39 @@ HeavySwingConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&bYou have a &e%ActivationChance%% &bchance of mining a'
-      - '&e%Range% &bblock square around what you mined.'
+      - '&e%Radius% &bblock square around what you mined.'
     MenuLore:
       - '&bThis ability lets you mine wood in a square'
 #
 # Config for the ability Dryads Gift
 # This ability will give vanilla exp when mining wood
 #
-DraydsGiftrConfig:
+DryadsGiftConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 200
-    TierIII: 325
-    TierIV: 450
-    TierV: 600
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
   #Config for each Tier
   TierI:
     #The chance of this ability activating
-    ActivationChance: 10
+    ActivationChance: 10.0
     #The amount of exp to be dropped
     ExpDropped: 10
   TierII:
-    ActivationChance: 15
+    ActivationChance: 15.0
     ExpDropped: 15
   TierIII:
-    ActivationChance: 20
+    ActivationChance: 20.0
     ExpDropped: 20
   TierIV:
-    ActivationChance: 25
+    ActivationChance: 25.0
     ExpDropped: 25
   TierV:
-    ActivationChance: 30
+    ActivationChance: 30.0
     ExpDropped: 25
   #How this ability should be seen in the GUIS
   Item:
@@ -165,7 +167,7 @@ DraydsGiftrConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&bYou have a &e%ActivationChance%% &bchance of'
-      - '&bmined wood dropping %e%ExpDropped% exp'
+      - '&bmined wood dropping &e%ExpDropped% &bexp'
     MenuLore:
       - '&bThis ability drops exp when wood is mined'
 #
@@ -177,10 +179,27 @@ NymphsVitalityConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 525
-    TierIII: 650
-    TierIV: 775
-    TierV: 925
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
+  Biomes:
+    - 'WOODED_HILLS'
+    - 'FOREST'
+    - 'TAIGA'
+    - 'FLOWER_FOREST'
+    - 'TALL_BIRCH_FOREST'
+    - 'TALL_BIRCH_HILLS'
+    - 'DARK_FOREST_HILLS'
+    - 'JUNGLE'
+    - 'JUNGLE_HILLS'
+    - 'JUNGLE_EDGE'
+    - 'BIRCH_FOREST'
+    - 'BIRCH_FOREST_HILLS'
+    - 'DARK_FOREST'
+    - 'GIANT_TREE_TAIGA'
+    - 'GIANT_TREE_TAIGA_HILLS'
+    - 'WOODED_MOUNTAINS'
   #Config for each tier
   TierI:
     #How far can hunger be depleted
@@ -206,6 +225,66 @@ NymphsVitalityConfig:
       - '&bThis ability regenerates hunger'
       - '&bwhile in forests'
 #
+# Config for the ability Hesperides Apples
+# Gives a random potion effect when eating apples
+#
+HesperidesApplesConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
+  #Config for each tier
+  TierI:
+    #What buff can be given from each apple type (excluding notch)
+    #Picks a random buff from the corresponding type
+    #Format is Potion_Effect:Potion_Level:Duration (in seconds)
+    AppleBuffs:
+      - 'SPEED:1:40'
+    GoldenAppleBuffs:
+      - 'INCREASE_DAMAGE:1:25'
+    #Cooldown in seconds
+    Cooldown: 100
+  TierII:
+    AppleBuffs:
+      - 'SPEED:1:50'
+    GoldenAppleBuffs:
+      - 'INCREASE_DAMAGE:1:35'
+    Cooldown: 90
+  TierIII:
+    AppleBuffs:
+      - 'SPEED:1:50'
+    GoldenAppleBuffs:
+      - 'INCREASE_DAMAGE:1:35'
+    Cooldown: 80
+  TierIV:
+    AppleBuffs:
+      - 'SPEED:2:40'
+    GoldenAppleBuffs:
+      - 'INCREASE_DAMAGE:2:30'
+    Cooldown: 70
+  TierV:
+    AppleBuffs:
+      - 'SPEED:2:60'
+    GoldenAppleBuffs:
+      - 'INCREASE_DAMAGE:2:40'
+    Cooldown: 60
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Hesperides Apples'
+    Material: APPLE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bEat a golden or normal apple'
+      - '&bto gain a potion effect'
+      - '&bCooldown: &e%Cooldown%'
+    MenuLore:
+      - '&bThis gives a potion effect from eating apples'
+#
 # Config for the ability Temporal Harvest
 # This active ability drops wood, saplings and apples when you break a sapling
 #
@@ -215,9 +294,9 @@ TemporalHarvestConfig:
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 350
-    TierIII: 450
-    TierIV: 550
-    TierV: 650
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
   #Config for each tier
   TierI:
     #The upper range on the amount of wood that can be dropped
@@ -279,104 +358,93 @@ TemporalHarvestConfig:
       - '&eActivate by readying and breaking a block'
     MenuLore:
       - '&bGives tree drops by mining a sapling'
-BlastMiningConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
-  TierAmount: 5
-  UseBlackList: true
-  UseWhiteList: false
-  BlackList:
-    - 'SPAWNER'
-    - 'END_PORTAL'
-    - 'END_PORTAL_FRAME'
-    - 'END_GATEWAY'
-    - 'CHEST'
-    - 'ENDER_CHEST'
-    - 'TRAPPED_CHEST'
-  WhiteList:
-    - 'STONE'
-  #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
-    TierII: 600
-    TierIII: 700
-    TierIV: 800
-    TierV: 900
-  #Config for each tier
-  TierI:
-    #Radius of the ability (this is done to every side of the player)
-    Radius: 4
-    #Cooldown in seconds
-    Cooldown: 240
-  TierII:
-    Radius: 5
-    Cooldown: 240
-  TierIII:
-    Radius: 6
-    Cooldown: 240
-  TierIV:
-    Radius: 7
-    Cooldown: 240
-  TierV:
-    Radius: 8
-    Cooldown: 240
-  #How this ability should be seen in the GUIS
-  Item:
-    DisplayName: '&3Blast Mining'
-    Material: TNT
-    Amount: 1
-    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
-    PlayerLore:
-      - '&bMine blocks in a %Radius% radius'
-      - '&bReady your pick and place tnt'
-      - '&bCooldown: &e%Cooldown%'
-      - '&eActivate by readying and placing TNT'
-    MenuLore:
-      - '&bThis ability mines blocks around you'
-OreScannerConfig:
+#
+# Config for Demeters Shrine
+# This ability allows for players to throw items into a shrine to gain a short exp boost
+# Shrine is four gold blocks surrounding water
+#
+DemetersShrineConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
     TierII: 475
-    TierIII: 600
-    TierIV: 725
-    TierV: 850
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
   #Config for each tier
   TierI:
-    #Radius for the plugin to scan
-    Radius: 7
+    #How long should the boost last in seconds
+    Duration: 900
+    #How much of a % boost should the ability provide. 1.01 = 101% of original exp
+    ExpBoost: 1.01
+    #What items can be accepted as a sacrifice
+    SacrificialItems:
+      - 'OAK_SAPLING'
+      - 'SPRUCE_SAPLING'
+      - 'BIRCH_SAPLING'
+      - 'DARK_OAK_SAPLING'
+      - 'ACACIA_SAPLING'
+      - 'JUNGLE_SAPLING'
     #Cooldown in seconds
-    Cooldown: 120
+    Cooldown: 3600
   TierII:
-    Radius: 9
-    Cooldown: 120
+    Duration: 900
+    ExpBoost: 1.02
+    SacrificialItems:
+      - 'OAK_SAPLING'
+      - 'SPRUCE_SAPLING'
+      - 'BIRCH_SAPLING'
+      - 'DARK_OAK_SAPLING'
+      - 'ACACIA_SAPLING'
+      - 'JUNGLE_SAPLING'
+    Cooldown: 3600
   TierIII:
-    #Radius for the plugin to scan
-    Radius: 10
-    #Cooldown in seconds
-    Cooldown: 120
+    Duration: 900
+    ExpBoost: 1.03
+    SacrificialItems:
+      - 'OAK_SAPLING'
+      - 'SPRUCE_SAPLING'
+      - 'BIRCH_SAPLING'
+      - 'DARK_OAK_SAPLING'
+      - 'ACACIA_SAPLING'
+      - 'JUNGLE_SAPLING'
+    Cooldown: 3600
   TierIV:
-    #Radius for the plugin to scan
-    Radius: 12
-    #Cooldown in seconds
-    Cooldown: 120
+    Duration: 900
+    ExpBoost: 1.04
+    SacrificialItems:
+      - 'OAK_SAPLING'
+      - 'SPRUCE_SAPLING'
+      - 'BIRCH_SAPLING'
+      - 'DARK_OAK_SAPLING'
+      - 'ACACIA_SAPLING'
+      - 'JUNGLE_SAPLING'
+    Cooldown: 3600
   TierV:
-    #Radius for the plugin to scan
-    Radius: 15
-    #Cooldown in seconds
-    Cooldown: 120
+    Duration: 900
+    ExpBoost: 1.05
+    SacrificialItems:
+      - 'OAK_SAPLING'
+      - 'SPRUCE_SAPLING'
+      - 'BIRCH_SAPLING'
+      - 'DARK_OAK_SAPLING'
+      - 'ACACIA_SAPLING'
+      - 'JUNGLE_SAPLING'
+    Cooldown: 3600
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&3Ore Scanner'
-    Material: EMERALD_ORE
+    DisplayName: '&3Demeters Shrine'
+    Material: GOLD_BLOCK
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bScan surrounding area in a'
-      - '&b%Radius% radius.'
-      - '&bDisplays amount of ores'
-      - '&bAnd points to closest valuable ore'
+      - '&bToss a sapling into'
+      - '&ba shrine to get'
+      - '&e%ExpBoost% &bexp multiplier'
+      - '&bfrom all collection skills'
+      - '&bDuration: &e%Duration%'
       - '&bCooldown: &e%Cooldown%'
-      - '&eActivate by readying and breaking a block'
     MenuLore:
-      - '&bScan surrounding area'
-      - '&bfor gold, emerald, and diamonds'
+      - '&bToss a sapling in a shrine'
+      - '&bfor exp boost on collection skills'

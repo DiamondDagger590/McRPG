@@ -1,7 +1,7 @@
 Gui:
   SkillsGUI:
     Size: 54
-    Title: '&bMcMMOx Skills Menu'
+    Title: '&bMcRPG Skills Menu'
     Events:
       1:
         - 'OpenNative:SubSkillGUI:Swords'
@@ -11,8 +11,10 @@ Gui:
         - 'OpenNative:SubSkillGUI:Unarmed'
       7:
         - 'OpenNative:SubSkillGUI:Herbalism'
-      10:
+      19:
         - 'OpenNative:SubSkillGUI:Archery'
+      21:
+        - 'OpenNative:SubSkillGUI:Woodcutting'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -55,7 +57,15 @@ Gui:
           - '&eClick this to view your archery information'
           - '&eCurrent Archery level: &a%Archery_Level%'
           - '&eDaze chance: &c%Daze_Chance%%'
-        Slot: 10
+        Slot: 19
+      WoodcuttingSkill:
+        Name: '&5Woodcutting Skill'
+        Material: DIAMOND_AXE
+        Lore:
+          - '&eClick this to view your woodcutting information'
+          - '&eCurrent Woodcutting level: &a%Woodcutting_Level%'
+          - '&eExtra Lumber chance: &c%Extra_Lumber_Chance%%'
+        Slot: 21
       Back:
         Name: '&bBack>>'
         Material: BARRIER

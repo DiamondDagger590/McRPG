@@ -11,6 +11,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,16 +26,22 @@ import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
 import us.eunoians.mcrpg.abilities.mining.ItsATriple;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.abilities.mining.RicherOres;
+import us.eunoians.mcrpg.abilities.woodcutting.DryadsGift;
+import us.eunoians.mcrpg.abilities.woodcutting.ExtraLumber;
+import us.eunoians.mcrpg.abilities.woodcutting.HeavySwing;
+import us.eunoians.mcrpg.abilities.woodcutting.TemporalHarvest;
+import us.eunoians.mcrpg.api.events.mcrpg.HeavySwingTestEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.herbalism.DiamondFlowersEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.herbalism.ReplantingEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.herbalism.TooManyPlantsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.DoubleDropEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.ItsATripleEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.RicherOresEvent;
-import us.eunoians.mcrpg.api.util.DiamondFlowersData;
-import us.eunoians.mcrpg.api.util.FileManager;
-import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.DryadsGiftEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.ExtraLumberEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.HeavySwingEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.TemporalHarvestEvent;
+import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -72,9 +79,9 @@ public class BreakEvent implements Listener {
           for(ProtectedRegion region : set) {
             if(regions.containsKey(region.getId()) && regions.get(region.getId()).getBreakExpressions().containsKey(event.getBlock().getType())) {
               List<String> expressions = regions.get(region.getId()).getBreakExpressions().get(event.getBlock().getType());
-              for(String s : expressions){
+              for(String s : expressions) {
                 ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mp);
-                if(actionLimiterParser.evaluateExpression()){
+                if(actionLimiterParser.evaluateExpression()) {
                   event.setCancelled(true);
                   return;
                 }
@@ -85,6 +92,190 @@ public class BreakEvent implements Listener {
       }
       FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
       FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
+      FileConfiguration woodCutting = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG);
+      //Deal with woodcutting
+      if(woodCutting.getBoolean("WoodcuttingEnabled")) {
+        int dropMultiplier = 1;
+        if(!McRPG.getPlaceStore().isTrue(block)) {
+          if(woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())) {
+            int expWorth = woodCutting.getInt("ExpAwardedPerBlock." + block.getType().toString());
+            mp.giveExp(Skills.WOODCUTTING, expWorth, GainReason.BREAK);
+          }
+        }
+        if(DefaultAbilities.EXTRA_LUMBER.isEnabled() && mp.getBaseAbility(DefaultAbilities.EXTRA_LUMBER).isToggled()) {
+          if(woodCutting.getStringList("ExtraLumberBlocks").contains(block.getType().toString())) {
+            ExtraLumber extraLumber = (ExtraLumber) mp.getBaseAbility(DefaultAbilities.EXTRA_LUMBER);
+            Parser parser = DefaultAbilities.EXTRA_LUMBER.getActivationEquation();
+            parser.setVariable("woodcutting_level", mp.getSkill(Skills.WOODCUTTING).getCurrentLevel());
+            parser.setVariable("power_level", mp.getPowerLevel());
+            int chance = (int) parser.getValue() * 1000;
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val) {
+              ExtraLumberEvent extraLumberEvent = new ExtraLumberEvent(mp, extraLumber, block.getType());
+              Bukkit.getPluginManager().callEvent(extraLumberEvent);
+              if(!extraLumberEvent.isCancelled()) {
+                dropMultiplier = 2;
+              }
+            }
+          }
+        }
+        if(UnlockedAbilities.DRYADS_GIFT.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DRYADS_GIFT)
+                && mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT).isToggled() && !McRPG.getPlaceStore().isTrue(block) && woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())) {
+          DryadsGift dryadsGift = (DryadsGift) mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT);
+          int chance = (int) woodCutting.getDouble("DryadsGiftConfig.Tier" + Methods.convertToNumeral(dryadsGift.getCurrentTier()) + ".ActivationChance") * 1000;
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(chance >= val) {
+            int expToDrop = woodCutting.getInt("DryadsGiftConfig.Tier" + Methods.convertToNumeral(dryadsGift.getCurrentTier()) + ".ExpDropped");
+            DryadsGiftEvent dryadsGiftEvent = new DryadsGiftEvent(mp, dryadsGift, expToDrop);
+            Bukkit.getPluginManager().callEvent(dryadsGiftEvent);
+            if(!dryadsGiftEvent.isCancelled()){
+              (block.getLocation().getWorld().spawn(block.getLocation(), ExperienceOrb.class)).setExperience(dryadsGiftEvent.getExpDropped());
+            }
+          }
+        }
+        if(McRPG.getPlaceStore().isTrue(block)) {
+          dropMultiplier = 1;
+        }
+        DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+        if(!(event instanceof HeavySwingTestEvent) && UnlockedAbilities.HEAVY_SWING.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HEAVY_SWING)
+        && mp.getBaseAbility(UnlockedAbilities.HEAVY_SWING).isToggled() && block.getType().toString().contains("LOG") && p.getItemInHand().getType().toString().contains("AXE")){
+          HeavySwing heavySwing = (HeavySwing) mp.getBaseAbility(UnlockedAbilities.HEAVY_SWING);
+          int chance = (int) woodCutting.getDouble("HeavySwingConfig.Tier" + Methods.convertToNumeral(heavySwing.getCurrentTier()) + ".ActivationChance") * 1000;
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(chance >= val){
+            ArrayList<Block> blocks = new ArrayList<>();
+            int radius = woodCutting.getInt("HeavySwingConfig.Tier" + Methods.convertToNumeral(heavySwing.getCurrentTier()) + ".Radius");
+            for(int x1 = -radius; x1 <= radius; x1++){
+              for(int y1 = -radius; y1 <= radius; y1++){
+                for(int z1 = -radius; z1 <= radius; z1++){
+                  Block b = block.getLocation().add(x1, y1, z1).getBlock();
+                  if((b.getType().toString().contains("LOG") && b.getType() == block.getType()) ||
+                          (b.getType().toString().contains("LEAVES") && block.getType().toString().contains(b.getType().toString().replace("_LEAVES", "")))){
+                    if(!McRPG.getPlaceStore().isTrue(b)) {
+                      blocks.add(b);
+                    }
+                  }
+                }
+              }
+            }
+            HeavySwingEvent heavySwingEvent = new HeavySwingEvent(mp, heavySwing, blocks);
+            Bukkit.getPluginManager().callEvent(heavySwingEvent);
+            if(!heavySwingEvent.isCancelled()) {
+              for(Block b : blocks) {
+                HeavySwingTestEvent heavySwingTestEvent = new HeavySwingTestEvent(p, b);
+                Bukkit.getPluginManager().callEvent(heavySwingTestEvent);
+                if(!heavySwingTestEvent.isCancelled()) {
+                  b.breakNaturally(p.getItemInHand());
+                }
+              }
+            }
+          }
+        }
+        if(mp.isReadying() && mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.TEMPORAL_HARVEST){
+          TemporalHarvest temporalHarvest = (TemporalHarvest) mp.getBaseAbility(UnlockedAbilities.TEMPORAL_HARVEST);
+          Material saplingType = Material.AIR;
+          Material woodType = Material.AIR;
+          Material leafType = Material.AIR;
+          if(block.getType() == Material.ACACIA_SAPLING){
+            saplingType = Material.ACACIA_SAPLING;
+            woodType = Material.ACACIA_LOG;
+            leafType = Material.ACACIA_LEAVES;
+          }
+          else if(block.getType() == Material.SPRUCE_SAPLING){
+            saplingType = Material.SPRUCE_SAPLING;
+            woodType = Material.SPRUCE_LOG;
+            leafType = Material.SPRUCE_LEAVES;
+          }
+          else if(block.getType() == Material.OAK_SAPLING){
+            saplingType = Material.OAK_SAPLING;
+            woodType = Material.OAK_LOG;
+            leafType = Material.OAK_LEAVES;
+          }
+          else if(block.getType() == Material.DARK_OAK_SAPLING){
+            saplingType = Material.DARK_OAK_SAPLING;
+            woodType = Material.DARK_OAK_LOG;
+            leafType = Material.DARK_OAK_LEAVES;
+          }
+          else if(block.getType() == Material.BIRCH_SAPLING){
+            saplingType = Material.BIRCH_SAPLING;
+            woodType = Material.BIRCH_LOG;
+            leafType = Material.BIRCH_LEAVES;
+          }
+          else if(block.getType() == Material.JUNGLE_SAPLING){
+            saplingType = Material.JUNGLE_SAPLING;
+            woodType = Material.JUNGLE_LOG;
+            leafType = Material.JUNGLE_LEAVES;
+          }
+          if(saplingType != Material.AIR){
+            String key = "TemporalHarvestConfig.Tier" + Methods.convertToNumeral(temporalHarvest.getCurrentTier()) + ".";
+            int minWood = woodCutting.getInt(key + "WoodMinDrop");
+            int maxWood = woodCutting.getInt(key + "WoodMaxDrop");
+            int minSapling = woodCutting.getInt(key + "SaplingsMinDrop");
+            int maxSapling = woodCutting.getInt(key + "SaplingsMaxDrop");
+            int minApple = woodCutting.getInt(key + "AppleMinDrop");
+            int maxApple = woodCutting.getInt(key + "AppleMaxDrop");
+            int cooldown = woodCutting.getInt(key + "Cooldown");
+            Random rand = new Random();
+            if(maxWood != 0 && maxSapling != 0 && maxApple != 0) {
+              ItemStack wood = new ItemStack(woodType, minWood + rand.nextInt(maxWood - minWood));
+              ItemStack sapling = new ItemStack(saplingType, minSapling + rand.nextInt(maxSapling - minSapling));
+              ItemStack apple = new ItemStack(saplingType, minApple + rand.nextInt(maxApple - minApple));
+              TemporalHarvestEvent temporalHarvestEvent = new TemporalHarvestEvent(mp, temporalHarvest, wood.getAmount(), apple.getAmount(), sapling.getAmount(), cooldown);
+              Bukkit.getPluginManager().callEvent(temporalHarvestEvent);
+              if(!temporalHarvestEvent.isCancelled()) {
+                int woodAmount = temporalHarvestEvent.getWoodAmount();
+                while(woodAmount > 0){
+                  if(woodAmount >= 64){
+                    wood.setAmount(64);
+                    woodAmount -= 64;
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), wood);
+                  }
+                  else{
+                    wood.setAmount(woodAmount);
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), wood);
+                    woodAmount = 0;
+                  }
+                }
+                int saplingAmount = temporalHarvestEvent.getSaplingAmount();
+                while(saplingAmount > 0){
+                  if(saplingAmount >= 64){
+                    sapling.setAmount(64);
+                    saplingAmount -= 64;
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), sapling);
+                  }
+                  else{
+                    sapling.setAmount(saplingAmount);
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), sapling);
+                    saplingAmount = 0;
+                  }
+                }
+                int appleAmount = temporalHarvestEvent.getAppleAmount();
+                while(appleAmount > 0){
+                  if(appleAmount >= 64){
+                    apple.setAmount(64);
+                    appleAmount -= 64;
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), apple);
+                  }
+                  else{
+                    apple.setAmount(appleAmount);
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), apple);
+                    appleAmount = 0;
+                  }
+                }
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.SECOND, temporalHarvestEvent.getCooldown());
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+                mp.setReadying(false);
+                mp.addAbilityOnCooldown(UnlockedAbilities.TEMPORAL_HARVEST, cal.getTimeInMillis());
+              }
+            }
+          }
+        }
+      }
       //Deal with herbalism
       if(herbalism.getBoolean("HerbalismEnabled")) {
         int dropMultiplier = 1;
@@ -209,7 +400,7 @@ public class BreakEvent implements Listener {
             DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
             double boost = 0;
             if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
-              && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()) {
+                    && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES).isToggled()) {
               RicherOres richerOres = (RicherOres) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.RICHER_ORES);
               RicherOresEvent richerOresEvent = new RicherOresEvent(mp, richerOres);
               Bukkit.getPluginManager().callEvent(richerOresEvent);
@@ -236,7 +427,7 @@ public class BreakEvent implements Listener {
           }
 
           if(incDrops && UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
-            && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()) {
+                  && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()) {
             ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
             double chance = (double) mining.getDouble("ItsATripleConfig.Tier" + Methods.convertToNumeral(itsATriple.getCurrentTier()) + ".ActivationChance") * 1000;
             Random rand = new Random();
@@ -289,14 +480,14 @@ public class BreakEvent implements Listener {
             else {
               event.setCancelled(true);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.IsLinked")
-                .replace("%Player%", Bukkit.getOfflinePlayer(uuid).getName())));
+                      .replace("%Player%", Bukkit.getOfflinePlayer(uuid).getName())));
               return;
             }
           }
         }
 
         else if(UnlockedAbilities.REMOTE_TRANSFER.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.REMOTE_TRANSFER)
-          && mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() && mp.isLinkedToRemoteTransfer()) {
+                && mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() && mp.isLinkedToRemoteTransfer()) {
           RemoteTransfer transfer = (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
           int tier = transfer.getCurrentTier();
           int range = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG).getInt("RemoteTransferConfig.Tier" + Methods.convertToNumeral(tier) + ".Range");

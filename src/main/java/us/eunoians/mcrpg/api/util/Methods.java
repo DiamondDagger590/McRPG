@@ -218,6 +218,12 @@ public class Methods {
       case STONE_HOE:
       case WOODEN_HOE:
         return Skills.HERBALISM;
+      case DIAMOND_AXE:
+      case IRON_AXE:
+      case GOLDEN_AXE:
+      case STONE_AXE:
+      case WOODEN_AXE:
+        return Skills.WOODCUTTING;
       case BOW:
         return Skills.ARCHERY;
       case AIR:

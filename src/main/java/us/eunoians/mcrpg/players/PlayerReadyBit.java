@@ -39,6 +39,9 @@ public class PlayerReadyBit {
 	  else if(abilityReady.getSkill().equalsIgnoreCase("archery")){
 	    replaceName = "Bow";
       }
+	  else if(abilityReady.getSkill().equalsIgnoreCase("woodcutting")){
+	    replaceName = "Axe";
+      }
       player.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
 		  McRPG.getInstance().getLangFile().getString("Messages.Players.PlayerUnready").replace("%Skill_Item%", replaceName)));
 	}, McRPG.getInstance().getConfig().getInt("PlayerConfiguration.PlayerReadyDuration") * 20).getTaskId();
