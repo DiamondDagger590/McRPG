@@ -1,7 +1,7 @@
 Gui:
   ReplaceSkillsGUI:
     Size: 54
-    Title: '&bMcMMOx Skills Menu'
+    Title: '&bMcRPGSkills Menu'
     Events:
       1:
         - 'OpenNative:SelectReplaceGUI:Swords'
@@ -11,8 +11,10 @@ Gui:
         - 'OpenNative:SelectReplaceGUI:Unarmed'
       7:
         - 'OpenNative:SelectReplaceGUI:Herbalism'
-      10:
+      19:
         - 'OpenNative:SelectReplaceGUI:Archery'
+      21:
+        - 'OpenNative:SelectReplaceGUI:Woodcutting'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:

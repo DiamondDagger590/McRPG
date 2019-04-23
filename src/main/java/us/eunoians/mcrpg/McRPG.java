@@ -54,6 +54,9 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Override
   public void onEnable() {
+    if(!getDataFolder().exists()){
+      getDataFolder().mkdir();
+    }
     Path path = Paths.get(getDataFolder().getAbsolutePath() + "/libs");
     Javen javen = new Javen(path);
     javen.addRepository("jitPack", "https://jitpack.io");
