@@ -57,7 +57,15 @@ Gui:
           - '&eClick this to view your archery abilities'
           - '&eCurrent Archery level: &a%Archery_Level%'
           - '&eDaze chance: &c%Daze_Chance%%'
-        Slot: 10
+        Slot: 19
+      WoodcuttingSkill:
+        Name: '&5Woodcutting Skill'
+        Material: BOW
+        Lore:
+          - '&eClick this to view your woodcutting abilities'
+          - '&eCurrent Woodcutting level: &a%Woodcutting_Level%'
+          - '&eExtra Lumber chance: &c%Extra_Lumber_Chance%%'
+        Slot: 19
       Back:
         Name: '&bHome>>'
         Material: BARRIER

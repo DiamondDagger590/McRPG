@@ -28,6 +28,8 @@ Configuration:
   AutoUpdate: true
   #Use mcrpg.{skill}.level
   UseLevelPerms: false
+  #If players should be sent an update every time they gain exp
+  UseConstantActionBarUpdates: false
   #Allow Health bars
   HealthBarEnabled: true
   #Display time in seconds

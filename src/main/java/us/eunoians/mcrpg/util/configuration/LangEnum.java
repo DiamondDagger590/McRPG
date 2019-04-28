@@ -6,6 +6,13 @@ import java.util.Arrays;
 
 public enum LangEnum implements ConfigurationEnum {
 
+    SKILL_NAMES_HEADER("SkillNames", "", "#Used for localizing skill names in GUIs and commands"),
+    SKILL_NAMES_SWORDS("SkillNames.Swords", "Swords"),
+    SKILL_NAMES_MINING("SkillNames.Mining", "Mining"),
+    SKILL_NAMES_UNARMED("SkillNames.Unarmed", "Unarmed"),
+    SKILL_NAMES_HERBALISM("SkillNames.Herbalism", "Herbalism"),
+    SKILL_NAMES_ARCHERY("SkillNames.Archery", "Archery"),
+    SKILL_NAMES_WOODCUTTING("SkillNames.Woodcutting", "Woodcutting"),
     PLUGIN_INFO_HEADER("Messages.PluginInfo", "", "#Messages relating to the general plugin information"),
     PLUGIN_PREFIX("Messages.PluginInfo.PluginPrefix", "&7[&1McRPG&7]"),
     MISC_HEADER("Messages.Misc", "", "#Messages that dont fit anywhere"),

@@ -63,7 +63,7 @@ public class SettingsGUI extends GUI {
       }
       else if(healthbarType == MobHealthbarUtils.MobHealthbarType.DISABLED) {
         healthItem.setType(Material.DEAD_FIRE_CORAL_BLOCK);
-        healthMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("MobHealthDisplay.Disabled")));
+        healthMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("MobHealthDisplay.None")));
       }
       else if(healthbarType == MobHealthbarUtils.MobHealthbarType.HEARTS) {
         healthItem.setType(Material.FIRE_CORAL_BLOCK);

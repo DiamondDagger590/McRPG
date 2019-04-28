@@ -32,6 +32,10 @@ public class FishCatchEvent implements Listener {
       String key = "PlayerConfiguration.PoseidonsGuardian.";
       Location lastLoc = mp.getLastFishCaughtLoc();
       Location currentLoc = e.getHook().getLocation();
+      if(!lastLoc.getWorld().equals(currentLoc.getWorld())){
+        mp.setLastFishCaughtLoc(currentLoc);
+        return;
+      }
       if(lastLoc.distance(currentLoc) <= config.getInt(key + "Range")){
         double incAmount = config.getDouble(key + "WithinRangeIncrease");
         double maxAmount = config.getDouble(key + "MaxChance");

@@ -54,7 +54,7 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
 	board = manager.getNewScoreboard();
 	Objective objective = board.registerNewObjective("mcrpg", "dummy");
 	objective.setDisplayName(Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.DisplayName").replaceAll("%Player%", player.getPlayer().getDisplayName())
-	.replaceAll("%Skill%", skill.getName())));
+	.replaceAll("%Skill%", skill.getDisplayName())));
 	Skill sk = player.getSkill(skill);
 	config.getConfigurationSection("DisplayConfig.Scoreboard.Lines").getKeys(false).stream().forEach(key ->{
 	  String value = Methods.color(player.getPlayer(), config.getString("DisplayConfig.Scoreboard.Lines." + key));

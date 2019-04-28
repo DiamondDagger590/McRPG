@@ -1,3 +1,11 @@
+1.2.5-ALPHA
++ Added a setting to forcibly display an actionbar update everytime a player gains exp
++ In the lang files, added a localization option for skill names. Commands will accept the english or custom version of the name
+= Bug fixes with Poseidons Guardian
+
+1.2.1-ALPHA - 1.2.4-ALPHA
+=Minor bug fixes
+
 1.2.0-ALPHA
 + Added Woodcutting Skill.
 + Added Posiedons Guardian for anti afk fishing

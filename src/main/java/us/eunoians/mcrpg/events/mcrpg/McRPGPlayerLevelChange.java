@@ -36,7 +36,7 @@ public class McRPGPlayerLevelChange implements Listener {
     //Send the player a message that they leveled up
     String message = Methods.color(e.getMcMMOPlayer().getPlayer(), mcRPG.getPluginPrefix() +
             mcRPG.getLangFile().getString("Messages.Players.LevelUp")
-                    .replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getName())
+                    .replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getType().getDisplayName())
                     .replaceAll("%Current_Level%", Integer.toString(e.getNextLevel())));
     Skill skillLeveled = e.getSkillLeveled();
     skillLeveled.updateExpToLevel();
@@ -63,6 +63,7 @@ public class McRPGPlayerLevelChange implements Listener {
         mp.getUsedTips().add(tipType);
       }
     }
+    //TODO for future reference
     //Do things for swords ability
     if(skillLeveled.getType().equals(Skills.SWORDS)) {
       //Get all enabled abilites
@@ -95,6 +96,11 @@ public class McRPGPlayerLevelChange implements Listener {
     if(skillLeveled.getType().equals(Skills.ARCHERY)) {
       //Get all enabled abilites
       List<String> enabledAbilities = Skills.ARCHERY.getEnabledAbilities();
+      //Iterate across these bois
+      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
+    }
+    if(skillLeveled.getType().equals(Skills.WOODCUTTING)){
+      List<String> enabledAbilities = Skills.WOODCUTTING.getEnabledAbilities();
       //Iterate across these bois
       addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
     }

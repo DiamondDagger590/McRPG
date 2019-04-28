@@ -36,6 +36,10 @@ public enum Skills {
 	return new Parser(McRPG.getInstance().getFileManager().getFile(file).getString("ExpEquation"));
   }
 
+  public String getDisplayName(){
+      return McRPG.getInstance().getLangFile().getString("SkillNames." + this.name);
+  }
+
   public boolean isEnabled(){
 	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
 	return McRPG.getInstance().getFileManager().getFile(file).getBoolean(name + "Enabled");
@@ -48,11 +52,11 @@ public enum Skills {
   }
 
   public static Skills fromString(String skill){
-	return Arrays.stream(Skills.values()).filter(type -> type.getName().equalsIgnoreCase(skill)).findAny().orElse(null);
+	return Arrays.stream(Skills.values()).filter(type -> type.getDisplayName().equalsIgnoreCase(skill) || type.getName().equalsIgnoreCase(skill)).findAny().orElse(null);
   }
 
   public static boolean isSkill(String skill){
-	return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
+	return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase()) || Arrays.stream(Skills.values()).map(type -> type.getDisplayName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
   }
 
 }

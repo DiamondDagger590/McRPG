@@ -220,7 +220,7 @@ NymphsVitalityConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&bWhen in a forest based biome, your'
-      - '&bhunger cant go below &eMinimumHunger%&b.'
+      - '&bhunger cant go below &e%MinimumHunger%&b.'
     MenuLore:
       - '&bThis ability regenerates hunger'
       - '&bwhile in forests'

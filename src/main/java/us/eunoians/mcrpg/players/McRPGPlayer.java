@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.players;
 import com.cyr1en.flatdb.Database;
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -1254,6 +1256,12 @@ public class McRPGPlayer {
 
   public void giveRedeemableLevels(int levels){
     this.redeemableLevels += levels;
+  }
+
+  public void sendConstantUpdate(Skill skill, int expGained){
+    getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Methods.color(getPlayer(), McRPG.getInstance().getConfig()
+            .getString("DisplayConfig.ActionBar." + skill.getName() + ".Message").replace("%Exp_Gained%", Integer.toString(expGained))
+            .replace("%Exp_To_Level%", Integer.toString(skill.getExpToLevel() - skill.getCurrentExp())))));
   }
 
   @Override

@@ -155,9 +155,9 @@ public class McAdmin implements CommandExecutor {
                   }
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Exp")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -165,7 +165,7 @@ public class McAdmin implements CommandExecutor {
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.getSkill(skill).giveExp(mp, amount, GainReason.COMMAND);
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -240,9 +240,9 @@ public class McAdmin implements CommandExecutor {
                   }
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Level")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -252,7 +252,7 @@ public class McAdmin implements CommandExecutor {
                 mp.getSkill(skill).updateExpToLevel();
 
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -745,9 +745,9 @@ public class McAdmin implements CommandExecutor {
                   mp.getAbilityLoadout().remove(remove);
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
+                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillWasReset")
-                        .replace("%Skill%", skill.getName())));
+                        .replace("%Skill%", skill.getType().getDisplayName())));
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
                 if(displayManager.doesPlayerHaveDisplay(p)) {
@@ -781,7 +781,7 @@ public class McAdmin implements CommandExecutor {
                 mp.updatePowerLevel();
                 skill.updateExpToLevel();
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
+                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
@@ -1036,9 +1036,9 @@ public class McAdmin implements CommandExecutor {
                   }
                 }
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Exp")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -1046,7 +1046,7 @@ public class McAdmin implements CommandExecutor {
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.getSkill(skill).giveExp(mp, amount, GainReason.COMMAND);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -1113,9 +1113,9 @@ public class McAdmin implements CommandExecutor {
                   }
                 }
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Level")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -1125,7 +1125,7 @@ public class McAdmin implements CommandExecutor {
                 mp.getSkill(skill).updateExpToLevel();
 
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getName())));
+                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
@@ -1578,9 +1578,9 @@ public class McAdmin implements CommandExecutor {
                   mp.getAbilityLoadout().remove(remove);
                 }
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
+                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillWasReset")
-                        .replace("%Skill%", skill.getName())));
+                        .replace("%Skill%", skill.getType().getDisplayName())));
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
                 if(displayManager.doesPlayerHaveDisplay(p)) {
@@ -1614,7 +1614,7 @@ public class McAdmin implements CommandExecutor {
                 mp.updatePowerLevel();
                 skill.updateExpToLevel();
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getName()).replace("%Player%", offlinePlayer.getName())));
+                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }

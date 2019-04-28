@@ -32,7 +32,7 @@ public class SubSkillGUI extends GUI{
 	  FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(skill.getName()));
 	  FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SUBSKILL_GUI);
 	  Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
-		  Methods.color(player.getPlayer(), guiConfig.getString("Title").replace("%Skill%", skill.getName())));
+		  Methods.color(player.getPlayer(), guiConfig.getString("Title").replace("%Skill%", skill.getDisplayName())));
 	  ArrayList<GUIItem> items = new ArrayList<>();
 	  List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
 	  enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));

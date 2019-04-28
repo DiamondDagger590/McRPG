@@ -160,6 +160,9 @@ public abstract class Skill {
 	if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())){
 	  return ;
 	}
+	if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseConstantActionBarUpdates")){
+	    player.sendConstantUpdate(this, expEvent.getExpGained());
+    }
 	GenericDisplay display = McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
 	if(display instanceof ExpDisplayType){
 	  ExpDisplayType expDisplayType = (ExpDisplayType) display;
