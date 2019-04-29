@@ -9,7 +9,7 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #If different materials of swords should give more exp. WOOD_SWORD: 1.0 means 100% of default exp
 MaterialBonus:
-  WOOD_SWORD: 1.0
+  WOODEN_SWORD: 1.0
   STONE_SWORD: 1.1
   GOLDEN_SWORD: 1.5
   IRON_SWORD: 1.25

@@ -80,6 +80,10 @@ public class WorldListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onChunkUnload(ChunkUnloadEvent event){
 	Chunk chunk = event.getChunk();
+	//Some edge case was happening here
+	if(chunk == null || event.getWorld() == null){
+	  return;
+    }
 	McRPG.getPlaceStore().chunkUnloaded(chunk.getX(), chunk.getZ(), event.getWorld());
   }
 }

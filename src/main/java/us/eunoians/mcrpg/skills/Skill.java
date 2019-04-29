@@ -72,40 +72,36 @@ public abstract class Skill {
   }
 
   /**
-   *
    * @param ability Enum value you want to get the ability instance of
    * @return instance of provided ability or null if invalid
    */
-  public BaseAbility getAbility(GenericAbility ability){
-	return abilityMap.getOrDefault(ability, null);
+  public BaseAbility getAbility(GenericAbility ability) {
+    return abilityMap.getOrDefault(ability, null);
   }
 
   /**
-   *
    * @param ability The ability you want to get a GenericAbility from
    * @return the enum value of the ability or null if invalid
    */
-  public GenericAbility getGenericAbility(String ability){
+  public GenericAbility getGenericAbility(String ability) {
     return abilityMap.keySet().stream().filter(ab -> ab.getName().equalsIgnoreCase(ability)).findFirst().orElse(null);
   }
 
   /**
-   *
    * @return The default ability for this skill
    */
-  public BaseAbility getDefaultAbility(){
+  public BaseAbility getDefaultAbility() {
     return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
   }
 
   /**
-   *
    * @return The array of Base Abilities
    */
-  public Collection<BaseAbility> getAbilities(){
+  public Collection<BaseAbility> getAbilities() {
     return abilityMap.values();
   }
 
-  public Set<GenericAbility> getAbilityKeys(){
+  public Set<GenericAbility> getAbilityKeys() {
     return abilityMap.keySet();
   }
 
@@ -113,93 +109,93 @@ public abstract class Skill {
     return type.getName();
   }
 
-  public void updateExpToLevel(){
-	Parser parser = type.getExpEquation();
-	parser.setVariable("skill_level", currentLevel);
-	parser.setVariable("power_level", player.getPowerLevel());
-	expToLevel = (int) parser.getValue();
-  }
-  /**
-   *
-   * @param exp The exp gained
-   * @param gainReason The reason the player is gaining the exp
-   */
-  public void giveExp(McRPGPlayer player, int exp, GainReason gainReason){
-	McRPGPlayerExpGainEvent expEvent = new McRPGPlayerExpGainEvent(player, exp, this, gainReason);
-	Bukkit.getPluginManager().callEvent(expEvent);
-	if(expEvent.isCancelled()){
-	  return;
-	}
-	exp = expEvent.getExpGained();
-    int oldLevel = currentLevel;
-    if(exp + currentExp >= expToLevel){
-	  int amountOfLevels = 1;
-      int leftOverExp = currentExp + exp - expToLevel;
-      currentLevel++;
-      Parser parser = type.getExpEquation();
-	  parser.setVariable("skill_level", currentLevel);
-	  parser.setVariable("power_level", player.getPowerLevel());
-	  expToLevel = (int) parser.getValue();
-	  currentExp = leftOverExp;
-	  while(currentExp >= expToLevel){
-	    amountOfLevels++;
-	    leftOverExp = currentExp - expToLevel;
-	    currentLevel++;
-		parser.setVariable("skill_level", currentLevel);
-		parser.setVariable("power_level", player.getPowerLevel());
-		expToLevel = (int) parser.getValue();
-		currentExp = leftOverExp;
-	  }
-	  McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, oldLevel, currentLevel, amountOfLevels, this);
-	  Bukkit.getPluginManager().callEvent(event);
-    }
-	else{
-	  currentExp += exp;
-	  //expToLevel -= exp;
-	}
-	if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())){
-	  return ;
-	}
-	if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseConstantActionBarUpdates")){
-	    player.sendConstantUpdate(this, expEvent.getExpGained());
-    }
-	GenericDisplay display = McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
-	if(display instanceof ExpDisplayType){
-	  ExpDisplayType expDisplayType = (ExpDisplayType) display;
-	  if(expDisplayType.getSkill().equals(this.getType())){
-		expDisplayType.sendUpdate(currentExp, expToLevel, currentLevel, exp);
-	  }
-	}
+  public void updateExpToLevel() {
+    Parser parser = type.getExpEquation();
+    parser.setVariable("skill_level", currentLevel);
+    parser.setVariable("power_level", player.getPowerLevel());
+    expToLevel = (int) parser.getValue();
   }
 
   /**
-   *
-   * @param levels The amount of levels to give
+   * @param exp        The exp gained
+   * @param gainReason The reason the player is gaining the exp
+   */
+  public void giveExp(McRPGPlayer player, int exp, GainReason gainReason) {
+    McRPGPlayerExpGainEvent expEvent = new McRPGPlayerExpGainEvent(player, exp, this, gainReason);
+    Bukkit.getPluginManager().callEvent(expEvent);
+    if(expEvent.isCancelled()) {
+      return;
+    }
+    exp = expEvent.getExpGained();
+    int oldLevel = currentLevel;
+    if(exp + currentExp >= expToLevel) {
+      int amountOfLevels = 1;
+      int leftOverExp = currentExp + exp - expToLevel;
+      currentLevel++;
+      Parser parser = type.getExpEquation();
+      parser.setVariable("skill_level", currentLevel);
+      parser.setVariable("power_level", player.getPowerLevel());
+      expToLevel = (int) parser.getValue();
+      currentExp = leftOverExp;
+      while(currentExp >= expToLevel) {
+        amountOfLevels++;
+        leftOverExp = currentExp - expToLevel;
+        currentLevel++;
+        parser.setVariable("skill_level", currentLevel);
+        parser.setVariable("power_level", player.getPowerLevel());
+        expToLevel = (int) parser.getValue();
+        currentExp = leftOverExp;
+      }
+      McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, oldLevel, currentLevel, amountOfLevels, this);
+      Bukkit.getPluginManager().callEvent(event);
+    }
+    else {
+      currentExp += exp;
+      //expToLevel -= exp;
+    }
+    if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseConstantActionBarUpdates")) {
+      player.sendConstantUpdate(this, expEvent.getExpGained());
+    }
+    if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())) {
+      return;
+    }
+
+    GenericDisplay display = McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
+    if(display instanceof ExpDisplayType) {
+      ExpDisplayType expDisplayType = (ExpDisplayType) display;
+      if(expDisplayType.getSkill().equals(this.getType())) {
+        expDisplayType.sendUpdate(currentExp, expToLevel, currentLevel, exp);
+      }
+    }
+  }
+
+  /**
+   * @param levels   The amount of levels to give
    * @param resetExp If the exp should be reset on level ip
    */
-  public void giveLevels(McRPGPlayer player, int levels, boolean resetExp){
+  public void giveLevels(McRPGPlayer player, int levels, boolean resetExp) {
     int old = currentLevel;
     currentLevel += levels;
     McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, old, currentLevel, levels, this);
     Bukkit.getPluginManager().callEvent(event);
-	Parser parser = type.getExpEquation();
-	parser.setVariable("skill_level", currentLevel);
-	parser.setVariable("power_level", player.getPowerLevel());
-	expToLevel = (int) parser.getValue();
-    if(resetExp){
+    Parser parser = type.getExpEquation();
+    parser.setVariable("skill_level", currentLevel);
+    parser.setVariable("power_level", player.getPowerLevel());
+    expToLevel = (int) parser.getValue();
+    if(resetExp) {
       currentExp = 0;
-	}
+    }
   }
 
-  public void resetSkill(){
+  public void resetSkill() {
     expToLevel = 0;
     currentLevel = 0;
     currentExp = 0;
-	for(BaseAbility baseAbility : this.getAbilities()){
-	  baseAbility.setToggled(true);
-	  baseAbility.setCurrentTier(0);
-	  baseAbility.setUnlocked(false);
-	}
-	updateExpToLevel();
+    for(BaseAbility baseAbility : this.getAbilities()) {
+      baseAbility.setToggled(true);
+      baseAbility.setCurrentTier(0);
+      baseAbility.setUnlocked(false);
+    }
+    updateExpToLevel();
   }
 }
