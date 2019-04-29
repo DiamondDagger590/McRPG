@@ -20,6 +20,7 @@ public enum UnlockedAbilities implements GenericAbility {
   BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
   BLESSING_OF_APOLLO("BlessingOfApollo", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
   BLESSING_OF_ARTEMIS("BlessingOfArtemis", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
+  BULLET_PROOF("BulletProof", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   COMBO("Combo", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   CURSE_OF_HADES("CurseOfHades", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
   DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
@@ -27,11 +28,14 @@ public enum UnlockedAbilities implements GenericAbility {
   DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
   DIAMOND_FLOWERS("DiamondFlowers", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
   DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
+  DIVINE_ESCAPE("DivineEscape", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
+  DODGE("Dodge", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   DRYADS_GIFT("DryadsGift", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
   FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
   HEAVY_SWING("HeavySwing", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
   HESPERIDES_APPLES("HesperidesApples", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
   IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
+  IRON_MUSCLES("IronMuscles", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
   MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
   NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
@@ -43,11 +47,13 @@ public enum UnlockedAbilities implements GenericAbility {
   REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
   REPLANTING("Replanting", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
   RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
+  RUNNERS_DIET("RunnersDiet", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
   SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
   SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
   TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
   TEMPORAL_HARVEST("TemporalHarvest", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
+  THICK_SKIN("ThickSkin", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
   TIPPED_ARROWS("TippedArrows", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG);
@@ -98,7 +104,7 @@ public enum UnlockedAbilities implements GenericAbility {
    * @return The instance of the unlocked ability if a correct name is provided or null if the ability provided does not exist
    */
   public static UnlockedAbilities fromString(String ability) {
-    if(ability.contains("bleed") && ability.contains("plus")){
+    if(ability.contains("bleed") && ability.contains("plus")) {
       return BLEED_PLUS;
     }
     return Arrays.stream(UnlockedAbilities.values()).filter(ab -> ab.getName().equalsIgnoreCase(ability)).findAny().orElse(null);

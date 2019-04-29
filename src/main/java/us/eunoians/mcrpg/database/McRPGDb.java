@@ -47,6 +47,7 @@ public class McRPGDb {
     dbBuilder.appendTable(MiningTable.class);
     dbBuilder.appendTable(SwordsTable.class);
     dbBuilder.appendTable(UnarmedTable.class);
+    dbBuilder.appendTable(FitnessTable.class);
     dbBuilder.appendTable(generated);
     try {
       database = dbBuilder.build();
