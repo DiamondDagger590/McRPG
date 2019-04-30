@@ -45,7 +45,7 @@ import java.util.List;
 
 public class InteractHandler implements Listener {
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void interactHandler(PlayerInteractEvent e){
 	Player p = e.getPlayer();
 	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());

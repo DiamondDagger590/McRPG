@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
@@ -35,13 +36,15 @@ public class PickupEvent implements Listener {
         }
         if(slot != firstEmpty && firstEmpty != -1) {
           e.setCancelled(true);
-          e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 5, 1);
+          e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 3, 1);
+          ItemStack itemToPickup = e.getItem().getItemStack();
           Inventory inv = e.getPlayer().getInventory();
           // e.getPlayer().getInventory().setItem(firstEmpty, e.getItem().getItemStack());
-          int amount = e.getItem().getItemStack().getAmount();
-          Material mat = e.getItem().getItemStack().getType();
+          int amount = itemToPickup.getAmount();
+          Material mat = itemToPickup.getType();
+          boolean hasMeta = itemToPickup.hasItemMeta();
+          ItemMeta meta = hasMeta ? itemToPickup.getItemMeta() : null;
           ArrayList<Integer> emptySlots = new ArrayList<>();
-          //if the chest contents are full, check if there are any stacks we can increase before dropping
           for(int i = 0; i < inv.getSize(); i++) {
             if(i == e.getPlayer().getInventory().getHeldItemSlot()) {
               continue;
@@ -64,6 +67,12 @@ public class PickupEvent implements Listener {
                 continue;
               }
               else {
+                if(hasMeta && !currentItem.hasItemMeta() || !hasMeta && currentItem.hasItemMeta()){
+                  continue;
+                }
+                if(hasMeta && currentItem.hasItemMeta() && !meta.equals(currentItem.getItemMeta())){
+                  continue;
+                }
                 if(currentItem.getAmount() + amount > 64) {
                   amount -= 64 - currentItem.getAmount();
                   currentItem.setAmount(64);
@@ -85,6 +94,9 @@ public class PickupEvent implements Listener {
               break;
             }
             ItemStack newStack = new ItemStack(mat);
+            if(hasMeta){
+              newStack.setItemMeta(meta);
+            }
             //if the amount is greater than a stack
             if(amount > 64) {
               newStack.setAmount(64);

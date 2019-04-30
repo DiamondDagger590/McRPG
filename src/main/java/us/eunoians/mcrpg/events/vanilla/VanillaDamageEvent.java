@@ -96,8 +96,11 @@ public class VanillaDamageEvent implements Listener {
    * It was released under the GPLv3 license
    */
 
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void damageEvent(EntityDamageByEntityEvent e) {
+    if(e.isCancelled()){
+      return;
+    }
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity) {
       Player damager = (Player) e.getDamager();

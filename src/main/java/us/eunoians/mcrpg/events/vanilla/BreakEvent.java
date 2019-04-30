@@ -59,7 +59,7 @@ import java.util.*;
 
 public class BreakEvent implements Listener {
 
-  @EventHandler(priority = EventPriority.LOW)
+  @EventHandler(priority = EventPriority.HIGHEST)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event) {
     if(!event.isCancelled() && event.getPlayer().getGameMode() == GameMode.SURVIVAL) {
