@@ -213,6 +213,14 @@ public class McRPGPlayer {
   @Setter
   private Location lastFishCaughtLoc = null;
 
+  @Getter
+  @Setter
+  private double divineEscapeExpDebuff;
+
+  @Getter
+  @Setter
+  private double divineEscapeDamageDebuff;
+
 
 
   public McRPGPlayer(UUID uuid) {
@@ -897,7 +905,103 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(woodcutting);
           }
+          else if(skill.equals(Skills.FITNESS)) {
+            //Initialize bleed
+            Bleed bleed = new Bleed();
+            bleed.setToggled(rs.getBoolean("is_bleed_toggled"));
+            //Initialize Deeper Wound
+            DeeperWound deeperWound = new DeeperWound();
+            deeperWound.setToggled(rs.getBoolean("is_deeper_wound_toggled"));
+            deeperWound.setCurrentTier(rs.getInt("deeper_wound_tier"));
+            if(deeperWound.getCurrentTier() != 0) {
+              deeperWound.setUnlocked(true);
+            }
+            //Initialize Bleed+
+            BleedPlus bleedPlus = new BleedPlus();
+            bleedPlus.setToggled(rs.getBoolean("is_bleed_plus_toggled"));
+            bleedPlus.setCurrentTier(rs.getInt("bleed_plus_tier"));
+            if(bleedPlus.getCurrentTier() != 0) {
+              bleedPlus.setUnlocked(true);
+            }
+            //Initialize Vampire
+            Vampire vampire = new Vampire();
+            vampire.setToggled(rs.getBoolean("is_vampire_toggled"));
+            vampire.setCurrentTier(rs.getInt("vampire_tier"));
+            if(vampire.getCurrentTier() != 0) {
+              vampire.setUnlocked(true);
+            }
+            //Initialize Serrated Strikes
+            SerratedStrikes serratedStrikes = new SerratedStrikes();
+            serratedStrikes.setToggled(rs.getBoolean("is_serrated_strikes_toggled"));
+            serratedStrikes.setCurrentTier(rs.getInt("serrated_strikes_tier"));
+            if(serratedStrikes.getCurrentTier() != 0) {
+              serratedStrikes.setUnlocked(true);
+            }
+            //Initialize Rage Spike
+            RageSpike rageSpike = new RageSpike();
+            rageSpike.setToggled(rs.getBoolean("is_rage_spike_toggled"));
+            rageSpike.setCurrentTier(rs.getInt("rage_spike_tier"));
+            if(rageSpike.getCurrentTier() != 0) {
+              rageSpike.setUnlocked(true);
+            }
+            //Initialize Tainted Blade
+            TaintedBlade taintedBlade = new TaintedBlade();
+            taintedBlade.setToggled(rs.getBoolean("is_tainted_blade_toggled"));
+            taintedBlade.setCurrentTier(rs.getInt("tainted_blade_tier"));
+            if(taintedBlade.getCurrentTier() != 0) {
+              taintedBlade.setUnlocked(true);
+            }
 
+            int serratedStrikesCooldown = rs.getInt("serrated_strikes_cooldown");
+            int rageSpikeCooldown = rs.getInt("rage_spike_cooldown");
+            int taintedBladeCooldown = rs.getInt("tainted_blade_cooldown");
+            if(serratedStrikesCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, serratedStrikesCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
+            }
+            if(rageSpikeCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, rageSpikeCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.RAGE_SPIKE, cal.getTimeInMillis());
+            }
+            if(taintedBladeCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, taintedBladeCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
+            }
+
+            if(rs.getBoolean("is_deeper_wound_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DEEPER_WOUND);
+            }
+            if(rs.getBoolean("is_bleed_plus_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BLEED_PLUS);
+            }
+            if(rs.getBoolean("is_vampire_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.VAMPIRE);
+            }
+            if(rs.getBoolean("is_serrated_strikes_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SERRATED_STRIKES);
+            }
+            if(rs.getBoolean("is_rage_spike_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.RAGE_SPIKE);
+            }
+            if(rs.getBoolean("is_tainted_blade_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.TAINTED_BLADE);
+            }
+
+            abilityMap.put(DefaultAbilities.BLEED, bleed);
+            abilityMap.put(UnlockedAbilities.DEEPER_WOUND, deeperWound);
+            abilityMap.put(UnlockedAbilities.BLEED_PLUS, bleedPlus);
+            abilityMap.put(UnlockedAbilities.VAMPIRE, vampire);
+            abilityMap.put(UnlockedAbilities.SERRATED_STRIKES, serratedStrikes);
+            abilityMap.put(UnlockedAbilities.RAGE_SPIKE, rageSpike);
+            abilityMap.put(UnlockedAbilities.TAINTED_BLADE, taintedBlade);
+            //Create skill
+            Swords swords = new Swords(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(swords);
+          }
         } catch(SQLException e) {
           e.printStackTrace();
         }
