@@ -27,7 +27,7 @@ public class MiningTable {
   @Column(defaultValue = "0") private int blast_mining_tier;
   @Column(defaultValue = "0") private int ore_scanner_tier;
 
-  @Column(defaultValue = "0") private int super_break_cooldown;
+  @Column(defaultValue = "0") private int super_breaker_cooldown;
   @Column(defaultValue = "0") private int blast_mining_cooldown;
   @Column(defaultValue = "0") private int ore_scanner_cooldown;
 
