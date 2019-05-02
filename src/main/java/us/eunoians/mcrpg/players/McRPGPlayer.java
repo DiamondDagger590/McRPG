@@ -16,6 +16,7 @@ import org.intellij.lang.annotations.Language;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
+import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
 import us.eunoians.mcrpg.abilities.swords.*;
@@ -23,8 +24,8 @@ import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.api.util.RedeemBit;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.skills.*;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
@@ -39,188 +40,52 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class McRPGPlayer {
 
-  /**
-   * The UUID of the player
-   */
-  @Getter
-  private UUID uuid;
-  /**
-   * The power level of a player. The total sum of all of the players skill levels
-   */
-  @Getter
-  private int powerLevel;
-  /**
-   * The amount of ability points a player has for upgrading their abilities.
-   */
-  @Getter
-  @Setter
-  private int abilityPoints;
-  /**
-   * The array of skills for the player
-   */
+  @Getter private UUID uuid;
+
+  @Getter private int powerLevel;
+  @Getter @Setter private int abilityPoints;
+
   private ArrayList<Skill> skills = new ArrayList<>();
-  /**
-   * The abilities a player has unlocked and has not yet accepted or denied. Whenever a player next opens the mcrpg main gui they should be forced to go through these
-   */
-  @Getter
-  private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
 
-  /**
-   * Map of the abilities on cooldown
-   */
+  @Getter private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
   private HashMap<UnlockedAbilities, Long> abilitiesOnCooldown = new HashMap<>();
+  @Getter private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
+  @Getter @Setter private long endTimeForReplaceCooldown;
+  @Getter private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
 
-  /**
-   * Boolean of if the player should be immune from bleed
-   */
-  @Getter
-  @Setter
-  private boolean hasBleedImmunity = false;
+  //Ability data
+  @Getter @Setter private boolean hasBleedImmunity = false;
+  @Getter @Setter private boolean hasDazeImmunity = false;
+  @Setter private boolean canSmite;
+  @Getter @Setter private SmitingFistEvent smitingFistData;
+  @Getter @Setter private boolean isLinkedToRemoteTransfer = false;
+  @Getter @Setter private boolean canDenseImpact;
+  @Getter @Setter private int armourDmg;
+  @Getter @Setter private double divineEscapeExpDebuff;
+  @Getter @Setter private double divineEscapeDamageDebuff;
 
-  @Getter
-  @Setter
-  private boolean hasDazeImmunity = false;
+  //Ready variables
+  @Getter @Setter private boolean isReadying = false;
+  @Getter @Setter private PlayerReadyBit readyingAbilityBit = null;
 
-  /**
-   * The players current ability loadout
-   */
-  @Getter
-  private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
+  //Settings
+  @Getter @Setter private MobHealthbarUtils.MobHealthbarType healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
+  @Getter @Setter private boolean keepHandEmpty = false;
+  @Getter @Setter private DisplayType displayType = DisplayType.SCOREBOARD;
+  @Getter @Setter private boolean autoDeny = false;
+  @Getter @Setter private boolean ignoreTips;
 
-  /**
-   * The kind of display the player currently has
-   */
-  @Getter
-  @Setter
-  private DisplayType displayType = DisplayType.SCOREBOARD;
+  @Getter private Set<TipType> usedTips = new HashSet<>();
 
-  /**
-   * If the player is readying for an active ability
-   */
-  @Getter
-  @Setter
-  private boolean isReadying = false;
+  //Redeemable data
+  @Getter @Setter private int redeemableExp;
+  @Getter @Setter private int redeemableLevels;
+  @Getter @Setter private boolean listenForCustomExpInput = false;
+  @Getter @Setter private RedeemBit redeemBit;
 
-  /**
-   * Contains info about what ability is being readied
-   */
-  @Getter
-  @Setter
-  private PlayerReadyBit readyingAbilityBit = null;
-
-  /**
-   * Boolean to check if the player is linked to remote transfer
-   */
-  @Getter
-  @Setter
-  private boolean isLinkedToRemoteTransfer = false;
-
-  /**
-   * Boolean to check if the player can smite
-   */
-  @Getter
-  @Setter
-  private boolean canSmite;
-
-  /**
-   * Object containing info about SmitingFist
-   */
-  @Getter
-  @Setter
-  private SmitingFistEvent smitingFistData;
-
-  /**
-   * Boolean if the player can use dense impact
-   */
-  @Getter
-  @Setter
-  private boolean canDenseImpact;
-
-  /**
-   * How much dmg Dense Impact should do
-   */
-  @Getter
-  @Setter
-  private int armourDmg;
-
-  /**
-   * The type of health display when a player hits a mob
-   */
-  @Getter
-  @Setter
-  private MobHealthbarUtils.MobHealthbarType healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
-
-  /**
-   * The end time for when a players replace ability cooldown should expire
-   */
-  @Getter
-  @Setter
-  private long endTimeForReplaceCooldown;
-
-  /**
-   * If an empty hand should be kept as such
-   */
-  @Getter
-  @Setter
-  private boolean keepHandEmpty = false;
-
-  /**
-   * If abilities should be auto denied
-   */
-  @Getter
-  @Setter
-  private boolean autoDeny = false;
-  /**
-   * If tips shouldnt be sent to player
-   */
-  @Getter
-  @Setter
-  private boolean ignoreTips;
-
-  /**
-   * Current active abilities
-   */
-  @Getter
-  private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
-
-  /**
-   * Tips that a player has already had displayed to them
-   */
-  @Getter
-  private HashSet<TipType> usedTips = new HashSet<>();
-
-  @Getter
-  @Setter
-  private int redeemableExp;
-
-  @Getter
-  @Setter
-  private int redeemableLevels;
-
-  @Getter
-  @Setter
-  private boolean listenForCustomExpInput = false;
-
-  @Getter
-  @Setter
-  private RedeemBit redeemBit;
-
-  @Getter
-  @Setter
-  private double guardianSummonChance;
-
-  @Getter
-  @Setter
-  private Location lastFishCaughtLoc = null;
-
-  @Getter
-  @Setter
-  private double divineEscapeExpDebuff;
-
-  @Getter
-  @Setter
-  private double divineEscapeDamageDebuff;
-
+  //Guardian Data
+  @Getter @Setter private double guardianSummonChance;
+  @Getter @Setter private Location lastFishCaughtLoc = null;
 
 
   public McRPGPlayer(UUID uuid) {
@@ -905,44 +770,45 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(woodcutting);
           }
+          //Initialize Fitness
           else if(skill.equals(Skills.FITNESS)) {
-            //Initialize bleed
-            Bleed bleed = new Bleed();
-            bleed.setToggled(rs.getBoolean("is_bleed_toggled"));
-            //Initialize Deeper Wound
-            DeeperWound deeperWound = new DeeperWound();
-            deeperWound.setToggled(rs.getBoolean("is_deeper_wound_toggled"));
-            deeperWound.setCurrentTier(rs.getInt("deeper_wound_tier"));
-            if(deeperWound.getCurrentTier() != 0) {
-              deeperWound.setUnlocked(true);
+            //Initialize Roll
+            Roll roll = new Roll();
+            roll.setToggled(rs.getBoolean("is_roll_toggled"));
+            //Initialize Thick Skin
+            ThickSkin thickSkin = new ThickSkin();
+            thickSkin.setToggled(rs.getBoolean("is_thick_skin_toggled"));
+            thickSkin.setCurrentTier(rs.getInt("thick_skin_tier"));
+            if(thickSkin.getCurrentTier() != 0) {
+              thickSkin.setUnlocked(true);
             }
-            //Initialize Bleed+
-            BleedPlus bleedPlus = new BleedPlus();
-            bleedPlus.setToggled(rs.getBoolean("is_bleed_plus_toggled"));
-            bleedPlus.setCurrentTier(rs.getInt("bleed_plus_tier"));
-            if(bleedPlus.getCurrentTier() != 0) {
-              bleedPlus.setUnlocked(true);
+            //Initialize Bullet Proof
+            BulletProof bulletProof = new BulletProof();
+            bulletProof.setToggled(rs.getBoolean("is_bullet_proof_toggled"));
+            bulletProof.setCurrentTier(rs.getInt("bullet_proof_tier"));
+            if(bulletProof.getCurrentTier() != 0) {
+              bulletProof.setUnlocked(true);
             }
-            //Initialize Vampire
-            Vampire vampire = new Vampire();
-            vampire.setToggled(rs.getBoolean("is_vampire_toggled"));
-            vampire.setCurrentTier(rs.getInt("vampire_tier"));
-            if(vampire.getCurrentTier() != 0) {
-              vampire.setUnlocked(true);
+            //Initialize Dodge
+            Dodge dodge = new Dodge();
+            dodge.setToggled(rs.getBoolean("is_dodge_toggled"));
+            dodge.setCurrentTier(rs.getInt("dodge_tier"));
+            if(dodge.getCurrentTier() != 0) {
+              dodge.setUnlocked(true);
             }
-            //Initialize Serrated Strikes
-            SerratedStrikes serratedStrikes = new SerratedStrikes();
-            serratedStrikes.setToggled(rs.getBoolean("is_serrated_strikes_toggled"));
-            serratedStrikes.setCurrentTier(rs.getInt("serrated_strikes_tier"));
-            if(serratedStrikes.getCurrentTier() != 0) {
-              serratedStrikes.setUnlocked(true);
+            //Initialize Iron Muscles
+            IronMuscles ironMuscles = new IronMuscles();
+            ironMuscles.setToggled(rs.getBoolean("is_iron_muscles_toggled"));
+            ironMuscles.setCurrentTier(rs.getInt("iron_muscles_tier"));
+            if(ironMuscles.getCurrentTier() != 0) {
+              ironMuscles.setUnlocked(true);
             }
-            //Initialize Rage Spike
-            RageSpike rageSpike = new RageSpike();
-            rageSpike.setToggled(rs.getBoolean("is_rage_spike_toggled"));
-            rageSpike.setCurrentTier(rs.getInt("rage_spike_tier"));
-            if(rageSpike.getCurrentTier() != 0) {
-              rageSpike.setUnlocked(true);
+            //Initialize Runners Diet
+            RunnersDiet runnersDiet = new RunnersDiet();
+            runnersDiet.setToggled(rs.getBoolean("is_runners_diet_toggled"));
+            runnersDiet.setCurrentTier(rs.getInt("runners_diet_tier"));
+            if(runnersDiet.getCurrentTier() != 0) {
+              runnersDiet.setUnlocked(true);
             }
             //Initialize Tainted Blade
             TaintedBlade taintedBlade = new TaintedBlade();
