@@ -529,6 +529,9 @@ public class VanillaDamageEvent implements Listener {
           baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
         }
         double dmg = e.getDamage();
+        if(!arrow.hasMetadata("ShootLoc")){
+          return;
+        }
         Location loc = Methods.stringToLoc(arrow.getMetadata("ShootLoc").get(0).asString());
         Location hitLoc = e.getEntity().getLocation();
         double distance = loc.distance(hitLoc);

@@ -159,12 +159,14 @@ public class InteractHandler implements Listener {
 		  @Override
 		  public void run(){
 			doubleDrop.setBonusChance(0);
-			mp.getPlayer().sendMessage(Methods.color(p,McRPG.getInstance().getPluginPrefix() +
-				McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Deactivated")));
+			if(mp.isOnline()) {
+				mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
+								McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Deactivated")));
+				mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
+			}
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.SECOND,
 				superBreakerEvent.getCooldown());
-			mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
 			mp.getActiveAbilities().remove(UnlockedAbilities.SUPER_BREAKER);
 			mp.addAbilityOnCooldown(UnlockedAbilities.SUPER_BREAKER, cal.getTimeInMillis());
 		  }
