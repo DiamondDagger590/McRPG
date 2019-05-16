@@ -1,0 +1,323 @@
+#Is fitness enabled
+FitnessEnabled: true
+#Exp equation for fitness. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+#
+ExpEquation: '2000+(20*(skill_level))'
+MaxLevel: 1000
+#How much exp should be awarded per damage source.
+ExpAwardedPerDamage:
+  FALL_DAMAGE: 200
+  ENTITY_DAMAGE: 100
+  ENVIRONMENT_DAMAGE: 15
+FallEquation: '(damage*exp_awarded)*feather_falling_level'
+#Minimal distance on each axis that a player must be from their last location to gain exp from falling
+AntiAFK:
+  XRange: 5
+  ZRange: 5
+  YRange: 10
+#What abilities are enabled
+EnabledAbilities:
+  Roll: true
+  ThickSkin: true
+  BulletProof: true
+  Dodge: true
+  IronMuscles: true
+  RunnersDiet: true
+  DivineEscape: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.fitness.unlock{ability} and mcrpg.fitness.use.{ability}
+UsePermsForAbilites:
+  Roll: false
+  ThickSkin: false
+  BulletProof: false
+  Dodge: false
+  IronMuscles: false
+  RunnerDiet: false
+  DivineEscape: false
+#At what fitness level should these abilities be unlocked at
+UnlockLevelForAbility:
+  ThickSkin: 50
+  BulletProof: 150
+  Dodge: 250
+  IronMuscles: 100
+  RunnersDiet: 200
+  DivineEscape: 300
+#
+# Roll is the default ability that every player has. This ability will increase every time the players Fitness level is increased
+#
+RollConfig:
+  #Equation for Roll chance. Default gives 66% at level 1000.
+  RollChanceEquation: (fitness_level)*.66
+  RollExpBuff: negated_damage*1.3
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Roll'
+    Material: FEATHER
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYou have a &e%Roll_Chance%%'
+      - '&bof halving fall damage taken'
+    MenuLore:
+      - '&bThis ability has a chance of negating fall damage'
+#
+# Config for the ability Thick Skin
+# This passive ability decreases the amount of damage taken from melee attacks
+#
+ThickSkinConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
+  TierI:
+    #The % of damage that will be decreased when hit by melee weapons
+    DamageDecrease: 2.5
+  TierII:
+    DamageDecrease: 4.0
+  TierIII:
+    DamageDecrease: 6.5
+  TierIV:
+    DamageDecrease: 9.0
+  TierV:
+    DamageDecrease: 12.5
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Thick Skin'
+    Material: ROTTEN_FLESH
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bDamage from melee attacks is'
+      - '&bdecreased by &e%DamageDecrease%%'
+    MenuLore:
+      - '&bThis ability decreases damage taken from melee'
+#
+# Config for the ability Bullet Proof
+# This ability can negate damage from arrows
+#
+BulletProofConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
+  #Config for each tier
+  TierI:
+    #Odds of activation per tier
+    ActivationChance: 5
+  TierII:
+    ActivationChance: 7.5
+  TierIII:
+    ActivationChance: 10.0
+  TierIV:
+    ActivationChance: 12.5
+  TierV:
+    ActivationChance: 15.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Bullet Proof'
+    Material: CHAINMAIL_CHESTPLATE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYou have a &e%ActivationChance%% &bchance'
+      - '&bof negating damage from an arrow'
+    MenuLore:
+      - '&bThis ability negates damage from arrows'
+#
+# Config for the ability Dodge
+# This passive ability has a chance of halving damage taken from arrows or melee
+#
+DodgeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
+  #Config for each tier
+  TierI:
+    #Odds of activation per tier
+    ActivationChance: 3.0
+    #% of damage that should be reduced
+    DamageReduction: 50.0
+  TierII:
+    ActivationChance: 4.0
+    DamageReduction: 50.0
+  TierIII:
+    ActivationChance: 5.0
+    DamageReduction: 50.0
+  TierIV:
+    ActivationChance: 7.5
+    DamageReduction: 50.0
+  TierV:
+    ActivationChance: 10.0
+    DamageReduction: 50.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Dodge'
+    Material: LEATHER_BOOTS
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYou have a &e%ActivationChance%% &bchance'
+      - '&bof taking &e%DamageReduction%% &breduced damage'
+    MenuLore:
+      - '&bThis ability can reduce all'
+      - '&bdamage taken'
+#
+# Config for the ability Iron Muscles
+# This active ability gives a chance to do extra durability damage to weapons that hit the player
+#
+IronMusclesConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
+  #Config for each tier
+  TierI:
+    #How much should the activation rate be boosted at each tier
+    ActivationChance: 5.0
+    #Amount of damage done to weapon that hits you
+    WeaponDamage: 1
+  TierII:
+    ActivationChance: 10.0
+    WeaponDamage: 1
+  TierIII:
+    ActivationChance: 10.0
+    WeaponDamage: 2
+  TierIV:
+    ActivationChance: 15.0
+    WeaponDamage: 2
+  TierV:
+    ActivationChance: 15.0
+    WeaponDamage: 3
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Iron Muscles'
+    Material: CACTUS
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bThis ability as a &e%ActivationChance%% &bchance'
+      - '&bof dealing &e%WeaponDamage% &bextra damage'
+      - '&bto an attackers melee weapon'
+    MenuLore:
+      - '&bDeals durability damage when hit by a melee weapon'
+#
+# Config for the ability Runners Diet
+# This active ability gives a chance to not lose hunger while sprinting
+#
+RunnersDietConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
+  #Config for each tier
+  TierI:
+    #The lowest hunger a player can have while sprinting
+    MinHunger: 7
+  TierII:
+    MinHunger: 8
+  TierIII:
+    MinHunger: 9
+  TierIV:
+    MinHunger: 10
+  TierV:
+    MinHunger: 12
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Runners Diet'
+    Material: BAKED_POTATO
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bWhile running, you hunger will not'
+      - '&bdrop below &e%MinHunger%'
+    MenuLore:
+      - '&bKeep hunger while running'
+#
+# Config for the ability Divine Escape
+# This active ability lets players ressurect at their bed
+#
+DivineEscapeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
+  #Config for each tier
+  TierI:
+    #Percentage by which to decrease their exp gain by
+    McRPGExpPenalty: 30.0
+    #Duration in seconds
+    McRPGExpPenaltyDuration: 1800
+    #Percentage by which to increase damage received by
+    DamagePenalty: 15.0
+    #Duration in seconds
+    DamagePenaltyDuration: 1800
+    #Cooldown in seconds
+    Cooldown: 7200
+  TierII:
+    McRPGExpPenalty: 29.0
+    McRPGExpPenaltyDuration: 1800
+    DamagePenalty: 15.0
+    DamagePenaltyDuration: 1800
+    Cooldown: 7200
+  TierIII:
+    McRPGExpPenalty: 27.0
+    McRPGExpPenaltyDuration: 1800
+    DamagePenalty: 14.0
+    DamagePenaltyDuration: 1800
+    Cooldown: 7200
+  TierIV:
+    McRPGExpPenalty: 25.0
+    McRPGExpPenaltyDuration: 1800
+    DamagePenalty: 12.0
+    DamagePenaltyDuration: 1800
+    Cooldown: 7200
+  TierV:
+    McRPGExpPenalty: 22.5
+    McRPGExpPenaltyDuration: 1800
+    DamagePenalty: 10.0
+    DamagePenaltyDuration: 1800
+    Cooldown: 7200
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Divine Escape'
+    Material: YELLOW_BED
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bWhen taking damage that would result'
+      - '&bin death, respawn at your bed.'
+      - '&bRespawning will result in penalties.'
+      - '&bPenalties will go away after a while'
+      - '&bDecrease McRPG Exp by &e%McRPGExpPenalty%%'
+      - '&bIncrease damage taken by &e%DamagePenalty%%'
+      - '&bCooldown: &e%Cooldown%'
+    MenuLore:
+      - '&bAllows you to resurrect'

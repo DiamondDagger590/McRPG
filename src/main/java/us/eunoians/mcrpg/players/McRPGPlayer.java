@@ -811,62 +811,50 @@ public class McRPGPlayer {
               runnersDiet.setUnlocked(true);
             }
             //Initialize Tainted Blade
-            TaintedBlade taintedBlade = new TaintedBlade();
-            taintedBlade.setToggled(rs.getBoolean("is_tainted_blade_toggled"));
-            taintedBlade.setCurrentTier(rs.getInt("tainted_blade_tier"));
-            if(taintedBlade.getCurrentTier() != 0) {
-              taintedBlade.setUnlocked(true);
+            DivineEscape divineEscape = new DivineEscape();
+            divineEscape.setToggled(rs.getBoolean("is_divine_escape_toggled"));
+            divineEscape.setCurrentTier(rs.getInt("divine_escape_tier"));
+            if(divineEscape.getCurrentTier() != 0) {
+              divineEscape.setUnlocked(true);
             }
 
-            int serratedStrikesCooldown = rs.getInt("serrated_strikes_cooldown");
-            int rageSpikeCooldown = rs.getInt("rage_spike_cooldown");
-            int taintedBladeCooldown = rs.getInt("tainted_blade_cooldown");
-            if(serratedStrikesCooldown > 0) {
+            int divineEscapeCooldown = rs.getInt("divine_escape_cooldown");
+
+            if(divineEscapeCooldown > 0) {
               Calendar cal = Calendar.getInstance();
-              cal.add(Calendar.SECOND, serratedStrikesCooldown);
-              abilitiesOnCooldown.put(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
+              cal.add(Calendar.SECOND, divineEscapeCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.DIVINE_ESCAPE, cal.getTimeInMillis());
             }
-            if(rageSpikeCooldown > 0) {
-              Calendar cal = Calendar.getInstance();
-              cal.add(Calendar.SECOND, rageSpikeCooldown);
-              abilitiesOnCooldown.put(UnlockedAbilities.RAGE_SPIKE, cal.getTimeInMillis());
+            if(rs.getBoolean("is_thick_skin_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.THICK_SKIN);
             }
-            if(taintedBladeCooldown > 0) {
-              Calendar cal = Calendar.getInstance();
-              cal.add(Calendar.SECOND, taintedBladeCooldown);
-              abilitiesOnCooldown.put(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
+            if(rs.getBoolean("is_bullet_proof_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BULLET_PROOF);
+            }
+            if(rs.getBoolean("is_dodge_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DODGE);
+            }
+            if(rs.getBoolean("is_iron_muscles_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.IRON_MUSCLES);
+            }
+            if(rs.getBoolean("is_runners_diet_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.RUNNERS_DIET);
+            }
+            if(rs.getBoolean("is_divine_escape_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.DIVINE_ESCAPE);
             }
 
-            if(rs.getBoolean("is_deeper_wound_pending")) {
-              pendingUnlockAbilities.add(UnlockedAbilities.DEEPER_WOUND);
-            }
-            if(rs.getBoolean("is_bleed_plus_pending")) {
-              pendingUnlockAbilities.add(UnlockedAbilities.BLEED_PLUS);
-            }
-            if(rs.getBoolean("is_vampire_pending")) {
-              pendingUnlockAbilities.add(UnlockedAbilities.VAMPIRE);
-            }
-            if(rs.getBoolean("is_serrated_strikes_pending")) {
-              pendingUnlockAbilities.add(UnlockedAbilities.SERRATED_STRIKES);
-            }
-            if(rs.getBoolean("is_rage_spike_pending")) {
-              pendingUnlockAbilities.add(UnlockedAbilities.RAGE_SPIKE);
-            }
-            if(rs.getBoolean("is_tainted_blade_pending")) {
-              pendingUnlockAbilities.add(UnlockedAbilities.TAINTED_BLADE);
-            }
-
-            abilityMap.put(DefaultAbilities.BLEED, bleed);
-            abilityMap.put(UnlockedAbilities.DEEPER_WOUND, deeperWound);
-            abilityMap.put(UnlockedAbilities.BLEED_PLUS, bleedPlus);
-            abilityMap.put(UnlockedAbilities.VAMPIRE, vampire);
-            abilityMap.put(UnlockedAbilities.SERRATED_STRIKES, serratedStrikes);
-            abilityMap.put(UnlockedAbilities.RAGE_SPIKE, rageSpike);
-            abilityMap.put(UnlockedAbilities.TAINTED_BLADE, taintedBlade);
+            abilityMap.put(DefaultAbilities.ROLL, roll);
+            abilityMap.put(UnlockedAbilities.THICK_SKIN, thickSkin);
+            abilityMap.put(UnlockedAbilities.BULLET_PROOF, bulletProof);
+            abilityMap.put(UnlockedAbilities.DODGE, dodge);
+            abilityMap.put(UnlockedAbilities.IRON_MUSCLES, ironMuscles);
+            abilityMap.put(UnlockedAbilities.RUNNERS_DIET, runnersDiet);
+            abilityMap.put(UnlockedAbilities.DIVINE_ESCAPE, divineEscape);
             //Create skill
-            Swords swords = new Swords(rs.getInt("current_level"),
+            Fitness fitness = new Fitness(rs.getInt("current_level"),
                     rs.getInt("current_exp"), abilityMap, this);
-            skills.add(swords);
+            skills.add(fitness);
           }
         } catch(SQLException e) {
           e.printStackTrace();
