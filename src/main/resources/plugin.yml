@@ -22,3 +22,5 @@ commands:
     description: Converts flatfile to SQL
   mchelp:
     description: Displays help info for commands
+  mcredeem:
+    description: Allows redeeming of exp

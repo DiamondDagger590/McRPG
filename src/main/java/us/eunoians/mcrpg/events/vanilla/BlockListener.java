@@ -4,7 +4,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
@@ -12,7 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockGrowEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -36,43 +38,6 @@ public class BlockListener implements Listener {
 
   public BlockListener(final McRPG plugin){
 	this.plugin = plugin;
-  }
-
-  /**
-   * Monitor BlockPistonExtend events.
-   *
-   * @param event The event to monitor
-   */
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onBlockPistonExtend(BlockPistonExtendEvent event){
-	BlockFace direction = event.getDirection();
-	Block movedBlock = event.getBlock();
-	movedBlock = movedBlock.getRelative(direction, 2);
-
-	for(Block b : event.getBlocks()){
-	  if(McRPG.getPlaceStore().isTrue(b)){
-		movedBlock = b.getRelative(direction);
-		McRPG.getPlaceStore().setTrue(movedBlock);
-	  }
-	}
-  }
-
-  /**
-   * Monitor BlockPistonRetract events.
-   *
-   * @param event The event to watch
-   */
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onBlockPistonRetract(BlockPistonRetractEvent event){
-	// Get opposite direction so we get correct block
-	BlockFace direction = event.getDirection();
-	Block movedBlock = event.getBlock().getRelative(direction);
-	McRPG.getPlaceStore().setTrue(movedBlock);
-
-	for(Block block : event.getBlocks()){
-	  movedBlock = block.getRelative(direction);
-	  McRPG.getPlaceStore().setTrue(movedBlock);
-	}
   }
 
   /**

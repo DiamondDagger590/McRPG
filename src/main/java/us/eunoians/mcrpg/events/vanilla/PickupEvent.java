@@ -36,7 +36,7 @@ public class PickupEvent implements Listener {
         }
         if(slot != firstEmpty && firstEmpty != -1) {
           e.setCancelled(true);
-          e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 3, 1);
+          e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
           ItemStack itemToPickup = e.getItem().getItemStack();
           Inventory inv = e.getPlayer().getInventory();
           // e.getPlayer().getInventory().setItem(firstEmpty, e.getItem().getItemStack());

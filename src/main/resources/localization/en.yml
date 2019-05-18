@@ -13,6 +13,10 @@ Messages:
   #Messages that dont fit anywhere
   Misc:
     PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
+  CustomRedeem:
+    Listening: '&ePlease type in chat the amount you would like to redeem.'
+    RedeemedExp: '&aYou redeemed &e%Amount% &aexp into &e%Skill%.'
+    RedeemedLevels: '&aYou redeemed &e%Amount% &alevels into &e%Skill%.'
   #Messages used by commands
   Commands:
     #Messages used by misc command
@@ -104,10 +108,14 @@ Messages:
         Replaced: '&aYou replaced %Player%s %Old_Ability% with %New_Ability%'
         AlreadyHave: '&cThe player already has that ability'
         HasActive: '&cThe player already has an active ability for that skill'
+        RedeemableExp: '&aYou gave %Player% %Amount% redeemable exp'
+        RedeemableLevels: '&aYou gave %Player% %Amount% redeemable levels'
       Receive:
         AbilityPoints: '&aYou were given &e%Amount% &aability points'
         Exp: '&aYou were given &e%Amount% &aexp in &5%Skill%'
         Level: '&aYou were given &e%Amount% &alevel(s) in &5%Skill%'
+        RedeemableLevels: '&aYou received %Amount% redeemable levels. Use /mcredeem {Skill} to use'
+        RedeemableExp: '&aYou received %Amount% redeemable exp. Use /mcredeem {Skill} to use'
         Ability: '&aYou were given &5%Ability%'
         Replaced: '&aYour %Old_Ability% was replaced with %New_Ability%'
       Remove:

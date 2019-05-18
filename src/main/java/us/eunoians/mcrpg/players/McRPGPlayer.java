@@ -463,7 +463,7 @@ public class McRPGPlayer {
               oreScanner.setUnlocked(true);
             }
 
-            int superBreakerCooldown = rs.getInt("super_break_cooldown");
+            int superBreakerCooldown = rs.getInt("super_breaker_cooldown");
             int blastMiningCooldown = rs.getInt("blast_mining_cooldown");
             int oreScannerCooldown = rs.getInt("ore_scanner_cooldown");
             if(superBreakerCooldown > 0) {

@@ -1,11 +1,15 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.*;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.event.world.WorldInitEvent;
@@ -24,8 +28,8 @@ import java.io.File;
 public class WorldListener implements Listener {
   private final McRPG plugin;
 
-  public WorldListener(final McRPG plugin){
-	this.plugin = plugin;
+  public WorldListener(final McRPG plugin) {
+    this.plugin = plugin;
   }
 
   /**
@@ -34,14 +38,14 @@ public class WorldListener implements Listener {
    * @param event The event to watch
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onStructureGrow(StructureGrowEvent event){
-	if(!McRPG.getPlaceStore().isTrue(event.getLocation().getBlock())){
-	  return;
-	}
+  public void onStructureGrow(StructureGrowEvent event) {
+    if(!McRPG.getPlaceStore().isTrue(event.getLocation().getBlock())) {
+      return;
+    }
 
-	for(BlockState blockState : event.getBlocks()){
-	  McRPG.getPlaceStore().setFalse(blockState);
-	}
+    for(BlockState blockState : event.getBlocks()) {
+      McRPG.getPlaceStore().setFalse(blockState);
+    }
   }
 
   /**
@@ -50,16 +54,16 @@ public class WorldListener implements Listener {
    * @param event The event to watch
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onWorldInit(WorldInitEvent event){
-	World world = event.getWorld();
+  public void onWorldInit(WorldInitEvent event) {
+    World world = event.getWorld();
 
-	if(!new File(world.getWorldFolder(), "mcmmo_data").exists() || plugin == null){
-	  return;
-	}
+    if(!new File(world.getWorldFolder(), "mcmmo_data").exists() || plugin == null) {
+      return;
+    }
 
-	plugin.getLogger().info("Converting block storage for " + world.getName() + " to a new format.");
+    plugin.getLogger().info("Converting block storage for " + world.getName() + " to a new format.");
 
-	new BlockStoreConversionMain(world).run();
+    new BlockStoreConversionMain(world).run();
   }
 
   /**
@@ -68,8 +72,8 @@ public class WorldListener implements Listener {
    * @param event The event to watch
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onWorldUnload(WorldUnloadEvent event){
-	McRPG.getPlaceStore().unloadWorld(event.getWorld());
+  public void onWorldUnload(WorldUnloadEvent event) {
+    McRPG.getPlaceStore().unloadWorld(event.getWorld());
   }
 
   /**
@@ -78,12 +82,96 @@ public class WorldListener implements Listener {
    * @param event The event to watch
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onChunkUnload(ChunkUnloadEvent event){
-	Chunk chunk = event.getChunk();
-	//Some edge case was happening here
-	if(chunk == null || event.getWorld() == null){
-	  return;
+  public void onChunkUnload(ChunkUnloadEvent event) {
+    Chunk chunk = event.getChunk();
+    //Some edge case was happening here
+    if(chunk == null || event.getWorld() == null) {
+      return;
     }
-	McRPG.getPlaceStore().chunkUnloaded(chunk.getX(), chunk.getZ(), event.getWorld());
+    McRPG.getPlaceStore().chunkUnloaded(chunk.getX(), chunk.getZ(), event.getWorld());
   }
+
+  /**
+   * Monitor BlockPistonExtend events.
+   *
+   * @param event The event to monitor
+   */
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onBlockPistonExtend(BlockPistonExtendEvent event) {
+    BlockFace direction = event.getDirection();
+    Block movedBlock = event.getBlock();
+    movedBlock = movedBlock.getRelative(direction, 2);
+
+    for(Block b : event.getBlocks()) {
+      movedBlock = b.getRelative(direction);
+      McRPG.getPlaceStore().setTrue(movedBlock);
+    }
+  }
+
+  /**
+   * Monitor BlockPistonRetract events.
+   *
+   * @param event The event to watch
+   */
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onBlockPistonRetract(BlockPistonRetractEvent event) {
+    // Get opposite direction so we get correct block
+    BlockFace direction = event.getDirection();
+    Block movedBlock = event.getBlock().getRelative(direction);
+    McRPG.getPlaceStore().setTrue(movedBlock);
+
+    for(Block block : event.getBlocks()) {
+      movedBlock = block.getRelative(direction);
+      McRPG.getPlaceStore().setTrue(movedBlock);
+    }
+  }
+
+  /**
+   * Monitor blocks formed by entities (snowmen)
+   *
+   * @param event The event to watch
+   */
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onEntityBlockFormEvent(EntityBlockFormEvent event) {
+    McRPG.getPlaceStore().setTrue(event.getBlock());
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onBlockFormEvent(BlockFormEvent event) {
+    if(event.getNewState().getType() != Material.OBSIDIAN) {
+      McRPG.getPlaceStore().setTrue(event.getNewState());
+    }
+  }
+
+  /**
+   * Monitor BlockPlace events.
+   *
+   * @param event The event to watch
+   */
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onBlockPlace(BlockPlaceEvent event) {
+    BlockState blockState = event.getBlock().getState();
+    McRPG.getPlaceStore().setTrue(blockState);
+  }
+
+  /**
+   * Monitor BlockMultiPlace events.
+   *
+   * @param event The event to watch
+   */
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onBlockMultiPlace(BlockMultiPlaceEvent event) {
+    for(BlockState replacedBlockState : event.getReplacedBlockStates()) {
+      BlockState blockState = replacedBlockState.getBlock().getState();
+      /* Check if the blocks placed should be monitored so they do not give out XP in the future */
+      McRPG.getPlaceStore().setTrue(blockState);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onBlockGrow(BlockGrowEvent event) {
+    BlockState blockState = event.getBlock().getState();
+    McRPG.getPlaceStore().setFalse(blockState);
+  }
+
 }
