@@ -26,6 +26,7 @@ repositories {
     maven { url 'https://nexus.wesjd.net/repository/thirdparty/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url = "https://oss.sonatype.org/content/repositories/snapshots"}
 }
 
 dependencies {

@@ -12,11 +12,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -90,12 +92,83 @@ public class VanillaDamageEvent implements Listener {
     return (entity == null || entity.hasMetadata("NPC") || entity instanceof NPC || entity.getClass().getName().equalsIgnoreCase("cofh.entity.PlayerFake"));
   }
 
+  @EventHandler(priority = EventPriority.HIGH)
+  public void fitnessListener(EntityDamageEvent e){
+    FileConfiguration fallConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    if(e.isCancelled()){
+      return;
+    }
+    else{
+      if(e.getEntity() instanceof Player){
+        Player player = (Player) e.getEntity();
+        McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
+        if(McRPG.getInstance().isWorldGuardEnabled()){
+          WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
+
+          if(wgSupportManager.isWorldTracker(player.getWorld())){
+            RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+            Location loc = player.getLocation();
+            RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+            HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
+            assert manager != null;
+            ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+            for(ProtectedRegion region : set) {
+              if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())) {
+                List<String> expressions = regions.get(region.getId()).getAttackExpressions().get(e.getEntity().getType());
+                for(String s : expressions) {
+                  if(s.contains("difference")) {
+                    if(!(e.getEntity() instanceof Player)) {
+                      continue;
+                    }
+                    else {
+                      ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer, PlayerManager.getPlayer(e.getEntity().getUniqueId()));
+                      if(actionLimiterParser.evaluateExpression()) {
+                        e.setCancelled(true);
+                        return;
+                      }
+                    }
+                  }
+                  else {
+                    ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer);
+                    if(actionLimiterParser.evaluateExpression()) {
+                      e.setCancelled(true);
+                      return;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        int featherFallingLevel = player.getEquipment().getBoots() != null
+                && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
+        int expAwarded;
+        if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
+          if(mcRPGPlayer.getLastFallLocation() == null){
+            mcRPGPlayer.setLastFallLocation(player.getLocation());
+          }
+          else{
+            Location oldLoc = mcRPGPlayer.getLastFallLocation();
+            Location currentLocation = player.getLocation();
+            
+          }
+          expAwarded = fallConfig.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
+          Parser equation = new Parser(fallConfig.getString("FallEquation"));
+          equation.setVariable("damage", e.getDamage());
+          equation.setVariable("exp_awarded", expAwarded);
+          equation.setVariable("feather_falling_level", featherFallingLevel);
+          mcRPGPlayer.giveExp(Skills.FITNESS, (int) equation.getValue(), GainReason.DAMAGE);
+        }
+      }
+    }
+  }
+
   /**
    * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
    * This code has been modified from it source material
    * It was released under the GPLv3 license
    */
-
   @EventHandler(priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e) {
     FileConfiguration config;

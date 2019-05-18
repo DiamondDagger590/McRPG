@@ -34,7 +34,14 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,7 +63,7 @@ public class McRPGPlayer {
   //Ability data
   @Getter @Setter private boolean hasBleedImmunity = false;
   @Getter @Setter private boolean hasDazeImmunity = false;
-  @Setter private boolean canSmite;
+  @Setter @Getter private boolean canSmite;
   @Getter @Setter private SmitingFistEvent smitingFistData;
   @Getter @Setter private boolean isLinkedToRemoteTransfer = false;
   @Getter @Setter private boolean canDenseImpact;
@@ -86,6 +93,9 @@ public class McRPGPlayer {
   //Guardian Data
   @Getter @Setter private double guardianSummonChance;
   @Getter @Setter private Location lastFishCaughtLoc = null;
+
+  //Fitness Data
+  @Getter @Setter private Location lastFallLocation = null;
 
 
   public McRPGPlayer(UUID uuid) {
