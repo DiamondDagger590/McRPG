@@ -38,7 +38,10 @@ public class PlayerManager {
             List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
             Random rand = new Random();
             int val = rand.nextInt(possibleMessages.size());
-            Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val))), 40L);
+            Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
+              if(mp.isOnline()) mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+              else players.remove(uuid);
+            }, 40L);
           }
         }
         playersFrozen.remove(uuid);
