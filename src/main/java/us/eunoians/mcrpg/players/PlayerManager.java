@@ -28,19 +28,20 @@ public class PlayerManager {
     if(freeze) {
       playersFrozen.add(uuid);
     }
+
     BukkitTask task = new BukkitRunnable() {
       public void run() {
         McRPGPlayer mp = new McRPGPlayer(uuid);
         mp.getUsedTips().add(TipType.LOGIN_TIP);
         if(mp.isOnline()) {
-          players.put(uuid, mp);
           if(!mp.isIgnoreTips()) {
             List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
             Random rand = new Random();
             int val = rand.nextInt(possibleMessages.size());
             Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
-              if(mp.isOnline()) mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
-              else players.remove(uuid);
+              if(mp.isOnline()){
+                mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+                players.put(uuid, mp);}
             }, 40L);
           }
         }
@@ -85,7 +86,9 @@ public class PlayerManager {
 
 
   private static void run() {
-    players.values().forEach(McRPGPlayer::saveData);
+    if(players.values() != null && !players.values().isEmpty()) {
+      players.values().forEach(McRPGPlayer::saveData);
+    }
   }
 
   public static void saveAll() {run();}
