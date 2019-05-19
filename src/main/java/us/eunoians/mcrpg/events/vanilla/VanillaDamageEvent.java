@@ -511,7 +511,7 @@ public class VanillaDamageEvent implements Listener {
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
     }
-    else if(e.getDamager() instanceof Arrow && Skills.ARCHERY.isEnabled()) {
+    else if(e.getEntity() instanceof LivingEntity && e.getDamager() instanceof Arrow && Skills.ARCHERY.isEnabled()) {
       Arrow arrow = (Arrow) e.getDamager();
       if(arrow.getShooter() instanceof Player) {
         Player shooter = (Player) arrow.getShooter();

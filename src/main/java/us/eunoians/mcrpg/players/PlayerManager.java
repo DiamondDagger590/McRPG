@@ -55,7 +55,12 @@ public class PlayerManager {
   }
 
   public static McRPGPlayer getPlayer(UUID uuid) {
-    return players.get(uuid);
+    if(players.containsKey(uuid)) {
+      return players.get(uuid);
+    }
+    else{
+      return players.put(uuid, new McRPGPlayer(uuid));
+    }
   }
 
   public static boolean isPlayerStored(UUID uuid) {
@@ -74,8 +79,9 @@ public class PlayerManager {
     }
     saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(p, PlayerManager::run, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
     System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
+    Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
     Bukkit.getScheduler().runTaskTimer(p, () -> {
-      for(McRPGPlayer mp : players.values()) {
+      for(McRPGPlayer mp : clone) {
         if(isPlayerFrozen(mp.getUuid())) {
           continue;
         }
