@@ -201,6 +201,8 @@ Messages:
       Activated: '&aYour axe cuts through time, harvesting the saplings future.'
     HesperidesApples:
       Activated: '&aThe apple you ate still contained bits of power from Hesperides Garden. It will be a bit before you can handle it again.'
+    Roll:
+      Activated: '&aYou managed to roll, negating some of your fall damage.'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'

@@ -24,10 +24,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.fitness.Roll;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.unarmed.*;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.RollEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
@@ -94,8 +96,8 @@ public class VanillaDamageEvent implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void fitnessListener(EntityDamageEvent e){
-    FileConfiguration fallConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
-    if(e.isCancelled()){
+    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
       return;
     }
     else{
@@ -144,26 +146,70 @@ public class VanillaDamageEvent implements Listener {
         int featherFallingLevel = player.getEquipment().getBoots() != null
                 && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
         int expAwarded;
-        if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
-          if(mcRPGPlayer.getLastFallLocation() == null){
+        boolean afk = false;
+        if(e.getCause() == EntityDamageEvent.DamageCause.FALL) {
+          if(mcRPGPlayer.getLastFallLocation() == null) {
             mcRPGPlayer.setLastFallLocation(player.getLocation());
           }
-          else{
+          else {
             Location oldLoc = mcRPGPlayer.getLastFallLocation();
             Location currentLocation = player.getLocation();
-            
+            int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
+            int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
+            int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
+            if(diffInX <= config.getInt("AntiAFK.XRange")) {
+              afk = true;
+            }
+            else if(diffInY <= config.getInt("AntiAFK.YRange")) {
+              afk = true;
+            }
+            else if(diffInZ <= config.getInt("AntiAFK.ZRange")) {
+              afk = true;
+            }
           }
-          expAwarded = fallConfig.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
-          Parser equation = new Parser(fallConfig.getString("FallEquation"));
-          equation.setVariable("damage", e.getDamage());
-          equation.setVariable("exp_awarded", expAwarded);
-          equation.setVariable("feather_falling_level", featherFallingLevel);
-          mcRPGPlayer.giveExp(Skills.FITNESS, (int) equation.getValue(), GainReason.DAMAGE);
+          if(!afk) {
+            expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
+            Parser equation = new Parser(config.getString("FallEquation"));
+            equation.setVariable("damage", e.getDamage());
+            equation.setVariable("exp_awarded", expAwarded);
+            equation.setVariable("feather_falling_level", featherFallingLevel);
+            expAwarded = (int) equation.getValue();
+          }
+          else expAwarded = 0;
+
+          Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
+          if(roll.getGenericAbility().isEnabled() && roll.isToggled()){
+            Parser rollEquation = new Parser(config.getString("RollConfig.RollChanceEquation"));
+            rollEquation.setVariable("fitness_level", mcRPGPlayer.getSkill(Skills.FITNESS).getCurrentLevel());
+            int chance = (int) rollEquation.getValue() * 1000;
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val) {
+              RollEvent rollEvent = new RollEvent(mcRPGPlayer, roll);
+              Bukkit.getPluginManager().callEvent(rollEvent);
+              if(!rollEvent.isCancelled()){
+                e.setDamage(e.getDamage()/2);
+                player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Roll.Activated")));
+              }
+            }
+          }
+          mcRPGPlayer.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
         }
       }
     }
   }
 
+  @EventHandler(priority = EventPriority.HIGH)
+  public void fitnessEvent(EntityDamageByEntityEvent e){
+    if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
+      return;
+    }
+    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    if(e.getEntity() instanceof Player){
+      McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
+
+    }
+  }
   /**
    * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
    * This code has been modified from it source material
