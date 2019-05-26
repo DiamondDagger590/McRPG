@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.events.vanilla;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
