@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -86,6 +87,10 @@ public class WorldListener implements Listener {
     Chunk chunk = event.getChunk();
     //Some edge case was happening here
     if(chunk == null || event.getWorld() == null) {
+      return;
+    }
+    if(McRPG.getPlaceStore() == null){
+      Bukkit.getConsoleSender().sendMessage("&There was an error unloading a chunk for McRPG.");
       return;
     }
     McRPG.getPlaceStore().chunkUnloaded(chunk.getX(), chunk.getZ(), event.getWorld());

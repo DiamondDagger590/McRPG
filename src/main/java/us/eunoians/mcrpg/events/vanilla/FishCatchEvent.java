@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -29,7 +30,7 @@ public class FishCatchEvent implements Listener {
     McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
     if(mp.getLastFishCaughtLoc() != null){
       FileConfiguration config = McRPG.getInstance().getConfig();
-      String key = "PlayerConfiguration.PoseidonsGuardian.";
+      String key = "PoseidonsGuardian.";
       Location lastLoc = mp.getLastFishCaughtLoc();
       Location currentLoc = e.getHook().getLocation();
       if(!lastLoc.getWorld().equals(currentLoc.getWorld())){
