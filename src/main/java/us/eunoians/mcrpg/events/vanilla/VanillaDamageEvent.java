@@ -24,12 +24,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.abilities.fitness.Roll;
+import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.api.events.mcrpg.fitness.RollEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.*;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
@@ -199,7 +199,7 @@ public class VanillaDamageEvent implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void fitnessEvent(EntityDamageByEntityEvent e){
     if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
       return;
@@ -207,8 +207,83 @@ public class VanillaDamageEvent implements Listener {
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(e.getEntity() instanceof Player){
       McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-
+      if(e.getDamager() instanceof LivingEntity){
+        LivingEntity attacker = (LivingEntity) e.getDamager();
+        Material weaponType = attacker.getEquipment().getItemInMainHand().getType();
+        if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")){
+          if(UnlockedAbilities.THICK_SKIN.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.THICK_SKIN)
+          && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()){
+            ThickSkin thickSkin = (ThickSkin) mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN);
+            double damageDecrease = config.getDouble("ThickSkinConfig.Tier" + Methods.convertToNumeral(thickSkin.getCurrentTier())
+            + ".DamageDecrease");
+            ThickSkinEvent thickSkinEvent = new ThickSkinEvent(mcRPGPlayer, thickSkin, damageDecrease, (LivingEntity) e.getDamager());
+            Bukkit.getPluginManager().callEvent(thickSkinEvent);
+            if(!thickSkinEvent.isCancelled()){
+              e.setDamage(e.getDamage() * ((100 - damageDecrease)/100));
+            }
+          }
+          if(attacker instanceof Player && UnlockedAbilities.IRON_MUSCLES.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.IRON_MUSCLES)
+          && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()){
+            IronMuscles ironMuscles = (IronMuscles) mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES);
+            double activationChance = config.getDouble("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier())
+                    + ".ActivationChance");
+            int chance = (int) activationChance * 1000;
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val) {
+              int weaponDamage = config.getInt("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier()) +
+                      ".WeaponDamage");
+              IronMusclesEvent ironMusclesEvent = new IronMusclesEvent(mcRPGPlayer, ironMuscles, weaponDamage, (Player) attacker);
+              Bukkit.getPluginManager().callEvent(ironMusclesEvent);
+              if(!ironMusclesEvent.isCancelled()) {
+                attacker.getEquipment().getItemInMainHand().setDurability((short) (attacker.getEquipment().getItemInMainHand().getDurability() + ironMusclesEvent.getDurabilityLoss()));
+              }
+            }
+          }
+        }
+        if(UnlockedAbilities.DODGE.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.DODGE) &&
+                mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()){
+          Dodge dodge = (Dodge) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE);
+          double activationChance = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier())
+                  + ".ActivationChance");
+          int chance = (int) activationChance * 1000;
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(chance >= val) {
+            double damageReduction = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier()) +
+                    ".DamageReduction");
+            DodgeEvent dodgeEvent = new DodgeEvent(mcRPGPlayer, dodge, attacker, damageReduction);
+            Bukkit.getPluginManager().callEvent(dodgeEvent);
+            if(!dodgeEvent.isCancelled()){
+              e.setDamage(e.getDamage() * ((100 - damageReduction)/100));
+            }
+          }
+        }
+      }
+      else if(e.getDamager() instanceof Projectile){
+        if(UnlockedAbilities.BULLET_PROOF.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.BULLET_PROOF)
+        && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()){
+          BulletProof bulletProof = (BulletProof) mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF);
+          double activationChance = config.getDouble("BulletProofConfig.Tier" + Methods.convertToNumeral(bulletProof.getCurrentTier())
+          + ".ActivationChance");
+          int chance = (int) activationChance * 1000;
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(chance >= val) {
+            BulletProofEvent bulletProofEvent = new BulletProofEvent(mcRPGPlayer, bulletProof, (Projectile) e.getDamager());
+            Bukkit.getPluginManager().callEvent(bulletProofEvent);
+            if(!bulletProofEvent.isCancelled()){
+              e.setCancelled(true);
+            }
+          }
+        }
+      }
     }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void awardFitnessExp(EntityDamageByEntityEvent e){
+
   }
   /**
    * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
@@ -217,6 +292,9 @@ public class VanillaDamageEvent implements Listener {
    */
   @EventHandler(priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e) {
+    if(e.isCancelled()){
+      return;
+    }
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity) {
       Player damager = (Player) e.getDamager();

@@ -113,7 +113,7 @@ BulletProofConfig:
   #Config for each tier
   TierI:
     #Odds of activation per tier
-    ActivationChance: 5
+    ActivationChance: 5.0
   TierII:
     ActivationChance: 7.5
   TierIII:
