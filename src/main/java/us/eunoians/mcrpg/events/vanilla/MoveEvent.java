@@ -2,8 +2,6 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.BukkitUtil;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -40,6 +38,9 @@ public class MoveEvent implements Listener {
       e.setCancelled(true);
     }
     McRPGPlayer player = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    if(player.getAbilityLoadout() == null){
+      return;
+    }
     if(player.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&
             UnlockedAbilities.NYMPHS_VITALITY.isEnabled() && player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY).isToggled()){
       Biome biome = e.getPlayer().getLocation().getBlock().getBiome();
