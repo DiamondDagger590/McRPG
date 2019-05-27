@@ -28,6 +28,7 @@ import java.io.File;
 
 public class WorldListener implements Listener {
   private final McRPG plugin;
+  private static boolean errored = false;
 
   public WorldListener(final McRPG plugin) {
     this.plugin = plugin;
@@ -89,8 +90,9 @@ public class WorldListener implements Listener {
     if(chunk == null || event.getWorld() == null) {
       return;
     }
-    if(McRPG.getPlaceStore() == null){
+    if(McRPG.getPlaceStore() == null && !errored){
       Bukkit.getConsoleSender().sendMessage("&There was an error unloading a chunk for McRPG.");
+      errored = true;
       return;
     }
     McRPG.getPlaceStore().chunkUnloaded(chunk.getX(), chunk.getZ(), event.getWorld());

@@ -74,7 +74,9 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 0)
   private void preInit() {
+    Bukkit.broadcastMessage("Init 1");
     Logger.init("McRPG");
+    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(
@@ -87,6 +89,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @SuppressWarnings("Duplicates")
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
+    Bukkit.broadcastMessage("Init 3");
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
@@ -105,7 +108,8 @@ public class McRPG extends JavaPlugin implements Initializable {
       wgSupportManager = new WGSupportManager(this);
     }
     remoteTransferTracker = new RemoteTransferTracker();
-    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
+    Bukkit.broadcastMessage("Creating chunk manager");
+    Bukkit.broadcastMessage("Created chunk manager");
     File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
     if (!folder.exists()) {
       folder.mkdir();
@@ -118,6 +122,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 3)
   private void initCmds() {
+    Bukkit.broadcastMessage("Init 4");
     getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
     getCommand("mcadmin").setExecutor(new McAdmin());
@@ -130,6 +135,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 4)
   private void initListener() {
+    Bukkit.broadcastMessage("Init 5");
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
     getServer().getPluginManager().registerEvents(new PlayerLogoutEvent(), this);
