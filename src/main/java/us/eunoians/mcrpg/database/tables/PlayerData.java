@@ -13,4 +13,6 @@ public class PlayerData {
   @Column(defaultValue = "0") int redeemable_levels;
   @Column(defaultValue = "0") double divine_escape_exp_debuff;
   @Column(defaultValue = "0") double divine_escape_damage_debuff;
+  @Column(defaultValue = "0") long divine_escape_exp_end_time;
+  @Column(defaultValue = "0") long divine_escape_damage_end_time;
 }

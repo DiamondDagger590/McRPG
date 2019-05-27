@@ -70,6 +70,8 @@ public class McRPGPlayer {
   @Getter @Setter private int armourDmg;
   @Getter @Setter private double divineEscapeExpDebuff;
   @Getter @Setter private double divineEscapeDamageDebuff;
+  @Getter @Setter private long divineEscapeExpEnd;
+  @Getter @Setter private long divineEscapeDamageEnd;
 
   //Ready variables
   @Getter @Setter private boolean isReadying = false;
