@@ -207,7 +207,10 @@ public class VanillaDamageEvent implements Listener {
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(e.getEntity() instanceof Player) {
       McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      //TODO damage debuffs
+      if(mcRPGPlayer.getDivineEscapeDamageDebuff() > 0){
+        double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff()/100 + 1;
+        e.setDamage(e.getDamage() * debuff);
+      }
       if(!Skills.FITNESS.isEnabled()){
         return;
       }
