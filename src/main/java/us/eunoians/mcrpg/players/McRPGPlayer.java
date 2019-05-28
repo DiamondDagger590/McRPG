@@ -1038,6 +1038,10 @@ public class McRPGPlayer {
       return;
     }
     for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()) {
+      if(!abilityLoadout.contains(ability)){
+        toRemove.add(ability);
+        continue;
+      }
       long timeToEnd = abilitiesOnCooldown.get(ability);
       if(Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
         if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
@@ -1046,7 +1050,7 @@ public class McRPGPlayer {
         }
         toRemove.add(ability);
       }
-      else if(timeToEnd == 0L){
+      else if(timeToEnd <= 0L){
         toRemove.add(ability);
       }
     }
