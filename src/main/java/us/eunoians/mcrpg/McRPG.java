@@ -74,7 +74,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 0)
   private void preInit() {
-    Bukkit.broadcastMessage("Init 1");
     Logger.init("McRPG");
     placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     /*var configManager = new ConfigManager(this);
@@ -89,7 +88,6 @@ public class McRPG extends JavaPlugin implements Initializable {
   @SuppressWarnings("Duplicates")
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
-    Bukkit.broadcastMessage("Init 3");
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
@@ -122,7 +120,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 3)
   private void initCmds() {
-    Bukkit.broadcastMessage("Init 4");
     getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
     getCommand("mcadmin").setExecutor(new McAdmin());
@@ -189,5 +186,9 @@ public class McRPG extends JavaPlugin implements Initializable {
   public InputStreamReader getResourceAsReader(String fileName) {
     InputStream in = getResource(fileName);
     return in == null ? null : new InputStreamReader(in, Charsets.UTF_8);
+  }
+
+  public static void resetPlaceStore(){
+    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
   }
 }
