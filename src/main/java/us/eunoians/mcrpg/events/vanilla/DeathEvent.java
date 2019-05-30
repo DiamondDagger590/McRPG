@@ -51,7 +51,8 @@ public class DeathEvent implements Listener {
             e.setCancelled(true);
             p.setHealth(p.getMaxHealth());
             p.teleport(p.getBedSpawnLocation());
-
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DivineEscape.Activated"))
+            .replace("%Exp_Debuff%", Double.toString(mcrpgExpPen)).replace("%Damage_Debuff%", Double.toString(damagePenalty)));
             mp.setDivineEscapeDamageDebuff(divineEscapeEvent.getDamageIncreaseDebuff());
             mp.setDivineEscapeExpDebuff(divineEscapeEvent.getExpDebuff());
             Calendar cal = Calendar.getInstance();

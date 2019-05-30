@@ -264,6 +264,7 @@ public class VanillaDamageEvent implements Listener {
             Bukkit.getPluginManager().callEvent(dodgeEvent);
             if(!dodgeEvent.isCancelled()) {
               e.setDamage(e.getDamage() * ((100 - damageReduction) / 100));
+              mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Dodge.Activated")));
             }
           }
         }
@@ -282,6 +283,7 @@ public class VanillaDamageEvent implements Listener {
             Bukkit.getPluginManager().callEvent(bulletProofEvent);
             if(!bulletProofEvent.isCancelled()) {
               e.setCancelled(true);
+              mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BulletProof.Activated")));
             }
           }
         }
