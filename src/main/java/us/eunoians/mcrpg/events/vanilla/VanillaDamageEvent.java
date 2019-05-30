@@ -95,7 +95,7 @@ public class VanillaDamageEvent implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGH)
-  public void fitnessListener(EntityDamageEvent e) {
+  public void fallListener(EntityDamageEvent e) {
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(e.isCancelled() || !Skills.FITNESS.isEnabled()) {
       return;
@@ -207,6 +207,7 @@ public class VanillaDamageEvent implements Listener {
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(e.getEntity() instanceof Player) {
       McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
+      //Deal with Divine Escape debuff
       if(mcRPGPlayer.getDivineEscapeDamageDebuff() > 0){
         double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff()/100 + 1;
         e.setDamage(e.getDamage() * debuff);
@@ -288,9 +289,14 @@ public class VanillaDamageEvent implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.MONITOR)
   public void awardFitnessExp(EntityDamageByEntityEvent e) {
-
+    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && e.getDamager() instanceof LivingEntity){
+      McRPGPlayer mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
+      double damage = e.getDamage();
+      int expAwarded = (int) (damage * FileManager.Files.FITNESS_CONFIG.getFile().getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));
+      mp.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
+    }
   }
 
   /**

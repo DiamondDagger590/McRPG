@@ -99,7 +99,6 @@ public class McRPGPlayer {
   //Fitness Data
   @Getter @Setter private Location lastFallLocation = null;
 
-
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
     this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
@@ -138,14 +137,18 @@ public class McRPGPlayer {
     playerDataSet.ifPresent(resultSet -> {
       try {
         //if(resultSet.next()) {
-          this.abilityPoints = resultSet.getInt("ability_points");
-          this.redeemableExp = resultSet.getInt("redeemable_exp");
-          this.redeemableLevels = resultSet.getInt("redeemable_levels");
-          int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
-          if(replaceCooldown > 0) {
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.SECOND, replaceCooldown);
-            this.endTimeForReplaceCooldown = cal.getTimeInMillis();
+        this.abilityPoints = resultSet.getInt("ability_points");
+        this.redeemableExp = resultSet.getInt("redeemable_exp");
+        this.redeemableLevels = resultSet.getInt("redeemable_levels");
+        int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
+        this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
+        this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
+        this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
+        this.divineEscapeDamageEnd = resultSet.getInt("divine_escape_damage_end_time");
+        if(replaceCooldown > 0) {
+          Calendar cal = Calendar.getInstance();
+          cal.add(Calendar.SECOND, replaceCooldown);
+          this.endTimeForReplaceCooldown = cal.getTimeInMillis();
           //}
         }
       } catch(SQLException e) {
@@ -1035,6 +1038,14 @@ public class McRPGPlayer {
         this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
       }
+      if(divineEscapeExpEnd != 0 && divineEscapeExpEnd <= Calendar.getInstance().getTimeInMillis()){
+        divineEscapeExpEnd = 0;
+        divineEscapeExpDebuff = 0;
+      }
+      if(divineEscapeDamageEnd != 0 && divineEscapeDamageEnd <= Calendar.getInstance().getTimeInMillis()){
+        divineEscapeDamageEnd = 0;
+        divineEscapeDamageDebuff = 0;
+      }
       database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
     }
   }
@@ -1099,7 +1110,9 @@ public class McRPGPlayer {
       int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
       database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = '" + uuid.toString() + "'");
     }
-    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + " WHERE uuid = '" + uuid.toString() + "'");
+    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
+            + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
+            ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
     @Language("SQL") String query = "UPDATE mcrpg_player_settings SET keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
             "', health_type = '" + healthbarType.getName() + "' WHERE uuid = '" + uuid.toString() + "'";

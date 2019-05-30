@@ -11,7 +11,6 @@ MaxLevel: 1000
 ExpAwardedPerDamage:
   FALL_DAMAGE: 200
   ENTITY_DAMAGE: 100
-  ENVIRONMENT_DAMAGE: 15
 FallEquation: '(damage*exp_awarded)*feather_falling_level'
 #Minimal distance on each axis that a player must be from their last location to gain exp from falling
 AntiAFK:
