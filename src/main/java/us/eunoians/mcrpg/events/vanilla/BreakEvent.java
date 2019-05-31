@@ -59,7 +59,7 @@ import java.util.*;
 
 public class BreakEvent implements Listener {
 
-  @EventHandler(priority = EventPriority.LOW)
+  @EventHandler(priority = EventPriority.HIGHEST)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event) {
     if(!event.isCancelled() && event.getPlayer().getGameMode() == GameMode.SURVIVAL) {
@@ -491,8 +491,10 @@ public class BreakEvent implements Listener {
           RemoteTransfer transfer = (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
           int tier = transfer.getCurrentTier();
           int range = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG).getInt("RemoteTransferConfig.Tier" + Methods.convertToNumeral(tier) + ".Range");
-          if((block.getLocation().distance(transfer.getLinkedChestLocation()) <= range)) {
-            DropItemEvent.getBlocksToRemoteTransfer().put(block.getLocation(), p.getUniqueId());
+          if(block.getLocation().getWorld().equals(transfer.getLinkedChestLocation().getWorld())) {
+            if((block.getLocation().distance(transfer.getLinkedChestLocation()) <= range)) {
+              DropItemEvent.getBlocksToRemoteTransfer().put(block.getLocation(), p.getUniqueId());
+            }
           }
         }
         DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);

@@ -721,7 +721,7 @@ public class VanillaDamageEvent implements Listener {
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
     }
-    else if(e.getDamager() instanceof Arrow && Skills.ARCHERY.isEnabled()) {
+    else if(e.getEntity() instanceof LivingEntity && e.getDamager() instanceof Arrow && Skills.ARCHERY.isEnabled()) {
       Arrow arrow = (Arrow) e.getDamager();
       if(arrow.getShooter() instanceof Player) {
         Player shooter = (Player) arrow.getShooter();
@@ -739,6 +739,9 @@ public class VanillaDamageEvent implements Listener {
           baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
         }
         double dmg = e.getDamage();
+        if(!arrow.hasMetadata("ShootLoc")){
+          return;
+        }
         Location loc = Methods.stringToLoc(arrow.getMetadata("ShootLoc").get(0).asString());
         Location hitLoc = e.getEntity().getLocation();
         double distance = loc.distance(hitLoc);

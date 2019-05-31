@@ -62,6 +62,8 @@ public class McRPG extends JavaPlugin implements Initializable {
     javen.addRepository("jitPack", "https://jitpack.io");
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
+    new PlayerManager(this);
+    Bukkit.getConsoleSender().sendMessage("Starting init sequence");
     Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
   }
 
@@ -75,6 +77,8 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Initialize(priority = 0)
   private void preInit() {
     Logger.init("McRPG");
+    Bukkit.getConsoleSender().sendMessage("Starting Phase 1");
+    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(
@@ -87,6 +91,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @SuppressWarnings("Duplicates")
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
+    Bukkit.getConsoleSender().sendMessage("Starting Phase 2");
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
@@ -105,7 +110,6 @@ public class McRPG extends JavaPlugin implements Initializable {
       wgSupportManager = new WGSupportManager(this);
     }
     remoteTransferTracker = new RemoteTransferTracker();
-    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
     if (!folder.exists()) {
       folder.mkdir();
@@ -118,6 +122,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 3)
   private void initCmds() {
+    Bukkit.getConsoleSender().sendMessage("Starting Phase 3");
     getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
     getCommand("mcadmin").setExecutor(new McAdmin());
@@ -125,10 +130,12 @@ public class McRPG extends JavaPlugin implements Initializable {
     getCommand("mcunlink").setExecutor(new McUnlink());
     getCommand("mchelp").setExecutor(new McHelp());
     getCommand("mcconvert").setExecutor(new McConvert());
+    getCommand("mcredeem").setExecutor(new McRedeem());
   }
 
   @Initialize(priority = 4)
   private void initListener() {
+    Bukkit.broadcastMessage("Init 5");
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
     getServer().getPluginManager().registerEvents(new PlayerLogoutEvent(), this);
@@ -141,7 +148,6 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new BleedHandler(), this);
     getServer().getPluginManager().registerEvents(new CheckReadyEvent(), this);
     getServer().getPluginManager().registerEvents(new ShiftToggle(), this);
-    getServer().getPluginManager().registerEvents(new BlockListener(this), this);
     getServer().getPluginManager().registerEvents(new WorldListener(this), this);
     getServer().getPluginManager().registerEvents(new McLink(), this);
     getServer().getPluginManager().registerEvents(new BreakEvent(), this);
@@ -183,5 +189,9 @@ public class McRPG extends JavaPlugin implements Initializable {
   public InputStreamReader getResourceAsReader(String fileName) {
     InputStream in = getResource(fileName);
     return in == null ? null : new InputStreamReader(in, Charsets.UTF_8);
+  }
+
+  public static void resetPlaceStore(){
+    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
   }
 }

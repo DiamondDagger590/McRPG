@@ -104,7 +104,7 @@ public class PlayerNomNomEvent implements Listener {
           HesperidesApplesEvent hesperidesApplesEvent = new HesperidesApplesEvent(mp, hesperidesApples, effectType, multiplier, duration, cooldown, foodType);
           Bukkit.getPluginManager().callEvent(hesperidesApplesEvent);
           if(!hesperidesApplesEvent.isCancelled()) {
-            PotionEffect potionEffect = new PotionEffect(hesperidesApplesEvent.getPotionEffectType(), hesperidesApplesEvent.getDuration(), hesperidesApplesEvent.getMultiplier());
+            PotionEffect potionEffect = new PotionEffect(hesperidesApplesEvent.getPotionEffectType(), hesperidesApplesEvent.getDuration() * 20, hesperidesApplesEvent.getMultiplier());
             player.addPotionEffect(potionEffect);
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND, hesperidesApplesEvent.getCooldown());

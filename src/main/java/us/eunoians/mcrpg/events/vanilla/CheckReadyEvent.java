@@ -46,7 +46,7 @@ public class CheckReadyEvent implements Listener {
         Skills skillType = Skills.ARCHERY;
         if(mp.getCooldown(skillType) != -1) {
           p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
-                  McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
+                  McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getDisplayName())
                           .replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
           return;
         }
@@ -191,7 +191,7 @@ public class CheckReadyEvent implements Listener {
         }
         if(mp.getCooldown(skillType) != -1) {
           p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
-                  McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getName())
+                  McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getDisplayName())
                           .replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
           return;
         }

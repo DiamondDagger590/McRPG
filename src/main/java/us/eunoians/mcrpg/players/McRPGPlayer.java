@@ -351,7 +351,7 @@ public class McRPGPlayer {
               oreScanner.setUnlocked(true);
             }
 
-            int superBreakerCooldown = rs.getInt("super_break_cooldown");
+            int superBreakerCooldown = rs.getInt("super_breaker_cooldown");
             int blastMiningCooldown = rs.getInt("blast_mining_cooldown");
             int oreScannerCooldown = rs.getInt("ore_scanner_cooldown");
             if(superBreakerCooldown > 0) {
@@ -1011,6 +1011,10 @@ public class McRPGPlayer {
       return;
     }
     for(UnlockedAbilities ability : abilitiesOnCooldown.keySet()) {
+      if(!abilityLoadout.contains(ability)){
+        toRemove.add(ability);
+        continue;
+      }
       long timeToEnd = abilitiesOnCooldown.get(ability);
       if(Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
         if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
@@ -1019,7 +1023,7 @@ public class McRPGPlayer {
         }
         toRemove.add(ability);
       }
-      else if(timeToEnd == 0L){
+      else if(timeToEnd <= 0L){
         toRemove.add(ability);
       }
     }

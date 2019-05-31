@@ -20,6 +20,10 @@ public class PlayerManager {
   private static McRPG plugin;
   private static BukkitTask saveTask;
 
+  public PlayerManager(McRPG plugin){
+    PlayerManager.plugin = plugin;
+  }
+
   public static void addMcRPGPlayer(Player player, boolean freeze) {
     if(players.containsKey(player.getUniqueId())) {
       return;
@@ -28,17 +32,21 @@ public class PlayerManager {
     if(freeze) {
       playersFrozen.add(uuid);
     }
+
     BukkitTask task = new BukkitRunnable() {
       public void run() {
         McRPGPlayer mp = new McRPGPlayer(uuid);
         mp.getUsedTips().add(TipType.LOGIN_TIP);
         if(mp.isOnline()) {
-          players.put(uuid, mp);
           if(!mp.isIgnoreTips()) {
             List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
             Random rand = new Random();
             int val = rand.nextInt(possibleMessages.size());
-            Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val))), 40L);
+            Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
+              if(mp.isOnline()){
+                mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+                players.put(uuid, mp);}
+            }, 40L);
           }
         }
         playersFrozen.remove(uuid);
@@ -51,7 +59,12 @@ public class PlayerManager {
   }
 
   public static McRPGPlayer getPlayer(UUID uuid) {
-    return players.get(uuid);
+    if(players.containsKey(uuid)) {
+      return players.get(uuid);
+    }
+    else{
+      return players.put(uuid, new McRPGPlayer(uuid));
+    }
   }
 
   public static boolean isPlayerStored(UUID uuid) {
@@ -70,8 +83,9 @@ public class PlayerManager {
     }
     saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(p, PlayerManager::run, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
     System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
+    Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
     Bukkit.getScheduler().runTaskTimer(p, () -> {
-      for(McRPGPlayer mp : players.values()) {
+      for(McRPGPlayer mp : clone) {
         if(isPlayerFrozen(mp.getUuid())) {
           continue;
         }
@@ -82,7 +96,9 @@ public class PlayerManager {
 
 
   private static void run() {
-    players.values().forEach(McRPGPlayer::saveData);
+    if(players.values() != null && !players.values().isEmpty()) {
+      players.values().forEach(McRPGPlayer::saveData);
+    }
   }
 
   public static void saveAll() {run();}

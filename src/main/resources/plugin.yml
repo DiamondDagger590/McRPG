@@ -1,5 +1,5 @@
 name: McRPG
-version: 1.2.6-ALPHA
+version: 1.2.7-ALPHA
 author: Eunoians
 description: A RPG plugin for 1.13+
 main: us.eunoians.mcrpg.McRPG
@@ -22,3 +22,5 @@ commands:
     description: Converts flatfile to SQL
   mchelp:
     description: Displays help info for commands
+  mcredeem:
+    description: Allows redeeming of exp

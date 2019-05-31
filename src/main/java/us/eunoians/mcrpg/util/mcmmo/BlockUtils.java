@@ -170,23 +170,6 @@ public final class BlockUtils {
   }
 
   /**
-   * Determine if a given block should be affected by Flux Mining
-   *
-   * @param blockState The {@link BlockState} of the block to check
-   * @return true if the block should affected by Flux Mining, false otherwise
-   */
-  public static boolean affectedByFluxMining(BlockState blockState){
-	switch(blockState.getType()){
-	  case IRON_ORE:
-	  case GOLD_ORE:
-		return true;
-
-	  default:
-		return false;
-	}
-  }
-
-  /**
    * Determine if a given block can activate Herbalism abilities
    *
    * @param blockState The {@link BlockState} of the block to check
@@ -203,41 +186,6 @@ public final class BlockUtils {
 
 	  default:
 		return true;
-	}
-  }
-
-  /**
-   * Determine if a given block should be affected by Block Cracker
-   *
-   * @param blockState The {@link BlockState} of the block to check
-   * @return true if the block should affected by Block Cracker, false
-   * otherwise
-   */
-  public static boolean affectedByBlockCracker(BlockState blockState){
-	switch(blockState.getType()){
-	  case STONE_BRICKS:
-		return true;
-
-	  default:
-		return false;
-	}
-  }
-
-  /**
-   * Determine if a given block can be made into Mycelium
-   *
-   * @param blockState The {@link BlockState} of the block to check
-   * @return true if the block can be made into Mycelium, false otherwise
-   */
-  public static boolean canMakeShroomy(BlockState blockState){
-	switch(blockState.getType()){
-	  case DIRT:
-	  case GRASS:
-	  case GRASS_PATH:
-		return true;
-
-	  default:
-		return false;
 	}
   }
 
