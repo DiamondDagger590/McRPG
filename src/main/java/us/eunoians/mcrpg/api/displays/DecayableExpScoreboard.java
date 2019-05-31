@@ -94,7 +94,7 @@ public class DecayableExpScoreboard extends GenericDisplay implements Scoreboard
   public void cancel(){
     board = manager.getNewScoreboard();
     player.getPlayer().setScoreboard(board);
-    if(endTask == null){
+    if(endTask != null){
       endTask.cancel();
     }
   }

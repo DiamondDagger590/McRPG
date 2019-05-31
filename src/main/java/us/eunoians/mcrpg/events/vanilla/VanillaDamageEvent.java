@@ -157,15 +157,7 @@ public class VanillaDamageEvent implements Listener {
             int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
             int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
             int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
-            if(diffInX <= config.getInt("AntiAFK.XRange")) {
-              afk = true;
-            }
-            else if(diffInY <= config.getInt("AntiAFK.YRange")) {
-              afk = true;
-            }
-            else if(diffInZ <= config.getInt("AntiAFK.ZRange")) {
-              afk = true;
-            }
+            afk = diffInY <= config.getInt("AntiAFK.YRange") && diffInX <= config.getInt("AntiAFK.XRange") && diffInZ <= config.getInt("AntiAFK.ZRange");
           }
           if(!afk) {
             expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
@@ -174,8 +166,11 @@ public class VanillaDamageEvent implements Listener {
             equation.setVariable("exp_awarded", expAwarded);
             equation.setVariable("feather_falling_level", featherFallingLevel);
             expAwarded = (int) equation.getValue();
+            mcRPGPlayer.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
           }
-          else expAwarded = 0;
+          else{
+            expAwarded = 0;
+          }
 
           Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
           if(roll.getGenericAbility().isEnabled() && roll.isToggled()) {
@@ -193,7 +188,6 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-          mcRPGPlayer.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
         }
       }
     }

@@ -36,6 +36,12 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
 	equation.setVariable("skill_level", s.getCurrentLevel());
 	equation.setVariable("power_level", player.getPowerLevel());
 	double progress = s.getCurrentExp()/equation.getValue();
+    if(progress >= 1){
+      progress = .9;
+    }
+    else if(progress < 0){
+      progress = 0;
+    }
 	this.expBar = Bukkit.createBossBar(title, color, style);
 	expBar.setProgress(progress);
 	expBar.setVisible(true);
@@ -49,9 +55,15 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
 	equation.setVariable("skill_level", s.getCurrentLevel());
 	equation.setVariable("power_level", player.getPowerLevel());
 	double progress = s.getCurrentExp()/equation.getValue();
+    if(progress >= 1){
+      progress = .9;
+    }
+    else if(progress < 0){
+      progress = 0;
+    }
     expBar.setProgress(progress);
     this.expBar.setTitle(Methods.color(player.getPlayer(), McRPG.getInstance().getConfig().getString("DisplayConfig.BossBar.DisplayName").replace("%Skill%", skill.getDisplayName())
-		.replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())).replace("%Current_Level%", Integer.toString(currentLevel))));
+            .replace("%Exp_Gained%", Integer.toString(expGained)).replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())).replace("%Current_Level%", Integer.toString(currentLevel))));
   }
 
   @Override
