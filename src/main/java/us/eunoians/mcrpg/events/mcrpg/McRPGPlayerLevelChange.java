@@ -17,7 +17,6 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.GenericAbility;
-import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.TipType;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
@@ -64,7 +63,7 @@ public class McRPGPlayerLevelChange implements Listener {
       }
     }
     //TODO for future reference
-    //Do things for swords ability
+ /**   //Do things for swords ability
     if(skillLeveled.getType().equals(Skills.SWORDS)) {
       //Get all enabled abilites
       List<String> enabledAbilities = Skills.SWORDS.getEnabledAbilities();
@@ -103,7 +102,10 @@ public class McRPGPlayerLevelChange implements Listener {
       List<String> enabledAbilities = Skills.WOODCUTTING.getEnabledAbilities();
       //Iterate across these bois
       addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }
+    }**/
+
+    addToPending(e, mcRPG, skillLeveled, mp, skillLeveled.getType().getEnabledAbilities());
+
     //Update their general info and scoreboards
     if(e.getMcMMOPlayer().isOnline()) {
       Player p = e.getMcMMOPlayer().getPlayer();
@@ -144,9 +146,10 @@ public class McRPGPlayerLevelChange implements Listener {
             if(abilityUnlockEvent.isCancelled()) {
               return;
             }
+            boolean denyFitness = mp.getAbilityLoadout().stream().filter(abilitiy -> abilitiy.getSkill().equalsIgnoreCase("Fitness")).count() >= 2;
             if(mp.isOnline()) {
               Player p = mp.getPlayer();
-              if(mp.isAutoDeny()) {
+              if(mp.isAutoDeny() || denyFitness) {
                 p.sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() +
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlockedButDenied").replaceAll("%Ability%", ab.getName())));
               }

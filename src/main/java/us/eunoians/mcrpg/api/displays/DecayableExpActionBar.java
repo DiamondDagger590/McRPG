@@ -10,20 +10,25 @@ import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.Skills;
 
-public class ExpActionBar extends GenericDisplay implements ExpDisplayType, ActionBarBase {
+public class DecayableExpActionBar extends GenericDisplay implements ActionBarBase, DecayableDisplay, ExpDisplayType{
 
   @Getter private Skills skill;
 
-  public ExpActionBar(McRPGPlayer player, Skills skill){
+  public DecayableExpActionBar(McRPGPlayer player, Skills skill){
     super(player, DisplayType.ACTION_BAR);
     this.skill = skill;
   }
 
   @Override
   public void sendUpdate(int currentExp, int expToLevel, int currentLevel, int expGained){
-	Skill s = player.getSkill(skill);
-	player.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Methods.color(player.getPlayer(), McRPG.getInstance().getConfig()
-		.getString("DisplayConfig.ActionBar." + skill.getName() + ".Message").replace("%Current_Level%", Integer.toString(s.getCurrentLevel())).replace("%Skill%", skill.getDisplayName())
+    Skill s = player.getSkill(skill);
+    player.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Methods.color(player.getPlayer(), McRPG.getInstance().getConfig()
+            .getString("DisplayConfig.ActionBar." + skill.getName() + ".Message").replace("%Current_Level%", Integer.toString(s.getCurrentLevel())).replace("%Skill%", skill.getDisplayName())
             .replace("%Exp_Gained%", Integer.toString(expGained)).replace("%Exp_To_Level%", Integer.toString(s.getExpToLevel() - s.getCurrentExp())))));
+  }
+
+  @Override
+  public int getDisplayTime(){
+    return 0;
   }
 }

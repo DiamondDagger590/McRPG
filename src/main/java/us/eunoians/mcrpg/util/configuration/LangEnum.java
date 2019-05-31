@@ -152,6 +152,12 @@ public enum LangEnum implements ConfigurationEnum {
     ABILITIES_DEMETERS_SHRINE_ON_COOLDOWN("Messages.Abilities.DemetersShrine.StillOnCooldown", "&aYour Demeters Shrine is still on cooldown!"),
     ABILITIES_TEMPORAL_HARVEST_ACTIVATED("Messages.Abilities.TemporalHarvest.Activated", "&aYour axe cuts through time, harvesting the saplings future."),
     ABILITIES_HESPERIDES_APPLES_ACTIVATED("Messages.Abilities.HesperidesApples.Activated", "&aThe apple you ate still contained bits of power from Hesperides Garden. It will be a bit before you can handle it again."),
+    ABILITIES_ROLL_ACTIVATED("Messages.Abilities.Roll.Activated", "&aYou managed to roll, negating some of your fall damage."),
+    ABILITIES_BULLET_PROOF_ACTIVATED("Messages.Abilities.BulletProof.Activated", "&aYou managed to negate the projectile."),
+    ABILITIES_DODGE_ACTIVATED("Messages.Abilities.Dodge.Activated", "&aYou dodged your opponents attack."),
+    ABILITIES_DIVINE_ESCAPE_ACTIVATED("Messages.Abilities.DivineEscape.Activated", "&aYou managed to escape with divine power. McRPG exp gain will be debuffed by &c%Exp_Debuff%% &aand you will take &c%Damage_Debuff%% &aextra damage for a while."),
+    ABILITIES_DIVINE_ESCAPE_EXP_EXPIRE("Messages.Abilities.DivineEscape.ExpDebuffExpire", "&aYour Divine Escape exp debuff has expired'."),
+    ABILITIES_DIVINE_ESCAPE_DAMAGE_EXPIRE("Messages.Abilities.DivineEscape.DamageDebuffExpire", "&aYour Divine Escape damage debuff has expired'."),
     GUIS_ACCEPTED_ABILITY("Messages.Guis.AcceptedAbility", "&aThe ability %Ability% has been added to your loadout!"),
     GUIS_UPGRADED_ABILITY("Messages.Guis.UpgradedAbility", "&aThe ability %Ability% has been upgraded to %Tier%!"),
     GUIS_HAS_ACTIVE("Messages.Guis.HasActive", "&cYou already have an active ability for that skill."),
@@ -189,7 +195,10 @@ public enum LangEnum implements ConfigurationEnum {
     TIPS_LEVEL_UP_WOODCUTTING("Messages.Tips.LevelUpWoodcutting", Arrays.asList("&7[&5McRPG Tip&7]: &aHeavy Swing will mine surrounding wood and leaves of the same type!",
             "&7[&5McRPG Tip&7]: &aHeavy Swing only works on natural blocks so no need to worry about it ruining your builds!",
             "&7[&5McRPG Tip&7]: &aToss a sapling into a block of water surrounded by gold blocks to activate Demeters Shrine!", "&7[&5McRPG Tip&7]: &aMoving in a forest will activate Nymphs Vitality!",
-            "&7[&5McRPG Tip&7]: &aReady your axe and mine a sapling in order to harvest the trees future self using Temporal Harvest!"));
+            "&7[&5McRPG Tip&7]: &aReady your axe and mine a sapling in order to harvest the trees future self using Temporal Harvest!")),
+    TIPS_LEVEL_UP_FITNESS("Messages.Tips.LevelupFitness", Arrays.asList("&7[&5McRPG Tip&7]: &aDue to how universal Fitness is, you can only have two Fitness abilities at once!",
+            "&7[&5McRPG Tip&7]: &aBullet Proof negates all projectiles when activated, including Archery abilities!", "&7[&5McRPG Tip&7]: &aGain Fitness exp by falling or taking damage from an mob or player",
+            "&7[&5McRPG Tip&7]: &aWearing Feather Falling increases exp gained from falling."));
 
     private String path;
     private Object defaultValue;

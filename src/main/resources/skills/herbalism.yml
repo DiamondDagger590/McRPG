@@ -192,7 +192,7 @@ DiamondFlowersConfig:
       UnCommon: 0.9
       Rare: .7
       Legendary: .01
-  #Define custom categories of items to be teleported using this ability. No cap to amount
+  #Define custom categories of items to be dropped using this ability. No cap to amount
   Categories:
     Common:
       MelonSeeds:

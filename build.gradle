@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 2, patch: 7, state: 'APLHA')
+def versionObj = new Version(major: 1, minor: 2, patch: 7, state: 'ALPHA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -26,6 +26,7 @@ repositories {
     maven { url 'https://nexus.wesjd.net/repository/thirdparty/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url = "https://oss.sonatype.org/content/repositories/snapshots"}
 }
 
 dependencies {

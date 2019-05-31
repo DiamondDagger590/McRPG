@@ -16,7 +16,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.fitness.RunnersDiet;
 import us.eunoians.mcrpg.abilities.woodcutting.NymphsVitality;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.RunnersDietEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.NymphsVitalityEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -55,6 +57,21 @@ public class MoveEvent implements Listener {
           if(!nymphsVitalityEvent.isCancelled()) {
             p.setFoodLevel(nymphsVitalityEvent.getNewHunger());
           }
+        }
+      }
+    }
+    if(UnlockedAbilities.RUNNERS_DIET.isEnabled() && player.getAbilityLoadout().contains(UnlockedAbilities.RUNNERS_DIET)
+    && player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET).isToggled()){
+      FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+      RunnersDiet runnersDiet = (RunnersDiet) player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET);
+      int minHunger = fitnessConfig.getInt("RunnersDietConfig.Tier" + Methods.convertToNumeral(runnersDiet.getCurrentTier())
+      + ".MinHunger");
+      Player p = e.getPlayer();
+      if(p.isSprinting() && p.getFoodLevel() < minHunger){
+        RunnersDietEvent runnersDietEvent = new RunnersDietEvent(player, runnersDiet);
+        Bukkit.getPluginManager().callEvent(runnersDietEvent);
+        if(!runnersDietEvent.isCancelled()){
+          p.setFoodLevel(p.getFoodLevel() + 1);
         }
       }
     }

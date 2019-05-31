@@ -16,7 +16,8 @@ public enum DefaultAbilities implements GenericAbility {
   DOUBLE_DROP("Double Drop", "Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
   STICKY_FINGERS("Sticky Fingers", "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
   TOO_MANY_PLANTS("Too Many Plants", "Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
-  EXTRA_LUMBER("Extra Lumber", "Woodcutting", AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG);
+  EXTRA_LUMBER("Extra Lumber", "Woodcutting", AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG),
+  ROLL("Roll", "Fitness", AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG);
 
   @Getter
   private String name;

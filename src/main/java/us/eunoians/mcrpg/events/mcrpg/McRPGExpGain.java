@@ -24,7 +24,6 @@ import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
 import us.eunoians.mcrpg.util.worldguard.WGRegion;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -97,6 +96,10 @@ public class McRPGExpGain implements Listener {
         }
       }
       e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
+    }
+    //Divine Escape exp debuff
+    if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0){
+      e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff()/100)));
     }
     if(e.getGainType() == GainReason.BREAK && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
       Skills type = e.getSkillGained().getType();
