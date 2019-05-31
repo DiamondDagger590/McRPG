@@ -14,6 +14,13 @@
 #   - Indents are correct: YAML hierarchy is based entirely on indentation
 ###################################
 Configuration:
+  ConstantExpUpdates:
+    #If players should be sent an update everytime they gain exp
+    Enabled: false
+    #What type should the display be. BOSSBAR, SCOREBOARD, or ACTIONBAR
+    DisplayType: BOSSBAR
+    #Duration of the reminder. Only used for scoreboard and bossbar
+    DisplayDuration: 3
   DisabledWorlds:
     - 'test'
   #This is in minutes
@@ -28,8 +35,6 @@ Configuration:
   AutoUpdate: true
   #Use mcrpg.{skill}.level
   UseLevelPerms: false
-  #If players should be sent an update every time they gain exp
-  UseConstantActionBarUpdates: false
   #Allow Health bars
   HealthBarEnabled: true
   #Display time in seconds
@@ -57,6 +62,7 @@ DisplayConfig:
       Herbalism: 'Green'
       Archery: 'Pink'
       Woodcutting: 'Green'
+      Fitness: 'White'
   ActionBar:
     Swords:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
@@ -69,6 +75,8 @@ DisplayConfig:
     Archery:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
     Woodcutting:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Fitness:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
 PlayerConfiguration:
   #This amount is here for the future and currently is unused

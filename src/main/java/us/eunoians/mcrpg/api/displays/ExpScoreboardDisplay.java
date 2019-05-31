@@ -16,14 +16,11 @@ import us.eunoians.mcrpg.types.Skills;
 
 public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBase, ExpDisplayType{
 
-  @Getter
-  private Skills skill;
-  @Getter
-  private Scoreboard oldBoard;
+  @Getter private Skills skill;
+  @Getter private Scoreboard oldBoard;
 
   private static ScoreboardManager manager = Bukkit.getScoreboardManager();
-  @Getter
-  private Scoreboard board;
+  @Getter private Scoreboard board;
 
   /**
    *

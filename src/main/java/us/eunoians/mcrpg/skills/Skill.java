@@ -6,15 +6,14 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
+import us.eunoians.mcrpg.api.displays.ExpDisplayFactory;
 import us.eunoians.mcrpg.api.displays.ExpDisplayType;
 import us.eunoians.mcrpg.api.displays.GenericDisplay;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerLevelChangeEvent;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.types.DefaultAbilities;
-import us.eunoians.mcrpg.types.GainReason;
-import us.eunoians.mcrpg.types.GenericAbility;
-import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.Parser;
 
 import java.util.Collection;
@@ -159,12 +158,20 @@ public abstract class Skill {
     if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())) {
       return;
     }
-
-    GenericDisplay display = McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
-    if(display instanceof ExpDisplayType) {
-      ExpDisplayType expDisplayType = (ExpDisplayType) display;
-      if(expDisplayType.getSkill().equals(this.getType())) {
-        expDisplayType.sendUpdate(currentExp, expToLevel, currentLevel, exp);
+    else if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer()) &&
+            McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.ConstantExpUpdates.Enabled")){
+      DisplayType displayType = DisplayType.fromString(McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getString("Configuration.ConstantExpUpdates.DisplayType"));
+      int duration = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.ConstantExpUpdates.DisplayDuration");
+      GenericDisplay display = ExpDisplayFactory.createDisplay(displayType, player, this.type, duration);
+      McRPG.getInstance().getDisplayManager().setGenericDisplay(display);
+    }
+    else {
+      GenericDisplay display = McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
+      if(display instanceof ExpDisplayType) {
+        ExpDisplayType expDisplayType = (ExpDisplayType) display;
+        if(expDisplayType.getSkill().equals(this.getType())) {
+          expDisplayType.sendUpdate(currentExp, expToLevel, currentLevel, exp);
+        }
       }
     }
   }
