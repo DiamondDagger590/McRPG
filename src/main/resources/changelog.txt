@@ -1,3 +1,7 @@
+1.3.0-ALPHA
++ Fitness Skill is added into the game!
++ Upon request, added a Constant Exp Update section to the config.
+
 1.2.5-ALPHA
 + Added a setting to forcibly display an actionbar update everytime a player gains exp
 + In the lang files, added a localization option for skill names. Commands will accept the english or custom version of the name

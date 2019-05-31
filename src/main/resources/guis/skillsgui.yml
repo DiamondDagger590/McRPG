@@ -15,6 +15,8 @@ Gui:
         - 'OpenNative:SubSkillGUI:Archery'
       21:
         - 'OpenNative:SubSkillGUI:Woodcutting'
+      23:
+        - 'OpenNative:SubSkillGUI:Fitness'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -66,6 +68,14 @@ Gui:
           - '&eCurrent Woodcutting level: &a%Woodcutting_Level%'
           - '&eExtra Lumber chance: &c%Extra_Lumber_Chance%%'
         Slot: 21
+      FitnessSkill:
+        Name: '&5Fitness Skill'
+        Material: DIAMOND_BOOTS
+        Lore:
+          - '&eClick this to view your fitness information'
+          - '&eCurrent Fitness level: &a%Fitness_Level%'
+          - '&eRoll chance: &c%Roll_Chance%%'
+        Slot: 23
       Back:
         Name: '&bBack>>'
         Material: BARRIER

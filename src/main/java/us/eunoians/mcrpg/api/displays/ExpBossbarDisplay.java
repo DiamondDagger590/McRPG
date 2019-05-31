@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.util.Parser;
 
 public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, ExpDisplayType {
 
-  @Getter private BossBar expBar;
+  private BossBar expBar;
 
   @Getter private Skills skill;
 
@@ -57,5 +57,10 @@ public class ExpBossbarDisplay extends GenericDisplay implements BossbarBase, Ex
   @Override
   public void cancel(){
     expBar.removeAll();
+  }
+
+  @Override
+  public BossBar getBossbar(){
+    return expBar;
   }
 }

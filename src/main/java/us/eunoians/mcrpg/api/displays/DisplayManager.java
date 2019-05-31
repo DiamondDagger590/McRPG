@@ -43,6 +43,7 @@ public class DisplayManager {
     displays.remove(display);
   }
 
+
   /**
    *
    * @param p Player to check

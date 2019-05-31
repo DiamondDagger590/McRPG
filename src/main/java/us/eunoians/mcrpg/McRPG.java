@@ -77,8 +77,6 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Initialize(priority = 0)
   private void preInit() {
     Logger.init("McRPG");
-    Bukkit.getConsoleSender().sendMessage("Starting Phase 1");
-    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(
@@ -91,7 +89,6 @@ public class McRPG extends JavaPlugin implements Initializable {
   @SuppressWarnings("Duplicates")
   @Initialize(priority = 2)
   private void initPrimaryInstance() {
-    Bukkit.getConsoleSender().sendMessage("Starting Phase 2");
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
@@ -109,6 +106,7 @@ public class McRPG extends JavaPlugin implements Initializable {
       worldGuardEnabled = true;
       wgSupportManager = new WGSupportManager(this);
     }
+    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     remoteTransferTracker = new RemoteTransferTracker();
     File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
     if (!folder.exists()) {
@@ -122,7 +120,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 3)
   private void initCmds() {
-    Bukkit.getConsoleSender().sendMessage("Starting Phase 3");
     getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
     getCommand("mcadmin").setExecutor(new McAdmin());
@@ -135,7 +132,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 4)
   private void initListener() {
-    Bukkit.broadcastMessage("Init 5");
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
     getServer().getPluginManager().registerEvents(new PlayerLogoutEvent(), this);
@@ -164,7 +160,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new ChatEvent(), this);
     getServer().getPluginManager().registerEvents(new PlayerTossItemEvent(), this);
     getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
-    getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
+    getServer().getPluginManager().registerEvents(new DeathEvent(), this);
   }
 
   public static McRPG getInstance() {

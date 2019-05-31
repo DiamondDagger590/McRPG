@@ -293,7 +293,7 @@ public class VanillaDamageEvent implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void awardFitnessExp(EntityDamageByEntityEvent e) {
-    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && e.getDamager() instanceof LivingEntity){
+    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player){
       McRPGPlayer mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
       double damage = e.getDamage();
       int expAwarded = (int) (damage * McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG).getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));

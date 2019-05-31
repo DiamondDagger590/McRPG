@@ -30,12 +30,15 @@ public class DeathEvent implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeathHighest(EntityDamageEvent e) {
-    if(e instanceof Player ) {
+    if(e.getEntity() instanceof Player ) {
       Player p = (Player) e.getEntity();
       if(p.getHealth() - e.getDamage() <= 0 && p.getBedSpawnLocation() != null) {
         McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
         if(UnlockedAbilities.DIVINE_ESCAPE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DIVINE_ESCAPE)
         && mp.getBaseAbility(UnlockedAbilities.DIVINE_ESCAPE).isToggled()){
+          if(mp.getCooldown(UnlockedAbilities.DIVINE_ESCAPE) > -1){
+            return;
+          }
           FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
           DivineEscape divineEscape = (DivineEscape) mp.getBaseAbility(UnlockedAbilities.DIVINE_ESCAPE);
           String key = "DivineEscapeConfig.Tier" + Methods.convertToNumeral(divineEscape.getCurrentTier()) + ".";
@@ -47,7 +50,6 @@ public class DeathEvent implements Listener {
           DivineEscapeEvent divineEscapeEvent = new DivineEscapeEvent(mp, divineEscape, mcrpgExpPen, damagePenalty);
           Bukkit.getPluginManager().callEvent(divineEscapeEvent);
           if(!divineEscapeEvent.isCancelled()){
-            //TODO add message
             e.setCancelled(true);
             p.setHealth(p.getMaxHealth());
             p.teleport(p.getBedSpawnLocation());

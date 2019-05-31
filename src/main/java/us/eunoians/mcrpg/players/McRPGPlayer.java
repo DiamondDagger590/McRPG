@@ -1002,6 +1002,19 @@ public class McRPGPlayer {
     abilitiesOnCooldown.replace(ability, 0L);
   }
 
+  public void removeAbilityOnCooldown(Skills skill){
+    UnlockedAbilities remove = null;
+    for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()) {
+      if(ab.getSkill().equalsIgnoreCase(skill.getName())) {
+        remove = ab;
+        break;
+      }
+    }
+    if(remove != null){
+      abilitiesOnCooldown.remove(remove);
+    }
+  }
+
   /**
    * Update all the cooldowns and verify if they are valid
    */

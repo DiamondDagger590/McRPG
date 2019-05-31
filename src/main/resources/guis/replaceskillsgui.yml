@@ -15,6 +15,8 @@ Gui:
         - 'OpenNative:SelectReplaceGUI:Archery'
       21:
         - 'OpenNative:SelectReplaceGUI:Woodcutting'
+      23:
+        - 'OpenNative:SelectReplaceGUI:Fitness'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -60,12 +62,20 @@ Gui:
         Slot: 19
       WoodcuttingSkill:
         Name: '&5Woodcutting Skill'
-        Material: BOW
+        Material: DIAMOND_AXE
         Lore:
           - '&eClick this to view your woodcutting abilities'
           - '&eCurrent Woodcutting level: &a%Woodcutting_Level%'
           - '&eExtra Lumber chance: &c%Extra_Lumber_Chance%%'
-        Slot: 19
+        Slot: 21
+      FitnessSkill:
+        Name: '&5Fitness Skill'
+        Material: DIAMOND_BOOTS
+        Lore:
+          - '&eClick this to view your fitness abilities'
+          - '&eCurrent Fitness level: &a%Fitness_Level%'
+          - '&eRoll chance: &c%Roll_Chance%%'
+        Slot: 23
       Back:
         Name: '&bHome>>'
         Material: BARRIER

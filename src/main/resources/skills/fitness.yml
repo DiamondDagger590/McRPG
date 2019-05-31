@@ -49,7 +49,7 @@ UnlockLevelForAbility:
 #
 RollConfig:
   #Equation for Roll chance. Default gives 66% at level 1000.
-  RollChanceEquation: (fitness_level)*.66
+  RollChanceEquation: (fitness_level)*.066
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Roll'

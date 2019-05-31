@@ -124,8 +124,6 @@ public class DecayableExpScoreboard extends GenericDisplay implements Scoreboard
     if(endTask != null){
       endTask.cancel();
     }
-    else{
-      endTask = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer()), displayTime * 20);
-    }
+    endTask = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer()), displayTime * 20);
   }
 }

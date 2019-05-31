@@ -16,7 +16,7 @@ import us.eunoians.mcrpg.util.Parser;
 
 public class DecayableExpBossBar extends GenericDisplay implements BossbarBase, ExpDisplayType, DecayableDisplay {
 
-  @Getter private BossBar expBar;
+  private BossBar expBar;
 
   @Getter private Skills skill;
 
@@ -70,6 +70,11 @@ public class DecayableExpBossBar extends GenericDisplay implements BossbarBase, 
   }
 
   @Override
+  public BossBar getBossbar(){
+    return expBar;
+  }
+
+  @Override
   public int getDisplayTime(){
     return displayTime;
   }
@@ -78,8 +83,7 @@ public class DecayableExpBossBar extends GenericDisplay implements BossbarBase, 
     if(endTask != null){
       endTask.cancel();
     }
-    else{
-      endTask = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer()), displayTime * 20);
-    }
+    endTask = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer()), displayTime * 20);
+
   }
 }

@@ -6,6 +6,7 @@ SkillNames:
   Herbalism: 'Herbalism'
   Archery: 'Archery'
   Woodcutting: 'Woodcutting'
+  Fitness: 'Fitness'
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:

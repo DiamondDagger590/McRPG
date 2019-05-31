@@ -43,6 +43,8 @@ ExpAwardedPerBlock:
   BLUE_ORCHID: 100
   BEATROOTS: 25
   AZURE_BLUET: 100
+  SEAGRASS: 10
+  SEA_PICKLE: 20
 TooManyPlantsBlocks:
   - 'CACTUS'
   - 'SUGAR_CANE'

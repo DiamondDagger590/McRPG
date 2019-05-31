@@ -361,6 +361,9 @@ public class InvClickEvent implements Listener {
           if(mp.getAbilityLoadout().contains(baseAbility.getGenericAbility())) {
             return;
           }
+          if(baseAbility.getGenericAbility().getSkill().equalsIgnoreCase("Fitness") && mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase("Fitness")).count() >= 2){
+            return;
+          }
           AbilityAddToLoadoutEvent event = new AbilityAddToLoadoutEvent(mp, baseAbility);
           Bukkit.getPluginManager().callEvent(event);
           if(event.isCancelled()) {

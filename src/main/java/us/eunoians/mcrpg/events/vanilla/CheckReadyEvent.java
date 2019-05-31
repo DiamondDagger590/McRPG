@@ -189,11 +189,14 @@ public class CheckReadyEvent implements Listener {
         if(McRPG.getInstance().getConfig().getBoolean("Configuration.RequireEmptyOffHand") && p.getInventory().getItemInOffHand().getType() != Material.AIR) {
           return;
         }
-        if(mp.getCooldown(skillType) != -1) {
+        if(mp.getCooldown(skillType) > -1) {
           p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getDisplayName())
                           .replace("%Time%", Integer.toString((int) mp.getCooldown(skillType)))));
           return;
+        }
+        else if(mp.getCooldown(skillType) <= -1){
+          mp.removeAbilityOnCooldown(skillType);
         }
         readyHandler(p, mp, skillType, e.getClickedBlock());
       }

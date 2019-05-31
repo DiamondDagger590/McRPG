@@ -40,9 +40,9 @@ public class MoveEvent implements Listener {
       e.setCancelled(true);
     }
     McRPGPlayer player = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
-    if(player.getAbilityLoadout() == null){
+    /*if(player.getAbilityLoadout() == null){
       return;
-    }
+    }*/
     if(player.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&
             UnlockedAbilities.NYMPHS_VITALITY.isEnabled() && player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY).isToggled()){
       Biome biome = e.getPlayer().getLocation().getBlock().getBiome();
