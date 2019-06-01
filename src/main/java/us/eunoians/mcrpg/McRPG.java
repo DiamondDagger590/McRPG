@@ -34,6 +34,8 @@ import java.nio.file.Paths;
 @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
 @Lib(group = "com.github.CyR1en", name = "FlatDB", version = "1.0.5")
 @Lib(group = "org.javassist", name = "javassist", version = "3.21.0-GA")
+@Lib(group = "de.articdive", name = "EnumToYAML", version = "1.0-20190129.130317-1",
+        directURL = "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar")
 public class McRPG extends JavaPlugin implements Initializable {
 
   @Ignore private static McRPG instance;
