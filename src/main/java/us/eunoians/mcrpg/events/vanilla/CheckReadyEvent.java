@@ -224,6 +224,9 @@ public class CheckReadyEvent implements Listener {
         skill = "Fist";
       }
       else if(skillType == Skills.HERBALISM) {
+        if(block == null){
+          return;
+        }
         if(block.getType() == Material.GRASS_BLOCK) {
           return;
         }

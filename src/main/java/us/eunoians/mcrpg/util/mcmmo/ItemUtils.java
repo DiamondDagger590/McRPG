@@ -581,7 +581,9 @@ public final class ItemUtils {
       case WHEAT:
       case WHEAT_SEEDS:
       case CARROT:
+      case CARROTS:
       case POTATO:
+      case POTATOES:
       case BEETROOT:
       case BEETROOT_SEEDS:
       case NETHER_WART:

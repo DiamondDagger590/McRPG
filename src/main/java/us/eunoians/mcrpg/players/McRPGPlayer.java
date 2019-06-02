@@ -1204,6 +1204,10 @@ public class McRPGPlayer {
     return (Player) Bukkit.getOfflinePlayer(uuid);
   }
 
+  public boolean isPlayerOnline(){
+    return Bukkit.getOfflinePlayer(uuid).isOnline();
+  }
+
   /**
    * @param ability Ability to add to the loadout
    */

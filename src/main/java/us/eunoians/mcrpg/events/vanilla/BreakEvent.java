@@ -62,7 +62,7 @@ public class BreakEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event) {
-    if(!event.isCancelled() && event.getPlayer().getGameMode() == GameMode.SURVIVAL) {
+    if(!event.isCancelled() && (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE)) {
 
       Player p = event.getPlayer();
       Block block = event.getBlock();
