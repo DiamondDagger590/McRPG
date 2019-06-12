@@ -64,7 +64,6 @@ public class InteractHandler implements Listener {
     else {
       type = target.getType();
     }
-
     if(mp.isReadying()) {
       PlayerReadyBit bit = mp.getReadyingAbilityBit();
       if(bit == null) {
