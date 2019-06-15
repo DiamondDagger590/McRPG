@@ -316,6 +316,7 @@ public class FileManager {
     EDIT_LOADOUT_GUI("editloadoutgui.yml", "guis/editloadoutgui.yml"),
     EDIT_LOADOUT_SELECT_GUI("editloadoutgselectui.yml", "guis/editloadoutselectgui.yml"),
     ENGLISH_FILE("en.yml", "localization/en.yml"),
+    EXCAVATION_CONFIG("excavation.yml", "skills/excavation.yml"),
     FITNESS_CONFIG("fitness.yml", "skills/fitness.yml"),
     HERBALISM_CONFIG("herbalism.yml", "skills/herbalism.yml"),
     LOCATIONS("locations.yml", "data/locations.yml"),
