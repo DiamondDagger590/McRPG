@@ -10,6 +10,6 @@ import java.util.HashMap;
 public class Excavation extends Skill{
 
   public Excavation(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map, McRPGPlayer player) {
-    super(Skills.SWORDS, map, currentLevel, currentExp, player);
+    super(Skills.EXCAVATION, map, currentLevel, currentExp, player);
   }
 }

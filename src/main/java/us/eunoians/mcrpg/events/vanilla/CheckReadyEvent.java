@@ -73,7 +73,7 @@ public class CheckReadyEvent implements Listener {
     if((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && UnlockedAbilities.NATURES_WRATH.isEnabled() &&
             mp.getAbilityLoadout().contains(UnlockedAbilities.NATURES_WRATH) && mp.getBaseAbility(UnlockedAbilities.NATURES_WRATH).isToggled()) {
       //verify they have a weapon or tool. prevents annoying food bug
-      if(Methods.getSkillsItem(p.getInventory().getItemInMainHand()) != null && !playersToIgnore.contains(p.getUniqueId())) {
+      if(Methods.getSkillsItem(p.getInventory().getItemInMainHand().getType()) != null && !playersToIgnore.contains(p.getUniqueId())) {
         NaturesWrath naturesWrath = (NaturesWrath) mp.getBaseAbility(UnlockedAbilities.NATURES_WRATH);
         FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
         String key = "NaturesWrathConfig.Tier" + Methods.convertToNumeral(naturesWrath.getCurrentTier()) + ".";
@@ -174,7 +174,13 @@ public class CheckReadyEvent implements Listener {
       }
       else {
         //Get the skill from the material of the item
-        Skills skillType = Methods.getSkillsItem(heldItem);
+        Block b = e.getClickedBlock();
+        Material m = b.getType();
+        Material heldItemType = heldItem.getType();
+        if(heldItem.getType() == Material.AIR && Methods.specialHandDigggingCase(m)){
+          heldItemType = Material.DIAMOND_SHOVEL;
+        }
+        Skills skillType = Methods.getSkillsItem(heldItemType);
         if(skillType == null || skillType == Skills.ARCHERY) {
           return;
         }
@@ -220,8 +226,11 @@ public class CheckReadyEvent implements Listener {
       else if(skillType == Skills.MINING) {
         skill = "Pickaxe";
       }
-      else if(skillType == Skills.UNARMED) {
+      else if(skillType == Skills.UNARMED || (skillType == Skills.EXCAVATION && ab.getGenericAbility() == UnlockedAbilities.HAND_DIGGING)) {
         skill = "Fist";
+      }
+      else if(skillType == Skills.EXCAVATION){
+        skill = "Shovel";
       }
       else if(skillType == Skills.HERBALISM) {
         if(block == null){

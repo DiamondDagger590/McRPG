@@ -17,7 +17,7 @@ import us.eunoians.mcrpg.types.Skills;
 public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBase, ExpDisplayType{
 
   @Getter private Skills skill;
-  @Getter private Scoreboard oldBoard;
+  private Scoreboard oldBoard;
 
   private static ScoreboardManager manager = Bukkit.getScoreboardManager();
   @Getter private Scoreboard board;
@@ -81,6 +81,10 @@ public class ExpScoreboardDisplay extends GenericDisplay implements ScoreboardBa
    */
   @Override
   public void cancel(){
+    if(hasOldScoreBoard()){
+      player.getPlayer().setScoreboard(oldBoard);
+      return;
+    }
     board = manager.getNewScoreboard();
     player.getPlayer().setScoreboard(board);
   }

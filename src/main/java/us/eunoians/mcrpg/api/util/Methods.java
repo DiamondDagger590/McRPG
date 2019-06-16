@@ -195,11 +195,11 @@ public class Methods {
   }
 
   /**
-   * @param item Item stack to test
+   * @param m Material
    * @return The Skill that the item belongs to
    */
-  public static Skills getSkillsItem(ItemStack item) {
-    switch(item.getType()) {
+  public static Skills getSkillsItem(Material m) {
+    switch(m) {
       case DIAMOND_SWORD:
       case IRON_SWORD:
       case GOLDEN_SWORD:
@@ -226,10 +226,33 @@ public class Methods {
         return Skills.WOODCUTTING;
       case BOW:
         return Skills.ARCHERY;
+      case DIAMOND_SHOVEL:
+      case IRON_SHOVEL:
+      case GOLDEN_SHOVEL:
+      case STONE_SHOVEL:
+      case WOODEN_SHOVEL:
+        return Skills.EXCAVATION;
       case AIR:
         return Skills.UNARMED;
     }
     return null;
+  }
+
+  public static boolean specialHandDigggingCase(Material material){
+    switch(material){
+      case DIRT:
+      case COARSE_DIRT:
+      case GRASS_BLOCK:
+      case GRASS_PATH:
+      case FARMLAND:
+      case MYCELIUM:
+      case PODZOL:
+      case GRAVEL:
+      case SAND:
+      case RED_SAND:
+        return true;
+    }
+    return false;
   }
 
   public static Location lookAt(Location loc, Location lookat) {
