@@ -1,0 +1,6 @@
+miner:
+  Perm: 'mcrpg.expbuff.miner'
+  AffectedSkills:
+    Mining: 1.5
+    Herbalism: 0.7
+  Priority: 10

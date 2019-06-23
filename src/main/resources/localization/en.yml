@@ -7,6 +7,7 @@ SkillNames:
   Archery: 'Archery'
   Woodcutting: 'Woodcutting'
   Fitness: 'Fitness'
+  Excavation: 'Excavation'
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:
@@ -220,6 +221,14 @@ Messages:
       Activated: '&aYou managed to escape with divine power. McRPG exp gain will be debuffed by &c%Exp_Debuff%% &aand you will take &c%Damage_Debuff%% &aextra damage for a while'
       ExpDebuffExpire: '&aYour Divine Escape exp debuff has expired'
       DamageDebuffExpire: '&aYour Divine Escape damage debuff has expired'
+    FrenzyDig:
+      Activated: '&aFrenzy Dig has been activated'
+      Deactivated: '&cFrenzy Dig has deactivated'
+    HandDigging:
+      Activated: '&aHand Digging has been activated'
+      Deactivated: '&cHand Digging has been deactivated'
+    PansShrine:
+      Activated: '&aPan has used the power of nature to change the surrounding landscape!'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
@@ -285,3 +294,8 @@ Messages:
       - '&7[&5McRPG Tip&7]: &aBullet Proof negates all projectiles when activated, including Archery abilities'
       - '&7[&5McRPG Tip&7]: &aGain Fitness exp by falling or taking damage from an mob or player'
       - '&7[&5McRPG Tip&7]: &aWearing Feather Falling increases exp gained from falling'
+    LevelUpExcavation:
+      - '&7[&5McRPG Tip&7]: &aPans Shrine requires a block of water surrounded on 4 sides by emerald blocks!'
+      - '&7[&5McRPG Tip&7]: &aFrenzy Dig will give haste and increase chance of doubling block drops for a short while!'
+      - '&7[&5McRPG Tip&7]: &aActivate Pans Shrine to change the landscape!'
+      - '&7[&5McRPG Tip&7]: &aMana Deposit will give you exp in a random skill occasionally!'

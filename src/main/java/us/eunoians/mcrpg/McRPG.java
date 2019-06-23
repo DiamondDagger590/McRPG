@@ -16,6 +16,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.util.*;
+import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.commands.*;
 import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.mcrpg.*;
@@ -41,6 +42,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Ignore private static McRPG instance;
   @Getter private PluginUpdater pluginUpdater;
   @Getter private FileManager fileManager;
+  @Getter private ExpPermissionManager expPermissionManager;
   @Getter private McRPGDb mcRPGDb;
   @Getter private DisplayManager displayManager;
   @Getter private static ChunkManager placeStore;
@@ -94,6 +96,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
+    expPermissionManager = ExpPermissionManager.getInstance().setup(this);
     this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     if (healthBarPluginEnabled) {
@@ -116,6 +119,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     }
     displayManager = DisplayManager.getInstance();
     DiamondFlowersData.init();
+    BuriedTreasureData.init();
     HiddenConfig.getInstance();
     PlayerManager.startSave(this);
   }

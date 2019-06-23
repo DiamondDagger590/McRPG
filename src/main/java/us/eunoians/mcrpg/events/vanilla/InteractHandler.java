@@ -4,6 +4,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,17 +14,23 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
+import us.eunoians.mcrpg.abilities.excavation.Extraction;
+import us.eunoians.mcrpg.abilities.excavation.FrenzyDig;
+import us.eunoians.mcrpg.abilities.excavation.HandDigging;
 import us.eunoians.mcrpg.abilities.herbalism.MassHarvest;
 import us.eunoians.mcrpg.abilities.herbalism.PansBlessing;
 import us.eunoians.mcrpg.abilities.mining.BlastMining;
 import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
 import us.eunoians.mcrpg.abilities.mining.OreScanner;
 import us.eunoians.mcrpg.abilities.mining.SuperBreaker;
+import us.eunoians.mcrpg.api.events.mcrpg.excavation.FrenzyDigEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.excavation.HandDiggingEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.herbalism.MassHarvestEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.herbalism.PansBlessingEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.BlastMiningEvent;
@@ -45,12 +52,26 @@ import java.util.List;
 
 public class InteractHandler implements Listener {
 
+  private static ItemStack shovel;
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public void interactHandler(PlayerInteractEvent e) {
+    if(shovel == null){
+      shovel = new ItemStack(Material.DIAMOND_SHOVEL);
+      shovel.addEnchantment(Enchantment.SILK_TOUCH, 1);
+      ItemMeta meta = shovel.getItemMeta();
+      meta.setUnbreakable(true);
+      shovel.setItemMeta(meta);
+    }
     Player p = e.getPlayer();
     McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
     ItemStack heldItem = e.getItem();
     if(heldItem == null) {
+      if(mp.isHandDigging() && e.getClickedBlock() != null && e.getClickedBlock().getType() != null){
+        if(mp.getHandDiggingBlocks().contains(e.getClickedBlock().getType())){
+          e.getClickedBlock().breakNaturally(shovel);
+        }
+      }
       return;
     }
     if(e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_AIR) {
@@ -171,6 +192,82 @@ public class InteractHandler implements Listener {
           }
         }.runTaskLater(McRPG.getInstance(), superBreakerEvent.getHasteDuration() * 20);
         return;
+      }
+      else if(abilityType.equals(UnlockedAbilities.FRENZY_DIG) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
+        FrenzyDig frenzyDig = (FrenzyDig) ability;
+        FileConfiguration excavationConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EXCAVATION_CONFIG);
+        e.setCancelled(true);
+        int hasteDuration = excavationConfig.getInt("FrenzyDigConfig.Tier" + Methods.convertToNumeral(frenzyDig.getCurrentTier()) + ".Duration");
+        int cooldown = excavationConfig.getInt("FrenzyDigConfig.Tier" + Methods.convertToNumeral(frenzyDig.getCurrentTier()) + ".Cooldown");
+        double boost = excavationConfig.getDouble("FrenzyDigConfig.Tier" + Methods.convertToNumeral(frenzyDig.getCurrentTier()) + ".ActivationBoost");
+        FrenzyDigEvent frenzyDigEvent = new FrenzyDigEvent(mp, frenzyDig, hasteDuration, cooldown, boost);
+        Bukkit.getPluginManager().callEvent(frenzyDigEvent);
+        if(frenzyDigEvent.isCancelled()) {
+          return;
+        }
+        Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+        mp.setReadyingAbilityBit(null);
+        mp.setReadying(false);
+        Extraction extraction = (Extraction) mp.getBaseAbility(DefaultAbilities.EXTRACTION);
+        extraction.setBonusChance(extraction.getBonusChance() + frenzyDigEvent.getExtractionBuff());
+        PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, frenzyDigEvent.getHasteDuration() * 20, 20);
+        p.addPotionEffect(effect);
+        mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
+                McRPG.getInstance().getLangFile().getString("Messages.Abilities.FrenzyDig.Activated")));
+        mp.getActiveAbilities().add(UnlockedAbilities.FRENZY_DIG);
+        new BukkitRunnable() {
+          @Override
+          public void run() {
+            extraction.setBonusChance(0);
+            if(mp.isOnline()) {
+              mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
+                      McRPG.getInstance().getLangFile().getString("Messages.Abilities.FrenzyDig.Deactivated")));
+              mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
+            }
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.SECOND,
+                    frenzyDigEvent.getCooldown());
+            mp.getActiveAbilities().remove(UnlockedAbilities.FRENZY_DIG);
+            mp.addAbilityOnCooldown(UnlockedAbilities.FRENZY_DIG, cal.getTimeInMillis());
+          }
+        }.runTaskLater(McRPG.getInstance(), frenzyDigEvent.getHasteDuration() * 20);
+        return;
+      }
+      else if(abilityType.equals(UnlockedAbilities.HAND_DIGGING) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)){
+        HandDigging handDigging = (HandDigging) ability;
+        FileConfiguration excavationConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EXCAVATION_CONFIG);
+        if(e.getClickedBlock() == null || e.getClickedBlock().getType() == null){
+          return;
+        }
+        if(BreakEvent.canLargerSpade(e.getClickedBlock().getType())){
+          int duration = excavationConfig.getInt("HandDiggingConfig.Tier" + Methods.convertToNumeral(handDigging.getCurrentTier()) + ".Duration");
+          int cooldown = excavationConfig.getInt("HandDiggingConfig.Tier" + Methods.convertToNumeral(handDigging.getCurrentTier()) + ".Cooldown");
+          HandDiggingEvent handDiggingEvent = new HandDiggingEvent(mp, handDigging, duration, cooldown, BreakEvent.getExcavationBlocks());
+          Bukkit.getPluginManager().callEvent(handDiggingEvent);
+          if(!handDiggingEvent.isCancelled()){
+            mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
+                    McRPG.getInstance().getLangFile().getString("Messages.Abilities.HandDigging.Activated")));
+            Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+            mp.setReadyingAbilityBit(null);
+            mp.setReadying(false);
+            mp.setHandDigging(true);
+            mp.setHandDiggingBlocks(handDiggingEvent.getBreakableBlocks());
+            mp.getActiveAbilities().add(UnlockedAbilities.HAND_DIGGING);
+            new BukkitRunnable(){
+              @Override
+              public void run() {
+                mp.setHandDigging(false);
+                mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
+                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.HandDigging.Deactivated")));
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.SECOND,
+                        handDiggingEvent.getCooldown());
+                mp.getActiveAbilities().remove(UnlockedAbilities.HAND_DIGGING);
+                mp.addAbilityOnCooldown(UnlockedAbilities.HAND_DIGGING, cal.getTimeInMillis());
+              }
+            }.runTaskLater(McRPG.getInstance(), handDiggingEvent.getDuration() * 20);
+          }
+        }
       }
       else if(abilityType == UnlockedAbilities.ORE_SCANNER && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
         OreScanner oreScanner = (OreScanner) ability;

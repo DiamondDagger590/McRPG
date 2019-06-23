@@ -187,13 +187,13 @@ DiamondFlowersConfig:
     Categories:
       Common: 1.0
       UnCommon: 0.9
-      Rare: .7
+      Rare: 0.7
   TierV:
     Categories:
       Common: 1.0
       UnCommon: 0.9
-      Rare: .7
-      Legendary: .01
+      Rare: 0.7
+      Legendary: 0.01
   #Define custom categories of items to be dropped using this ability. No cap to amount
   Categories:
     Common:
@@ -392,7 +392,7 @@ ReplantingConfig:
     MaxGrowthLevel: 2
     MinGrowthLevel: 1
   TierV:
-    ActivationChance: 30.
+    ActivationChance: 30.0
     StageGrowthChance: 33.3
     MaxGrowthLevel: 3
     MinGrowthLevel: 1

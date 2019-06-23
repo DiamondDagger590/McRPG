@@ -14,6 +14,7 @@ public enum LangEnum implements ConfigurationEnum {
     SKILL_NAMES_ARCHERY("SkillNames.Archery", "Archery"),
     SKILL_NAMES_WOODCUTTING("SkillNames.Woodcutting", "Woodcutting"),
     SKILL_NAMES_FITNESS("SkillNames.Fitness", "Fitness"),
+    SKILL_NAMES_EXCAVATION("SkillNames.Excavation", "Excavation"),
     PLUGIN_INFO_HEADER("Messages.PluginInfo", "", "#Messages relating to the general plugin information"),
     PLUGIN_PREFIX("Messages.PluginInfo.PluginPrefix", "&7[&1McRPG&7]"),
     CUSTOM_REDEEM("Messages.CustomRedeem", "#Messages relating to redeemable experience"),
@@ -159,6 +160,11 @@ public enum LangEnum implements ConfigurationEnum {
     ABILITIES_DIVINE_ESCAPE_ACTIVATED("Messages.Abilities.DivineEscape.Activated", "&aYou managed to escape with divine power. McRPG exp gain will be debuffed by &c%Exp_Debuff%% &aand you will take &c%Damage_Debuff%% &aextra damage for a while."),
     ABILITIES_DIVINE_ESCAPE_EXP_EXPIRE("Messages.Abilities.DivineEscape.ExpDebuffExpire", "&aYour Divine Escape exp debuff has expired'."),
     ABILITIES_DIVINE_ESCAPE_DAMAGE_EXPIRE("Messages.Abilities.DivineEscape.DamageDebuffExpire", "&aYour Divine Escape damage debuff has expired'."),
+    ABILITIES_FRENZY_DIG_ACTIVATED("Messages.Abilities.FrenzyDig.Activated", "&aFrenzy Dig has been activated!"),
+    ABILITIES_FRENZY_DIG_DEACTIVATED("Messages.Abilities.FrenzyDig.Deactivated", "&cFrenzy Dig has deactivated!"),
+    ABILITIES_HAND_DIGGING_ACTIVATED("Messages.Abilities.HandDigging.Activated", "&aHand Digging has been activated!"),
+    ABILITIES_HAND_DIGGING_DEACTIVATED("Messages.Abilities.HandDigging.Deactivated", "&cHand Digging has deactivated!"),
+    ABILITIES_PANS_SHRINE_ACTIVATED("Messages.Abilities.PansShrine.Activated", "&aPan has used the power of nature to change the surrounding landscape!"),
     GUIS_ACCEPTED_ABILITY("Messages.Guis.AcceptedAbility", "&aThe ability %Ability% has been added to your loadout!"),
     GUIS_UPGRADED_ABILITY("Messages.Guis.UpgradedAbility", "&aThe ability %Ability% has been upgraded to %Tier%!"),
     GUIS_HAS_ACTIVE("Messages.Guis.HasActive", "&cYou already have an active ability for that skill."),
@@ -199,7 +205,10 @@ public enum LangEnum implements ConfigurationEnum {
             "&7[&5McRPG Tip&7]: &aReady your axe and mine a sapling in order to harvest the trees future self using Temporal Harvest!")),
     TIPS_LEVEL_UP_FITNESS("Messages.Tips.LevelupFitness", Arrays.asList("&7[&5McRPG Tip&7]: &aDue to how universal Fitness is, you can only have two Fitness abilities at once!",
             "&7[&5McRPG Tip&7]: &aBullet Proof negates all projectiles when activated, including Archery abilities!", "&7[&5McRPG Tip&7]: &aGain Fitness exp by falling or taking damage from an mob or player",
-            "&7[&5McRPG Tip&7]: &aWearing Feather Falling increases exp gained from falling."));
+                    "&7[&5McRPG Tip&7]: &aWearing Feather Falling increases exp gained from falling.")),
+    TIPS_LEVEL_UP_EXCAVATION("Messages.Tips.LevelupExcavation", Arrays.asList("&7[&5McRPG Tip&7]: &aPans Shrine requires a block of water surrounded on 4 sides by emerald blocks!",
+            "&7[&5McRPG Tip&7]: &aFrenzy Dig will give haste and increase chance of doubling block drops for a short while!", "&7[&5McRPG Tip&7]: &aMana Deposit will give you exp in a random skill occasionally!",
+            "&7[&5McRPG Tip&7]: &aActivate Pans Shrine to change the landscape!"));
 
     private String path;
     private Object defaultValue;

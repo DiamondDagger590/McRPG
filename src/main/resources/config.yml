@@ -63,6 +63,7 @@ DisplayConfig:
       Archery: 'Pink'
       Woodcutting: 'Green'
       Fitness: 'White'
+      Excavation: 'Blue'
   ActionBar:
     Swords:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
@@ -77,6 +78,8 @@ DisplayConfig:
     Woodcutting:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
     Fitness:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Excavation:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
 PlayerConfiguration:
   #This amount is here for the future and currently is unused

@@ -8,6 +8,7 @@ public enum GainReason {
   MOVE,
   OTHER,
   REDEEM,
-  BONUS
-
+  BONUS,
+  PLUGIN,
+  ABILITY
 }

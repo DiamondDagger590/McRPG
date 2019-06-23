@@ -16,6 +16,7 @@ import org.intellij.lang.annotations.Language;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
+import us.eunoians.mcrpg.abilities.excavation.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
@@ -72,6 +73,8 @@ public class McRPGPlayer {
   @Getter @Setter private double divineEscapeDamageDebuff;
   @Getter @Setter private long divineEscapeExpEnd;
   @Getter @Setter private long divineEscapeDamageEnd;
+  @Getter @Setter private boolean isHandDigging = false;
+  @Getter @Setter private Set<Material> handDiggingBlocks;
 
   //Ready variables
   @Getter @Setter private boolean isReadying = false;
@@ -687,7 +690,6 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(archery);
           }
-          //}
           //init woodcutting
           else if(skill.equals(Skills.WOODCUTTING)) {
             //Initialize Extra Lumber
@@ -870,6 +872,103 @@ public class McRPGPlayer {
             Fitness fitness = new Fitness(rs.getInt("current_level"),
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(fitness);
+          }
+          //init excavation
+          else if(skill.equals(Skills.EXCAVATION)) {
+            //Initialize Extraction
+            Extraction extraction = new Extraction();
+            extraction.setToggled(rs.getBoolean("is_extraction_toggled"));
+            //Initialize Buried Treasure
+            BuriedTreasure buriedTreasure = new BuriedTreasure();
+            buriedTreasure.setToggled(rs.getBoolean("is_buried_treasure_toggled"));
+            buriedTreasure.setCurrentTier(rs.getInt("buried_treasure_tier"));
+            if(buriedTreasure.getCurrentTier() != 0) {
+              buriedTreasure.setUnlocked(true);
+            }
+            //Initialize Larger Spade
+            LargerSpade largerSpade = new LargerSpade();
+            largerSpade.setToggled(rs.getBoolean("is_larger_spade_toggled"));
+            largerSpade.setCurrentTier(rs.getInt("larger_spade_tier"));
+            if(largerSpade.getCurrentTier() != 0) {
+              largerSpade.setUnlocked(true);
+            }
+            //Initialize Mana Deposit
+            ManaDeposit manaDeposit = new ManaDeposit();
+            manaDeposit.setToggled(rs.getBoolean("is_mana_deposit_toggled"));
+            manaDeposit.setCurrentTier(rs.getInt("mana_deposit_tier"));
+            if(manaDeposit.getCurrentTier() != 0) {
+              manaDeposit.setUnlocked(true);
+            }
+            //Initialize Hand Digging
+            HandDigging handDigging = new HandDigging();
+            handDigging.setToggled(rs.getBoolean("is_hand_digging_toggled"));
+            handDigging.setCurrentTier(rs.getInt("hand_digging_tier"));
+            if(handDigging.getCurrentTier() != 0) {
+              handDigging.setUnlocked(true);
+            }
+            //Initialize Pans Shrine
+            PansShrine pansShrine = new PansShrine();
+            pansShrine.setToggled(rs.getBoolean("is_pans_shrine_toggled"));
+            pansShrine.setCurrentTier(rs.getInt("pans_shrine_tier"));
+            if(pansShrine.getCurrentTier() != 0) {
+              pansShrine.setUnlocked(true);
+            }
+            //Initialize Frenzy Dig
+            FrenzyDig frenzyDig = new FrenzyDig();
+            frenzyDig.setToggled(rs.getBoolean("is_frenzy_dig_toggled"));
+            frenzyDig.setCurrentTier(rs.getInt("frenzy_dig_tier"));
+            if(frenzyDig.getCurrentTier() != 0) {
+              frenzyDig.setUnlocked(true);
+            }
+
+            int handDiggingCooldown = rs.getInt("hand_digging_cooldown");
+            int pansShrineCooldown = rs.getInt("pans_shrine_cooldown");
+            int frenzyDigCooldown = rs.getInt("frenzy_dig_cooldown");
+
+            if(handDiggingCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, handDiggingCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.HAND_DIGGING, cal.getTimeInMillis());
+            }
+            if(pansShrineCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, pansShrineCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.PANS_SHRINE, cal.getTimeInMillis());
+            }
+            if(frenzyDigCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, frenzyDigCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.FRENZY_DIG, cal.getTimeInMillis());
+            }
+
+            if(rs.getBoolean("is_buried_treasure_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BURIED_TREASURE);
+            }
+            if(rs.getBoolean("is_larger_spade_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.LARGER_SPADE);
+            }
+            if(rs.getBoolean("is_mana_deposit_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.MANA_DEPOSIT);
+            }
+            if(rs.getBoolean("is_hand_digging_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.HAND_DIGGING);
+            }
+            if(rs.getBoolean("is_frenzy_dig_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.FRENZY_DIG);
+            }
+            if(rs.getBoolean("is_pans_shrine_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.PANS_SHRINE);
+            }
+            abilityMap.put(DefaultAbilities.EXTRACTION, extraction);
+            abilityMap.put(UnlockedAbilities.BURIED_TREASURE, buriedTreasure);
+            abilityMap.put(UnlockedAbilities.LARGER_SPADE, largerSpade);
+            abilityMap.put(UnlockedAbilities.MANA_DEPOSIT, manaDeposit);
+            abilityMap.put(UnlockedAbilities.HAND_DIGGING, handDigging);
+            abilityMap.put(UnlockedAbilities.FRENZY_DIG, frenzyDig);
+            abilityMap.put(UnlockedAbilities.PANS_SHRINE, pansShrine);
+            Excavation excavation = new Excavation(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(excavation);
           }
         } catch(SQLException e) {
           e.printStackTrace();

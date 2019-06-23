@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
+import us.eunoians.mcrpg.api.util.BuriedTreasureData;
 import us.eunoians.mcrpg.api.util.DiamondFlowersData;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.gui.*;
@@ -77,6 +78,8 @@ public class McRPGStub implements CommandExecutor {
             p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
             PlayerManager.startSave(plugin);
             DiamondFlowersData.init();
+            BuriedTreasureData.init();
+            McRPG.getInstance().getExpPermissionManager().reload();
             McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
             return true;
           }
