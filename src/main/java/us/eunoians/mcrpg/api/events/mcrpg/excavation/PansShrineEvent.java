@@ -8,7 +8,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.AbilityActivateEvent;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.AbilityEventType;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class PansShrineEvent extends AbilityActivateEvent {
@@ -20,13 +20,13 @@ public class PansShrineEvent extends AbilityActivateEvent {
   private Set<Material> affectableBlocks;
 
   @Getter
-  private HashMap<Material, Double> replaceableBlocks;
+  private List<String> replaceableBlocks;
 
   @Getter
   @Setter
   private int cooldown;
 
-  public PansShrineEvent(McRPGPlayer player, PansShrine pansShrine, Material itemSacrificed, Set<Material> affectableBlocks, HashMap<Material, Double> replaceableBlocks, int cooldown){
+  public PansShrineEvent(McRPGPlayer player, PansShrine pansShrine, Material itemSacrificed, Set<Material> affectableBlocks, List<String> replaceableBlocks, int cooldown){
     super(pansShrine, player, AbilityEventType.RECREATIONAL);
     this.itemSacrificed = itemSacrificed;
     this.affectableBlocks = affectableBlocks;

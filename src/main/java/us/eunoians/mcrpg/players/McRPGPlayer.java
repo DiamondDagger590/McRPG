@@ -73,6 +73,8 @@ public class McRPGPlayer {
   @Getter @Setter private double divineEscapeDamageDebuff;
   @Getter @Setter private long divineEscapeExpEnd;
   @Getter @Setter private long divineEscapeDamageEnd;
+  @Getter @Setter private boolean isHandDigging = false;
+  @Getter @Setter private Set<Material> handDiggingBlocks;
 
   //Ready variables
   @Getter @Setter private boolean isReadying = false;

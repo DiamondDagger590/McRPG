@@ -1,0 +1,619 @@
+#Is excavation enabled
+ExcavationEnabled: true
+#Exp equation for excavation. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+#
+ExpEquation: '2000+(20*(skill_level))'
+MaxLevel: 1000
+#How much exp should be awarded per block.
+ExpAwardedPerBlock:
+  DIRT: 15
+  GRASS_BLOCK: 30
+  MYCELIUM: 100
+  PODZOL: 50
+  GRAVEL: 40
+  COARSE_DIRT: 20
+  SAND: 30
+  RED_SAND: 40
+  SOUL_SAND: 55
+  CLAY: 30
+ExtractionBlocks:
+  - 'DIRT'
+  - 'GRASS_BLOCK'
+  - 'MYCELIUM'
+  - 'BROWN_MUSHROOM'
+  - 'PODZOL'
+  - 'GRAVEL'
+  - 'COARSE_DIRT'
+  - 'SAND'
+  - 'RED_SAND'
+  - 'SOUL_SAND'
+  - 'CLAY'
+#What abilities are enabled
+EnabledAbilities:
+  Extraction: true
+  BuriedTreasure: true
+  LargerSpade: true
+  ManaDeposit: true
+  FrenzyDig: true
+  HandDigging: true
+  PansShrine: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.herbalism.unlock{ability} and mcrpg.herbalism.use.{ability}
+UsePermsForAbilites:
+  BuriedTreasure: false
+  LargerSpade: false
+  ManaDeposit: false
+  FrenzyDig: false
+  HandDigging: false
+  PansShrine: false
+#At what swords level should these abilities be unlocked at
+UnlockLevelForAbility:
+  BuriedTreasure: 50
+  LargerSpade: 150
+  ManaDeposit: 250
+  FrenzyDig: 100
+  handDigging: 200
+  PansShrine: 300
+#
+# Extraction is the default ability that every player has. This ability will increase every time the players Excavation level is increased
+#
+ExtractionConfig:
+  #Equation for Excavation chance. Default gives 33% at level 1000.
+  ExtractionChanceEquation: (excavation_level)*.05
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&2Extraction'
+    Material: DIRT
+    Amount: 2
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&aYou have a &e%Extraction_Chance%%'
+      - '&aof doubling drops from blocks'
+    MenuLore:
+      - '&aThis ability has a chance of'
+      - '&adoubling blocks when digging'
+#
+# Config for the ability Buried Treasure
+# This passive ability will drop random items from blocks
+#
+BuriedTreasureConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
+  #Config for each Tier
+  TierI:
+    #What categories the ability can get loot from
+    Categories:
+      #Category name and chance of it being dropped. Chances don't need to add to 100%
+      Common: 1.0
+  TierII:
+    Categories:
+      Common: 1.0
+      UnCommon: 0.7
+  TierIII:
+    Categories:
+      Common: 1.0
+      UnCommon: 0.7
+      Rare: 0.5
+  TierIV:
+    Categories:
+      Common: 1.0
+      UnCommon: 0.9
+      Rare: .7
+  TierV:
+    Categories:
+      Common: 1.0
+      UnCommon: 0.9
+      Rare: 0.7
+      Legendary: 0.01
+  #Define custom categories of items to be dropped using this ability. No cap to amount
+  Categories:
+    Common:
+      Gunpowder:
+        Exp: 200
+        DropChance: 50.0
+        MaxAmount: 3
+        MinAmount: 1
+        Material: GUNPOWDER
+        Blocks:
+          - 'CLAY'
+          - 'COARSE_DIRT'
+      ExpBottle:
+        Exp: 200
+        DropChance: 5.0
+        MaxAmount: 5
+        MinAmount: 3
+        Material: EXPERIENCE_BOTTLE
+        Blocks:
+          - 'GRASS_BLOCK'
+          - 'MYCELIUM'
+          - 'PODZOL'
+        EnderChest:
+          Exp: 200
+          DropChance: 7.5
+          MaxAmount: 1
+          MinAmount: 1
+          Material: ENDER_CHEST
+          Blocks:
+            - 'COARSE_DIRT'
+            - 'PODZOL'
+            - 'SOUL_SAND'
+        IronIngots:
+          Exp: 200
+          DropChance: 2.5
+          MaxAmount: 3
+          MinAmount: 1
+          Material: IRON_INGOT
+          Blocks:
+            - 'GRASS_BLOCK'
+            - 'DIRT'
+        BlazeRod:
+          Exp: 200
+          DropChance: 5.0
+          MaxAmount: 1
+          MinAmount: 1
+          Material: BLAZE_ROD
+          Blocks:
+            - 'SAND'
+            - 'RED_SAND'
+            - 'COARSE_DIRT'
+            - 'SOUL_SAND'
+    UnCommon:
+      Slime:
+        Exp: 1000
+        DropChance: 15.0
+        MaxAmount: 3
+        MinAmount: 1
+        Material: SLIME_BALL
+        Blocks:
+          - 'CLAY'
+          - 'PODZOL'
+          - 'MYCELIUM'
+      Prismarine:
+        Exp: 1000
+        DropChance: 5.0
+        MaxAmount: 10
+        MinAmount: 1
+        Material: PRISMARINE
+        Blocks:
+          - 'CLAY'
+          - 'SAND'
+          - 'GRAVEL'
+      Books:
+        Exp: 1000
+        DropChance: 20.0
+        MaxAmount: 5
+        MinAmount: 1
+        Material: BOOK
+        Blocks:
+          - 'SAND'
+          - 'RED_SAND'
+          - 'DIRT'
+    Rare:
+      Emerald:
+        Exp: 5000
+        DropChance: 30.0
+        MaxAmount: 5
+        MinAmount: 1
+        Material: EMERALD
+        Blocks:
+          - 'SAND'
+          - 'RED_SAND'
+      DiamondShovel:
+        Exp: 5000
+        DropChance: 5.0
+        MaxAmount: 1
+        MinAmount: 1
+        Enchants:
+          - 'EFFICIENCY:5'
+          - 'SILK_TOUCH:1'
+        Material: DIAMOND_SHOVEL
+        Blocks:
+          - 'CARROT'
+          - 'GRASS'
+          - 'DEAD_BUSH'
+      GoldBlocks:
+        Exp: 5000
+        DropChance: 10.5
+        MaxAmount: 6
+        MinAmount: 2
+        Material: GOLD_BLOCKS
+        Blocks:
+          - 'COARSE_DIRT'
+          - 'RED_SAND'
+          - 'SAND'
+    Legendary:
+      Trident:
+        Exp: 10000
+        DropChance: 20.0
+        MaxAmount: 1
+        MinAmount: 1
+        Material: Trident
+        Blocks:
+          - 'CLAY'
+          - 'GRAVEL'
+          - 'SAND'
+        WitherSkull:
+          Exp: 10000
+          DropChance: 35.0
+          MaxAmount: 1
+          MinAmount: 1
+          Material: WITHER_SKULL
+          Blocks:
+            - 'SOUL_SAND'
+        DiamondBlocks:
+          Exp: 10000
+          DropChance: 50.0
+          MaxAmount: 3
+          MinAmount: 1
+          Material: DIAMOND_BLOCK
+          Blocks:
+            - 'DIRT'
+            - 'GRASS_BLOCK'
+            - 'GRAVEL'
+        HeartOfSea:
+          Exp: 10000
+          DropChance: 10.0
+          MaxAmount: 1
+          MinAmount: 1
+          Material: HEART_OF_THE_SEA
+          Blocks:
+            - 'SAND'
+            - 'CLAY'
+            - 'GRAVEL'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&2Buried Treasure'
+    Material: SAND
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bDrop items from harvesting certain blocks'
+    MenuLore:
+      - '&bThis ability drops rare items '
+      - '&bfrom harvesting certain blocks'
+#
+# Config for the ability Larger Spade
+# This passive ability has a chance of mining in an AOE
+#
+LargerSpadeConfig:
+  #Should the ability activate for placed blocks as well as natural
+  AllowForPlacedBlocks: false
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
+  #Config for each tier
+  TierI:
+    #The activation chance
+    ActivationChance: 30.0
+    #The radius of the square
+    Radius: 1
+  TierII:
+    ActivationChance: 45.0
+    Radius: 1
+  TierIII:
+    ActivationChance: 60.0
+    Radius: 1
+  TierIV:
+    ActivationChance: 75.0
+    Radius: 2
+  TierV:
+    ActivationChance: 100.0
+    Radius: 2
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Larger Spade'
+    Material: IRON_SHOVEL
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYou have a &e%ActivationChance%% &bchance of mining a'
+      - '&e%Radius% &bblock square around what you mined.'
+    MenuLore:
+      - '&bThis ability lets you dig in a square'
+#
+# Config for the ability Mana Deposit
+# This ability allows for the user get exp in a random skill by digging
+ManaDepositConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
+  #Config for each tier
+  TierI:
+    ActivationChance: 2.0
+    #The upper limit of exp that can be awarded
+    HighBound: 10
+    #The lower limit of exp that can be awarded. In this instance it would be 5-10
+    LowBound: 5
+    #Can include a list of skill names or ALL to allow selection of any skill
+    Skills:
+      - 'ALL'
+  TierII:
+    ActivationChance: 3.0
+    HighBound: 15
+    LowBound: 5
+    Skills:
+      - 'ALL'
+  TierIII:
+    ActivationChance: 4.0
+    HighBound: 20
+    LowBound: 5
+    Skills:
+      - 'ALL'
+  TierIV:
+    ActivationChance: 5.0
+    HighBound: 25
+    LowBound: 10
+    Skills:
+      - 'ALL'
+  TierV:
+    ActivationChance: 7.5
+    HighBound: 30
+    LowBound: 15
+    Skills:
+      - 'ALL'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Mana Deposit'
+    Material: MYCELIUM
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYou have a &e%ActivationChance%% &bchance of gaining'
+      - '&e%LowBound%-%HighBound% &bexp in a random skill'
+      - '&bwhen digging'
+    MenuLore:
+      - '&bThis ability lets gain exp in'
+      - '&brandom skills when digging'
+#
+# Config for the ability Hand Digging
+# This active ability allows you to mine blocks with your hand
+#
+HandDiggingConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
+  #Config for each tier
+  TierI:
+    #Duration of the ability in seconds
+    Duration: 3
+    Cooldown: 180
+  TierII:
+    Duration: 4
+    Cooldown: 180
+  TierIII:
+    Duration: 5
+    Cooldown: 180
+  TierIV:
+    Duration: 7
+    Cooldown: 180
+  TierV:
+    Duration: 10
+    Cooldown: 180
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&2Hand Digging'
+    Material: GRAVEL
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bAllows you to instant dig blocks'
+      - '&bwith your fist for &e%Duration% &bseconds'
+      - '&bCooldown: &e%Cooldown%'
+      - '&bActivate by readying and digging a block'
+    MenuLore:
+      - '&bLets you instant break blocks for a while'
+#
+# Config for the ability Frenzy Dig
+# This active ability allows the player to gain haste and extra Extraction chance for a short while
+#
+FrenzyDigConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
+  #Config for each tier
+  TierI:
+    #How much should the activation rate be boosted at each tier
+    ActivationBoost: 5.0
+    #Duration of the ability at each tier in seconds
+    Duration: 3
+    Cooldown: 180
+  TierII:
+    ActivationBoost: 7.5
+    Duration: 3
+    Cooldown: 180
+  TierIII:
+    ActivationBoost: 10.0
+    Duration: 5
+    Cooldown: 180
+  TierIV:
+    ActivationBoost: 15.0
+    Duration: 5
+    Cooldown: 180
+  TierV:
+    ActivationBoost: 20.0
+    Duration: 8
+    Cooldown: 180
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Frenzy Dig'
+    Material: DIAMOND_SHOVEL
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bThis ability give haste and'
+      - '&bincreases activation rate of Extraction'
+      - '&bGain &e%ActivationBoost%% &bfor &e%Duration% &bseconds'
+      - '&bCooldown: &e%Cooldown%'
+      - '&eActivate by readying and breaking a block'
+    MenuLore:
+      - '&bGives haste and increases Extraction'
+#
+# Config for the ability Pans Shrine
+# This active active ability allows players to toss items into a shrine and turn surrounding blocks into others like ores
+#
+PansShrineConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
+  #Config for each tier
+  TierI:
+    #Defines information about the item to sacrifice
+    SacrificialItems:
+      - 'EMERALD'
+      #Radius for the plugin to check
+    Radius: 3
+    #Y of 0 does the layer under the shrine. Y of 1 does the layer above and below the first, etc.
+    YRadius: 0
+    #What blocks can be affected by the ability
+    AffectableBlocks:
+     - 'DIRT'
+     - 'GRASS_BLOCK'
+     - 'MYCELIUM'
+     - 'PODZOL'
+     - 'GRAVEL'
+    #What blocks can replace the old ones using this ability
+    #Format is MATERIAL:CHANCE. Chances do not have to add to 100%
+    ReplaceBlocks:
+      - 'IRON_ORE:50'
+      - 'GOLD_ORE:25'
+      - 'CLAY:50'
+      - 'GRASS_BLOCK:40'
+      - 'NETHER_QUARTZ_ORE:5'
+      - 'REDSTONE_ORE:30'
+      - 'LAPIS_ORE:25'
+    #Cooldown in seconds
+    Cooldown: 3600
+  TierII:
+    SacrificialItems:
+      - 'EMERALD'
+    Radius: 3
+    YRadius: 0
+    AffectableBlocks:
+      - 'DIRT'
+      - 'GRASS_BLOCK'
+      - 'MYCELIUM'
+      - 'PODZOL'
+      - 'GRAVEL'
+    ReplaceBlocks:
+      - 'IRON_ORE:45'
+      - 'GOLD_ORE:30'
+      - 'CLAY:40'
+      - 'GRASS_BLOCK:30'
+      - 'NETHER_QUARTZ_ORE:7'
+      - 'REDSTONE_ORE:28'
+      - 'LAPIS_ORE:23'
+    Cooldown: 3600
+  TierIII:
+    SacrificialItems:
+      - 'EMERALD'
+    Radius: 5
+    YRadius: 0
+    AffectableBlocks:
+      - 'DIRT'
+      - 'GRASS_BLOCK'
+      - 'MYCELIUM'
+      - 'PODZOL'
+      - 'GRAVEL'
+    ReplaceBlocks:
+      - 'IRON_ORE:40'
+      - 'GOLD_ORE:32'
+      - 'CLAY:35'
+      - 'GRASS_BLOCK:25'
+      - 'NETHER_QUARTZ_ORE:8'
+      - 'REDSTONE_ORE:25'
+      - 'LAPIS_ORE:20'
+      - 'DIAMOND_ORE:2'
+      - 'EMERALD_ORE:1'
+    Cooldown: 3600
+  TierIV:
+    SacrificialItems:
+      - 'EMERALD'
+    Radius: 5
+    YRadius: 0
+    AffectableBlocks:
+      - 'DIRT'
+      - 'GRASS_BLOCK'
+      - 'MYCELIUM'
+      - 'PODZOL'
+      - 'GRAVEL'
+    ReplaceBlocks:
+      - 'IRON_ORE:40'
+      - 'GOLD_ORE:35'
+      - 'CLAY:30'
+      - 'GRASS_BLOCK:20'
+      - 'NETHER_QUARTZ_ORE:9'
+      - 'REDSTONE_ORE:20'
+      - 'LAPIS_ORE:18'
+      - 'DIAMOND_ORE:3'
+      - 'EMERALD_ORE:2'
+    Cooldown: 3600
+  TierV:
+    SacrificialItems:
+      - 'EMERALD'
+    Radius: 5
+    YRadius: 0
+    AffectableBlocks:
+      - 'DIRT'
+      - 'GRASS_BLOCK'
+      - 'MYCELIUM'
+      - 'PODZOL'
+      - 'GRAVEL'
+    ReplaceBlocks:
+      - 'IRON_ORE:38'
+      - 'GOLD_ORE:38'
+      - 'CLAY:25'
+      - 'GRASS_BLOCK:15'
+      - 'NETHER_QUARTZ_ORE:10'
+      - 'REDSTONE_ORE:20'
+      - 'LAPIS_ORE:18'
+      - 'DIAMOND_ORE:4'
+      - 'EMERALD_ORE:3'
+    Cooldown: 3600
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&2Pans Shrine'
+    Material: ALLIUM
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bSacrifice 1 emerald into a shrine'
+      - '&bto turn &e%Radius%x%Radius% &bblocks'
+      - '&binto random ores'
+      - '&bCooldown: &e%Cooldown%'
+    MenuLore:
+      - '&bSacrifce an emerald to Pan'
+      - '&bin order to change the landscape'

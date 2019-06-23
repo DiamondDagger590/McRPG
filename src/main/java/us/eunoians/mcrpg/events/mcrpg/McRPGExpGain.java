@@ -103,10 +103,11 @@ public class McRPGExpGain implements Listener {
     }
     if(e.getGainType() == GainReason.BREAK && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
       Skills type = e.getSkillGained().getType();
-      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING) {
+      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION) {
         e.setExpGained((int) (e.getExpGained() * demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid())));
       }
     }
+    e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));
   }
 
   public static void addDemetersShrineEffect(UUID uuid, double multiplier, int duration){

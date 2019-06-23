@@ -17,6 +17,8 @@ Gui:
         - 'OpenNative:SubSkillGUI:Woodcutting'
       23:
         - 'OpenNative:SubSkillGUI:Fitness'
+      25:
+        - 'OpenNative:SubSkillGUI:Excavation'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -76,6 +78,14 @@ Gui:
           - '&eCurrent Fitness level: &a%Fitness_Level%'
           - '&eRoll chance: &c%Roll_Chance%%'
         Slot: 23
+      ExcavationSkill:
+        Name: '&5Excavation Skill'
+        Material: DIAMOND_SHOVEL
+        Lore:
+          - '&eClick this to view your excavation abilities'
+          - '&eCurrent Excavation level: &a%Excavation_Level%'
+          - '&eExtraction chance: &c%Extraction_Chance%%'
+        Slot: 25
       Back:
         Name: '&bBack>>'
         Material: BARRIER

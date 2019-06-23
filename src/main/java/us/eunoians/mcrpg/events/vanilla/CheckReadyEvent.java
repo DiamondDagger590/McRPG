@@ -175,6 +175,9 @@ public class CheckReadyEvent implements Listener {
       else {
         //Get the skill from the material of the item
         Block b = e.getClickedBlock();
+        if(b == null){
+          return;
+        }
         Material m = b.getType();
         Material heldItemType = heldItem.getType();
         if(heldItem.getType() == Material.AIR && Methods.specialHandDigggingCase(m)){

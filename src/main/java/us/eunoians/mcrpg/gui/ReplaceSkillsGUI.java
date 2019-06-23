@@ -5,7 +5,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.Parser;
 
@@ -35,15 +34,14 @@ public class ReplaceSkillsGUI extends GUI {
 		for(String s : meta.getLore()){
 		  for(Skills skill : Skills.values()){
 			s = s.replaceAll("%" + skill.getName() + "_Level%", Integer.toString(player.getSkill(skill).getCurrentLevel()));
-			DefaultAbilities ability = DefaultAbilities.getSkillsDefaultAbility(skill.getName());
-			Parser equation = ability.getActivationEquation();
+			Parser equation = skill.getDefaultAbility().getActivationEquation();
 			equation.setVariable(skill.getName().toLowerCase() + "_level", player.getSkill(skill).getCurrentLevel());
 			equation.setVariable("power_level", player.getPowerLevel());
 			NumberFormat nf = NumberFormat.getInstance();
 			nf.setMinimumIntegerDigits(1);
 			nf.setMaximumFractionDigits(3);
 			nf.setMinimumFractionDigits(2);
-			s = s.replaceAll("%" + ability.getName().replaceAll(" ", "_") + "_Chance%", nf.format(equation.getValue()));
+			s = s.replaceAll("%" + skill.getDefaultAbility().getName().replaceAll(" ", "_") + "_Chance%", nf.format(equation.getValue()));
 		  }
 		  lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
 			  .replaceAll("%Ability_Points%", Integer.toString(player.getAbilityPoints())));

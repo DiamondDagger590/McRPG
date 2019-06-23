@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.database.tables.skills;
 import com.cyr1en.flatdb.annotations.Column;
 import com.cyr1en.flatdb.annotations.Table;
 
-@Table(nameOverride = "woodcutting_data")
+@Table(nameOverride = "excavation_data")
 public class ExcavationTable {
 
   @Column(autoIncrement = true) private int id;

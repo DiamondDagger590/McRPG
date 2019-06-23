@@ -9,7 +9,7 @@ public class Extraction extends BaseAbility {
 
   @Getter
   @Setter
-  private double chanceBuff = 0;
+  private double bonusChance = 0;
 
   public Extraction(){ super(DefaultAbilities.EXTRACTION, true, false); }
 }

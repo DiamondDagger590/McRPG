@@ -11,7 +11,7 @@ public class FrenzyDigEvent extends AbilityActivateEvent {
 
   @Getter
   @Setter
-  private int duration;
+  private int hasteDuration;
 
   @Getter
   @Setter
@@ -23,7 +23,7 @@ public class FrenzyDigEvent extends AbilityActivateEvent {
 
   public FrenzyDigEvent(McRPGPlayer player, FrenzyDig frenzyDig, int duration, int cooldown, double extractionBuff) {
     super(frenzyDig, player, AbilityEventType.RECREATIONAL);
-    this.duration = duration;
+    this.hasteDuration = duration;
     this.cooldown = cooldown;
     this.extractionBuff = extractionBuff;
   }

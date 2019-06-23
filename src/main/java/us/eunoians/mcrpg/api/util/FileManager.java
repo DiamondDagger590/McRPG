@@ -313,6 +313,7 @@ public class FileManager {
     CONFIG("config.yml", "config.yml"),
     CUSTOM("custom.yml", "localization/custom.yml"),
     EDIT_DEFAULT_ABILITIES_GUI("editdefaultabilitiesgui.yml", "guis/editdefaultabilitiesgui.yml"),
+    EXP_PERM_FILE("exp_perms.yml", "exp_perms.yml"),
     EDIT_LOADOUT_GUI("editloadoutgui.yml", "guis/editloadoutgui.yml"),
     EDIT_LOADOUT_SELECT_GUI("editloadoutgselectui.yml", "guis/editloadoutselectgui.yml"),
     ENGLISH_FILE("en.yml", "localization/en.yml"),
