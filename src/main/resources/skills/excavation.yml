@@ -41,7 +41,7 @@ EnabledAbilities:
   HandDigging: true
   PansShrine: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcrpg.herbalism.unlock{ability} and mcrpg.herbalism.use.{ability}
+#Perms will be mcrpg.excavation.unlock{ability} and mcrpg.excavation.use.{ability}
 UsePermsForAbilites:
   BuriedTreasure: false
   LargerSpade: false
@@ -49,13 +49,13 @@ UsePermsForAbilites:
   FrenzyDig: false
   HandDigging: false
   PansShrine: false
-#At what swords level should these abilities be unlocked at
+#At what excavation level should these abilities be unlocked at
 UnlockLevelForAbility:
   BuriedTreasure: 50
   LargerSpade: 150
   ManaDeposit: 250
   FrenzyDig: 100
-  handDigging: 200
+  HandDigging: 200
   PansShrine: 300
 #
 # Extraction is the default ability that every player has. This ability will increase every time the players Excavation level is increased
@@ -392,10 +392,10 @@ HandDiggingConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 500
-    TierIV: 650
-    TierV: 800
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
   #Config for each tier
   TierI:
     #Duration of the ability in seconds
@@ -435,10 +435,10 @@ FrenzyDigConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
-    TierIII: 650
-    TierIV: 825
-    TierV: 1000
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
   #Config for each tier
   TierI:
     #How much should the activation rate be boosted at each tier
@@ -485,10 +485,10 @@ PansShrineConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 500
-    TierV: 650
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
   #Config for each tier
   TierI:
     #Defines information about the item to sacrifice
@@ -500,11 +500,11 @@ PansShrineConfig:
     YRadius: 0
     #What blocks can be affected by the ability
     AffectableBlocks:
-     - 'DIRT'
-     - 'GRASS_BLOCK'
-     - 'MYCELIUM'
-     - 'PODZOL'
-     - 'GRAVEL'
+      - 'DIRT'
+      - 'GRASS_BLOCK'
+      - 'MYCELIUM'
+      - 'PODZOL'
+      - 'GRAVEL'
     #What blocks can replace the old ones using this ability
     #Format is MATERIAL:CHANCE. Chances do not have to add to 100%
     ReplaceBlocks:
