@@ -13,6 +13,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.herbalism.NaturesWrath;
@@ -34,7 +35,9 @@ public class CheckReadyEvent implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void checkReady(PlayerInteractEvent e) {
-
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
     Player p = e.getPlayer();
     McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
     ItemStack heldItem = e.getItem();
@@ -157,7 +160,12 @@ public class CheckReadyEvent implements Listener {
             }
           }
           playersToIgnore.add(p.getUniqueId());
-          Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> playersToIgnore.remove(p.getUniqueId()), 3 * 20);
+          new BukkitRunnable(){
+            @Override
+            public void run(){
+              playersToIgnore.remove(p.getUniqueId());
+            }
+          }.runTaskLater(McRPG.getInstance(), 3 * 20);
         }
       }
     }

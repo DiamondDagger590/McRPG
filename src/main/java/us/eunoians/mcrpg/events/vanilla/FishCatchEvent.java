@@ -23,6 +23,9 @@ public class FishCatchEvent implements Listener {
 
   @EventHandler
   public void catchEvent(PlayerFishEvent e){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
     if(e.getCaught() == null){
       return;
     }

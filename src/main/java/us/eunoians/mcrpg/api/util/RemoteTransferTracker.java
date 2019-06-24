@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.api.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 
 import java.util.ArrayList;
@@ -64,7 +65,12 @@ public class RemoteTransferTracker {
 	});  }
 
   private static String locToString(Location loc){
-    Bukkit.getScheduler().runTaskTimerAsynchronously(McRPG.getInstance(), RemoteTransferTracker::save, 0 , 120);
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        RemoteTransferTracker.save();
+      }
+    }.runTaskTimerAsynchronously(McRPG.getInstance(), 0, 120);
 	return loc.getWorld().getName() + " , " + (int) loc.getX() + " , " + (int) loc.getY() + " , " + (int) loc.getZ();
   }
 

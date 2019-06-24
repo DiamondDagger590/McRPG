@@ -44,6 +44,9 @@ public class InvClickEvent implements Listener {
   @SuppressWarnings("Duplicates")
   @EventHandler(priority = EventPriority.HIGHEST)
   public void invClickEvent(InventoryClickEvent e) {
+    if(PlayerManager.isPlayerFrozen(e.getWhoClicked().getUniqueId())){
+      return;
+    }
     Player p = (Player) e.getWhoClicked();
     //If this is a gui
     if(GUITracker.isPlayerTracked(p)) {

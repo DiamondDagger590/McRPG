@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -95,6 +96,11 @@ public class DecayableExpBossBar extends GenericDisplay implements BossbarBase, 
     if(endTask != null){
       endTask.cancel();
     }
-    endTask = Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer()), displayTime * 20);
+    endTask = new BukkitRunnable(){
+      @Override
+      public void run(){
+        McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer());
+      }
+    }.runTaskLater(McRPG.getInstance(), displayTime * 20);
   }
 }

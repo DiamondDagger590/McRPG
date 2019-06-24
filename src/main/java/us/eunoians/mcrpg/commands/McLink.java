@@ -31,6 +31,9 @@ public class McLink implements CommandExecutor, Listener {
     }
     else {
       Player p = (Player) sender;
+      if(PlayerManager.isPlayerFrozen(p.getUniqueId())){
+        return true;
+      }
       //Disabled Worlds
       String world = p.getWorld().getName();
       if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&

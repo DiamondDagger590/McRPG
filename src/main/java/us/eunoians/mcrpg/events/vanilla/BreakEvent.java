@@ -74,6 +74,9 @@ public class BreakEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   @SuppressWarnings("Duplicates")
   public void breakEvent(BlockBreakEvent event) {
+    if(PlayerManager.isPlayerFrozen(event.getPlayer().getUniqueId())){
+      return;
+    }
     if(event instanceof PansShrineTestEvent){
       return;
     }
@@ -168,29 +171,31 @@ public class BreakEvent implements Listener {
               }
             }
           }
-          if(UnlockedAbilities.MANA_DEPOSIT.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MANA_DEPOSIT) && mp.getBaseAbility(UnlockedAbilities.MANA_DEPOSIT).isToggled()) {
+          if(UnlockedAbilities.MANA_DEPOSIT.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MANA_DEPOSIT) && mp.getBaseAbility(UnlockedAbilities.MANA_DEPOSIT).isToggled()){
             ManaDeposit manaDeposit = (ManaDeposit) mp.getBaseAbility(UnlockedAbilities.MANA_DEPOSIT);
-            int chance = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".ActivationChance") * 1000;
-            Random rand = new Random();
-            int val = rand.nextInt(100000);
-            if(chance >= val) {
-              int highBound = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".HighBound");
-              int lowBound = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".LowBound");
-              List<String> skills = excavationConfig.getStringList("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".Skills");
-              int exp = lowBound + rand.nextInt(highBound - lowBound);
-              String s = skills.get(rand.nextInt(skills.size()));
-              Skills skill;
-              if(s.equalsIgnoreCase("ALL")) {
-                skill = Skills.values()[rand.nextInt(Skills.values().length)];
-              }
-              else {
-                skill = Skills.fromString(s);
-              }
-              ManaDepositEvent manaDepositEvent = new ManaDepositEvent(mp, manaDeposit, exp, skill);
-              Bukkit.getPluginManager().callEvent(manaDepositEvent);
-              if(!manaDepositEvent.isCancelled()) {
-                if(manaDepositEvent.getExp() > 0) {
-                  mp.giveExp(manaDepositEvent.getSkill(), manaDepositEvent.getExp(), GainReason.ABILITY);
+            if(getExcavationBlocks().contains(block.getType())){
+              int chance = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".ActivationChance") * 1000;
+              Random rand = new Random();
+              int val = rand.nextInt(100000);
+              if(chance >= val){
+                int highBound = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".HighBound");
+                int lowBound = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".LowBound");
+                List<String> skills = excavationConfig.getStringList("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".Skills");
+                int exp = lowBound + rand.nextInt(highBound - lowBound);
+                String s = skills.get(rand.nextInt(skills.size()));
+                Skills skill;
+                if(s.equalsIgnoreCase("ALL")){
+                  skill = Skills.values()[rand.nextInt(Skills.values().length)];
+                }
+                else{
+                  skill = Skills.fromString(s);
+                }
+                ManaDepositEvent manaDepositEvent = new ManaDepositEvent(mp, manaDeposit, exp, skill);
+                Bukkit.getPluginManager().callEvent(manaDepositEvent);
+                if(!manaDepositEvent.isCancelled()){
+                  if(manaDepositEvent.getExp() > 0){
+                    mp.giveExp(manaDepositEvent.getSkill(), manaDepositEvent.getExp(), GainReason.ABILITY);
+                  }
                 }
               }
             }

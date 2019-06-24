@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
@@ -112,13 +113,16 @@ public class McRPGExpGain implements Listener {
 
   public static void addDemetersShrineEffect(UUID uuid, double multiplier, int duration){
     demetersShrineMultipliers.put(uuid, multiplier);
-    Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
-      demetersShrineMultipliers.remove(uuid);
-      if(Bukkit.getOfflinePlayer(uuid).isOnline()){
-        if(PlayerManager.isPlayerStored(uuid)){
-          PlayerManager.getPlayer(uuid).getActiveAbilities().remove(UnlockedAbilities.DEMETERS_SHRINE);
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        demetersShrineMultipliers.remove(uuid);
+        if(Bukkit.getOfflinePlayer(uuid).isOnline()){
+          if(PlayerManager.isPlayerStored(uuid)){
+            PlayerManager.getPlayer(uuid).getActiveAbilities().remove(UnlockedAbilities.DEMETERS_SHRINE);
+          }
         }
       }
-    }, duration * 20);
+    }.runTaskLater(McRPG.getInstance(), duration * 20);
   }
 }

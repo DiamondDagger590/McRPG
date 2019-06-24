@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.archery.*;
@@ -35,6 +36,9 @@ public class ShootEvent implements Listener {
 
   @EventHandler
   public static void shootEvent(EntityShootBowEvent e) {
+    if(PlayerManager.isPlayerFrozen(e.getEntity().getUniqueId())){
+      return;
+    }
     if(e.getEntity() instanceof Player) {
       Player p = (Player) e.getEntity();
       if(e.getProjectile() instanceof Arrow) {
@@ -220,15 +224,18 @@ public class ShootEvent implements Listener {
   }
 
   public static void trackArrowParticles(Arrow arrow, Particle p){
-    BukkitTask task = Bukkit.getScheduler().runTaskTimer(McRPG.getInstance(), ()-> {
-      if(arrow.isValid()) {
-        arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 4);
+    BukkitTask task = new BukkitRunnable(){
+      @Override
+      public void run() {
+        if(arrow.isValid()) {
+          arrow.getLocation().getWorld().spawnParticle(p, arrow.getLocation(), 4);
+        }
+        else{
+          arrowTasks.remove(arrow.getUniqueId()).cancel();
+          return;
+        }
       }
-      else{
-        arrowTasks.remove(arrow.getUniqueId()).cancel();
-        return;
-      }
-    }, 10, 15);
+    }.runTaskTimer(McRPG.getInstance(), 10, 15);
     arrowTasks.put(arrow.getUniqueId(), task);
   }
 }

@@ -19,6 +19,9 @@ public class PickupEvent implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void pickupEvent(PlayerPickupItemEvent e) {
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
     if(e.getPlayer().getInventory().getItemInMainHand() == null || e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR) {
       McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
       if(mp.isKeepHandEmpty()) {

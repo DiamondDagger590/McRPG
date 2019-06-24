@@ -31,6 +31,10 @@ public class PlayerNomNomEvent implements Listener {
 
   @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void onFoodLevelChange(FoodLevelChangeEvent event) {
+    if(PlayerManager.isPlayerFrozen(event.getEntity().getUniqueId())){
+      return;
+    }
+
     Entity entity = event.getEntity();
 
     if(!(entity instanceof Player)) {

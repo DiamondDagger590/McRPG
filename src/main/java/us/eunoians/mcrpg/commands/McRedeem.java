@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,6 +18,9 @@ public class McRedeem implements CommandExecutor {
     McRPG plugin = McRPG.getInstance();
     if(sender instanceof Player){
       Player p = (Player) sender;
+      if(PlayerManager.isPlayerFrozen(p.getUniqueId())){
+        return true;
+      }
       // /mcredeem %skill%
       if(args.length < 1){
         p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcredeem")));

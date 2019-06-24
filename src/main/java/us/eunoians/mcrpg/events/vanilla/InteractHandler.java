@@ -56,6 +56,9 @@ public class InteractHandler implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void interactHandler(PlayerInteractEvent e) {
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
     if(shovel == null){
       shovel = new ItemStack(Material.DIAMOND_SHOVEL);
       shovel.addEnchantment(Enchantment.SILK_TOUCH, 1);

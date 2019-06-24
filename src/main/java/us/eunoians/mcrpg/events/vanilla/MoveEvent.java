@@ -32,12 +32,13 @@ import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 import java.util.HashMap;
 import java.util.List;
 
-public class MoveEvent implements Listener {
+public class MoveEvent implements Listener{
 
-  @EventHandler (priority = EventPriority.HIGHEST)
-  public void playerMove(PlayerMoveEvent e) {
-    if (PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())) {
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void playerMove(PlayerMoveEvent e){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
       e.setCancelled(true);
+      return;
     }
     McRPGPlayer player = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
     if(player == null || player.getAbilityLoadout() == null){
@@ -54,18 +55,18 @@ public class MoveEvent implements Listener {
         if(p.getFoodLevel() < minHunger){
           NymphsVitalityEvent nymphsVitalityEvent = new NymphsVitalityEvent(player, nymphsVitality, p.getFoodLevel() + 1, p.getFoodLevel());
           Bukkit.getPluginManager().callEvent(nymphsVitalityEvent);
-          if(!nymphsVitalityEvent.isCancelled()) {
+          if(!nymphsVitalityEvent.isCancelled()){
             p.setFoodLevel(nymphsVitalityEvent.getNewHunger());
           }
         }
       }
     }
     if(UnlockedAbilities.RUNNERS_DIET.isEnabled() && player.getAbilityLoadout().contains(UnlockedAbilities.RUNNERS_DIET)
-    && player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET).isToggled()){
+            && player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET).isToggled()){
       FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
       RunnersDiet runnersDiet = (RunnersDiet) player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET);
       int minHunger = fitnessConfig.getInt("RunnersDietConfig.Tier" + Methods.convertToNumeral(runnersDiet.getCurrentTier())
-      + ".MinHunger");
+              + ".MinHunger");
       Player p = e.getPlayer();
       if(p.isSprinting() && p.getFoodLevel() < minHunger){
         RunnersDietEvent runnersDietEvent = new RunnersDietEvent(player, runnersDiet);

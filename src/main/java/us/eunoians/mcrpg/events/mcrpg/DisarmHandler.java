@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.unarmed.StickyFingers;
 import us.eunoians.mcrpg.abilities.unarmed.TighterGrip;
@@ -22,47 +23,52 @@ import us.eunoians.mcrpg.util.Parser;
 
 import java.util.Random;
 
-public class DisarmHandler implements Listener {
+public class DisarmHandler implements Listener{
 
-  @EventHandler (priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.HIGH)
   public void disarmHandler(DisarmEvent e){
-	McRPGPlayer target = e.getTarget();
-	StickyFingers stickyFingers = (StickyFingers) target.getBaseAbility(DefaultAbilities.STICKY_FINGERS);
-	if(DefaultAbilities.STICKY_FINGERS.isEnabled() && stickyFingers.isToggled()){
-	  Parser parser = DefaultAbilities.STICKY_FINGERS.getActivationEquation();
-	  parser.setVariable("swords_level", target.getSkill(Skills.UNARMED).getCurrentLevel());
-	  parser.setVariable("power_level", target.getPowerLevel());
-	  double bonus = 0.0;
-	  if(UnlockedAbilities.TIGHTER_GRIP.isEnabled() && target.getAbilityLoadout().contains(UnlockedAbilities.TIGHTER_GRIP) && target.getBaseAbility(UnlockedAbilities.TIGHTER_GRIP).isToggled()){
-		TighterGrip tighterGrip = (TighterGrip) target.getBaseAbility(UnlockedAbilities.TIGHTER_GRIP);
-		bonus = McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getDouble("TighterGripConfig.Tier"
-			+ Methods.convertToNumeral(tighterGrip.getCurrentTier()) + ".GripBoost");
-		TighterGripEvent tighterGripEvent = new TighterGripEvent(target, tighterGrip, bonus);
-		if(tighterGripEvent.isCancelled()){
-		  bonus = 0.0;
-		}
-		else{
-		  bonus = tighterGripEvent.getGripBonus();
-		}
-	  }
-	  int chance = (int) (parser.getValue() + bonus) * 1000;
-	  Random rand = new Random();
-	  int val = rand.nextInt(100000);
-	  if(chance >= val){
-		StickyFingersEvent stickyFingersEvent = new StickyFingersEvent(target, stickyFingers);
-		Bukkit.getPluginManager().callEvent(stickyFingersEvent);
-		if(!stickyFingersEvent.isCancelled()){
-		  Player targ = target.getPlayer();
-		  e.setCancelled(true);
-		  targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 5, 1);
-		  targ.sendMessage(Methods.color(targ,McRPG.getInstance().getPluginPrefix()
-		  + McRPG.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
-		  return;
-		}
-	  }
-	}
-	e.getTarget().getPlayer().setCanPickupItems(false);
-	Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> e.getTarget().getPlayer().setCanPickupItems(true), McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG)
-	.getInt("DisarmConfig.CancelPickupDuration") * 20);
+    McRPGPlayer target = e.getTarget();
+    StickyFingers stickyFingers = (StickyFingers) target.getBaseAbility(DefaultAbilities.STICKY_FINGERS);
+    if(DefaultAbilities.STICKY_FINGERS.isEnabled() && stickyFingers.isToggled()){
+      Parser parser = DefaultAbilities.STICKY_FINGERS.getActivationEquation();
+      parser.setVariable("swords_level", target.getSkill(Skills.UNARMED).getCurrentLevel());
+      parser.setVariable("power_level", target.getPowerLevel());
+      double bonus = 0.0;
+      if(UnlockedAbilities.TIGHTER_GRIP.isEnabled() && target.getAbilityLoadout().contains(UnlockedAbilities.TIGHTER_GRIP) && target.getBaseAbility(UnlockedAbilities.TIGHTER_GRIP).isToggled()){
+        TighterGrip tighterGrip = (TighterGrip) target.getBaseAbility(UnlockedAbilities.TIGHTER_GRIP);
+        bonus = McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getDouble("TighterGripConfig.Tier"
+                + Methods.convertToNumeral(tighterGrip.getCurrentTier()) + ".GripBoost");
+        TighterGripEvent tighterGripEvent = new TighterGripEvent(target, tighterGrip, bonus);
+        if(tighterGripEvent.isCancelled()){
+          bonus = 0.0;
+        }
+        else{
+          bonus = tighterGripEvent.getGripBonus();
+        }
+      }
+      int chance = (int) (parser.getValue() + bonus) * 1000;
+      Random rand = new Random();
+      int val = rand.nextInt(100000);
+      if(chance >= val){
+        StickyFingersEvent stickyFingersEvent = new StickyFingersEvent(target, stickyFingers);
+        Bukkit.getPluginManager().callEvent(stickyFingersEvent);
+        if(!stickyFingersEvent.isCancelled()){
+          Player targ = target.getPlayer();
+          e.setCancelled(true);
+          targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 5, 1);
+          targ.sendMessage(Methods.color(targ, McRPG.getInstance().getPluginPrefix()
+                  + McRPG.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
+          return;
+        }
+      }
+    }
+    e.getTarget().getPlayer().setCanPickupItems(false);
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        e.getTarget().getPlayer().setCanPickupItems(true);
+      }
+    }.runTaskLater(McRPG.getInstance(), McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG)
+            .getInt("DisarmConfig.CancelPickupDuration") * 20);
   }
 }

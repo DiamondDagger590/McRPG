@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.players;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -42,11 +41,14 @@ public class PlayerManager {
             List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
             Random rand = new Random();
             int val = rand.nextInt(possibleMessages.size());
-            Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
-              if(mp.isOnline()){
-                mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
-                players.put(uuid, mp);}
-            }, 40L);
+            new BukkitRunnable(){
+              @Override
+              public void run() {
+                if(mp.isOnline()){
+                  mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+                  players.put(uuid, mp);}
+              }
+            }.runTaskLater(McRPG.getInstance(), 40L);
           }
         }
         playersFrozen.remove(uuid);
@@ -81,17 +83,25 @@ public class PlayerManager {
       System.out.println(Methods.color(plugin.getPluginPrefix() + "&eRestarting player saving task...."));
       saveTask.cancel();
     }
-    saveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(p, PlayerManager::run, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
-    System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
-    Bukkit.getScheduler().runTaskTimer(p, () -> {
-      Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
-      for(McRPGPlayer mp : clone) {
-        if(isPlayerFrozen(mp.getUuid())) {
-          continue;
-        }
-        mp.updateCooldowns();
+    saveTask = new BukkitRunnable(){
+      @Override
+      public void run() {
+        PlayerManager.run();
       }
-    }, 0, 20);
+    }.runTaskTimerAsynchronously(p, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
+    System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
+    new BukkitRunnable() {
+      @Override
+      public void run() {
+        Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
+        for(McRPGPlayer mp : clone) {
+          if(isPlayerFrozen(mp.getUuid())) {
+            continue;
+          }
+          mp.updateCooldowns();
+        }
+      }
+    }.runTaskTimer(p, 0, 20);
   }
 
 

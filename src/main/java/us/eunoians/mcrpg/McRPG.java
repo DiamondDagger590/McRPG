@@ -14,6 +14,7 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
@@ -68,7 +69,13 @@ public class McRPG extends JavaPlugin implements Initializable {
     javen.loadDependencies();
     new PlayerManager(this);
     Bukkit.getConsoleSender().sendMessage("Starting init sequence");
-    Bukkit.getScheduler().runTaskLater(this, () -> Initializer.initAll(this), 1L);
+    McRPG t = this;
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        Initializer.initAll(t);
+      }
+    }.runTaskLater(this, 1L);
   }
 
   @Override

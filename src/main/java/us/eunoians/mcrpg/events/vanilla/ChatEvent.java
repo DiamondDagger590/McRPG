@@ -16,7 +16,6 @@ public class ChatEvent implements Listener {
   @EventHandler
   public void chatEvent(AsyncPlayerChatEvent e){
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
-      e.setCancelled(true);
       return;
     }
     McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());

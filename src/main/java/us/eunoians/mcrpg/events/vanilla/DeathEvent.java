@@ -30,6 +30,9 @@ public class DeathEvent implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeathHighest(EntityDamageEvent e) {
+    if(PlayerManager.isPlayerFrozen(e.getEntity().getUniqueId())){
+      return;
+    }
     if(e.getEntity() instanceof Player ) {
       Player p = (Player) e.getEntity();
       if(p.getHealth() - e.getDamage() <= 0 && p.getBedSpawnLocation() != null) {

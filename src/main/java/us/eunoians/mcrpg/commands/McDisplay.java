@@ -25,6 +25,9 @@ public class McDisplay implements CommandExecutor {
     FileConfiguration config = plugin.getLangFile();
     if(sender instanceof Player) {
       Player p = (Player) sender;
+      if(PlayerManager.isPlayerFrozen(p.getUniqueId())){
+        return true;
+      }
       String world = p.getWorld().getName();
       //Disabled Worlds
       if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&

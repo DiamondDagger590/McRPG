@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.excavation.PansShrine;
 import us.eunoians.mcrpg.abilities.woodcutting.DemetersShrine;
@@ -27,6 +28,9 @@ public class PlayerTossItemEvent implements Listener {
 
   @EventHandler
   public void tossItem(PlayerDropItemEvent e){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
     Player p = e.getPlayer();
     McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
     if(UnlockedAbilities.DEMETERS_SHRINE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DEMETERS_SHRINE)
@@ -36,37 +40,40 @@ public class PlayerTossItemEvent implements Listener {
       String key = "DemetersShrineConfig.Tier" + Methods.convertToNumeral(demetersShrine.getCurrentTier()) + ".";
       if(woodcuttingConfig.getStringList(key + "SacrificialItems").contains(e.getItemDrop().getItemStack().getType().toString())) {
         Item item = e.getItemDrop();
-        Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
-          if(mp.getCooldown(UnlockedAbilities.DEMETERS_SHRINE) != -1){
-            p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DemetersShrine.StillOnCooldown")));
-            return;
-          }
-          if(item.isValid()){
-            Location loc = item.getLocation();
-            if(loc.getBlock().getType() == Material.WATER){
+        new BukkitRunnable() {
+          @Override
+          public void run() {
+            if(mp.getCooldown(UnlockedAbilities.DEMETERS_SHRINE) != -1) {
+              p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DemetersShrine.StillOnCooldown")));
+              return;
+            }
+            if(item.isValid()) {
+              Location loc = item.getLocation();
+              if(loc.getBlock().getType() == Material.WATER) {
 
-              if(item.getLocation().add(1, 0, 0).getBlock().getType() == Material.GOLD_BLOCK && item.getLocation().add(-1, 0, 0).getBlock().getType() == Material.GOLD_BLOCK
-              && item.getLocation().add(0, 0, 1).getBlock().getType() == Material.GOLD_BLOCK && item.getLocation().add(0, 0, -1).getBlock().getType() == Material.GOLD_BLOCK){
-                item.getItemStack().setAmount(item.getItemStack().getAmount() - 1);
-                if(item.getItemStack().getAmount() == 0){
-                  item.remove();
+                if(item.getLocation().add(1, 0, 0).getBlock().getType() == Material.GOLD_BLOCK && item.getLocation().add(-1, 0, 0).getBlock().getType() == Material.GOLD_BLOCK
+                        && item.getLocation().add(0, 0, 1).getBlock().getType() == Material.GOLD_BLOCK && item.getLocation().add(0, 0, -1).getBlock().getType() == Material.GOLD_BLOCK) {
+                  item.getItemStack().setAmount(item.getItemStack().getAmount() - 1);
+                  if(item.getItemStack().getAmount() == 0) {
+                    item.remove();
+                  }
+                  loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
+                  loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
+                  int duration = woodcuttingConfig.getInt(key + "Duration");
+                  double multiplier = woodcuttingConfig.getDouble(key + "ExpBoost");
+                  int cooldown = woodcuttingConfig.getInt(key + "Cooldown");
+                  McRPGExpGain.addDemetersShrineEffect(e.getPlayer().getUniqueId(), multiplier, duration);
+                  Calendar cal = Calendar.getInstance();
+                  cal.add(Calendar.SECOND, cooldown);
+                  p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DemetersShrine.Activated")
+                          .replace("%Multiplier%", Double.toString(multiplier)).replace("%Duration%", Integer.toString(duration / 60))));
+                  mp.getActiveAbilities().add(UnlockedAbilities.DEMETERS_SHRINE);
+                  mp.addAbilityOnCooldown(UnlockedAbilities.DEMETERS_SHRINE, cal.getTimeInMillis());
                 }
-                loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
-                loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
-                int duration = woodcuttingConfig.getInt(key + "Duration");
-                double multiplier = woodcuttingConfig.getDouble(key + "ExpBoost");
-                int cooldown = woodcuttingConfig.getInt(key + "Cooldown");
-                McRPGExpGain.addDemetersShrineEffect(e.getPlayer().getUniqueId(), multiplier, duration);
-                Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.SECOND, cooldown);
-                p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DemetersShrine.Activated")
-                .replace("%Multiplier%", Double.toString(multiplier)).replace("%Duration%", Integer.toString(duration/60))));
-                mp.getActiveAbilities().add(UnlockedAbilities.DEMETERS_SHRINE);
-                mp.addAbilityOnCooldown(UnlockedAbilities.DEMETERS_SHRINE, cal.getTimeInMillis());
               }
             }
           }
-        }, 5 * 20);
+        }.runTaskLater(McRPG.getInstance(), 5 * 20);
       }
     }
     if(UnlockedAbilities.PANS_SHRINE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.PANS_SHRINE)
@@ -76,62 +83,65 @@ public class PlayerTossItemEvent implements Listener {
       String key = "PansShrineConfig.Tier" + Methods.convertToNumeral(pansShrine.getCurrentTier()) + ".";
       if(excavationConfig.getStringList(key + "SacrificialItems").contains(e.getItemDrop().getItemStack().getType().toString())) {
         Item item = e.getItemDrop();
-        Bukkit.getScheduler().runTaskLater(McRPG.getInstance(), () -> {
-          if(mp.getCooldown(UnlockedAbilities.PANS_SHRINE) != -1){
-            p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.PansShrine.StillOnCooldown")));
-            return;
-          }
-          if(item.isValid()){
-            Location loc = item.getLocation();
-            if(loc.getBlock().getType() == Material.WATER) {
-              if(item.getLocation().add(1, 0, 0).getBlock().getType() == Material.EMERALD_BLOCK && item.getLocation().add(-1, 0, 0).getBlock().getType() == Material.EMERALD_BLOCK
-                      && item.getLocation().add(0, 0, 1).getBlock().getType() == Material.EMERALD_BLOCK && item.getLocation().add(0, 0, -1).getBlock().getType() == Material.EMERALD_BLOCK) {
-                int radius = excavationConfig.getInt(key + "Radius");
-                int Yradius = excavationConfig.getInt(key + "Yadius");
-                int cooldown = excavationConfig.getInt(key + "Cooldown");
-                Set<Material> replaceMaterials = excavationConfig.getStringList("PansShrineConfig.Tier" + Methods.convertToNumeral(pansShrine.getCurrentTier()) + ".AffectableBlocks")
-                        .stream().map(Material::getMaterial).collect(Collectors.toSet());
-                PansShrineEvent pansShrineEvent = new PansShrineEvent(mp, pansShrine, item.getItemStack().getType(), replaceMaterials, excavationConfig.getStringList("PansShrineConfig.Tier" + Methods.convertToNumeral(pansShrine.getCurrentTier()) + ".ReplaceBlocks"), cooldown);
-                Bukkit.getPluginManager().callEvent(pansShrineEvent);
-                if(!pansShrineEvent.isCancelled()) {
-                  Queue<Material> processedChanges = populateBlockArray((int) Math.pow(radius + radius + 1, 2) * ((Yradius * 2) + 1), pansShrineEvent.getReplaceableBlocks());
-                  item.getItemStack().setAmount(item.getItemStack().getAmount() - 1);
-                  if(item.getItemStack().getAmount() == 0) {
-                    item.remove();
-                  }
-                  loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
-                  loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
-                  Block b = item.getLocation().getBlock();
-                  for(int y = Yradius * -1; y <= Yradius; y++) {
-                    for(int x = radius * -1; x <= radius; x++) {
-                      for(int z = radius * -1; z <= radius; z++) {
-                        Block newBlock = b.getLocation().add(x, y - 1, z).getBlock();
-                        if(replaceMaterials.contains(newBlock.getType())) {
-                          if(!processedChanges.isEmpty()) {
-                            PansShrineTestEvent pansShrineTestEvent = new PansShrineTestEvent(mp.getPlayer(), newBlock);
-                            Bukkit.getPluginManager().callEvent(pansShrineEvent);
-                            if(!pansShrineTestEvent.isCancelled()) {
-                              Material mat = processedChanges.poll();
-                              if(mat == Material.AIR) {
-                                continue;
-                              }
-                              else {
-                                newBlock.setType(mat);
+        new BukkitRunnable(){
+          @Override
+          public void run() {
+            if(mp.getCooldown(UnlockedAbilities.PANS_SHRINE) != -1){
+              p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.PansShrine.StillOnCooldown")));
+              return;
+            }
+            if(item.isValid()){
+              Location loc = item.getLocation();
+              if(loc.getBlock().getType() == Material.WATER) {
+                if(item.getLocation().add(1, 0, 0).getBlock().getType() == Material.EMERALD_BLOCK && item.getLocation().add(-1, 0, 0).getBlock().getType() == Material.EMERALD_BLOCK
+                        && item.getLocation().add(0, 0, 1).getBlock().getType() == Material.EMERALD_BLOCK && item.getLocation().add(0, 0, -1).getBlock().getType() == Material.EMERALD_BLOCK) {
+                  int radius = excavationConfig.getInt(key + "Radius");
+                  int Yradius = excavationConfig.getInt(key + "Yadius");
+                  int cooldown = excavationConfig.getInt(key + "Cooldown");
+                  Set<Material> replaceMaterials = excavationConfig.getStringList("PansShrineConfig.Tier" + Methods.convertToNumeral(pansShrine.getCurrentTier()) + ".AffectableBlocks")
+                          .stream().map(Material::getMaterial).collect(Collectors.toSet());
+                  PansShrineEvent pansShrineEvent = new PansShrineEvent(mp, pansShrine, item.getItemStack().getType(), replaceMaterials, excavationConfig.getStringList("PansShrineConfig.Tier" + Methods.convertToNumeral(pansShrine.getCurrentTier()) + ".ReplaceBlocks"), cooldown);
+                  Bukkit.getPluginManager().callEvent(pansShrineEvent);
+                  if(!pansShrineEvent.isCancelled()) {
+                    Queue<Material> processedChanges = populateBlockArray((int) Math.pow(radius + radius + 1, 2) * ((Yradius * 2) + 1), pansShrineEvent.getReplaceableBlocks());
+                    item.getItemStack().setAmount(item.getItemStack().getAmount() - 1);
+                    if(item.getItemStack().getAmount() == 0) {
+                      item.remove();
+                    }
+                    loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
+                    loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
+                    Block b = item.getLocation().getBlock();
+                    for(int y = Yradius * -1; y <= Yradius; y++) {
+                      for(int x = radius * -1; x <= radius; x++) {
+                        for(int z = radius * -1; z <= radius; z++) {
+                          Block newBlock = b.getLocation().add(x, y - 1, z).getBlock();
+                          if(replaceMaterials.contains(newBlock.getType())) {
+                            if(!processedChanges.isEmpty()) {
+                              PansShrineTestEvent pansShrineTestEvent = new PansShrineTestEvent(mp.getPlayer(), newBlock);
+                              Bukkit.getPluginManager().callEvent(pansShrineEvent);
+                              if(!pansShrineTestEvent.isCancelled()) {
+                                Material mat = processedChanges.poll();
+                                if(mat == Material.AIR || mat == null) {
+                                  continue;
+                                }
+                                else {
+                                  newBlock.setType(mat);
+                                }
                               }
                             }
                           }
                         }
                       }
                     }
+                    Calendar cal = Calendar.getInstance();
+                    cal.add(Calendar.SECOND, cooldown);
+                    mp.addAbilityOnCooldown(UnlockedAbilities.PANS_SHRINE, cal.getTimeInMillis());
                   }
-                  Calendar cal = Calendar.getInstance();
-                  cal.add(Calendar.SECOND, cooldown);
-                  mp.addAbilityOnCooldown(UnlockedAbilities.PANS_SHRINE, cal.getTimeInMillis());
                 }
               }
             }
           }
-        }, 5 * 20);
+        }.runTaskLater(McRPG.getInstance(), 5 * 20);
       }
     }
   }

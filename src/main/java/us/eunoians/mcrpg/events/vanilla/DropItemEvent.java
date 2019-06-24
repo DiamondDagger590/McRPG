@@ -31,6 +31,9 @@ public class DropItemEvent implements Listener {
 
   @EventHandler
   public void dropItem(BlockDropItemEvent e) {
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
     Location loc = e.getBlock().getLocation();
     if(blockDropsToMultiplier.containsKey(loc)) {
       for(Item i : e.getItems()) {

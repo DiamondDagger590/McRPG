@@ -16,6 +16,9 @@ public class McUnlink implements CommandExecutor {
   @Override
   public boolean onCommand(CommandSender sender, Command command, String s, String[] strings) {
     if(sender instanceof Player) {
+      if(PlayerManager.isPlayerFrozen(((Player) sender).getUniqueId())){
+        return true;
+      }
       //Disabled Worlds
       String world = ((Player) sender).getWorld().getName();
       if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&

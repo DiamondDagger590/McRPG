@@ -24,6 +24,9 @@ public class McRPGStub implements CommandExecutor {
     McRPG plugin = McRPG.getInstance();
     if(sender instanceof Player) {
       Player p = (Player) sender;
+      if(PlayerManager.isPlayerFrozen(p.getUniqueId())){
+        return true;
+      }
       //Disabled Worlds
       String world = p.getWorld().getName();
       if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
