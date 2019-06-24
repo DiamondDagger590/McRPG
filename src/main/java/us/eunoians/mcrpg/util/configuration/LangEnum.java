@@ -106,6 +106,8 @@ public enum LangEnum implements ConfigurationEnum {
     MCADMIN_RESET_ABILITY_RESET("Messages.Commands.Admin.Reset.AbilityReset", "&aYou reset %Player%s %Ability% ability."),
     MCADMIN_RESET_PLAYER_WAS_RESET("Messages.Commands.Admin.Reset.PlayerWasReset", "&cYour McRPG stats were reset."),
     MCADMIN_RESET_PLAYER_RESET("Messages.Commands.Admin.Reset.PlayerReset", "&aYou reset %Player%s McRPG stats."),
+    MCADMIN_ABILITY_SPY_UNLOCK("Messages.Commands.Admin.AbilitySpy.Unlock", "&a%Player% unlocked %Ability%"),
+    MCADMIN_ABILITY_SPY_UPGRADE("Messages.Commands.Admin.AbilitySpy.Upgrade", "&a%Player% upgraded %Ability% to tier %Tier%"),
     ABILITIES_BLEED_PLAYER_BLEEDING("Messages.Abilities.Bleed.PlayerBleeding", "&cYou are now bleeding."),
     ABILITIES_BLEED_PLAYER_BLEEDING_STOPPED("Messages.Abilities.Bleed.BleedingStopped", "&cThe bleeding has stopped."),
     ABILITIES_RAGE_SPIKE_CHARGING("Messages.Abilities.RageSpike.Charging", "&eYou are now charging Rage Spike. Please stay crouched for &a%Charge% &eseconds."),

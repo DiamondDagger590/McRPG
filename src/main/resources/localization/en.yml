@@ -138,6 +138,9 @@ Messages:
         AbilityReset: '&aYou reset %Player%s %Ability% ability'
         PlayerWasReset: '&cYour McRPG stats were reset'
         PlayerReset: '&aYou reset %Player%s McRPG stats'
+      AbilitySpy:
+        Unlock: '&a%Player% unlocked %Ability%'
+        Upgrade: '&a%Player% upgraded %Ability% to tier %Tier%'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'
