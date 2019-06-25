@@ -28,7 +28,7 @@ public class AbilityUnlock implements Listener {
           continue;
         }
         if(player.hasPermission("mcrpg.*") || player.hasPermission("mcadmin.*") || player.hasPermission("mcadmin.abilityspy")){
-          player.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Admin.AbilitySpy.Unlock")
+          player.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands..Admin.AbilitySpy.Unlock")
                   .replace("%Player%", p.getDisplayName()).replace("%Ability%", event.getAbilityToUnlock().getGenericAbility().getName())));
         }
       }

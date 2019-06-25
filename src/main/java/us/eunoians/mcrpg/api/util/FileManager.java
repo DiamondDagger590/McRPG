@@ -310,6 +310,7 @@ public class FileManager {
     ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
     ABILITY_OVERRIDE_GUI("abilityoverridegui.yml", "guis/abilityoverridegui.yml"),
     ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
+    AXES_CONFIG("axes.yml", "skills/axes.yml"),
     CONFIG("config.yml", "config.yml"),
     CUSTOM("custom.yml", "localization/custom.yml"),
     EDIT_DEFAULT_ABILITIES_GUI("editdefaultabilitiesgui.yml", "guis/editdefaultabilitiesgui.yml"),

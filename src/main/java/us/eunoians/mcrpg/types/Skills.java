@@ -14,6 +14,7 @@ An enum that stores a type of every skill
  */
 public enum Skills {
   ARCHERY("Archery", DefaultAbilities.DAZE),
+  AXES("Axes", DefaultAbilities.SHRED),
   HERBALISM("Herbalism", DefaultAbilities.TOO_MANY_PLANTS),
   EXCAVATION("Excavation", DefaultAbilities.EXTRACTION),
   MINING("Mining", DefaultAbilities.DOUBLE_DROP),
