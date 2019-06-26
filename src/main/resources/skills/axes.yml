@@ -1,0 +1,444 @@
+#Is axes enabled
+AxesEnabled: true
+#Exp equation for axes. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+#
+ExpEquation: '2000+(20*(skill_level))'
+MaxLevel: 1000
+#If different materials of axes should give more exp. WOODEN_AXE: 1.0 means 100% of default exp
+MaterialBonus:
+  WOODEN_AXE: 1.0
+  STONE_AXE: 1.1
+  GOLDEN_AXE: 1.5
+  IRON_AXE: 1.25
+  DIAMOND_AXE: 1.3
+#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
+#Ex) Spider gives 50 exp. Deal 3 damage, get 150 exp with a wooden axe
+ExpAwardedPerMob:
+  OTHER: 5
+  BAT: 5
+  BLAZE: 200
+  CAVE_SPIDER: 75
+  SPIDER: 50
+  CHICKEN: 15
+  COW: 15
+  MUSROOM_COW: 30
+  PIG: 15
+  SHEEP: 15
+  RABBIT: 15
+  COD: 15
+  TROPICAL_FISH: 15
+  SALMON: 15
+  PUFFERFISH: 15
+  DOLPHIN: 200
+  SQUID: 15
+  TURTLE: 100
+  DONKEY: 125
+  MULE: 125
+  HORSE: 125
+  LLAMA: 100
+  CREEPER: 175
+  GUARDIAN: 250
+  ELDER_GUARDIAN: 350
+  ENDER_DRAGON: 400
+  ENDERMAN: 250
+  SHULKER: 300
+  EVOKER: 375
+  VEX: 15
+  ILLUSIONER: 150
+  IRON_GOLEM: 75
+  SLIME: 40
+  MAGMA_CUBE: 80
+  OCELOT: 15
+  PARROT: 15
+  WOLF: 15
+  PHANTOM: 125
+  PLAYER: 100
+  POLAR_BEAR: 75
+  SILVERFISH: 50
+  ENDERMITE: 50
+  SKELETON: 100
+  STRAY: 125
+  WITHER_SKELETON: 200
+  SKELETON_HORSE: 80
+  SNOWMAN: 15
+  VILLAGER: 15
+  WITCH: 200
+  ZOMBIE: 100
+  ZOMBIE_VILLAGER: 115
+  DROWNED: 115
+  PIG_ZOMBIE: 200
+  HUSK: 125
+  ZOMBIE_HORSE: 20
+#What abilities are enabled
+EnabledAbilities:
+  Shred: true
+  HeavyStrike: true
+  BloodFrenzy: true
+  SharperAxe: true
+  WhirlwindStrike: true
+  AresBlessing: true
+  CripplingBlow: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.axes.unlock{ability} and mcrpg.axes.use.{ability}
+UsePermsForAbilites:
+  Shred: false
+  HeavyStrike: false
+  BloodFrenzy: false
+  SharperAxe: false
+  WhirlwindStrike: false
+  AresBlessing: false
+  CripplingBlow: false
+#At what swords level should these abilities be unlocked at
+UnlockLevelForAbility:
+  HeavyStrike: 50
+  BloodFrenzy: 150
+  SharperAxe: 250
+  WhirlwindStrike: 100
+  AresBlessing: 200
+  CripplingBlow: 300
+#
+# Shred is the default ability that every player has. This ability will increase every time the players Axes level is increased
+#
+ShredConfig:
+  #Equation for shred chance. Default gives 33% at level 1000.
+  ShredChanceEquation: (axes_level)*.033
+  #How much damage should the ability deal to armour
+  ArmourDamage: 1
+  #If unbreaking should be ignored
+  IgnoreUnbreaking: true
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Shred'
+    Material: IRON_AXE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%Shred_Chance%% &cchance of damaging'
+      - '&copponents armour'
+    MenuLore:
+      - '&cThis ability will deal extra armour damage'
+      - '&cwhen striking a target with an axe'
+#
+# Config for the ability Heavy Strike
+# This passive ability increases the activation chance of Shred
+#
+HeavyStrikeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
+  TierI:
+    #How much should the Shred chance be increased
+    ActivationChanceBoost: 5.0
+  TierII:
+    ActivationChanceBoost: 7.5
+  TierIII:
+    ActivationChanceBoost: 10.0
+  TierIV:
+    ActivationChanceBoost: 12.5
+  TierV:
+    ActivationChanceBoost: 15.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Heavy Strike'
+    Material: IRON_BLOCK
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cPassivly increases Shred chance by &e%ActivationChanceBoost%%'
+    MenuLore:
+      - '&cPassively increases Shred chance'
+#
+# Config for the ability Blood Frenzy
+# This ability extends the duration of the Bleed effect
+#
+BloodFrenzyConfig:
+  #If the ability should activate when the player kills a mob
+  ActiveOnMobs: false
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
+  #Config for each Tier
+  TierI:
+    #Level and duration (in seconds) of the haste effect
+    HasteLevel: 1
+    HasteDuration: 4
+    #Level and duration (in seconds) of the regeneration effect
+    RegenerationLevel: 1
+    RegenerationDuration: 2
+  TierII:
+    HasteLevel: 1
+    HasteDuration: 5
+    RegenerationLevel: 1
+    RegenerationDuration: 3
+  TierIII:
+    HasteLevel: 1
+    HasteDuration: 6
+    RegenerationLevel: 1
+    RegenerationDuration: 4
+  TierIV:
+    HasteLevel: 1
+    HasteDuration: 8
+    RegenerationLevel: 1
+    RegenerationDuration: 6
+  TierV:
+    HasteLevel: 2
+    HasteDuration: 10
+    RegenerationLevel: 2
+    RegenerationDuration: 6
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Blood Frenzy'
+    Material: SKELETON_SKULL
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cWhen killing an enemy, gain'
+      - '&cHaste &e%HasteLevel% &cfor &e%HasteDuration% &bseconds'
+      - '&cHaste &e%RegenerationLevel% &cfor &e%RegenerationDuration% &bseconds'
+    MenuLore:
+      - '&cGain a few seconds of regen and haste'
+      - '&cwhen killing an enemy'
+#
+# Config for the ability Sharper Axe
+# This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
+#
+SharperAxeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
+  #Config for each tier
+  TierI:
+    #The minimum amount of armour damage
+    LowEnd: 1
+    #The max amount of armour damage
+    HighEnd: 2
+  TierII:
+    LowEnd: 1
+    HighEnd: 3
+  TierIII:
+    LowEnd: 2
+    HighEnd: 3
+  TierIV:
+    LowEnd: 2
+    HighEnd: 4
+  TierV:
+    LowEnd: 3
+    HighEnd: 4
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Sharper Axe'
+    Material: GOLDEN_AXE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cDeal &e%LowEnd%-%HighEnd% armour damage'
+      - '&cwhen hitting an opponent'
+    MenuLore:
+      - '&cIncrease possible amount of'
+      - '&carmour damage from Shred'
+#
+# Config for the ability Whirlwind Strike
+# This active ability damages nearby players and sends them flying
+#
+WhirlwindStrikeConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
+  #Config for each tier
+  TierI:
+    #How far from the player can enemies be affected
+    Radius: 2.0
+    #How much damage the ability will deal
+    Damage: 1
+    Cooldown: 120
+  TierII:
+    Radius: 2.0
+    Damage: 2
+    Cooldown: 120
+  TierIII:
+    Radius: 2.5
+    Damage: 3
+    Cooldown: 120
+  TierIV:
+    Radius: 3.0
+    Damage: 5
+    Cooldown: 120
+  TierV:
+    Radius: 3.0
+    Damage: 7
+    Cooldown: 120
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Whirlwind Strike'
+    Material: DIAMOND_AXE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cDeal &e%Damage% &cdamage to nearby'
+      - '&cenemies in a &e%Radius% &cblock radius'
+      - '&cand send them flying.'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
+    MenuLore:
+      - '&cDeal damage and send nearby enemies flying'
+#
+# Config for the ability Ares Blessing
+# This active ability gives strength and resistance for a short while and then gives debuffs
+#
+AresBlessingConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
+  #Config for each tier
+  TierI:
+    StrengthDuration: 15
+    StrengthLevel: 1
+    ResistanceDuration: 15
+    ResistanceLevel: 1
+    WeaknessDuration: 180
+    WeaknessLevel: 1
+    MiningFatigueDuration: 180
+    MiningFatigueLevel: 1
+    #Cooldown in seconds
+    Cooldown: 200
+  TierII:
+    StrengthDuration: 17
+    StrengthLevel: 1
+    ResistanceDuration: 17
+    ResistanceLevel: 1
+    WeaknessDuration: 160
+    WeaknessLevel: 1
+    MiningFatigueDuration: 160
+    MiningFatigueLevel: 1
+    Cooldown: 200
+  TierIII:
+    StrengthDuration: 20
+    StrengthLevel: 1
+    ResistanceDuration: 20
+    ResistanceLevel: 1
+    WeaknessDuration: 140
+    WeaknessLevel: 1
+    MiningFatigueDuration: 140
+    MiningFatigueLevel: 1
+    Cooldown: 200
+  TierIV:
+    StrengthDuration: 25
+    StrengthLevel: 1
+    ResistanceDuration: 25
+    ResistanceLevel: 1
+    WeaknessDuration: 120
+    WeaknessLevel: 1
+    MiningFatigueDuration: 120
+    MiningFatigueLevel: 1
+    Cooldown: 200
+  TierV:
+    StrengthDuration: 30
+    StrengthLevel: 1
+    ResistanceDuration: 30
+    ResistanceLevel: 2
+    WeaknessDuration: 100
+    WeaknessLevel: 1
+    MiningFatigueDuration: 100
+    MiningFatigueLevel: 1
+    Cooldown: 200
+    #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Ares Blessing'
+    Material: IRON_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cGain buffs for a short bit'
+      - '&e%StrengthDuration% &cseconds of Strength &e%StrengthLevel'
+      - '&e%ResistanceDuration% &cseconds of Resistance &e%ResistanceLevel'
+      - '&cOnce they wear off, go into a weakened state'
+      - '&e%WeaknessDuration% &cseconds of Weakness &e%WeaknessLevel'
+      - '&e%MiningFatigueDuration% &cseconds of Mining Fatigue &e%MiningFatigueLevel'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
+    MenuLore:
+      - '&cThis ability gives potion buffs'
+      - '&cin exchange for being weakened after'
+CripplingBlowConfig:
+  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
+  #Config for each tier
+  TierI:
+    Duration: 3
+    SlownessDuration: 5
+    SlownessLevel: 1
+    NauseaDuration: 3
+    Cooldown: 160
+  TierII:
+    Duration: 3
+    SlownessDuration: 7
+    SlownessLevel: 1
+    NauseaDuration: 3
+    Cooldown: 160
+  TierIII:
+    Duration: 4
+    SlownessDuration: 8
+    SlownessLevel: 1
+    NauseaDuration: 5
+    Cooldown: 160
+  TierIV:
+    Duration: 4
+    SlownessDuration: 10
+    SlownessLevel: 1
+    NauseaDuration: 6
+    Cooldown: 160
+  TierV:
+    Duration: 5
+    SlownessDuration: 12
+    SlownessLevel: 1
+    NauseaDuration: 7
+    Cooldown: 160
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Crippling Block'
+    Material: CRACKED_STONE_BRICKS
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cFor &e%Duration% &cseconds, hit enemies to give'
+      - '&e%SlownessDuration% &cseconds of Slowness &e%SlownessLevel%'
+      - '&e%NauseaDuration% &cseconds of nausea'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
+    MenuLore:
+      - '&cCripple any attacked opponents'
+      - '&cfor a short while'
