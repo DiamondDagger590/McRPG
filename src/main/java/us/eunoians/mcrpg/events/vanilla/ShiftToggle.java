@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -82,7 +83,7 @@ public class ShiftToggle implements Listener{
                 //get all the entities in a 2 by 2 radius
                 for(Entity en : player.getNearbyEntities(2, 2, 2)){
                   //if the entity is living (avoids items and such) and isnt already hit
-                  if(en instanceof LivingEntity && !entities.contains(en.getUniqueId())){
+                  if(en instanceof LivingEntity && !(en instanceof ArmorStand) && !entities.contains(en.getUniqueId())){
                     LivingEntity len = (LivingEntity) en;
                     //call the ragespike dmg event
                     RageSpikeDamageEvent event = new RageSpikeDamageEvent(mp, (RageSpike) mp.getBaseAbility(UnlockedAbilities.RAGE_SPIKE), len, preEvent.getDamage());
@@ -91,7 +92,7 @@ public class ShiftToggle implements Listener{
                       continue;
                     }
                     //make target go voom
-                    Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
+                    Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), en.getLocation().getDirection().getZ());
                     en.setVelocity(targVector.multiply(-4.3));
                     //damage target and add them to list
                     len.damage(event.getDamage());

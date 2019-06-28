@@ -23,20 +23,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.abilities.axes.CripplingBlow;
-import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
-import us.eunoians.mcrpg.abilities.axes.SharperAxe;
-import us.eunoians.mcrpg.abilities.axes.Shred;
+import us.eunoians.mcrpg.abilities.axes.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
-import us.eunoians.mcrpg.api.events.mcrpg.axes.HeavyStrikeEvent;
-import us.eunoians.mcrpg.api.events.mcrpg.axes.SharperAxeEvent;
-import us.eunoians.mcrpg.api.events.mcrpg.axes.ShredEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.*;
 import us.eunoians.mcrpg.api.events.mcrpg.fitness.*;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
@@ -736,6 +731,9 @@ public class VanillaDamageEvent implements Listener {
               CripplingBlowEvent cripplingBlowEvent = new CripplingBlowEvent(mp, cripplingBlow, duration, slownessDuration, slownessLevel, nauseaDuration, cooldown);
               Bukkit.getPluginManager().callEvent(cripplingBlowEvent);
               if(!cripplingBlowEvent.isCancelled()){
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+                mp.setReadying(false);
                 mp.getActiveAbilities().add(UnlockedAbilities.CRIPPLING_BLOW);
                 mp.setCripplingBlowData(cripplingBlowEvent);
                 //TODO event text
@@ -752,13 +750,75 @@ public class VanillaDamageEvent implements Listener {
                 }.runTaskLater(McRPG.getInstance(), cripplingBlowEvent.getDuration() * 20);
               }
             }
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.WHIRLWIND_STRIKE){
+              WhirlwindStrike whirlwindStrike = (WhirlwindStrike) mp.getBaseAbility(UnlockedAbilities.WHIRLWIND_STRIKE);
+              String key = "WhirlwindStrike.Tier" + Methods.convertToNumeral(whirlwindStrike.getCurrentTier()) + ".";
+              double radius = config.getDouble(key + "Radius");
+              int damage = config.getInt(key + "Damage");
+              int cooldown = config.getInt(key + "Cooldown");
+              WhirlwindStrikeEvent whirlwindStrikeEvent = new WhirlwindStrikeEvent(mp, whirlwindStrike, damage, radius, cooldown);
+              Bukkit.getPluginManager().callEvent(whirlwindStrikeEvent);
+              if(!whirlwindStrikeEvent.isCancelled()){
+                mp.getActiveAbilities().add(UnlockedAbilities.WHIRLWIND_STRIKE);
+                for(Entity en : mp.getPlayer().getNearbyEntities(whirlwindStrikeEvent.getRange(), 2, whirlwindStrikeEvent.getRange())){
+                  if(en instanceof LivingEntity && !(en instanceof ArmorStand)){
+                    //make target go voom
+                    org.bukkit.util.Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), en.getLocation().getDirection().getZ());
+                    en.setVelocity(targVector.multiply(-4.3));
+                    //damage target and add them to list
+                    ((LivingEntity) en).damage(whirlwindStrikeEvent.getDamage());
+                  }
+                }
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.SECOND, whirlwindStrikeEvent.getCooldown());
+                mp.addAbilityOnCooldown(UnlockedAbilities.WHIRLWIND_STRIKE, cal.getTimeInMillis());
+                mp.getActiveAbilities().remove(UnlockedAbilities.WHIRLWIND_STRIKE);
+                mp.setReadying(false);
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+              }
+            }
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.ARES_BLESSING){
+              AresBlessing aresBlessing = (AresBlessing) mp.getBaseAbility(UnlockedAbilities.ARES_BLESSING);
+              String key = "AresBlessingConfig.Tier" + Methods.convertToNumeral(aresBlessing.getCurrentTier()) + ".";
+              int strengthDuration = config.getInt(key + "StrengthDuration");
+              int strengthLevel = config.getInt(key + "StrengthLevel");
+              int resistanceDuration = config.getInt(key + "ResistanceDuration");
+              int resistanceLevel = config.getInt(key + "ResistanceLevel");
+              int weaknessDuration = config.getInt(key + "WeaknessDuration");
+              int weaknessLevel = config.getInt(key + "WeaknessLevel");
+              int miningFatigueDuration = config.getInt(key + "MiningFatigueDuration");
+              int miningFatigueLevel = config.getInt(key + "MiningFatigueLevel");
+              int cooldown = config.getInt(key + "Cooldown");
+              AresBlessingEvent aresBlessingEvent = new AresBlessingEvent(mp, aresBlessing, strengthDuration, strengthLevel, resistanceDuration, resistanceLevel, weaknessDuration, weaknessLevel, miningFatigueDuration, miningFatigueLevel, cooldown);
+              Bukkit.getPluginManager().callEvent(aresBlessingEvent);
+              if(!aresBlessingEvent.isCancelled()){
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+                mp.setReadying(false);
+                mp.getActiveAbilities().add(UnlockedAbilities.ARES_BLESSING);
+                damager.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, aresBlessingEvent.getStrengthDuration() * 20, aresBlessingEvent.getStrengthLevel()));
+                damager.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, aresBlessingEvent.getResistanceDuration() * 20, aresBlessingEvent.getResistanceLevel()));
+                new BukkitRunnable(){
+                  @Override
+                  public void run() {
+                    damager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, aresBlessingEvent.getMiningFatigueDuration() * 20, aresBlessingEvent.getMiningFatigueLevel()));
+                    damager.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, aresBlessingEvent.getWeaknessDuration() * 20, aresBlessingEvent.getWeaknessDuration()));
+                    mp.getActiveAbilities().remove(UnlockedAbilities.ARES_BLESSING);
+                    Calendar cal = Calendar.getInstance();
+                    cal.add(Calendar.SECOND, aresBlessingEvent.getCooldown());
+                    mp.addAbilityOnCooldown(UnlockedAbilities.ARES_BLESSING, cal.getTimeInMillis());
+                  }
+                }.runTaskLater(McRPG.getInstance(), Math.max(aresBlessingEvent.getStrengthDuration(), aresBlessingEvent.getResistanceDuration()) * 20);
+              }
+            }
           }
           if(mp.getActiveAbilities().contains(UnlockedAbilities.CRIPPLING_BLOW)){
             if(e.getEntity() instanceof Player){
               if(mp.getCripplingBlowData() != null){
                 Player target = (Player) e.getEntity();
-                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, mp.getCripplingBlowData().getSlownessDuration(), mp.getCripplingBlowData().getSlownessLevel()));
-                target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, mp.getCripplingBlowData().getNauseaDuration(), 0));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, mp.getCripplingBlowData().getSlownessDuration() * 20, mp.getCripplingBlowData().getSlownessLevel()));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, mp.getCripplingBlowData().getNauseaDuration() * 20, 0));
               }
               else{
                 mp.getActiveAbilities().remove(UnlockedAbilities.CRIPPLING_BLOW);
