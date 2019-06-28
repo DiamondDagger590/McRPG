@@ -24,6 +24,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.axes.CripplingBlow;
 import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
 import us.eunoians.mcrpg.abilities.axes.SharperAxe;
 import us.eunoians.mcrpg.abilities.axes.Shred;
@@ -32,6 +33,7 @@ import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.unarmed.*;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.HeavyStrikeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.SharperAxeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.ShredEvent;
@@ -722,6 +724,47 @@ public class VanillaDamageEvent implements Listener {
         else if(weapon.name().contains("AXE")){
           Axes axes = (Axes) mp.getSkill(Skills.AXES);
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.AXES_CONFIG);
+          if(mp.isReadying()){
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.CRIPPLING_BLOW){
+              CripplingBlow cripplingBlow = (CripplingBlow) mp.getBaseAbility(UnlockedAbilities.CRIPPLING_BLOW);
+              String key = "CripplingBlowConfig.Tier" + Methods.convertToNumeral(cripplingBlow.getCurrentTier()) + ".";
+              int duration = config.getInt(key + "Duration");
+              int slownessDuration = config.getInt(key + "SlownessDuration");
+              int slownessLevel = config.getInt(key + "SlownessLevel");
+              int nauseaDuration = config.getInt(key + "NauseaDuration");
+              int cooldown = config.getInt(key + "Cooldown");
+              CripplingBlowEvent cripplingBlowEvent = new CripplingBlowEvent(mp, cripplingBlow, duration, slownessDuration, slownessLevel, nauseaDuration, cooldown);
+              Bukkit.getPluginManager().callEvent(cripplingBlowEvent);
+              if(!cripplingBlowEvent.isCancelled()){
+                mp.getActiveAbilities().add(UnlockedAbilities.CRIPPLING_BLOW);
+                mp.setCripplingBlowData(cripplingBlowEvent);
+                //TODO event text
+                new BukkitRunnable(){
+                  @Override
+                  public void run() {
+                    mp.getActiveAbilities().remove(UnlockedAbilities.CRIPPLING_BLOW);
+                    Calendar cal = Calendar.getInstance();
+                    cal.add(Calendar.SECOND, cripplingBlowEvent.getCooldown());
+                    mp.addAbilityOnCooldown(UnlockedAbilities.CRIPPLING_BLOW, cal.getTimeInMillis());
+                    mp.setCripplingBlowData(null);
+                    //TODO event text
+                  }
+                }.runTaskLater(McRPG.getInstance(), cripplingBlowEvent.getDuration() * 20);
+              }
+            }
+          }
+          if(mp.getActiveAbilities().contains(UnlockedAbilities.CRIPPLING_BLOW)){
+            if(e.getEntity() instanceof Player){
+              if(mp.getCripplingBlowData() != null){
+                Player target = (Player) e.getEntity();
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, mp.getCripplingBlowData().getSlownessDuration(), mp.getCripplingBlowData().getSlownessLevel()));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, mp.getCripplingBlowData().getNauseaDuration(), 0));
+              }
+              else{
+                mp.getActiveAbilities().remove(UnlockedAbilities.CRIPPLING_BLOW);
+              }
+            }
+          }
           if(e.getEntity() instanceof Player && DefaultAbilities.SHRED.isEnabled() && mp.getBaseAbility(DefaultAbilities.SHRED).isToggled()){
             Player target = (Player) e.getEntity();
             Shred shred = (Shred) mp.getBaseAbility(DefaultAbilities.SHRED);
@@ -764,7 +807,6 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-
           double multiplier = config.getDouble("MaterialBonus." + weapon.name());
           int baseExp = 0;
           if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {

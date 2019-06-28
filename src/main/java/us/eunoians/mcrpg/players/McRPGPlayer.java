@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.abilities.mining.*;
 import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
@@ -67,6 +68,7 @@ public class McRPGPlayer {
   @Getter @Setter private boolean hasDazeImmunity = false;
   @Setter @Getter private boolean canSmite;
   @Getter @Setter private SmitingFistEvent smitingFistData;
+  @Getter @Setter private CripplingBlowEvent cripplingBlowData;
   @Getter @Setter private boolean isLinkedToRemoteTransfer = false;
   @Getter @Setter private boolean canDenseImpact;
   @Getter @Setter private int armourDmg;

@@ -2,14 +2,21 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.axes.BloodFrenzy;
 import us.eunoians.mcrpg.abilities.fitness.DivineEscape;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.BloodFrenzyEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.fitness.DivineEscapeEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -75,6 +82,52 @@ public class DeathEvent implements Listener {
     }
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onEntityDeathMonitor(EntityDamageByEntityEvent e){
+    if(e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && ((LivingEntity) e.getEntity()).getHealth() - e.getDamage() <= 0){
+      LivingEntity len = (LivingEntity) e.getEntity();
+      if(e.getDamager() instanceof Player){
+        McRPGPlayer attacker = PlayerManager.getPlayer(e.getDamager().getUniqueId());
+        if(UnlockedAbilities.BLOOD_FRENZY.isEnabled() && attacker.getAbilityLoadout().contains(UnlockedAbilities.BLOOD_FRENZY) && attacker.getBaseAbility(UnlockedAbilities.BLOOD_FRENZY).isToggled()){
+          BloodFrenzy bloodFrenzy = (BloodFrenzy) attacker.getBaseAbility(UnlockedAbilities.BLOOD_FRENZY);
+          FileConfiguration axesConfiguration = McRPG.getInstance().getFileManager().getFile(FileManager.Files.AXES_CONFIG);
+          boolean affectMobs = axesConfiguration.getBoolean("BloodFrenzyConfig.ActiveOnMobs");
+          if(len instanceof Player || affectMobs){
+            String key = "BloodFrenzyConfig.Tier" + Methods.convertToNumeral(bloodFrenzy.getCurrentTier()) + ".";
+            int hasteLevel = axesConfiguration.getInt(key + "HasteLevel") - 1;
+            int hasteDuration = axesConfiguration.getInt(key + "HasteDuration");
+            int regenLevel = axesConfiguration.getInt(key + "RegenerationLevel") - 1;
+            int regenDuration = axesConfiguration.getInt(key + "RegenerationDuration");
+            BloodFrenzyEvent bloodFrenzyEvent = new BloodFrenzyEvent(attacker, bloodFrenzy, hasteDuration, hasteLevel, regenDuration, regenLevel, len);
+            Bukkit.getPluginManager().callEvent(bloodFrenzyEvent);
+            if(!bloodFrenzyEvent.isCancelled()){
+              Player p = attacker.getPlayer();
+              if (p.hasPotionEffect(PotionEffectType.FAST_DIGGING)) {
+                PotionEffect effect = p.getPotionEffect(PotionEffectType.FAST_DIGGING);
+                if(effect.getDuration() < bloodFrenzyEvent.getHasteDuration() * 20 && effect.getAmplifier() <= bloodFrenzyEvent.getHasteLevel()){
+                  p.removePotionEffect(PotionEffectType.FAST_DIGGING);
+                  p.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, bloodFrenzyEvent.getHasteDuration() * 20, bloodFrenzyEvent.getHasteLevel()));
+                }
+              }
+              else {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, bloodFrenzyEvent.getHasteDuration() * 20, bloodFrenzyEvent.getHasteLevel()));
+              }
+              if (p.hasPotionEffect(PotionEffectType.REGENERATION)) {
+                PotionEffect effect = p.getPotionEffect(PotionEffectType.REGENERATION);
+                if(effect.getDuration() < bloodFrenzyEvent.getRegenDuration() * 20 && effect.getAmplifier() <= bloodFrenzyEvent.getRegenLevel()){
+                  p.removePotionEffect(PotionEffectType.REGENERATION);
+                  p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, bloodFrenzyEvent.getRegenDuration() * 20, bloodFrenzyEvent.getRegenLevel()));
+                }
+              }
+              else {
+                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, bloodFrenzyEvent.getRegenDuration() * 20, bloodFrenzyEvent.getRegenLevel()));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   /**
    * Handle PlayerDeathEvents at the lowest priority.
    * <p>
