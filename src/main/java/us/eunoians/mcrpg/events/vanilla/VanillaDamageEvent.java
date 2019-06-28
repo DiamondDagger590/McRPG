@@ -24,11 +24,17 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
+import us.eunoians.mcrpg.abilities.axes.SharperAxe;
+import us.eunoians.mcrpg.abilities.axes.Shred;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.unarmed.*;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.HeavyStrikeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.SharperAxeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.ShredEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.fitness.*;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
@@ -39,6 +45,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
+import us.eunoians.mcrpg.skills.Axes;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.GainReason;
@@ -55,7 +62,7 @@ import java.util.*;
 public class VanillaDamageEvent implements Listener {
 
   public static void handleHealthbars(Entity attacker, LivingEntity target, double damage) {
-    if(!(attacker instanceof Player)) {
+    if(!(attacker instanceof Player) || target instanceof ArmorStand) {
       return;
     }
 
@@ -296,7 +303,7 @@ public class VanillaDamageEvent implements Listener {
   }
 
   /**
-   * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
+   * This code is not all mine. It is copyright from the original mcMMO allowed for use by their license.
    * This code has been modified from it source material
    * It was released under the GPLv3 license
    */
@@ -306,7 +313,7 @@ public class VanillaDamageEvent implements Listener {
       return;
     }
     FileConfiguration config;
-    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity) {
+    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)) {
       Player damager = (Player) e.getDamager();
       if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()) {
         return;
@@ -605,7 +612,7 @@ public class VanillaDamageEvent implements Listener {
           //If the player is readying for an ability
           if(mp.isReadying()) {
             //If we need to use serrated strikes (We can preemptively assume that its enabled as we have checked earlier on in the code)
-            if(mp.getReadyingAbilityBit().getAbilityReady().getName().equalsIgnoreCase(UnlockedAbilities.SERRATED_STRIKES.getName())) {
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.SERRATED_STRIKES) {
               //call api event
               SerratedStrikesEvent event = new SerratedStrikesEvent(mp, (SerratedStrikes) mp.getBaseAbility(UnlockedAbilities.SERRATED_STRIKES));
               Bukkit.getPluginManager().callEvent(event);
@@ -640,7 +647,7 @@ public class VanillaDamageEvent implements Listener {
               }
             }
             //If we need to use tainted blade
-            else if(mp.getReadyingAbilityBit().getAbilityReady().getName().equalsIgnoreCase(UnlockedAbilities.TAINTED_BLADE.getName())) {
+            else if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.TAINTED_BLADE) {
               TaintedBladeEvent event = new TaintedBladeEvent(mp, (TaintedBlade) mp.getBaseAbility(UnlockedAbilities.TAINTED_BLADE));
               Bukkit.getPluginManager().callEvent(event);
               if(!event.isCancelled()) {
@@ -663,7 +670,7 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-          if(Skills.SWORDS.getEnabledAbilities().contains("Bleed")) {
+          if(DefaultAbilities.BLEED.isEnabled()) {
             if(playersSkill.getAbility(DefaultAbilities.BLEED).isToggled()) {
               Bleed bleed = (Bleed) playersSkill.getAbility(DefaultAbilities.BLEED);
               Parser parser = DefaultAbilities.BLEED.getActivationEquation();
@@ -696,7 +703,7 @@ public class VanillaDamageEvent implements Listener {
             }
           }
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
-          double multiplier = config.getDouble("MaterialBonus." + weapon);
+          double multiplier = config.getDouble("MaterialBonus." + weapon.name());
           int baseExp = 0;
           if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
             baseExp = config.getInt("ExpAwardedPerMob.OTHER");
@@ -711,6 +718,68 @@ public class VanillaDamageEvent implements Listener {
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
           mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        }
+        else if(weapon.name().contains("AXE")){
+          Axes axes = (Axes) mp.getSkill(Skills.AXES);
+          config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.AXES_CONFIG);
+          if(e.getEntity() instanceof Player && DefaultAbilities.SHRED.isEnabled() && mp.getBaseAbility(DefaultAbilities.SHRED).isToggled()){
+            Player target = (Player) e.getEntity();
+            Shred shred = (Shred) mp.getBaseAbility(DefaultAbilities.SHRED);
+            int armourDamage = 1;
+            double bonusChance = 0.0;
+            if(UnlockedAbilities.SHARPER_AXE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.SHARPER_AXE) && mp.getBaseAbility(UnlockedAbilities.SHARPER_AXE).isToggled()){
+              SharperAxe sharperAxe = (SharperAxe) mp.getBaseAbility(UnlockedAbilities.SHARPER_AXE);
+              int highEnd = config.getInt("SharperAxeConfig.Tier" + Methods.convertToNumeral(sharperAxe.getCurrentTier()) + ".HighEnd");
+              int lowEnd = config.getInt("SharperAxeConfig.Tier" + Methods.convertToNumeral(sharperAxe.getCurrentTier()) + ".LowEnd");
+              SharperAxeEvent sharperAxeEvent = new SharperAxeEvent(mp, sharperAxe, lowEnd, highEnd);
+              Bukkit.getPluginManager().callEvent(sharperAxeEvent);
+              if(!sharperAxeEvent.isCancelled()){
+                Random rand = new Random();
+                int diff = rand.nextInt(highEnd - lowEnd);
+                armourDamage = lowEnd + diff;
+              }
+            }
+            if(UnlockedAbilities.HEAVY_STRIKE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.HEAVY_STRIKE) && mp.getBaseAbility(UnlockedAbilities.HEAVY_STRIKE).isToggled()){
+              HeavyStrike heavyStrike = (HeavyStrike) mp.getBaseAbility(UnlockedAbilities.HEAVY_STRIKE);
+              double bonus = config.getDouble("HeavyStrikeConfig.Tier" + Methods.convertToNumeral(heavyStrike.getCurrentTier()) + ".ActivationChanceBoost");
+              HeavyStrikeEvent heavyStrikeEvent = new HeavyStrikeEvent(mp, heavyStrike, bonus);
+              Bukkit.getPluginManager().callEvent(heavyStrikeEvent);
+              if(!heavyStrikeEvent.isCancelled()){
+                bonusChance = heavyStrikeEvent.getBonusChance();
+              }
+            }
+            Parser parser = DefaultAbilities.SHRED.getActivationEquation();
+            parser.setVariable("axes_level", axes.getCurrentLevel());
+            parser.setVariable("power_level", mp.getPowerLevel());
+            int chance = (int) (parser.getValue() + bonusChance) * 1000;
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val) {
+              ShredEvent event = new ShredEvent(mp, shred, target, armourDamage);
+              Bukkit.getPluginManager().callEvent(event);
+              if(!event.isCancelled() && target.getEquipment() != null){
+                for(ItemStack i : target.getEquipment().getArmorContents()){
+                  i.setDurability((short) (i.getDurability() + event.getArmourDamage()));
+                }
+              }
+            }
+          }
+
+          double multiplier = config.getDouble("MaterialBonus." + weapon.name());
+          int baseExp = 0;
+          if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+            baseExp = config.getInt("ExpAwardedPerMob.OTHER");
+          }
+          else {
+            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+          }
+          double dmg = e.getDamage();
+          double mobSpawnValue = 1.0;
+          if(e.getEntity().hasMetadata("ExpModifier")) {
+            mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
+          }
+          int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
+          mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
         }
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
