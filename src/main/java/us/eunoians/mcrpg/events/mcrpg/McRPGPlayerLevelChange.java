@@ -31,6 +31,9 @@ public class McRPGPlayerLevelChange implements Listener {
   @EventHandler(priority = EventPriority.NORMAL)
   public void levelChange(McRPGPlayerLevelChangeEvent e) {
     McRPG mcRPG = McRPG.getInstance();
+    if(e.getNextLevel() > e.getSkillLeveled().getType().getMaxLevel()){
+      e.setNextLevel( e.getSkillLeveled().getType().getMaxLevel());
+    }
     e.getMcMMOPlayer().updatePowerLevel();
     //Send the player a message that they leveled up
     String message = Methods.color(e.getMcMMOPlayer().getPlayer(), mcRPG.getPluginPrefix() +
