@@ -198,7 +198,7 @@ public class Methods {
    * @param m Material
    * @return The Skill that the item belongs to
    */
-  public static Skills getSkillsItem(Material m) {
+  public static Skills getSkillsItem(Material m, Material blockType) {
     switch(m) {
       case DIAMOND_SWORD:
       case IRON_SWORD:
@@ -223,6 +223,10 @@ public class Methods {
       case GOLDEN_AXE:
       case STONE_AXE:
       case WOODEN_AXE:
+        switch(blockType){
+          case AIR:
+            return Skills.AXES;
+        }
         return Skills.WOODCUTTING;
       case BOW:
         return Skills.ARCHERY;

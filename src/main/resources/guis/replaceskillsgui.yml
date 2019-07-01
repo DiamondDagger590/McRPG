@@ -19,6 +19,8 @@ Gui:
         - 'OpenNative:SelectReplaceGUI:Fitness'
       25:
         - 'OpenNative:SelectReplaceGUI:Excavation'
+      37:
+        - 'OpenNative:SelectReplaceGUI:Axes'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -86,6 +88,14 @@ Gui:
           - '&eCurrent Excavation level: &a%Excavation_Level%'
           - '&eExtraction chance: &c%Extraction_Chance%%'
         Slot: 25
+      AxesSkill:
+        Name: '&5Axes Skill'
+        Material: GOLDEN_AXE
+        Lore:
+          - '&eClick this to view your axes abilities'
+          - '&eCurrent Axes level: &a%Axes_Level%'
+          - '&eShredchance: &c%Shredn_Chance%%'
+        Slot: 37
       Back:
         Name: '&bHome>>'
         Material: BARRIER

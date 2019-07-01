@@ -8,6 +8,7 @@ SkillNames:
   Woodcutting: 'Woodcutting'
   Fitness: 'Fitness'
   Excavation: 'Excavation'
+  Axes: 'Axes'
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:
@@ -232,6 +233,15 @@ Messages:
       Deactivated: '&cHand Digging has been deactivated'
     PansShrine:
       Activated: '&aPan has used the power of nature to change the surrounding landscape!'
+    CripplingBlow:
+      Activated: '&aCrippling Blow is now active! Strike enemies to cripple them with debuffs'
+      Hit: '&cYou been struck with a crippling blow.'
+    WhirlwindStrike:
+      Activated: '&aYou swing around and knock away all enemies'
+      Hit: '&cYou were blown away by the opponents axe'
+    AresBlessing:
+      Activated: '&aThe god of war blesses you with his power'
+      Deactivated: '&cYour mortal body couldnt handle the power and is now weakened'
   Guis:
     AcceptedAbility: '&aThe ability %Ability% has been added to your loadout!'
     UpgradedAbility: '&aThe ability %Ability% has been upgraded to %Tier%!'
@@ -302,3 +312,8 @@ Messages:
       - '&7[&5McRPG Tip&7]: &aFrenzy Dig will give haste and increase chance of doubling block drops for a short while!'
       - '&7[&5McRPG Tip&7]: &aActivate Pans Shrine to change the landscape!'
       - '&7[&5McRPG Tip&7]: &aMana Deposit will give you exp in a random skill occasionally!'
+    LevelUpAxes:
+      - '&7[&5McRPG Tip&7]: &aShred will quickly whittle down opponents armour durability!'
+      - '&7[&5McRPG Tip&7]: &aAres Blessing will buff you for a short while, but then leave you in a long weakened state!'
+      - '&7[&5McRPG Tip&7]: &aDifferent types of axes will give more or less exp per hit!'
+      - '&7[&5McRPG Tip&7]: &aUse Whirlwind Strike when surrounded to knockback enemies!'

@@ -736,7 +736,7 @@ public class VanillaDamageEvent implements Listener {
                 mp.setReadying(false);
                 mp.getActiveAbilities().add(UnlockedAbilities.CRIPPLING_BLOW);
                 mp.setCripplingBlowData(cripplingBlowEvent);
-                //TODO event text
+                damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CripplingBlow.Activated")));
                 new BukkitRunnable(){
                   @Override
                   public void run() {
@@ -750,9 +750,9 @@ public class VanillaDamageEvent implements Listener {
                 }.runTaskLater(McRPG.getInstance(), cripplingBlowEvent.getDuration() * 20);
               }
             }
-            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.WHIRLWIND_STRIKE){
+            else if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.WHIRLWIND_STRIKE){
               WhirlwindStrike whirlwindStrike = (WhirlwindStrike) mp.getBaseAbility(UnlockedAbilities.WHIRLWIND_STRIKE);
-              String key = "WhirlwindStrike.Tier" + Methods.convertToNumeral(whirlwindStrike.getCurrentTier()) + ".";
+              String key = "WhirlwindStrikeConfig.Tier" + Methods.convertToNumeral(whirlwindStrike.getCurrentTier()) + ".";
               double radius = config.getDouble(key + "Radius");
               int damage = config.getInt(key + "Damage");
               int cooldown = config.getInt(key + "Cooldown");
@@ -760,13 +760,15 @@ public class VanillaDamageEvent implements Listener {
               Bukkit.getPluginManager().callEvent(whirlwindStrikeEvent);
               if(!whirlwindStrikeEvent.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.WHIRLWIND_STRIKE);
+                damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.WhirlwindStrike.Activated")));
                 for(Entity en : mp.getPlayer().getNearbyEntities(whirlwindStrikeEvent.getRange(), 2, whirlwindStrikeEvent.getRange())){
                   if(en instanceof LivingEntity && !(en instanceof ArmorStand)){
                     //make target go voom
-                    org.bukkit.util.Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), en.getLocation().getDirection().getZ());
-                    en.setVelocity(targVector.multiply(-4.3));
+                    org.bukkit.util.Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), mp.getPlayer().getLocation().getDirection().getZ());
+                    en.setVelocity(targVector.multiply(-5.1));
                     //damage target and add them to list
                     ((LivingEntity) en).damage(whirlwindStrikeEvent.getDamage());
+                    en.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.WhirlwindStrike.Hit")));
                   }
                 }
                 Calendar cal = Calendar.getInstance();
@@ -778,7 +780,7 @@ public class VanillaDamageEvent implements Listener {
                 mp.setReadyingAbilityBit(null);
               }
             }
-            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.ARES_BLESSING){
+            else if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.ARES_BLESSING){
               AresBlessing aresBlessing = (AresBlessing) mp.getBaseAbility(UnlockedAbilities.ARES_BLESSING);
               String key = "AresBlessingConfig.Tier" + Methods.convertToNumeral(aresBlessing.getCurrentTier()) + ".";
               int strengthDuration = config.getInt(key + "StrengthDuration");
@@ -799,11 +801,13 @@ public class VanillaDamageEvent implements Listener {
                 mp.getActiveAbilities().add(UnlockedAbilities.ARES_BLESSING);
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, aresBlessingEvent.getStrengthDuration() * 20, aresBlessingEvent.getStrengthLevel()));
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, aresBlessingEvent.getResistanceDuration() * 20, aresBlessingEvent.getResistanceLevel()));
+                damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Activated")));
                 new BukkitRunnable(){
                   @Override
                   public void run() {
                     damager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, aresBlessingEvent.getMiningFatigueDuration() * 20, aresBlessingEvent.getMiningFatigueLevel()));
                     damager.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, aresBlessingEvent.getWeaknessDuration() * 20, aresBlessingEvent.getWeaknessDuration()));
+                    damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Deactivated")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.ARES_BLESSING);
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND, aresBlessingEvent.getCooldown());
@@ -819,6 +823,7 @@ public class VanillaDamageEvent implements Listener {
                 Player target = (Player) e.getEntity();
                 target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, mp.getCripplingBlowData().getSlownessDuration() * 20, mp.getCripplingBlowData().getSlownessLevel()));
                 target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, mp.getCripplingBlowData().getNauseaDuration() * 20, 0));
+                target.sendMessage(Methods.color(mp.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CripplingBlow.Hit")));
               }
               else{
                 mp.getActiveAbilities().remove(UnlockedAbilities.CRIPPLING_BLOW);
@@ -862,6 +867,9 @@ public class VanillaDamageEvent implements Listener {
               Bukkit.getPluginManager().callEvent(event);
               if(!event.isCancelled() && target.getEquipment() != null){
                 for(ItemStack i : target.getEquipment().getArmorContents()){
+                  if(i == null){
+                    continue;
+                  }
                   i.setDurability((short) (i.getDurability() + event.getArmourDamage()));
                 }
               }

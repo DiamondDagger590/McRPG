@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ShiftToggle implements Listener{
+public class ShiftToggle implements Listener {
 
   private static HashMap<UUID, Integer> playersCharging = new HashMap<>();
 
@@ -58,7 +58,7 @@ public class ShiftToggle implements Listener{
       player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() +
               McRPG.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Integer.toString(preEvent.getChargeTime()))));
       //Save the id of the task
-      int id = new BukkitRunnable(){
+      int id = new BukkitRunnable() {
         @Override
         public void run(){
           //get vector and make them go voom
@@ -72,7 +72,7 @@ public class ShiftToggle implements Listener{
           //A list of all entities hit by rage spike so we arent double hitting
           ArrayList<UUID> entities = new ArrayList<>();
           //Damage entities as we fly by
-          new BukkitRunnable(){
+          new BukkitRunnable() {
             @Override
             public void run(){
               //verify that this runs 20 times
@@ -92,7 +92,7 @@ public class ShiftToggle implements Listener{
                       continue;
                     }
                     //make target go voom
-                    Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), en.getLocation().getDirection().getZ());
+                    Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
                     en.setVelocity(targVector.multiply(-4.3));
                     //damage target and add them to list
                     len.damage(event.getDamage());

@@ -37,14 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -1098,6 +1091,17 @@ public class McRPGPlayer {
     updatePowerLevel();
     for(Skill s : skills) {
       s.updateExpToLevel();
+    }
+    List<UnlockedAbilities> toremove = new ArrayList<>();
+    for(UnlockedAbilities a : abilityLoadout){
+      BaseAbility ab = getBaseAbility(a);
+      if(ab.getCurrentTier() < 1){
+        ab.setUnlocked(false);
+        toremove.add(a);
+      }
+    }
+    for(UnlockedAbilities a : toremove){
+      abilityLoadout.remove(a);
     }
   }
 
