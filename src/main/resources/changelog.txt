@@ -1,3 +1,11 @@
+1.5.0-ALPHA
++ Added axes
+= Improved UI. Default abilities now show in SubSkillGUI. Upgrade GUI now shows what skill is needed for upgrade
++ To add, go to editloadoutgui.yml and add %Skill% in the LevelPromptLore.
+= Fixed bug with level up tips.
+= Woodcutting abilities will only "ready" when looking at blocks. Axes will "ready" when looking at air or an entity. Looking into
+a way to make this more generic.
+
 1.4.0-ALPHA
 + Excavation added into the game
 + Weighted exp permissions

@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.ArrayList;
@@ -102,6 +103,7 @@ public class EditLoadoutGUI extends GUI {
             for(String s : guiConfig.getStringList("AbilityItem.LevelPromptLore")){
               s = s.replace("%Level%", Integer.toString(((UnlockedAbilities) ability.getGenericAbility()).tierUnlockLevel(ability.getCurrentTier() + 1)));
               s = s.replace("%Tier%", Methods.convertToNumeral(ability.getCurrentTier() + 1));
+              s = s.replace("%Skill%", Skills.fromString(ability.getGenericAbility().getSkill()).getDisplayName());
               newLore.add(Methods.color(player.getPlayer(), s));
             }
           }

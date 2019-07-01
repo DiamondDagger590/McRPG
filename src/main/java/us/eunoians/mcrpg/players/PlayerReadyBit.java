@@ -50,6 +50,9 @@ public class PlayerReadyBit {
             replaceName = "Fist";
           }
         }
+        else if(abilityReady.getSkill().equalsIgnoreCase("axes")){
+          replaceName = "Battle Axe";
+        }
         player.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Players.PlayerUnready").replace("%Skill_Item%", replaceName)));
       }

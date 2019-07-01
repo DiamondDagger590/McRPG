@@ -26,7 +26,7 @@ public class AbilityUpgrade implements Listener{
         }
         if(p.hasPermission("mcrpg.*") || p.hasPermission("mcadmin.*") || p.hasPermission("mcadmin.abilityspy")){
           p.sendMessage(Methods.color(event.getMcRPGPlayer().getPlayer(), McRPG.getInstance().getPluginPrefix() +
-                  McRPG.getInstance().getLangFile().getString("Messages.Admin.AbilitySpy.Upgrade")
+                  McRPG.getInstance().getLangFile().getString("Messages.Commands.Admin.AbilitySpy.Upgrade")
                           .replace("%Player%", event.getMcRPGPlayer().getPlayer().getDisplayName())
                           .replace("%Ability%", event.getAbilityUpgrading().getGenericAbility().getName())
                           .replace("%Tier%", Integer.toString(event.getNextTier()))));

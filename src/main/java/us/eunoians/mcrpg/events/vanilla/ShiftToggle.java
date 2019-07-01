@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,7 +27,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ShiftToggle implements Listener{
+public class ShiftToggle implements Listener {
 
   private static HashMap<UUID, Integer> playersCharging = new HashMap<>();
 
@@ -57,7 +58,7 @@ public class ShiftToggle implements Listener{
       player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() +
               McRPG.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Integer.toString(preEvent.getChargeTime()))));
       //Save the id of the task
-      int id = new BukkitRunnable(){
+      int id = new BukkitRunnable() {
         @Override
         public void run(){
           //get vector and make them go voom
@@ -71,7 +72,7 @@ public class ShiftToggle implements Listener{
           //A list of all entities hit by rage spike so we arent double hitting
           ArrayList<UUID> entities = new ArrayList<>();
           //Damage entities as we fly by
-          new BukkitRunnable(){
+          new BukkitRunnable() {
             @Override
             public void run(){
               //verify that this runs 20 times
@@ -82,7 +83,7 @@ public class ShiftToggle implements Listener{
                 //get all the entities in a 2 by 2 radius
                 for(Entity en : player.getNearbyEntities(2, 2, 2)){
                   //if the entity is living (avoids items and such) and isnt already hit
-                  if(en instanceof LivingEntity && !entities.contains(en.getUniqueId())){
+                  if(en instanceof LivingEntity && !(en instanceof ArmorStand) && !entities.contains(en.getUniqueId())){
                     LivingEntity len = (LivingEntity) en;
                     //call the ragespike dmg event
                     RageSpikeDamageEvent event = new RageSpikeDamageEvent(mp, (RageSpike) mp.getBaseAbility(UnlockedAbilities.RAGE_SPIKE), len, preEvent.getDamage());

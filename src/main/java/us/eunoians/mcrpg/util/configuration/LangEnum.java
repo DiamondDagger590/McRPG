@@ -15,6 +15,7 @@ public enum LangEnum implements ConfigurationEnum {
     SKILL_NAMES_WOODCUTTING("SkillNames.Woodcutting", "Woodcutting"),
     SKILL_NAMES_FITNESS("SkillNames.Fitness", "Fitness"),
     SKILL_NAMES_EXCAVATION("SkillNames.Excavation", "Excavation"),
+    SKILL_NAMES_AXES("SkillNames.Axes", "Axes"),
     PLUGIN_INFO_HEADER("Messages.PluginInfo", "", "#Messages relating to the general plugin information"),
     PLUGIN_PREFIX("Messages.PluginInfo.PluginPrefix", "&7[&1McRPG&7]"),
     CUSTOM_REDEEM("Messages.CustomRedeem", "#Messages relating to redeemable experience"),
@@ -167,6 +168,12 @@ public enum LangEnum implements ConfigurationEnum {
     ABILITIES_HAND_DIGGING_ACTIVATED("Messages.Abilities.HandDigging.Activated", "&aHand Digging has been activated!"),
     ABILITIES_HAND_DIGGING_DEACTIVATED("Messages.Abilities.HandDigging.Deactivated", "&cHand Digging has deactivated!"),
     ABILITIES_PANS_SHRINE_ACTIVATED("Messages.Abilities.PansShrine.Activated", "&aPan has used the power of nature to change the surrounding landscape!"),
+    ABILITIES_CRIPPLING_BLOW_ACTIVATED("Messages.Abilities.CripplingBlow.Activated", "&aCrippling Blow is now active! Strike enemies to cripple them with debuffs!"),
+    ABILITIES_CRIPPLING_BLOW_HIT("Messages.Abilities.CripplingBlow.Hit", "&cYou been struck with a crippling blow!"),
+    ABILITIES_WHIRLWIND_STRIKE_ACTIVATED("Messages.Abilities.WhirlwindStrike.Activated", "&aYou swing around and knock away all enemies!"),
+    ABILITIES_WHIRLWIND_STRIKE_HIT("Messages.Abilities.WhirlwindStrike.Hit", "&cYou were blown away by the opponents axe!"),
+    ABILITIES_ARES_BLESSING_ACTIVATED("Messages.Abilities.AresBlessing.Activated", "&aThe god of war blesses you with his power!"),
+    ABILITIES_ARES_BLESSING_DEACTIVATED("Messages.Abilities.AresBlessing.Deactivated", "&cYour mortal body couldnt handle the power and is now weakened!"),
     GUIS_ACCEPTED_ABILITY("Messages.Guis.AcceptedAbility", "&aThe ability %Ability% has been added to your loadout!"),
     GUIS_UPGRADED_ABILITY("Messages.Guis.UpgradedAbility", "&aThe ability %Ability% has been upgraded to %Tier%!"),
     GUIS_HAS_ACTIVE("Messages.Guis.HasActive", "&cYou already have an active ability for that skill."),
@@ -205,12 +212,15 @@ public enum LangEnum implements ConfigurationEnum {
             "&7[&5McRPG Tip&7]: &aHeavy Swing only works on natural blocks so no need to worry about it ruining your builds!",
             "&7[&5McRPG Tip&7]: &aToss a sapling into a block of water surrounded by gold blocks to activate Demeters Shrine!", "&7[&5McRPG Tip&7]: &aMoving in a forest will activate Nymphs Vitality!",
             "&7[&5McRPG Tip&7]: &aReady your axe and mine a sapling in order to harvest the trees future self using Temporal Harvest!")),
-    TIPS_LEVEL_UP_FITNESS("Messages.Tips.LevelupFitness", Arrays.asList("&7[&5McRPG Tip&7]: &aDue to how universal Fitness is, you can only have two Fitness abilities at once!",
+    TIPS_LEVEL_UP_FITNESS("Messages.Tips.LevelUpFitness", Arrays.asList("&7[&5McRPG Tip&7]: &aDue to how universal Fitness is, you can only have two Fitness abilities at once!",
             "&7[&5McRPG Tip&7]: &aBullet Proof negates all projectiles when activated, including Archery abilities!", "&7[&5McRPG Tip&7]: &aGain Fitness exp by falling or taking damage from an mob or player",
                     "&7[&5McRPG Tip&7]: &aWearing Feather Falling increases exp gained from falling.")),
-    TIPS_LEVEL_UP_EXCAVATION("Messages.Tips.LevelupExcavation", Arrays.asList("&7[&5McRPG Tip&7]: &aPans Shrine requires a block of water surrounded on 4 sides by emerald blocks!",
+    TIPS_LEVEL_UP_EXCAVATION("Messages.Tips.LevelUpExcavation", Arrays.asList("&7[&5McRPG Tip&7]: &aPans Shrine requires a block of water surrounded on 4 sides by emerald blocks!",
             "&7[&5McRPG Tip&7]: &aFrenzy Dig will give haste and increase chance of doubling block drops for a short while!", "&7[&5McRPG Tip&7]: &aMana Deposit will give you exp in a random skill occasionally!",
-            "&7[&5McRPG Tip&7]: &aActivate Pans Shrine to change the landscape!"));
+            "&7[&5McRPG Tip&7]: &aActivate Pans Shrine to change the landscape!")),
+    TIPS_LEVEL_UP_AXES("Messages.Tips.LevelUpAxes", Arrays.asList("&7[&5McRPG Tip&7]: &aShred will quickly whittle down opponents armour durability!",
+            "&7[&5McRPG Tip&7]: &aAres Blessing will buff you for a short while, but then leave you in a long weakened state!", "&7[&5McRPG Tip&7]: &aDifferent types of axes will give more or less exp per hit!",
+            "&7[&5McRPG Tip&7]: &aUse Whirlwind Strike when surrounded to knockback enemies!"));
 
     private String path;
     private Object defaultValue;

@@ -16,6 +16,7 @@ import org.intellij.lang.annotations.Language;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
+import us.eunoians.mcrpg.abilities.axes.*;
 import us.eunoians.mcrpg.abilities.excavation.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
@@ -23,6 +24,7 @@ import us.eunoians.mcrpg.abilities.mining.*;
 import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
@@ -35,14 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -66,6 +61,7 @@ public class McRPGPlayer {
   @Getter @Setter private boolean hasDazeImmunity = false;
   @Setter @Getter private boolean canSmite;
   @Getter @Setter private SmitingFistEvent smitingFistData;
+  @Getter @Setter private CripplingBlowEvent cripplingBlowData;
   @Getter @Setter private boolean isLinkedToRemoteTransfer = false;
   @Getter @Setter private boolean canDenseImpact;
   @Getter @Setter private int armourDmg;
@@ -970,6 +966,103 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(excavation);
           }
+          //init axes
+          else if(skill.equals(Skills.AXES)) {
+            //Initialize Shred
+            Shred shred = new Shred();
+            shred.setToggled(rs.getBoolean("is_shred_toggled"));
+            //Initialize Heavy Strike
+            HeavyStrike heavyStrike = new HeavyStrike();
+            heavyStrike.setToggled(rs.getBoolean("is_heavy_strike_toggled"));
+            heavyStrike.setCurrentTier(rs.getInt("heavy_strike_tier"));
+            if(heavyStrike.getCurrentTier() != 0) {
+              heavyStrike.setUnlocked(true);
+            }
+            //Initialize Blood Frenzy
+            BloodFrenzy bloodFrenzy = new BloodFrenzy();
+            bloodFrenzy.setToggled(rs.getBoolean("is_blood_frenzy_toggled"));
+            bloodFrenzy.setCurrentTier(rs.getInt("blood_frenzy_tier"));
+            if(bloodFrenzy.getCurrentTier() != 0) {
+              bloodFrenzy.setUnlocked(true);
+            }
+            //Initialize Sharper Axe
+            SharperAxe sharperAxe = new SharperAxe();
+            sharperAxe.setToggled(rs.getBoolean("is_sharper_axe_toggled"));
+            sharperAxe.setCurrentTier(rs.getInt("sharper_axe_tier"));
+            if(sharperAxe.getCurrentTier() != 0) {
+              sharperAxe.setUnlocked(true);
+            }
+            //Initialize Whirlwind Strike
+            WhirlwindStrike whirlwindStrike = new WhirlwindStrike();
+            whirlwindStrike.setToggled(rs.getBoolean("is_whirlwind_strike_toggled"));
+            whirlwindStrike.setCurrentTier(rs.getInt("whirlwind_strike_tier"));
+            if(whirlwindStrike.getCurrentTier() != 0) {
+              whirlwindStrike.setUnlocked(true);
+            }
+            //Initialize Ares Blessing
+            AresBlessing aresBlessing = new AresBlessing();
+            aresBlessing.setToggled(rs.getBoolean("is_ares_blessing_toggled"));
+            aresBlessing.setCurrentTier(rs.getInt("ares_blessing_tier"));
+            if(aresBlessing.getCurrentTier() != 0) {
+              aresBlessing.setUnlocked(true);
+            }
+            //Initialize Crippling Blow
+            CripplingBlow cripplingBlow = new CripplingBlow();
+            cripplingBlow.setToggled(rs.getBoolean("is_crippling_blow_toggled"));
+            cripplingBlow.setCurrentTier(rs.getInt("crippling_blow_tier"));
+            if(cripplingBlow.getCurrentTier() != 0) {
+              cripplingBlow.setUnlocked(true);
+            }
+
+            int whirlwindStrikeCooldown = rs.getInt("whirlwind_strike_cooldown");
+            int aresBlessingCooldown = rs.getInt("ares_blessing_cooldown");
+            int cripplingBlowCooldown = rs.getInt("crippling_blow_cooldown");
+
+            if(whirlwindStrikeCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, whirlwindStrikeCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.WHIRLWIND_STRIKE, cal.getTimeInMillis());
+            }
+            if(aresBlessingCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, aresBlessingCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.ARES_BLESSING, cal.getTimeInMillis());
+            }
+            if(cripplingBlowCooldown > 0) {
+              Calendar cal = Calendar.getInstance();
+              cal.add(Calendar.SECOND, cripplingBlowCooldown);
+              abilitiesOnCooldown.put(UnlockedAbilities.CRIPPLING_BLOW, cal.getTimeInMillis());
+            }
+
+            if(rs.getBoolean("is_heavy_strike_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.HEAVY_STRIKE);
+            }
+            if(rs.getBoolean("is_blood_frenzy_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.BLOOD_FRENZY);
+            }
+            if(rs.getBoolean("is_sharper_axe_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SHARPER_AXE);
+            }
+            if(rs.getBoolean("is_whirlwind_strike_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.WHIRLWIND_STRIKE);
+            }
+            if(rs.getBoolean("is_ares_blessing_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.ARES_BLESSING);
+            }
+            if(rs.getBoolean("is_crippling_blow_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CRIPPLING_BLOW);
+            }
+            abilityMap.put(DefaultAbilities.SHRED, shred);
+            abilityMap.put(UnlockedAbilities.HEAVY_STRIKE, heavyStrike);
+            abilityMap.put(UnlockedAbilities.BLOOD_FRENZY, bloodFrenzy);
+            abilityMap.put(UnlockedAbilities.SHARPER_AXE, sharperAxe);
+            abilityMap.put(UnlockedAbilities.WHIRLWIND_STRIKE, whirlwindStrike);
+            abilityMap.put(UnlockedAbilities.ARES_BLESSING, aresBlessing);
+            abilityMap.put(UnlockedAbilities.CRIPPLING_BLOW, cripplingBlow);
+            Axes axes = new Axes(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(axes);
+          }
         } catch(SQLException e) {
           e.printStackTrace();
         }
@@ -998,6 +1091,17 @@ public class McRPGPlayer {
     updatePowerLevel();
     for(Skill s : skills) {
       s.updateExpToLevel();
+    }
+    List<UnlockedAbilities> toremove = new ArrayList<>();
+    for(UnlockedAbilities a : abilityLoadout){
+      BaseAbility ab = getBaseAbility(a);
+      if(ab.getCurrentTier() < 1){
+        ab.setUnlocked(false);
+        toremove.add(a);
+      }
+    }
+    for(UnlockedAbilities a : toremove){
+      abilityLoadout.remove(a);
     }
   }
 
