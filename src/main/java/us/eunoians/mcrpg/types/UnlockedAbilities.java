@@ -68,7 +68,13 @@ public enum UnlockedAbilities implements GenericAbility{
   TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
   TIPPED_ARROWS("TippedArrows", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
-  WHIRLWIND_STRIKE("WhirlwindStrike", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG);
+  WHIRLWIND_STRIKE("WhirlwindStrike", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
+  POSEIDONS_FAVOR("PoseidonsFavor", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  MAGIC_TOUCH("MagicTouch", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  SEA_GODS_BLESSING("SeaGodsBlessing", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  SUNKEN_ARMORY("SunkenArmory", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  SHAKE("Shake", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  SUPER_ROD("SuperRod", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG);
 
   @Getter
   private String name;

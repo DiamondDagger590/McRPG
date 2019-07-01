@@ -1,0 +1,1114 @@
+EnchantmentWeightScale:
+  #How much should enchantment level be weighted
+  #Pick a random number between 1 - sum of weights
+  #Ex) if the value is 20 then its a III enchantment
+  I: 10
+  II: 7
+  III: 5
+  IV: 3
+  V: 1
+Categories:
+  #Define different categories that the fishing loottable can use
+  #
+  #Required Tables: Fish, Treasure, Junk
+  #
+  Fish:
+    Cod:
+      Material: RAW_COD
+      Chance: '60.0'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 1000
+    Salmon:
+      Material: RAW_SALMON
+      Chance: '25.0'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 1000
+    TropicalFist:
+      Material: TROPICAL_FISH
+      Chance: '2.0'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 1000
+    Pufferfish:
+      Material: PUFFERFISH
+      Chance: '13.0'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 1000
+  Treasure:
+    Bow:
+      Material: BOW
+      Chance: '14.3'
+      Amount: 1
+      VanillaExp: '1-10'
+      McRPGExp: 4000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'POWER:1-5:50'
+              - 'DURABILITY:1-3:25'
+              - 'MENDING:1-1:1'
+              - 'FLAME:1-1:10'
+              - 'INFINITY:1-1:10'
+              - 'PUNCH:1-2:30'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    FishingRod:
+      Material: FISHING_ROD
+      Chance: '14.3'
+      Amount: 1
+      VanillaExp: '1-10'
+      McRPGExp: 4000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'LURE:1-3:25'
+              - 'DURABILITY:1-3:50'
+              - 'LUCK_OF_THE_SEA:1-3:25'
+              - 'MEDNING:1-1:1'
+            EnchantmentAmountRange: 1-3
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    NameTag:
+      Material: NAME_TAG
+      Chance: '14.3'
+      Amount: 1
+      VanillaExp: '1-10'
+      McRPGExp: 4000
+    NautilusShell:
+      Material: NAUTILUS_SHELL
+      Chance: '14.3'
+      Amount: 1
+      VanillaExp: '1-10'
+      McRPGExp: 4000
+    Saddle:
+      Material: SADDLE
+      Chance: '14.3'
+      Amount: 1
+      VanillaExp: '1-10'
+      McRPGExp: 4000
+    CyclopsPotion:
+      Material: POTION
+      DisplayName: '&7[&bCyclops Potion&7]'
+      Chance: '2.0'
+      Amount: '1-1'
+      VanillaExp: '1-100'
+      McRPGExp: 10000
+      Effects:
+        - 'STRENGTH:1:100'
+        - 'SPEED:1:100'
+        - 'MINING_FATIGUE:1:50'
+  Junk:
+    Bowl:
+      Material: BOWL
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    Leather:
+      Material: LEATHER
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    GunPowder:
+      Material: GUN_POWDER
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    RottenFlesh:
+      Material: ROTTEN_FLESH
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    String:
+      Material: STRING
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    InkSac:
+      Material: INK_SAC
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    Stick:
+      Material: STICK
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    Bone:
+      Material: Bone
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    Clay:
+      Material: CLAY
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    Bucket:
+      Material: BUCKET
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    TripwireHook:
+      Material: TRIPWIRE_HOOK
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+    Slime:
+      Material: SLIME_BALL
+      Chance: '12.0'
+      Amount: 1
+      VanillaExp: '1-3'
+      McRPGExp: 250
+  #All items in here will be implicitly added into Treasure.
+  #Super rod checks if it can activate, if so, it then inserts its loottable into the Treasure one
+  SuperRod:
+    WitherSkull:
+      Material: WITHER_SKELETON_SKULL
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '1-40'
+      McRPGExp: 25000
+    TotemOfUndying:
+      Material: TOTEM_OF_UNDYING
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '1-40'
+      McRPGExp: 25000
+    NotchApple:
+      Material: ENCHANTED_GOLDEN_APPLE
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '1-40'
+      McRPGExp: 25000
+    DiamondHorseArmour:
+      Material: DIAMOND_HORSE_ARMOR
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '1-40'
+      McRPGExp: 25000
+    ShuklerShell:
+      Material: SHULKER_SHELL
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '1-40'
+      McRPGExp: 25000
+  SeaGodsBlessing:
+    SeaGodsBlessing:
+      Material: POTION
+      DisplayName: '&7[&bBlessing of the Sea God&7]'
+      Chance: '100.0'
+      Amount: '1-1'
+      VanillaExp: '1-100'
+      McRPGExp: 10000
+      PotionMeta:
+        Effects:
+          - 'DOLPHINS_GRACE:1:30'
+          - 'WATER_BREATHING:1:240'
+          - 'NIGHT_VISION:1:240'
+          - 'FIRE_RESISTANCE:1:240'
+          - 'RESISTANCE:1:240'
+        Splash: false
+  MagicTouch:
+    Book:
+      Material: ENCHANTED_BOOK
+      Chance: '100.0'
+      Amount: 1
+      VanillaExp: '1-15'
+      McRPGExp: 4500
+      EnchantmentMeta:
+        Enchantments:
+          - 'PROTECTION:1-5:10'
+          - 'EFFICIENCY:1-5:50'
+          - 'SHARPNESS:1-5:30'
+          - 'POWER:1-5:40'
+          - 'MENDING:1-1:1'
+          - 'FIRE_ASPECT:1-2:5'
+          - 'FEATHER_FALLING:1-4:4'
+          - 'LOOTING:1-3:4'
+          - 'FORTUNE:1-3:4'
+          - 'SMITE:1-5:50'
+          - 'BANE_OF_ARTHROPODS:1-5:50'
+        EnchantmentAmountRange: '1-2'
+  Armor:
+    LeatherHelmet:
+      #The material of the item fished up
+      Material: LEATHER_HELMET
+      #The chance of the item being fished up if the category is selected. Items do not need add to 100%
+      #However, having some items with a higher % will help performance.
+      #If you want four items of the same rarity, set them all to Chance: 50.0 or something similar
+      #Setting them to Chance: 0.01 will mean that the code will run until it finds an item.
+      #And with a .01% chance, that would take a good while and no one wants that
+      #If an ability calls this item, the (tier) placeholder will be replaced with that items tier
+      #If it is called from the default, the (tier) is automatically replaced with 1
+      Chance: '30.0/(tier)'
+      #
+      #The range of how much durability the item should have remaining
+      #DurabilityRemainingRange: '1-40'
+      #
+      #The range of amounts for the fished up item. Can be a single number or a range such as '1-2'
+      Amount: 1
+      #How much vanilla exp should be awarded for catching this item
+      VanillaExp: '1-5'
+      #How much mcrpg exp should be awarded when catching a fish
+      McRPGExp: 3000
+      #
+      #The display name of the iten
+      #DisplayName: '&7Plain Leather Cap'
+      #The lore of the item
+      #Lore:
+      #  - '&7A plain leather cap'
+      #What enchantmenst can be on the item
+      #Follows format of ENCHANTMENT:LOW_LEVEL-HIGH_LEVEL:CHANCE
+      #Where CHANCE is a number from 1-100
+      #
+      #Selected enchantments are then tossed itno a pool and randomly selected
+      #Enchantments:
+      #  - 'PROTECTION:1-3:30'
+      #
+      #How many enchantments can be selected from the enchantment pool
+      #EnchantmentAmountRange: '1-2'
+      #
+      Dependencies:
+        #The ability thats being depended on. Can be any ability from any skill. Ex) RageSpike
+        MagicTouch:
+          #
+          #The new display name of the item
+          #DisplayName: '&7[&bPirates Cap&7]'
+          #
+          #The new lore of an item
+          #Lore:
+          #  - '&7A cap from a long lost ship'
+          #
+          #What tiers of the ability should this dependancy activate for
+          Tiers: '1-5'
+          #The chance of the dependancy activating
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            #Should this dependancy override any enchantments from the original item
+            OverrideExistingEnchants: true
+            #Items to either add to the possible enchantment pool or make a new pool if override enchants is enabled
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            #How many enchantments should be applied (overrides the existing amount)
+            EnchantmentAmountRange: '1-2'
+          #New amount range
+          Amount: 1
+          #Higher priority will override lower Dependencies
+          Priority: 5
+          #If there is multiple Dependencies for this item, will it override the lower one
+          OverrideLowerDependencies: false
+    LeatherChestplate:
+      Material: LEATHER_CHESTPLATE
+      Chance: '30.0/(tier)'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 3000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    LeatherLeggings:
+      Material: LEATHER_LEGGINGS
+      Chance: '30.0/(tier)'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 3000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    LeatherBoots:
+      Material: LEATHER_BOOTS
+      Chance: '30.0/(tier)'
+      Amount: 1
+      VanillaExp: '1-5'
+      McRPGExp: 3000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    GoldHelmet:
+      Material: GOLDEN_HELMET
+      Chance: '25.0/(tier)'
+      Amount: 1
+      VanillaExp: '3-5'
+      McRPGExp: 4000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    GoldChestplace:
+      Material: GOLDEN_CHESTPLATE
+      Chance: '25.0/(tier)'
+      Amount: 1
+      VanillaExp: '3-5'
+      McRPGExp: 4000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    GoldLeggings:
+      Material: GOLDEN_LEGGINGS
+      Chance: '25.0/(tier)'
+      Amount: 1
+      VanillaExp: '3-5'
+      McRPGExp: 4000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    GoldBoots:
+      Material: GOLDEN_BOOTS
+      Chance: '25.0/(tier)'
+      Amount: 1
+      VanillaExp: '3-5'
+      McRPGExp: 4000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    ChainHelmet:
+      Material: CHAINMAIL_HELMET
+      Chance: '5.0*(tier)'
+      Amount: 1
+      VanillaExp: '5-7'
+      McRPGExp: 5000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    ChainChestplate:
+      Material: CHAINMAIL_CHESTPLATE
+      Chance: '5.0*(tier)'
+      Amount: 1
+      VanillaExp: '5-7'
+      McRPGExp: 5000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    ChainLeggings:
+      Material: CHAINMAIL_LEGGINGS
+      Chance: '5.0*(tier)'
+      Amount: 1
+      VanillaExp: '5-7'
+      McRPGExp: 5000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    ChainBoots:
+      Material: CHAINMAIL_BOOTS
+      Chance: '5.0*(tier)'
+      Amount: 1
+      VanillaExp: '5-7'
+      McRPGExp: 5000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    IronHelmet:
+      Material: IRON_HELMET
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '7-10'
+      McRPGExp: 7500
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    IronChestplate:
+      Material: IRON_CHESTPLATE
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '7-10'
+      McRPGExp: 7500
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    IronLeggings:
+      Material: IRON_LEGGINGS
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '7-10'
+      McRPGExp: 7500
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    IronBoots:
+      Material: IRON_BOOTS
+      Chance: '2.5*(tier)'
+      Amount: 1
+      VanillaExp: '7-10'
+      McRPGExp: 7500
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    DiamondHelmet:
+      Material: DIAMOND_HELMET
+      Chance: '0.5*(tier)'
+      Amount: 1
+      VanillaExp: '9-15'
+      McRPGExp: 10000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    DiamondChestplate:
+      Material: DIAMOND_CHESTPLATE
+      Chance: '0.5*(tier)'
+      Amount: 1
+      VanillaExp: '9-15'
+      McRPGExp: 10000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    DiamondLeggings:
+      Material: DIAMOND_LEGGINGS
+      Chance: '0.5*(tier)'
+      Amount: 1
+      VanillaExp: '9-15'
+      McRPGExp: 10000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+              - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+    DiamondBoots:
+      Material: DIAMOND_BOOTS
+      Chance: '0.5*(tier)'
+      Amount: 1
+      VanillaExp: '9-15'
+      McRPGExp: 10000
+      Dependencies:
+        MagicTouch:
+          Tiers: '1-5'
+          ActivationChance: '2.5*(tier)'
+          EnchantmentMeta:
+            OverrideExistingEnchants: true
+            Enchantments:
+              - 'PROTECTION:1-3:30'
+                - 'DURABILITY:1-3:5'
+            EnchantmentAmountRange: '1-2'
+          Amount: 1
+          Priority: 5
+          OverrideLowerDependencies: false
+ShakeLootTable:
+  SKELETON:
+    Bow:
+      Material: BOW
+      #DisplayName:
+      #Lore:
+      Amount: 1
+      Exp: 200
+      Chance: 20.0
+      EnchantmentMeta:
+        Enchantments:
+          - 'POWER:1-3:30'
+          - 'UNBREAKING:1-2:10'
+        EnchantmentAmount: '0-2'
+    Arrow:
+      Material: BONE
+      Amount: '1'
+      Exp: 200
+      Chance: 80.0
+    Bone:
+      Material: BONE
+      Amount: '1-3'
+      Exp: 200
+      Chance: 60.0
+  STRAY:
+    Arrow:
+      Material: BONE
+      Amount: '1'
+      Exp: 200
+      Chance: 80.0
+    Bone:
+      Material: BONE
+      Amount: '1-3'
+      Exp: 200
+      Chance: 60.0
+  ZOMBIE:
+    RottenFlesh:
+      Material: ROTTEN_FLESH
+      Amount: '1-3'
+      Exp: 200
+      Chance: 100.0
+  HUSK:
+    RottenFlesh:
+      Material: ROTTEN_FLESH
+      Amount: '1-3'
+      Exp: 200
+      Chance: 100.0
+  CREEPER:
+    Gunpowder:
+      Material: GUNPOWDER
+      Amount: '1-3'
+      Exp: 200
+      Chance: 80.0
+    13:
+      Material: MUSIC_DISC_13
+      Amount: 1
+      Exp: 5000
+      Chance: 1.0
+  PHANTOM:
+    Membrane:
+      Material: PHANTOM_MEMBRANE
+      Amount: 1
+      Exp: 500
+      Chance: 100.0
+  DROWNED:
+    RottenFlesh:
+      Material: ROTTEN_FLESH
+      Amount: '1-3'
+      Exp: 200
+      Chance: 95.0
+    Trident:
+      Material: TRIDENT
+      Amount: 1
+      Exp: 15000
+      Chance: 1.0
+    Shell:
+      Material: NAUTILUS_SHELL
+      Amount: 1
+      Exp: 2500
+      Chance: 3.5
+  WITHER_SKELETON:
+    Coal:
+      Material: COAL
+      Amount: 1
+      Exp: 200
+      Chance: 60.0
+    Bone:
+      Material: BONE
+      Amount: 1
+      Exp: 200
+      Chance: 60.0
+    StoneSword:
+      Material: STONE_SWORD
+      Amount: 1
+      Exp: 200
+      Chance: 30.0
+    WitherSkull:
+      Material: WITHER_SKULL
+      Amount: 1
+      Exp: 4000
+      Chance: 1.0
+  SPIDER:
+    SpiderEye:
+      Material: SPIDER_EYE
+      Amount: 1
+      Exp: 200
+      Chance: 20.0
+    String:
+      Material: STRING
+      Amount: 1
+      Exp: 200
+      Chance: 80.0
+  CAVE_SPIDER:
+    SpiderEye:
+      Material: SPIDER_EYE
+      Amount: 1
+      Exp: 200
+      Chance: 20.0
+    String:
+      Material: STRING
+      Amount: 1
+      Exp: 200
+      Chance: 80.0
+    PoisonPotion:
+      Material: POTION
+      Amount: 1
+      Exp: 1000
+      Chance: 5.0
+      PotionMeta:
+        PotionType: POISON
+        Duration: 60
+        Splash: true
+        Level: 1
+  COW:
+    Beef:
+      Material: RAW_BEEF
+      Amount: 1
+      Exp: 200
+      Chance: 30.0
+    Leather:
+      Material: LEATHER
+      Amount: '1-3'
+      Exp: 200
+      Chance: 50.0
+  MUSHROOM_COW:
+    Beef:
+      Material: RAW_BEEF
+      Amount: 1
+      Exp: 200
+      Chance: 30.0
+    Leather:
+      Material: LEATHER
+      Amount: '1-3'
+      Exp: 200
+      Chance: 50.0
+    MushroomStew:
+      Material: MUSHROOM_STEW
+      Amount: 1
+      Exp: 200
+      Chance: 5.0
+  PIG:
+    Porkchop:
+      Material: PORKCHOP
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  SHEEP:
+    Wool:
+      Material: WHITE_WOOL
+      Amount: 1
+      Exp: 200
+      Chance: 80.0
+    Mutton:
+      Material: RAW_MUTTON
+      Amount: 1
+      Exp: 200
+      Chance: 30.0
+  RABBIT:
+    RawRabbit:
+      Material: RAW_RABBIT
+      Amount: 1
+      Exp: 200
+      Chance: 80.0
+    RabbitsHide:
+      Material: RABBITS_HIDE
+      Amount: 1
+      Exp: 200
+      Chance: 70.0
+    RabbitsFoot:
+      Material: RABBITS_FOOT
+      Amount: 1
+      Exp: 1000
+      Chance: 2.0
+  CHICKEN:
+    Egg:
+      Material: EGG
+      Amount: 1
+      Exp: 200
+      Chance: 75.0
+    Feather:
+      Material: FEATHER
+      Amount: 1
+      Exp: 200
+      Chance: 80.0
+    RawChicken:
+      Material: RAW_CHICKEN
+      Amount: 1
+      Exp: 200
+      Chance: 60.0
+  OCELOT:
+    Cod:
+      Material: RAW_COD
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  WOLF:
+    Bone:
+      Matieral: BONE
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  SQUID:
+    InkSac:
+      Material: INK_SAC
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  PILLAGER:
+    Emerald:
+      Material: EMERALD
+      Amount: '1-3'
+      Exp: 200
+      Chance: 100.0
+  RAVAGER:
+    Leather:
+      Material: LEATHER
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  BLAZE:
+    BlazeRod:
+      Material: BLAZE_ROD
+      Amount: 1
+      Exp: 200
+      Chance: 90.0
+    FireResistancePotion:
+      Material: POTION
+      Amount: 1
+      Exp: 1000
+      Chance: 5.0
+      PotionMeta:
+        PotionType: FIRE_RESISTANCE
+        Duration: 180
+        Splash: true
+        Level: 1
+  ENDERMAN:
+    Enderpearl:
+      Material: ENDERPEARL
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  SHULKER:
+    Shell:
+      Material: SHULKER_SHELL
+      Amount: 1
+      Exp: 5000
+      Chance: 5.0
+    Purpur:
+      Material: PURPUR_BLOCK
+      Amount: '1-4'
+      Exp: 200
+      Chance: 90.0
+  IRON_GOLEM:
+    Pumpkin:
+      Material: PUMPKIN
+      Amount: 1
+      Exp: 200
+      Chance: 20.0
+    Poppy:
+      Material: POPPY
+      Amount: 1
+      Exp: 200
+      Chance: 85.0
+    IronIngot:
+      Material: IRON_INGOT
+      Amount: 1
+      Exp: 500
+      Chance: 40.0
+  GHAST:
+    GhastTear:
+      Material: GHAST_TEAR
+      Amount: 1
+      Exp: 2000
+      Chance: 25.0
+    GunPowder:
+      Material: GUNPOWEDER
+      Amount: 1
+      Exp: 500
+      Chance: 80.0
+  HORSE:
+    Leather:
+      Material: LEATHER
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  DONKEY:
+    Leather:
+      Material: LEATHER
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  MULE:
+    Leather:
+      Material: LEATHER
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  PIG_ZOMBIE:
+    RottenFlesh:
+      Material: ROTTEN_FLESH
+      Amount: 1
+      Exp: 200
+      Chance: 80.0
+    GoldNuggest:
+      Material: GOLD_NUGGET
+      Amount: '1-3'
+      Exp: 500
+      Chance: 50.0
+    GoldIngot:
+      Material: GOLD_INGOT
+      Amount: 1
+      Exp: 1000
+      Chance: 20.0
+    GoldenSword:
+      Material: GOLDEN_SWORD
+      Amount: 1
+      Exp: 2000
+      Chance: 10.0
+  SLIME:
+    Slimeball:
+      Material: SLIME_BALL
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  MAGMA_CUBE:
+    MagmaCream:
+      Material: MAGMA_CREAM
+      Amount: 1
+      Exp: 200
+      Chance: 100.0
+  SNOWMAN:
+    Snowball:
+      Material: SNOWBALL
+      Amount: '1-3'
+      Exp: 200
+      Chance: 90.0
+    Pumpkin:
+      Material: PUMPKIN
+      Amount: 1
+      Exp: 1000
+      Chance: 10.0
+  WITCH:
+    HealingPot:
+      Material: POTION
+      Amount: 1
+      Exp: 3000
+      Chance: 1.5
+      PotionMeta:
+        PotionType: INSTANT_HEAL
+        Level: 1
+        Splash: false
+    FireResistancePot:
+      Material: POTION
+      Amount: 1
+      Exp: 3000
+      Chance: 1.5
+      PotionMeta:
+        PotionType: FIRE_RESISTANCE
+        Level: 1
+        Splash: false
+    NightVisionPot:
+      Material: POTION
+      Amount: 1
+      Exp: 3000
+      Chance: 1.5
+      PotionMeta:
+        PotionType: NIGHT_VISION
+        Level: 1
+        Splash: false
+    SpeedPot:
+      Material: POTION
+      Amount: 1
+      Exp: 3000
+      Chance: 1.5
+      PotionMeta:
+        PotionType: SPEED
+        Level: 1
+        Splash: false
+    Glowstone:
+      Material: GLOWSTONE_DUST
+      Amount: '1-3'
+      Exp: 200
+      Chance: 70.0
+    Redstone:
+      Material: REDSTONE
+      Amount: '1-3'
+      Exp: 200
+      Chance: 70.0
+    Gunpowder:
+      Material: GUNPOWDER
+      Amount: 1
+      Exp: 500
+      Chance: 30.0
+    GlassBottle:
+      Material: GLASS_BOTTLE
+      Amount: '1-3'
+      Exp: 500
+      Chance: 20.0
+    Sugar:
+      Material: SUGAR
+      Amount: '1-3'
+      Exp: 500
+      Chance: 30.0
+    SpiderEye:
+      Material: SPIDER_EYE
+      Amount: 1
+      Exp: 500
+      Chance: 40.0

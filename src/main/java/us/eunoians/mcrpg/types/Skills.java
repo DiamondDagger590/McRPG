@@ -21,7 +21,8 @@ public enum Skills {
   SWORDS("Swords", DefaultAbilities.BLEED),
   UNARMED("Unarmed", DefaultAbilities.STICKY_FINGERS),
   WOODCUTTING("Woodcutting", DefaultAbilities.EXTRA_LUMBER),
-  FITNESS("Fitness", DefaultAbilities.ROLL);
+  FITNESS("Fitness", DefaultAbilities.ROLL),
+  FISHING("Fishing", DefaultAbilities.GREAT_ROD);
 
   @Getter
   private String name;

@@ -7,15 +7,18 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
+import us.eunoians.mcrpg.types.Skills;
 
 import java.util.Random;
 
@@ -30,6 +33,11 @@ public class FishCatchEvent implements Listener {
       return;
     }
     McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    if(Skills.FISHING.isEnabled()){
+      Item caughtItem = (Item) e.getCaught();
+      FileConfiguration fishingLoot = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FISHING_LOOT);
+    }
+    //Poseidons Guardian info
     if(mp.getLastFishCaughtLoc() != null){
       FileConfiguration config = McRPG.getInstance().getConfig();
       String key = "PoseidonsGuardian.";
