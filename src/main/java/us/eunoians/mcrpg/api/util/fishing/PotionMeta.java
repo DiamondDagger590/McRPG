@@ -14,15 +14,21 @@ public class PotionMeta {
   private List<PotionSubMeta> effects = new ArrayList<>();
   @Getter
   private boolean isSplash;
+  @Getter
+  private boolean isLingering;
+  @Getter
+  private String RGB;
 
   public PotionMeta(String filePath){
     for(String s : getFishingLootConfig().getStringList(filePath + "Effects")){
       effects.add(new PotionSubMeta(s));
     }
     isSplash = getFishingLootConfig().getBoolean(filePath + "Splash", false);
+    isLingering = getFishingLootConfig().getBoolean(filePath + "Lingering", false);
+    RGB = getFishingLootConfig().getString(filePath + "RGB", "");
   }
 
-  private class PotionSubMeta {
+  class PotionSubMeta {
 
     @Getter
     private PotionEffectType effectType;

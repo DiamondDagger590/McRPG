@@ -697,7 +697,7 @@ ShakeLootTable:
         Enchantments:
           - 'POWER:1-3:30'
           - 'UNBREAKING:1-2:10'
-        EnchantmentAmount: '0-2'
+        EnchantmentAmountRange: '0-2'
     Arrow:
       Material: BONE
       Amount: '1'

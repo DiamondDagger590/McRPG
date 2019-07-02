@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
 import us.eunoians.mcrpg.abilities.axes.*;
 import us.eunoians.mcrpg.abilities.excavation.*;
+import us.eunoians.mcrpg.abilities.fishing.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
@@ -1063,6 +1064,83 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(axes);
           }
+          else if(skill.equals(Skills.FISHING)) {
+            //Initialize Great Rod
+            GreatRod greatRod = new GreatRod();
+            greatRod.setToggled(rs.getBoolean("is_great_rod_toggled"));
+            //Initialize Poseidons Favor
+            PoseidonsFavor poseidonsFavor = new PoseidonsFavor();
+            poseidonsFavor.setToggled(rs.getBoolean("is_poseidons_favor_toggled"));
+            poseidonsFavor.setCurrentTier(rs.getInt("poseidons_favor_tier"));
+            if(poseidonsFavor.getCurrentTier() != 0) {
+              poseidonsFavor.setUnlocked(true);
+            }
+            //Initialize Magic Touch
+            MagicTouch magicTouch = new MagicTouch();
+            magicTouch.setToggled(rs.getBoolean("is_magic_touch_toggled"));
+            magicTouch.setCurrentTier(rs.getInt("magic_touch_tier"));
+            if(magicTouch.getCurrentTier() != 0) {
+              magicTouch.setUnlocked(true);
+            }
+            //Initialize Sea Gods Blessing
+            SeaGodsBlessing seaGodsBlessing = new SeaGodsBlessing();
+            seaGodsBlessing.setToggled(rs.getBoolean("is_sea_gods_blessing_toggled"));
+            seaGodsBlessing.setCurrentTier(rs.getInt("sea_gods_blessing_tier"));
+            if(seaGodsBlessing.getCurrentTier() != 0) {
+              seaGodsBlessing.setUnlocked(true);
+            }
+            //Initialize Sunken Armory
+            SunkenArmory sunkenArmory = new SunkenArmory();
+            sunkenArmory.setToggled(rs.getBoolean("is_sunken_armory_toggled"));
+            sunkenArmory.setCurrentTier(rs.getInt("sunken_armory_tier"));
+            if(sunkenArmory.getCurrentTier() != 0) {
+              sunkenArmory.setUnlocked(true);
+            }
+            //Initialize Shake
+            Shake shake = new Shake();
+            shake.setToggled(rs.getBoolean("is_shake_toggled"));
+            shake.setCurrentTier(rs.getInt("shake_tier"));
+            if(shake.getCurrentTier() != 0) {
+              shake.setUnlocked(true);
+            }
+            //Initialize Super Rod
+            SuperRod superRod = new SuperRod();
+            superRod.setToggled(rs.getBoolean("is_super_rod_toggled"));
+            superRod.setCurrentTier(rs.getInt("super_rod_tier"));
+            if(superRod.getCurrentTier() != 0) {
+              superRod.setUnlocked(true);
+            }
+
+            if(rs.getBoolean("is_poseidons_favor_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.POSEIDONS_FAVOR);
+            }
+            if(rs.getBoolean("is_magic_touch_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.MAGIC_TOUCH);
+            }
+            if(rs.getBoolean("is_sea_gods_blessing_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SEA_GODS_BLESSING);
+            }
+            if(rs.getBoolean("is_sunken_armory_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SUNKEN_ARMORY);
+            }
+            if(rs.getBoolean("is_shake_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SHAKE);
+            }
+            if(rs.getBoolean("is_super_rod_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SUPER_ROD);
+            }
+            abilityMap.put(DefaultAbilities.GREAT_ROD, greatRod);
+            abilityMap.put(UnlockedAbilities.POSEIDONS_FAVOR, poseidonsFavor);
+            abilityMap.put(UnlockedAbilities.MAGIC_TOUCH, magicTouch);
+            abilityMap.put(UnlockedAbilities.SEA_GODS_BLESSING, seaGodsBlessing);
+            abilityMap.put(UnlockedAbilities.SUNKEN_ARMORY, sunkenArmory);
+            abilityMap.put(UnlockedAbilities.SHAKE, shake);
+            abilityMap.put(UnlockedAbilities.SUPER_ROD, superRod);
+            Fishing fishing = new Fishing(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(fishing);
+          }
+
         } catch(SQLException e) {
           e.printStackTrace();
         }

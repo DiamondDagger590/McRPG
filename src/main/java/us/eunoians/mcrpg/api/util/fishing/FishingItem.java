@@ -41,7 +41,9 @@ public class FishingItem {
     this.lowEndVanillaExpAmount = Integer.parseInt(expRange[0]);
     this.highEndVanillaExpAmount = expRange.length > 1 ? Integer.parseInt(expRange[1]) : highEndAmount;
     this.mcrpgExpValue = getFishingLootConfig().getInt(filePath + "McRPGExp", 0);
-    this.displayName = getFishingLootConfig().getString(filePath + "DisplayName", "");
+    if(getFishingLootConfig().contains(filePath + "DisplayName")) {
+      this.displayName = getFishingLootConfig().getString(filePath + "DisplayName");
+    }
     if(getFishingLootConfig().contains(filePath + "Lore")){
       this.lore = getFishingLootConfig().getStringList(filePath + "Lore");
     }

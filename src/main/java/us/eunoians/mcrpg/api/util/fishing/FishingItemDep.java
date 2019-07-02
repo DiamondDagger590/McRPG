@@ -19,6 +19,10 @@ public class FishingItemDep {
   @Getter
   private int highEndAmount;
   @Getter
+  private int lowDamage;
+  @Getter
+  private int highDamage;
+  @Getter
   private String displayName;
   @Getter
   private List<String> lore;
@@ -38,14 +42,22 @@ public class FishingItemDep {
   public FishingItemDep(String filePath){
     this.newType = Material.getMaterial(getFishingLootConfig().getString(filePath + "Material", "AIR"));
     this.activationEquation = new Parser(getFishingLootConfig().getString(filePath + "ActivationChance", "50.0"));
+
     String[] amountRange = getFishingLootConfig().getString(filePath + "Amount", "1").split("-");
     this.lowEndAmount = Integer.parseInt(amountRange[0]);
     this.highEndAmount = amountRange.length > 1 ? Integer.parseInt(amountRange[1]) : lowEndAmount;
+
+    String[] durabilityRange = getFishingLootConfig().getString(filePath + "DurabilityRange", "0").split("-");
+    this.lowDamage = Integer.parseInt(durabilityRange[0]);
+    this.highDamage = durabilityRange.length > 1 ? Integer.parseInt(durabilityRange[1]) : lowDamage;
+
     this.displayName = getFishingLootConfig().getString(filePath + "DisplayName", null);
     this.lore = getFishingLootConfig().getStringList(filePath + "Lore");
+
     String[] tierRange = getFishingLootConfig().getString(filePath + "Tiers", "1").split("-");
     this.lowTier = Integer.parseInt(tierRange[0]);
     this.highTier = tierRange.length > 1 ? Integer.parseInt(tierRange[1]) : lowTier;
+
     if(getFishingLootConfig().contains(filePath + "EnchantmentMeta")){
       this.enchantmentMeta = new EnchantmentMeta(filePath + "EnchantmentMeta.");
     }

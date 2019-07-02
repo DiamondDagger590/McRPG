@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
+import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
 import us.eunoians.mcrpg.commands.*;
 import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.mcrpg.*;
@@ -48,6 +49,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private DisplayManager displayManager;
   @Getter private static ChunkManager placeStore;
   @Getter private RemoteTransferTracker remoteTransferTracker;
+  @Getter private FishingItemManager fishingItemManager;
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
   @Getter private final String customVisibleKey = "mcMMO: Name Visibility";

@@ -50,6 +50,8 @@ public class McRPGDb {
     dbBuilder.appendTable(FitnessTable.class);
     dbBuilder.appendTable(ExcavationTable.class);
     dbBuilder.appendTable(AxesTable.class);
+    dbBuilder.appendTable(FishingTable.class);
+
     dbBuilder.appendTable(generated);
     try {
       database = dbBuilder.build();

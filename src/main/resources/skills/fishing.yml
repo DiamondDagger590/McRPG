@@ -243,10 +243,15 @@ ShakeConfig:
     TierV: 1000
   #Config for each tier
   TierI:
+    ActivationChance: 1.0
   TierII:
+    ActivationChance: 2.0
   TierIII:
+    ActivationChance: 3.0
   TierIV:
+    ActivationChance: 4.0
   TierV:
+    ActivationChance: 5.0
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Shake'
