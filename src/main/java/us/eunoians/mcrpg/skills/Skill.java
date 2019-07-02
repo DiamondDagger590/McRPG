@@ -131,7 +131,6 @@ public abstract class Skill {
     exp = expEvent.getExpGained();
     int oldLevel = currentLevel;
     if(exp + currentExp >= expToLevel) {
-      int amountOfLevels = 1;
       int leftOverExp = currentExp + exp - expToLevel;
       currentLevel++;
       Parser parser = type.getExpEquation();
@@ -140,7 +139,12 @@ public abstract class Skill {
       expToLevel = (int) parser.getValue();
       currentExp = leftOverExp;
       while(currentExp >= expToLevel) {
-        amountOfLevels++;
+        if(currentLevel >= type.getMaxLevel()){
+          expToLevel = 0;
+          currentExp = 0;
+          leftOverExp = 0;
+          break;
+        }
         leftOverExp = currentExp - expToLevel;
         currentLevel++;
         parser.setVariable("skill_level", currentLevel);
@@ -148,7 +152,7 @@ public abstract class Skill {
         expToLevel = (int) parser.getValue();
         currentExp = leftOverExp;
       }
-      McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, oldLevel, currentLevel, amountOfLevels, this);
+      McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, oldLevel, currentLevel, this);
       Bukkit.getPluginManager().callEvent(event);
     }
     else {
@@ -192,7 +196,10 @@ public abstract class Skill {
   public void giveLevels(McRPGPlayer player, int levels, boolean resetExp) {
     int old = currentLevel;
     currentLevel += levels;
-    McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, old, currentLevel, levels, this);
+    if(currentLevel > type.getMaxLevel()){
+      currentLevel = type.getMaxLevel();
+    }
+    McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, old, currentLevel, this);
     Bukkit.getPluginManager().callEvent(event);
     Parser parser = type.getExpEquation();
     parser.setVariable("skill_level", currentLevel);
