@@ -9,13 +9,13 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #What abilities are enabled
 EnabledAbilities:
-  SuperRod: true
+  GreatRod: true
   PoseidonsFavor: true
   MagicTouch: true
   SeaGodsBlessing: true
   SunkenArmory: true
   Shake: true
-  TreasureLoot: true
+  SuperRod: true
 #If perms should be used for players to unlock abilities.
 #Perms will be mcrpg.fishing.unlock{ability} and mcrpg.fishing.use.{ability}
 UsePermsForAbilites:
@@ -24,7 +24,7 @@ UsePermsForAbilites:
   MagicTouch: false
   SeaGodsBlessing: false
   SunkenArmory: false
-  Shake: true
+  Shake: false
   SuperRod: false
 #At what swords level should these abilities be unlocked at
 UnlockLevelForAbility:
