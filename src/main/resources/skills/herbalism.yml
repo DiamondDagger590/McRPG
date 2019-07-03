@@ -154,7 +154,8 @@ FarmersDietConfig:
     - '&e%FoodRestorationBonus% &ahunger bonus'
     - '&e%SaturationBonus% &asaturation bonus'
     MenuLore:
-    - '&bThis ability increases the potency of crop food'
+    - '&aThis ability increases the potency of crop food'
+    - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Diamond Flowers
 # This ability allows for the user to find items in crops
@@ -356,6 +357,7 @@ DiamondFlowersConfig:
     - '&aDrop items from harvesting certain blocks'
     MenuLore:
     - '&aThis ability drops rare items from harvesting certain blocks'
+    - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Replanting
 # This passive ability has a chance replanting crops for free and at varying stages
@@ -409,6 +411,7 @@ ReplantingConfig:
     MenuLore:
     - '&aThis ability replants crops'
     - '&aoccassionally at a higher growth level'
+    - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Mass Harvest
 # This active ability harvests crops and replants in a radius
@@ -452,6 +455,7 @@ MassHarvestConfig:
     - '&eActivate by readying and breaking a crop'
     MenuLore:
     - '&bMines and replants crops in a radius'
+    - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Natures Wrath
 # This active ability allows to eat flowers for potion effects but lose hunger
@@ -537,6 +541,7 @@ NaturesWrathConfig:
     - '&ein the offhand and eat it'
     MenuLore:
     - '&aConsume flowers for buffs but lose hunger.'
+    - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Pans Blessing
 # This active ability uses a bone meal to max out crops in a radius
@@ -587,3 +592,4 @@ PansBlessingConfig:
     - '&eActivate by readying and using bone meal'
     MenuLore:
     - '&aGrow crops in a radius to max level'
+    - '&aUnlock Level: &e%UnlockLevel%'

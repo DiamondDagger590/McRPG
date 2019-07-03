@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AcceptAbilityGUI extends GUI {
 
@@ -58,7 +59,14 @@ public class AcceptAbilityGUI extends GUI {
                 config.getInt(path + "Amount"));
         ItemMeta abilityMeta = abilityItem.getItemMeta();
         abilityMeta.setDisplayName(Methods.color(p.getPlayer(), config.getString(path + "DisplayName")));
-        abilityMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.AbilityItem.Lore")));
+        List<String> lore = Methods.colorLore(guiConfig.getStringList("AcceptAbility.AbilityItem.Lore"));
+        for(String s : config.getStringList(path + "MenuLore")){
+          if(s.contains("%UnlockLevel%")){
+            continue;
+          }
+          lore.add(Methods.color(s));
+        }
+        abilityMeta.setLore(lore);
         abilityItem.setItemMeta(abilityMeta);
         items.add(new GUIItem(abilityItem, guiConfig.getInt("AcceptAbility.AbilityItem.Slot")));
 

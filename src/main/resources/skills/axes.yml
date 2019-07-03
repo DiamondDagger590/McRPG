@@ -155,6 +155,7 @@ HeavyStrikeConfig:
       - '&cPassivly increases Shred chance by &e%ActivationChanceBoost%%'
     MenuLore:
       - '&cPassively increases Shred chance'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Blood Frenzy
 # This ability extends the duration of the Bleed effect
@@ -211,6 +212,7 @@ BloodFrenzyConfig:
     MenuLore:
       - '&cGain a few seconds of regen and haste'
       - '&cwhen killing an enemy'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Sharper Axe
 # This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
@@ -254,6 +256,7 @@ SharperAxeConfig:
     MenuLore:
       - '&cIncrease possible amount of'
       - '&carmour damage from Shred'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Whirlwind Strike
 # This active ability damages nearby players and sends them flying
@@ -304,6 +307,7 @@ WhirlwindStrikeConfig:
       - '&eActivate by readying and attacking an enemy'
     MenuLore:
       - '&cDeal damage and send nearby enemies flying'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Ares Blessing
 # This active ability gives strength and resistance for a short while and then gives debuffs
@@ -387,6 +391,7 @@ AresBlessingConfig:
     MenuLore:
       - '&cThis ability gives potion buffs'
       - '&cin exchange for being weakened after'
+      - '&cUnlock Level: &e%UnlockLevel%'
 CripplingBlowConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -442,3 +447,4 @@ CripplingBlowConfig:
     MenuLore:
       - '&cCripple any attacked opponents'
       - '&cfor a short while'
+      - '&cUnlock Level: &e%UnlockLevel%'

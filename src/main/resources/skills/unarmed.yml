@@ -144,6 +144,7 @@ TighterGripConfig:
     - '&9Gain &e%GripBoost%% &9resistance to disarm'
     MenuLore:
     - '&9This ability increases resistance to being disarmed'
+    - '&9Unlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Disarm
 # This ability moves a players item to their inventory or drops if inv is full
@@ -182,6 +183,7 @@ DisarmConfig:
     - '&9of Disarming your opponent'
     MenuLore:
     - '&9This ability will disarm opponents'
+    - '&9Unlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Iron Arm
 # This passive ability has a chance of increasing damage dealt with fist
@@ -224,6 +226,7 @@ IronArmConfig:
     MenuLore:
     - '&9This ability has a chance of dealing'
     - '&9extra damage with fists'
+    - '&9Unlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Berserk
 # This active ability increases the chance of disarm and deals more damage
@@ -279,6 +282,7 @@ BerserkConfig:
     - '&eActivate by readying and attacking an enemy'
     MenuLore:
     - '&9Increase activation rate of Disarm and damage'
+    - '&9Unlock Level: &e%UnlockLevel%'
 SmitingFistConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -355,6 +359,7 @@ SmitingFistConfig:
     MenuLore:
     - '&9Activate to cleanse self of debuffs'
     - '&9gaining bonus hp and ability to smite'
+    - '&9Unlock Level: &e%UnlockLevel%'
 DenseImpactConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -402,3 +407,6 @@ DenseImpactConfig:
     - '&eActivate by readying and attacking an enemy'
     MenuLore:
     - '&9Do damage directly to armor'
+    - '&9for a short bit, but you deal'
+    - '&9no player damage during that time'
+    - '&9Unlock Level: &e%UnlockLevel%'

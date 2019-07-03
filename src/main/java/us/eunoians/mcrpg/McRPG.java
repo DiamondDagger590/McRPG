@@ -16,6 +16,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
+import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
@@ -50,6 +51,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private static ChunkManager placeStore;
   @Getter private RemoteTransferTracker remoteTransferTracker;
   @Getter private FishingItemManager fishingItemManager;
+  @Getter private LeaderboardManager leaderboardManager;
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
   @Getter private final String customVisibleKey = "mcMMO: Name Visibility";
@@ -144,6 +146,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getCommand("mchelp").setExecutor(new McHelp());
     getCommand("mcconvert").setExecutor(new McConvert());
     getCommand("mcredeem").setExecutor(new McRedeem());
+    getCommand("mcrank").setExecutor(new McRank());
   }
 
   @Initialize(priority = 4)
@@ -177,6 +180,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new PlayerTossItemEvent(), this);
     getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
     getServer().getPluginManager().registerEvents(new DeathEvent(), this);
+    getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
   }
 
   public static McRPG getInstance() {

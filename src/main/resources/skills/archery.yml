@@ -153,6 +153,7 @@ PunctureConfig:
       - '&cYou have a &e%ActivationChance%% &cchance of Puncture activating'
     MenuLore:
       - '&cThis ability can inflict bleed via shooting a player'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Tipped Arrows
 # This ability has a chance to convert normal arrows shot into tipped arrows
@@ -205,6 +206,7 @@ TippedArrowsConfig:
       - '&cof applying a debuff to enemy'
     MenuLore:
       - '&cThis ability allows normal arrows deal debuffs'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Combo
 # This passive ability will deal more damage if you hit the target consecutively
@@ -254,6 +256,7 @@ ComboConfig:
     MenuLore:
       - '&cThis ability will do more damage'
       - '&cfor two consecutive shots'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Blessing of Artemis
 # This active ability gives invis and increases damage on next shot
@@ -306,6 +309,7 @@ BlessingOfArtemisConfig:
     MenuLore:
       - '&cGain invis and do more damage'
       - '&con your next shot'
+      - '&cUnlock Level: &e%UnlockLevel%'
 BlessingOfApolloConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -352,6 +356,7 @@ BlessingOfApolloConfig:
     MenuLore:
       - '&cGain fire res and ignite target'
       - '&cand burn away targets buffs'
+      - '&cUnlock Level: &e%UnlockLevel%'
 CurseOfHadesConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -413,3 +418,4 @@ CurseOfHadesConfig:
     MenuLore:
       - '&cGive wither, slowness and blindness'
       - '&cto any player hit by next shot'
+      - '&cUnlock Level: &e%UnlockLevel%'

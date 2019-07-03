@@ -173,6 +173,7 @@ Bleed+Config:
       - '&cDamage Boost: &e%DamageBoost%'
     MenuLore:
       - '&cThis ability increases the damage dealt by Bleed'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Deeper Wound
 # This ability extends the duration of the Bleed effect
@@ -216,6 +217,7 @@ DeeperWoundConfig:
       - '&e%DurationBoost% &cseconds'
     MenuLore:
       - '&cThis ability extends the duration of Bleed'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Vampire
 # This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
@@ -259,6 +261,7 @@ VampireConfig:
     MenuLore:
       - '&cThis ability has a chance of healing you'
       - '&con target Bleed'
+      - '&cUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Serrated Strikes
 # This active ability increases the chance of applying bleed for a short time
@@ -309,6 +312,8 @@ SerratedStrikesConfig:
       - '&eActivate by readying and attacking an enemy'
     MenuLore:
       - '&cIncrease activation rate of Bleed'
+      - '&cfor a short while'
+      - '&cUnlock Level: &e%UnlockLevel%'
 RageSpikeConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -358,6 +363,8 @@ RageSpikeConfig:
     MenuLore:
       - '&cThis ability dashs you forward'
       - '&cdealing damage and knockback'
+      - '&cafter having charged for a few seconds'
+      - '&cUnlock Level: &e%UnlockLevel%'
 TaintedBladeConfig:
   #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
   TierAmount: 5
@@ -413,3 +420,4 @@ TaintedBladeConfig:
     MenuLore:
       - '&cGain hunger in exchange'
       - '&cfor Strength and Resistance'
+      - '&cUnlock Level: &e%UnlockLevel%'

@@ -96,6 +96,7 @@ ThickSkinConfig:
       - '&bdecreased by &e%DamageDecrease%%'
     MenuLore:
       - '&bThis ability decreases damage taken from melee'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Bullet Proof
 # This ability can negate damage from arrows
@@ -132,6 +133,7 @@ BulletProofConfig:
       - '&bof negating damage from an arrow'
     MenuLore:
       - '&bThis ability negates damage from arrows'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Dodge
 # This passive ability has a chance of halving damage taken from arrows or melee
@@ -175,6 +177,7 @@ DodgeConfig:
     MenuLore:
       - '&bThis ability can reduce all'
       - '&bdamage taken'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Iron Muscles
 # This active ability gives a chance to do extra durability damage to weapons that hit the player
@@ -218,6 +221,7 @@ IronMusclesConfig:
       - '&bto an attackers melee weapon'
     MenuLore:
       - '&bDeals durability damage when hit by a melee weapon'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Runners Diet
 # This active ability gives a chance to not lose hunger while sprinting
@@ -254,6 +258,7 @@ RunnersDietConfig:
       - '&bdrop below &e%MinHunger%'
     MenuLore:
       - '&bKeep hunger while running'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Divine Escape
 # This active ability lets players ressurect at their bed
@@ -318,4 +323,6 @@ DivineEscapeConfig:
       - '&bIncrease damage taken by &e%DamagePenalty%%'
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
-      - '&bAllows you to resurrect'
+      - '&bAllows you to resurrect but'
+      - '&bsustain debuffs for a while after'
+      - '&bUnlock Level: &e%UnlockLevel%'

@@ -101,6 +101,7 @@ PoseidonsFavorConfig:
     MenuLore:
       - '&bThis ability increases the amount of exp'
       - '&bgiven by Poseidons Guardian'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Magic Touch
 # This passive ability adds new categories to fishing
@@ -144,6 +145,7 @@ MagicTouchConfig:
     MenuLore:
       - '&bThis ability adds enchanted items'
       - '&bto fishing'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Sea Gods Blessing
 # This passive ability adds new categories to fishing
@@ -187,6 +189,7 @@ SeaGodsBlessingConfig:
     MenuLore:
       - '&bAllows you to fish up a special potion'
       - '&bcontaining a powerful blessing.'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Sunken Armory
 # This passive ability adds new categories to fishing
@@ -228,6 +231,7 @@ SunkenArmoryConfig:
     MenuLore:
       - '&bAllows you to fish up various'
       - '&btypes of armour'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Shake
 # This active ability allows the player to hit a mob with a fishing rod and force it to drop items
@@ -266,6 +270,7 @@ ShakeConfig:
     MenuLore:
       - '&bUsing a fishing rod, shake an'
       - '&bitem off a mob'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Super Rod
 # This passive ability adds loot to the Treasure category
@@ -303,3 +308,4 @@ SuperRodConfig:
     MenuLore:
       - '&bThis ability adds some extremely rare items'
       - '&binto the Treasure loot table'
+      - '&bUnlock Level: &e%UnlockLevel%'

@@ -55,6 +55,7 @@ public class McDisplay implements CommandExecutor {
           // /mcdisplay keep
           else if(args[0].equalsIgnoreCase("keep")) {
             //TODO
+            return true;
           }
           // /mcdisplay {skill}
           else if(Skills.isSkill(args[0])) {
@@ -110,7 +111,6 @@ public class McDisplay implements CommandExecutor {
         p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
         return true;
       }
-      return true;
     }
     else {
       sender.sendMessage(Methods.color(plugin.getPluginPrefix()) + "&cConsole can not run this command.");

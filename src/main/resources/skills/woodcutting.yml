@@ -128,6 +128,7 @@ HeavySwingConfig:
       - '&e%Radius% &bblock square around what you mined.'
     MenuLore:
       - '&bThis ability lets you mine wood in a square'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Dryads Gift
 # This ability will give vanilla exp when mining wood
@@ -170,6 +171,7 @@ DryadsGiftConfig:
       - '&bmined wood dropping &e%ExpDropped% &bexp'
     MenuLore:
       - '&bThis ability drops exp when wood is mined'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Nymphs Vitality
 # This passive ability regenerates hunger while in a forest
@@ -224,6 +226,7 @@ NymphsVitalityConfig:
     MenuLore:
       - '&bThis ability regenerates hunger'
       - '&bwhile in forests'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Hesperides Apples
 # Gives a random potion effect when eating apples
@@ -284,6 +287,7 @@ HesperidesApplesConfig:
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
       - '&bThis gives a potion effect from eating apples'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Temporal Harvest
 # This active ability drops wood, saplings and apples when you break a sapling
@@ -358,6 +362,7 @@ TemporalHarvestConfig:
       - '&eActivate by readying and breaking a block'
     MenuLore:
       - '&bGives tree drops by mining a sapling'
+      - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for Demeters Shrine
 # This ability allows for players to throw items into a shrine to gain a short exp boost
@@ -447,4 +452,9 @@ DemetersShrineConfig:
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
       - '&bToss a sapling in a shrine'
-      - '&bfor exp boost on collection skills'
+      - '&bfor exp boost on collection skills.'
+      - ''
+      - '&bShrine is built with water'
+      - '&bsurrounded on all sides by a block'
+      - '&bof gold'
+      - '&bUnlock Level: &e%UnlockLevel%'

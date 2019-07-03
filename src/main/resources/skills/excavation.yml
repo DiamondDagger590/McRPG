@@ -280,6 +280,7 @@ BuriedTreasureConfig:
     MenuLore:
       - '&bThis ability drops rare items '
       - '&bfrom harvesting certain blocks'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Larger Spade
 # This passive ability has a chance of mining in an AOE
@@ -324,6 +325,7 @@ LargerSpadeConfig:
       - '&e%Radius% &bblock square around what you mined.'
     MenuLore:
       - '&bThis ability lets you dig in a square'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Mana Deposit
 # This ability allows for the user get exp in a random skill by digging
@@ -383,6 +385,7 @@ ManaDepositConfig:
     MenuLore:
       - '&bThis ability lets gain exp in'
       - '&brandom skills when digging'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Hand Digging
 # This active ability allows you to mine blocks with your hand
@@ -426,6 +429,7 @@ HandDiggingConfig:
       - '&bActivate by readying and digging a block'
     MenuLore:
       - '&bLets you instant break blocks for a while'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Frenzy Dig
 # This active ability allows the player to gain haste and extra Extraction chance for a short while
@@ -475,7 +479,9 @@ FrenzyDigConfig:
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and breaking a block'
     MenuLore:
-      - '&bGives haste and increases Extraction'
+      - '&bGives haste and increases Extraction chance'
+      - '&bfor a few seconds'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Pans Shrine
 # This active active ability allows players to toss items into a shrine and turn surrounding blocks into others like ores
@@ -615,5 +621,10 @@ PansShrineConfig:
       - '&binto random ores'
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
-      - '&bSacrifce an emerald to Pan'
+      - '&bSacrifice an emerald to Pan'
       - '&bin order to change the landscape'
+      - ''
+      - '&bShrine is built with water'
+      - '&bsurrounded on all sides by a block'
+      - '&bof emerald'
+      - '&aUnlock Level: &e%UnlockLevel%'

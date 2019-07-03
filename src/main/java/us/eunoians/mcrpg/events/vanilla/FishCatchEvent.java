@@ -190,7 +190,8 @@ public class FishCatchEvent implements Listener {
             Methods.setMetadata(entity, "GuardianExp", config.getInt(key + "RedeemableExpReward"));
             e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Misc.PoseidonsGuardianSummoned")));
           }
-        } else {
+        }
+        else {
           double decAmount = config.getDouble(key + "OutsideRangeDecrease");
           double minAmount = config.getDouble(key + "MinChance");
           if (mp.getGuardianSummonChance() - decAmount < minAmount) {

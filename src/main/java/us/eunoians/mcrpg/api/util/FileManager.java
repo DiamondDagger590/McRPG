@@ -335,6 +335,7 @@ public class FileManager {
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
+    SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
     WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml");

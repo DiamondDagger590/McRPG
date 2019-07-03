@@ -27,6 +27,7 @@ import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
+import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
@@ -56,6 +57,13 @@ public class McRPGPlayer {
   @Getter private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
   @Getter @Setter private long endTimeForReplaceCooldown;
   @Getter private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
+
+  @Getter @Setter
+  private PlayerRank powerRank;
+  @Getter
+  private Map<Skills, PlayerRank> skillRanks = new HashMap<>();
+  @Getter
+  private boolean isLoadingRankData = false;
 
   //Ability data
   @Getter @Setter private boolean hasBleedImmunity = false;
@@ -1410,7 +1418,7 @@ public class McRPGPlayer {
       int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
       database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = '" + uuid.toString() + "'");
     }
-    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
+    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
     @Language("SQL") String query = "UPDATE mcrpg_player_settings SET keep_hand = " + Methods.convertBool(keepHandEmpty)

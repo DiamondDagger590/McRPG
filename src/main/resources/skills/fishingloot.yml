@@ -18,13 +18,13 @@ Categories:
       Chance: '60.0'
       Amount: 1
       VanillaExp: '1-5'
-      McRPGExp: 1000
+      McRPGExp: 400
     Salmon:
       Material: SALMON
       Chance: '25.0'
       Amount: 1
       VanillaExp: '1-5'
-      McRPGExp: 1000
+      McRPGExp: 450
     TropicalFist:
       Material: TROPICAL_FISH
       Chance: '2.0'
@@ -36,7 +36,7 @@ Categories:
       Chance: '13.0'
       Amount: 1
       VanillaExp: '1-5'
-      McRPGExp: 1000
+      McRPGExp: 500
   Treasure:
     Bow:
       Material: BOW

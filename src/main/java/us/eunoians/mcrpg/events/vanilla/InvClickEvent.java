@@ -248,6 +248,7 @@ public class InvClickEvent implements Listener {
             mp.removePendingAbilityUnlock((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility());
             mp.saveData();
             p.closeInventory();
+            checkAndOpenPending(mp);
             return;
           }
           if(slot == 10 && mp.getAbilityLoadout().size() < 9) {
@@ -262,6 +263,7 @@ public class InvClickEvent implements Listener {
             acceptAbilityGUI.getAbility().setToggled(true);
             mp.saveData();
             p.closeInventory();
+            checkAndOpenPending(mp);
             p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())));
             return;
           }
@@ -362,9 +364,6 @@ public class InvClickEvent implements Listener {
         BaseAbility baseAbility = mp.getBaseAbility(selectReplaceGUI.getAbilities().get(e.getSlot()));
         if(mp.getAbilityLoadout().size() < 9) {
           if(mp.getAbilityLoadout().contains(baseAbility.getGenericAbility())) {
-            return;
-          }
-          if(baseAbility.getGenericAbility().getSkill().equalsIgnoreCase("Fitness") && mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase("Fitness")).count() >= 2){
             return;
           }
           AbilityAddToLoadoutEvent event = new AbilityAddToLoadoutEvent(mp, baseAbility);
@@ -568,6 +567,9 @@ public class InvClickEvent implements Listener {
             }
           }
           p.closeInventory();
+          if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_OVERRIDE){
+            checkAndOpenPending(mp);
+          }
         }
         mp.saveData();
         return;
@@ -782,6 +784,33 @@ public class InvClickEvent implements Listener {
           GUITracker.replacePlayersGUI(mp, gui);
           return;
         }
+      }
+    }
+  }
+
+  private void checkAndOpenPending(McRPGPlayer mp){
+    Player p = mp.getPlayer();
+    if(mp.hasPendingAbility()){
+      UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
+      if(ability.getAbilityType() == AbilityType.ACTIVE) {
+        BaseAbility baseAbility = mp.getBaseAbility(ability);
+        if(mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
+          BaseAbility oldAbility = mp.getBaseAbility(mp.getActiveAbilityForSkill(Skills.fromString(ability.getSkill())));
+          AbilityOverrideGUI overrideGUI = new AbilityOverrideGUI(mp, oldAbility, baseAbility);
+          p.openInventory(overrideGUI.getGui().getInv());
+          GUITracker.trackPlayer(p, overrideGUI);
+        }
+        else {
+          GUI gui = new AcceptAbilityGUI(mp, baseAbility, AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY);
+          p.openInventory(gui.getGui().getInv());
+          GUITracker.trackPlayer(p, gui);
+        }
+      }
+      else {
+        BaseAbility baseAbility = mp.getBaseAbility(ability);
+        GUI gui = new AcceptAbilityGUI(mp, baseAbility, AcceptAbilityGUI.AcceptType.ACCEPT_ABILITY);
+        p.openInventory(gui.getGui().getInv());
+        GUITracker.trackPlayer(p, gui);
       }
     }
   }

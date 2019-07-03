@@ -142,6 +142,7 @@ RicherOresConfig:
     - '&bbonus chance for Double Drop'
     MenuLore:
     - '&bThis ability increases the chance of Double Drop'
+    - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Remote Transfer
 # This ability teleports mined items into a chest
@@ -226,10 +227,13 @@ RemoteTransferConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
     - '&bUse /mclink to link a chest'
+    - '&bUse /mcunlink to unlink a chest'
     - '&bCurrently linked to &e%Location%'
     - '&bYour current range is &e%Range% &bblocks'
     MenuLore:
     - '&bThis ability transfers items mined to a linked chest'
+    - '&bUse /mclink to link and /mcunlink to delink'
+    - '&bUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Its A Triple
 # This passive ability has a chance at tripling the drops from ores instead of doubling
