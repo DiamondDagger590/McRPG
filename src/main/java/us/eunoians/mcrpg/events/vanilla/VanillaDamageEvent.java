@@ -905,11 +905,11 @@ public class VanillaDamageEvent implements Listener {
         //give exp
         config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ARCHERY_CONFIG);
         int baseExp = 0;
-        if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+        if(!config.contains("ExpAwardedPerMob." + e.getEntity().getType().getName())) {
           baseExp = config.getInt("ExpAwardedPerMob.OTHER");
         }
         else {
-          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().getType().getName());
         }
         double dmg = e.getDamage();
         if(!arrow.hasMetadata("ShootLoc")){

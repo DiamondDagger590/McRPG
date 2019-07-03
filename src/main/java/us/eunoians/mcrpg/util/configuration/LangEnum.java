@@ -16,6 +16,7 @@ public enum LangEnum implements ConfigurationEnum {
     SKILL_NAMES_FITNESS("SkillNames.Fitness", "Fitness"),
     SKILL_NAMES_EXCAVATION("SkillNames.Excavation", "Excavation"),
     SKILL_NAMES_AXES("SkillNames.Axes", "Axes"),
+    SKILL_NAMES_FISHING("SkillNames.Fishing", "Fishing"),
     PLUGIN_INFO_HEADER("Messages.PluginInfo", "", "#Messages relating to the general plugin information"),
     PLUGIN_PREFIX("Messages.PluginInfo.PluginPrefix", "&7[&1McRPG&7]"),
     CUSTOM_REDEEM("Messages.CustomRedeem", "#Messages relating to redeemable experience"),

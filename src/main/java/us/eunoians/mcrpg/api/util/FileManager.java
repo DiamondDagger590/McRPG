@@ -320,7 +320,7 @@ public class FileManager {
     EXCAVATION_CONFIG("excavation.yml", "skills/excavation.yml"),
     EXP_PERM_FILE("exp_perms.yml", "exp_perms.yml"),
     FISHING_CONFIG("fishing.yml", "skills/fishing.yml"),
-    FISHING_LOOT("fishingloot.yml", "skill/fishingloot.yml"),
+    FISHING_LOOT("fishingloot.yml", "skills/fishingloot.yml"),
     FITNESS_CONFIG("fitness.yml", "skills/fitness.yml"),
     HERBALISM_CONFIG("herbalism.yml", "skills/herbalism.yml"),
     LOCATIONS("locations.yml", "data/locations.yml"),
