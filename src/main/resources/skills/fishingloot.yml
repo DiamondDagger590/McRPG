@@ -1070,7 +1070,7 @@ ShakeLootTable:
       Material: POTION
       Amount: 1
       Exp: 3000
-      Chance: 100
+      Chance: 1.5
       PotionMeta:
         PotionType: NIGHT_VISION
         Extended: false
@@ -1079,7 +1079,7 @@ ShakeLootTable:
       Material: POTION
       Amount: 1
       Exp: 3000
-      Chance: 100
+      Chance: 1.5
       PotionMeta:
         PotionType: SPEED
         Extended: false
