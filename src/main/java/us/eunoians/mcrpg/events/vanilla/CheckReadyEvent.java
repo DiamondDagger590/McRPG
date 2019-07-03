@@ -188,7 +188,7 @@ public class CheckReadyEvent implements Listener {
           m = b.getType();
         }
         Material heldItemType = heldItem.getType();
-        if(heldItem.getType() == Material.AIR && Methods.specialHandDigggingCase(m)){
+        if(heldItem.getType() == Material.AIR && Methods.specialHandDigggingCase(m) && mp.getAbilityLoadout().contains(UnlockedAbilities.HAND_DIGGING)){
           heldItemType = Material.DIAMOND_SHOVEL;
         }
         Skills skillType = Methods.getSkillsItem(heldItemType, m);

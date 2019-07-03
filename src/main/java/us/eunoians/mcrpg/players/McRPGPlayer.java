@@ -1230,7 +1230,7 @@ public class McRPGPlayer {
    * @return The BaseAbility of the provided enum value
    */
   public BaseAbility getBaseAbility(GenericAbility ability) {
-    return getSkill(ability.getSkill()).getAbility(ability);
+    return ability != null ? getSkill(ability.getSkill()).getAbility(ability) : null;
   }
 
   public void giveExp(Skills skill, int exp, GainReason reason) {

@@ -14,13 +14,13 @@ Categories:
   #
   Fish:
     Cod:
-      Material: RAW_COD
+      Material: COD
       Chance: '60.0'
       Amount: 1
       VanillaExp: '1-5'
       McRPGExp: 1000
     Salmon:
-      Material: RAW_SALMON
+      Material: SALMON
       Chance: '25.0'
       Amount: 1
       VanillaExp: '1-5'
@@ -109,9 +109,10 @@ Categories:
       McRPGExp: 10000
       PotionMeta:
         Effects:
-          - 'STRENGTH:1:100'
+          - 'INCREASE_DAMAGE:1:100'
           - 'SPEED:1:100'
-          - 'MINING_FATIGUE:1:50'
+          - 'SLOW_DIGGING:1:50'
+        RGB: '236:245:66'
   Junk:
     Bowl:
       Material: BOWL
@@ -126,7 +127,7 @@ Categories:
       VanillaExp: '1-3'
       McRPGExp: 250
     GunPowder:
-      Material: GUN_POWDER
+      Material: GUNPOWDER
       Chance: '12.0'
       Amount: 1
       VanillaExp: '1-3'
@@ -156,13 +157,13 @@ Categories:
       VanillaExp: '1-3'
       McRPGExp: 250
     Bone:
-      Material: Bone
+      Material: BONE
       Chance: '12.0'
       Amount: 1
       VanillaExp: '1-3'
       McRPGExp: 250
     Clay:
-      Material: CLAY
+      Material: CLAY_BALL
       Chance: '12.0'
       Amount: 1
       VanillaExp: '1-3'
@@ -232,7 +233,8 @@ Categories:
           - 'WATER_BREATHING:1:240'
           - 'NIGHT_VISION:1:240'
           - 'FIRE_RESISTANCE:1:240'
-          - 'RESISTANCE:1:240'
+          - 'DAMAGE_RESISTANCE:1:240'
+        RGB: '0:200:135'
         Splash: false
   MagicTouch:
     Book:
@@ -680,7 +682,7 @@ Categories:
             OverrideExistingEnchants: true
             Enchantments:
               - 'PROTECTION_ENVIRONMENTAL:1-3:30'
-                - 'DURABILITY:1-3:5'
+              - 'DURABILITY:1-3:5'
             EnchantmentAmountRange: '1-2'
           Amount: 1
           Priority: 5
@@ -815,9 +817,9 @@ ShakeLootTable:
       Chance: 5.0
       PotionMeta:
         PotionType: POISON
-        Duration: 60
+        Extended: false
+        Upgraded: false
         Splash: true
-        Level: 1
   COW:
     Beef:
       Material: RAW_BEEF
@@ -937,12 +939,11 @@ ShakeLootTable:
       Chance: 5.0
       PotionMeta:
         PotionType: FIRE_RESISTANCE
-        Duration: 180
-        Splash: true
-        Level: 1
+        Extended: false
+        Upgraded: false
   ENDERMAN:
     Enderpearl:
-      Material: ENDERPEARL
+      Material: ENDER_PEARL
       Amount: 1
       Exp: 200
       Chance: 100.0
@@ -980,7 +981,7 @@ ShakeLootTable:
       Exp: 2000
       Chance: 25.0
     GunPowder:
-      Material: GUNPOWEDER
+      Material: GUNPOWDER
       Amount: 1
       Exp: 500
       Chance: 80.0
@@ -1054,8 +1055,8 @@ ShakeLootTable:
       Chance: 1.5
       PotionMeta:
         PotionType: INSTANT_HEAL
-        Level: 1
-        Splash: false
+        Extended: false
+        Upgraded: false
     FireResistancePot:
       Material: POTION
       Amount: 1
@@ -1063,26 +1064,26 @@ ShakeLootTable:
       Chance: 1.5
       PotionMeta:
         PotionType: FIRE_RESISTANCE
-        Level: 1
-        Splash: false
+        Extended: false
+        Upgraded: false
     NightVisionPot:
       Material: POTION
       Amount: 1
       Exp: 3000
-      Chance: 1.5
+      Chance: 100
       PotionMeta:
         PotionType: NIGHT_VISION
-        Level: 1
-        Splash: false
+        Extended: false
+        Upgraded: false
     SpeedPot:
       Material: POTION
       Amount: 1
       Exp: 3000
-      Chance: 1.5
+      Chance: 100
       PotionMeta:
         PotionType: SPEED
-        Level: 1
-        Splash: false
+        Extended: false
+        Upgraded: false
     Glowstone:
       Material: GLOWSTONE_DUST
       Amount: '1-3'

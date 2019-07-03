@@ -221,7 +221,10 @@ public enum LangEnum implements ConfigurationEnum {
             "&7[&5McRPG Tip&7]: &aActivate Pans Shrine to change the landscape!")),
     TIPS_LEVEL_UP_AXES("Messages.Tips.LevelUpAxes", Arrays.asList("&7[&5McRPG Tip&7]: &aShred will quickly whittle down opponents armour durability!",
             "&7[&5McRPG Tip&7]: &aAres Blessing will buff you for a short while, but then leave you in a long weakened state!", "&7[&5McRPG Tip&7]: &aDifferent types of axes will give more or less exp per hit!",
-            "&7[&5McRPG Tip&7]: &aUse Whirlwind Strike when surrounded to knockback enemies!"));
+            "&7[&5McRPG Tip&7]: &aUse Whirlwind Strike when surrounded to knockback enemies!")),
+    TIPS_LEVEL_UP_FISHING("Messages.Tips.LevelUpFishing", Arrays.asList("&7[&5McRPG Tip&7]: &aGreat Rod increases your chance of finding treasure!",
+            "&7[&5McRPG Tip&7]: &aUsing Luck Of The Sea makes it more likely to get treasure and makes junk more rare!", "&7[&5McRPG Tip&7]: &aShake has a small chance of making mobs drop related item!",
+            "&7[&5McRPG Tip&7]: &aSunken Armory can even fish up diamond armor!", "&7[&5McRPG Tip&7]: &aSuper Rod makes treasure found even more amazing!", "&7[&5McRPG Tip&7]: &aMagic Touch will let you fish enchanted books and gear!"));
 
     private String path;
     private Object defaultValue;

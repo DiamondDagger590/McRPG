@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.api.util.fishing;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
@@ -48,7 +49,7 @@ public class FishingItemManager {
     while(returnItems.isEmpty()) {
       for (FishingItem fishingItem : items) {
         Parser equation = fishingItem.getChance();
-        int tier = ability.getCurrentTier() != 0 ? ability.getCurrentTier() : 1;
+        int tier = (ability != null && ability.getCurrentTier() != 0) ? ability.getCurrentTier() : 1;
         equation.setVariable("tier", tier);
         int chance = (int) equation.getValue() * 1000;
         int val = rand.nextInt(100000);
@@ -65,7 +66,10 @@ public class FishingItemManager {
     boolean isPotion = resultItem.getPotionMeta() != null;
     String displayName = resultItem.getDisplayName();
     List<String> lore = resultItem.getLore();
-    if(mat == Material.AIR){
+    if(mat == null){
+      Bukkit.broadcastMessage(category + "" + returnItems.size());
+    }
+    if(mat == Material.AIR || mat == null){
       return new FishingResult(new ItemStack(Material.COD), 1, 10);
     }
     ItemStack returnItem = FishedItemStackFactory.createItem(mat, displayName, lore);

@@ -82,7 +82,8 @@ public class FishCatchEvent implements Listener {
                 c += parser.getValue();
               }
             }
-          } else if (category.equalsIgnoreCase("Junk") && fishingRod.getEnchantments().containsKey(Enchantment.LUCK)) {
+          }
+          else if (category.equalsIgnoreCase("Junk") && fishingRod.getEnchantments().containsKey(Enchantment.LUCK)) {
             Parser parser = new Parser(fishingConfig.getString("LuckOfSeaModifiers.JunkModifier"));
             parser.setVariable("level", fishingRod.getEnchantmentLevel(Enchantment.LUCK));
             c -= parser.getValue();

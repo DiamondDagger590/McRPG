@@ -364,11 +364,11 @@ public class VanillaDamageEvent implements Listener {
         e.setDamage(e.getDamage() + config.getInt("BonusDamage"));
         //Give exp
         int baseExp = 0;
-        if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+        if(!config.contains("ExpAwardedPerMob." + e.getEntityType().name())) {
           baseExp = config.getInt("ExpAwardedPerMob.OTHER");
         }
         else {
-          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntityType().name());
         }
         double dmg = e.getDamage();
         double mobSpawnValue = 1.0;
@@ -702,11 +702,11 @@ public class VanillaDamageEvent implements Listener {
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
           double multiplier = config.getDouble("MaterialBonus." + weapon.name());
           int baseExp = 0;
-          if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+          if(!config.contains("ExpAwardedPerMob." + e.getEntityType().name())) {
             baseExp = config.getInt("ExpAwardedPerMob.OTHER");
           }
           else {
-            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntityType().name());
           }
           double dmg = e.getDamage();
           double mobSpawnValue = 1.0;
@@ -877,11 +877,11 @@ public class VanillaDamageEvent implements Listener {
           }
           double multiplier = config.getDouble("MaterialBonus." + weapon.name());
           int baseExp = 0;
-          if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+          if(!config.contains("ExpAwardedPerMob." + e.getEntityType().name())) {
             baseExp = config.getInt("ExpAwardedPerMob.OTHER");
           }
           else {
-            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntityType().name());
           }
           double dmg = e.getDamage();
           double mobSpawnValue = 1.0;
@@ -905,11 +905,11 @@ public class VanillaDamageEvent implements Listener {
         //give exp
         config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ARCHERY_CONFIG);
         int baseExp = 0;
-        if(!config.contains("ExpAwardedPerMob." + e.getEntity().getType().getName())) {
+        if(!config.contains("ExpAwardedPerMob." + e.getEntity().getType().name())) {
           baseExp = config.getInt("ExpAwardedPerMob.OTHER");
         }
         else {
-          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().getType().getName());
+          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().getType().name());
         }
         double dmg = e.getDamage();
         if(!arrow.hasMetadata("ShootLoc")){
