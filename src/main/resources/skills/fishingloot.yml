@@ -227,6 +227,23 @@ Categories:
       Amount: '1-1'
       VanillaExp: '1-100'
       McRPGExp: 10000
+      #Potion Meta can have two settings
+      #Setting one:
+      #Example is shown in this item.
+      #Format is EFFECT:LEVEL:DURATION
+      #
+      #Second is for a single potion type
+      #PotionType: NIGHT_VISION
+      #Extended: false
+      #Upgraded: false
+      #
+      #The difference is that the second sets the single value as the base potion type
+      #This defines the base color. If you use the first, you need to set a RGB value in
+      #order to make it not pink.
+      #
+      #RGB -> RED:GREEN:BLUE (optional)
+      #Splash -> if not present, defaulted to false
+      #Lingering -> if not present, defaulted to false
       PotionMeta:
         Effects:
           - 'DOLPHINS_GRACE:1:30'

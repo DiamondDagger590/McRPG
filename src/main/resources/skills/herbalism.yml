@@ -1,5 +1,7 @@
 #Is herbalism enabled
 HerbalismEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for herbalism. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -90,26 +92,26 @@ UnlockLevelForAbility:
 # Too Many Plants is the default ability that every player has. This ability will increase every time the players Herbalism level is increased
 #
 TooManyPlantsConfig:
-  #Equation for Double Drop chance. Default gives 33% at level 1000.
+  #Equation for Double Drop chance. Default gives 50% at level 1000.
   TooManyPlantsChanceEquation: (herbalism_level)*.05
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Too Many Plants'
+    DisplayName: '&3Too Many Plants'
     Material: GRASS
     Amount: 2
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aYou have a &e%TooManyPlants_Chance%%'
-    - '&aof doubling drops from plants'
+      - '&bYou have a &e%TooManyPlants_Chance%%'
+      - '&bof doubling drops from plants'
     MenuLore:
-    - '&aThis ability has a chance of'
-    - '&adoubling plants when harvesting'
+      - '&bThis ability has a chance of'
+      - '&bdoubling plants when harvesting'
 #
 # Config for the ability Farmers Diet
 # This passive ability increases hunger and saturation restored by eating crops
 #
 FarmersDietConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   FoodForFarmersDiet:
     - 'CARROT'
@@ -145,23 +147,23 @@ FarmersDietConfig:
     SaturationBonus: 2.5
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Farmers Diet'
+    DisplayName: '&3Farmers Diet'
     Material: CARROT
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aYour Farmers Diet gives'
-    - '&e%FoodRestorationBonus% &ahunger bonus'
-    - '&e%SaturationBonus% &asaturation bonus'
+      - '&bYour Farmers Diet gives'
+      - '&e%FoodRestorationBonus% &bhunger bonus'
+      - '&e%SaturationBonus% &bsaturation bonus'
     MenuLore:
-    - '&aThis ability increases the potency of crop food'
-    - '&aUnlock Level: &e%UnlockLevel%'
+      - '&bThis ability increases the potency of crop food'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Diamond Flowers
 # This ability allows for the user to find items in crops
 #
 DiamondFlowersConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -241,8 +243,8 @@ DiamondFlowersConfig:
         MinAmount: 1
         Material: OAK_SAPLING
         Blocks:
-        - 'DEAD_BUSH'
-        - 'GRASS'
+          - 'DEAD_BUSH'
+          - 'GRASS'
       DarkOakSapling:
         Exp: 40
         DropChance: 2.5
@@ -250,8 +252,8 @@ DiamondFlowersConfig:
         MinAmount: 1
         Material: DARK_OAK_SAPLING
         Blocks:
-        - 'DEAD_BUSH'
-        - 'GRASS'
+          - 'DEAD_BUSH'
+          - 'GRASS'
       BirchSapling:
         Exp: 40
         DropChance: 2.5
@@ -259,8 +261,8 @@ DiamondFlowersConfig:
         MinAmount: 1
         Material: BIRCH_SAPLING
         Blocks:
-        - 'DEAD_BUSH'
-        - 'GRASS'
+          - 'DEAD_BUSH'
+          - 'GRASS'
       JungleSapling:
         Exp: 40
         DropChance: 2.5
@@ -268,8 +270,8 @@ DiamondFlowersConfig:
         MinAmount: 1
         Material: JUNGLE_SAPLING
         Blocks:
-        - 'DEAD_BUSH'
-        - 'GRASS'
+          - 'DEAD_BUSH'
+          - 'GRASS'
     UnCommon:
       NetherWart:
         Exp: 30
@@ -301,8 +303,8 @@ DiamondFlowersConfig:
         MinAmount: 1
         Material: APPLE
         Blocks:
-        - 'GRASS'
-        - 'DEAD_BUSH'
+          - 'GRASS'
+          - 'DEAD_BUSH'
       GoldenCarrot:
         Exp: 150
         DropChance: 40.0
@@ -349,21 +351,21 @@ DiamondFlowersConfig:
           - 'ROSE'
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Diamond Flowers'
+    DisplayName: '&3Diamond Flowers'
     Material: BLUE_ORCHID
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aDrop items from harvesting certain blocks'
+      - '&bDrop items from harvesting certain blocks'
     MenuLore:
-    - '&aThis ability drops rare items from harvesting certain blocks'
-    - '&aUnlock Level: &e%UnlockLevel%'
+      - '&bThis ability drops rare items from harvesting certain blocks'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Replanting
 # This passive ability has a chance replanting crops for free and at varying stages
 #
 ReplantingConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -400,24 +402,24 @@ ReplantingConfig:
     MinGrowthLevel: 1
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Replanting'
+    DisplayName: '&3Replanting'
     Material: DIAMOND_HOE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aYou have a %ActivationChance%% chance'
-    - '&aof replanting and a %StageGrowthChance%'
-    - '&aof the crop being slightly grown.'
+      - '&bYou have a &e%ActivationChance%% &bchance'
+      - '&bof replanting and a &e%StageGrowthChance%%'
+      - 'baof the crop being slightly grown.'
     MenuLore:
-    - '&aThis ability replants crops'
-    - '&aoccassionally at a higher growth level'
-    - '&aUnlock Level: &e%UnlockLevel%'
+      - '&bThis ability replants crops'
+      - '&boccassionally at a higher growth level'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Mass Harvest
 # This active ability harvests crops and replants in a radius
 #
 MassHarvestConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -444,24 +446,24 @@ MassHarvestConfig:
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Mass Harvest'
+    DisplayName: '&3Mass Harvest'
     Material: STONE_HOE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aMines and replants crops in a'
-    - '&e%Range% &ablock range.'
-    - '&aCooldown: &e%Cooldown%'
-    - '&eActivate by readying and breaking a crop'
+      - '&bMines and replants crops in a'
+      - '&e%Range% &bblock range.'
+      - '&bCooldown: &e%Cooldown%'
+      - '&eActivate by readying and breaking a crop'
     MenuLore:
-    - '&bMines and replants crops in a radius'
-    - '&aUnlock Level: &e%UnlockLevel%'
+      - '&bMines and replants crops in a radius'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Natures Wrath
 # This active ability allows to eat flowers for potion effects but lose hunger
 #
 NaturesWrathConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -525,29 +527,29 @@ NaturesWrathConfig:
     HungerLimit: 14
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Natures Wrath'
+    DisplayName: '&3Natures Wrath'
     Material: POPPY
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aConsume a flower to gain a buff but lose hunger'
-    - '&aStrength: &e%POPPY%'
-    - '&aHaste: &e%DANDELION%'
-    - '&aSpeed: &e%BLUE_ORCHID%'
-    - '&aResistance: &e%LILAC%'
-    - '&aEffect Lv: &e%Modifier%'
-    - '&aHunger Lost: &e%HungerLost%'
-    - '&eActivate by holding a flower'
-    - '&ein the offhand and eat it'
+      - '&bConsume a flower to gain a buff but lose hunger'
+      - '&bStrength: &e%POPPY%'
+      - '&bHaste: &e%DANDELION%'
+      - '&bSpeed: &e%BLUE_ORCHID%'
+      - '&bResistance: &e%LILAC%'
+      - '&bEffect Lv: &e%Modifier%'
+      - '&bHunger Lost: &e%HungerLost%'
+      - '&eActivate by holding a flower'
+      - '&ein the offhand and eat it'
     MenuLore:
-    - '&aConsume flowers for buffs but lose hunger.'
-    - '&aUnlock Level: &e%UnlockLevel%'
+      - '&bConsume flowers for buffs but lose hunger.'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Pans Blessing
 # This active ability uses a bone meal to max out crops in a radius
 #
 PansBlessingConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -565,31 +567,25 @@ PansBlessingConfig:
     Radius: 5
     Cooldown: 120
   TierIII:
-    #Radius for the plugin to scan
     Radius: 7
-    #Cooldown in seconds
     Cooldown: 120
   TierIV:
-    #Radius for the plugin to scan
     Radius: 11
-    #Cooldown in seconds
     Cooldown: 120
   TierV:
-    #Radius for the plugin to scan
     Radius: 15
-    #Cooldown in seconds
     Cooldown: 120
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Pans Blessing'
+    DisplayName: '&3Pans Blessing'
     Material: BONE_MEAL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&aUse bone meal to instantly grow crops in a radius'
-    - '&a%Radius% block radius.'
-    - '&aCooldown: &e%Cooldown%'
-    - '&eActivate by readying and using bone meal'
+      - '&bUse bone meal to instantly grow crops in a radius'
+      - '&e%Radius% &bblock radius.'
+      - '&bCooldown: &e%Cooldown%'
+      - '&eActivate by readying and using bone meal'
     MenuLore:
-    - '&aGrow crops in a radius to max level'
-    - '&aUnlock Level: &e%UnlockLevel%'
+      - '&bGrow crops in a radius to max level'
+      - '&aUnlock Level: &e%UnlockLevel%'

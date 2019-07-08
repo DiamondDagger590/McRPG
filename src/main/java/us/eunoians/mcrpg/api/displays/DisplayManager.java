@@ -39,8 +39,10 @@ public class DisplayManager {
    */
   public void removePlayersDisplay(Player p){
     GenericDisplay display = getDisplay(p);
-    display.cancel();
-    displays.remove(display);
+    if(display != null){
+      display.cancel();
+      displays.remove(display);
+    }
   }
 
 

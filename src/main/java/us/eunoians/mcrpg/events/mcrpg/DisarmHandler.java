@@ -46,7 +46,7 @@ public class DisarmHandler implements Listener{
           bonus = tighterGripEvent.getGripBonus();
         }
       }
-      int chance = (int) (parser.getValue() + bonus) * 1000;
+      int chance = (int) ((parser.getValue() + bonus) * 1000);
       Random rand = new Random();
       int val = rand.nextInt(100000);
       if(chance >= val){

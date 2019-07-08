@@ -1,20 +1,19 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Creature;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.fishing.*;
+import us.eunoians.mcrpg.api.events.mcrpg.fishing.*;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.fishing.FishingResult;
@@ -43,17 +42,21 @@ public class FishCatchEvent implements Listener {
     }
     McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
     if(e.getState() == PlayerFishEvent.State.CAUGHT_ENTITY){
-      if(Skills.FISHING.isEnabled()){
-        if(UnlockedAbilities.SHAKE.isEnabled() && mp.getBaseAbility(UnlockedAbilities.SHAKE).isUnlocked() && mp.getBaseAbility(UnlockedAbilities.SHAKE).isToggled()
+      if(Skills.FISHING.isEnabled() && e.getCaught() instanceof LivingEntity && !(e.getCaught() instanceof ArmorStand)){
+        if(UnlockedAbilities.SHAKE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SHAKE) && mp.getBaseAbility(UnlockedAbilities.SHAKE).isToggled()
                 && McRPG.getInstance().getFishingItemManager().canShake(e.getCaught().getType())){
           Shake shake = (Shake) mp.getBaseAbility(UnlockedAbilities.SHAKE);
           Random rand = new Random();
           int chance = (int) McRPG.getInstance().getFileManager().getFile(FileManager.Files.FISHING_CONFIG).getDouble("ShakeConfig.Tier" + Methods.convertToNumeral(shake.getCurrentTier()) + ".ActivationChance") * 1000;
           int val = rand.nextInt(100000);
           if (chance >= val) {
-            ShakeResult result = McRPG.getInstance().getFishingItemManager().getShakeItem(e.getCaught().getType());
-            e.getCaught().getLocation().getWorld().dropItemNaturally(e.getCaught().getLocation(), result.getItemStack());
-            mp.giveExp(Skills.FISHING, result.getExp(), GainReason.ABILITY);
+            ShakeEvent shakeEvent = new ShakeEvent(mp, shake, (LivingEntity) e.getCaught());
+            Bukkit.getPluginManager().callEvent(shakeEvent);
+            if(!shakeEvent.isCancelled()){
+              ShakeResult result = McRPG.getInstance().getFishingItemManager().getShakeItem(e.getCaught().getType());
+              e.getCaught().getLocation().getWorld().dropItemNaturally(e.getCaught().getLocation(), result.getItemStack());
+              mp.giveExp(Skills.FISHING, result.getExp(), GainReason.ABILITY);
+            }
           }
         }
       }
@@ -72,9 +75,13 @@ public class FishCatchEvent implements Listener {
         for (String category : fishingConfig.getConfigurationSection("CategoriesDefault").getKeys(false)) {
           double c = fishingConfig.getDouble("CategoriesDefault." + category);
           if (category.equalsIgnoreCase("Treasure") && DefaultAbilities.GREAT_ROD.isEnabled() && mp.getBaseAbility(DefaultAbilities.GREAT_ROD).isToggled()) {
-            Parser equation = DefaultAbilities.GREAT_ROD.getActivationEquation();
-            equation.setVariable("fishing_level", fishing.getCurrentLevel());
-            c += equation.getValue();
+            GreatRodEvent greatRodEvent = new GreatRodEvent(mp, (GreatRod) mp.getBaseAbility(DefaultAbilities.GREAT_ROD));
+            Bukkit.getPluginManager().callEvent(greatRodEvent);
+            if(!greatRodEvent.isCancelled()){
+              Parser equation = DefaultAbilities.GREAT_ROD.getActivationEquation();
+              equation.setVariable("fishing_level", fishing.getCurrentLevel());
+              c += equation.getValue();
+            }
             if (fishingRod.getEnchantments().containsKey(Enchantment.LUCK)) {
               if (category.equalsIgnoreCase("Treasure")) {
                 Parser parser = new Parser(fishingConfig.getString("LuckOfSeaModifiers.TreasureModifier"));
@@ -88,61 +95,77 @@ public class FishCatchEvent implements Listener {
             parser.setVariable("level", fishingRod.getEnchantmentLevel(Enchantment.LUCK));
             c -= parser.getValue();
           }
-          int chance = (int) c * 1000;
+          int chance = (int) (c * 1000);
           int val = rand.nextInt(100000);
           if (chance >= val) {
             validCategories.add(category);
             categoryToAbilityMap.put(category, DefaultAbilities.GREAT_ROD);
           }
         }
-        if (UnlockedAbilities.SUNKEN_ARMORY.isEnabled() && mp.getBaseAbility(UnlockedAbilities.SUNKEN_ARMORY).isUnlocked() && mp.getBaseAbility(UnlockedAbilities.SUNKEN_ARMORY).isToggled()) {
+        if (UnlockedAbilities.SUNKEN_ARMORY.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SUNKEN_ARMORY) && mp.getBaseAbility(UnlockedAbilities.SUNKEN_ARMORY).isToggled()) {
           SunkenArmory sunkenArmory = (SunkenArmory) mp.getBaseAbility(UnlockedAbilities.SUNKEN_ARMORY);
           String key = "SunkenArmoryConfig.Tier" + Methods.convertToNumeral(sunkenArmory.getCurrentTier()) + ".ExtraCategories";
           for (String category : fishingConfig.getConfigurationSection(key).getKeys(false)) {
             double c = fishingConfig.getDouble(key + "." + category);
-            int chance = (int) c * 1000;
+            int chance = (int) (c * 1000);
             int val = rand.nextInt(100000);
-            if (chance >= val) {
-              validCategories.add(category);
-              categoryToAbilityMap.put(category, UnlockedAbilities.SUNKEN_ARMORY);
+            SunkenArmoryEvent sunkenArmoryEvent = new SunkenArmoryEvent(mp, sunkenArmory);
+            Bukkit.getPluginManager().callEvent(sunkenArmoryEvent);
+            if(!sunkenArmoryEvent.isCancelled()){
+              if(chance >= val){
+                validCategories.add(category);
+                categoryToAbilityMap.put(category, UnlockedAbilities.SUNKEN_ARMORY);
+              }
             }
           }
         }
-        if (UnlockedAbilities.SEA_GODS_BLESSING.isEnabled() && mp.getBaseAbility(UnlockedAbilities.SEA_GODS_BLESSING).isUnlocked() && mp.getBaseAbility(UnlockedAbilities.SEA_GODS_BLESSING).isToggled()) {
+        if (UnlockedAbilities.SEA_GODS_BLESSING.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SEA_GODS_BLESSING) && mp.getBaseAbility(UnlockedAbilities.SEA_GODS_BLESSING).isToggled()) {
           SeaGodsBlessing seaGodsBlessing = (SeaGodsBlessing) mp.getBaseAbility(UnlockedAbilities.SEA_GODS_BLESSING);
           String key = "SeaGodsBlessingConfig.Tier" + Methods.convertToNumeral(seaGodsBlessing.getCurrentTier()) + ".ExtraCategories";
           for (String category : fishingConfig.getConfigurationSection(key).getKeys(false)) {
             double c = fishingConfig.getDouble(key + "." + category);
-            int chance = (int) c * 1000;
+            int chance = (int) (c * 1000);
             int val = rand.nextInt(100000);
-            if (chance >= val) {
-              validCategories.add(category);
-              categoryToAbilityMap.put(category, UnlockedAbilities.SEA_GODS_BLESSING);
+            SeaGodsBlessingEvent seaGodsBlessingEvent = new SeaGodsBlessingEvent(mp, seaGodsBlessing);
+            Bukkit.getPluginManager().callEvent(seaGodsBlessingEvent);
+            if(!seaGodsBlessingEvent.isCancelled()){
+              if(chance >= val){
+                validCategories.add(category);
+                categoryToAbilityMap.put(category, UnlockedAbilities.SEA_GODS_BLESSING);
+              }
             }
           }
         }
-        if (UnlockedAbilities.MAGIC_TOUCH.isEnabled() && mp.getBaseAbility(UnlockedAbilities.MAGIC_TOUCH).isUnlocked() && mp.getBaseAbility(UnlockedAbilities.MAGIC_TOUCH).isToggled()) {
+        if (UnlockedAbilities.MAGIC_TOUCH.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MAGIC_TOUCH)&& mp.getBaseAbility(UnlockedAbilities.MAGIC_TOUCH).isToggled()) {
           MagicTouch magicTouch = (MagicTouch) mp.getBaseAbility(UnlockedAbilities.MAGIC_TOUCH);
           String key = "MagicTouchConfig.Tier" + Methods.convertToNumeral(magicTouch.getCurrentTier()) + ".ExtraCategories";
           for (String category : fishingConfig.getConfigurationSection(key).getKeys(false)) {
             double c = fishingConfig.getDouble(key + "." + category);
-            int chance = (int) c * 1000;
+            int chance = (int) (c * 1000);
             int val = rand.nextInt(100000);
             if (chance >= val) {
-              validCategories.add(category);
-              categoryToAbilityMap.put(category, UnlockedAbilities.MAGIC_TOUCH);
+              MagicTouchEvent magicTouchEvent = new MagicTouchEvent(mp, magicTouch);
+              Bukkit.getPluginManager().callEvent(magicTouchEvent);
+              if(!magicTouchEvent.isCancelled()){
+                validCategories.add(category);
+                categoryToAbilityMap.put(category, UnlockedAbilities.MAGIC_TOUCH);
+              }
             }
           }
         }
         String category = !validCategories.isEmpty() ? validCategories.get(rand.nextInt(validCategories.size())) : "Junk";
-        if (category.equalsIgnoreCase("Treasure") && UnlockedAbilities.SUPER_ROD.isEnabled() && mp.getBaseAbility(UnlockedAbilities.SUPER_ROD).isUnlocked() && mp.getBaseAbility(UnlockedAbilities.SUPER_ROD).isToggled()) {
+        if (category.equalsIgnoreCase("Treasure") && UnlockedAbilities.SUPER_ROD.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SUPER_ROD) && mp.getBaseAbility(UnlockedAbilities.SUPER_ROD).isToggled()) {
           SuperRod superRod = (SuperRod) mp.getBaseAbility(UnlockedAbilities.SUPER_ROD);
           categoryToAbilityMap.put("SuperRod", UnlockedAbilities.SUPER_ROD);
           double c = fishingConfig.getDouble("SuperRodConfig.Tier" + Methods.convertToNumeral(superRod.getCurrentTier()) + ".ActivationChance");
-          int chance = (int) c * 1000;
+          int chance = (int) (c * 1000);
           int val = rand.nextInt(100000);
           if (chance >= val) {
-            category = "SuperRod";
+            SuperRodEvent superRodEvent = new SuperRodEvent(mp, superRod);
+            Bukkit.getPluginManager().callEvent(superRodEvent);
+            if(!superRodEvent.isCancelled()){
+              category = "SuperRod";
+            }
           }
         }
         FishingResult fishingResult = McRPG.getInstance().getFishingItemManager().generateItem(category, mp.getBaseAbility(categoryToAbilityMap.get(category)), mp);
@@ -168,7 +191,7 @@ public class FishCatchEvent implements Listener {
           } else {
             mp.setGuardianSummonChance(mp.getGuardianSummonChance() + incAmount);
           }
-          int chance = (int) mp.getGuardianSummonChance() * 1000;
+          int chance = (int) (mp.getGuardianSummonChance() * 1000);
           Random rand = new Random();
           int val = rand.nextInt(100000);
           if (chance >= val) {

@@ -28,10 +28,10 @@ public class LeaderboardManager {
     public LeaderboardManager(McRPG plugin){
         this.plugin = plugin;
         try {
-            powerLevelStatement = plugin.getMcRPGDb().getDatabase().getConnection().prepareStatement("SELECT uuid, power_level FROM mcrpg_player_data ORDER BY power_level DESC");
+            powerLevelStatement = plugin.getMcRPGDb().getDatabase().getConnection().prepareStatement("SELECT uuid, power_level FROM mcrpg_player_data ORDER BY power_level DESC ");
             for(Skills skill : Skills.values()){
                 PreparedStatement statement = plugin.getMcRPGDb().getDatabase().getConnection()
-                        .prepareStatement("SELECT uuid, current_level FROM mcrpg_" + skill.getName().toLowerCase() + "_data ORDER BY current_level");
+                        .prepareStatement("SELECT uuid, current_level FROM mcrpg_" + skill.getName().toLowerCase() + "_data ORDER BY current_level DESC ");
                 skillsPreparedStatementMap.put(skill, statement);
             }
             startLeaderBoardTask();
@@ -45,11 +45,19 @@ public class LeaderboardManager {
     }
 
     public List<PlayerLeaderboardData> getPowerPage(int page){
-        return powerLevel.subList((10 * page) - 10, 10 * page);
+        if((10 * page) - 10 > powerLevel.size()){
+            page = 1;
+        }
+        int max = 10 * page <= powerLevel.size() ? 10 * page : powerLevel.size();
+        return powerLevel.subList((10 * page) - 10, max);
     }
 
     public List<PlayerLeaderboardData> getSkillPage(int page, Skills skill){
-        return skillSets.get(skill).subList((10 * page) - 10, 10 * page);
+        if((10 * page) - 10 > skillSets.get(skill).size()){
+            page = 1;
+        }
+        int max = 10 * page <= skillSets.get(skill).size() ? 10 * page : skillSets.get(skill).size();
+        return skillSets.get(skill).subList((10 * page) - 10, max);
     }
 
     public PlayerLeaderboardData getPowerPlayer(int rank){
@@ -166,16 +174,16 @@ public class LeaderboardManager {
                         int level = resultSet.getInt("power_level");
                         newPowerLevel.add(new PlayerLeaderboardData(uuid, level));
                     }
-                    newPowerLevel.sort(Comparator.comparingInt(PlayerLeaderboardData::getLevel));
+                    //newPowerLevel.sort(Comparator.comparingInt(PlayerLeaderboardData::getLevel));
                     for(Skills skill : Skills.values()){
                         ResultSet results = skillsPreparedStatementMap.get(skill).executeQuery();
                         List<PlayerLeaderboardData> playerLeaderboardData = new ArrayList<>();
                         while(results.next()){
-                            UUID uuid = UUID.fromString(resultSet.getString("uuid"));
-                            int level = resultSet.getInt("current_level");
+                            UUID uuid = UUID.fromString(results.getString("uuid"));
+                            int level = results.getInt("current_level");
                             playerLeaderboardData.add(new PlayerLeaderboardData(uuid, level));
                         }
-                        playerLeaderboardData.sort(Comparator.comparingInt(PlayerLeaderboardData::getLevel));
+                        //playerLeaderboardData.sort(Comparator.comparingInt(PlayerLeaderboardData::getLevel));
                         newSkillSets.put(skill, playerLeaderboardData);
                     }
                     powerLevel = newPowerLevel;
@@ -185,6 +193,6 @@ public class LeaderboardManager {
                     e.printStackTrace();
                 }
             }
-        }.runTaskAsynchronously(McRPG.getInstance());
+        }.runTaskTimerAsynchronously(McRPG.getInstance(), 0L, 5 * 60 *20);
     }
 }

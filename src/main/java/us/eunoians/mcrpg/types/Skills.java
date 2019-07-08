@@ -63,6 +63,11 @@ public enum Skills {
 	return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase()) || Arrays.stream(Skills.values()).map(type -> type.getDisplayName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
   }
 
+  public boolean usePerm(){
+    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return McRPG.getInstance().getFileManager().getFile(file).getBoolean("RequirePermission", false);
+  }
+
   public int getMaxLevel(){
       FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
       return file.getFile().getInt("MaxLevel");

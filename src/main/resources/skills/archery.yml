@@ -1,5 +1,7 @@
 #Is archery enabled
 ArcheryEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for archery. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -15,58 +17,58 @@ DistanceBonusCap: 25
 ExpAwardedPerMob:
   OTHER: 5
   BAT: 5
-  BLAZE: 200
-  CAVE_SPIDER: 75
-  SPIDER: 50
-  CHICKEN: 15
-  COW: 15
-  MUSROOM_COW: 30
-  PIG: 15
-  SHEEP: 15
-  RABBIT: 15
-  COD: 15
-  TROPICAL_FISH: 15
-  SALMON: 15
-  PUFFERFISH: 15
-  DOLPHIN: 200
-  SQUID: 15
-  TURTLE: 100
-  DONKEY: 125
-  MULE: 125
-  HORSE: 125
-  LLAMA: 100
-  CREEPER: 175
-  GUARDIAN: 250
-  ELDER_GUARDIAN: 350
-  ENDER_DRAGON: 400
-  ENDERMAN: 250
-  SHULKER: 300
-  EVOKER: 375
-  VEX: 15
-  ILLUSIONER: 150
-  IRON_GOLEM: 75
-  SLIME: 40
-  MAGMA_CUBE: 80
-  OCELOT: 15
-  PARROT: 15
-  WOLF: 15
-  PHANTOM: 125
-  PLAYER: 100
-  POLAR_BEAR: 75
-  SILVERFISH: 50
-  ENDERMITE: 50
-  SKELETON: 100
-  STRAY: 125
-  WITHER_SKELETON: 200
-  SKELETON_HORSE: 80
-  SNOWMAN: 15
-  VILLAGER: 15
-  WITCH: 200
-  ZOMBIE: 100
-  ZOMBIE_VILLAGER: 115
-  DROWNED: 115
-  PIG_ZOMBIE: 200
-  HUSK: 125
+  BLAZE: 25
+  CAVE_SPIDER: 10
+  SPIDER: 10
+  CHICKEN: 7
+  COW: 7
+  MUSROOM_COW: 9
+  PIG: 7
+  SHEEP: 7
+  RABBIT: 7
+  COD: 7
+  TROPICAL_FISH: 7
+  SALMON: 7
+  PUFFERFISH: 7
+  DOLPHIN: 15
+  SQUID: 5
+  TURTLE: 9
+  DONKEY: 9
+  MULE: 9
+  HORSE: 9
+  LLAMA: 9
+  CREEPER: 15
+  GUARDIAN: 20
+  ELDER_GUARDIAN: 25
+  ENDER_DRAGON: 35
+  ENDERMAN: 20
+  SHULKER: 25
+  EVOKER: 25
+  VEX: 5
+  ILLUSIONER: 10
+  IRON_GOLEM: 6
+  SLIME: 8
+  MAGMA_CUBE: 10
+  OCELOT: 7
+  PARROT: 7
+  WOLF: 7
+  PHANTOM: 15
+  PLAYER: 10
+  POLAR_BEAR: 7
+  SILVERFISH: 7
+  ENDERMITE: 7
+  SKELETON: 10
+  STRAY: 12
+  WITHER_SKELETON: 20
+  SKELETON_HORSE: 8
+  SNOWMAN: 7
+  VILLAGER: 7
+  WITCH: 15
+  ZOMBIE: 10
+  ZOMBIE_VILLAGER: 12
+  DROWNED: 12
+  PIG_ZOMBIE: 20
+  HUSK: 12
   ZOMBIE_HORSE: 20
 #What abilities are enabled
 EnabledAbilities:
@@ -124,7 +126,7 @@ DazeConfig:
 # This passive ability applies bleed and takes into account Bleed modifiers from swords
 #
 PunctureConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -159,7 +161,7 @@ PunctureConfig:
 # This ability has a chance to convert normal arrows shot into tipped arrows
 #
 TippedArrowsConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -212,7 +214,7 @@ TippedArrowsConfig:
 # This passive ability will deal more damage if you hit the target consecutively
 #
 ComboConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -262,7 +264,7 @@ ComboConfig:
 # This active ability gives invis and increases damage on next shot
 #
 BlessingOfArtemisConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -311,7 +313,7 @@ BlessingOfArtemisConfig:
       - '&con your next shot'
       - '&cUnlock Level: &e%UnlockLevel%'
 BlessingOfApolloConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -353,12 +355,13 @@ BlessingOfApolloConfig:
       - '&cand ignite target for &e%IgniteDuration% &cseconds'
       - '&cas well as burn away all buffs from the target'
       - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and shooting an arrow'
     MenuLore:
       - '&cGain fire res and ignite target'
       - '&cand burn away targets buffs'
       - '&cUnlock Level: &e%UnlockLevel%'
 CurseOfHadesConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:

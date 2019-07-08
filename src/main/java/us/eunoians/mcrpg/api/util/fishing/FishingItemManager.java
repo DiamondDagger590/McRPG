@@ -51,7 +51,7 @@ public class FishingItemManager {
         Parser equation = fishingItem.getChance();
         int tier = (ability != null && ability.getCurrentTier() != 0) ? ability.getCurrentTier() : 1;
         equation.setVariable("tier", tier);
-        int chance = (int) equation.getValue() * 1000;
+        int chance = (int) (equation.getValue() * 1000);
         int val = rand.nextInt(100000);
         if (chance >= val) {
           returnItems.add(fishingItem);
@@ -98,7 +98,7 @@ public class FishingItemManager {
         if(player.getBaseAbility(ab).getCurrentTier() >= fishingItemDep.getLowTier() && player.getBaseAbility(ab).getCurrentTier() <= fishingItemDep.getHighTier()){
           Parser equation = fishingItemDep.getActivationEquation();
           equation.setVariable("tier", player.getBaseAbility(ab).getCurrentTier());
-          int chance = (int) equation.getValue() * 1000;
+          int chance = (int) (equation.getValue() * 1000);
           int val = rand.nextInt(100000);
           if(chance >= val){
             validDeps.add(fishingItemDep);
@@ -160,7 +160,7 @@ public class FishingItemManager {
     List<ShakeItem> validItems = new ArrayList<>();
     while(validItems.isEmpty()) {
       for (ShakeItem shakeItem : shakeItems.get(entityType)) {
-        int chance = (int) shakeItem.getChance() * 1000;
+        int chance = (int) (shakeItem.getChance() * 1000);
         int val = rand.nextInt(100000);
         if (chance >= val) {
           validItems.add(shakeItem);

@@ -1,5 +1,7 @@
 #Is woodcutting enabled
 WoodcuttingEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Require player to crouch for ability activation when facing a wood block
 CrouchForReady: false
 #Exp equation for woodcutting. Allowed placeholders are:
@@ -92,7 +94,7 @@ ExtraLumberConfig:
 HeavySwingConfig:
   #Should the ability activate for placed blocks as well as natural
   AllowForPlacedBlocks: false
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -102,20 +104,20 @@ HeavySwingConfig:
     TierV: 500
   TierI:
     #The activation chance
-    ActivationChance: 30
+    ActivationChance: 10.0
     #The radius of the square
     Radius: 1
   TierII:
-    ActivationChance: 45
+    ActivationChance: 12.5
     Radius: 1
   TierIII:
-    ActivationChance: 60
+    ActivationChance: 15.0
     Radius: 1
   TierIV:
-    ActivationChance: 75
+    ActivationChance: 20.0
     Radius: 2
   TierV:
-    ActivationChance: 100
+    ActivationChance: 25.0
     Radius: 2
   #How this ability should be seen in the GUIS
   Item:
@@ -128,13 +130,13 @@ HeavySwingConfig:
       - '&e%Radius% &bblock square around what you mined.'
     MenuLore:
       - '&bThis ability lets you mine wood in a square'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Dryads Gift
 # This ability will give vanilla exp when mining wood
 #
 DryadsGiftConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -145,21 +147,21 @@ DryadsGiftConfig:
   #Config for each Tier
   TierI:
     #The chance of this ability activating
-    ActivationChance: 10.0
+    ActivationChance: 2.5
     #The amount of exp to be dropped
-    ExpDropped: 10
+    ExpDropped: 3
   TierII:
-    ActivationChance: 15.0
-    ExpDropped: 15
+    ActivationChance: 5.0
+    ExpDropped: 5
   TierIII:
-    ActivationChance: 20.0
-    ExpDropped: 20
+    ActivationChance: 7.5
+    ExpDropped: 7
   TierIV:
-    ActivationChance: 25.0
-    ExpDropped: 25
+    ActivationChance: 10.0
+    ExpDropped: 9
   TierV:
-    ActivationChance: 30.0
-    ExpDropped: 25
+    ActivationChance: 12.5
+    ExpDropped: 12
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Dryads Gift'
@@ -171,13 +173,13 @@ DryadsGiftConfig:
       - '&bmined wood dropping &e%ExpDropped% &bexp'
     MenuLore:
       - '&bThis ability drops exp when wood is mined'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Nymphs Vitality
 # This passive ability regenerates hunger while in a forest
 #
 NymphsVitalityConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -226,13 +228,13 @@ NymphsVitalityConfig:
     MenuLore:
       - '&bThis ability regenerates hunger'
       - '&bwhile in forests'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Hesperides Apples
 # Gives a random potion effect when eating apples
 #
 HesperidesApplesConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -287,13 +289,13 @@ HesperidesApplesConfig:
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
       - '&bThis gives a potion effect from eating apples'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Temporal Harvest
 # This active ability drops wood, saplings and apples when you break a sapling
 #
 TemporalHarvestConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -362,14 +364,14 @@ TemporalHarvestConfig:
       - '&eActivate by readying and breaking a block'
     MenuLore:
       - '&bGives tree drops by mining a sapling'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for Demeters Shrine
 # This ability allows for players to throw items into a shrine to gain a short exp boost
 # Shrine is four gold blocks surrounding water
 #
 DemetersShrineConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -382,7 +384,7 @@ DemetersShrineConfig:
     #How long should the boost last in seconds
     Duration: 900
     #How much of a % boost should the ability provide. 1.01 = 101% of original exp
-    ExpBoost: 1.01
+    ExpBoost: 1.03
     #What items can be accepted as a sacrifice
     SacrificialItems:
       - 'OAK_SAPLING'
@@ -395,7 +397,7 @@ DemetersShrineConfig:
     Cooldown: 3600
   TierII:
     Duration: 900
-    ExpBoost: 1.02
+    ExpBoost: 1.05
     SacrificialItems:
       - 'OAK_SAPLING'
       - 'SPRUCE_SAPLING'
@@ -406,7 +408,7 @@ DemetersShrineConfig:
     Cooldown: 3600
   TierIII:
     Duration: 900
-    ExpBoost: 1.03
+    ExpBoost: 1.07
     SacrificialItems:
       - 'OAK_SAPLING'
       - 'SPRUCE_SAPLING'
@@ -417,7 +419,7 @@ DemetersShrineConfig:
     Cooldown: 3600
   TierIV:
     Duration: 900
-    ExpBoost: 1.04
+    ExpBoost: 1.9
     SacrificialItems:
       - 'OAK_SAPLING'
       - 'SPRUCE_SAPLING'
@@ -428,7 +430,7 @@ DemetersShrineConfig:
     Cooldown: 3600
   TierV:
     Duration: 900
-    ExpBoost: 1.05
+    ExpBoost: 1.11
     SacrificialItems:
       - 'OAK_SAPLING'
       - 'SPRUCE_SAPLING'
@@ -457,4 +459,4 @@ DemetersShrineConfig:
       - '&bShrine is built with water'
       - '&bsurrounded on all sides by a block'
       - '&bof gold'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'

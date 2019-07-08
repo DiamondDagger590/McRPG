@@ -66,7 +66,7 @@ public class SubSkillGUI extends GUI {
         for(String s : lore){
           newLore.add(s.replace("%UnlockLevel%", Integer.toString(ab.getUnlockLevel())));
         }
-        abilityMeta.setLore(lore);
+        abilityMeta.setLore(newLore);
         abilityItem.setItemMeta(abilityMeta);
         GUIItem item = new GUIItem(abilityItem, counter);
         counter++;

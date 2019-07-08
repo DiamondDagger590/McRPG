@@ -1,5 +1,7 @@
 #Is axes enabled
 AxesEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for axes. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -19,58 +21,58 @@ MaterialBonus:
 ExpAwardedPerMob:
   OTHER: 5
   BAT: 5
-  BLAZE: 200
-  CAVE_SPIDER: 75
-  SPIDER: 50
-  CHICKEN: 15
-  COW: 15
-  MUSROOM_COW: 30
-  PIG: 15
-  SHEEP: 15
-  RABBIT: 15
-  COD: 15
-  TROPICAL_FISH: 15
-  SALMON: 15
-  PUFFERFISH: 15
-  DOLPHIN: 200
-  SQUID: 15
-  TURTLE: 100
-  DONKEY: 125
-  MULE: 125
-  HORSE: 125
-  LLAMA: 100
-  CREEPER: 175
-  GUARDIAN: 250
-  ELDER_GUARDIAN: 350
-  ENDER_DRAGON: 400
-  ENDERMAN: 250
-  SHULKER: 300
-  EVOKER: 375
-  VEX: 15
-  ILLUSIONER: 150
-  IRON_GOLEM: 75
-  SLIME: 40
-  MAGMA_CUBE: 80
-  OCELOT: 15
-  PARROT: 15
-  WOLF: 15
-  PHANTOM: 125
-  PLAYER: 100
-  POLAR_BEAR: 75
-  SILVERFISH: 50
-  ENDERMITE: 50
-  SKELETON: 100
-  STRAY: 125
-  WITHER_SKELETON: 200
-  SKELETON_HORSE: 80
-  SNOWMAN: 15
-  VILLAGER: 15
-  WITCH: 200
-  ZOMBIE: 100
-  ZOMBIE_VILLAGER: 115
-  DROWNED: 115
-  PIG_ZOMBIE: 200
-  HUSK: 125
+  BLAZE: 50
+  CAVE_SPIDER: 20
+  SPIDER: 20
+  CHICKEN: 10
+  COW: 10
+  MUSROOM_COW: 15
+  PIG: 10
+  SHEEP: 10
+  RABBIT: 10
+  COD: 10
+  TROPICAL_FISH: 10
+  SALMON: 10
+  PUFFERFISH: 10
+  DOLPHIN: 30
+  SQUID: 10
+  TURTLE: 15
+  DONKEY: 17
+  MULE: 17
+  HORSE: 17
+  LLAMA: 17
+  CREEPER: 40
+  GUARDIAN: 45
+  ELDER_GUARDIAN: 60
+  ENDER_DRAGON: 75
+  ENDERMAN: 50
+  SHULKER: 55
+  EVOKER: 45
+  VEX: 5
+  ILLUSIONER: 25
+  IRON_GOLEM: 15
+  SLIME: 20
+  MAGMA_CUBE: 25
+  OCELOT: 10
+  PARROT: 10
+  WOLF: 10
+  PHANTOM: 25
+  PLAYER: 15
+  POLAR_BEAR: 10
+  SILVERFISH: 7
+  ENDERMITE: 7
+  SKELETON: 25
+  STRAY: 30
+  WITHER_SKELETON: 35
+  SKELETON_HORSE: 20
+  SNOWMAN: 10
+  VILLAGER: 10
+  WITCH: 30
+  ZOMBIE: 25
+  ZOMBIE_VILLAGER: 30
+  DROWNED: 30
+  PIG_ZOMBIE: 35
+  HUSK: 30
   ZOMBIE_HORSE: 20
 #What abilities are enabled
 EnabledAbilities:
@@ -91,7 +93,7 @@ UsePermsForAbilites:
   WhirlwindStrike: false
   AresBlessing: false
   CripplingBlow: false
-#At what swords level should these abilities be unlocked at
+#At what axes level should these abilities be unlocked at
 UnlockLevelForAbility:
   HeavyStrike: 50
   BloodFrenzy: 150
@@ -126,7 +128,7 @@ ShredConfig:
 # This passive ability increases the activation chance of Shred
 #
 HeavyStrikeConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -163,7 +165,7 @@ HeavyStrikeConfig:
 BloodFrenzyConfig:
   #If the ability should activate when the player kills a mob
   ActiveOnMobs: false
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -218,7 +220,7 @@ BloodFrenzyConfig:
 # This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
 #
 SharperAxeConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -262,7 +264,7 @@ SharperAxeConfig:
 # This active ability damages nearby players and sends them flying
 #
 WhirlwindStrikeConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -313,7 +315,7 @@ WhirlwindStrikeConfig:
 # This active ability gives strength and resistance for a short while and then gives debuffs
 #
 AresBlessingConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -324,9 +326,9 @@ AresBlessingConfig:
   #Config for each tier
   TierI:
     StrengthDuration: 15
-    StrengthLevel: 1
+    StrengthLevel: 2
     ResistanceDuration: 15
-    ResistanceLevel: 1
+    ResistanceLevel: 2
     WeaknessDuration: 180
     WeaknessLevel: 1
     MiningFatigueDuration: 180
@@ -335,9 +337,9 @@ AresBlessingConfig:
     Cooldown: 200
   TierII:
     StrengthDuration: 17
-    StrengthLevel: 1
+    StrengthLevel: 2
     ResistanceDuration: 17
-    ResistanceLevel: 1
+    ResistanceLevel: 2
     WeaknessDuration: 160
     WeaknessLevel: 1
     MiningFatigueDuration: 160
@@ -345,9 +347,9 @@ AresBlessingConfig:
     Cooldown: 200
   TierIII:
     StrengthDuration: 20
-    StrengthLevel: 1
+    StrengthLevel: 2
     ResistanceDuration: 20
-    ResistanceLevel: 1
+    ResistanceLevel: 2
     WeaknessDuration: 140
     WeaknessLevel: 1
     MiningFatigueDuration: 140
@@ -355,9 +357,9 @@ AresBlessingConfig:
     Cooldown: 200
   TierIV:
     StrengthDuration: 25
-    StrengthLevel: 1
+    StrengthLevel: 2
     ResistanceDuration: 25
-    ResistanceLevel: 1
+    ResistanceLevel: 2
     WeaknessDuration: 120
     WeaknessLevel: 1
     MiningFatigueDuration: 120
@@ -365,7 +367,7 @@ AresBlessingConfig:
     Cooldown: 200
   TierV:
     StrengthDuration: 30
-    StrengthLevel: 1
+    StrengthLevel: 2
     ResistanceDuration: 30
     ResistanceLevel: 2
     WeaknessDuration: 100
@@ -393,7 +395,7 @@ AresBlessingConfig:
       - '&cin exchange for being weakened after'
       - '&cUnlock Level: &e%UnlockLevel%'
 CripplingBlowConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -434,7 +436,7 @@ CripplingBlowConfig:
     Cooldown: 160
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Crippling Block'
+    DisplayName: '&4Crippling Blow'
     Material: CRACKED_STONE_BRICKS
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis

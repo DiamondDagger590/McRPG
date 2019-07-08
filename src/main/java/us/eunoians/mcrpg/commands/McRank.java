@@ -31,44 +31,44 @@ public class McRank implements CommandExecutor {
             if (p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.rank")) {
                 McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(p.getUniqueId());
                 if(args.length == 0){
-                    if(McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)){
+                    /*if(McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)){
                         p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                         return true;
                     }
                     if (McRPG.getInstance().getLeaderboardManager().updateRank(mcRPGPlayer, "power")) {
                         p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                         return true;
-                    }
-                    LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.POWER, p.getScoreboard(),30, 0);
+                    }*/
+                    LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.POWER, p.getScoreboard(),15, 1);
                     McRPG.getInstance().getDisplayManager().setGenericDisplay(leaderboardScoreboard);
                     p.setScoreboard(leaderboardScoreboard.getBoard());
                     return true;
                 }
                 else if(args.length == 1) {
                     if (args[0].equalsIgnoreCase("power") || args[0].equalsIgnoreCase("powerlevel")) {
-                        if (McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)) {
+                        /*if (McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)) {
                             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                             return true;
                         }
                         if (McRPG.getInstance().getLeaderboardManager().updateRank(mcRPGPlayer, "power")) {
                             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                             return true;
-                        }
-                        LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.POWER, p.getScoreboard(), 30, 0);
+                        }*/
+                        LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.POWER, p.getScoreboard(), 15, 1);
                         McRPG.getInstance().getDisplayManager().setGenericDisplay(leaderboardScoreboard);
                         p.setScoreboard(leaderboardScoreboard.getBoard());
                         return true;
                     } else if (Skills.isSkill(args[0])) {
                         Skills skill = Skills.fromString(args[0]);
-                        if (McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)) {
+                        /*if (McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)) {
                             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                             return true;
                         }
                         if (McRPG.getInstance().getLeaderboardManager().updateRank(mcRPGPlayer, args[0].toLowerCase())) {
                             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                             return true;
-                        }
-                        LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.SKILL, p.getScoreboard(), skill, 30, 0);
+                        }*/
+                        LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.SKILL, p.getScoreboard(), skill, 15, 1);
                         McRPG.getInstance().getDisplayManager().setGenericDisplay(leaderboardScoreboard);
                         p.setScoreboard(leaderboardScoreboard.getBoard());
                         return true;
@@ -81,15 +81,15 @@ public class McRank implements CommandExecutor {
                     }
                     else{
                         Skills skill = Skills.fromString(args[0]);
-                        if (McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)) {
+                       /* if (McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)) {
                             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                             return true;
                         }
                         if (McRPG.getInstance().getLeaderboardManager().updateRank(mcRPGPlayer, args[0].toLowerCase())) {
                             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));
                             return true;
-                        }
-                        LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.SKILL, p.getScoreboard(), skill, 30, Integer.parseInt(args[1]));
+                        }*/
+                        LeaderboardScoreboard leaderboardScoreboard = new LeaderboardScoreboard(mcRPGPlayer, LeaderboardType.SKILL, p.getScoreboard(), skill, 15, Integer.parseInt(args[1]));
                         McRPG.getInstance().getDisplayManager().setGenericDisplay(leaderboardScoreboard);
                         p.setScoreboard(leaderboardScoreboard.getBoard());
                         return true;

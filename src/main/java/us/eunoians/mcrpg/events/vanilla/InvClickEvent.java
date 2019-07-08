@@ -251,7 +251,7 @@ public class InvClickEvent implements Listener {
             checkAndOpenPending(mp);
             return;
           }
-          if(slot == 10 && mp.getAbilityLoadout().size() < 9) {
+          if(slot == 10 && mp.getAbilityLoadout().size() <  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")) {
             //If they accept and their loadout isnt full
             AbilityAddToLoadoutEvent event = new AbilityAddToLoadoutEvent(mp, acceptAbilityGUI.getAbility());
             Bukkit.getPluginManager().callEvent(event);
@@ -290,7 +290,7 @@ public class InvClickEvent implements Listener {
           }
           if(slot == 10) {
             AbilityUpgradeEvent event = new AbilityUpgradeEvent(mp, acceptAbilityGUI.getAbility(), acceptAbilityGUI.getAbility().getCurrentTier(), acceptAbilityGUI.getAbility().getCurrentTier() + 1);
-            event.setCancelled(event.getNextTier() > 5);
+            event.setCancelled(event.getNextTier() > ((UnlockedAbilities) acceptAbilityGUI.getAbility().getGenericAbility()).getMaxTier());
             Bukkit.getPluginManager().callEvent(event);
             if(event.isCancelled()) {
               return;
@@ -362,7 +362,7 @@ public class InvClickEvent implements Listener {
           return;
         }
         BaseAbility baseAbility = mp.getBaseAbility(selectReplaceGUI.getAbilities().get(e.getSlot()));
-        if(mp.getAbilityLoadout().size() < 9) {
+        if(mp.getAbilityLoadout().size() <  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")) {
           if(mp.getAbilityLoadout().contains(baseAbility.getGenericAbility())) {
             return;
           }
@@ -527,7 +527,7 @@ public class InvClickEvent implements Listener {
         }
         else if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_UPGRADE) {
           UnlockedAbilities unlockedAbility = (UnlockedAbilities) abilityToChange.getGenericAbility();
-          if(abilityToChange.getCurrentTier() < 5) {
+          if(abilityToChange.getCurrentTier() < unlockedAbility.getMaxTier()) {
             if(unlockedAbility.tierUnlockLevel(abilityToChange.getCurrentTier() + 1) > mp.getSkill(unlockedAbility.getSkill()).getCurrentLevel()) {
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
               return;

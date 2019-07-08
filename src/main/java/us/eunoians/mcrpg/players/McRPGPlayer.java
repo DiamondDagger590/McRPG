@@ -105,7 +105,7 @@ public class McRPGPlayer {
   @Getter @Setter private Location lastFishCaughtLoc = null;
 
   //Fitness Data
-  @Getter @Setter private Location lastFallLocation = null;
+  @Getter private List<Location> lastFallLocation = new ArrayList<>();
 
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;

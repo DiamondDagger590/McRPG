@@ -150,7 +150,7 @@ public class BreakEvent implements Listener{
               Parser parser = DefaultAbilities.EXTRA_LUMBER.getActivationEquation();
               parser.setVariable("excavation_level", mp.getSkill(Skills.EXCAVATION).getCurrentLevel());
               parser.setVariable("power_level", mp.getPowerLevel());
-              int chance = (int) parser.getValue() * 1000;
+              int chance = (int) (parser.getValue() * 1000);
               Random rand = new Random();
               int val = rand.nextInt(100000);
               if(chance >= val){
@@ -166,7 +166,7 @@ public class BreakEvent implements Listener{
           if(!(event instanceof LargerSpadeTestEvent) && UnlockedAbilities.LARGER_SPADE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.LARGER_SPADE)
                   && mp.getBaseAbility(UnlockedAbilities.LARGER_SPADE).isToggled() && canLargerSpade(block.getType()) && p.getItemInHand().getType().toString().contains("SHOVEL")){
             LargerSpade largerSpade = (LargerSpade) mp.getBaseAbility(UnlockedAbilities.LARGER_SPADE);
-            int chance = (int) excavationConfig.getDouble("LargerSpadeConfig.Tier" + Methods.convertToNumeral(largerSpade.getCurrentTier()) + ".ActivationChance") * 1000;
+            int chance = (int) (excavationConfig.getDouble("LargerSpadeConfig.Tier" + Methods.convertToNumeral(largerSpade.getCurrentTier()) + ".ActivationChance") * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
             if(chance >= val){
@@ -200,7 +200,7 @@ public class BreakEvent implements Listener{
           if(UnlockedAbilities.MANA_DEPOSIT.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MANA_DEPOSIT) && mp.getBaseAbility(UnlockedAbilities.MANA_DEPOSIT).isToggled()){
             ManaDeposit manaDeposit = (ManaDeposit) mp.getBaseAbility(UnlockedAbilities.MANA_DEPOSIT);
             if(getExcavationBlocks().contains(block.getType())){
-              int chance = (int) excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".ActivationChance") * 1000;
+              int chance = (int) (excavationConfig.getDouble("ManaDepositConfig.Tier" + Methods.convertToNumeral(manaDeposit.getCurrentTier()) + ".ActivationChance") * 1000);
               Random rand = new Random();
               int val = rand.nextInt(100000);
               if(chance >= val){
@@ -234,7 +234,7 @@ public class BreakEvent implements Listener{
                 Random rand = new Random();
                 String key = "BuriedTreasureConfig.Tier" + Methods.convertToNumeral(buriedTreasure.getCurrentTier()) + ".Categories";
                 for(String s : excavationConfig.getConfigurationSection(key).getKeys(false)){
-                  int chance = (int) excavationConfig.getDouble(key + "." + s) * 1000;
+                  int chance = (int) (excavationConfig.getDouble(key + "." + s) * 1000);
                   int val = rand.nextInt(100000);
                   if(chance >= val){
                     categoriesToChooseFrom.add(s);
@@ -247,7 +247,7 @@ public class BreakEvent implements Listener{
                   if(BuriedTreasureData.getBuriedTreasureData().get(block.getType()).containsKey(catToUse)){
                     while(itemsPossible.isEmpty()){
                       for(BuriedTreasureData.BuriedTreasureItem buriedTreasureItem : BuriedTreasureData.getBuriedTreasureData().get(block.getType()).get(catToUse)){
-                        int chance = (int) buriedTreasureItem.getDropChance() * 1000;
+                        int chance = (int) (buriedTreasureItem.getDropChance() * 1000);
                         int val = rand.nextInt(100000);
                         if(chance >= val){
                           itemsPossible.add(buriedTreasureItem);
@@ -288,7 +288,7 @@ public class BreakEvent implements Listener{
               Parser parser = DefaultAbilities.EXTRA_LUMBER.getActivationEquation();
               parser.setVariable("woodcutting_level", mp.getSkill(Skills.WOODCUTTING).getCurrentLevel());
               parser.setVariable("power_level", mp.getPowerLevel());
-              int chance = (int) parser.getValue() * 1000;
+              int chance = (int) (parser.getValue() * 1000);
               Random rand = new Random();
               int val = rand.nextInt(100000);
               if(chance >= val){
@@ -303,7 +303,7 @@ public class BreakEvent implements Listener{
           if(UnlockedAbilities.DRYADS_GIFT.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DRYADS_GIFT)
                   && mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT).isToggled() && !McRPG.getPlaceStore().isTrue(block) && woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())){
             DryadsGift dryadsGift = (DryadsGift) mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT);
-            int chance = (int) woodCutting.getDouble("DryadsGiftConfig.Tier" + Methods.convertToNumeral(dryadsGift.getCurrentTier()) + ".ActivationChance") * 1000;
+            int chance = (int) (woodCutting.getDouble("DryadsGiftConfig.Tier" + Methods.convertToNumeral(dryadsGift.getCurrentTier()) + ".ActivationChance") * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
             if(chance >= val){
@@ -319,7 +319,7 @@ public class BreakEvent implements Listener{
           if(!(event instanceof HeavySwingTestEvent) && UnlockedAbilities.HEAVY_SWING.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HEAVY_SWING)
                   && mp.getBaseAbility(UnlockedAbilities.HEAVY_SWING).isToggled() && block.getType().toString().contains("LOG") && p.getItemInHand().getType().toString().contains("AXE")){
             HeavySwing heavySwing = (HeavySwing) mp.getBaseAbility(UnlockedAbilities.HEAVY_SWING);
-            int chance = (int) woodCutting.getDouble("HeavySwingConfig.Tier" + Methods.convertToNumeral(heavySwing.getCurrentTier()) + ".ActivationChance") * 1000;
+            int chance = (int) (woodCutting.getDouble("HeavySwingConfig.Tier" + Methods.convertToNumeral(heavySwing.getCurrentTier()) + ".ActivationChance") * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
             if(chance >= val){
@@ -473,7 +473,7 @@ public class BreakEvent implements Listener{
               Parser parser = DefaultAbilities.TOO_MANY_PLANTS.getActivationEquation();
               parser.setVariable("herbalism_level", mp.getSkill(Skills.HERBALISM).getCurrentLevel());
               parser.setVariable("power_level", mp.getPowerLevel());
-              int chance = (int) parser.getValue() * 1000;
+              int chance = (int) (parser.getValue() * 1000);
               Random rand = new Random();
               int val = rand.nextInt(100000);
               if(chance >= val){
@@ -493,11 +493,11 @@ public class BreakEvent implements Listener{
             Replanting replanting = (Replanting) mp.getBaseAbility(UnlockedAbilities.REPLANTING);
             if(!McRPG.getPlaceStore().isTrue(block) && ItemUtils.isCrop(block.getType())){
               {
-                int chance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000;
+                int chance = (int) (herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000);
                 Random rand = new Random();
                 int val = rand.nextInt(100000);
                 if(chance >= val){
-                  int growChance = (int) herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".StageGrowthChance") * 1000;
+                  int growChance = (int) (herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".StageGrowthChance") * 1000);
                   int maxAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MaxGrowthLevel");
                   int minAge = herbalism.getInt("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".MinGrowthLevel");
                   boolean grow = false;
@@ -527,7 +527,7 @@ public class BreakEvent implements Listener{
                 Random rand = new Random();
                 String key = "DiamondFlowersConfig.Tier" + Methods.convertToNumeral(diamondFlowers.getCurrentTier()) + ".Categories";
                 for(String s : herbalism.getConfigurationSection(key).getKeys(false)){
-                  int chance = (int) herbalism.getDouble(key + "." + s) * 1000;
+                  int chance = (int) (herbalism.getDouble(key + "." + s) * 1000);
                   int val = rand.nextInt(100000);
                   if(chance >= val){
                     categoriesToChooseFrom.add(s);
@@ -540,7 +540,7 @@ public class BreakEvent implements Listener{
                   if(DiamondFlowersData.getDiamondFlowersData().get(type).containsKey(catToUse)){
                     while(itemsPossible.isEmpty()){
                       for(DiamondFlowersData.DiamondFlowersItem diamondFlowersItem : DiamondFlowersData.getDiamondFlowersData().get(type).get(catToUse)){
-                        int chance = (int) diamondFlowersItem.getDropChance() * 1000;
+                        int chance = (int) (diamondFlowersItem.getDropChance() * 1000);
                         int val = rand.nextInt(100000);
                         if(chance >= val){
                           itemsPossible.add(diamondFlowersItem);

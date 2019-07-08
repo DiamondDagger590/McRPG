@@ -21,7 +21,7 @@ public class McRPGPlayerLevelChangeEvent extends PlayerModifiedEvent {
     this.skillLeveled = skillLeveled;
   }
 
-  public McRPGPlayer getMcMMOPlayer() {
+  public McRPGPlayer getMcRPGPlayer() {
     return skillLeveled.getPlayer();
   }
 

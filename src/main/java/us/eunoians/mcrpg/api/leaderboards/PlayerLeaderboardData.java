@@ -15,4 +15,8 @@ public class PlayerLeaderboardData {
         this.level = level;
         this.UUID = uuid;
     }
+
+    public String toString(){
+        return "[" + UUID + "_" + level + "]";
+    }
 }

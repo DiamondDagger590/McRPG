@@ -44,7 +44,14 @@ public class AcceptAbilityGUI extends GUI {
         ItemStack confirmItem = new ItemStack(Material.valueOf(guiConfig.getString("AcceptAbility.AcceptItem.Material")), guiConfig.getInt("AcceptAbility.AcceptItem.Amount"));
         ItemMeta confirmMeta = confirmItem.getItemMeta();
         confirmMeta.setDisplayName(Methods.color(p.getPlayer(), guiConfig.getString("AcceptAbility.AcceptItem.DisplayName")));
-        confirmMeta.setLore(Methods.colorLore(config.getStringList(path + "MenuLore")));
+        List<String> confirmLore = new ArrayList<>();
+        for(String s : Methods.colorLore(config.getStringList(path + "MenuLore"))){
+          if(s.contains("%UnlockLevel%")){
+            continue;
+          }
+          confirmLore.add(s);
+        }
+        confirmMeta.setLore(confirmLore);
         confirmItem.setItemMeta(confirmMeta);
         items.add(new GUIItem(confirmItem, guiConfig.getInt("AcceptAbility.AcceptItem.Slot")));
 

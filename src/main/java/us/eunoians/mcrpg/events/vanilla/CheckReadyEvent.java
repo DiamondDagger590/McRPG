@@ -81,8 +81,10 @@ public class CheckReadyEvent implements Listener {
         FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
         String key = "NaturesWrathConfig.Tier" + Methods.convertToNumeral(naturesWrath.getCurrentTier()) + ".";
         ItemStack offHand = p.getInventory().getItemInOffHand();
-        if(offHand != null && offHand.getType() != Material.AIR) {
-          Material itemType = offHand.getType();
+        if((offHand != null && Methods.isDiamondFlower(offHand.getType())) ||
+                (p.getItemInHand() != null && Methods.isDiamondFlower(p.getItemInHand().getType()))) {
+          boolean isOffHand = Methods.isDiamondFlower(offHand.getType());
+          Material itemType = isOffHand ? offHand.getType() : p.getItemInHand().getType();
           if(itemType == Material.POPPY && herbalism.getBoolean(key + itemType.toString())) {
             int hungerLost = herbalism.getInt(key + "HungerLost");
             int hungerLimit = herbalism.getInt(key + "HungerLimit");
@@ -95,7 +97,12 @@ public class CheckReadyEvent implements Listener {
               if(!naturesWrathEvent.isCancelled()) {
                 p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.POPPY));
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
-                p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+                if(isOffHand){
+                  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+                }
+                else{
+                  p.getItemInHand().setAmount(p.getItemInHand().getAmount());
+                }
                 p.updateInventory();
                 p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
                 p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier() - 1));
@@ -114,8 +121,12 @@ public class CheckReadyEvent implements Listener {
               if(!naturesWrathEvent.isCancelled()) {
                 p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.DANDELION));
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
-                p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
-                p.updateInventory();
+                if(isOffHand){
+                  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+                }
+                else{
+                  p.getItemInHand().setAmount(p.getItemInHand().getAmount());
+                }                p.updateInventory();
                 p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
                 p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier() - 1));
               }
@@ -133,8 +144,12 @@ public class CheckReadyEvent implements Listener {
               if(!naturesWrathEvent.isCancelled()) {
                 p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.BLUE_ORCHID));
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
-                p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
-                p.updateInventory();
+                if(isOffHand){
+                  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+                }
+                else{
+                  p.getItemInHand().setAmount(p.getItemInHand().getAmount());
+                }                p.updateInventory();
                 p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
                 p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier() - 1));
               }
@@ -152,8 +167,12 @@ public class CheckReadyEvent implements Listener {
               if(!naturesWrathEvent.isCancelled()) {
                 p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.LILAC));
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_PLAYER_BURP, 5, 1);
-                p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
-                p.updateInventory();
+                if(isOffHand){
+                  p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
+                }
+                else{
+                  p.getItemInHand().setAmount(p.getItemInHand().getAmount());
+                }                p.updateInventory();
                 p.setFoodLevel(p.getFoodLevel() - naturesWrathEvent.getHungerLost());
                 p.addPotionEffect(new PotionEffect(naturesWrathEvent.getEffectType(), naturesWrathEvent.getDuration() * 20, naturesWrathEvent.getModifier() - 1));
               }

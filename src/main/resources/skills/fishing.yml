@@ -1,5 +1,7 @@
 #Is fishing enabled
 FishingEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for fishing. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -26,7 +28,7 @@ UsePermsForAbilites:
   SunkenArmory: false
   Shake: false
   SuperRod: false
-#At what swords level should these abilities be unlocked at
+#At what fishing level should these abilities be unlocked at
 UnlockLevelForAbility:
   PoseidonsFavor: 50
   MagicTouch: 100
@@ -35,6 +37,8 @@ UnlockLevelForAbility:
   Shake: 250
   SuperRod: 300
 #What categories will players have by default
+#Treasure and Junk are required.
+#You can put any number of categories into here from the fishingloot.yml
 CategoriesDefault:
   Treasure: 1.0
   Junk: 40.0
@@ -52,24 +56,23 @@ GreatRodConfig:
   GreatRodChanceEquation: '(fishing_level)*.033'
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Great Rod'
+    DisplayName: '&3Great Rod'
     Material: FISHING_ROD
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&aIncreases chance of finding'
-      - '&atreasure by &e+%Super_Rod_Chance%%'
+      - '&bIncreases chance of finding'
+      - '&btreasure by &e+%Great_Rod_Chance%%'
     MenuLore:
-      - '&aIncreases chance of finding'
-      - '&atreasure when fishing'
-    CategoryText:
-      - '&e%Category% &aChance: &e%Chance%'
+      - '&bIncreases chance of finding'
+      - '&btreasure when fishing'
+    CategoryText: '&6%Category% Chance: &e%Chance%%'
 #
 # Config for the ability Poseidons Favor
 # This passive ability increases the amount of redeemable exp dropped by the guardian
 #
 PoseidonsFavorConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -91,7 +94,7 @@ PoseidonsFavorConfig:
     ExpIncrease: 5000
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Poseidons Favor'
+    DisplayName: '&3Poseidons Favor'
     Material: PRISMARINE_CRYSTALS
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -101,13 +104,13 @@ PoseidonsFavorConfig:
     MenuLore:
       - '&bThis ability increases the amount of exp'
       - '&bgiven by Poseidons Guardian'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Magic Touch
 # This passive ability adds new categories to fishing
 #
 MagicTouchConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -120,19 +123,19 @@ MagicTouchConfig:
     #What categories should this ability give access to
     ExtraCategories:
       #Category name and chance of being chosen
-      MagicTouch: 5.0
+      MagicTouch: 1.0
   TierII:
     ExtraCategories:
-      MagicTouch: 5.0
+      MagicTouch: 3.0
   TierIII:
     ExtraCategories:
       MagicTouch: 5.0
   TierIV:
     ExtraCategories:
-      MagicTouch: 5.0
+      MagicTouch: 7.0
   TierV:
     ExtraCategories:
-      MagicTouch: 5.0
+      MagicTouch: 10.0
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Magic Touch'
@@ -141,17 +144,17 @@ MagicTouchConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&bFished items can become enchanted'
-      - '&eand adds enchanted books to the loot'
+      - '&band adds enchanted books to the loot'
     MenuLore:
       - '&bThis ability adds enchanted items'
       - '&bto fishing'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Sea Gods Blessing
 # This passive ability adds new categories to fishing
 #
 SeaGodsBlessingConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -189,13 +192,13 @@ SeaGodsBlessingConfig:
     MenuLore:
       - '&bAllows you to fish up a special potion'
       - '&bcontaining a powerful blessing.'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Sunken Armory
 # This passive ability adds new categories to fishing
 #
 SunkenArmoryConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -221,7 +224,7 @@ SunkenArmoryConfig:
       Armor: 5.0
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Sunken Armory'
+    DisplayName: '&3Sunken Armory'
     Material: DIAMOND_LEGGINGS
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -231,14 +234,14 @@ SunkenArmoryConfig:
     MenuLore:
       - '&bAllows you to fish up various'
       - '&btypes of armour'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Shake
 # This active ability allows the player to hit a mob with a fishing rod and force it to drop items
 # Loot tables still a WIP
 #
 ShakeConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -270,14 +273,14 @@ ShakeConfig:
     MenuLore:
       - '&bUsing a fishing rod, shake an'
       - '&bitem off a mob'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Super Rod
 # This passive ability adds loot to the Treasure category
 # If Treasure is chosen, then if super rod is unlocked, it checks for activation
 #
 SuperRodConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -287,17 +290,17 @@ SuperRodConfig:
     TierV: 650
   #Config for each tier
   TierI:
-    ActivationChance: 5.0
+    ActivationChance: 1.0
   TierII:
-    ActivationChance: 5.0
+    ActivationChance: 2.0
   TierIII:
-    ActivationChance: 5.0
+    ActivationChance: 3.0
   TierIV:
     ActivationChance: 5.0
   TierV:
-    ActivationChance: 5.0
+    ActivationChance: 7.5
   Item:
-    DisplayName: '&2Super Rod'
+    DisplayName: '&3Super Rod'
     Material: NAUTILUS_SHELL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -308,4 +311,4 @@ SuperRodConfig:
     MenuLore:
       - '&bThis ability adds some extremely rare items'
       - '&binto the Treasure loot table'
-      - '&bUnlock Level: &e%UnlockLevel%'
+      - '&aUnlock Level: &e%UnlockLevel%'

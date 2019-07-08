@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
@@ -119,7 +120,31 @@ public class LeaderboardScoreboard extends GenericDisplay implements ScoreboardB
         FileConfiguration config = McRPG.getInstance().getConfig();
         board = manager.getNewScoreboard();
         Objective objective = board.registerNewObjective("mcrpg", "dummy");
-        String displayName = config.getString("DisplayConfig.LeaderboardScoreboard.DisplayName").replaceAll("%Player%", player.getPlayer().getDisplayName());
+        //String displayName = config.getString("DisplayConfig.LeaderboardScoreboard.DisplayName").replace("%Player%", player.getPlayer().getDisplayName());
+        LeaderboardManager leaderboardManager = McRPG.getInstance().getLeaderboardManager();
+        int i = 1 + ((page-1) * 10);
+
+        int min = i;
+        if(leaderboardType == LeaderboardType.POWER){
+            this.storedData = leaderboardManager.getPowerPage(page);
+            for(PlayerLeaderboardData leaderboardData : storedData){
+                String name = leaderboardData.getUUID().equals(player.getUuid()) ? "&6--You--" : Bukkit.getOfflinePlayer(leaderboardData.getUUID()).getName();
+                objective.getScore(Methods.color(name)).setScore(leaderboardData.getLevel());
+                i++;
+            }
+            //objective.getScore(Methods.color("&eYou:")).setScore(player.getPowerRank().getRank());
+        }
+        else{
+            this.storedData = leaderboardManager.getSkillPage(page, storedSkill);
+            for(PlayerLeaderboardData leaderboardData : storedData){
+                String name = leaderboardData.getUUID().equals(player.getUuid()) ? "&6--You--" : Bukkit.getOfflinePlayer(leaderboardData.getUUID()).getName();
+                objective.getScore(Methods.color(name)).setScore(leaderboardData.getLevel());
+                i++;
+            }
+            //objective.getScore(Methods.color("&eYou:")).setScore(player.getSkillRanks().get(storedSkill).getRank());
+        }
+        String displayName = Methods.color("&a%Type% (" + min + "-" + (i - 1) + ")"); //config.getString("DisplayConfig.LeaderboardScoreboard.DisplayName").replace("%Player%", player.getPlayer().getDisplayName());
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         if(leaderboardType == LeaderboardType.POWER){
             displayName = displayName.replace("%Type%", "Power");
         }
@@ -127,23 +152,6 @@ public class LeaderboardScoreboard extends GenericDisplay implements ScoreboardB
             displayName = displayName.replace("%Type%", storedSkill.getDisplayName());
         }
         objective.setDisplayName(Methods.color(player.getPlayer(), displayName));
-        LeaderboardManager leaderboardManager = McRPG.getInstance().getLeaderboardManager();
-        if(leaderboardType == LeaderboardType.POWER){
-            this.storedData = leaderboardManager.getPowerPage(page);
-            int i = 1 + (page * 10);
-            for(PlayerLeaderboardData leaderboardData : storedData){
-                objective.getScore(i + ". " + Bukkit.getOfflinePlayer(leaderboardData.getUUID()).getName() + " - ").setScore(leaderboardData.getLevel());
-            }
-            objective.getScore(Methods.color("&eYou:")).setScore(player.getPowerRank().getRank());
-        }
-        else{
-            this.storedData = leaderboardManager.getSkillPage(page, storedSkill);
-            int i = 1 + (page * 10);
-            for(PlayerLeaderboardData leaderboardData : storedData){
-                objective.getScore(i + ". " + Bukkit.getOfflinePlayer(leaderboardData.getUUID()).getName() + " - ").setScore(leaderboardData.getLevel());
-            }
-            objective.getScore(Methods.color("&eYou:")).setScore(player.getSkillRanks().get(storedSkill).getRank());
-        }
     }
 
     /**

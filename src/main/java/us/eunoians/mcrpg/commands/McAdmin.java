@@ -284,7 +284,7 @@ public class McAdmin implements CommandExecutor {
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
-                if(mp.getAbilityLoadout().size() == 9) {
+                if(mp.getAbilityLoadout().size() ==  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")) {
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.LoadoutFull")));
                   return true;
                 }
@@ -1153,7 +1153,7 @@ public class McAdmin implements CommandExecutor {
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
-                if(mp.getAbilityLoadout().size() == 9) {
+                if(mp.getAbilityLoadout().size() ==  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")) {
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.LoadoutFull")));
                   return true;
                 }

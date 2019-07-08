@@ -111,6 +111,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     fishingItemManager = new FishingItemManager();
+    leaderboardManager = new LeaderboardManager(this);
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
