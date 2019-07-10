@@ -1,18 +1,17 @@
 package us.eunoians.mcrpg.gui;
 
+import org.bukkit.entity.Player;
+import us.eunoians.mcrpg.players.McRPGPlayer;
+
 import java.util.HashMap;
 import java.util.UUID;
-
-import org.bukkit.entity.Player;
-
-import us.eunoians.mcrpg.players.McRPGPlayer;
 
 /*
 This class is a static class that keeps track of a players current gui
 */
 public class GUITracker {
 
-  private static HashMap<UUID, GUITrackerBit> guiTracker = new HashMap<UUID, GUITrackerBit>();
+  private static HashMap<UUID, GUITrackerBit> guiTracker = new HashMap<>();
 
   public static boolean isPlayerTracked(Player p) {
     boolean result = false;

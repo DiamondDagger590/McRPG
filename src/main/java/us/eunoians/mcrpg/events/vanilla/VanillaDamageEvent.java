@@ -173,7 +173,7 @@ public class VanillaDamageEvent implements Listener {
               mcRPGPlayer.getLastFallLocation().add(currentLocation);
             }
           }
-          if(!afk){
+          if(!afk && player.getHealth() - e.getDamage() > 0){
             expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
             Parser equation = new Parser(config.getString("FallEquation"));
             equation.setVariable("damage", e.getDamage());

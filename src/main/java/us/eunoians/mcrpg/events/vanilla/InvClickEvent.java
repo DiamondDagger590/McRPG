@@ -125,10 +125,10 @@ public class InvClickEvent implements Listener {
         else if(slot == guiConfig.getInt("BackButton.Slot")) {
           if(GUITracker.doesPlayerHavePrevious(mp)) {
             currentGUI.setClearData(false);
-            GUI old = GUITracker.getPlayersPreviousGUI(mp);
-            old.setClearData(true);
-            p.openInventory(old.getGui().getInv());
-            GUITracker.replacePlayersGUI(mp, old);
+            GUI home = new HomeGUI(mp);
+            home.setClearData(true);
+            p.openInventory(home.getGui().getInv());
+            GUITracker.replacePlayersGUI(mp, home);
             return;
           }
         }

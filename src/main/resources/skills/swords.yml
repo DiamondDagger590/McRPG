@@ -356,14 +356,14 @@ RageSpikeConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cCharge by shifting for &e%ChargeTime%'
+      - '&cCharge by crouching for &e%ChargeTime%'
       - '&cto dash forward'
       - '&cDealing &e%Damage% &cdamage.'
       - '&cCooldown: &e%Cooldown%'
       - '&eActivate by readying and crouching'
       - '&eHold crouch for the charge time'
     MenuLore:
-      - '&cThis ability dashs you forward'
+      - '&cThis ability dashes you forward'
       - '&cdealing damage and knockback'
       - '&cafter having charged for a few seconds'
       - '&aUnlock Level: &e%UnlockLevel%'
