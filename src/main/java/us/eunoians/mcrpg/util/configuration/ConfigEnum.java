@@ -57,7 +57,6 @@ public enum ConfigEnum implements ConfigurationEnum {
   ACTIONBAR_EXCAVATION_MESSAGE("DisplayConfig.ActionBar.Excavation.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
   ACTIONBAR_AXES_MESSAGE("DisplayConfig.ActionBar.Axes.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
   ACTIONBAR_FISHING_MESSAGE("DisplayConfig.ActionBar.Fishing.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
-  LEADERBOARD_DISPLAY_NAME("DisplayConfig.LeaderboardScoreboard.DisplayName", "&e%Type% Rankings"),
   PLAYER_CONFIGURATION_AMOUNT_OF_TOTAL_ABILITIES("PlayerConfiguration.AmountOfTotalAbilities", 9, "#This amount is how many ability slots are in the players loadout", "#Modifying this requires a restart. A reload will break plugin"),
   PLAYER_CONFIGURATION_ABILITY_POINT_INTERVAL("PlayerConfiguration.AbilityPointInterval", 100, "#When the power level reaches a multiple of this number an ability point is awarded"),
   PLAYER_CONFIGURATION_PLAYER_READY_DURATION("PlayerConfiguration.PlayerReadyDuration", 2, "#How many seconds a player should stay ready for"),
