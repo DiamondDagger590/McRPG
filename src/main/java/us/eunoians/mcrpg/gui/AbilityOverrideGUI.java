@@ -57,7 +57,15 @@ public class AbilityOverrideGUI extends GUI {
 		  config.getInt(path + "Amount"));
 	  ItemMeta abilityMeta = abilityItem.getItemMeta();
 	  abilityMeta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "DisplayName")));
-	  List<String> lore = config.getStringList(path + "MenuLore");
+	  List<String> lore = new ArrayList<>();
+	  for(String s : config.getStringList(path + "MenuLore")){
+	  	if(s.contains("%UnlockLevel%")){
+	  		continue;
+		}
+	  	else{
+	  		lore.add(s);
+		}
+	  }
 	  for(String s : guiConfig.getStringList("AbilityToBeReplacedItem.Lore")){
 	  	lore.add(0, s);
 	  }
@@ -70,7 +78,15 @@ public class AbilityOverrideGUI extends GUI {
 		  config.getInt(path1 + "Amount"));
 	  ItemMeta abilityMeta1 = abilityItem1.getItemMeta();
 	  abilityMeta1.setDisplayName(Methods.color(player.getPlayer(), config.getString(path1 + "DisplayName")));
-	  List<String> lore1 = config.getStringList(path1 + "MenuLore");
+	  List<String> lore1 = new ArrayList<>();
+	  for(String s : config.getStringList(path1 + "MenuLore")){
+	  	if(s.contains("%UnlockLevel%")){
+	  		continue;
+		}
+	  	else{
+	  		lore1.add(s);
+		}
+	  }
       for(String s : guiConfig.getStringList("AbilityReplacingItem.Lore")){
         lore1.add(0, s);
       }

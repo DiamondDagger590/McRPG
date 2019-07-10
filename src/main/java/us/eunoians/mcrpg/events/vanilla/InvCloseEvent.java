@@ -9,14 +9,14 @@ import us.eunoians.mcrpg.gui.GUITracker;
 
 public class InvCloseEvent implements Listener {
 
-  @EventHandler (priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void invClose(InventoryCloseEvent e){
-	Player p = (Player) e.getPlayer();
-	if(GUITracker.isPlayerTracked(p)){
-	  if(GUITracker.getPlayersGUI(p).isClearData()){
-		GUITracker.stopTrackingPlayer(p);
-	  }
-	}
+    Player p = (Player) e.getPlayer();
+    if(GUITracker.isPlayerTracked(p)){
+      if(GUITracker.getPlayersGUI(p).isClearData()){
+        GUITracker.stopTrackingPlayer(p);
+      }
+    }
 
   }
 }

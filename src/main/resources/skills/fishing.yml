@@ -31,10 +31,10 @@ UsePermsForAbilites:
 #At what fishing level should these abilities be unlocked at
 UnlockLevelForAbility:
   PoseidonsFavor: 50
-  MagicTouch: 100
-  SeaGodsBlessing: 150
-  SunkenArmory: 200
-  Shake: 250
+  MagicTouch: 200
+  SeaGodsBlessing: 250
+  SunkenArmory: 100
+  Shake: 150
   SuperRod: 300
 #What categories will players have by default
 #Treasure and Junk are required.
@@ -114,10 +114,10 @@ MagicTouchConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 275
-    TierIII: 425
-    TierIV: 575
-    TierV: 700
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
   #Config for each tier
   TierI:
     #What categories should this ability give access to
@@ -202,10 +202,10 @@ SunkenArmoryConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 500
-    TierIV: 650
-    TierV: 800
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
   #Config for each tier
   TierI:
     ExtraCategories:
@@ -245,10 +245,10 @@ ShakeConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
-    TierIII: 650
-    TierIV: 825
-    TierV: 1000
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
   #Config for each tier
   TierI:
     ActivationChance: 1.0
@@ -284,10 +284,10 @@ SuperRodConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 500
-    TierV: 650
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
   #Config for each tier
   TierI:
     ActivationChance: 1.0
