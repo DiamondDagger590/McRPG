@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AcceptAbilityGUI extends GUI {
 
@@ -43,7 +44,14 @@ public class AcceptAbilityGUI extends GUI {
         ItemStack confirmItem = new ItemStack(Material.valueOf(guiConfig.getString("AcceptAbility.AcceptItem.Material")), guiConfig.getInt("AcceptAbility.AcceptItem.Amount"));
         ItemMeta confirmMeta = confirmItem.getItemMeta();
         confirmMeta.setDisplayName(Methods.color(p.getPlayer(), guiConfig.getString("AcceptAbility.AcceptItem.DisplayName")));
-        confirmMeta.setLore(Methods.colorLore(config.getStringList(path + "MenuLore")));
+        List<String> confirmLore = new ArrayList<>();
+        for(String s : Methods.colorLore(config.getStringList(path + "MenuLore"))){
+          if(s.contains("%UnlockLevel%")){
+            continue;
+          }
+          confirmLore.add(s);
+        }
+        confirmMeta.setLore(confirmLore);
         confirmItem.setItemMeta(confirmMeta);
         items.add(new GUIItem(confirmItem, guiConfig.getInt("AcceptAbility.AcceptItem.Slot")));
 
@@ -58,7 +66,14 @@ public class AcceptAbilityGUI extends GUI {
                 config.getInt(path + "Amount"));
         ItemMeta abilityMeta = abilityItem.getItemMeta();
         abilityMeta.setDisplayName(Methods.color(p.getPlayer(), config.getString(path + "DisplayName")));
-        abilityMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.AbilityItem.Lore")));
+        List<String> lore = Methods.colorLore(guiConfig.getStringList("AcceptAbility.AbilityItem.Lore"));
+        for(String s : config.getStringList(path + "MenuLore")){
+          if(s.contains("%UnlockLevel%")){
+            continue;
+          }
+          lore.add(Methods.color(s));
+        }
+        abilityMeta.setLore(lore);
         abilityItem.setItemMeta(abilityMeta);
         items.add(new GUIItem(abilityItem, guiConfig.getInt("AcceptAbility.AbilityItem.Slot")));
 

@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.database.tables.LoadoutInstrumentation;
 import us.eunoians.mcrpg.database.tables.PlayerData;
@@ -34,7 +35,8 @@ public class McRPGDb {
   public McRPGDb(McRPG plugin) {
     this.instance = plugin;
 
-    Class generated = new LoadoutInstrumentation(instance, 9).instrument();
+    Class generated = new LoadoutInstrumentation(instance,
+            plugin.getFileManager().getFile(FileManager.Files.CONFIG).getInt("PlayerConfiguration.AmountOfTotalAbilities")).instrument();
     //printClass(generated);
     DatabaseBuilder dbBuilder = new DatabaseBuilder();
     dbBuilder.setDatabasePrefix("mcrpg_");
@@ -50,6 +52,8 @@ public class McRPGDb {
     dbBuilder.appendTable(FitnessTable.class);
     dbBuilder.appendTable(ExcavationTable.class);
     dbBuilder.appendTable(AxesTable.class);
+    dbBuilder.appendTable(FishingTable.class);
+
     dbBuilder.appendTable(generated);
     try {
       database = dbBuilder.build();

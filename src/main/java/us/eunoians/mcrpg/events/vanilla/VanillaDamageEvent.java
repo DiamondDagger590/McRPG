@@ -58,14 +58,14 @@ import java.util.*;
 
 public class VanillaDamageEvent implements Listener {
 
-  public static void handleHealthbars(Entity attacker, LivingEntity target, double damage) {
-    if(!(attacker instanceof Player) || target instanceof ArmorStand) {
+  public static void handleHealthbars(Entity attacker, LivingEntity target, double damage){
+    if(!(attacker instanceof Player) || target instanceof ArmorStand){
       return;
     }
 
     Player player = (Player) attacker;
 
-    if(isNPCEntity(player) || isNPCEntity(target)) {
+    if(isNPCEntity(player) || isNPCEntity(target)){
       return;
     }
 
@@ -85,7 +85,7 @@ public class VanillaDamageEvent implements Listener {
    * @param eventDamage The damage from the event the entity is involved in
    * @return true if the entity is invincible, false otherwise
    */
-  public static boolean isInvincible(LivingEntity entity, double eventDamage) {
+  public static boolean isInvincible(LivingEntity entity, double eventDamage){
     /*
      * So apparently if you do more damage to a LivingEntity than its last damage int you bypass the invincibility.
      * So yeah, this is for that.
@@ -94,49 +94,49 @@ public class VanillaDamageEvent implements Listener {
   }
   //End mcMMO code
 
-  private static boolean isNPCEntity(Entity entity) {
+  private static boolean isNPCEntity(Entity entity){
     return (entity == null || entity.hasMetadata("NPC") || entity instanceof NPC || entity.getClass().getName().equalsIgnoreCase("cofh.entity.PlayerFake"));
   }
 
   @EventHandler(priority = EventPriority.HIGH)
-  public void fallListener(EntityDamageEvent e) {
+  public void fallListener(EntityDamageEvent e){
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
-    if(e.isCancelled() || !Skills.FITNESS.isEnabled()) {
+    if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
       return;
     }
-    else {
-      if(e.getEntity() instanceof Player) {
+    else{
+      if(e.getEntity() instanceof Player){
         Player player = (Player) e.getEntity();
         McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-        if(McRPG.getInstance().isWorldGuardEnabled()) {
+        if(McRPG.getInstance().isWorldGuardEnabled()){
           WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
 
-          if(wgSupportManager.isWorldTracker(player.getWorld())) {
+          if(wgSupportManager.isWorldTracker(player.getWorld())){
             RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
             Location loc = player.getLocation();
             RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
             HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
             assert manager != null;
             ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
-            for(ProtectedRegion region : set) {
-              if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())) {
+            for(ProtectedRegion region : set){
+              if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())){
                 List<String> expressions = regions.get(region.getId()).getAttackExpressions().get(e.getEntity().getType());
-                for(String s : expressions) {
-                  if(s.contains("difference")) {
-                    if(!(e.getEntity() instanceof Player)) {
+                for(String s : expressions){
+                  if(s.contains("difference")){
+                    if(!(e.getEntity() instanceof Player)){
                       continue;
                     }
-                    else {
+                    else{
                       ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer, PlayerManager.getPlayer(e.getEntity().getUniqueId()));
-                      if(actionLimiterParser.evaluateExpression()) {
+                      if(actionLimiterParser.evaluateExpression()){
                         e.setCancelled(true);
                         return;
                       }
                     }
                   }
-                  else {
+                  else{
                     ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer);
-                    if(actionLimiterParser.evaluateExpression()) {
+                    if(actionLimiterParser.evaluateExpression()){
                       e.setCancelled(true);
                       return;
                     }
@@ -151,19 +151,29 @@ public class VanillaDamageEvent implements Listener {
                 && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
         int expAwarded;
         boolean afk = false;
-        if(e.getCause() == EntityDamageEvent.DamageCause.FALL) {
-          if(mcRPGPlayer.getLastFallLocation() == null) {
-            mcRPGPlayer.setLastFallLocation(player.getLocation());
+        if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
+          if(mcRPGPlayer.getLastFallLocation().size() < 4){
+            mcRPGPlayer.getLastFallLocation().add(player.getLocation());
           }
-          else {
-            Location oldLoc = mcRPGPlayer.getLastFallLocation();
+          else{
             Location currentLocation = player.getLocation();
-            int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
-            int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
-            int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
-            afk = diffInY <= config.getInt("AntiAFK.YRange") && diffInX <= config.getInt("AntiAFK.XRange") && diffInZ <= config.getInt("AntiAFK.ZRange");
+            for(Location oldLoc : mcRPGPlayer.getLastFallLocation()){
+              if(afk){
+                break;
+              }
+              int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
+              int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
+              int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
+              afk = diffInY <= config.getInt("AntiAFK.YRange") && diffInX <= config.getInt("AntiAFK.XRange") && diffInZ <= config.getInt("AntiAFK.ZRange");
+            }
+            if(mcRPGPlayer.getLastFallLocation().size() >= 4){
+              while(mcRPGPlayer.getLastFallLocation().size() >= 4){
+                mcRPGPlayer.getLastFallLocation().remove(0);
+              }
+              mcRPGPlayer.getLastFallLocation().add(currentLocation);
+            }
           }
-          if(!afk) {
+          if(!afk){
             expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
             Parser equation = new Parser(config.getString("FallEquation"));
             equation.setVariable("damage", e.getDamage());
@@ -175,18 +185,17 @@ public class VanillaDamageEvent implements Listener {
           else{
             expAwarded = 0;
           }
-
           Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
-          if(roll.getGenericAbility().isEnabled() && roll.isToggled()) {
+          if(roll.getGenericAbility().isEnabled() && roll.isToggled()){
             Parser rollEquation = new Parser(config.getString("RollConfig.RollChanceEquation"));
             rollEquation.setVariable("fitness_level", mcRPGPlayer.getSkill(Skills.FITNESS).getCurrentLevel());
-            int chance = (int) rollEquation.getValue() * 1000;
+            int chance = (int) (rollEquation.getValue() * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
-            if(chance >= val) {
+            if(chance >= val){
               RollEvent rollEvent = new RollEvent(mcRPGPlayer, roll);
               Bukkit.getPluginManager().callEvent(rollEvent);
-              if(!rollEvent.isCancelled()) {
+              if(!rollEvent.isCancelled()){
                 e.setDamage(e.getDamage() / 2);
                 player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Roll.Activated")));
               }
@@ -198,88 +207,88 @@ public class VanillaDamageEvent implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
-  public void fitnessEvent(EntityDamageByEntityEvent e) {
+  public void fitnessEvent(EntityDamageByEntityEvent e){
     if(e.isCancelled()){
       return;
     }
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
-    if(e.getEntity() instanceof Player) {
+    if(e.getEntity() instanceof Player){
       McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
       //Deal with Divine Escape debuff
       if(mcRPGPlayer.getDivineEscapeDamageDebuff() > 0){
-        double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff()/100 + 1;
+        double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff() / 100 + 1;
         e.setDamage(e.getDamage() * debuff);
       }
       if(!Skills.FITNESS.isEnabled()){
         return;
       }
-      if(e.getDamager() instanceof LivingEntity) {
+      if(e.getDamager() instanceof LivingEntity){
         LivingEntity attacker = (LivingEntity) e.getDamager();
         Material weaponType = attacker.getEquipment().getItemInMainHand().getType();
-        if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")) {
+        if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")){
           if(UnlockedAbilities.THICK_SKIN.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.THICK_SKIN)
-                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()) {
+                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()){
             ThickSkin thickSkin = (ThickSkin) mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN);
             double damageDecrease = config.getDouble("ThickSkinConfig.Tier" + Methods.convertToNumeral(thickSkin.getCurrentTier())
                     + ".DamageDecrease");
             ThickSkinEvent thickSkinEvent = new ThickSkinEvent(mcRPGPlayer, thickSkin, damageDecrease, (LivingEntity) e.getDamager());
             Bukkit.getPluginManager().callEvent(thickSkinEvent);
-            if(!thickSkinEvent.isCancelled()) {
+            if(!thickSkinEvent.isCancelled()){
               e.setDamage(e.getDamage() * ((100 - damageDecrease) / 100));
             }
           }
           if(attacker instanceof Player && UnlockedAbilities.IRON_MUSCLES.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.IRON_MUSCLES)
-                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()) {
+                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()){
             IronMuscles ironMuscles = (IronMuscles) mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES);
             double activationChance = config.getDouble("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier())
                     + ".ActivationChance");
-            int chance = (int) activationChance * 1000;
+            int chance = (int) (activationChance * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
-            if(chance >= val) {
+            if(chance >= val){
               int weaponDamage = config.getInt("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier()) +
                       ".WeaponDamage");
               IronMusclesEvent ironMusclesEvent = new IronMusclesEvent(mcRPGPlayer, ironMuscles, weaponDamage, (Player) attacker);
               Bukkit.getPluginManager().callEvent(ironMusclesEvent);
-              if(!ironMusclesEvent.isCancelled()) {
+              if(!ironMusclesEvent.isCancelled()){
                 attacker.getEquipment().getItemInMainHand().setDurability((short) (attacker.getEquipment().getItemInMainHand().getDurability() + ironMusclesEvent.getDurabilityLoss()));
               }
             }
           }
         }
         if(UnlockedAbilities.DODGE.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.DODGE) &&
-                mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()) {
+                mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()){
           Dodge dodge = (Dodge) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE);
           double activationChance = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier())
                   + ".ActivationChance");
-          int chance = (int) activationChance * 1000;
+          int chance = (int) (activationChance * 1000);
           Random rand = new Random();
           int val = rand.nextInt(100000);
-          if(chance >= val) {
+          if(chance >= val){
             double damageReduction = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier()) +
                     ".DamageReduction");
             DodgeEvent dodgeEvent = new DodgeEvent(mcRPGPlayer, dodge, attacker, damageReduction);
             Bukkit.getPluginManager().callEvent(dodgeEvent);
-            if(!dodgeEvent.isCancelled()) {
+            if(!dodgeEvent.isCancelled()){
               e.setDamage(e.getDamage() * ((100 - damageReduction) / 100));
               mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Dodge.Activated")));
             }
           }
         }
       }
-      else if(e.getDamager() instanceof Projectile) {
+      else if(e.getDamager() instanceof Projectile){
         if(UnlockedAbilities.BULLET_PROOF.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.BULLET_PROOF)
-                && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()) {
+                && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()){
           BulletProof bulletProof = (BulletProof) mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF);
           double activationChance = config.getDouble("BulletProofConfig.Tier" + Methods.convertToNumeral(bulletProof.getCurrentTier())
                   + ".ActivationChance");
-          int chance = (int) activationChance * 1000;
+          int chance = (int) (activationChance * 1000);
           Random rand = new Random();
           int val = rand.nextInt(100000);
-          if(chance >= val) {
+          if(chance >= val){
             BulletProofEvent bulletProofEvent = new BulletProofEvent(mcRPGPlayer, bulletProof, (Projectile) e.getDamager());
             Bukkit.getPluginManager().callEvent(bulletProofEvent);
-            if(!bulletProofEvent.isCancelled()) {
+            if(!bulletProofEvent.isCancelled()){
               e.setCancelled(true);
               mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BulletProof.Activated")));
             }
@@ -290,8 +299,8 @@ public class VanillaDamageEvent implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void awardFitnessExp(EntityDamageByEntityEvent e) {
-    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player){
+  public void awardFitnessExp(EntityDamageByEntityEvent e){
+    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && ((Player) e.getEntity()).getHealth() - e.getDamage() > 0){
       McRPGPlayer mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
       double damage = e.getDamage();
       int expAwarded = (int) (damage * McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG).getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));
@@ -305,47 +314,47 @@ public class VanillaDamageEvent implements Listener {
    * It was released under the GPLv3 license
    */
   @EventHandler(priority = EventPriority.HIGH)
-  public void damageEvent(EntityDamageByEntityEvent e) {
-    if(e.isCancelled()) {
+  public void damageEvent(EntityDamageByEntityEvent e){
+    if(e.isCancelled()){
       return;
     }
     FileConfiguration config;
-    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)) {
+    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)){
       Player damager = (Player) e.getDamager();
-      if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()) {
+      if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()){
         return;
       }
       McRPGPlayer mp = PlayerManager.getPlayer(damager.getUniqueId());
       //Deal with world guard
-      if(McRPG.getInstance().isWorldGuardEnabled()) {
+      if(McRPG.getInstance().isWorldGuardEnabled()){
         WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
 
-        if(wgSupportManager.isWorldTracker(damager.getWorld())) {
+        if(wgSupportManager.isWorldTracker(damager.getWorld())){
           RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
           Location loc = damager.getLocation();
           RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
           HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
           assert manager != null;
           ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
-          for(ProtectedRegion region : set) {
-            if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())) {
+          for(ProtectedRegion region : set){
+            if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())){
               List<String> expressions = regions.get(region.getId()).getAttackExpressions().get(e.getEntity().getType());
-              for(String s : expressions) {
-                if(s.contains("difference")) {
-                  if(!(e.getEntity() instanceof Player)) {
+              for(String s : expressions){
+                if(s.contains("difference")){
+                  if(!(e.getEntity() instanceof Player)){
                     continue;
                   }
-                  else {
+                  else{
                     ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mp, PlayerManager.getPlayer(e.getEntity().getUniqueId()));
-                    if(actionLimiterParser.evaluateExpression()) {
+                    if(actionLimiterParser.evaluateExpression()){
                       e.setCancelled(true);
                       return;
                     }
                   }
                 }
-                else {
+                else{
                   ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mp);
-                  if(actionLimiterParser.evaluateExpression()) {
+                  if(actionLimiterParser.evaluateExpression()){
                     e.setCancelled(true);
                     return;
                   }
@@ -356,39 +365,39 @@ public class VanillaDamageEvent implements Listener {
         }
       }
       //Deal with unarmed
-      if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR) {
-        if(!Skills.UNARMED.isEnabled()) {
+      if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
+        if(!Skills.UNARMED.isEnabled()){
           return;
         }
         config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG);
         e.setDamage(e.getDamage() + config.getInt("BonusDamage"));
         //Give exp
         int baseExp = 0;
-        if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+        if(!config.contains("ExpAwardedPerMob." + e.getEntityType().name())){
           baseExp = config.getInt("ExpAwardedPerMob.OTHER");
         }
-        else {
-          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+        else{
+          baseExp = config.getInt("ExpAwardedPerMob." + e.getEntityType().name());
         }
         double dmg = e.getDamage();
         double mobSpawnValue = 1.0;
-        if(e.getEntity().hasMetadata("ExpModifier")) {
+        if(e.getEntity().hasMetadata("ExpModifier")){
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
         mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
-        if(mp.isCanSmite()) {
-          if(!(e.getEntity().getFireTicks() > 0)) {
+        if(mp.isCanSmite()){
+          if(!(e.getEntity().getFireTicks() > 0)){
             LivingEntity entity = (LivingEntity) e.getEntity();
-            int chance = (int) mp.getSmitingFistData().getSmiteChance() * 1000;
+            int chance = (int) (mp.getSmitingFistData().getSmiteChance() * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
-            if(chance >= val) {
-              if(entity.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+            if(chance >= val){
+              if(entity.hasPotionEffect(PotionEffectType.INVISIBILITY)){
                 entity.removePotionEffect(PotionEffectType.INVISIBILITY);
               }
               entity.setFireTicks(mp.getSmitingFistData().getSmiteDuration() * 20);
-              if(entity instanceof Player) {
+              if(entity instanceof Player){
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited").replace("%Player%", entity.getName())));
               }
@@ -396,29 +405,29 @@ public class VanillaDamageEvent implements Listener {
             }
           }
         }
-        else if(mp.isCanDenseImpact()) {
-          if(e.getEntity() instanceof Player) {
+        else if(mp.isCanDenseImpact()){
+          if(e.getEntity() instanceof Player){
             Player damaged = (Player) e.getEntity();
-            for(ItemStack armour : damaged.getInventory().getArmorContents()) {
+            for(ItemStack armour : damaged.getInventory().getArmorContents()){
               armour.setDurability((short) (armour.getDurability() + mp.getArmourDmg()));
             }
           }
         }
-        if(mp.isReadying()) {
-          if(mp.getReadyingAbilityBit() == null) {
+        if(mp.isReadying()){
+          if(mp.getReadyingAbilityBit() == null){
             mp.setReadying(false);
             return;
           }
           PlayerReadyBit playerReadyBit = mp.getReadyingAbilityBit();
-          if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.BERSERK)) {
-            if(UnlockedAbilities.BERSERK.isEnabled() && mp.getBaseAbility(UnlockedAbilities.BERSERK).isToggled()) {
+          if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.BERSERK)){
+            if(UnlockedAbilities.BERSERK.isEnabled() && mp.getBaseAbility(UnlockedAbilities.BERSERK).isToggled()){
 
               Berserk berserk = (Berserk) mp.getBaseAbility(UnlockedAbilities.BERSERK);
               double bonusChance = config.getDouble("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".ActivationBoost");
               int bonusDmg = config.getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".DamageBoost");
               BerserkEvent event = new BerserkEvent(mp, (Berserk) mp.getBaseAbility(UnlockedAbilities.BERSERK), bonusChance, bonusDmg);
               Bukkit.getPluginManager().callEvent(event);
-              if(!event.isCancelled()) {
+              if(!event.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.BERSERK);
                 //cancel the readying task and null the bit
                 Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
@@ -434,10 +443,10 @@ public class VanillaDamageEvent implements Listener {
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 5, 1);
                 new BukkitRunnable() {
                   @Override
-                  public void run() {
+                  public void run(){
                     //Undo all the things that berserk did and set it on cooldown
                     disarm.setBonusChance(0);
-                    if(mp.getPlayer().isOnline()) {
+                    if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                               McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Deactivated")));
                     }
@@ -452,8 +461,8 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-          else if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.SMITING_FIST)) {
-            if(UnlockedAbilities.SMITING_FIST.isEnabled() && mp.getBaseAbility(UnlockedAbilities.SMITING_FIST).isToggled()) {
+          else if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.SMITING_FIST)){
+            if(UnlockedAbilities.SMITING_FIST.isEnabled() && mp.getBaseAbility(UnlockedAbilities.SMITING_FIST).isToggled()){
               SmitingFist smitingFist = (SmitingFist) mp.getBaseAbility(UnlockedAbilities.SMITING_FIST);
               //cancel the readying task and null the bit
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
@@ -468,16 +477,16 @@ public class VanillaDamageEvent implements Listener {
               int cooldown = config.getInt("SmitingFistConfig.Tier" + Methods.convertToNumeral(smitingFist.getCurrentTier()) + ".Cooldown");
               SmitingFistEvent smitingFistEvent = new SmitingFistEvent(mp, smitingFist, absorptionLevel, smiteChance, smiteDuration, removeInvis, removeDebuff, duration, cooldown);
               Bukkit.getPluginManager().callEvent(smitingFistEvent);
-              if(!smitingFistEvent.isCancelled()) {
+              if(!smitingFistEvent.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.SMITING_FIST);
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Activated")));
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_CAST_SPELL, 5, 1);
                 mp.setSmitingFistData(smitingFistEvent);
                 mp.setCanSmite(true);
-                if(smitingFistEvent.isRemoveDebuffs()) {
-                  for(PotionEffect effectType : damager.getActivePotionEffects()) {
-                    if(Debuffs.isDebuff(effectType.getType())) {
+                if(smitingFistEvent.isRemoveDebuffs()){
+                  for(PotionEffect effectType : damager.getActivePotionEffects()){
+                    if(Debuffs.isDebuff(effectType.getType())){
                       damager.removePotionEffect(effectType.getType());
                     }
                   }
@@ -485,11 +494,11 @@ public class VanillaDamageEvent implements Listener {
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, smitingFistEvent.getDuration() * 20, smitingFistEvent.getAbsorptionLevel()));
                 new BukkitRunnable() {
                   @Override
-                  public void run() {
+                  public void run(){
                     //Undo all the things that smiting fist did and set it on cooldown
                     mp.setCanSmite(false);
                     mp.setSmitingFistData(null);
-                    if(mp.getPlayer().isOnline()) {
+                    if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                               McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Deactivated")));
                     }
@@ -504,8 +513,8 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-          else if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.DENSE_IMPACT)) {
-            if(UnlockedAbilities.DENSE_IMPACT.isEnabled() && mp.getBaseAbility(UnlockedAbilities.DENSE_IMPACT).isToggled()) {
+          else if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.DENSE_IMPACT)){
+            if(UnlockedAbilities.DENSE_IMPACT.isEnabled() && mp.getBaseAbility(UnlockedAbilities.DENSE_IMPACT).isToggled()){
               DenseImpact denseImpact = (DenseImpact) mp.getBaseAbility(UnlockedAbilities.DENSE_IMPACT);
               int cooldown = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".Cooldown");
               int duration = config.getInt("DenseImpactConfig.Tier" + Methods.convertToNumeral(denseImpact.getCurrentTier()) + ".Duration");
@@ -515,7 +524,7 @@ public class VanillaDamageEvent implements Listener {
               mp.setReadyingAbilityBit(null);
               DenseImpactEvent denseImpactEvent = new DenseImpactEvent(mp, denseImpact, armourDmg);
               Bukkit.getPluginManager().callEvent(denseImpactEvent);
-              if(!denseImpactEvent.isCancelled()) {
+              if(!denseImpactEvent.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.DENSE_IMPACT);
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Activated")));
@@ -524,11 +533,11 @@ public class VanillaDamageEvent implements Listener {
                 mp.setArmourDmg(denseImpactEvent.getArmourDmg());
                 new BukkitRunnable() {
                   @Override
-                  public void run() {
+                  public void run(){
                     //Undo all the things that dense impact did and set it on cooldown
                     mp.setCanDenseImpact(false);
                     mp.setArmourDmg(0);
-                    if(mp.getPlayer().isOnline()) {
+                    if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                               McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Deactivated")));
                     }
@@ -545,35 +554,35 @@ public class VanillaDamageEvent implements Listener {
           }
         }
         //Manage disarm
-        if(e.getEntity() instanceof Player && UnlockedAbilities.DISARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DISARM) && mp.getBaseAbility(UnlockedAbilities.DISARM).isToggled()) {
+        if(e.getEntity() instanceof Player && UnlockedAbilities.DISARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DISARM) && mp.getBaseAbility(UnlockedAbilities.DISARM).isToggled()){
           Disarm disarm = (Disarm) mp.getBaseAbility(UnlockedAbilities.DISARM);
           Player damagedPlayer = (Player) e.getEntity();
           McRPGPlayer damagedMcRPGPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-          if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR) {
+          if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR){
             double disarmChance = config.getDouble("DisarmConfig.Tier" + Methods.convertToNumeral(disarm.getCurrentTier()) + ".ActivationChance") + disarm.getBonusChance();
-            int chance = (int) disarmChance * 1000;
+            int chance = (int) (disarmChance * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
-            if(chance >= val) {
+            if(chance >= val){
               DisarmEvent disarmEvent = new DisarmEvent(mp, damagedMcRPGPlayer, disarm, damagedPlayer.getItemInHand());
               Bukkit.getPluginManager().callEvent(disarmEvent);
-              if(!disarmEvent.isCancelled()) {
+              if(!disarmEvent.isCancelled()){
                 int slot = -1;
-                for(int i = 9; i < 36; i++) {
+                for(int i = 9; i < 36; i++){
                   ItemStack item = damagedPlayer.getInventory().getItem(i);
-                  if(item == null || item.getType() == Material.AIR) {
+                  if(item == null || item.getType() == Material.AIR){
                     slot = i;
                     break;
                   }
                 }
                 int heldSlot = damagedPlayer.getInventory().getHeldItemSlot();
-                if(damagedPlayer.getInventory().getItem(heldSlot) == null) {
+                if(damagedPlayer.getInventory().getItem(heldSlot) == null){
                   return;
                 }
-                if(slot == -1) {
+                if(slot == -1){
                   damagedPlayer.getLocation().getWorld().dropItemNaturally(damagedPlayer.getLocation(), disarmEvent.getItemToDisarm());
                 }
-                else {
+                else{
                   damagedPlayer.getInventory().setItem(slot, disarmEvent.getItemToDisarm());
                 }
                 damagedPlayer.getInventory().setItem(heldSlot, new ItemStack(Material.AIR));
@@ -584,36 +593,36 @@ public class VanillaDamageEvent implements Listener {
             }
           }
         }
-        if(UnlockedAbilities.IRON_ARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.IRON_ARM) && mp.getBaseAbility(UnlockedAbilities.IRON_ARM).isToggled()) {
+        if(UnlockedAbilities.IRON_ARM.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.IRON_ARM) && mp.getBaseAbility(UnlockedAbilities.IRON_ARM).isToggled()){
           IronArm ironArm = (IronArm) mp.getBaseAbility(UnlockedAbilities.IRON_ARM);
-          int chance = (int) config.getDouble("IronArmConfig.Tier" + Methods.convertToNumeral(ironArm.getCurrentTier()) + ".ActivationChance") * 1000;
+          int chance = (int) (config.getDouble("IronArmConfig.Tier" + Methods.convertToNumeral(ironArm.getCurrentTier()) + ".ActivationChance") * 1000);
           int bonusDmg = config.getInt("IronArmConfig.Tier" + Methods.convertToNumeral(ironArm.getCurrentTier()) + ".DamageBoost");
           Random rand = new Random();
           int val = rand.nextInt(100000);
-          if(chance >= val) {
+          if(chance >= val){
             IronArmEvent ironArmEvent = new IronArmEvent(mp, ironArm, bonusDmg);
             Bukkit.getPluginManager().callEvent(ironArmEvent);
-            if(!ironArmEvent.isCancelled()) {
+            if(!ironArmEvent.isCancelled()){
               e.setDamage(e.getDamage() + ironArmEvent.getBonusDamage());
             }
           }
         }
       }
-      else {
+      else{
         Material weapon = damager.getItemInHand().getType();
-        if(weapon.name().contains("SWORD")) {
+        if(weapon.name().contains("SWORD")){
           Skill playersSkill = mp.getSkill(Skills.SWORDS);
-          if(!Skills.SWORDS.isEnabled()) {
+          if(!Skills.SWORDS.isEnabled()){
             return;
           }
           //If the player is readying for an ability
-          if(mp.isReadying()) {
+          if(mp.isReadying()){
             //If we need to use serrated strikes (We can preemptively assume that its enabled as we have checked earlier on in the code)
-            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.SERRATED_STRIKES) {
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.SERRATED_STRIKES){
               //call api event
               SerratedStrikesEvent event = new SerratedStrikesEvent(mp, (SerratedStrikes) mp.getBaseAbility(UnlockedAbilities.SERRATED_STRIKES));
               Bukkit.getPluginManager().callEvent(event);
-              if(!event.isCancelled()) {
+              if(!event.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.SERRATED_STRIKES);
                 //cancel the readying task and null the bit
                 Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
@@ -626,10 +635,10 @@ public class VanillaDamageEvent implements Listener {
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Activated")));
                 new BukkitRunnable() {
                   @Override
-                  public void run() {
+                  public void run(){
                     //Undo all the things that serrated strikes did and set it on cooldown
                     bleed.setBonusChance(0);
-                    if(mp.getPlayer().isOnline()) {
+                    if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                               McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Deactivated")));
                     }
@@ -644,10 +653,10 @@ public class VanillaDamageEvent implements Listener {
               }
             }
             //If we need to use tainted blade
-            else if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.TAINTED_BLADE) {
+            else if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.TAINTED_BLADE){
               TaintedBladeEvent event = new TaintedBladeEvent(mp, (TaintedBlade) mp.getBaseAbility(UnlockedAbilities.TAINTED_BLADE));
               Bukkit.getPluginManager().callEvent(event);
-              if(!event.isCancelled()) {
+              if(!event.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.TAINTED_BLADE);
                 Player p = mp.getPlayer();
                 p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
@@ -667,32 +676,32 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-          if(DefaultAbilities.BLEED.isEnabled()) {
-            if(playersSkill.getAbility(DefaultAbilities.BLEED).isToggled()) {
+          if(DefaultAbilities.BLEED.isEnabled()){
+            if(playersSkill.getAbility(DefaultAbilities.BLEED).isToggled()){
               Bleed bleed = (Bleed) playersSkill.getAbility(DefaultAbilities.BLEED);
               Parser parser = DefaultAbilities.BLEED.getActivationEquation();
-              if(e.getEntity() instanceof Player) {
+              if(e.getEntity() instanceof Player){
                 Player damagedPlayer = (Player) e.getEntity();
                 McRPGPlayer dmged = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-                if(!dmged.isHasBleedImmunity() && bleed.canTarget()) {
+                if(!dmged.isHasBleedImmunity() && bleed.canTarget()){
                   parser.setVariable("swords_level", playersSkill.getCurrentLevel());
                   parser.setVariable("power_level", mp.getPowerLevel());
-                  int chance = (int) parser.getValue() * 1000;
+                  int chance = (int) (parser.getValue() * 1000);
                   Random rand = new Random();
                   int val = rand.nextInt(100000);
-                  if(chance >= val) {
+                  if(chance >= val){
                     BleedEvent event = new BleedEvent(mp, (Player) e.getEntity(), bleed);
                     Bukkit.getPluginManager().callEvent(event);
                   }
                 }
               }
-              else {
+              else{
                 parser.setVariable("swords_level", playersSkill.getCurrentLevel());
                 parser.setVariable("power_level", mp.getPowerLevel());
                 Random rand = new Random();
                 int chance = (int) (parser.getValue() + bleed.getBonusChance()) * 1000;
                 int val = rand.nextInt(100000);
-                if(chance >= val && e.getEntity() instanceof LivingEntity) {
+                if(chance >= val && e.getEntity() instanceof LivingEntity){
                   BleedEvent event = new BleedEvent(mp, (LivingEntity) e.getEntity(), bleed);
                   Bukkit.getPluginManager().callEvent(event);
                 }
@@ -702,15 +711,15 @@ public class VanillaDamageEvent implements Listener {
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
           double multiplier = config.getDouble("MaterialBonus." + weapon.name());
           int baseExp = 0;
-          if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+          if(!config.contains("ExpAwardedPerMob." + e.getEntityType().name())){
             baseExp = config.getInt("ExpAwardedPerMob.OTHER");
           }
-          else {
-            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+          else{
+            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntityType().name());
           }
           double dmg = e.getDamage();
           double mobSpawnValue = 1.0;
-          if(e.getEntity().hasMetadata("ExpModifier")) {
+          if(e.getEntity().hasMetadata("ExpModifier")){
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
@@ -737,9 +746,9 @@ public class VanillaDamageEvent implements Listener {
                 mp.getActiveAbilities().add(UnlockedAbilities.CRIPPLING_BLOW);
                 mp.setCripplingBlowData(cripplingBlowEvent);
                 damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CripplingBlow.Activated")));
-                new BukkitRunnable(){
+                new BukkitRunnable() {
                   @Override
-                  public void run() {
+                  public void run(){
                     mp.getActiveAbilities().remove(UnlockedAbilities.CRIPPLING_BLOW);
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND, cripplingBlowEvent.getCooldown());
@@ -802,9 +811,9 @@ public class VanillaDamageEvent implements Listener {
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, aresBlessingEvent.getStrengthDuration() * 20, aresBlessingEvent.getStrengthLevel()));
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, aresBlessingEvent.getResistanceDuration() * 20, aresBlessingEvent.getResistanceLevel()));
                 damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Activated")));
-                new BukkitRunnable(){
+                new BukkitRunnable() {
                   @Override
-                  public void run() {
+                  public void run(){
                     damager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, aresBlessingEvent.getMiningFatigueDuration() * 20, aresBlessingEvent.getMiningFatigueLevel()));
                     damager.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, aresBlessingEvent.getWeaknessDuration() * 20, aresBlessingEvent.getWeaknessDuration()));
                     damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Deactivated")));
@@ -862,7 +871,7 @@ public class VanillaDamageEvent implements Listener {
             int chance = (int) (parser.getValue() + bonusChance) * 1000;
             Random rand = new Random();
             int val = rand.nextInt(100000);
-            if(chance >= val) {
+            if(chance >= val){
               ShredEvent event = new ShredEvent(mp, shred, target, armourDamage);
               Bukkit.getPluginManager().callEvent(event);
               if(!event.isCancelled() && target.getEquipment() != null){
@@ -877,15 +886,15 @@ public class VanillaDamageEvent implements Listener {
           }
           double multiplier = config.getDouble("MaterialBonus." + weapon.name());
           int baseExp = 0;
-          if(!config.contains("ExpAwardedPerMob." + e.getEntity().toString())) {
+          if(!config.contains("ExpAwardedPerMob." + e.getEntityType().name())){
             baseExp = config.getInt("ExpAwardedPerMob.OTHER");
           }
-          else {
-            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().toString());
+          else{
+            baseExp = config.getInt("ExpAwardedPerMob." + e.getEntityType().name());
           }
           double dmg = e.getDamage();
           double mobSpawnValue = 1.0;
-          if(e.getEntity().hasMetadata("ExpModifier")) {
+          if(e.getEntity().hasMetadata("ExpModifier")){
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
@@ -894,21 +903,21 @@ public class VanillaDamageEvent implements Listener {
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
     }
-    else if(e.getEntity() instanceof LivingEntity && e.getDamager() instanceof Arrow && Skills.ARCHERY.isEnabled()) {
+    else if(e.getEntity() instanceof LivingEntity && e.getDamager() instanceof Arrow && Skills.ARCHERY.isEnabled()){
       Arrow arrow = (Arrow) e.getDamager();
-      if(arrow.getShooter() instanceof Player) {
+      if(arrow.getShooter() instanceof Player){
         Player shooter = (Player) arrow.getShooter();
-        if(shooter.getUniqueId().equals(e.getEntity().getUniqueId())) {
+        if(shooter.getUniqueId().equals(e.getEntity().getUniqueId())){
           return;
         }
         McRPGPlayer mp = PlayerManager.getPlayer(shooter.getUniqueId());
         //give exp
         config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ARCHERY_CONFIG);
         int baseExp = 0;
-        if(!config.contains("ExpAwardedPerMob." + e.getEntity().getType().name())) {
+        if(!config.contains("ExpAwardedPerMob." + e.getEntity().getType().name())){
           baseExp = config.getInt("ExpAwardedPerMob.OTHER");
         }
-        else {
+        else{
           baseExp = config.getInt("ExpAwardedPerMob." + e.getEntity().getType().name());
         }
         double dmg = e.getDamage();
@@ -918,13 +927,13 @@ public class VanillaDamageEvent implements Listener {
         Location loc = Methods.stringToLoc(arrow.getMetadata("ShootLoc").get(0).asString());
         Location hitLoc = e.getEntity().getLocation();
         double distance = loc.distance(hitLoc);
-        if(distance > config.getInt("DistanceBonusCap")) {
+        if(distance > config.getInt("DistanceBonusCap")){
           distance = config.getInt("DistanceBonusCap");
         }
         Parser parser = new Parser(config.getString("DistanceBonus"));
         parser.setVariable("block_distance", distance);
         double mobSpawnValue = 1.0;
-        if(e.getEntity().hasMetadata("ExpModifier")) {
+        if(e.getEntity().hasMetadata("ExpModifier")){
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp + (dmg * baseExp * parser.getValue())) * mobSpawnValue);
@@ -933,21 +942,21 @@ public class VanillaDamageEvent implements Listener {
         //Handle the hp bars when dealing with archery
         handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
 
-        if(e.getEntity() instanceof LivingEntity) {
+        if(e.getEntity() instanceof LivingEntity){
           LivingEntity target = (LivingEntity) e.getEntity();
-          if(arrow.hasMetadata("Artemis")) {
+          if(arrow.hasMetadata("Artemis")){
             double dmgMultiplier = arrow.getMetadata("Artemis").get(0).asDouble();
             e.setDamage(e.getDamage() * dmgMultiplier);
-            if(target instanceof Player) {
+            if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Hit")));
             }
           }
 
-          else if(arrow.hasMetadata("Apollo")) {
+          else if(arrow.hasMetadata("Apollo")){
             int fireDuration = arrow.getMetadata("Apollo").get(0).asInt();
             target.setFireTicks(fireDuration * 20);
-            if(target instanceof Player) {
+            if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Hit")));
             }
@@ -962,7 +971,7 @@ public class VanillaDamageEvent implements Listener {
             target.removePotionEffect(PotionEffectType.WATER_BREATHING);
           }
 
-          else if(arrow.hasMetadata("Hades1")) {
+          else if(arrow.hasMetadata("Hades1")){
             int witherDuration = arrow.getMetadata("Hades1").get(0).asInt();
             int witherLevel = arrow.getMetadata("Hades2").get(0).asInt();
             int slownessDuration = arrow.getMetadata("Hades3").get(0).asInt();
@@ -972,59 +981,59 @@ public class VanillaDamageEvent implements Listener {
             target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slownessDuration * 20, slownessLevel - 1));
             target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, blindnessDuration * 20, 0));
 
-            if(target instanceof Player) {
+            if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.CurseOfHades.Hit")));
             }
           }
 
-          if(arrow.hasMetadata("Puncture")) {
+          if(arrow.hasMetadata("Puncture")){
             McRPGPlayer s = PlayerManager.getPlayer(UUID.fromString(arrow.getMetadata("Puncture").get(0).asString()));
             BleedEvent bleedEvent = new BleedEvent(s, target, (Bleed) s.getBaseAbility(DefaultAbilities.BLEED));
             Bukkit.getPluginManager().callEvent(bleedEvent);
-            if(!bleedEvent.isCancelled() && target instanceof Player) {
+            if(!bleedEvent.isCancelled() && target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Puncture.Hit")));
             }
           }
 
-          if(arrow.hasMetadata("TippedArrows")) {
+          if(arrow.hasMetadata("TippedArrows")){
             String effect = arrow.getMetadata("TippedArrows").get(0).asString();
             String[] data = effect.split(":");
             PotionEffect potionEffect = new PotionEffect(PotionEffectType.getByName(data[0]), Integer.parseInt(data[2]) * 20, Integer.parseInt(data[1]) - 1);
             target.addPotionEffect(potionEffect);
-            if(target instanceof Player) {
+            if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.TippedArrows.Hit")));
             }
           }
 
-          if(arrow.hasMetadata("Combo1")) {
+          if(arrow.hasMetadata("Combo1")){
             //Kinda unneeded but better safe than sorry ig?
             UUID shooterUUID = UUID.fromString(arrow.getMetadata("Combo1").get(0).asString());
             long lastShotTime = 0;
             int lengthBetweenShots = arrow.getMetadata("Combo3").get(0).asInt();
             double dmgMultiplier = arrow.getMetadata("Combo2").get(0).asDouble();
             Calendar cal = Calendar.getInstance();
-            if(shooter.getUniqueId().equals(shooterUUID)) {
+            if(shooter.getUniqueId().equals(shooterUUID)){
               //Update the last shot time to the most recent one
-              if(target.hasMetadata("LastShotTime")) {
+              if(target.hasMetadata("LastShotTime")){
                 lastShotTime = target.getMetadata("LastShotTime").get(0).asLong();
               }
-              if(target.hasMetadata("TaggedBy")) {
+              if(target.hasMetadata("TaggedBy")){
                 UUID taggedByUUID = UUID.fromString(target.getMetadata("TaggedBy").get(0).asString());
-                if(taggedByUUID.equals(shooterUUID)) {
+                if(taggedByUUID.equals(shooterUUID)){
                   //This shouldnt happen but lets check it just in case we need to set the time for the next time
-                  if(lastShotTime == 0) {
+                  if(lastShotTime == 0){
                     Methods.setMetadata(target, "LastShotTime", cal.getTimeInMillis());
                   }
                   //If it is within the time frame
-                  else if(cal.getTimeInMillis() - lastShotTime <= lengthBetweenShots * 1000) {
+                  else if(cal.getTimeInMillis() - lastShotTime <= lengthBetweenShots * 1000){
                     //do dmg buff
                     e.setDamage(e.getDamage() * dmgMultiplier);
-                    if(target instanceof Player) {
+                    if(target instanceof Player){
                       target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Combo.Hit")));
                     }
                     //if for some reason i didnt catch this remove it
-                    if(shooter.hasMetadata("ComboCooldown")) {
+                    if(shooter.hasMetadata("ComboCooldown")){
                       shooter.removeMetadata("ComboCooldown", McRPG.getInstance());
                     }
                     //add the new value to ComboCooldown
@@ -1035,13 +1044,13 @@ public class VanillaDamageEvent implements Listener {
                   Methods.setMetadata(target, "LastShotTime", cal.getTimeInMillis());
                 }
                 //if they have been shot by someone other than the previous shooter
-                else {
+                else{
                   //If there is no stored time we need to set it
-                  if(lastShotTime == 0) {
+                  if(lastShotTime == 0){
                     Methods.setMetadata(target, "LastShotTime", cal.getTimeInMillis());
                   }
                   //otherwise we need to reset the time since they've been shot again
-                  else {
+                  else{
                     target.removeMetadata("LastShotTime", McRPG.getInstance());
                     Methods.setMetadata(target, "LastShotTime", cal.getTimeInMillis());
                   }
@@ -1051,7 +1060,7 @@ public class VanillaDamageEvent implements Listener {
                 }
               }
               //If they arent already tagged by smt
-              else {
+              else{
                 Methods.setMetadata(target, "TaggedBy", shooterUUID.toString());
                 Methods.setMetadata(target, "LastShotTime", cal.getTimeInMillis());
               }
@@ -1059,15 +1068,15 @@ public class VanillaDamageEvent implements Listener {
           }
         }
         //Deal with player specific archery abilities.
-        if(e.getEntity() instanceof Player) {
+        if(e.getEntity() instanceof Player){
           Player target = (Player) e.getEntity();
-          if(arrow.hasMetadata("DazeN")) {
+          if(arrow.hasMetadata("DazeN")){
             int nauseaDuration = arrow.getMetadata("DazeN").get(0).asInt();
             int blindnessDuration = arrow.getMetadata("DazeB").get(0).asInt();
             boolean forcePlayerLookup = arrow.getMetadata("DazeF").get(0).asBoolean();
             target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, blindnessDuration * 20, 0));
             target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, nauseaDuration * 20, 0));
-            if(forcePlayerLookup) {
+            if(forcePlayerLookup){
               Location l = target.getLocation();
               Random rand = new Random();
               //pick a bound between 0-180 and subtract off 90 to give us a range of 90 to -90
@@ -1077,12 +1086,12 @@ public class VanillaDamageEvent implements Listener {
             }
           }
         }
-        else {
+        else{
           return;
         }
       }
     }
-    else {
+    else{
       return;
     }
   }
@@ -1099,13 +1108,13 @@ public class VanillaDamageEvent implements Listener {
     @Getter
     private PotionEffectType effectType;
 
-    Debuffs(PotionEffectType effectType) {
+    Debuffs(PotionEffectType effectType){
       this.effectType = effectType;
     }
 
-    public static boolean isDebuff(PotionEffectType test) {
-      for(Debuffs debuff : values()) {
-        if(debuff.getEffectType().equals(test)) {
+    public static boolean isDebuff(PotionEffectType test){
+      for(Debuffs debuff : values()){
+        if(debuff.getEffectType().equals(test)){
           return true;
         }
       }

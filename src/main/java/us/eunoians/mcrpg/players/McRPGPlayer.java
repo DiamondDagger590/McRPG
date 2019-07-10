@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
 import us.eunoians.mcrpg.abilities.axes.*;
 import us.eunoians.mcrpg.abilities.excavation.*;
+import us.eunoians.mcrpg.abilities.fishing.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
@@ -26,6 +27,7 @@ import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
+import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
@@ -55,6 +57,13 @@ public class McRPGPlayer {
   @Getter private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
   @Getter @Setter private long endTimeForReplaceCooldown;
   @Getter private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
+
+  @Getter @Setter
+  private PlayerRank powerRank;
+  @Getter
+  private Map<Skills, PlayerRank> skillRanks = new HashMap<>();
+  @Getter
+  private boolean isLoadingRankData = false;
 
   //Ability data
   @Getter @Setter private boolean hasBleedImmunity = false;
@@ -96,7 +105,7 @@ public class McRPGPlayer {
   @Getter @Setter private Location lastFishCaughtLoc = null;
 
   //Fitness Data
-  @Getter @Setter private Location lastFallLocation = null;
+  @Getter private List<Location> lastFallLocation = new ArrayList<>();
 
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
@@ -1063,6 +1072,83 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(axes);
           }
+          else if(skill.equals(Skills.FISHING)) {
+            //Initialize Great Rod
+            GreatRod greatRod = new GreatRod();
+            greatRod.setToggled(rs.getBoolean("is_great_rod_toggled"));
+            //Initialize Poseidons Favor
+            PoseidonsFavor poseidonsFavor = new PoseidonsFavor();
+            poseidonsFavor.setToggled(rs.getBoolean("is_poseidons_favor_toggled"));
+            poseidonsFavor.setCurrentTier(rs.getInt("poseidons_favor_tier"));
+            if(poseidonsFavor.getCurrentTier() != 0) {
+              poseidonsFavor.setUnlocked(true);
+            }
+            //Initialize Magic Touch
+            MagicTouch magicTouch = new MagicTouch();
+            magicTouch.setToggled(rs.getBoolean("is_magic_touch_toggled"));
+            magicTouch.setCurrentTier(rs.getInt("magic_touch_tier"));
+            if(magicTouch.getCurrentTier() != 0) {
+              magicTouch.setUnlocked(true);
+            }
+            //Initialize Sea Gods Blessing
+            SeaGodsBlessing seaGodsBlessing = new SeaGodsBlessing();
+            seaGodsBlessing.setToggled(rs.getBoolean("is_sea_gods_blessing_toggled"));
+            seaGodsBlessing.setCurrentTier(rs.getInt("sea_gods_blessing_tier"));
+            if(seaGodsBlessing.getCurrentTier() != 0) {
+              seaGodsBlessing.setUnlocked(true);
+            }
+            //Initialize Sunken Armory
+            SunkenArmory sunkenArmory = new SunkenArmory();
+            sunkenArmory.setToggled(rs.getBoolean("is_sunken_armory_toggled"));
+            sunkenArmory.setCurrentTier(rs.getInt("sunken_armory_tier"));
+            if(sunkenArmory.getCurrentTier() != 0) {
+              sunkenArmory.setUnlocked(true);
+            }
+            //Initialize Shake
+            Shake shake = new Shake();
+            shake.setToggled(rs.getBoolean("is_shake_toggled"));
+            shake.setCurrentTier(rs.getInt("shake_tier"));
+            if(shake.getCurrentTier() != 0) {
+              shake.setUnlocked(true);
+            }
+            //Initialize Super Rod
+            SuperRod superRod = new SuperRod();
+            superRod.setToggled(rs.getBoolean("is_super_rod_toggled"));
+            superRod.setCurrentTier(rs.getInt("super_rod_tier"));
+            if(superRod.getCurrentTier() != 0) {
+              superRod.setUnlocked(true);
+            }
+
+            if(rs.getBoolean("is_poseidons_favor_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.POSEIDONS_FAVOR);
+            }
+            if(rs.getBoolean("is_magic_touch_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.MAGIC_TOUCH);
+            }
+            if(rs.getBoolean("is_sea_gods_blessing_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SEA_GODS_BLESSING);
+            }
+            if(rs.getBoolean("is_sunken_armory_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SUNKEN_ARMORY);
+            }
+            if(rs.getBoolean("is_shake_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SHAKE);
+            }
+            if(rs.getBoolean("is_super_rod_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.SUPER_ROD);
+            }
+            abilityMap.put(DefaultAbilities.GREAT_ROD, greatRod);
+            abilityMap.put(UnlockedAbilities.POSEIDONS_FAVOR, poseidonsFavor);
+            abilityMap.put(UnlockedAbilities.MAGIC_TOUCH, magicTouch);
+            abilityMap.put(UnlockedAbilities.SEA_GODS_BLESSING, seaGodsBlessing);
+            abilityMap.put(UnlockedAbilities.SUNKEN_ARMORY, sunkenArmory);
+            abilityMap.put(UnlockedAbilities.SHAKE, shake);
+            abilityMap.put(UnlockedAbilities.SUPER_ROD, superRod);
+            Fishing fishing = new Fishing(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(fishing);
+          }
+
         } catch(SQLException e) {
           e.printStackTrace();
         }
@@ -1152,7 +1238,7 @@ public class McRPGPlayer {
    * @return The BaseAbility of the provided enum value
    */
   public BaseAbility getBaseAbility(GenericAbility ability) {
-    return getSkill(ability.getSkill()).getAbility(ability);
+    return ability != null ? getSkill(ability.getSkill()).getAbility(ability) : null;
   }
 
   public void giveExp(Skills skill, int exp, GainReason reason) {
@@ -1332,7 +1418,7 @@ public class McRPGPlayer {
       int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
       database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = '" + uuid.toString() + "'");
     }
-    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
+    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
     @Language("SQL") String query = "UPDATE mcrpg_player_settings SET keep_hand = " + Methods.convertBool(keepHandEmpty)

@@ -141,7 +141,7 @@ public class ShootEvent implements Listener {
             Parser parser = DefaultAbilities.DAZE.getActivationEquation();
             parser.setVariable("archery_level", mp.getSkill(Skills.ARCHERY).getCurrentLevel());
             parser.setVariable("power_level", mp.getPowerLevel());
-            int chance = (int) parser.getValue() * 1000;
+            int chance = (int) (parser.getValue() * 1000);
             Random rand = new Random();
             int val = rand.nextInt(100000);
             if(chance >= val) {

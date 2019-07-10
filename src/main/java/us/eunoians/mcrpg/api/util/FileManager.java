@@ -307,32 +307,35 @@ public class FileManager {
   }
 
   public enum Files {
-    ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
     ABILITY_OVERRIDE_GUI("abilityoverridegui.yml", "guis/abilityoverridegui.yml"),
+    ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
     ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
     AXES_CONFIG("axes.yml", "skills/axes.yml"),
     CONFIG("config.yml", "config.yml"),
     CUSTOM("custom.yml", "localization/custom.yml"),
     EDIT_DEFAULT_ABILITIES_GUI("editdefaultabilitiesgui.yml", "guis/editdefaultabilitiesgui.yml"),
-    EXP_PERM_FILE("exp_perms.yml", "exp_perms.yml"),
     EDIT_LOADOUT_GUI("editloadoutgui.yml", "guis/editloadoutgui.yml"),
     EDIT_LOADOUT_SELECT_GUI("editloadoutgselectui.yml", "guis/editloadoutselectgui.yml"),
     ENGLISH_FILE("en.yml", "localization/en.yml"),
     EXCAVATION_CONFIG("excavation.yml", "skills/excavation.yml"),
+    EXP_PERM_FILE("exp_perms.yml", "exp_perms.yml"),
+    FISHING_CONFIG("fishing.yml", "skills/fishing.yml"),
+    FISHING_LOOT("fishingloot.yml", "skills/fishingloot.yml"),
     FITNESS_CONFIG("fitness.yml", "skills/fitness.yml"),
     HERBALISM_CONFIG("herbalism.yml", "skills/herbalism.yml"),
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),
     REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
-    REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
+    REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
     SELECT_REPLACE_SKILLS_GUI("selectreplaceskillsgui.yml", "guis/selectreplaceskillsgui.yml"),
     SETTINGS_GUI("playersettingsgui.yml", "guis/playersettingsgui.yml"),
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
+    SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
     WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml");
@@ -379,8 +382,8 @@ public class FileManager {
     }
 
     public static Files fromString(String file) {
-      for(Files f : Files.values()) {
-        if(f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)) {
+      for (Files f : Files.values()) {
+        if (f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)) {
           return f;
         }
       }

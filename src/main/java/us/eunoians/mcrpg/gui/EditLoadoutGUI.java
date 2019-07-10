@@ -44,7 +44,9 @@ public class EditLoadoutGUI extends GUI {
       else if(type == EditType.ABILITY_UPGRADE) {
         title = Methods.color(player.getPlayer(), guiConfig.getString("Title.Upgrade").replace("%AbilityPoints%", Integer.toString(player.getAbilityPoints())));
       }
-      Inventory inv = Bukkit.createInventory(null, 9,
+      int totAbilities =  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
+      int size = totAbilities % 9 != 0 ?  totAbilities - (totAbilities % 9) + 9 : totAbilities;
+      Inventory inv = Bukkit.createInventory(null, size,
               title);
       ArrayList<GUIItem> items = new ArrayList<>();
 
@@ -94,7 +96,7 @@ public class EditLoadoutGUI extends GUI {
           newLore = newNewLore;
         }
         if(type == EditType.ABILITY_UPGRADE) {
-          if(ability.getCurrentTier() == 5) {
+          if(ability.getCurrentTier() >= ((UnlockedAbilities) ability.getGenericAbility()).getMaxTier()) {
             for(String s : guiConfig.getStringList("AbilityItem.MaxedLore")){
               newLore.add(Methods.color(player.getPlayer(), s));
             }
@@ -158,7 +160,9 @@ public class EditLoadoutGUI extends GUI {
         invName = "&eEdit your ability loadout";
       }
       //FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
-      Inventory inv = Bukkit.createInventory(null, 9,
+      int totAbilities =  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
+      int size = totAbilities % 9 != 0 ?  totAbilities - (totAbilities % 9) + 9 : totAbilities;
+      Inventory inv = Bukkit.createInventory(null, size,
               Methods.color(player.getPlayer(), invName));
       ArrayList<GUIItem> items = new ArrayList<>();
 

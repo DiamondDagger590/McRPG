@@ -1,5 +1,7 @@
 #Is fitness enabled
 FitnessEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for fitness. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -9,8 +11,8 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much exp should be awarded per damage source.
 ExpAwardedPerDamage:
-  FALL_DAMAGE: 200
-  ENTITY_DAMAGE: 100
+  FALL_DAMAGE: 75
+  ENTITY_DAMAGE: 15
 FallEquation: '(damage*exp_awarded)*feather_falling_level'
 #Minimal distance on each axis that a player must be from their last location to gain exp from falling
 AntiAFK:
@@ -66,7 +68,7 @@ RollConfig:
 # This passive ability decreases the amount of damage taken from melee attacks
 #
 ThickSkinConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -96,12 +98,13 @@ ThickSkinConfig:
       - '&bdecreased by &e%DamageDecrease%%'
     MenuLore:
       - '&bThis ability decreases damage taken from melee'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Bullet Proof
 # This ability can negate damage from arrows
 #
 BulletProofConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -132,12 +135,13 @@ BulletProofConfig:
       - '&bof negating damage from an arrow'
     MenuLore:
       - '&bThis ability negates damage from arrows'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Dodge
 # This passive ability has a chance of halving damage taken from arrows or melee
 #
 DodgeConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -175,12 +179,13 @@ DodgeConfig:
     MenuLore:
       - '&bThis ability can reduce all'
       - '&bdamage taken'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Iron Muscles
 # This active ability gives a chance to do extra durability damage to weapons that hit the player
 #
 IronMusclesConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -218,12 +223,13 @@ IronMusclesConfig:
       - '&bto an attackers melee weapon'
     MenuLore:
       - '&bDeals durability damage when hit by a melee weapon'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Runners Diet
 # This active ability gives a chance to not lose hunger while sprinting
 #
 RunnersDietConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -254,12 +260,13 @@ RunnersDietConfig:
       - '&bdrop below &e%MinHunger%'
     MenuLore:
       - '&bKeep hunger while running'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Divine Escape
 # This active ability lets players ressurect at their bed
 #
 DivineEscapeConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -318,4 +325,6 @@ DivineEscapeConfig:
       - '&bIncrease damage taken by &e%DamagePenalty%%'
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
-      - '&bAllows you to resurrect'
+      - '&bAllows you to resurrect but'
+      - '&bsustain debuffs for a while after'
+      - '&aUnlock Level: &e%UnlockLevel%'

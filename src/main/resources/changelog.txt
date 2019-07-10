@@ -1,3 +1,62 @@
+1.0.0-BETA
++ Added fishing skill. Fishing is seperated into two different config files, the fishing.yml and fishingloot.yml
+  The fishingloot.yml allows an extremely powerful system to configure items, where you can set abilities to give access to
+  different categories, have items require the player to have a specific ability in order for a modifier to be applied etc.
+  The modifier feature is seen with Magic Touch and enchanting fished up loot.
++ Added leaderboard support. /mcrank power, /mcrank power {page}, /mcrank {skill}, /mcrank {skill} {page}. These
+  auto update every 5 minutes async
++ Added leaderboard head support. Make a sign of the following format
+  [mcrpg]
+  power
+  rank #
+
+  example:
+  [mcrpg]
+  power
+  1
+
+  or
+
+  [mcrpg]
+  skill
+  rank #
+
+  example:
+  [mcrpg]
+  herbalism
+  2
+
+  These auto update every 5 or so minutes if the chunks are loaded. If a sign or skull is broke, it'll unregister and send
+  warning to console. Sign must be attached to a block. There must be a block of air above the sign or the block the sign
+  is attached to.
+
+= Removed 2 ability cap on Fitness (fixes a related bug where abilities would be auto denied even with setting disabled)
+= Removed cap of 5 tiers on abilities. Abilities can now have basically infinite tiers.  (Whoever wants to be a
+  smart alek and break this, don't blame me when you mess up on one out of your thousands of lines xD)
+= Can now edit the loadout size
+= Buffed fitness afk check to 4 past locations
+= Added more info to unlock gui
+= Fixed NPE with decayable displays
+= if you have multiple pending abilities, unlock guis will keep popping up until list is exhausted
+= In subskill GUI, added support to showcase when abilities get unlocked to better the UI experience
+= Better unified coloring conventions for skills. Red for combat and blue for collection skills
+= Fixed bug where dying would still give fitness exp
+= Fixed bug where combat exp was calculated incorrectly
+= Rebalanced combat skills to give more accurate exp gains
+= Rebalanced excavation to slow down leveling speed when using max gear
+= Nerfed activation chance of Heavy Swing (Woodcutting) Was too OP for leveling and gathering supplies, should prevent us from needing to nerf exp values
+= Nerfed Dyrads Gift exp values and activation chance (Woodcutting) Granted too much exp, especially when coupled with Heavy Swing
+= Buffed Demeters Shrine (Woodcutting) For a shrine ability, it felt too bland, offering 1-5% exp buff based on tier. This
+  balance change ups it to be considerably better for the duration/cooldown the ability has.
+= Lowered hunger duration on Tainted Blade (Swords) Help make it stand out from Ares Blessing. Shorter/Smaller buff + Smaller punishment
+= Nerfed range on Blast Mining (Mining) Too powerful/too laggy
+= Nerfed chance of Its A Triple (Mining) Too powerful too early
+= Nerfed bonus chance of Richer Ores (Mining) Too powerful too early
+= Nerfed max Double Drop chance (Mining) Made gathering valuables too easy
+= Nerfed exp values from fitness. Yeeting yourself off a cliff made it too easy to level
+= Added sand and red sand to Pans Shrine (Excavation) Consistency among abilities.
+= Buffed Ares Blessing buff levels (Axes) To make it stand out from Tainted Blade. Stronger punishments should have a stronger buff too
+
 1.5.0-ALPHA
 + Added axes
 = Improved UI. Default abilities now show in SubSkillGUI. Upgrade GUI now shows what skill is needed for upgrade

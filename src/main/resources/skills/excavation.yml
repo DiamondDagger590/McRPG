@@ -1,5 +1,7 @@
 #Is excavation enabled
 ExcavationEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for excavation. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -9,16 +11,16 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
-  DIRT: 15
-  GRASS_BLOCK: 30
-  MYCELIUM: 100
-  PODZOL: 50
-  GRAVEL: 40
-  COARSE_DIRT: 20
-  SAND: 30
-  RED_SAND: 40
-  SOUL_SAND: 55
-  CLAY: 30
+  DIRT: 10
+  GRASS_BLOCK: 15
+  MYCELIUM: 30
+  PODZOL: 30
+  GRAVEL: 15
+  COARSE_DIRT: 15
+  SAND: 15
+  RED_SAND: 17
+  SOUL_SAND: 20
+  CLAY: 20
 ExtractionBlocks:
   - 'DIRT'
   - 'GRASS_BLOCK'
@@ -61,26 +63,26 @@ UnlockLevelForAbility:
 # Extraction is the default ability that every player has. This ability will increase every time the players Excavation level is increased
 #
 ExtractionConfig:
-  #Equation for Excavation chance. Default gives 33% at level 1000.
+  #Equation for Excavation chance. Default gives 50% at level 1000.
   ExtractionChanceEquation: (excavation_level)*.05
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Extraction'
+    DisplayName: '&3Extraction'
     Material: DIRT
     Amount: 2
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&aYou have a &e%Extraction_Chance%%'
-      - '&aof doubling drops from blocks'
+      - '&bYou have a &e%Extraction_Chance%%'
+      - '&bof doubling drops from blocks'
     MenuLore:
-      - '&aThis ability has a chance of'
-      - '&adoubling blocks when digging'
+      - '&bThis ability has a chance of'
+      - '&bdoubling blocks when digging'
 #
 # Config for the ability Buried Treasure
 # This passive ability will drop random items from blocks
 #
 BuriedTreasureConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -271,7 +273,7 @@ BuriedTreasureConfig:
             - 'GRAVEL'
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Buried Treasure'
+    DisplayName: '&3Buried Treasure'
     Material: SAND
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -280,6 +282,7 @@ BuriedTreasureConfig:
     MenuLore:
       - '&bThis ability drops rare items '
       - '&bfrom harvesting certain blocks'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Larger Spade
 # This passive ability has a chance of mining in an AOE
@@ -287,7 +290,7 @@ BuriedTreasureConfig:
 LargerSpadeConfig:
   #Should the ability activate for placed blocks as well as natural
   AllowForPlacedBlocks: false
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -324,11 +327,12 @@ LargerSpadeConfig:
       - '&e%Radius% &bblock square around what you mined.'
     MenuLore:
       - '&bThis ability lets you dig in a square'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Mana Deposit
 # This ability allows for the user get exp in a random skill by digging
 ManaDepositConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -383,12 +387,13 @@ ManaDepositConfig:
     MenuLore:
       - '&bThis ability lets gain exp in'
       - '&brandom skills when digging'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Hand Digging
 # This active ability allows you to mine blocks with your hand
 #
 HandDiggingConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -415,7 +420,7 @@ HandDiggingConfig:
     Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Hand Digging'
+    DisplayName: '&3Hand Digging'
     Material: GRAVEL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -423,15 +428,16 @@ HandDiggingConfig:
       - '&bAllows you to instant dig blocks'
       - '&bwith your fist for &e%Duration% &bseconds'
       - '&bCooldown: &e%Cooldown%'
-      - '&bActivate by readying and digging a block'
+      - '&eActivate by readying and digging a block'
     MenuLore:
       - '&bLets you instant break blocks for a while'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Frenzy Dig
 # This active ability allows the player to gain haste and extra Extraction chance for a short while
 #
 FrenzyDigConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -475,13 +481,15 @@ FrenzyDigConfig:
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and breaking a block'
     MenuLore:
-      - '&bGives haste and increases Extraction'
+      - '&bGives haste and increases Extraction chance'
+      - '&bfor a few seconds'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Pans Shrine
 # This active active ability allows players to toss items into a shrine and turn surrounding blocks into others like ores
 #
 PansShrineConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -505,6 +513,8 @@ PansShrineConfig:
       - 'MYCELIUM'
       - 'PODZOL'
       - 'GRAVEL'
+      - 'SAND'
+      - 'RED_SAND'
     #What blocks can replace the old ones using this ability
     #Format is MATERIAL:CHANCE. Chances do not have to add to 100%
     ReplaceBlocks:
@@ -528,6 +538,8 @@ PansShrineConfig:
       - 'MYCELIUM'
       - 'PODZOL'
       - 'GRAVEL'
+      - 'SAND'
+      - 'RED_SAND'
     ReplaceBlocks:
       - 'IRON_ORE:45'
       - 'GOLD_ORE:30'
@@ -548,6 +560,8 @@ PansShrineConfig:
       - 'MYCELIUM'
       - 'PODZOL'
       - 'GRAVEL'
+      - 'SAND'
+      - 'RED_SAND'
     ReplaceBlocks:
       - 'IRON_ORE:40'
       - 'GOLD_ORE:32'
@@ -570,6 +584,8 @@ PansShrineConfig:
       - 'MYCELIUM'
       - 'PODZOL'
       - 'GRAVEL'
+      - 'SAND'
+      - 'RED_SAND'
     ReplaceBlocks:
       - 'IRON_ORE:40'
       - 'GOLD_ORE:35'
@@ -592,6 +608,8 @@ PansShrineConfig:
       - 'MYCELIUM'
       - 'PODZOL'
       - 'GRAVEL'
+      - 'SAND'
+      - 'RED_SAND'
     ReplaceBlocks:
       - 'IRON_ORE:38'
       - 'GOLD_ORE:38'
@@ -605,7 +623,7 @@ PansShrineConfig:
     Cooldown: 3600
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&2Pans Shrine'
+    DisplayName: '&3Pans Shrine'
     Material: ALLIUM
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
@@ -615,5 +633,10 @@ PansShrineConfig:
       - '&binto random ores'
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
-      - '&bSacrifce an emerald to Pan'
+      - '&bSacrifice an emerald to Pan'
       - '&bin order to change the landscape'
+      - ''
+      - '&bShrine is built with water'
+      - '&bsurrounded on all sides by a block'
+      - '&bof emerald'
+      - '&aUnlock Level: &e%UnlockLevel%'

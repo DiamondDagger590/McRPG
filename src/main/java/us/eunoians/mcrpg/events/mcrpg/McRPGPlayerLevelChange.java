@@ -34,24 +34,24 @@ public class McRPGPlayerLevelChange implements Listener {
     if(e.getNextLevel() > e.getSkillLeveled().getType().getMaxLevel()){
       e.setNextLevel( e.getSkillLeveled().getType().getMaxLevel());
     }
-    e.getMcMMOPlayer().updatePowerLevel();
+    e.getMcRPGPlayer().updatePowerLevel();
     //Send the player a message that they leveled up
-    String message = Methods.color(e.getMcMMOPlayer().getPlayer(), mcRPG.getPluginPrefix() +
+    String message = Methods.color(e.getMcRPGPlayer().getPlayer(), mcRPG.getPluginPrefix() +
             mcRPG.getLangFile().getString("Messages.Players.LevelUp")
                     .replaceAll("%Levels%", Integer.toString(e.getAmountOfLevelsIncreased())).replaceAll("%Skill%", e.getSkillLeveled().getType().getDisplayName())
                     .replaceAll("%Current_Level%", Integer.toString(e.getNextLevel())));
     Skill skillLeveled = e.getSkillLeveled();
     skillLeveled.updateExpToLevel();
-    McRPGPlayer mp = e.getMcMMOPlayer();
+    McRPGPlayer mp = e.getMcRPGPlayer();
     //iterate across all levels gained
     for(int i = e.getPreviousLevel() + 1; i <= e.getNextLevel(); i++) {
       //if the level is at a interval to gain the player an ability point, award it to them
       if(i % mcRPG.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0) {
         mp.setAbilityPoints(mp.getAbilityPoints() + 1);
         //Need to fiddle with this sound
-        mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
+        mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 2, 1);
         mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
-                .replaceAll("%Ability_Points%", Integer.toString(e.getMcMMOPlayer().getAbilityPoints()))));
+                .replaceAll("%Ability_Points%", Integer.toString(e.getMcRPGPlayer().getAbilityPoints()))));
         mp.saveData();
       }
     }
@@ -110,12 +110,12 @@ public class McRPGPlayerLevelChange implements Listener {
     addToPending(e, mcRPG, skillLeveled, mp, skillLeveled.getType().getEnabledAbilities());
 
     //Update their general info and scoreboards
-    if(e.getMcMMOPlayer().isOnline()) {
-      Player p = e.getMcMMOPlayer().getPlayer();
+    if(e.getMcRPGPlayer().isOnline()) {
+      Player p = e.getMcRPGPlayer().getPlayer();
       p.sendMessage(message);
       World w = p.getWorld();
-      w.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 1);
-      if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(e.getMcMMOPlayer().getPlayer())) {
+      w.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2, 1);
+      if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(e.getMcRPGPlayer().getPlayer())) {
         return;
       }
       DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
@@ -159,7 +159,7 @@ public class McRPGPlayerLevelChange implements Listener {
               else {
                 p.sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() +
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
-                p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 5, 1);
+                p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 3, 1);
                 mp.addPendingAbilityUnlock(ab);
               }
             }

@@ -24,3 +24,5 @@ commands:
     description: Displays help info for commands
   mcredeem:
     description: Allows redeeming of exp
+  mcrank:
+    description: Shows a leaderboard

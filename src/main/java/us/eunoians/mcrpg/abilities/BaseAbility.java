@@ -13,7 +13,7 @@ public abstract class BaseAbility {
   private boolean isToggled;
 
   @Getter @Setter
-  private int currentTier;
+  private int currentTier = 0;
 
   @Getter @Setter
   private boolean isUnlocked;

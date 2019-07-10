@@ -1,5 +1,7 @@
 #Is mining enabled
 MiningEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
 #Exp equation for mining. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
@@ -94,8 +96,8 @@ UnlockLevelForAbility:
 # DoubleDrop is the default ability that every player has. This ability will increase every time the players Mining level is increased
 #
 DoubleDropConfig:
-  #Equation for Double Drop chance. Default gives 50% at level 1000.
-  DoubleDropChanceEquation: (mining_level)*.05
+  #Equation for Double Drop chance. Default gives 25% at level 1000.
+  DoubleDropChanceEquation: (mining_level)*.025
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Double Drop'
@@ -103,16 +105,16 @@ DoubleDropConfig:
     Amount: 2
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bYou have a &e%DoubleDrop_Chance%% &b+&e%Chance_Boost%% &bchance'
-    - '&bof doubling drops from natural ores'
+      - '&bYou have a &e%DoubleDrop_Chance%% &b+&e%Chance_Boost%% &bchance'
+      - '&bof doubling drops from natural ores'
     MenuLore:
-    - '&bThis ability has a chance of doubling ores from mining'
+      - '&bThis ability has a chance of doubling ores from mining'
 #
 # Config for the ability Richer Ores
 # This passive ability increases the chance of Double Drop activating
 #
 RicherOresConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -124,13 +126,13 @@ RicherOresConfig:
     #The chance boost from richer ores
     ActivationBoost: 5.0
   TierII:
-    ActivationBoost: 10.0
+    ActivationBoost: 7.5
   TierIII:
-    ActivationBoost: 20.0
+    ActivationBoost: 10.0
   TierIV:
-    ActivationBoost: 25.0
+    ActivationBoost: 12.5
   TierV:
-    ActivationBoost: 30.0
+    ActivationBoost: 15.0
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Richer Ores'
@@ -138,16 +140,17 @@ RicherOresConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bYour Richer Ores gives &e%ActivationBoost%%'
-    - '&bbonus chance for Double Drop'
+      - '&bYour Richer Ores gives &e%ActivationBoost%%'
+      - '&bbonus chance for Double Drop'
     MenuLore:
-    - '&bThis ability increases the chance of Double Drop'
+      - '&bThis ability increases the chance of Double Drop'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Remote Transfer
 # This ability teleports mined items into a chest
 #
 RemoteTransferConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #When a player mines their lined chest, should it unlink or should it unlink and break
   UnlinkAndBreakOnMine: false
@@ -163,61 +166,61 @@ RemoteTransferConfig:
     Range: 50
     #What categories the ability can transfer
     Categories:
-    - 'Stone'
+      - 'Stone'
     InvSize: 18
   TierII:
     Range: 75
     Categories:
-    - 'Stone'
-    - 'TierII'
+      - 'Stone'
+      - 'TierII'
     InvSize: 18
   TierIII:
     Range: 100
     Categories:
-    - 'Stone'
-    - 'TierII'
-    - 'TierIII'
+      - 'Stone'
+      - 'TierII'
+      - 'TierIII'
     InvSize: 27
   TierIV:
     Range: 150
     Categories:
-    - 'Stone'
-    - 'TierII'
-    - 'TierIII'
-    - 'TierIV'
+      - 'Stone'
+      - 'TierII'
+      - 'TierIII'
+      - 'TierIV'
     InvSize: 36
   TierV:
     Range: 200
     Categories:
-    - 'Stone'
-    - 'TierII'
-    - 'TierIII'
-    - 'TierIV'
-    - 'TierV'
+      - 'Stone'
+      - 'TierII'
+      - 'TierIII'
+      - 'TierIV'
+      - 'TierV'
     InvSize: 45
   #Define custom categories of items to be teleported using this ability. No cap to amount
   Categories:
     Stone:
-    - 'COBBLESTONE'
-    - 'STONE'
-    - 'ANDESITE'
-    - 'GRANITE'
-    - 'DIORITE'
-    - 'POLISHED_GRANITE'
-    - 'POLISHED_ANDESITE'
-    - 'POLISHED_DIORITE'
-    - 'MOSSY_COBBLESTONE'
-    - 'OBSIDIAN'
+      - 'COBBLESTONE'
+      - 'STONE'
+      - 'ANDESITE'
+      - 'GRANITE'
+      - 'DIORITE'
+      - 'POLISHED_GRANITE'
+      - 'POLISHED_ANDESITE'
+      - 'POLISHED_DIORITE'
+      - 'MOSSY_COBBLESTONE'
+      - 'OBSIDIAN'
     TierII:
-    - 'IRON_ORE'
-    - 'REDSTONE_ORE'
+      - 'IRON_ORE'
+      - 'REDSTONE_ORE'
     TierIII:
-    - 'GOLD_ORE'
-    - 'LAPIS_ORE'
+      - 'GOLD_ORE'
+      - 'LAPIS_ORE'
     TIERIV:
-    - 'EMERALD_ORE'
+      - 'EMERALD_ORE'
     TIERV:
-    - 'DIAMOND_ORE'
+      - 'DIAMOND_ORE'
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Remote Transfer'
@@ -225,17 +228,20 @@ RemoteTransferConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bUse /mclink to link a chest'
-    - '&bCurrently linked to &e%Location%'
-    - '&bYour current range is &e%Range% &bblocks'
+      - '&bUse &e/mclink &bto link a chest'
+      - '&bUse &e/mcunlink &bto unlink a chest'
+      - '&bCurrently linked to &e%Location%'
+      - '&bYour current range is &e%Range% &bblocks'
     MenuLore:
-    - '&bThis ability transfers items mined to a linked chest'
+      - '&bThis ability transfers items mined to a linked chest'
+      - '&bUse &e/mclink &bto link and &e/mcunlink &bto delink'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Its A Triple
 # This passive ability has a chance at tripling the drops from ores instead of doubling
 #
 ItsATripleConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -248,13 +254,13 @@ ItsATripleConfig:
     #Odds of activation per tier
     ActivationChance: 3.0
   TierII:
-    ActivationChance: 5.5
+    ActivationChance: 4.0
   TierIII:
-    ActivationChance: 8.5
+    ActivationChance: 5.0
   TierIV:
-    ActivationChance: 11.0
+    ActivationChance: 7.5
   TierV:
-    ActivationChance: 15.0
+    ActivationChance: 10.0
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Its A Triple'
@@ -262,17 +268,18 @@ ItsATripleConfig:
     Amount: 3
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bYou have a &e%ActivationChance%% &bchance'
-    - '&bof getting a triple drop instead of double.'
+      - '&bYou have a &e%ActivationChance%% &bchance'
+      - '&bof getting a triple drop instead of double.'
     MenuLore:
-    - '&bThis ability turns double drops'
-    - '&binto triple drops'
+      - '&bThis ability turns double drops'
+      - '&binto triple drops'
+      - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Super Breaker
 # This active ability gives haste and double drop chance
 #
 SuperBreakerConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -310,15 +317,16 @@ SuperBreakerConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bThis ability give haste and'
-    - '&bincreases activation rate of Double Drop'
-    - '&bGain &e%ActivationBoost%% &bfor &e%Duration% &bseconds'
-    - '&bCooldown: &e%Cooldown%'
-    - '&eActivate by readying and breaking a block'
+      - '&bThis ability give haste and'
+      - '&bincreases activation rate of Double Drop'
+      - '&bGain &e%ActivationBoost%% &bfor &e%Duration% &bseconds'
+      - '&bCooldown: &e%Cooldown%'
+      - '&eActivate by readying and breaking a block'
     MenuLore:
-    - '&bGives haste and increases Double Drop'
+      - '&bGives haste and increases Double Drop'
+      - '&aUnlock Level: &e%UnlockLevel%'
 BlastMiningConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   UseBlackList: true
   UseWhiteList: false
@@ -341,20 +349,20 @@ BlastMiningConfig:
   #Config for each tier
   TierI:
     #Radius of the ability (this is done to every side of the player)
-    Radius: 4
+    Radius: 2
     #Cooldown in seconds
     Cooldown: 240
   TierII:
-    Radius: 5
+    Radius: 3
     Cooldown: 240
   TierIII:
-    Radius: 6
+    Radius: 4
     Cooldown: 240
   TierIV:
-    Radius: 7
+    Radius: 5
     Cooldown: 240
   TierV:
-    Radius: 8
+    Radius: 6
     Cooldown: 240
   #How this ability should be seen in the GUIS
   Item:
@@ -363,14 +371,15 @@ BlastMiningConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bMine blocks in a %Radius% radius'
-    - '&bReady your pick and place tnt'
-    - '&bCooldown: &e%Cooldown%'
-    - '&eActivate by readying and placing TNT'
+      - '&bMine blocks in a %Radius% radius'
+      - '&bReady your pick and place tnt'
+      - '&bCooldown: &e%Cooldown%'
+      - '&eActivate by readying and placing TNT'
     MenuLore:
-    - '&bThis ability mines blocks around you'
+      - '&bThis ability mines blocks around you'
+      - '&aUnlock Level: &e%UnlockLevel%'
 OreScannerConfig:
-  #How many tiers there should be. Highly recommended to keep at 5. Do not exceed 5
+  #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
@@ -409,12 +418,13 @@ OreScannerConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-    - '&bScan surrounding area in a'
-    - '&b%Radius% radius.'
-    - '&bDisplays amount of ores'
-    - '&bAnd points to closest valuable ore'
-    - '&bCooldown: &e%Cooldown%'
-    - '&eActivate by readying and breaking a block'
+      - '&bScan surrounding area in a'
+      - '&b%Radius% radius.'
+      - '&bDisplays amount of ores'
+      - '&bAnd points to closest valuable ore'
+      - '&bCooldown: &e%Cooldown%'
+      - '&eActivate by readying and breaking a block'
     MenuLore:
-    - '&bScan surrounding area'
-    - '&bfor gold, emerald, and diamonds'
+      - '&bScan surrounding area'
+      - '&bfor gold, emerald, and diamonds'
+      - '&aUnlock Level: &e%UnlockLevel%'

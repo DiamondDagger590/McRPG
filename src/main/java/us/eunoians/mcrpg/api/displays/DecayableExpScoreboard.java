@@ -133,7 +133,7 @@ public class DecayableExpScoreboard extends GenericDisplay implements Scoreboard
     endTask = new BukkitRunnable(){
       @Override
       public void run(){
-        McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer());
+        McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getUuid());
       }
     }.runTaskLater(McRPG.getInstance(), displayTime * 20);
   }

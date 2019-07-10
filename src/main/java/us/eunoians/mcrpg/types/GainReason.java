@@ -10,5 +10,6 @@ public enum GainReason {
   REDEEM,
   BONUS,
   PLUGIN,
-  ABILITY
+  ABILITY,
+  FISHING
 }

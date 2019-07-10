@@ -21,7 +21,8 @@ public enum Skills {
   SWORDS("Swords", DefaultAbilities.BLEED),
   UNARMED("Unarmed", DefaultAbilities.STICKY_FINGERS),
   WOODCUTTING("Woodcutting", DefaultAbilities.EXTRA_LUMBER),
-  FITNESS("Fitness", DefaultAbilities.ROLL);
+  FITNESS("Fitness", DefaultAbilities.ROLL),
+  FISHING("Fishing", DefaultAbilities.GREAT_ROD);
 
   @Getter
   private String name;
@@ -60,6 +61,11 @@ public enum Skills {
 
   public static boolean isSkill(String skill){
 	return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase()) || Arrays.stream(Skills.values()).map(type -> type.getDisplayName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
+  }
+
+  public boolean usePerm(){
+    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return McRPG.getInstance().getFileManager().getFile(file).getBoolean("RequirePermission", false);
   }
 
   public int getMaxLevel(){

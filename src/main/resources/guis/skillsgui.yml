@@ -21,6 +21,8 @@ Gui:
         - 'OpenNative:SubSkillGUI:Excavation'
       37:
         - 'OpenNative:SubSkillGUI:Axes'
+      39:
+        - 'OpenNative:SubSkillGUI:Fishing'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -94,8 +96,16 @@ Gui:
         Lore:
           - '&eClick this to view your axes abilities'
           - '&eCurrent Axes level: &a%Axes_Level%'
-          - '&eShredchance: &c%Shredn_Chance%%'
+          - '&eShred chance: &c%Shred_Chance%%'
         Slot: 37
+      FishingSkill:
+        Name: '&5Fishing Skill'
+        Material: FISHING_ROD
+        Lore:
+          - '&eClick this to view your fishing abilities'
+          - '&eCurrent Fishing level: &a%Fishing_Level%'
+          - '&eGreat Rod chance: &c%Great_Rod_Chance%%'
+        Slot: 39
       Back:
         Name: '&bBack>>'
         Material: BARRIER
