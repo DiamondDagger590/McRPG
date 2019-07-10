@@ -11,7 +11,7 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much exp should be awarded per damage source.
 ExpAwardedPerDamage:
-  FALL_DAMAGE: 100
+  FALL_DAMAGE: 75
   ENTITY_DAMAGE: 15
 FallEquation: '(damage*exp_awarded)*feather_falling_level'
 #Minimal distance on each axis that a player must be from their last location to gain exp from falling

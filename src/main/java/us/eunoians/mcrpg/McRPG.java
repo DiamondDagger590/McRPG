@@ -16,6 +16,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
+import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
@@ -52,6 +53,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private RemoteTransferTracker remoteTransferTracker;
   @Getter private FishingItemManager fishingItemManager;
   @Getter private LeaderboardManager leaderboardManager;
+  @Getter private LeaderboardHeadManager leaderboardHeadManager;
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
   @Getter private final String customVisibleKey = "mcMMO: Name Visibility";
@@ -112,6 +114,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     fishingItemManager = new FishingItemManager();
     leaderboardManager = new LeaderboardManager(this);
+    leaderboardHeadManager = new LeaderboardHeadManager();
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
@@ -182,6 +185,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
     getServer().getPluginManager().registerEvents(new DeathEvent(), this);
     getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
+    getServer().getPluginManager().registerEvents(new SignEvent(), this);
   }
 
   public static McRPG getInstance() {

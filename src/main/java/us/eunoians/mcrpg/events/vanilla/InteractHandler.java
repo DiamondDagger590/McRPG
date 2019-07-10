@@ -59,6 +59,7 @@ public class InteractHandler implements Listener {
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
       return;
     }
+    //Used for Hand Digging ability so we have a persistant silk shovel
     if(shovel == null){
       shovel = new ItemStack(Material.DIAMOND_SHOVEL);
       shovel.addEnchantment(Enchantment.SILK_TOUCH, 1);
@@ -69,8 +70,9 @@ public class InteractHandler implements Listener {
     Player p = e.getPlayer();
     McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
     ItemStack heldItem = e.getItem();
+    //if they arent holding anything and they are hand digging/its a valid block, insta break it
     if(heldItem == null) {
-      if(mp.isHandDigging() && e.getClickedBlock() != null && e.getClickedBlock().getType() != null){
+      if(mp.isHandDigging() && e.getClickedBlock() != null){
         if(mp.getHandDiggingBlocks().contains(e.getClickedBlock().getType())){
           e.getClickedBlock().breakNaturally(shovel);
         }
@@ -82,21 +84,27 @@ public class InteractHandler implements Listener {
     }
     Block target = e.getClickedBlock();
     Material type;
+    //prevent possible NPE's
     if(target == null) {
       type = Material.AIR;
     }
     else {
       type = target.getType();
     }
+    //If the player is readying
     if(mp.isReadying()) {
       PlayerReadyBit bit = mp.getReadyingAbilityBit();
+      //If bit for some reason is null but they are readying we want to set it so they arent
       if(bit == null) {
         mp.setReadying(false);
         return;
       }
+      //Get the readying ability and the BaseAbility instance
       UnlockedAbilities abilityType = bit.getAbilityReady();
       BaseAbility ability = mp.getSkill(abilityType.getSkill()).getAbility(abilityType);
+      //if they are readying blast mining
       if(abilityType == UnlockedAbilities.BLAST_MINING) {
+        //veryify they are trying to place tnt
         if(heldItem.getType() == Material.TNT) {
           BlastMining blastMining = (BlastMining) ability;
           FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
@@ -108,6 +116,7 @@ public class InteractHandler implements Listener {
           boolean useWhiteList = mining.getBoolean(key + ".UseWhiteList");
           List<String> blackList = mining.getStringList(key + ".BlackList");
           List<String> whiteList = mining.getStringList(key + ".WhiteList");
+          //Populate our blocks array
           ArrayList<Block> blocks = new ArrayList<>();
           for(int x = -1 * radius; x < radius; x++) {
             for(int z = -1 * radius; z < radius; z++) {
@@ -116,18 +125,20 @@ public class InteractHandler implements Listener {
               }
             }
           }
+          //Call the blast mining event
           BlastMiningEvent blastMiningEvent = new BlastMiningEvent(mp, blastMining, blocks, cooldown);
           Bukkit.getPluginManager().callEvent(blastMiningEvent);
           if(!blastMiningEvent.isCancelled()) {
+            //Set the active abilities (more internal use than anything)
             mp.getActiveAbilities().add(UnlockedAbilities.BLAST_MINING);
             heldItem.setAmount(heldItem.getAmount() - 1);
             if(heldItem.getAmount() <= 0) {
               heldItem.setType(Material.AIR);
             }
-            p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_HUGE, p.getLocation(), 50);
+            p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, p.getLocation(), 30);
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 1);
             ItemStack pick = new ItemStack(Material.DIAMOND_PICKAXE, 1);
-            for(Block b : blocks) {
+            for(Block b : blastMiningEvent.getBlocks()) {
               Material material = b.getType();
               if(material == Material.WATER || material == Material.LAVA || material.toString().contains("AIR")) {
                 continue;
@@ -138,6 +149,7 @@ public class InteractHandler implements Listener {
               if(useWhiteList && !whiteList.contains(material.toString())) {
                 continue;
               }
+              //Test for land protections
               BlastTestEvent breakEvent = new BlastTestEvent(b, p);
               Bukkit.getPluginManager().callEvent(breakEvent);
               if(breakEvent.isCancelled()) {
@@ -145,8 +157,10 @@ public class InteractHandler implements Listener {
               }
               b.breakNaturally(pick);
             }
+            //set cooldown
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND, blastMiningEvent.getCooldown());
+            //Cancel and reset readying
             Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
             mp.setReadyingAbilityBit(null);
             mp.setReadying(false);

@@ -41,6 +41,7 @@ public class CheckReadyEvent implements Listener {
     Player p = e.getPlayer();
     McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
     ItemStack heldItem = e.getItem();
+    //verify a proper ready action/special case for archery
     if(e.isCancelled() && e.getAction() != Action.RIGHT_CLICK_AIR) {
       if(e.getHand() != null && e.getAction() != null && heldItem != null && e.getHand() == EquipmentSlot.HAND && (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) && heldItem.getType() == Material.BOW) {
         if(mp.isReadying()){

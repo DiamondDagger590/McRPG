@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.api.leaderboards;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.Skills;
@@ -15,8 +16,8 @@ import java.util.logging.Level;
 
 public class LeaderboardManager {
 
-    List<PlayerLeaderboardData> powerLevel;
-    Map<Skills, List<PlayerLeaderboardData>> skillSets;
+    private List<PlayerLeaderboardData> powerLevel;
+    private Map<Skills, List<PlayerLeaderboardData>> skillSets;
     private static PreparedStatement powerLevelStatement;
     private static Map<Skills, PreparedStatement> skillsPreparedStatementMap = new HashMap<>();
     private List<UUID> loadingPlayers = new ArrayList<>();
@@ -61,19 +62,19 @@ public class LeaderboardManager {
     }
 
     public PlayerLeaderboardData getPowerPlayer(int rank){
-        if(powerLevel.size() > rank){
-            Bukkit.getLogger().log(Level.SEVERE, "&cYou are trying to get the #" + rank + "s player power level and it does not exist");
+        if(powerLevel.size() <= rank - 1){
+            Bukkit.getLogger().log(Level.WARNING, Methods.color("&cYou are trying to get the #" + rank + "s player power level and it does not exist. This may be because you are using a placeholder, if so ignore this"));
             return null;
         }
-        return powerLevel.get(rank);
+        return powerLevel.get(rank - 1);
     }
 
     public PlayerLeaderboardData getSkillPlayer(int rank, Skills skill){
-        if(skillSets.get(skill).size() > rank){
-            Bukkit.getLogger().log(Level.SEVERE, "&cYou are trying to get the #" + rank + "s player " + skill.getName() + " level and it does not exist");
+        if(skillSets.get(skill).size() <= rank - 1){
+            Bukkit.getLogger().log(Level.WARNING, Methods.color("&cYou are trying to get the #" + rank + "s player " + skill.getName() + " level and it does not exist. This may be because you are using a placeholder, if so ignore this"));
             return null;
         }
-        return powerLevel.get(rank);
+        return skillSets.get(skill).get(rank - 1);
     }
 
     public boolean updateRank(McRPGPlayer player, String type){

@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class DisplayManager {
 
@@ -19,6 +20,15 @@ public class DisplayManager {
    */
   public GenericDisplay getDisplay(Player p){
     return displays.stream().filter(display -> display.getPlayer().getUuid().equals(p.getUniqueId())).findFirst().orElse(null);
+  }
+
+  /**
+   *
+   * @param uuid Player to get the display type for
+   * @return The GenericDisplay of a player
+   */
+  public GenericDisplay getDisplay(UUID uuid){
+    return displays.stream().filter(display -> display.getPlayer().getUuid().equals(uuid)).findFirst().orElse(null);
   }
 
   /**
@@ -45,6 +55,17 @@ public class DisplayManager {
     }
   }
 
+  /**
+   *
+   * @param uuid Players who GenericDisplay is to be removed
+   */
+  public void removePlayersDisplay(UUID uuid){
+    GenericDisplay display = getDisplay(uuid);
+    if(display != null){
+      display.cancel();
+      displays.remove(display);
+    }
+  }
 
   /**
    *

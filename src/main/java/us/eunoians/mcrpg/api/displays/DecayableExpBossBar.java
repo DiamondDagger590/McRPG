@@ -99,7 +99,7 @@ public class DecayableExpBossBar extends GenericDisplay implements BossbarBase, 
     endTask = new BukkitRunnable(){
       @Override
       public void run(){
-        McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getPlayer());
+        McRPG.getInstance().getDisplayManager().removePlayersDisplay(player.getUuid());
       }
     }.runTaskLater(McRPG.getInstance(), displayTime * 20);
   }

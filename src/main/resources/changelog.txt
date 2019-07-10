@@ -1,4 +1,35 @@
 1.0.0-BETA
++ Added fishing skill. Fishing is seperated into two different config files, the fishing.yml and fishingloot.yml
+  The fishingloot.yml allows an extremely powerful system to configure items, where you can set abilities to give access to
+  different categories, have items require the player to have a specific ability in order for a modifier to be applied etc.
+  The modifier feature is seen with Magic Touch and enchanting fished up loot.
++ Added leaderboard support. /mcrank power, /mcrank power {page}, /mcrank {skill}, /mcrank {skill} {page}. These
+  auto update every 5 minutes async
++ Added leaderboard head support. Make a sign of the following format
+  [mcrpg]
+  power
+  rank #
+
+  example:
+  [mcrpg]
+  power
+  1
+
+  or
+
+  [mcrpg]
+  skill
+  rank #
+
+  example:
+  [mcrpg]
+  herbalism
+  2
+
+  These auto update every 5 or so minutes if the chunks are loaded. If a sign or skull is broke, it'll unregister and send
+  warning to console. Sign must be attached to a block. There must be a block of air above the sign or the block the sign
+  is attached to.
+
 = Removed 2 ability cap on Fitness (fixes a related bug where abilities would be auto denied even with setting disabled)
 = Removed cap of 5 tiers on abilities. Abilities can now have basically infinite tiers.  (Whoever wants to be a
   smart alek and break this, don't blame me when you mess up on one out of your thousands of lines xD)
@@ -25,10 +56,6 @@
 = Nerfed exp values from fitness. Yeeting yourself off a cliff made it too easy to level
 = Added sand and red sand to Pans Shrine (Excavation) Consistency among abilities.
 = Buffed Ares Blessing buff levels (Axes) To make it stand out from Tainted Blade. Stronger punishments should have a stronger buff too
-+ Added fishing skill. Fishing is seperated into two different config files, the fishing.yml and fishingloot.yml
-  The fishingloot.yml allows an extremely powerful system to configure items, where you can set abilities to give access to
-  different categories, have items require the player to have a specific ability in order for a modifier to be applied etc.
-  The modifier feature is seen with Magic Touch and enchanting fished up loot.
 
 1.5.0-ALPHA
 + Added axes
