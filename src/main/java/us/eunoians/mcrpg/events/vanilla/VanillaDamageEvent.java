@@ -793,13 +793,13 @@ public class VanillaDamageEvent implements Listener {
               AresBlessing aresBlessing = (AresBlessing) mp.getBaseAbility(UnlockedAbilities.ARES_BLESSING);
               String key = "AresBlessingConfig.Tier" + Methods.convertToNumeral(aresBlessing.getCurrentTier()) + ".";
               int strengthDuration = config.getInt(key + "StrengthDuration");
-              int strengthLevel = config.getInt(key + "StrengthLevel");
+              int strengthLevel = config.getInt(key + "StrengthLevel") - 1;
               int resistanceDuration = config.getInt(key + "ResistanceDuration");
-              int resistanceLevel = config.getInt(key + "ResistanceLevel");
+              int resistanceLevel = config.getInt(key + "ResistanceLevel") - 1;
               int weaknessDuration = config.getInt(key + "WeaknessDuration");
-              int weaknessLevel = config.getInt(key + "WeaknessLevel");
+              int weaknessLevel = config.getInt(key + "WeaknessLevel") - 1;
               int miningFatigueDuration = config.getInt(key + "MiningFatigueDuration");
-              int miningFatigueLevel = config.getInt(key + "MiningFatigueLevel");
+              int miningFatigueLevel = config.getInt(key + "MiningFatigueLevel") - 1;
               int cooldown = config.getInt(key + "Cooldown");
               AresBlessingEvent aresBlessingEvent = new AresBlessingEvent(mp, aresBlessing, strengthDuration, strengthLevel, resistanceDuration, resistanceLevel, weaknessDuration, weaknessLevel, miningFatigueDuration, miningFatigueLevel, cooldown);
               Bukkit.getPluginManager().callEvent(aresBlessingEvent);
