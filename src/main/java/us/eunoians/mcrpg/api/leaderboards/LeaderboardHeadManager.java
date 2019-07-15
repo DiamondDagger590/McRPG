@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.api.leaderboards;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
@@ -96,8 +97,20 @@ public class LeaderboardHeadManager {
                 }
                 Sign sign = (Sign) loc.getBlock().getState();
                 PlayerLeaderboardData playerLeaderboardData = McRPG.getInstance().getLeaderboardManager().getPowerPlayer(powerLevelSigns.get(loc));
-                sign.setLine(2, Methods.color("&7" + Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()).getName()));
-                sign.setLine(3, Methods.color("&7Lv. " + playerLeaderboardData.getLevel()));
+                if(playerLeaderboardData == null){
+                    continue;
+                }
+                int rank = powerLevelSigns.get(loc);
+                int level = playerLeaderboardData.getLevel();
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID());
+                sign.setLine(0, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line1").replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                sign.setLine(1, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line2").replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                sign.setLine(2, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line3").replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                sign.setLine(3, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line4").replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                 sign.update();
                 Skull skull = (Skull) skullLoc.getBlock().getState();
                 skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
@@ -124,8 +137,21 @@ public class LeaderboardHeadManager {
                 }
                 Sign sign = (Sign) loc.getBlock().getState();
                 PlayerLeaderboardData playerLeaderboardData = McRPG.getInstance().getLeaderboardManager().getSkillPlayer(skillLevelSigns.get(loc).rank, skillLevelSigns.get(loc).skill);
-                sign.setLine(2, Methods.color("&7" + Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()).getName()));
-                sign.setLine(3, Methods.color("&7Lv. " + playerLeaderboardData.getLevel()));
+                if(playerLeaderboardData == null){
+                    continue;
+                }
+                Skills skill = skillLevelSigns.get(loc).skill;
+                int rank = skillLevelSigns.get(loc).rank;
+                int level = playerLeaderboardData.getLevel();
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID());
+                sign.setLine(0, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line1").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                sign.setLine(1, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line2").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                sign.setLine(2, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line3").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                sign.setLine(3, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line4").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                        .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                 sign.update();
                 Skull skull = (Skull) skullLoc.getBlock().getState();
                 skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));

@@ -1,3 +1,6 @@
+1.0.1-BETA
++ Added ability to change sign colors
+
 1.0.0-BETA
 + Added fishing skill. Fishing is seperated into two different config files, the fishing.yml and fishingloot.yml
   The fishingloot.yml allows an extremely powerful system to configure items, where you can set abilities to give access to

@@ -13,6 +13,17 @@ SkillNames:
   Excavation: 'Excavation'
   Axes: 'Axes'
   Fishing: 'Fishing'
+Signs:
+  PowerLeaderboard:
+    Line1: '&7[&6Power&7]'
+    Line2: '&b#%Rank%'
+    Line3: '&7%Player%'
+    Line4: '&7Lv. %Level%'
+  SkillLeaderboard:
+    Line1: '&7[&6%Skill%&7]'
+    Line2: '&b#%Rank%'
+    Line3: '&7%Player%'
+    Line4: '&7LV. %Level%'
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:

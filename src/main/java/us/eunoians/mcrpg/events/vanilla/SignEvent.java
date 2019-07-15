@@ -65,10 +65,14 @@ public class SignEvent implements Listener {
                     skull.setRotation(sign.getFacing());
                   }
                   skull.update();
-                  e.setLine(0, Methods.color("&7[&ePower&7]"));
-                  e.setLine(1, Methods.color("&b#" + rank));
-                  e.setLine(2, Methods.color("&7" + offlinePlayer.getName()));
-                  e.setLine(3, Methods.color("&7Lv." + level));
+                  e.setLine(0, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line1").replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                  e.setLine(1, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line2").replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                  e.setLine(2, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line3").replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                  e.setLine(3, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line4").replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                   McRPG.getInstance().getLeaderboardHeadManager().addPowerSign(e.getBlock().getLocation(), skullLoc, rank);
                 }
                 else{
@@ -91,10 +95,14 @@ public class SignEvent implements Listener {
                     skull.setRotation(sign.getFacing());
                   }
                   skull.update();
-                  e.setLine(0, Methods.color("&7[&e" + skill.getDisplayName()+ "&7]"));
-                  e.setLine(1, Methods.color("&b#" + rank));
-                  e.setLine(2, Methods.color("&7" + offlinePlayer.getName()));
-                  e.setLine(3, Methods.color("&7Lv." + level));
+                  e.setLine(0, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line1").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                  e.setLine(1, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line2").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                  e.setLine(2, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line3").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
+                  e.setLine(3, Methods.color(McRPG.getInstance().getLangFile().getString("Signs.PowerLeaderboard.Line4").replace("%Skill%", skill.getDisplayName()).replace("%Rank%", Integer.toString(rank))
+                          .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                   McRPG.getInstance().getLeaderboardHeadManager().addSkillSign(e.getBlock().getLocation(), skullLoc, rank, skill);
                 }
               }
