@@ -21,6 +21,16 @@ public class McRedeem implements CommandExecutor {
       if(PlayerManager.isPlayerFrozen(p.getUniqueId())){
         return true;
       }
+      String world = p.getWorld().getName();
+      //Disabled Worlds
+      if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+              McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)) {
+        return true;
+      }
+      else if(plugin.getConfig().getBoolean("Configuration.UseRedeemPerm") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.redeem"))){
+        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.Utility.NoPerms")));
+        return true;
+      }
       // /mcredeem %skill%
       if(args.length < 1){
         p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcredeem")));

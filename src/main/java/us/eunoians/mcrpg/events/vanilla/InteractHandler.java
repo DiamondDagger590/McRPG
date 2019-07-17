@@ -56,7 +56,7 @@ public class InteractHandler implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void interactHandler(PlayerInteractEvent e) {
-    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || PlayerManager.getPlayer(e.getPlayer().getUniqueId()) == null){
       return;
     }
     //Used for Hand Digging ability so we have a persistant silk shovel

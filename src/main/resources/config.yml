@@ -19,6 +19,8 @@
 Configuration:
   #If ability spy should be on, alerting admins when abilities are unlocked and upgraded
   AbilitySpyEnabled: false
+  #If redeem perms should be used
+  UseRedeemPerm: false
   ConstantExpUpdates:
     #If players should be sent an update everytime they gain exp
     Enabled: false

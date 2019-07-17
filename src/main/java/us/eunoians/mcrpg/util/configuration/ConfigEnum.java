@@ -15,6 +15,7 @@ public enum ConfigEnum implements ConfigurationEnum {
           "#   - No tabs are present: YAML only allows spaces", "#   - Indents are correct: YAML hierarchy is based entirely on indentation",
           "###################################"),
   ABILITY_SPY_ENABLED("Configuration.AbilitySpyEnabled", false, "#If ability spy should be on, alerting admins when abilities are unlocked and upgraded"),
+  USE_REDEEM_PERM("Configuration.UseRedeemPerm", false, "#If redeem perms should be used"),
   CONSTANT_EXP_UPDATES_ENABLED("Configuration.ConstantExpUpdates.Enabled", false, "#If players should be sent an update everytime they gain exp"),
   CONSTANT_EXP_UPDATES_DISPLAY_TYPE("Configuration.ConstantExpUpdates.DisplayType", "BOSSBAR", "#What type should the display be. BOSSBAR, SCOREBOARD, or ACTIONBAR"),
   CONSTANT_EXP_UPDATES_DISPLAY_DURATION("Configuration.ConstantExpUpdates.DisplayDuration", 3, "#Duration of the reminder. Only used for scoreboard and bossbar"),
