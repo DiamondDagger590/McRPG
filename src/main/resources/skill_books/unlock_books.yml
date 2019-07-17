@@ -1,0 +1,69 @@
+#Command format /mcadmin give book unlock %Player%
+#If dropping books should be enabled.
+Enabled: true
+#What abilities can not be selected
+ExcludedAbilities:
+  - ''
+#How should the book look
+BookFormat:
+  DisplayName: '&eUnlock: %Ability%'
+  Lore:
+    - '&eRight click this book to unlock'
+    - '&e%Ability% from %Skill%.'
+    - '&eUnlocked at Tier %Tier%.'
+DropChances:
+  #Can be Break, KillSpawner, KillNatural, LevelUp, ExpGain
+  #Kill Spawner/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books
+  DropEvents:
+    - 'Break'
+  #The default chance of a book being dropped when an action occurs
+  #Chances can be up to 3 decimal places
+  Default: 0.001
+  #When you want the chance to be modified for certain things.
+  #For Break you can have MATERIAL:CHANCE
+  #For any Kill, have ENTITY_TYPE:CHANCE
+  #For LevelUp or ExpGain have SKILL:CHANCE
+  SpecialCases:
+    - 'OBSIDIAN:0.003'
+    - 'DIAMOND_ORE:0.003'
+    - 'EMERALD_ORE:0.003'
+  ExcludedBlocks:
+    - 'SPAWNER'
+#Deals with all skills
+UniversalFormat:
+  # Can be a single number or in the format of 'x-y' with x being low end and y being high end
+  UnlockTierRange: '1'
+  #Should a level be required in order to use the book
+  RequireLevel: false
+  #Append this lore to the end of the item if RequireLevel is set to true
+  RequireLore:
+    - '&cIn order to unlock you must be'
+    - '&cLevel &e%Level% &cin &e%Skill%'
+  #What skills can be selected if RequireLevel is true
+  PossibleLevelSkills:
+    #Format is SKILL:x-y where x is low end of level required and y is high level.
+    #ALL is accepted as input here for all skills to be possibly selected
+    - 'ALL:50-200'
+  #The chance of the ability in the book
+  AbilityWeightEquation: '50.0 * (10/unlock_level)'
+#
+#
+#Example of skill specific format. These will override the Universal Format
+#
+#SwordsFormat:
+#  # Can be a single number or in the format of 'x-y' with x being low end and y being high end
+#  UnlockTierRange: '1-5'
+#  #Should a level be required in order to use the book
+#  RequireLevel: true
+#  #Append this lore to the end of the item if RequireLevel is set to true
+#  RequireLore:
+#    - '&cIn order to unlock you must be'
+#    - '&cLevel &e%Level% &cin &e%Skill%'
+#  #What skills can be selected if RequireLevel is true
+#  PossibleLevelSkills:
+#    #Format is SKILL:x-y where x is low end of level required and y is high level.
+#    #ALL is accepted as input here for all skills to be possibly selected
+#    - 'Axes:50-200'
+#    - 'Mining:30-900'
+#  #The chance of the ability in the book
+#  AbilityWeightEquation: '1.0 * (10/unlock_level)'

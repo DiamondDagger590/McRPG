@@ -37,7 +37,7 @@ public class DropItemEvent implements Listener {
     Location loc = e.getBlock().getLocation();
     if(blockDropsToMultiplier.containsKey(loc)) {
       for(Item i : e.getItems()) {
-        i.getItemStack().setAmount(blockDropsToMultiplier.get(loc));
+        i.getItemStack().setAmount(i.getItemStack().getAmount() * blockDropsToMultiplier.get(loc));
       }
       blockDropsToMultiplier.remove(loc);
     }

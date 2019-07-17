@@ -22,7 +22,7 @@ public class SignEvent implements Listener {
   @EventHandler
   public void signChangeEvent(SignChangeEvent e){
     Player p = e.getPlayer();
-    if(e.getBlock().getType() == Material.WALL_SIGN){
+    if(e.getBlock().getType().name().contains("WALL_SIGN")){
       if(p.hasPermission("mcrpg.*") || p.hasPermission("mcadmin.*") || p.hasPermission("mcadmin.sign")){
         String[] lines = e.getLines();
         if(lines.length > 3){
