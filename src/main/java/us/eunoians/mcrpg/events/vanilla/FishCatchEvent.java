@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.fishing.*;
 import us.eunoians.mcrpg.api.events.mcrpg.fishing.*;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.fishing.FishingResult;
@@ -40,7 +41,13 @@ public class FishCatchEvent implements Listener {
     if (e.getCaught() == null) {
       return;
     }
-    McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
     if(e.getState() == PlayerFishEvent.State.CAUGHT_ENTITY){
       if(Skills.FISHING.isEnabled() && e.getCaught() instanceof LivingEntity && !(e.getCaught() instanceof ArmorStand)){
         if(UnlockedAbilities.SHAKE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SHAKE) && mp.getBaseAbility(UnlockedAbilities.SHAKE).isToggled()

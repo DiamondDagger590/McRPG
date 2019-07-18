@@ -51,6 +51,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.DryadsGiftEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.ExtraLumberEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.HeavySwingEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.TemporalHarvestEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -109,7 +110,13 @@ public class BreakEvent implements Listener{
     if(!event.isCancelled() && (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE)){
       Player p = event.getPlayer();
       Block block = event.getBlock();
-      McRPGPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
+      McRPGPlayer mp;
+      try{
+        mp = PlayerManager.getPlayer(p.getUniqueId());
+      }
+      catch(McRPGPlayerNotFoundException exception){
+        return;
+      }
       if(McRPG.getInstance().isWorldGuardEnabled()){
         WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
         if(wgSupportManager.isWorldTracker(event.getBlock().getWorld())){
@@ -643,11 +650,11 @@ public class BreakEvent implements Listener{
             if(p.hasPermission("mcadmin.*") || p.hasPermission("mcadmin.unlink")){
               McRPGPlayer target;
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-              if(offlinePlayer.isOnline()){
-                target = PlayerManager.getPlayer(uuid);
+              try{
+                target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                 target.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.AdminUnlinked")));
               }
-              else{
+              catch(McRPGPlayerNotFoundException exception){
                 target = new McRPGPlayer(uuid);
               }
               target.setLinkedToRemoteTransfer(false);

@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
@@ -23,7 +24,13 @@ public class PickupEvent implements Listener {
       return;
     }
     if(e.getPlayer().getInventory().getItemInMainHand() == null || e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR) {
-      McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+      McRPGPlayer mp;
+      try{
+        mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+      }
+      catch(McRPGPlayerNotFoundException exception){
+        return;
+      }
       if(mp.isKeepHandEmpty()) {
         int slot = e.getPlayer().getInventory().getHeldItemSlot();
         int firstEmpty = -1;

@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor;
 import us.eunoians.mcrpg.api.events.mcrpg.fishing.PoseidonsFavorEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -22,7 +23,13 @@ public class EntityDeathEvent implements Listener {
     if(entity.getKiller() != null && entity.hasMetadata("GuardianExp")){
       int exp = entity.getMetadata("GuardianExp").get(0).asInt();
       Player p = entity.getKiller();
-      McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+      McRPGPlayer mp;
+      try{
+        mp = PlayerManager.getPlayer(p.getUniqueId());
+      }
+      catch(McRPGPlayerNotFoundException exception){
+        return;
+      }
       if(UnlockedAbilities.POSEIDONS_FAVOR.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.POSEIDONS_FAVOR) && mp.getBaseAbility(UnlockedAbilities.POSEIDONS_FAVOR).isToggled()){
         PoseidonsFavor poseidonsFavor = (PoseidonsFavor) mp.getBaseAbility(UnlockedAbilities.POSEIDONS_FAVOR);
         int extraExp = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FISHING_CONFIG).getInt("PoseidonsFavorConfig.Tier" + Methods.convertToNumeral(poseidonsFavor.getCurrentTier()) + ".ExpIncrease");

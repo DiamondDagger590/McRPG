@@ -5,6 +5,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.TipType;
@@ -60,12 +61,12 @@ public class PlayerManager {
     return playersFrozen.contains(uuid);
   }
 
-  public static McRPGPlayer getPlayer(UUID uuid) {
+  public static McRPGPlayer getPlayer(UUID uuid) throws McRPGPlayerNotFoundException{
     if(players.containsKey(uuid)) {
       return players.get(uuid);
     }
     else{
-      return players.put(uuid, new McRPGPlayer(uuid));
+      throw new McRPGPlayerNotFoundException("Player is not found or loaded yet.");
     }
   }
 

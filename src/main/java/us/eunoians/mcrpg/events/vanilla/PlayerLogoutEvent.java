@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
@@ -29,7 +30,13 @@ public class PlayerLogoutEvent implements Listener{
   @EventHandler(priority = EventPriority.MONITOR)
   public void logout(PlayerQuitEvent e){
     Player p = e.getPlayer();
-    McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(p.getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
     if(McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(p)){
       McRPG.getInstance().getDisplayManager().removePlayersDisplay(p);
     }

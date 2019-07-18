@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.abilities.axes.BloodFrenzy;
 import us.eunoians.mcrpg.abilities.fitness.DivineEscape;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.BloodFrenzyEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.fitness.DivineEscapeEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -43,7 +44,13 @@ public class DeathEvent implements Listener {
     if(e.getEntity() instanceof Player ) {
       Player p = (Player) e.getEntity();
       if(p.getHealth() - e.getDamage() <= 0 && p.getBedSpawnLocation() != null) {
-        McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+        McRPGPlayer mp;
+        try{
+          mp = PlayerManager.getPlayer(p.getUniqueId());
+        }
+        catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
         if(UnlockedAbilities.DIVINE_ESCAPE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DIVINE_ESCAPE)
         && mp.getBaseAbility(UnlockedAbilities.DIVINE_ESCAPE).isToggled()){
           if(mp.getCooldown(UnlockedAbilities.DIVINE_ESCAPE) > -1){
@@ -87,7 +94,13 @@ public class DeathEvent implements Listener {
     if(e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && ((LivingEntity) e.getEntity()).getHealth() - e.getDamage() <= 0){
       LivingEntity len = (LivingEntity) e.getEntity();
       if(e.getDamager() instanceof Player){
-        McRPGPlayer attacker = PlayerManager.getPlayer(e.getDamager().getUniqueId());
+        McRPGPlayer attacker;
+        try{
+          attacker = PlayerManager.getPlayer(e.getDamager().getUniqueId());
+        }
+        catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
         if(UnlockedAbilities.BLOOD_FRENZY.isEnabled() && attacker.getAbilityLoadout().contains(UnlockedAbilities.BLOOD_FRENZY) && attacker.getBaseAbility(UnlockedAbilities.BLOOD_FRENZY).isToggled()){
           BloodFrenzy bloodFrenzy = (BloodFrenzy) attacker.getBaseAbility(UnlockedAbilities.BLOOD_FRENZY);
           FileConfiguration axesConfiguration = McRPG.getInstance().getFileManager().getFile(FileManager.Files.AXES_CONFIG);
