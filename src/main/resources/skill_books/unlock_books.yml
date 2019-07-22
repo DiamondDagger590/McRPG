@@ -4,6 +4,8 @@ Enabled: true
 #What abilities can not be selected
 ExcludedAbilities:
   - ''
+ExcludedSkills:
+  - ''
 #How should the book look
 BookFormat:
   DisplayName: '&eUnlock: %Ability%'
