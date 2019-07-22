@@ -49,7 +49,13 @@ public class BookManager {
         defaultUpgradeChance = upgradeFile.getDouble("DropChances.Default");
 
         enabledUnlockEvents = unlockFile.getStringList("DropChances.DropEvents");
+        if(!unlockFile.getBoolean("Enabled")){
+            enabledUnlockEvents.clear();
+        }
         enabledUpgradeEvents = upgradeFile.getStringList("DropChances.DropEvents");
+        if(!upgradeFile.getBoolean("Enabled")){
+            enabledUpgradeEvents.clear();
+        }
 
         unlockExcluded = new HashSet<>(unlockFile.getStringList("DropChances.Excluded"));
         upgradeExcluded = new HashSet<>(upgradeFile.getStringList("DropChances.Excluded"));
@@ -109,7 +115,13 @@ public class BookManager {
         defaultUpgradeChance = upgradeFile.getDouble("DropChances.Default");
 
         enabledUnlockEvents = unlockFile.getStringList("DropChances.DropEvents");
+        if(!unlockFile.getBoolean("Enabled")){
+            enabledUnlockEvents.clear();
+        }
         enabledUpgradeEvents = upgradeFile.getStringList("DropChances.DropEvents");
+        if(!upgradeFile.getBoolean("Enabled")){
+            enabledUpgradeEvents.clear();
+        }
 
         unlockExcluded = new HashSet<>(unlockFile.getStringList("DropChances.Excluded"));
         upgradeExcluded = new HashSet<>(upgradeFile.getStringList("DropChances.Excluded"));
