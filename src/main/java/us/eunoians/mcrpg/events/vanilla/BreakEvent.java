@@ -52,6 +52,8 @@ import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.ExtraLumberEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.HeavySwingEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.TemporalHarvestEvent;
 import us.eunoians.mcrpg.api.util.*;
+import us.eunoians.mcrpg.api.util.books.BookManager;
+import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -109,6 +111,38 @@ public class BreakEvent implements Listener{
     if(!event.isCancelled() && (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE)){
       Player p = event.getPlayer();
       Block block = event.getBlock();
+      Material blockType = block.getType();
+
+      BookManager bookManager = McRPG.getInstance().getBookManager();
+      int bookChance = new Random().nextInt(100000);
+      Location playerLoc = p.getLocation();
+
+      if(bookManager.getEnabledUnlockEvents().contains("Break")){
+        if(!bookManager.getUnlockExcluded().contains(blockType.name())){
+          double chance = bookManager.getDefaultUnlockChance();
+          if(bookManager.getMaterialChances().containsKey("Unlock") && bookManager.getMaterialChances().get("Unlock").containsKey(blockType)){
+            chance = bookManager.getMaterialChances().get("Unlock").get(blockType);
+          }
+          chance *= 1000;
+          if (chance >= bookChance) {
+            playerLoc.getWorld().dropItemNaturally(playerLoc, SkillBookFactory.generateUnlockBook());
+          }
+        }
+      }
+      if(bookManager.getEnabledUpgradeEvents().contains("Break")){
+        if(!bookManager.getUpgradeExcluded().contains(blockType.name())){
+          double chance = bookManager.getDefaultUpgradeChance();
+          if(bookManager.getMaterialChances().containsKey("Upgrade") && bookManager.getMaterialChances().get("Upgrade").containsKey(blockType)){
+            chance = bookManager.getMaterialChances().get("Upgrade").get(blockType);
+          }
+          chance *= 1000;
+          if (chance >= bookChance) {
+            playerLoc.getWorld().dropItemNaturally(playerLoc, SkillBookFactory.generateUpgradeBook());
+          }
+        }
+      }
+
+
       McRPGPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
       if(McRPG.getInstance().isWorldGuardEnabled()){
         WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();

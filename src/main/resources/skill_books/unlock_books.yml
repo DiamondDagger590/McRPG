@@ -14,8 +14,8 @@ BookFormat:
     - '&e%Ability% from %Skill%.'
     - '&eUnlocked at Tier %Tier%.'
 DropChances:
-  #Can be Break, KillSpawner, KillNatural, LevelUp, ExpGain
-  #Kill Spawner/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books
+  #Can be Break, KillSpawned, KillNatural, ExpGain
+  #Kill Spawned/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books
   DropEvents:
     - 'Break'
   #The default chance of a book being dropped when an action occurs
@@ -29,7 +29,7 @@ DropChances:
     - 'OBSIDIAN:0.003'
     - 'DIAMOND_ORE:0.003'
     - 'EMERALD_ORE:0.003'
-  ExcludedBlocks:
+  Excluded:
     - 'SPAWNER'
 #Deals with all skills
 UniversalFormat:
@@ -47,7 +47,7 @@ UniversalFormat:
     #ALL is accepted as input here for all skills to be possibly selected
     - 'ALL:50-200'
   #The chance of the ability in the book
-  AbilityWeightEquation: '50.0 * (10/unlock_level)'
+  AbilityWeightEquation: '50.0*(10/unlock_level)'
 #
 #
 #Example of skill specific format. These will override the Universal Format

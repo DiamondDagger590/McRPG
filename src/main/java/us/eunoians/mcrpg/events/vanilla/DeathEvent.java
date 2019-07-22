@@ -1,8 +1,10 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,12 +22,15 @@ import us.eunoians.mcrpg.api.events.mcrpg.axes.BloodFrenzyEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.fitness.DivineEscapeEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.books.BookManager;
+import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
 import java.util.Calendar;
+import java.util.Random;
 
 public class DeathEvent implements Listener {
   /**
@@ -86,6 +91,64 @@ public class DeathEvent implements Listener {
   public void onEntityDeathMonitor(EntityDamageByEntityEvent e){
     if(e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && ((LivingEntity) e.getEntity()).getHealth() - e.getDamage() <= 0){
       LivingEntity len = (LivingEntity) e.getEntity();
+
+      BookManager bookManager = McRPG.getInstance().getBookManager();
+      Random rand = new Random();
+      int bookChance = rand.nextInt(100000);
+      Location loc = e.getDamager().getLocation();
+      EntityType type = len.getType();
+
+      if(len.hasMetadata("ExpModifier")) {
+        if (bookManager.getEnabledUnlockEvents().contains("KillSpawned")) {
+          if (!bookManager.getUnlockExcluded().contains(type.name())) {
+            double chance = bookManager.getDefaultUnlockChance();
+            if (bookManager.getEntityChances().containsKey("Unlock") && bookManager.getEntityChances().get("Unlock").containsKey(type)) {
+              chance = bookManager.getEntityChances().get("Unlock").get(type);
+            }
+            chance *= 1000;
+            if (chance >= bookChance) {
+              loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUnlockBook());
+            }
+          }
+        }
+        if (bookManager.getEnabledUpgradeEvents().contains("KillSpawned")) {
+          if (!bookManager.getUpgradeExcluded().contains(type.name())) {
+            double chance = bookManager.getDefaultUpgradeChance();
+            if (bookManager.getEntityChances().containsKey("Upgrade") && bookManager.getEntityChances().get("Upgrade").containsKey(type)) {
+              chance = bookManager.getEntityChances().get("Upgrade").get(type);
+            }
+            chance *= 1000;
+            if (chance >= bookChance) {
+              loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUpgradeBook());
+            }
+          }
+        }
+      }
+      else{
+        if (bookManager.getEnabledUnlockEvents().contains("KillNatural")) {
+          if (!bookManager.getUnlockExcluded().contains(type.name())) {
+            double chance = bookManager.getDefaultUnlockChance();
+            if (bookManager.getEntityChances().containsKey("Unlock") && bookManager.getEntityChances().get("Unlock").containsKey(type)) {
+              chance = bookManager.getEntityChances().get("Unlock").get(type);
+            }
+            if (chance >= bookChance) {
+              loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUnlockBook());
+            }
+          }
+        }
+        if (bookManager.getEnabledUpgradeEvents().contains("KillNatural")) {
+          if (!bookManager.getUpgradeExcluded().contains(type.name())) {
+            double chance = bookManager.getDefaultUpgradeChance();
+            if (bookManager.getEntityChances().containsKey("Upgrade") && bookManager.getEntityChances().get("Upgrade").containsKey(type)) {
+              chance = bookManager.getEntityChances().get("Upgrade").get(type);
+            }
+            if (chance >= bookChance) {
+              loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUpgradeBook());
+            }
+          }
+        }
+      }
+
       if(e.getDamager() instanceof Player){
         McRPGPlayer attacker = PlayerManager.getPlayer(e.getDamager().getUniqueId());
         if(UnlockedAbilities.BLOOD_FRENZY.isEnabled() && attacker.getAbilityLoadout().contains(UnlockedAbilities.BLOOD_FRENZY) && attacker.getBaseAbility(UnlockedAbilities.BLOOD_FRENZY).isToggled()){

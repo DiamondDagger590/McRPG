@@ -56,6 +56,7 @@ public class FishCatchEvent implements Listener {
               ShakeResult result = McRPG.getInstance().getFishingItemManager().getShakeItem(e.getCaught().getType());
               e.getCaught().getLocation().getWorld().dropItemNaturally(e.getCaught().getLocation(), result.getItemStack());
               mp.giveExp(Skills.FISHING, result.getExp(), GainReason.ABILITY);
+              ((LivingEntity) e.getCaught()).damage(1);
             }
           }
         }

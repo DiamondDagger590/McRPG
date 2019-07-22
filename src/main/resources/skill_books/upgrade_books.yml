@@ -4,17 +4,19 @@ Enabled: true
 #What abilities can not be selected
 ExcludedAbilities:
   - ''
+ExcludedSkills:
+  - ''
 #How should the book look
 BookFormat:
   DisplayName: '&eUpgrade: %Ability%'
   Lore:
     - '&eRight click this book to upgrade'
     - '&e%Ability% from %Skill%.'
-    - '&eUpgrade by one tier.'
+    - '&eUpgrade by %UpgradeAmount% tier(s).'
     - '&eCan be used from Tier %LowTier%-%HighTier%'
 DropChances:
-  #Can be Break, KillSpawner, KillNatural, LevelUp, ExpGain
-  #Kill Spawner/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books
+  #Can be Break, KillSpawned, KillNatural, ExpGain
+  #Kill Spawned/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books
   DropEvents:
     - 'KillNatural'
   #The default chance of a book being dropped when an action occurs
@@ -28,12 +30,14 @@ DropChances:
     - 'BLAZE:0.003'
     - 'WITHER_SKELETON:0.003'
     - 'GHAST:0.003'
-  ExcludedBlocks:
+  Excluded:
     - 'SPAWNER'
 #Deals with all skills
 UniversalFormat:
   # Can be a single number or in the format of 'x-y' with x being low end and y being high end
-  UnlockTierRange: '1'
+  UpgradeTierAmount: '1'
+  UseTierRange: '1-3'
+  UseTierWeight: '100/(tier_level + 4)'
   #Should a level be required in order to use the book
   RequireLevel: false
   #Append this lore to the end of the item if RequireLevel is set to true
@@ -46,7 +50,7 @@ UniversalFormat:
     #ALL is accepted as input here for all skills to be possibly selected
     - 'ALL:50-200'
   #The chance of the ability in the book. unlock_level being the level the ability is unlocked
-  AbilityWeightEquation: '50.0 * (10/unlock_level)'
+  AbilityWeightEquation: '50.0*(10/unlock_level)'
 #
 #
 #Example of skill specific format. These will override the Universal Format

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -41,6 +42,83 @@ public class CheckReadyEvent implements Listener {
     Player p = e.getPlayer();
     McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
     ItemStack heldItem = e.getItem();
+
+    //skill book checks
+    if(heldItem != null && e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK && heldItem.getType() == Material.ENCHANTED_BOOK){
+      NBTItem nbtItem = new NBTItem(heldItem);
+      if(nbtItem.hasKey("UpgradeSkill")){
+        UnlockedAbilities ab = UnlockedAbilities.fromString(nbtItem.getString("UpgradeAbility"));
+        BaseAbility baseAbility = mp.getBaseAbility(ab);
+        if(baseAbility.isUnlocked()){
+          if(baseAbility.getCurrentTier() <= nbtItem.getInteger("UpgradeHighTier") && baseAbility.getCurrentTier() >= nbtItem.getInteger("UpgradeLowTier")){
+            if(nbtItem.getBoolean("RequireLevel")){
+              Skills skill = Skills.fromString(nbtItem.getString("RequireSkill"));
+              int requireLevel = nbtItem.getInteger("RequireLevel");
+              if(mp.getSkill(skill).getCurrentLevel() < requireLevel){
+                p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.RequiredLevel")
+                        .replace("%Level%", Integer.toString(requireLevel)).replace("%Skill%", skill.getDisplayName())));
+                return;
+              }
+            }
+            int oldTier = baseAbility.getCurrentTier();
+            int tierInc = nbtItem.getInteger("UpgradeTierAmount");
+            int newTier = baseAbility.getCurrentTier() + tierInc <= ab.getMaxTier() ? baseAbility.getCurrentTier() + tierInc : ab.getMaxTier();
+            baseAbility.setCurrentTier(newTier);
+            mp.saveData();
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.Upgraded")
+                    .replace("%OldTier%", Integer.toString(oldTier)).replace("%NewTier%", Integer.toString(newTier)).replace("%Ability%", ab.getDisplayName())));
+            heldItem.setAmount(heldItem.getAmount() - 1);
+            if(heldItem.getAmount() <= 0){
+              heldItem.setType(Material.AIR);
+              p.updateInventory();
+            }
+            return;
+          }
+          else{
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.InvalidTier")));
+            return;
+          }
+        }
+        else{
+          p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.NoAbility")));
+          return;
+        }
+      }
+      if(nbtItem.hasKey("UnlockSkill")){
+        UnlockedAbilities ab = UnlockedAbilities.fromString(nbtItem.getString("UnlockAbility"));
+        BaseAbility baseAbility = mp.getBaseAbility(ab);
+        if(!baseAbility.isUnlocked()) {
+          if (nbtItem.getBoolean("RequireLevel")) {
+            Skills skill = Skills.fromString(nbtItem.getString("RequireSkill"));
+            int requireLevel = nbtItem.getInteger("RequireLevel");
+            if (mp.getSkill(skill).getCurrentLevel() < requireLevel) {
+              p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.RequiredLevel")
+                      .replace("%Level%", Integer.toString(requireLevel)).replace("%Skill%", skill.getDisplayName())));
+              return;
+            }
+          }
+          int unlockTier = nbtItem.getInteger("UnlockTier");
+          unlockTier = unlockTier <= ab.getMaxTier() ? unlockTier : ab.getMaxTier();
+          baseAbility.setCurrentTier(unlockTier);
+          baseAbility.setUnlocked(true);
+          mp.addPendingAbilityUnlock(ab);
+          mp.saveData();
+          p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.Unlocked")
+                  .replace("%Tier%", Integer.toString(unlockTier)).replace("%Ability%", ab.getDisplayName())));
+          heldItem.setAmount(heldItem.getAmount() - 1);
+          if (heldItem.getAmount() <= 0) {
+            heldItem.setType(Material.AIR);
+            p.updateInventory();
+          }
+          return;
+        }
+        else{
+          p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.SkillBooks.AlreadyUnlocked")));
+          return;
+        }
+      }
+    }
+
     //verify a proper ready action/special case for archery
     if(e.isCancelled() && e.getAction() != Action.RIGHT_CLICK_AIR) {
       if(e.getHand() != null && e.getAction() != null && heldItem != null && e.getHand() == EquipmentSlot.HAND && (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) && heldItem.getType() == Material.BOW) {

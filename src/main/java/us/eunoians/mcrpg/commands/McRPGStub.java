@@ -37,15 +37,6 @@ public class McRPGStub implements CommandExecutor {
         McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
         if(mp.hasPendingAbility()) {
           UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
-          if(ability.getSkill().equalsIgnoreCase("Fitness")){
-            if(mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase("Fitness")).count() >= 2){
-              mp.removePendingAbilityUnlock(ability);
-              GUI gui = new HomeGUI(PlayerManager.getPlayer(p.getUniqueId()));
-              p.openInventory(gui.getGui().getInv());
-              GUITracker.trackPlayer(p, gui);
-              return true;
-            }
-          }
           if(ability.getAbilityType() == AbilityType.ACTIVE) {
             BaseAbility baseAbility = mp.getBaseAbility(ability);
             if(mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
@@ -82,6 +73,7 @@ public class McRPGStub implements CommandExecutor {
             PlayerManager.startSave(plugin);
             DiamondFlowersData.init();
             BuriedTreasureData.init();
+            McRPG.getInstance().getBookManager().reload();
             McRPG.getInstance().getExpPermissionManager().reload();
             McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
             return true;
@@ -107,6 +99,11 @@ public class McRPGStub implements CommandExecutor {
           McRPG.getInstance().getFileManager().reloadFiles();
           sender.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.ReloadFiles")));
           PlayerManager.startSave(plugin);
+          DiamondFlowersData.init();
+          BuriedTreasureData.init();
+          McRPG.getInstance().getBookManager().reload();
+          McRPG.getInstance().getExpPermissionManager().reload();
+          McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
           return true;
         }
         else {

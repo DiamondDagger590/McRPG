@@ -43,26 +43,26 @@ public class McRPGPlayerLevelChange implements Listener {
     Skill skillLeveled = e.getSkillLeveled();
     skillLeveled.updateExpToLevel();
     McRPGPlayer mp = e.getMcRPGPlayer();
+    Random rand = new Random();
     //iterate across all levels gained
     for(int i = e.getPreviousLevel() + 1; i <= e.getNextLevel(); i++) {
       //if the level is at a interval to gain the player an ability point, award it to them
-      if(i % mcRPG.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0) {
+      if (i % mcRPG.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0) {
         mp.setAbilityPoints(mp.getAbilityPoints() + 1);
         //Need to fiddle with this sound
         mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 2, 1);
-        mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
+        mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcRPGPlayer().getAbilityPoints()))));
         mp.saveData();
       }
-    }
-    TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
-    if(!mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
-      List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
-      if(possibleMessages.size() > 0) {
-        Random rand = new Random();
-        int val = rand.nextInt(possibleMessages.size());
-        mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
-        mp.getUsedTips().add(tipType);
+      TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
+      if (!mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
+        List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
+        if (possibleMessages.size() > 0) {
+          int val = rand.nextInt(possibleMessages.size());
+          mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+          mp.getUsedTips().add(tipType);
+        }
       }
     }
     //TODO for future reference
@@ -149,10 +149,9 @@ public class McRPGPlayerLevelChange implements Listener {
             if(abilityUnlockEvent.isCancelled()) {
               return;
             }
-            boolean denyFitness = mp.getAbilityLoadout().stream().filter(abilitiy -> abilitiy.getSkill().equalsIgnoreCase("Fitness")).count() >= 2;
             if(mp.isOnline()) {
               Player p = mp.getPlayer();
-              if(mp.isAutoDeny() || denyFitness) {
+              if(mp.isAutoDeny()) {
                 p.sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() +
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlockedButDenied").replaceAll("%Ability%", ab.getName())));
               }
