@@ -44,7 +44,8 @@ public class CheckReadyEvent implements Listener {
     ItemStack heldItem = e.getItem();
 
     //skill book checks
-    if(heldItem != null && e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK && heldItem.getType() == Material.ENCHANTED_BOOK){
+    if(heldItem != null && e.getAction() != null &&
+            e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK && heldItem.getType() != null && heldItem.getType() == Material.ENCHANTED_BOOK){
       NBTItem nbtItem = new NBTItem(heldItem);
       if(nbtItem.hasKey("UpgradeSkill")){
         UnlockedAbilities ab = UnlockedAbilities.fromString(nbtItem.getString("UpgradeAbility"));
