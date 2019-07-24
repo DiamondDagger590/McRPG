@@ -597,7 +597,7 @@ public class InvClickEvent implements Listener {
         else if(event.equalsIgnoreCase("Command")) {
           String sender = events[1];
           if(sender.equalsIgnoreCase("console")) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), events[2].replaceAll("%Player%", p.getName()));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), events[2].replace("%Player%", p.getName()));
             continue;
           }
           else if(sender.equalsIgnoreCase("player")) {
