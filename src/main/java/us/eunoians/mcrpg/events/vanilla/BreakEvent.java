@@ -113,35 +113,36 @@ public class BreakEvent implements Listener{
       Block block = event.getBlock();
       Material blockType = block.getType();
 
-      BookManager bookManager = McRPG.getInstance().getBookManager();
-      int bookChance = new Random().nextInt(100000);
-      Location playerLoc = p.getLocation();
+      if(!McRPG.getPlaceStore().isTrue(block)){
+        BookManager bookManager = McRPG.getInstance().getBookManager();
+        int bookChance = new Random().nextInt(100000);
+        Location playerLoc = p.getLocation();
 
-      if(bookManager.getEnabledUnlockEvents().contains("Break")){
-        if(!bookManager.getUnlockExcluded().contains(blockType.name())){
-          double chance = bookManager.getDefaultUnlockChance();
-          if(bookManager.getMaterialChances().containsKey("Unlock") && bookManager.getMaterialChances().get("Unlock").containsKey(blockType)){
-            chance = bookManager.getMaterialChances().get("Unlock").get(blockType);
+        if(bookManager.getEnabledUnlockEvents().contains("Break")){
+          if(!bookManager.getUnlockExcluded().contains(blockType.name())){
+            double chance = bookManager.getDefaultUnlockChance();
+            if(bookManager.getMaterialChances().containsKey("Unlock") && bookManager.getMaterialChances().get("Unlock").containsKey(blockType)){
+              chance = bookManager.getMaterialChances().get("Unlock").get(blockType);
+            }
+            chance *= 1000;
+            if(chance >= bookChance){
+              playerLoc.getWorld().dropItemNaturally(playerLoc, SkillBookFactory.generateUnlockBook());
+            }
           }
-          chance *= 1000;
-          if (chance >= bookChance) {
-            playerLoc.getWorld().dropItemNaturally(playerLoc, SkillBookFactory.generateUnlockBook());
+        }
+        if(bookManager.getEnabledUpgradeEvents().contains("Break")){
+          if(!bookManager.getUpgradeExcluded().contains(blockType.name())){
+            double chance = bookManager.getDefaultUpgradeChance();
+            if(bookManager.getMaterialChances().containsKey("Upgrade") && bookManager.getMaterialChances().get("Upgrade").containsKey(blockType)){
+              chance = bookManager.getMaterialChances().get("Upgrade").get(blockType);
+            }
+            chance *= 1000;
+            if(chance >= bookChance){
+              playerLoc.getWorld().dropItemNaturally(playerLoc, SkillBookFactory.generateUpgradeBook());
+            }
           }
         }
       }
-      if(bookManager.getEnabledUpgradeEvents().contains("Break")){
-        if(!bookManager.getUpgradeExcluded().contains(blockType.name())){
-          double chance = bookManager.getDefaultUpgradeChance();
-          if(bookManager.getMaterialChances().containsKey("Upgrade") && bookManager.getMaterialChances().get("Upgrade").containsKey(blockType)){
-            chance = bookManager.getMaterialChances().get("Upgrade").get(blockType);
-          }
-          chance *= 1000;
-          if (chance >= bookChance) {
-            playerLoc.getWorld().dropItemNaturally(playerLoc, SkillBookFactory.generateUpgradeBook());
-          }
-        }
-      }
-
 
       McRPGPlayer mp = PlayerManager.getPlayer((p).getUniqueId());
       if(McRPG.getInstance().isWorldGuardEnabled()){
