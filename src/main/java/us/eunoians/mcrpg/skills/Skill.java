@@ -58,7 +58,7 @@ public abstract class Skill {
   @Getter
   private McRPGPlayer player;
 
-  public Skill(Skills type, HashMap<GenericAbility, BaseAbility> abilityMap, int currentLevel, int currentExp, McRPGPlayer player) {
+  public Skill(Skills type, HashMap<GenericAbility, BaseAbility> abilityMap, int currentLevel, int currentExp, McRPGPlayer player){
     this.type = type;
     this.currentLevel = currentLevel;
     this.currentExp = currentExp;
@@ -74,7 +74,7 @@ public abstract class Skill {
    * @param ability Enum value you want to get the ability instance of
    * @return instance of provided ability or null if invalid
    */
-  public BaseAbility getAbility(GenericAbility ability) {
+  public BaseAbility getAbility(GenericAbility ability){
     return abilityMap.getOrDefault(ability, null);
   }
 
@@ -82,33 +82,33 @@ public abstract class Skill {
    * @param ability The ability you want to get a GenericAbility from
    * @return the enum value of the ability or null if invalid
    */
-  public GenericAbility getGenericAbility(String ability) {
+  public GenericAbility getGenericAbility(String ability){
     return abilityMap.keySet().stream().filter(ab -> ab.getName().equalsIgnoreCase(ability)).findFirst().orElse(null);
   }
 
   /**
    * @return The default ability for this skill
    */
-  public BaseAbility getDefaultAbility() {
+  public BaseAbility getDefaultAbility(){
     return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
   }
 
   /**
    * @return The array of Base Abilities
    */
-  public Collection<BaseAbility> getAbilities() {
+  public Collection<BaseAbility> getAbilities(){
     return abilityMap.values();
   }
 
-  public Set<GenericAbility> getAbilityKeys() {
+  public Set<GenericAbility> getAbilityKeys(){
     return abilityMap.keySet();
   }
 
-  public String getName() {
+  public String getName(){
     return type.getName();
   }
 
-  public void updateExpToLevel() {
+  public void updateExpToLevel(){
     Parser parser = type.getExpEquation();
     parser.setVariable("skill_level", currentLevel);
     parser.setVariable("power_level", player.getPowerLevel());
@@ -119,18 +119,18 @@ public abstract class Skill {
    * @param exp        The exp gained
    * @param gainReason The reason the player is gaining the exp
    */
-  public void giveExp(McRPGPlayer player, int exp, GainReason gainReason) {
+  public void giveExp(McRPGPlayer player, int exp, GainReason gainReason){
     if(!player.isOnline()){
       return;
     }
     McRPGPlayerExpGainEvent expEvent = new McRPGPlayerExpGainEvent(player, exp, this, gainReason);
     Bukkit.getPluginManager().callEvent(expEvent);
-    if(expEvent.isCancelled()) {
+    if(expEvent.isCancelled()){
       return;
     }
     exp = expEvent.getExpGained();
     int oldLevel = currentLevel;
-    if(exp + currentExp >= expToLevel) {
+    if(exp + currentExp >= expToLevel){
       int leftOverExp = currentExp + exp - expToLevel;
       currentLevel++;
       Parser parser = type.getExpEquation();
@@ -138,7 +138,7 @@ public abstract class Skill {
       parser.setVariable("power_level", player.getPowerLevel());
       expToLevel = (int) parser.getValue();
       currentExp = leftOverExp;
-      while(currentExp >= expToLevel) {
+      while(currentExp >= expToLevel){
         if(currentLevel >= type.getMaxLevel()){
           expToLevel = 0;
           currentExp = 0;
@@ -155,19 +155,21 @@ public abstract class Skill {
       McRPGPlayerLevelChangeEvent event = new McRPGPlayerLevelChangeEvent(player, oldLevel, currentLevel, this);
       Bukkit.getPluginManager().callEvent(event);
     }
-    else {
+    else{
       currentExp += exp;
       //expToLevel -= exp;
     }
     if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.ConstantExpUpdates.Enabled")){
       if(McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())){
+        if(McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer()) instanceof ExpDisplayType){
           ExpDisplayType expDisplay = (ExpDisplayType) McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
-          if(expDisplay.getSkill() == this.type) {
+          if(expDisplay.getSkill() == this.type){
             expDisplay.sendUpdate(currentExp, expToLevel, currentLevel, exp);
             return;
+          }
         }
       }
-      else {
+      else{
         DisplayType displayType = DisplayType.fromString(McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getString("Configuration.ConstantExpUpdates.DisplayType"));
         int duration = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.ConstantExpUpdates.DisplayDuration");
         GenericDisplay display = ExpDisplayFactory.createDisplay(displayType, player, this.type, duration);
@@ -175,14 +177,14 @@ public abstract class Skill {
         ((ExpDisplayType) display).sendUpdate(currentExp, expToLevel, currentLevel, exp);
       }
     }
-    else if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())) {
+    else if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(player.getPlayer())){
       return;
     }
-    else {
+    else{
       GenericDisplay display = McRPG.getInstance().getDisplayManager().getDisplay(player.getPlayer());
-      if(display instanceof ExpDisplayType) {
+      if(display instanceof ExpDisplayType){
         ExpDisplayType expDisplayType = (ExpDisplayType) display;
-        if(expDisplayType.getSkill().equals(this.getType())) {
+        if(expDisplayType.getSkill().equals(this.getType())){
           expDisplayType.sendUpdate(currentExp, expToLevel, currentLevel, exp);
         }
       }
@@ -193,7 +195,7 @@ public abstract class Skill {
    * @param levels   The amount of levels to give
    * @param resetExp If the exp should be reset on level ip
    */
-  public void giveLevels(McRPGPlayer player, int levels, boolean resetExp) {
+  public void giveLevels(McRPGPlayer player, int levels, boolean resetExp){
     int old = currentLevel;
     currentLevel += levels;
     if(currentLevel > type.getMaxLevel()){
@@ -205,16 +207,16 @@ public abstract class Skill {
     parser.setVariable("skill_level", currentLevel);
     parser.setVariable("power_level", player.getPowerLevel());
     expToLevel = (int) parser.getValue();
-    if(resetExp) {
+    if(resetExp){
       currentExp = 0;
     }
   }
 
-  public void resetSkill() {
+  public void resetSkill(){
     expToLevel = 0;
     currentLevel = 0;
     currentExp = 0;
-    for(BaseAbility baseAbility : this.getAbilities()) {
+    for(BaseAbility baseAbility : this.getAbilities()){
       baseAbility.setToggled(true);
       baseAbility.setCurrentTier(0);
       baseAbility.setUnlocked(false);

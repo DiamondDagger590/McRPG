@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.players;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -26,6 +27,7 @@ public class PlayerManager {
 
   public static void addMcRPGPlayer(Player player, boolean freeze) {
     if(players.containsKey(player.getUniqueId())) {
+      Bukkit.broadcastMessage("already there");
       return;
     }
     UUID uuid = player.getUniqueId();
@@ -47,10 +49,11 @@ public class PlayerManager {
               public void run() {
                 if(mp.isOnline()){
                   mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
-                  players.put(uuid, mp);}
+                }
               }
             }.runTaskLater(McRPG.getInstance(), 40L);
           }
+          players.put(uuid, mp);
         }
         playersFrozen.remove(uuid);
       }
@@ -58,6 +61,9 @@ public class PlayerManager {
   }
 
   public static boolean isPlayerFrozen(UUID uuid) {
+    if(isPlayerStored(uuid)){
+      playersFrozen.remove(uuid);
+    }
     return playersFrozen.contains(uuid);
   }
 
