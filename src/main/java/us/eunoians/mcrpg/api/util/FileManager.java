@@ -331,12 +331,14 @@ public class FileManager {
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
     SELECT_REPLACE_SKILLS_GUI("selectreplaceskillsgui.yml", "guis/selectreplaceskillsgui.yml"),
     SETTINGS_GUI("playersettingsgui.yml", "guis/playersettingsgui.yml"),
+    SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
-    SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
+    UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
+    UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
     WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml");
 
@@ -349,7 +351,7 @@ public class FileManager {
      * @param fileName     The file name that will be in the plugin's folder.
      * @param fileLocation The location the file is in while in the Jar.
      */
-    Files(String fileName, String fileLocation) {
+    Files(String fileName, String fileLocation){
       this.fileName = fileName;
       this.fileLocation = fileLocation;
     }
@@ -359,7 +361,7 @@ public class FileManager {
      *
      * @return The name of the file.
      */
-    public String getFileName() {
+    public String getFileName(){
       return fileName;
     }
 
@@ -368,7 +370,7 @@ public class FileManager {
      *
      * @return The location in the jar the file is in.
      */
-    public String getFileLocation() {
+    public String getFileLocation(){
       return fileLocation;
     }
 
@@ -377,13 +379,13 @@ public class FileManager {
      *
      * @return The file from the system.
      */
-    public FileConfiguration getFile() {
+    public FileConfiguration getFile(){
       return getInstance().getFile(this);
     }
 
-    public static Files fromString(String file) {
-      for (Files f : Files.values()) {
-        if (f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)) {
+    public static Files fromString(String file){
+      for(Files f : Files.values()){
+        if(f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)){
           return f;
         }
       }
@@ -393,18 +395,18 @@ public class FileManager {
     /**
      * Saves the file from the loaded state to the file system.
      */
-    public void saveFile() {
+    public void saveFile(){
       getInstance().saveFile(this);
     }
 
     /**
      * Overrides the loaded state file and loads the file systems file.
      */
-    public void reloadFile() {
+    public void reloadFile(){
       getInstance().reloadFile(this);
     }
 
-    public static Files getSkillFile(Skills skill) {
+    public static Files getSkillFile(Skills skill){
       return fromString(skill.getName());
     }
 

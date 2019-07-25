@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 0, patch: 4, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 1, patch: 0, state: 'BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -20,12 +20,13 @@ repositories {
     mavenLocal()
     maven { url 'https://repo.aikar.co/content/groups/aikar/' }
     maven { url 'https://jitpack.io' }
-    maven { url 'http://repo.extendedclip.com/content/repositories/placeholderapi/'}
-    maven { url 'https://nexus.articdive.de/repository/maven-public/'}
-    maven { url 'http://maven.sk89q.com/repo/'}
+    maven { url 'http://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url 'https://nexus.articdive.de/repository/maven-public/' }
+    maven { url 'http://maven.sk89q.com/repo/' }
     maven { url 'https://nexus.wesjd.net/repository/thirdparty/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url  'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://repo.codemc.org/repository/maven-public/' }
 }
 
 dependencies {
@@ -39,6 +40,7 @@ dependencies {
         exclude group: 'come.google.guava'
     }
 
+    compile 'de.tr7zw:item-nbt-api:2.0.0-20190627.115026-33'
     compileOnly 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
     compileOnly group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'

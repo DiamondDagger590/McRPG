@@ -18,6 +18,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.books.BookManager;
+import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.Skills;
@@ -28,6 +30,7 @@ import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class McRPGExpGain implements Listener {
@@ -99,6 +102,37 @@ public class McRPGExpGain implements Listener {
       }
       e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
     }
+
+    BookManager bookManager = McRPG.getInstance().getBookManager();
+    Random rand = new Random();
+    int bookChance = rand.nextInt(100000);
+    Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
+
+    if(bookManager.getEnabledUnlockEvents().contains("ExpGain")){
+      if(!bookManager.getUnlockExcluded().contains(skill.getName())){
+        double chance = bookManager.getDefaultUnlockChance();
+        if(bookManager.getExpChances().containsKey("Unlock") && bookManager.getExpChances().get("Unlock").containsKey(skill)){
+          chance = bookManager.getExpChances().get("Unlock").get(skill);
+        }
+        chance *= 1000;
+        if (chance >= bookChance) {
+          loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUnlockBook());
+        }
+      }
+    }
+    if(bookManager.getEnabledUpgradeEvents().contains("ExpGain")){
+      if(!bookManager.getUpgradeExcluded().contains(skill.getName())){
+        double chance = bookManager.getDefaultUpgradeChance();
+        if(bookManager.getExpChances().containsKey("Upgrade") && bookManager.getExpChances().get("Upgrade").containsKey(skill)){
+          chance = bookManager.getExpChances().get("Upgrade").get(skill);
+        }
+        chance *= 1000;
+        if (chance >= bookChance) {
+          loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUpgradeBook());
+        }
+      }
+    }
+
     //Divine Escape exp debuff
     if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0){
       e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff()/100)));

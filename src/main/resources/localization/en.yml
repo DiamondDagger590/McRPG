@@ -31,6 +31,13 @@ Messages:
   #Messages that dont fit anywhere
   Misc:
     PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
+  SkillBooks:
+    Upgraded: '&aYou upgraded %Ability% from Tier &e%OldTier% &ato &e%NewTier%&a!'
+    Unlocked: '&aYou unlocked &e%Ability% &aTier &e%Tier%&a!'
+    InvalidTier: '&cYour ability is not currently a valid tier to use this book.'
+    RequiredLevel: '&cIn order to use that book, you must be level &e%Level% &cin &e%Skill%&c.'
+    NoAbility: '&cYou do not have that ability unlocked, thus you can not use it.'
+    AlreadyUnlocked: '&cYou already have that ability unlocked.'
   CustomRedeem:
     Listening: '&ePlease type in chat the amount you would like to redeem.'
     RedeemedExp: '&aYou redeemed &e%Amount% &aexp into &e%Skill%.'

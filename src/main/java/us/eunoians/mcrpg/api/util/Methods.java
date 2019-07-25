@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.api.util;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.*;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.gui.GUIItem;
-import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.Skills;
 
 import java.util.*;
@@ -344,13 +343,9 @@ public class Methods {
     return material == Material.POPPY || material == Material.DANDELION || material == Material.BLUE_ORCHID || material == Material.LILAC;
   }
 
-  public static Map<String, Double> getCategoryChances(McRPGPlayer player){
-    Map<String, Double> returnMap = new HashMap<>();
-    FileConfiguration fishingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FISHING_CONFIG);
-    for (String category : fishingConfig.getConfigurationSection("CategoriesDefault").getKeys(false)){
-      double c = fishingConfig.getDouble("CategoriesDefault." + category);
-
-    }
-    return returnMap;
+  public static boolean isSkillBook(ItemStack itemStack){
+    NBTItem item = new NBTItem(itemStack);
+    return item.hasKey("UpgradeSkill") || item.hasKey("UnlockSkill");
   }
+
 }
