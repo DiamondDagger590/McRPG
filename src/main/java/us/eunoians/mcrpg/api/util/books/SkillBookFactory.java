@@ -45,11 +45,14 @@ public class SkillBookFactory {
     UnlockedAbilities ability = null;
     List<String> excludedAbilities = file.getStringList("ExcludedAbilities");
     List<String> tempList = skill.getEnabledAbilities();
-    tempList.remove(skill.getDefaultAbility().getName());
+    tempList.remove(skill.getDefaultAbility().getName().replace(" ", ""));
     List<UnlockedAbilities> enabledAbilities = tempList.stream().map(UnlockedAbilities::fromString).collect(Collectors.toList());
     HashMap<UnlockedAbilities, Double> chances = new HashMap<>();
     Parser equation = new Parser(file.getString(key + "AbilityWeightEquation"));
     for(UnlockedAbilities ab : enabledAbilities){
+      if(ab == null){
+        continue;
+      }
       if(!excludedAbilities.contains(ab.getName())){
         equation.setVariable("unlock_level", ab.getUnlockLevel());
         chances.put(ab, equation.getValue());
@@ -81,7 +84,7 @@ public class SkillBookFactory {
     tier = highTier > lowTier ? lowTier + RANDOM.nextInt(highTier - lowTier) : lowTier;
 
     requireLevel = file.getBoolean(key + "RequireLevel");
-    requireLore = file.getStringList(key + "RequireLore");
+    requireLore = Methods.colorLore(file.getStringList(key + "RequireLore"));
 
     if(requireLevel){
       List<String> possibleLevelSkills = file.getStringList(key + "PossibleLevelSkills");
@@ -114,7 +117,9 @@ public class SkillBookFactory {
         lore.add(s.replace("%Ability%", ability.getDisplayName()).replace("%Skill%", skill.getDisplayName()).replace("%Tier%", Integer.toString(tier)));
       }
       if(requireLevel){
-        lore.addAll(requireLore);
+        for(String s : requireLore){
+          lore.add(s.replace("%Level%", Integer.toString(requireSkillLevel)).replace("%Skill%", requireSkill.getDisplayName()));
+        }
       }
       meta.setLore(lore);
     }
@@ -213,7 +218,7 @@ public class SkillBookFactory {
     }
 
     requireLevel = file.getBoolean(key + "RequireLevel");
-    requireLore = file.getStringList(key + "RequireLore");
+    requireLore = Methods.colorLore(file.getStringList(key + "RequireLore"));
 
     if(requireLevel){
       List<String> possibleLevelSkills = file.getStringList(key + "PossibleLevelSkills");
@@ -247,7 +252,9 @@ public class SkillBookFactory {
                 .replace("%LowTier%", Integer.toString(lowUseTier)).replace("%HighTier%", Integer.toString(highUseTier)).replace("%UpgradeAmount%", Integer.toString(upgradeTierAmount)));
       }
       if(requireLevel){
-        lore.addAll(requireLore);
+        for(String s : requireLore){
+          lore.add(s.replace("%Level%", Integer.toString(requireSkillLevel)).replace("%Skill%", requireSkill.getDisplayName()));
+        }
       }
       meta.setLore(lore);
     }

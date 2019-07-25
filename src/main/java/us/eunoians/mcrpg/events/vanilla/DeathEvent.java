@@ -131,6 +131,7 @@ public class DeathEvent implements Listener{
 						if(bookManager.getEntityChances().containsKey("Unlock") && bookManager.getEntityChances().get("Unlock").containsKey(type)){
 							chance = bookManager.getEntityChances().get("Unlock").get(type);
 						}
+						chance *= 1000;
 						if(chance >= bookChance){
 							loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUnlockBook());
 						}
@@ -142,6 +143,7 @@ public class DeathEvent implements Listener{
 						if(bookManager.getEntityChances().containsKey("Upgrade") && bookManager.getEntityChances().get("Upgrade").containsKey(type)){
 							chance = bookManager.getEntityChances().get("Upgrade").get(type);
 						}
+						chance *= 1000;
 						if(chance >= bookChance){
 							loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUpgradeBook());
 						}
