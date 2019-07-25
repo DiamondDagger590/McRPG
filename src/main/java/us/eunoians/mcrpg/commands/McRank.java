@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.displays.LeaderboardScoreboard;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -30,7 +31,12 @@ public class McRank implements CommandExecutor {
         return true;
       }
       if(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.rank")){
-        McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(p.getUniqueId());
+        McRPGPlayer mcRPGPlayer;
+        try{
+          mcRPGPlayer = PlayerManager.getPlayer(p.getUniqueId());
+        } catch(McRPGPlayerNotFoundException exception){
+          return true;
+        }
         if(args.length == 0){
                     /*if(McRPG.getInstance().getLeaderboardManager().isLoading(mcRPGPlayer)){
                         p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&ePlease wait while we load in your data..."));

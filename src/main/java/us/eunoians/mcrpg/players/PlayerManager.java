@@ -1,10 +1,12 @@
 package us.eunoians.mcrpg.players;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.TipType;
@@ -25,6 +27,7 @@ public class PlayerManager {
 
   public static void addMcRPGPlayer(Player player, boolean freeze) {
     if(players.containsKey(player.getUniqueId())) {
+      Bukkit.broadcastMessage("already there");
       return;
     }
     UUID uuid = player.getUniqueId();
@@ -46,10 +49,11 @@ public class PlayerManager {
               public void run() {
                 if(mp.isOnline()){
                   mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
-                  players.put(uuid, mp);}
+                }
               }
             }.runTaskLater(McRPG.getInstance(), 40L);
           }
+          players.put(uuid, mp);
         }
         playersFrozen.remove(uuid);
       }
@@ -57,15 +61,18 @@ public class PlayerManager {
   }
 
   public static boolean isPlayerFrozen(UUID uuid) {
+    if(isPlayerStored(uuid)){
+      playersFrozen.remove(uuid);
+    }
     return playersFrozen.contains(uuid);
   }
 
-  public static McRPGPlayer getPlayer(UUID uuid) {
+  public static McRPGPlayer getPlayer(UUID uuid) throws McRPGPlayerNotFoundException{
     if(players.containsKey(uuid)) {
       return players.get(uuid);
     }
     else{
-      return players.put(uuid, new McRPGPlayer(uuid));
+      throw new McRPGPlayerNotFoundException("Player is not found or loaded yet.");
     }
   }
 

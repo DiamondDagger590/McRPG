@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.api.util;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.Skills;
@@ -35,10 +36,10 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
       return null;
     }
     McRPGPlayer mp;
-    if(player.isOnline()){
+    try{
       mp = PlayerManager.getPlayer(player.getUniqueId());
     }
-    else{
+    catch(McRPGPlayerNotFoundException exception){
       mp = new McRPGPlayer(player.getUniqueId());
     }
     String [] args = identifier.split("_");

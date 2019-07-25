@@ -16,6 +16,7 @@ import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.ChestLinkEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.FakeChestOpenEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.PreChestLinkEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -40,7 +41,13 @@ public class McLink implements CommandExecutor, Listener {
               McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)) {
         return true;
       }
-      McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+      McRPGPlayer mp;
+      try{
+        mp = PlayerManager.getPlayer(p.getUniqueId());
+      }
+      catch(McRPGPlayerNotFoundException exception){
+        return true;
+      }
       Block target = p.getTargetBlock(null, 100);
       if(target.getType() != Material.CHEST) {
         p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.RemoteTransfer.NotAChest")));
@@ -60,7 +67,13 @@ public class McLink implements CommandExecutor, Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void fakeBlockListener(FakeChestOpenEvent event) {
-    McRPGPlayer mp = PlayerManager.getPlayer(event.getPlayer().getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(event.getPlayer().getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
     Location loc = event.getClickedBlock().getLocation();
     Player p = event.getPlayer();
     PreChestLinkEvent preChestLinkEvent = new PreChestLinkEvent(mp, (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER), loc);

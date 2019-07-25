@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.abilities.excavation.PansShrine;
 import us.eunoians.mcrpg.abilities.woodcutting.DemetersShrine;
 import us.eunoians.mcrpg.api.events.mcrpg.PansShrineTestEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.excavation.PansShrineEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.events.mcrpg.McRPGExpGain;
@@ -32,7 +33,13 @@ public class PlayerTossItemEvent implements Listener {
       return;
     }
     Player p = e.getPlayer();
-    McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(p.getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
     if(UnlockedAbilities.DEMETERS_SHRINE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DEMETERS_SHRINE)
     && mp.getBaseAbility(UnlockedAbilities.DEMETERS_SHRINE).isToggled()){
       FileConfiguration woodcuttingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG);

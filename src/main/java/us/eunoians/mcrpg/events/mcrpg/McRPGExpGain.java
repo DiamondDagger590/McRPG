@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
@@ -153,7 +154,12 @@ public class McRPGExpGain implements Listener {
         demetersShrineMultipliers.remove(uuid);
         if(Bukkit.getOfflinePlayer(uuid).isOnline()){
           if(PlayerManager.isPlayerStored(uuid)){
-            PlayerManager.getPlayer(uuid).getActiveAbilities().remove(UnlockedAbilities.DEMETERS_SHRINE);
+            try{
+              PlayerManager.getPlayer(uuid).getActiveAbilities().remove(UnlockedAbilities.DEMETERS_SHRINE);
+            }
+            catch(McRPGPlayerNotFoundException exception){
+              return;
+            }
           }
         }
       }

@@ -37,6 +37,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.mining.BlastMiningEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.BlastTestEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.OreScannerEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.SuperBreakerEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -56,7 +57,7 @@ public class InteractHandler implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void interactHandler(PlayerInteractEvent e) {
-    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || PlayerManager.getPlayer(e.getPlayer().getUniqueId()) == null){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
       return;
     }
     //Used for Hand Digging ability so we have a persistant silk shovel
@@ -68,7 +69,13 @@ public class InteractHandler implements Listener {
       shovel.setItemMeta(meta);
     }
     Player p = e.getPlayer();
-    McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(p.getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
     ItemStack heldItem = e.getItem();
     //if they arent holding anything and they are hand digging/its a valid block, insta break it
     if(heldItem == null) {

@@ -5,7 +5,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.util.mcmmo.BlockUtils;
@@ -37,7 +35,7 @@ public class BlockListener implements Listener {
   private final McRPG plugin;
 
   public BlockListener(final McRPG plugin){
-	this.plugin = plugin;
+    this.plugin = plugin;
   }
 
   /**
@@ -48,25 +46,25 @@ public class BlockListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onFallingBlock(EntityChangeBlockEvent event){
 
-	if(event.getEntityType().equals(EntityType.FALLING_BLOCK)){
-	  if(event.getTo().equals(Material.AIR) && McRPG.getPlaceStore().isTrue(event.getBlock())){
-		event.getEntity().setMetadata("mcMMOBlockFall", new FixedMetadataValue(plugin, event.getBlock().getLocation()));
-	  }
-	  else{
-		List<MetadataValue> values = event.getEntity().getMetadata("mcMMOBlockFall");
+    if(event.getEntityType().equals(EntityType.FALLING_BLOCK)){
+      if(event.getTo().equals(Material.AIR) && McRPG.getPlaceStore().isTrue(event.getBlock())){
+        event.getEntity().setMetadata("mcMMOBlockFall", new FixedMetadataValue(plugin, event.getBlock().getLocation()));
+      }
+      else{
+        List<MetadataValue> values = event.getEntity().getMetadata("mcMMOBlockFall");
 
-		if(!values.isEmpty()){
+        if(!values.isEmpty()){
 
-		  if(values.get(0).value() == null) return;
-		  Block spawn = ((Location) values.get(0).value()).getBlock();
+          if(values.get(0).value() == null) return;
+          Block spawn = ((Location) values.get(0).value()).getBlock();
 
 
-		  McRPG.getPlaceStore().setTrue(event.getBlock());
-		  McRPG.getPlaceStore().setFalse(spawn);
+          McRPG.getPlaceStore().setTrue(event.getBlock());
+          McRPG.getPlaceStore().setFalse(spawn);
 
-		}
-	  }
-	}
+        }
+      }
+    }
   }
 
   /**
@@ -76,20 +74,20 @@ public class BlockListener implements Listener {
    */
   @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event){
-	Player player = event.getPlayer();
+    Player player = event.getPlayer();
 
-	if(!PlayerManager.isPlayerStored(event.getPlayer().getUniqueId())){
-	  return;
-	}
+    if(!PlayerManager.isPlayerStored(event.getPlayer().getUniqueId())){
+      return;
+    }
 
-	BlockState blockState = event.getBlock().getState();
+    BlockState blockState = event.getBlock().getState();
 
-	/* Check if the blocks placed should be monitored so they do not give out XP in the future */
-	if(blockState.getType() != Material.CHORUS_FLOWER){
-	  McRPG.getPlaceStore().setTrue(blockState);
-	}
+    /* Check if the blocks placed should be monitored so they do not give out XP in the future */
+    if(blockState.getType() != Material.CHORUS_FLOWER){
+      McRPG.getPlaceStore().setTrue(blockState);
+    }
 
-	McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
+    //McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
 
         /*if (blockState.getType() == Repair.anvilMaterial && SkillType.REPAIR.getPermissions(player)) {
             mcRPGPlayer.getRepairManager().placedAnvilCheck();
@@ -101,8 +99,8 @@ public class BlockListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockGrow(BlockGrowEvent event){
-	BlockState blockState = event.getBlock().getState();
-	McRPG.getPlaceStore().setFalse(blockState);
+    BlockState blockState = event.getBlock().getState();
+    McRPG.getPlaceStore().setFalse(blockState);
   }
 
   /**
@@ -115,23 +113,22 @@ public class BlockListener implements Listener {
         /*if (event instanceof FakeBlockBreakEvent) {
             return;
         }*/
-	BlockState blockState = event.getBlock().getState();
-	Location location = blockState.getLocation();
+    BlockState blockState = event.getBlock().getState();
+    Location location = blockState.getLocation();
 /*
         /* ALCHEMY - Cancel any brew in progress for that BrewingStand
         if (blockState instanceof BrewingStand && Alchemy.brewingStandMap.containsKey(location)) {
             Alchemy.brewingStandMap.get(location).cancelBrew();
         }
 */
-	Block block = event.getBlock();
-	Player p = event.getPlayer();
-	McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
-	FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
-	if(!PlayerManager.isPlayerStored(p.getUniqueId()) || p.getGameMode() == GameMode.CREATIVE){
-	  return;
-	}
-	/* Remove metadata from placed watched blocks */
-	  McRPG.getPlaceStore().setFalse(blockState);
+    Block block = event.getBlock();
+    Player p = event.getPlayer();
+    //McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+    if(!PlayerManager.isPlayerStored(p.getUniqueId()) || p.getGameMode() == GameMode.CREATIVE){
+      return;
+    }
+    /* Remove metadata from placed watched blocks */
+    McRPG.getPlaceStore().setFalse(blockState);
   }
 
   /**
@@ -141,23 +138,23 @@ public class BlockListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockDamage(BlockDamageEvent event){
-	Player player = event.getPlayer();
+    Player player = event.getPlayer();
 
-	if(!PlayerManager.isPlayerStored(player.getUniqueId())){
-	  return;
-	}
+    if(!PlayerManager.isPlayerStored(player.getUniqueId())){
+      return;
+    }
 
-	McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-	BlockState blockState = event.getBlock().getState();
+    //McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
+    BlockState blockState = event.getBlock().getState();
 
-	/*
-	 * ABILITY PREPARATION CHECKS
-	 *
-	 * We check permissions here before processing activation.
-	 */
-	if(BlockUtils.canActivateAbilities(blockState)){
-	  ItemStack heldItem = player.getInventory().getItemInMainHand();
-	}
+    /*
+     * ABILITY PREPARATION CHECKS
+     *
+     * We check permissions here before processing activation.
+     */
+    if(BlockUtils.canActivateAbilities(blockState)){
+      ItemStack heldItem = player.getInventory().getItemInMainHand();
+    }
 //TODO
         /*
          * TREE FELLER SOUNDS

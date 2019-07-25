@@ -18,6 +18,7 @@ import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.archery.*;
 import us.eunoians.mcrpg.api.events.mcrpg.archery.*;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -42,7 +43,13 @@ public class ShootEvent implements Listener {
     if(e.getEntity() instanceof Player) {
       Player p = (Player) e.getEntity();
       if(e.getProjectile() instanceof Arrow) {
-        McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
+        McRPGPlayer mp;
+        try{
+          mp = PlayerManager.getPlayer(p.getUniqueId());
+        }
+        catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
         Arrow arrow = (Arrow) e.getProjectile();
         if(!Skills.ARCHERY.isEnabled()){
           return;

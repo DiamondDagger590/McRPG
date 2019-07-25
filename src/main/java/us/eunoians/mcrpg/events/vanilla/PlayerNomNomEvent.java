@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.abilities.herbalism.FarmersDiet;
 import us.eunoians.mcrpg.abilities.woodcutting.HesperidesApples;
 import us.eunoians.mcrpg.api.events.mcrpg.herbalism.FarmersDietEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.HesperidesApplesEvent;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -49,7 +50,13 @@ public class PlayerNomNomEvent implements Listener {
     if(foodChange <= 0) {
       return;
     }
-    McRPGPlayer mp = PlayerManager.getPlayer(player.getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(event.getEntity().getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
     if(UnlockedAbilities.FARMERS_DIET.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.FARMERS_DIET) && mp.getBaseAbility(UnlockedAbilities.FARMERS_DIET).isToggled()) {
       FarmersDiet farmersDiet = (FarmersDiet) mp.getBaseAbility(UnlockedAbilities.FARMERS_DIET);
       FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
