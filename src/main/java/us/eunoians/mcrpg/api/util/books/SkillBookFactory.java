@@ -166,6 +166,9 @@ public class SkillBookFactory {
     HashMap<UnlockedAbilities, Double> chances = new HashMap<>();
     Parser equation = new Parser(file.getString(key + "AbilityWeightEquation"));
     for(UnlockedAbilities ab : enabledAbilities){
+      if(ab == null){
+        continue;
+      }
       if(!excludedAbilities.contains(ab.getName())){
         equation.setVariable("unlock_level", ab.getUnlockLevel());
         chances.put(ab, equation.getValue());

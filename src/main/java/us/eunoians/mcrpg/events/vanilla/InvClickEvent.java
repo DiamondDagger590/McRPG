@@ -647,6 +647,10 @@ public class InvClickEvent implements Listener {
           if(Methods.isInt(events[1])) {
             int amount = Integer.parseInt(events[1]);
             if(redeemType == RedeemType.EXP) {
+              if(mp.getRedeemableExp() - amount < 0){
+                e.setCancelled(true);
+                return;
+              }
               mp.giveExp(skill, amount, GainReason.REDEEM);
               mp.setRedeemableExp(mp.getRedeemableExp() - amount);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
@@ -655,6 +659,10 @@ public class InvClickEvent implements Listener {
               return;
             }
             else {
+              if(mp.getRedeemableLevels() - amount < 0){
+                e.setCancelled(true);
+                return;
+              }
               mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")

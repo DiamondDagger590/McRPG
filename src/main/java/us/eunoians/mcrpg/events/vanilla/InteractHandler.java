@@ -446,6 +446,7 @@ public class InteractHandler implements Listener {
             mp.setReadying(false);
             Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
             mp.setReadyingAbilityBit(null);
+            mp.getActiveAbilities().add(UnlockedAbilities.PANS_BLESSING);
             int cooldown = herbalism.getInt("PansBlessingConfig.Tier" + Methods.convertToNumeral(pansBlessing.getCurrentTier()) + ".Cooldown");
             for(int x = -1 * radius; x <= radius; x++) {
               for(int z = -1 * radius; z <= radius; z++) {
@@ -468,7 +469,7 @@ public class InteractHandler implements Listener {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND, cooldown);
             p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.PansBlessing.Activated")));
-            mp.getActiveAbilities().add(UnlockedAbilities.PANS_BLESSING);
+            mp.getActiveAbilities().remove(UnlockedAbilities.PANS_BLESSING);
             mp.addAbilityOnCooldown(UnlockedAbilities.PANS_BLESSING, cal.getTimeInMillis());
           }
         }

@@ -130,8 +130,9 @@ FarmersDietConfig:
     TierIV: 375
     TierV: 500
   TierI:
-    #The chance boost from richer ores
+    #The hunger bonus from eating crops.
     FoodRestorationBonus: 0
+    #The saturation bonus from eating crops
     SaturationBonus: 0.5
   TierII:
     FoodRestorationBonus: 1

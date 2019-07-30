@@ -51,56 +51,55 @@ public class McRPGExpGain implements Listener {
     }
     else if(McRPG.getInstance().isWorldGuardEnabled()) {
       WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
-      if(!wgSupportManager.isWorldTracker(e.getMcRPGPlayer().getPlayer().getWorld())){
-        return;
-      }
-      RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-      Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
-      RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+      if(wgSupportManager.isWorldTracker(e.getMcRPGPlayer().getPlayer().getWorld())){
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
+        RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
 
-      HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
-      assert manager != null;
-      ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
-      boolean useMultiplier = false;
-      double lowestMultiplier = 0;
-      boolean continueSeaching = true;
-      for(ProtectedRegion region : set) {
-        if(regions.containsKey(region.getId())) {
-          double multiplier = regions.get(region.getId()).getExpMultiplier();
-          if(useMultiplier && multiplier < lowestMultiplier){
-            lowestMultiplier = multiplier;
-          }
-          else{
-            lowestMultiplier = multiplier;
-            useMultiplier = true;
-          }
-          if(!continueSeaching){
-            continue;
-          }
-          HashMap<String, List<String>> expExpression = regions.get(region.getId()).getExpGainExpressions();
-          if(expExpression.containsKey("All")){
-            List<String> expressions = expExpression.get("All");
-            for(String s : expressions){
-              ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, e.getMcRPGPlayer());
-              if(actionLimiterParser.evaluateExpression(e.getSkillGained().getType())){
-                e.setCancelled(true);
-                continueSeaching = false;
+        HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
+        assert manager != null;
+        ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+        boolean useMultiplier = false;
+        double lowestMultiplier = 0;
+        boolean continueSeaching = true;
+        for(ProtectedRegion region : set){
+          if(regions.containsKey(region.getId())){
+            double multiplier = regions.get(region.getId()).getExpMultiplier();
+            if(useMultiplier && multiplier < lowestMultiplier){
+              lowestMultiplier = multiplier;
+            }
+            else{
+              lowestMultiplier = multiplier;
+              useMultiplier = true;
+            }
+            if(!continueSeaching){
+              continue;
+            }
+            HashMap<String, List<String>> expExpression = regions.get(region.getId()).getExpGainExpressions();
+            if(expExpression.containsKey("All")){
+              List<String> expressions = expExpression.get("All");
+              for(String s : expressions){
+                ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, e.getMcRPGPlayer());
+                if(actionLimiterParser.evaluateExpression(e.getSkillGained().getType())){
+                  e.setCancelled(true);
+                  continueSeaching = false;
+                }
               }
             }
-          }
-          if(expExpression.containsKey(e.getSkillGained().getType().getName())){
-            List<String> expressions = expExpression.get(e.getSkillGained().getType().getName());
-            for(String s : expressions){
-              ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, e.getMcRPGPlayer());
-              if(actionLimiterParser.evaluateExpression()){
-                e.setCancelled(true);
-                continueSeaching = false;
+            if(expExpression.containsKey(e.getSkillGained().getType().getName())){
+              List<String> expressions = expExpression.get(e.getSkillGained().getType().getName());
+              for(String s : expressions){
+                ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, e.getMcRPGPlayer());
+                if(actionLimiterParser.evaluateExpression()){
+                  e.setCancelled(true);
+                  continueSeaching = false;
+                }
               }
             }
           }
         }
+        e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
       }
-      e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
     }
 
     BookManager bookManager = McRPG.getInstance().getBookManager();

@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.util.exp;
 
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
@@ -50,7 +51,7 @@ public class ExpPermissionManager {
     for(String s : permissions.keySet()){
       if(p.hasPermission(s)){
         if(perm != null){
-          if(perm.getPriority() < permissions.get(s).getPriority()){
+          if(perm.getPriority() < permissions.get(s).getPriority() && permissions.get(s).getExpValues().containsKey(skill.getType())){
             perm = permissions.get(s);
           }
         }
