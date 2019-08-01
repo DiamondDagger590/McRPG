@@ -99,6 +99,19 @@ public class SettingsGUI extends GUI {
       ignoreTip.setItemMeta(ignoreTipMeta);
       items.add(new GUIItem(ignoreTip, settingsFile.getInt("IgnoreTips.Slot")));
 
+      ItemStack requireEmptyOffhand = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+      ItemMeta requireEmptyOffhandMeta = requireEmptyOffhand.getItemMeta();
+      if(player.isRequireEmptyOffHand()) {
+        requireEmptyOffhandMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("EmptyOffHand.Enabled")));
+      }
+      else {
+        requireEmptyOffhand.setType(Material.RED_STAINED_GLASS_PANE);
+        requireEmptyOffhandMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("EmptyOffHand.Disabled")));
+      }
+      requireEmptyOffhandMeta.setLore(Methods.colorLore(settingsFile.getStringList("EmptyOffHand.Lore")));
+      requireEmptyOffhand.setItemMeta(requireEmptyOffhandMeta);
+      items.add(new GUIItem(requireEmptyOffhand, settingsFile.getInt("EmptyOffHand.Slot")));
+
       ItemStack later = new ItemStack(Material.RED_STAINED_GLASS_PANE);
       ItemMeta laterMeta = later.getItemMeta();
       laterMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AddLater.DisplayName")));

@@ -157,7 +157,9 @@ public class CheckReadyEvent implements Listener {
       heldItem = new ItemStack(Material.AIR);
     }
     if(type == Material.CHEST || type == Material.ENDER_CHEST || type == Material.TRAPPED_CHEST
-            || type == Material.BEACON) {
+            || type == Material.BEACON || type.name().contains("DOOR") || type.name().contains("SIGN") || type.name().contains("SHULKER") || type == Material.ENCHANTING_TABLE || type == Material.LEVER
+    || type.name().contains("BUTTON") || type == Material.REPEATER || type == Material.COMPARATOR || type == Material.CRAFTING_TABLE || type.name().contains("FURNACE") || type.name().contains("SMOKER")
+    || type == Material.ITEM_FRAME || type.name().contains("CARTOGRAPHY") || type.name().contains("COMPOSTER")) {
       return;
     }
     if((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && UnlockedAbilities.NATURES_WRATH.isEnabled() &&
@@ -277,7 +279,6 @@ public class CheckReadyEvent implements Listener {
     }
     //Verify that the player is in a state able to ready abilities
     //If the slot is not their hand or they arent right clicking or the player is charging or if their gamemode isnt survival or if they are holding air
-
     if(e.getHand() == null || e.getHand() != EquipmentSlot.HAND || (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) || ShiftToggle.isPlayerCharging(p) || p.getGameMode() != GameMode.SURVIVAL) {
       return;
     }

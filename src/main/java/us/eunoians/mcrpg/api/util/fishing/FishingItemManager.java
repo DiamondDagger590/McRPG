@@ -21,6 +21,8 @@ public class FishingItemManager {
   private Map<String, List<FishingItem>> categoriesToItems = new HashMap<>();
   private Map<EntityType, List<ShakeItem>> shakeItems = new HashMap<>();
   private static Random rand = new Random();
+  private int lowDurability = 0;
+  private int highDurability = 0;
 
   public FishingItemManager(){
     for(String category : getFishingLootConfig().getConfigurationSection("Categories").getKeys(false)){
@@ -39,6 +41,9 @@ public class FishingItemManager {
       }
       shakeItems.put(type, items);
     }
+    String[] durabilityData = getFishingLootConfig().getString("DurabilityDamageScale").split("-");
+    lowDurability = Integer.parseInt(durabilityData[0]);
+    highDurability = durabilityData.length > 1 ? lowDurability + rand.nextInt(Integer.parseInt(durabilityData[1]) - lowDurability) : lowDurability;
   }
 
   public FishingResult generateItem(String category, BaseAbility ability, McRPGPlayer player){
@@ -79,11 +84,12 @@ public class FishingItemManager {
     else if(isPotion){
       returnItem = FishedItemStackFactory.convertToPotion(returnItem, resultItem.getPotionMeta());
     }
-    if(resultItem.getLowEndDurability() > 0){
+    returnItem = FishedItemStackFactory.damageItem(returnItem, lowDurability, highDurability);
+   /* if(resultItem.getLowEndDurability() > 0){
       returnItem = FishedItemStackFactory.damageItem(returnItem, resultItem.getLowEndDurability(), resultItem.getHighEndDurability());
-    }
+    }*/
     if(resultItem.getHighEndAmount() > 1){
-      returnItem.setAmount(resultItem.getLowEndAmount() + rand.nextInt(resultItem.getHighEndAmount() - resultItem.getLowEndDurability()));
+      returnItem.setAmount(resultItem.getLowEndAmount() + rand.nextInt(resultItem.getHighEndAmount() - resultItem.getLowEndAmount()));
     }
     int vanillaExp = resultItem.getLowEndVanillaExpAmount();
     if(resultItem.getHighEndVanillaExpAmount() > 0){

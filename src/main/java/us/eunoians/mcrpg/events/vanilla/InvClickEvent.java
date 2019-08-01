@@ -236,6 +236,22 @@ public class InvClickEvent implements Listener {
           currentGUI.getGui().getInv().setItem(e.getSlot(), autoDenyItem);
           p.updateInventory();
         }
+        else if(e.getSlot() == guiConfig.getInt("EmptyOffHand.Slot")) {
+          ItemStack emptyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+          ItemMeta emptyMeta = emptyItem.getItemMeta();
+          if(!mp.isRequireEmptyOffHand()) {
+            emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Enabled")));
+          }
+          else {
+            emptyItem.setType(Material.RED_STAINED_GLASS_PANE);
+            emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Disabled")));
+          }
+          mp.setRequireEmptyOffHand(!mp.isRequireEmptyOffHand());
+          emptyMeta.setLore(Methods.colorLore(guiConfig.getStringList("EmptyOffHand.Lore")));
+          emptyItem.setItemMeta(emptyMeta);
+          currentGUI.getGui().getInv().setItem(e.getSlot(), emptyItem);
+          p.updateInventory();
+        }
         else if(e.getSlot() == guiConfig.getInt("BackButton.Slot")) {
           HomeGUI main = new HomeGUI(mp);
           currentGUI.setClearData(false);

@@ -35,10 +35,17 @@ IgnoreTips:
   Lore:
     - '&eClick this to change'
     - '&eif tips should be ignored'
+EmptyOffHand:
+  Enabled: '&aOff hand must be empty'
+  Disabled: '&cOff hand can have an item in it'
+  Slot: 12
+  Lore:
+    - '&eIf enabled, then in order to ready'
+    - '&eabilities, your offhand must be empty'
 AddLater:
   DisplayName: '&cThis feature will be added later'
   Lore: {}
-  Slot: 12
+  Slot: 14
 BackButton:
   Material: BARRIER
   DisplayName: '&bBack>>'

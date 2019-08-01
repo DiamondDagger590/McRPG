@@ -10,7 +10,7 @@ RequirePermission: false
 ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much extra damage by default a fist should do
-BonusDamage: 2
+BonusDamage: 4
 #How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
 #Ex) Spider gives 50 exp. Deal 3 damage, get 150 exp with a wood sword
 ExpAwardedPerMob:
@@ -90,9 +90,9 @@ UsePermsForAbilites:
   DenseImpact: false
 #At what unarmed level should these abilities be unlocked at
 UnlockLevelForAbility:
-  TighterGrip: 50
+  TighterGrip: 250
   Disarm: 150
-  IronArm: 250
+  IronArm: 50
   Berserk: 100
   SmitingFist: 200
   DenseImpact: 300
@@ -121,10 +121,10 @@ TighterGripConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 125
-    TierIII: 250
-    TierIV: 375
-    TierV: 500
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
   TierI:
     #The boost to disarm resistance occurring per tier
     GripBoost: 5.0
@@ -195,27 +195,27 @@ IronArmConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 400
-    TierIII: 550
-    TierIV: 700
-    TierV: 850
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
   #Config for each tier
   TierI:
     #Odds of activation per tier
-    ActivationChance: 25.0
-    DamageBoost: 1
-  TierII:
     ActivationChance: 50.0
     DamageBoost: 1
-  TierIII:
-    ActivationChance: 75.0
+  TierII:
+    ActivationChance: 60.0
     DamageBoost: 1
+  TierIII:
+    ActivationChance: 70.0
+    DamageBoost: 2
   TierIV:
-    ActivationChance: 75.0
+    ActivationChance: 80.0
     DamageBoost: 2
   TierV:
-    ActivationChance: 100.0
-    AmountToHeal: 2
+    ActivationChance: 90.0
+    DamageBoost: 3
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Iron Arm'

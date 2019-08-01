@@ -90,6 +90,7 @@ public class McRPGPlayer {
   @Getter @Setter private boolean keepHandEmpty = false;
   @Getter @Setter private DisplayType displayType = DisplayType.SCOREBOARD;
   @Getter @Setter private boolean autoDeny = false;
+  @Getter @Setter private boolean requireEmptyOffHand = false;
   @Getter @Setter private boolean ignoreTips;
 
   @Getter private Set<TipType> usedTips = new HashSet<>();
@@ -173,6 +174,7 @@ public class McRPGPlayer {
           this.displayType = DisplayType.fromString(rs.getString("display_type"));
           this.autoDeny = rs.getBoolean("auto_deny");
           this.ignoreTips = rs.getBoolean("ignore_tips");
+          this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
         }
       } catch(SQLException e) {
         e.printStackTrace();
@@ -1421,7 +1423,7 @@ public class McRPGPlayer {
     database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
-    @Language("SQL") String query = "UPDATE mcrpg_player_settings SET keep_hand = " + Methods.convertBool(keepHandEmpty)
+    @Language("SQL") String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
             "', health_type = '" + healthbarType.getName() + "' WHERE uuid = '" + uuid.toString() + "'";
     database.executeUpdate(query);

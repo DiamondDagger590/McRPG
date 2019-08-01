@@ -218,7 +218,7 @@ public class VanillaDamageEvent implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGH)
   public void fitnessEvent(EntityDamageByEntityEvent e){
     if(e.isCancelled()){
       return;
@@ -318,7 +318,7 @@ public class VanillaDamageEvent implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void awardFitnessExp(EntityDamageByEntityEvent e){
-    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && ((Player) e.getEntity()).getHealth() - e.getDamage() > 0){
+    if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && e.getDamage() >= 1.0 && ((Player) e.getEntity()).getHealth() - e.getDamage() > 0){
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
@@ -339,6 +339,7 @@ public class VanillaDamageEvent implements Listener {
    */
   @EventHandler(priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e){
+    //TODO do entity/plugin checks
     if(e.isCancelled()){
       return;
     }

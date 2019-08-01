@@ -7,6 +7,8 @@ EnchantmentWeightScale:
   III: 5
   IV: 3
   V: 1
+#Scale is lowend-highend. Meaning items can have 1% of their max dur or 60% of their max dur
+DurabilityDamageScale: '1-60'
 Categories:
   #Define different categories that the fishing loottable can use
   #

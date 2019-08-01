@@ -10,6 +10,7 @@ public class PlayerSetting {
   @Column(defaultValue = "0") boolean keep_hand;
   @Column(defaultValue = "0") boolean ignore_tips;
   @Column(defaultValue = "0") boolean auto_deny;
+  @Column(defaultValue = "0") boolean require_empty_offhand;
   @Column(defaultValue = "Scoreboard") String display_type;
   @Column(defaultValue = "Bar") String health_type;
 }

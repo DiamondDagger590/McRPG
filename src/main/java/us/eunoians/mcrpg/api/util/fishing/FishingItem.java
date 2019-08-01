@@ -17,8 +17,8 @@ public class FishingItem {
   @Getter private Parser chance;
   @Getter private int lowEndAmount;
   @Getter private int highEndAmount;
-  @Getter private int lowEndDurability;
-  @Getter private int highEndDurability;
+//  @Getter private int lowEndDurability;
+ // @Getter private int highEndDurability;
   @Getter private int lowEndVanillaExpAmount;
   @Getter private int highEndVanillaExpAmount;
   @Getter private int mcrpgExpValue;
@@ -35,8 +35,8 @@ public class FishingItem {
     this.lowEndAmount = Integer.parseInt(amountRange[0]);
     this.highEndAmount = amountRange.length > 1 ? Integer.parseInt(amountRange[1]) : lowEndAmount;
     String[] durabilityRange = getFishingLootConfig().getString(filePath + "DurabilityRange", "0").split("-");
-    this.lowEndDurability = Integer.parseInt(durabilityRange[0]);
-    this.highEndDurability = durabilityRange.length > 1 ? Integer.parseInt(durabilityRange[1]) : lowEndDurability;
+  //  this.lowEndDurability = Integer.parseInt(durabilityRange[0]);
+//    this.highEndDurability = durabilityRange.length > 1 ? Integer.parseInt(durabilityRange[1]) : lowEndDurability;
     String[] expRange = getFishingLootConfig().getString(filePath + "VanillaExp", "0").split("-");
     this.lowEndVanillaExpAmount = Integer.parseInt(expRange[0]);
     this.highEndVanillaExpAmount = expRange.length > 1 ? Integer.parseInt(expRange[1]) : highEndAmount;
