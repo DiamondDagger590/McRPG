@@ -346,6 +346,9 @@ public class VanillaDamageEvent implements Listener {
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)){
       Player damager = (Player) e.getDamager();
+      if(damager.isInsideVehicle()){
+        return;
+      }
       if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()){
         return;
       }

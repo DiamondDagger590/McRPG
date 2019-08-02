@@ -61,10 +61,12 @@ public class FishedItemStackFactory {
   }
 
   public static ItemStack damageItem(@NotNull ItemStack item, int lowDamage, int highDamage){
-    if(item.hasItemMeta() && item.getItemMeta() instanceof Damageable){
-      int damage = lowDamage + rand.nextInt(highDamage - lowDamage);
+    if(item.getItemMeta() instanceof Damageable){
+      double damage = lowDamage + rand.nextInt(highDamage - lowDamage);
       Damageable meta = (Damageable) item.getItemMeta();
-      meta.setDamage(damage);
+      double multiplier = (damage/100d);
+      damage = (int) (item.getType().getMaxDurability() * multiplier);
+      meta.setDamage(item.getType().getMaxDurability() - (int) damage);
       item.setItemMeta((ItemMeta) meta);
     }
     return item;

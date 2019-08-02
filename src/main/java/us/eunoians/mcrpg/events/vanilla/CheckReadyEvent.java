@@ -313,6 +313,9 @@ public class CheckReadyEvent implements Listener {
         if(McRPG.getInstance().getConfig().getBoolean("Configuration.RequireEmptyOffHand") && p.getInventory().getItemInOffHand().getType() != Material.AIR) {
           return;
         }
+        else if(mp.isRequireEmptyOffHand() && p.getInventory().getItemInOffHand().getType() != Material.AIR){
+          return;
+        }
         if(mp.getCooldown(skillType) > -1) {
           p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownActive").replace("%Skill%", skillType.getDisplayName())
