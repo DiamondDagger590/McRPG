@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Arrow;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -18,9 +19,9 @@ import java.util.ArrayList;
 @SuppressWarnings("Duplicates")
 public class PickupEvent implements Listener {
 
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.LOWEST)
   public void pickupEvent(PlayerPickupItemEvent e) {
-    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || e.getRemaining() < 1 || e.isCancelled()){
       return;
     }
     if(e.getPlayer().getInventory().getItemInMainHand() == null || e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR) {
@@ -123,6 +124,10 @@ public class PickupEvent implements Listener {
             }
           }
           e.getItem().getItemStack().setAmount(amount);
+          if(e.getItem() instanceof Arrow){
+            Arrow arrow = (Arrow) e.getItem();
+            arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+          }
         }
       }
     }
