@@ -1,0 +1,37 @@
+Recipies:
+  Speed:
+    BrewableItems:
+      - 'SUGAR'
+    ParentPotion:
+      - 'AWKWARD_POTION'
+    BaseEffect: 'SPEED'
+    BaseDuration: 180
+    #How much fuel needs to be used in order to
+    FuelConsumption: 1
+    DurationAmplifier:
+      #How many times redstone can be applied
+      MaxAmount: 1
+      #When using redstone, how should the duration be modified
+      DurationModification: '(duration * 2) + 2'
+      #How much fuel should be consumed when redstone is used
+      FuelConsumption: 2
+      #If the effect amplifier should be decremented by 1
+      LowerEffectOnUse: true
+    EffectAmplifier:
+      #How many times glowstone can be applied
+      MaxAmount: 1
+      #When using glowstone, how should the effect be modified
+      EffectModification: 'effect + 1'
+      #How much fuel should be consumed when glowstone is used
+      FuelConsumption: 2
+      LowerDurationOnUse: true
+      #If the duration is already not extended, then how much should the duration be decreased by
+      LowerDurationIfNotExtended: 'duration/2'
+    Splash:
+      CanSplash: true
+      FuelConsumption: 2
+      DurationModifier: 'duration * .66'
+    Lingering:
+      CanLinger: true
+      FuelConsumption: 5
+      DurationModifier: 'duration * .66'
