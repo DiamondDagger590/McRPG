@@ -43,7 +43,7 @@ public class FishingItemManager {
     }
     String[] durabilityData = getFishingLootConfig().getString("DurabilityDamageScale").split("-");
     lowDurability = Integer.parseInt(durabilityData[0]);
-    highDurability = durabilityData.length > 1 ? Integer.parseInt(durabilityData[1]) : lowDurability;
+    highDurability = durabilityData.length > 1 ? Integer.parseInt(durabilityData[1]) : 60;
   }
 
   public FishingResult generateItem(String category, BaseAbility ability, McRPGPlayer player){
