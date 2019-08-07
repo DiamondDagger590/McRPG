@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -236,18 +237,20 @@ public class InvClickEvent implements Listener {
           currentGUI.getGui().getInv().setItem(e.getSlot(), autoDenyItem);
           p.updateInventory();
         }
-        else if(e.getSlot() == guiConfig.getInt("EmptyOffHand.Slot")) {
+        //Handle legacy files
+        else if(e.getSlot() == guiConfig.getInt("EmptyOffHand.Slot", 12)) {
           ItemStack emptyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
           ItemMeta emptyMeta = emptyItem.getItemMeta();
           if(!mp.isRequireEmptyOffHand()) {
-            emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Enabled")));
+            emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Enabled", "&aOff Hand Must Be Empty")));
           }
           else {
             emptyItem.setType(Material.RED_STAINED_GLASS_PANE);
-            emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Disabled")));
+            emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Disabled", "&cOff Hand Can Have An Item In It")));
           }
           mp.setRequireEmptyOffHand(!mp.isRequireEmptyOffHand());
-          emptyMeta.setLore(Methods.colorLore(guiConfig.getStringList("EmptyOffHand.Lore")));
+          List<String> lore = guiConfig.contains("EmptyOffHand.Lore") ? guiConfig.getStringList("EmptyOffHand.Lore") : Arrays.asList("&eIf enabled, then in order to ready", "&eabilities, your offhand must be empty.");
+          emptyMeta.setLore(Methods.colorLore(lore));
           emptyItem.setItemMeta(emptyMeta);
           currentGUI.getGui().getInv().setItem(e.getSlot(), emptyItem);
           p.updateInventory();

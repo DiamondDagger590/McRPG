@@ -14,6 +14,8 @@ import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SettingsGUI extends GUI {
 
@@ -25,6 +27,15 @@ public class SettingsGUI extends GUI {
       FileConfiguration settingsFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SETTINGS_GUI);
       Inventory inv = Bukkit.createInventory(null, settingsFile.getInt("Size"), Methods.color(player.getPlayer(), settingsFile.getString("Title")));
       ArrayList<GUIItem> items = new ArrayList<>();
+
+      //Move this up so new additions will override it if a legacy file exists
+      ItemStack later = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+      ItemMeta laterMeta = later.getItemMeta();
+      laterMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AddLater.DisplayName")));
+      laterMeta.setLore(Methods.colorLore(settingsFile.getStringList("AddLater.Lore")));
+      later.setItemMeta(laterMeta);
+      items.add(new GUIItem(later, settingsFile.getInt("AddLater.Slot")));
+
       ItemStack displayItem = new ItemStack(Material.BLAZE_ROD);
       ItemMeta displayMeta = displayItem.getItemMeta();
       if(player.getDisplayType() == DisplayType.SCOREBOARD) {
@@ -99,26 +110,20 @@ public class SettingsGUI extends GUI {
       ignoreTip.setItemMeta(ignoreTipMeta);
       items.add(new GUIItem(ignoreTip, settingsFile.getInt("IgnoreTips.Slot")));
 
+      //Deal with legacy files
       ItemStack requireEmptyOffhand = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
       ItemMeta requireEmptyOffhandMeta = requireEmptyOffhand.getItemMeta();
       if(player.isRequireEmptyOffHand()) {
-        requireEmptyOffhandMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("EmptyOffHand.Enabled")));
+        requireEmptyOffhandMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("EmptyOffHand.Enabled", "&aOff Hand Must Be Empty")));
       }
       else {
         requireEmptyOffhand.setType(Material.RED_STAINED_GLASS_PANE);
-        requireEmptyOffhandMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("EmptyOffHand.Disabled")));
+        requireEmptyOffhandMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("EmptyOffHand.Disabled", "&cOff Hand Can Have An Item In It")));
       }
-      requireEmptyOffhandMeta.setLore(Methods.colorLore(settingsFile.getStringList("EmptyOffHand.Lore")));
+      List<String> lore = settingsFile.contains("EmptyOffHand.Lore") ? settingsFile.getStringList("EmptyOffHand.Lore") : Arrays.asList("&eIf enabled, then in order to ready", "&eabilities, your offhand must be empty.");
+      requireEmptyOffhandMeta.setLore(Methods.colorLore(lore));
       requireEmptyOffhand.setItemMeta(requireEmptyOffhandMeta);
-      items.add(new GUIItem(requireEmptyOffhand, settingsFile.getInt("EmptyOffHand.Slot")));
-
-      ItemStack later = new ItemStack(Material.RED_STAINED_GLASS_PANE);
-      ItemMeta laterMeta = later.getItemMeta();
-      laterMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AddLater.DisplayName")));
-      laterMeta.setLore(Methods.colorLore(settingsFile.getStringList("AddLater.Lore")));
-      later.setItemMeta(laterMeta);
-      items.add(new GUIItem(later, settingsFile.getInt("AddLater.Slot")));
-
+      items.add(new GUIItem(requireEmptyOffhand, settingsFile.getInt("EmptyOffHand.Slot", 12)));
 
       ItemStack back = new ItemStack(Material.valueOf(settingsFile.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();

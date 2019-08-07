@@ -29,19 +29,19 @@ AutoDenyNewAbilities:
     - '&eClick this to change'
     - '&eif new abilities should auto deny'
 IgnoreTips:
-  Enabled: '&aIgnoring tips Enabled'
+  Enabled: '&aIgnoring Tips Enabled'
   Disabled: '&cIgnoring Tips Disabled'
   Slot: 10
   Lore:
     - '&eClick this to change'
     - '&eif tips should be ignored'
 EmptyOffHand:
-  Enabled: '&aOff hand must be empty'
-  Disabled: '&cOff hand can have an item in it'
+  Enabled: '&aOff Hand Must Be Empty'
+  Disabled: '&cOff Hand Can Have An Item In It'
   Slot: 12
   Lore:
     - '&eIf enabled, then in order to ready'
-    - '&eabilities, your offhand must be empty'
+    - '&eabilities, your offhand must be empty.'
 AddLater:
   DisplayName: '&cThis feature will be added later'
   Lore: {}
