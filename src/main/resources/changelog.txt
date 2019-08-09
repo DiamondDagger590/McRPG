@@ -1,3 +1,29 @@
+1.0.2-BETA
++ Added a new player setting. When enabled, players must have their offhand empty in order to 'ready' to use abilities.
+The plugin will automatically try to utilize default text for these, if you wish for customization, please refer to the
+settingsgui.yml on GitHub. Please note that in order for the AddLater item to show up still, you will need to change its slot as well
++ Added a command to give skill books. /mcadmin give book unlock %Player% /mcadmin give book upgrade %Player%
+Please be aware that the player must be online in order for these to work.
++ Added support for Sickle, when harvesting using a Sickle, you will now gain Herbalism exp.
++ Added a new section to /mchelp mcadmin. This will automatically be inserted into the en.yml
+= Recolored Skill Books to look a lot cleaner. If you have not modified these files, you can get these changes by deleting and letting the files regenerate
+= Spawners now give decreased experience as intended
+= Lowered default Luck Of Sea "Treasure" bonus by 40%
+= Lowered default Luck of Sea "Junk" modification by 50%
+= Patched an exploit for infinite tridents/arrows when using Keep OffHand Setting
+= Fixed a possible soft lock for players when changing certain settings
+= Patched an archery exploit giving infinite exp very quickly when using a /sit command
+= Added a new durability feature for fishing items. Please add in DurabilityDamageScale: '1-60' to the fishingloot.yml, otherwise it will default to 1-60% damage on items.
+You may also delete and regen this file for the changes as many have not modified this file presumably.
+= Readying algorithm has been improved to ignore a lot more blocks such as Shulker Boxes
+= Fixed Pans Blessing being activatable once per login session
+= Sunken Armory and Magic Touch had their levels swapped to make fishing more valuable
+= Iron Arm has received significant buffs to make it more powerful early game to help leveling
+= Iron Arm and Tighter Grip have had their levels swapped
+= Please change line 218 in unarmed.yml from AmountToHeal to DamageBoost (copy pasting got the best of me)
+= Nerfed a few mobs for swords/axes/unarmed, most notably Endermen
+= Buffed most mob exp values for Archery
+
 1.0.1-BETA
 + Added ability to change sign colors
 
