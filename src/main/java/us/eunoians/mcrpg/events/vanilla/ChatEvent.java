@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.events.vanilla;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -48,22 +49,33 @@ public class ChatEvent implements Listener {
               return;
             }
             else{
-              mp.getSkill(redeemBit.getSkill()).giveExp(mp, amount, GainReason.REDEEM);
-              mp.setRedeemableExp(mp.getRedeemableExp() - amount);
-              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
-                      .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  mp.getSkill(redeemBit.getSkill()).giveExp(mp, amount, GainReason.REDEEM);
+                  mp.setRedeemableExp(mp.getRedeemableExp() - amount);
+                  e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
+                          .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
+                }
+              }.runTaskLater(McRPG.getInstance(), 5);
               return;
             }
           }
           else{
             if(mp.getRedeemableLevels() < amount){
               e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.NotEnoughLevels")));
-              return;            }
+              return;
+            }
             else{
-              mp.getSkill(redeemBit.getSkill()).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.RedeemLevelsResetExp"));
-              mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
-              e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
-                      .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  mp.getSkill(redeemBit.getSkill()).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.RedeemLevelsResetExp"));
+                  mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
+                  e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
+                          .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
+                }
+              }.runTaskLater(McRPG.getInstance(), 5);
               return;
             }
           }
