@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
@@ -16,6 +17,7 @@ import us.eunoians.mcrpg.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.skills.Skill;
@@ -46,7 +48,6 @@ public class McAdmin implements CommandExecutor {
               McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)) {
         return true;
       }
-
       if(args.length < 3) {
         sendHelpMessage(admin);
         return true;
@@ -361,6 +362,40 @@ public class McAdmin implements CommandExecutor {
                 mp.getAbilityLoadout().add(ability);
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Ability").replace("%Player%", offlinePlayer.getName()).replace("%Ability%", ability.getName())));
                 mp.saveData();
+                return true;
+              }
+            }
+            else {
+              admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              return true;
+            }
+          }
+          else if(args[1].equalsIgnoreCase("book")){
+            //mcadmin give book %type% %player%
+            if(args.length < 4) {
+              sendHelpMessage(admin);
+              return true;
+            }
+            if(Methods.hasPlayerLoggedInBefore(args[3])) {
+              if(!(args[2].equalsIgnoreCase("unlock") || args[2].equalsIgnoreCase("upgrade"))) {
+                sendHelpMessage(admin);
+                return true;
+              }
+              if(!(admin.hasPermission("admin.*") || admin.hasPermission("admin.give.*") || admin.hasPermission("admin.give.book"))) {
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
+                return true;
+              }
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[3]);
+              if(!offlinePlayer.isOnline()){
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerOffline")));
+                return true;
+              }
+              else {
+                Player p = (Player) offlinePlayer;
+                ItemStack book = args[2].equalsIgnoreCase("unlock") ? SkillBookFactory.generateUnlockBook() : SkillBookFactory.generateUpgradeBook();
+                p.getWorld().dropItemNaturally(p.getLocation(), book);
+                p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Book").replace("%Player%", offlinePlayer.getName()).replace("%Type%", args[2])));
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Book").replace("%Player%", offlinePlayer.getName()).replace("%Ability%", args[2])));
                 return true;
               }
             }
@@ -1332,6 +1367,37 @@ public class McAdmin implements CommandExecutor {
               return true;
             }
           }
+          else if(args[1].equalsIgnoreCase("book")){
+            //mcadmin give book %type% %player%
+            if(args.length < 4) {
+              sendHelpMessage(sender);
+              return true;
+            }
+            if(Methods.hasPlayerLoggedInBefore(args[3])) {
+              if(!(args[2].equalsIgnoreCase("unlock") || args[2].equalsIgnoreCase("upgrade"))) {
+                sendHelpMessage(sender);
+                return true;
+              }
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[3]);
+              if(!offlinePlayer.isOnline()){
+                sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerOffline")));
+                return true;
+              }
+              else {
+                Player p = (Player) offlinePlayer;
+                ItemStack book = args[2].equalsIgnoreCase("unlock") ? SkillBookFactory.generateUnlockBook() : SkillBookFactory.generateUpgradeBook();
+                p.getWorld().dropItemNaturally(p.getLocation(), book);
+                p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Book").replace("%Player%", offlinePlayer.getName()).replace("%Type%", args[2])));
+                sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Book").replace("%Player%", offlinePlayer.getName()).replace("%Ability%", args[2])));
+                return true;
+              }
+            }
+            else {
+              sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              return true;
+            }
+          }
+
           else {
             sendHelpMessage(sender);
             return true;
