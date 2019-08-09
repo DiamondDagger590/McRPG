@@ -8,11 +8,11 @@ ExcludedSkills:
   - ''
 #How should the book look
 BookFormat:
-  DisplayName: '&eUnlock: %Ability%'
+  DisplayName: '&7[&bUnlock: &3%Ability%&7]'
   Lore:
-    - '&eRight click this book to unlock'
-    - '&e%Ability% from %Skill%.'
-    - '&eUnlocked at Tier %Tier%.'
+    - '&7Right click this book to unlock'
+    - '&3%Ability% &7from &3%Skill%.'
+    - '&7Unlocked at &eTier %Tier%.'
 DropChances:
   #Can be Break, KillSpawned, KillNatural, ExpGain, Fished
   #Kill Spawned/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books

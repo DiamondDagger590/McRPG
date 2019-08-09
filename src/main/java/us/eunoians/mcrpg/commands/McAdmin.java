@@ -395,7 +395,7 @@ public class McAdmin implements CommandExecutor {
                 ItemStack book = args[2].equalsIgnoreCase("unlock") ? SkillBookFactory.generateUnlockBook() : SkillBookFactory.generateUpgradeBook();
                 p.getWorld().dropItemNaturally(p.getLocation(), book);
                 p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Book").replace("%Player%", offlinePlayer.getName()).replace("%Type%", args[2])));
-                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Book").replace("%Player%", offlinePlayer.getName()).replace("%Ability%", args[2])));
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Book").replace("%Player%", offlinePlayer.getName()).replace("%Type%", args[2])));
                 return true;
               }
             }
@@ -1388,7 +1388,7 @@ public class McAdmin implements CommandExecutor {
                 ItemStack book = args[2].equalsIgnoreCase("unlock") ? SkillBookFactory.generateUnlockBook() : SkillBookFactory.generateUpgradeBook();
                 p.getWorld().dropItemNaturally(p.getLocation(), book);
                 p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Book").replace("%Player%", offlinePlayer.getName()).replace("%Type%", args[2])));
-                sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Book").replace("%Player%", offlinePlayer.getName()).replace("%Ability%", args[2])));
+                sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Book").replace("%Player%", offlinePlayer.getName()).replace("%Type%", args[2])));
                 return true;
               }
             }
