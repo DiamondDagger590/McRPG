@@ -1,7 +1,11 @@
 package us.eunoians.mcrpg.api.util.brewing;
 
 import lombok.Getter;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.types.BasePotionType;
+
+import static us.eunoians.mcrpg.api.util.brewing.PotionFactory.getBasePotionTypeFromItemStack;
 
 public class BasePotion{
 
@@ -14,12 +18,15 @@ public class BasePotion{
 	@Getter
 	private BasePotionType basePotionType;
 
-	BasePotion(BasePotionType basePotionType, boolean isSplash, boolean isLingering){
-		this.basePotionType = basePotionType;
-		this.isSplash = isSplash;
-		this.isLingering = isLingering;
-	}
+	@Getter
+	private ItemStack potionItem;
 
+	BasePotion(ItemStack potion){
+		this.basePotionType = getBasePotionTypeFromItemStack(potion);
+		this.isSplash = potion.getType() == Material.SPLASH_POTION;
+		this.isLingering = potion.getType() == Material.LINGERING_POTION;
+		this.potionItem = potion;
+	}
 
 
 }
