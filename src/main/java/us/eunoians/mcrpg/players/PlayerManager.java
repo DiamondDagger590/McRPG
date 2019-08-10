@@ -27,7 +27,6 @@ public class PlayerManager {
 
   public static void addMcRPGPlayer(Player player, boolean freeze) {
     if(players.containsKey(player.getUniqueId())) {
-      Bukkit.broadcastMessage("already there");
       return;
     }
     UUID uuid = player.getUniqueId();
