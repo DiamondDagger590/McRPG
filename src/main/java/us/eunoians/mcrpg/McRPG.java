@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
 import us.eunoians.mcrpg.commands.*;
 import us.eunoians.mcrpg.database.McRPGDb;
+import us.eunoians.mcrpg.events.external.sickle.Sickle;
 import us.eunoians.mcrpg.events.mcrpg.*;
 import us.eunoians.mcrpg.events.vanilla.*;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -62,6 +63,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private boolean healthBarPluginEnabled = false;
   @Getter private boolean mvdwEnabled = false;
   @Getter private boolean papiEnabled = false;
+  @Getter private boolean sickleEnabled = false;
   @Getter private boolean worldGuardEnabled = false;
   @Getter @Setter private WGSupportManager wgSupportManager;
 
@@ -114,6 +116,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     expPermissionManager = ExpPermissionManager.getInstance().setup(this);
     this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
+    sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
     fishingItemManager = new FishingItemManager();
     bookManager = new BookManager(this);
     leaderboardManager = new LeaderboardManager(this);
@@ -189,6 +192,10 @@ public class McRPG extends JavaPlugin implements Initializable {
     getServer().getPluginManager().registerEvents(new DeathEvent(), this);
     getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
     getServer().getPluginManager().registerEvents(new SignEvent(), this);
+    getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
+    if(sickleEnabled){
+      getServer().getPluginManager().registerEvents(new Sickle(), this);
+    }
   }
 
   public static McRPG getInstance() {

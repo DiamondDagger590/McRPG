@@ -424,7 +424,9 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
-        mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        if(expAwarded > 0){
+          mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        }
         if(mp.isCanSmite()){
           if(!(e.getEntity().getFireTicks() > 0)){
             LivingEntity entity = (LivingEntity) e.getEntity();
@@ -774,7 +776,9 @@ public class VanillaDamageEvent implements Listener {
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
-          mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          if(expAwarded > 0){
+            mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          }
         }
         else if(weapon.name().contains("AXE")){
           Axes axes = (Axes) mp.getSkill(Skills.AXES);
@@ -949,7 +953,9 @@ public class VanillaDamageEvent implements Listener {
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
-          mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          if(expAwarded > 0){
+            mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          }
         }
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
@@ -958,7 +964,7 @@ public class VanillaDamageEvent implements Listener {
       Arrow arrow = (Arrow) e.getDamager();
       if(arrow.getShooter() instanceof Player){
         Player shooter = (Player) arrow.getShooter();
-        if(shooter.getUniqueId().equals(e.getEntity().getUniqueId())){
+        if(shooter.getUniqueId().equals(e.getEntity().getUniqueId()) || shooter.isInsideVehicle()){
           return;
         }
         McRPGPlayer mp;
@@ -994,8 +1000,9 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp + (dmg * baseExp * parser.getValue())) * mobSpawnValue);
-        mp.getSkill(Skills.ARCHERY).giveExp(mp, expAwarded, GainReason.DAMAGE);
-
+        if(expAwarded > 0){
+          mp.getSkill(Skills.ARCHERY).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        }
         //Handle the hp bars when dealing with archery
         handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
 

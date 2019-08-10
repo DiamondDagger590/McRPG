@@ -47,6 +47,7 @@ dependencies {
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
     compileOnly 'org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT'
+    compileOnly files('libs/Sickle.jar')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
