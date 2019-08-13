@@ -17,13 +17,13 @@ public class BookManager {
     private McRPG plugin;
 
     @Getter
-    private List<String> enabledUnlockEvents;
+    private List<String> enabledUnlockEvents = new ArrayList<>();
     @Getter
-    private List<String> enabledUpgradeEvents;
+    private List<String> enabledUpgradeEvents = new ArrayList<>();
     @Getter
-    private Set<String> unlockExcluded;
+    private Set<String> unlockExcluded = new HashSet<>();
     @Getter
-    private Set<String> upgradeExcluded;
+    private Set<String> upgradeExcluded = new HashSet<>();
 
     @Getter
     private double defaultUpgradeChance;
@@ -31,11 +31,11 @@ public class BookManager {
     private double defaultUnlockChance;
 
     @Getter
-    private Map<String, Map<Material, Double>> materialChances;
+    private Map<String, Map<Material, Double>> materialChances = new HashMap<>();
     @Getter
-    private Map<String, Map<EntityType, Double>> entityChances;
+    private Map<String, Map<EntityType, Double>> entityChances = new HashMap<>();
     @Getter
-    private Map<String, Map<Skills, Double>> expChances;
+    private Map<String, Map<Skills, Double>> expChances = new HashMap<>();
 
 
 
