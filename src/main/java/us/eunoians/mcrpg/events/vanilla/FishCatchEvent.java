@@ -75,7 +75,7 @@ public class FishCatchEvent implements Listener {
 
       BookManager bookManager = McRPG.getInstance().getBookManager();
       Random rand = new Random();
-      int bookChance = rand.nextInt(100000);
+      int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && e.getPlayer().getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
       Location loc = e.getPlayer().getLocation();
 
       if(bookManager.getEnabledUnlockEvents().contains("Fished")){

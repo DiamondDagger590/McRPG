@@ -112,8 +112,9 @@ public class PlayerManager {
 
 
   private static void run() {
+    HashMap<UUID, McRPGPlayer> clone = (HashMap<UUID, McRPGPlayer>) players.clone();
     if(players.values() != null && !players.values().isEmpty()) {
-      players.values().forEach(McRPGPlayer::saveData);
+      clone.values().forEach(McRPGPlayer::saveData);
     }
   }
 

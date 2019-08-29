@@ -57,6 +57,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private LeaderboardManager leaderboardManager;
   @Getter private LeaderboardHeadManager leaderboardHeadManager;
   @Getter private BookManager bookManager;
+  @Getter private WorldModifierManager worldModifierManager;
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
   @Getter private final String customVisibleKey = "mcMMO: Name Visibility";
@@ -119,6 +120,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
     fishingItemManager = new FishingItemManager();
     bookManager = new BookManager(this);
+    worldModifierManager = new WorldModifierManager();
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
     if (healthBarPluginEnabled) {

@@ -116,9 +116,9 @@ public class BreakEvent implements Listener{
 
       if(!McRPG.getPlaceStore().isTrue(block)){
         BookManager bookManager = McRPG.getInstance().getBookManager();
-        int bookChance = new Random().nextInt(100000);
+        Random rand = new Random();
+        int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && p.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
         Location playerLoc = p.getLocation();
-
         if(bookManager.getEnabledUnlockEvents().contains("Break")){
           if(!bookManager.getUnlockExcluded().contains(blockType.name())){
             double chance = bookManager.getDefaultUnlockChance();

@@ -99,7 +99,7 @@ public class DeathEvent implements Listener {
 
       BookManager bookManager = McRPG.getInstance().getBookManager();
       Random rand = new Random();
-      int bookChance = rand.nextInt(100000);
+      int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && e.getDamager().getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
       Location loc = e.getDamager().getLocation();
       EntityType type = len.getType();
 

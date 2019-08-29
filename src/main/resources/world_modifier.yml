@@ -1,0 +1,6 @@
+WorldModifier:
+  #Test will never be loaded in.
+  #This is the name of the world being modified
+  test:
+    #List of Skill:Multiplier
+    - 'SWORDS:0.5'

@@ -1,3 +1,11 @@
+1.1.3-BETA
++ Added new setting to prevent fitness exp from ender pearl damage
++ Added setting to disable skill books dropping in the end to prevent endermen farms from mass producing books
++ Added new file world_modifier.yml where you can modify the exp gain in specific worlds for certain skills
+= Fixed issue with keep hand empty being broken/Exploit with trident/arrow duplication
+= Fixed a CME with player saving
+= Fixed fitness giving extra exp when it shouldn't
+
 1.0.2-BETA
 + Added a new player setting. When enabled, players must have their offhand empty in order to 'ready' to use abilities.
 The plugin will automatically try to utilize default text for these, if you wish for customization, please refer to the
