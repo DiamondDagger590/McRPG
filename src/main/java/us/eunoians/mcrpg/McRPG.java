@@ -70,6 +70,7 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Override
   public void onEnable() {
+    Logger.init("McRPG");
     if(!getDataFolder().exists()){
       getDataFolder().mkdir();
     }
@@ -79,7 +80,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
     new PlayerManager(this);
-    Bukkit.getConsoleSender().sendMessage("Starting init sequence");
+    Logger.info("Starting init sequence");
     McRPG t = this;
     new BukkitRunnable(){
       @Override
@@ -98,7 +99,6 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Initialize(priority = 0)
   private void preInit() {
-    Logger.init("McRPG");
     /*var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(

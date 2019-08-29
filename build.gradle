@@ -40,7 +40,7 @@ dependencies {
        exclude group: 'come.google.guava'
     }
 
-    compile 'de.tr7zw:item-nbt-api:2.0.0-20190627.115026-33'
+    compile 'de.tr7zw:item-nbt-api:2.0.0-SNAPSHOT'
     compileOnly 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
     compileOnly group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
