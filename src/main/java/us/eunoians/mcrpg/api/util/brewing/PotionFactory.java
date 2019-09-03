@@ -13,7 +13,6 @@ public class PotionFactory {
     return new BasePotion(potion);
   }
 
-
   @Nullable
   static BasePotionType getBasePotionTypeFromItemStack(@NotNull ItemStack potion){
     if(!potion.getType().name().contains("POTION")){
