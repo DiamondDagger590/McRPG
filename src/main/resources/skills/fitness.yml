@@ -177,8 +177,8 @@ DodgeConfig:
       - '&bYou have a &e%ActivationChance%% &bchance'
       - '&bof taking &e%DamageReduction%% &breduced damage'
     MenuLore:
-      - '&bThis ability can reduce all'
-      - '&bdamage taken'
+      - '&bThis ability can reduce damage'
+      - '&btaken from most sources.'
       - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Iron Muscles
@@ -222,7 +222,8 @@ IronMusclesConfig:
       - '&bof dealing &e%WeaponDamage% &bextra damage'
       - '&bto an attackers melee weapon'
     MenuLore:
-      - '&bDeals durability damage when hit by a melee weapon'
+      - '&bDeals durability damage to opponents'
+      - '&bweapon when hit by them.'
       - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Runners Diet
@@ -259,7 +260,8 @@ RunnersDietConfig:
       - '&bWhile running, you hunger will not'
       - '&bdrop below &e%MinHunger%'
     MenuLore:
-      - '&bKeep hunger while running'
+      - '&bWhilst running, your hunger will not'
+      - '&bdeplete past a certain amount'
       - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Divine Escape
@@ -277,10 +279,12 @@ DivineEscapeConfig:
   #Config for each tier
   TierI:
     #Percentage by which to decrease their exp gain by
+    #Player who resurrected will gaing 30% less exp for the duration
     McRPGExpPenalty: 30.0
     #Duration in seconds
     McRPGExpPenaltyDuration: 1800
     #Percentage by which to increase damage received by
+    #Player who resurrected will take 15% more damage for the duration
     DamagePenalty: 15.0
     #Duration in seconds
     DamagePenaltyDuration: 1800
@@ -325,6 +329,7 @@ DivineEscapeConfig:
       - '&bIncrease damage taken by &e%DamagePenalty%%'
       - '&bCooldown: &e%Cooldown%'
     MenuLore:
-      - '&bAllows you to resurrect but'
+      - '&bAllows you to resurrect on death'
+      - '&bat your bed, but you will'
       - '&bsustain debuffs for a while after'
       - '&aUnlock Level: &e%UnlockLevel%'

@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
@@ -37,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 
 @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
 @Lib(group = "com.github.CyR1en", name = "FlatDB", version = "1.0.5")
@@ -88,6 +90,24 @@ public class McRPG extends JavaPlugin implements Initializable {
         Initializer.initAll(t);
       }
     }.runTaskLater(this, 1L);
+    if(Bukkit.getVersion().contains("1.14")){
+      new BukkitRunnable(){
+        @Override
+        public void run(){
+          Bukkit.getLogger().log(Level.WARNING, "You are on 1.14. Please ensure in the swords.yml that you have changed ROSE_RED to RED_DYE" +
+                  ", otherwise the plugin will error. Make these changes and then do /mcrpg reload");
+        }
+      }.runTaskLater(this, 400);
+    }
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        if(bookManager == null){
+          Bukkit.getLogger().log(Level.WARNING, "There was an error on startup for McRPG. Please seek the developer on Discord for support" +
+                  " or a special JAR distribution");
+        }
+      }
+    }.runTaskLater(this, 400);
   }
 
   @Override
@@ -95,6 +115,7 @@ public class McRPG extends JavaPlugin implements Initializable {
     if (!Initializer.finished())
       Initializer.interrupt();
     PlayerManager.shutDownManager();
+    placeStore.saveAll();
   }
 
   @Initialize(priority = 0)

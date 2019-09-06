@@ -61,9 +61,10 @@ public class ShiftToggle implements Listener {
         return;
       }
       mp.getActiveAbilities().add(UnlockedAbilities.RAGE_SPIKE);
+      int chargeTime = (int) preEvent.getChargeTime() * 20;
       //Tell the player how long they have to charge for
       player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() +
-              McRPG.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Integer.toString(preEvent.getChargeTime()))));
+              McRPG.getInstance().getLangFile().getString("Messages.Abilities.RageSpike.Charging").replace("%Charge%", Double.toString(preEvent.getChargeTime()))));
       //Save the id of the task
       int id = new BukkitRunnable() {
         @Override
@@ -118,7 +119,7 @@ public class ShiftToggle implements Listener {
           //self remove the task from the array
           playersCharging.remove(player.getUniqueId());
         }
-      }.runTaskLater(McRPG.getInstance(), preEvent.getChargeTime() * 20).getTaskId();
+      }.runTaskLater(McRPG.getInstance(), chargeTime).getTaskId();
       //store the task
       playersCharging.put(player.getUniqueId(), id);
       //disable the readying

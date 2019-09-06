@@ -157,7 +157,9 @@ FarmersDietConfig:
       - '&e%FoodRestorationBonus% &bhunger bonus'
       - '&e%SaturationBonus% &bsaturation bonus'
     MenuLore:
-      - '&bThis ability increases the potency of crop food'
+      - '&bThis ability increases the'
+      - '&bsaturation and hunger restored'
+      - '&bfrom crop based food'
       - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Diamond Flowers
@@ -452,12 +454,12 @@ MassHarvestConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bMines and replants crops in a'
+      - '&bHarvests and replants crops in a'
       - '&e%Range% &bblock range.'
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and breaking a crop'
     MenuLore:
-      - '&bMines and replants crops in a radius'
+      - '&bHarvests and replants crops in an AOE'
       - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Natures Wrath
@@ -588,5 +590,7 @@ PansBlessingConfig:
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and using bone meal'
     MenuLore:
-      - '&bGrow crops in a radius to max level'
+      - '&bWill consume one bone meal'
+      - '&bto make all crops in an area grow'
+      - '&bto their max level'
       - '&aUnlock Level: &e%UnlockLevel%'

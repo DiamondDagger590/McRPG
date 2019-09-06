@@ -1,6 +1,9 @@
 miner:
   Perm: 'mcrpg.expbuff.miner'
   AffectedSkills:
+    #1.5 gives 150% exp.
+    #0.7 gives 70% exp
     Mining: 1.5
     Herbalism: 0.7
+  #Higher priority overrides lower prio perms
   Priority: 10

@@ -105,7 +105,7 @@ DazeConfig:
   DazeChanceEquation: (archery_level)*.015
   #How long should the nausea effect last in seconds
   NauseaDuration: 6
-  #How long should the blindess effect last in seconds
+  #How long should the blindness effect last in seconds
   BlindnessDuration: 3
   #If the affected player should look up
   MakePlayerLookUp: true
@@ -357,7 +357,7 @@ BlessingOfApolloConfig:
       - '&cCooldown: &e%Cooldown%'
       - '&eActivate by readying and shooting an arrow'
     MenuLore:
-      - '&cGain fire res and ignite target'
+      - '&cGain fire res, ignite target'
       - '&cand burn away targets buffs'
       - '&cUnlock Level: &e%UnlockLevel%'
 CurseOfHadesConfig:

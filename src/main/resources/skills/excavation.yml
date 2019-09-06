@@ -11,16 +11,16 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
-  DIRT: 10
-  GRASS_BLOCK: 15
-  MYCELIUM: 30
-  PODZOL: 30
-  GRAVEL: 15
-  COARSE_DIRT: 15
-  SAND: 15
-  RED_SAND: 17
-  SOUL_SAND: 20
-  CLAY: 20
+  DIRT: 20
+  GRASS_BLOCK: 30
+  MYCELIUM: 45
+  PODZOL: 45
+  GRAVEL: 20
+  COARSE_DIRT: 25
+  SAND: 30
+  RED_SAND: 35
+  SOUL_SAND: 45
+  CLAY: 30
 ExtractionBlocks:
   - 'DIRT'
   - 'GRASS_BLOCK'
@@ -280,7 +280,7 @@ BuriedTreasureConfig:
     PlayerLore:
       - '&bDrop items from harvesting certain blocks'
     MenuLore:
-      - '&bThis ability drops rare items '
+      - '&bThis ability drops rare items'
       - '&bfrom harvesting certain blocks'
       - '&aUnlock Level: &e%UnlockLevel%'
 #

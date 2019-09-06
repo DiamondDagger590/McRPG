@@ -18,13 +18,13 @@ public class PreRageSpikeEvent extends AbilityActivateEvent {
   @Getter @Setter
   private int damage;
   @Getter @Setter
-  private int chargeTime;
+  private double chargeTime;
   public PreRageSpikeEvent(McRPGPlayer user, RageSpike rageSpike){
     super(rageSpike, user, AbilityEventType.COMBAT);
     int tier = rageSpike.getCurrentTier();
 	this.isCancelled = !rageSpike.isToggled();
 	this.cooldown = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".Cooldown");
 	this.damage = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".Damage");
-	this.chargeTime = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getInt("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".ChargeTime");
+	this.chargeTime = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG).getDouble("RageSpikeConfig.Tier" + Methods.convertToNumeral(tier) + ".ChargeTime");
   }
 }
