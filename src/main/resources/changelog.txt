@@ -1,3 +1,20 @@
+1.1.4-BETA
+= Issue where blocks wouldn't retain placed status after server restart in spawn chunks, giving exp even after placed.
+= Fixed issue where Temporal Harvest would only work in some occassions
+= Fixed issue where double drop from each collection skill would override each other in some cases, nullifying some double drops
+= Temporal Harvest now drops apples as it should
+= Temporal Harvest now sends a message on activation
+= Cleaned up some skill GUI messages in various files for new installs
+= Added warning for 1.14 users about swords.yml and the gui on server startup
+= Added warning when plugin fails to properly init
+= Buffed excavation exp by 60-100% in some cases. Was very slow to level even by default equation. Will be monitored in case it needs nerfed later.
+= Buffed Bleed+ for swords. It now activates more commonly to make it a better ability overall.
+= Buffed RageSpike. It now accepts doubles as charge time. Charge time has been halfed early on, making it viable sooner
+= Added a few clarifying comments to exp_perms.yml
+= Better clarified Divine Escape comments in the fitness.yml
+= Fixed a random ' in two lang file lines.
+= Fixed null message when players do not have permission to do /mcredeem
+
 1.1.3-BETA
 + Added new setting to prevent fitness exp from ender pearl damage
 + Added setting to disable skill books dropping in the end to prevent endermen farms from mass producing books
