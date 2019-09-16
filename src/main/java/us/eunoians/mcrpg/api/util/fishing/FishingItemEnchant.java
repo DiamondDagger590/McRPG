@@ -12,9 +12,9 @@ public class FishingItemEnchant {
   @Getter
   private int highLevel;
   @Getter
-  private int enchantmentChance;
+  private double enchantmentChance;
 
-  public FishingItemEnchant(Enchantment enchantmentType, int lowLevel, int highLevel, int enchantmentChance){
+  public FishingItemEnchant(Enchantment enchantmentType, int lowLevel, int highLevel, double enchantmentChance){
     this.enchantmentType = enchantmentType;
     this.lowLevel = lowLevel;
     this.highLevel = highLevel;

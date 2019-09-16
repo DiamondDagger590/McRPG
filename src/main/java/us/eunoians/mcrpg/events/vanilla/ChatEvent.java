@@ -49,13 +49,14 @@ public class ChatEvent implements Listener {
               return;
             }
             else{
+              final int fAmount = amount;
               new BukkitRunnable(){
                 @Override
                 public void run(){
-                  mp.getSkill(redeemBit.getSkill()).giveExp(mp, amount, GainReason.REDEEM);
-                  mp.setRedeemableExp(mp.getRedeemableExp() - amount);
+                  mp.getSkill(redeemBit.getSkill()).giveExp(mp, fAmount, GainReason.REDEEM);
+                  mp.setRedeemableExp(mp.getRedeemableExp() - fAmount);
                   e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
-                          .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
+                          .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(fAmount))));
                 }
               }.runTaskLater(McRPG.getInstance(), 5);
               return;
@@ -67,13 +68,17 @@ public class ChatEvent implements Listener {
               return;
             }
             else{
+              if(amount + mp.getSkill(redeemBit.getSkill()).getCurrentLevel() > mp.getSkill(redeemBit.getSkill()).getType().getMaxLevel()){
+                amount = mp.getSkill(redeemBit.getSkill()).getType().getMaxLevel() - mp.getSkill(redeemBit.getSkill()).getCurrentLevel();
+              }
+              final int fAmount = amount;
               new BukkitRunnable(){
                 @Override
                 public void run(){
-                  mp.getSkill(redeemBit.getSkill()).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.RedeemLevelsResetExp"));
-                  mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
+                  mp.getSkill(redeemBit.getSkill()).giveLevels(mp, fAmount, McRPG.getInstance().getConfig().getBoolean("Configuration.RedeemLevelsResetExp"));
+                  mp.setRedeemableLevels(mp.getRedeemableLevels() - fAmount);
                   e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
-                          .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(amount))));
+                          .replace("%Skill%", redeemBit.getSkill().getName()).replace("%Amount%", Integer.toString(fAmount))));
                 }
               }.runTaskLater(McRPG.getInstance(), 5);
               return;

@@ -682,6 +682,9 @@ public class InvClickEvent implements Listener {
                 e.setCancelled(true);
                 return;
               }
+              if(amount + mp.getSkill(skill).getCurrentLevel() > mp.getSkill(skill).getType().getMaxLevel()){
+                amount = mp.getSkill(skill).getType().getMaxLevel() - mp.getSkill(skill).getCurrentLevel();
+              }
               mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
@@ -707,10 +710,18 @@ public class InvClickEvent implements Listener {
               return;
             }
             else{
-              mp.getSkill(skill).giveLevels(mp, mp.getRedeemableLevels(), McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
+              int amount = 0;
+              if(mp.getRedeemableLevels() + mp.getSkill(skill).getCurrentLevel() > mp.getSkill(skill).getType().getMaxLevel()){
+                amount = mp.getSkill(skill).getType().getMaxLevel() - mp.getSkill(skill).getCurrentLevel();
+                mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
+              }
+              else{
+                amount = mp.getRedeemableLevels();
+                mp.setRedeemableLevels(0);
+              }
+              mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
-                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableLevels()))));
-              mp.setRedeemableLevels(0);
+                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
             }

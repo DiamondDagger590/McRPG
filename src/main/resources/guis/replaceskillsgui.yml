@@ -100,10 +100,10 @@ Gui:
         Slot: 37
       FishingSkill:
         Name: '&5Fishing Skill'
-        Material: GOLDEN_AXE
+        Material: FISHING_ROD
         Lore:
           - '&eClick this to view your fishing abilities'
-          - '&eCurrent Fishing level: &a%GFishing_Level%'
+          - '&eCurrent Fishing level: &a%Fishing_Level%'
           - '&eGreat Rod chance: &c%Great_Rod_Chance%%'
         Slot: 39
       Back:

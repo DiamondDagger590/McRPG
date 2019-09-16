@@ -1,3 +1,9 @@
+1.1.5-BETA
+= Rare NPE when readying
+= Reedeming levels would consume levels even when skill is maxed although the skills level wouldnt change
+= Fishing in the replaceskillsgui.yml was weird. Forgot to change item from GOLDEN_AXE to FISHING_ROD. Also had issue with placeholder being %GFishin...%, so I removed the G
+= Fixed world modifier from modifying redeemable exp
+
 1.1.4-BETA
 = Issue where blocks wouldn't retain placed status after server restart in spawn chunks, giving exp even after placed.
 = Fixed issue where Temporal Harvest would only work in some occassions

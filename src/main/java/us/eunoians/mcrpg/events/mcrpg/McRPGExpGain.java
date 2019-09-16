@@ -51,7 +51,7 @@ public class McRPGExpGain implements Listener {
     else if(e.getSkillGained().getCurrentLevel() >= McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getInt("MaxLevel")) {
       e.setCancelled(true);
     }
-    else if(McRPG.getInstance().isWorldGuardEnabled()) {
+    else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM) {
       WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
       if(wgSupportManager.isWorldTracker(e.getMcRPGPlayer().getPlayer().getWorld())){
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
@@ -105,7 +105,7 @@ public class McRPGExpGain implements Listener {
     }
 
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG);
-    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName())){
+    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM){
       WorldModifierManager.ExpModifierWrapper modifierWrapper = McRPG.getInstance().getWorldModifierManager().getWorldModifiers().get(p.getWorld().getName());
       if(modifierWrapper.isModified(e.getSkillGained().getType())){
         e.setExpGained((int) (e.getExpGained() * modifierWrapper.getModifier(e.getSkillGained().getType())));
@@ -114,7 +114,7 @@ public class McRPGExpGain implements Listener {
     BookManager bookManager = McRPG.getInstance().getBookManager();
     Random rand = new Random();
     int bookChance = config.getBoolean("Configuration.DisableBooksInEnd", false) && p.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
-
+    bookChance = e.getGainType() == GainReason.REDEEM ? 0 : bookChance;
     Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
 
     if(bookManager.getEnabledUnlockEvents().contains("ExpGain")){
@@ -143,7 +143,7 @@ public class McRPGExpGain implements Listener {
     }
 
     //Divine Escape exp debuff
-    if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0){
+    if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0 && e.getGainType() != GainReason.REDEEM){
       e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff()/100)));
     }
     if(e.getGainType() == GainReason.BREAK && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){

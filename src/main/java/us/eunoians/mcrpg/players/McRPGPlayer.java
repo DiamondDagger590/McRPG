@@ -82,7 +82,7 @@ public class McRPGPlayer {
   @Getter @Setter private Set<Material> handDiggingBlocks;
 
   //Ready variables
-  @Getter @Setter private boolean isReadying = false;
+  @Setter private boolean isReadying = false;
   @Getter @Setter private PlayerReadyBit readyingAbilityBit = null;
 
   //Settings
@@ -1195,6 +1195,13 @@ public class McRPGPlayer {
 
   public OfflinePlayer getOfflineMcMMOPlayer() {
     return Bukkit.getOfflinePlayer(uuid);
+  }
+
+  public boolean isReadying(){
+    if(this.readyingAbilityBit == null || this.readyingAbilityBit.getAbilityReady() == null){
+      this.isReadying = false;
+    }
+    return isReadying;
   }
 
   /**
