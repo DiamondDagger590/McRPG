@@ -54,7 +54,7 @@ public class McLink implements CommandExecutor, Listener {
         return true;
       }
       else if(!mp.getAbilityLoadout().contains(UnlockedAbilities.REMOTE_TRANSFER) || !mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER).isToggled() || !UnlockedAbilities.REMOTE_TRANSFER.isEnabled()) {
-        p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Utility.NotEnabledOrUnlocked")));
+        p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.NotEnabledOrUnlocked")));
         return true;
       }
       else {

@@ -36,8 +36,11 @@ public class SelectReplaceGUI extends GUI {
       Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
               Methods.color(player.getPlayer(), guiConfig.getString("Title").replace("%Skill%", skill.getDisplayName())));
       ArrayList<GUIItem> items = new ArrayList<>();
+
       List<String> enabledAbilities = new ArrayList<>(skill.getEnabledAbilities());
+      //Default abilities dont matter so exclude it
       enabledAbilities.remove(skill.getDefaultAbility().getName().replace(" ", ""));
+
       int counter = 0;
       for(UnlockedAbilities ab : enabledAbilities.stream().map(UnlockedAbilities::fromString).collect(Collectors.toList())) {
         if(ab == null) {
@@ -49,16 +52,18 @@ public class SelectReplaceGUI extends GUI {
           tier = Methods.convertToNumeral(baseAbility.getCurrentTier());
         }
         String path = ab.getName().replaceAll(" ", "") + "Config.Item.";
+        Bukkit.broadcastMessage(path + " " + config.getString(path + "DisplayName"));
 
         ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
                 config.getInt(path + "Amount"));
-
+        Bukkit.broadcastMessage("Material: " + abilityItem.getType().name());
         ItemMeta abilityMeta = abilityItem.getItemMeta();
 
         abilityMeta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "DisplayName") + " " + tier));
 
         abilityMeta.setLore(Methods.colorLore(config.getStringList(path + "PlayerLore")));
         List<String> newLore = new ArrayList<>();
+        //Move strings into new array
         for(String s : abilityMeta.getLore()) {
           if(baseAbility.getCurrentTier() != 0) {
             for(String value : config.getConfigurationSection(ab.getName() + "Config.Tier" + Methods.convertToNumeral(baseAbility.getCurrentTier())).getKeys(false)) {
@@ -67,6 +72,7 @@ public class SelectReplaceGUI extends GUI {
             newLore.add(s);
           }
         }
+        //Handle special ability
         if(baseAbility instanceof RemoteTransfer) {
           List<String> newNewLore = new ArrayList<>();
           RemoteTransfer remoteTransfer = (RemoteTransfer) baseAbility;
@@ -85,6 +91,7 @@ public class SelectReplaceGUI extends GUI {
           }
           newLore = newNewLore;
         }
+        //Append gui specific lore
         if(player.getBaseAbility(ab).isUnlocked()) {
           newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsUnlocked")));
           if(player.getAbilityLoadout().contains(ab)) {
@@ -98,9 +105,18 @@ public class SelectReplaceGUI extends GUI {
           newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsNotUnlocked")));
           abilityItem.setType(Material.valueOf(guiConfig.getString("Ability.NotUnlockedMaterial")));
         }
+
+        //Debugg
+        Bukkit.broadcastMessage("Counter: " + counter);
         abilities.add(ab);
+        Bukkit.broadcastMessage(newLore.toString());
         abilityMeta.setLore(newLore);
+        Bukkit.broadcastMessage("Material: " + abilityItem.getType().name());
+        Bukkit.broadcastMessage("From Meta: " + abilityMeta.getDisplayName());
         abilityItem.setItemMeta(abilityMeta);
+        Bukkit.broadcastMessage("From Meta Post Set: " + abilityMeta.getDisplayName());
+        Bukkit.broadcastMessage("From Item: " + abilityItem.getItemMeta().getDisplayName());
+        Bukkit.broadcastMessage(abilityItem.getItemMeta().getDisplayName());
         GUIItem item = new GUIItem(abilityItem, counter);
         counter++;
         items.add(item);

@@ -128,7 +128,9 @@ public class FishedItemStackFactory {
         }
       }
       for(Enchantment enchantment : enchants.keySet()){
-        item.addEnchantment(enchantment, enchants.get(enchantment));
+        if(enchantment != null){
+          item.addEnchantment(enchantment, enchants.get(enchantment));
+        }
       }
     }
     return item;

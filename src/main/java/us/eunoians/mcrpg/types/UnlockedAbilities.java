@@ -187,4 +187,8 @@ public enum UnlockedAbilities implements GenericAbility{
     }
     return string.toString();
   }
+
+  public String getLocalizedName(){
+    return "";
+  }
 }

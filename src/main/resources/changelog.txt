@@ -1,3 +1,7 @@
+1.1.6-BETA
+= Fixed NPE with enchanted fishing loot
+= Fixed null message with McLink
+
 1.1.5-BETA
 = Rare NPE when readying
 = Reedeming levels would consume levels even when skill is maxed although the skills level wouldnt change

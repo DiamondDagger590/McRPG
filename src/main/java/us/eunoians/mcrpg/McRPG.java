@@ -24,6 +24,10 @@ import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
 import us.eunoians.mcrpg.commands.*;
+import us.eunoians.mcrpg.commands.prompts.McAdminPrompt;
+import us.eunoians.mcrpg.commands.prompts.McDisplayPrompt;
+import us.eunoians.mcrpg.commands.prompts.McRankPrompt;
+import us.eunoians.mcrpg.commands.prompts.McRedeemPrompt;
 import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.external.sickle.Sickle;
 import us.eunoians.mcrpg.events.mcrpg.*;
@@ -158,6 +162,11 @@ public class McRPG extends JavaPlugin implements Initializable {
     getCommand("mcconvert").setExecutor(new McConvert());
     getCommand("mcredeem").setExecutor(new McRedeem());
     getCommand("mcrank").setExecutor(new McRank());
+
+    getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
+    getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
+    getCommand("mcrank").setTabCompleter(new McRankPrompt());
+    getCommand("mcadmin").setTabCompleter(new McAdminPrompt());
 
     //Events
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
