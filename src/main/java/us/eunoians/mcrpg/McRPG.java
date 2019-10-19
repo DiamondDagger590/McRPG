@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.books.BookManager;
+import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
 import us.eunoians.mcrpg.commands.*;
@@ -56,6 +57,7 @@ public class McRPG extends JavaPlugin implements Initializable {
   @Getter private LeaderboardManager leaderboardManager;
   @Getter private LeaderboardHeadManager leaderboardHeadManager;
   @Getter private BookManager bookManager;
+  @Getter private PotionRecipeManager potionRecipeManager;
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
   @Getter private final String customVisibleKey = "mcMMO: Name Visibility";

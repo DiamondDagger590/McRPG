@@ -1,0 +1,17 @@
+Title: '&eBrewing Stand'
+FuelPlaceholder:
+  DisplayName: '&bFuel Slot'
+  Lore:
+    - '&aPlace fuel for the brewing stand into this slot'
+IngredientPlaceholder:
+  DisplayName: '&bIngredient Slot'
+  Lore:
+    - '&aPlace your ingredient into this slot'
+PotionPlaceholder:
+  DisplayName: '&bPotion Slot'
+  Lore:
+    - '&aPlace your potion bottles here to be brewed'
+SpecialItemPlaceholder:
+  DisplayName: '&bSpecial Item Slot'
+  Lore:
+    - '&aSpecial items like skill books will spawn here'

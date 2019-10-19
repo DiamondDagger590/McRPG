@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BrewingStand;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -40,6 +41,8 @@ import us.eunoians.mcrpg.api.events.mcrpg.mining.SuperBreakerEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingGUI;
+import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
@@ -74,6 +77,14 @@ public class InteractHandler implements Listener {
       mp = PlayerManager.getPlayer(p.getUniqueId());
     }
     catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
+    if(e.getClickedBlock().getType() == Material.BREWING_STAND){
+      BrewingStand brewingStand = (BrewingStand) e.getClickedBlock().getState();
+      BrewingGUI gui = new BrewingGUI(brewingStand);
+      GUITracker.trackPlayer(p, gui);
+      e.setCancelled(true);
+      p.openInventory(gui.getInv());
       return;
     }
     ItemStack heldItem = e.getItem();

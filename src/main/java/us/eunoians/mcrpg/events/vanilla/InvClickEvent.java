@@ -23,6 +23,8 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
+import us.eunoians.mcrpg.api.util.brewing.PotionUtils;
+import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingGUI;
 import us.eunoians.mcrpg.gui.*;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -54,10 +56,6 @@ public class InvClickEvent implements Listener {
     if(GUITracker.isPlayerTracked(p)) {
       //Cancel event
       e.setCancelled(true);
-      //Ignore player inventory
-      if(e.getClickedInventory() instanceof PlayerInventory) {
-        return;
-      }
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(p.getUniqueId());
@@ -68,7 +66,20 @@ public class InvClickEvent implements Listener {
       //Cuz null errors are fun
       if(e.getCurrentItem() == null) return;
       GUI currentGUI = GUITracker.getPlayersGUI(p);
-
+      //Brewing GUI comes before player inventory checks
+      if(currentGUI instanceof BrewingGUI){
+        BrewingGUI brewingGUI = (BrewingGUI) currentGUI;
+        if(e.getClickedInventory() instanceof PlayerInventory){
+          if(PotionUtils.isFuel(e.getCurrentItem())){
+            if(brewingGUI.getFuel())
+          }
+        }
+        return;
+      }
+      //Ignore player inventory
+      if(e.getClickedInventory() instanceof PlayerInventory) {
+        return;
+      }
       //Overriding abilities gui, used for active abilities
       if(currentGUI instanceof AbilityOverrideGUI) {
         AbilityOverrideGUI overrideGUI = (AbilityOverrideGUI) currentGUI;
@@ -600,7 +611,6 @@ public class InvClickEvent implements Listener {
         mp.saveData();
         return;
       }
-
       GUIEventBinder binder = null;
       if(currentGUI.getGui().getBoundEvents() != null) {
         binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
