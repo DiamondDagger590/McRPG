@@ -150,6 +150,7 @@ public class McAdminPrompt implements TabCompleter {
             case "level":
             case "exp":
               completions.add("1");
+              break;
             case "ability":
               for(UnlockedAbilities ab : UnlockedAbilities.values()){
                 completions.add(ab.getName().toLowerCase());

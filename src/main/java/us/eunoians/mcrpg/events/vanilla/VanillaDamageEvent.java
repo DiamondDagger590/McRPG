@@ -19,7 +19,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -113,8 +112,7 @@ public class VanillaDamageEvent implements Listener {
           McRPGPlayer mcRPGPlayer;
           try{
             mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-          }
-          catch(McRPGPlayerNotFoundException exception){
+          } catch(McRPGPlayerNotFoundException exception){
             return;
           }
           if(McRPG.getInstance().isWorldGuardEnabled()){
@@ -143,8 +141,7 @@ public class VanillaDamageEvent implements Listener {
                             e.setCancelled(true);
                             return;
                           }
-                        }
-                        catch(McRPGPlayerNotFoundException exception){
+                        } catch(McRPGPlayerNotFoundException exception){
                         }
                       }
                     }
@@ -231,8 +228,7 @@ public class VanillaDamageEvent implements Listener {
       McRPGPlayer mcRPGPlayer;
       try{
         mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      }
-      catch(McRPGPlayerNotFoundException exception){
+      } catch(McRPGPlayerNotFoundException exception){
         return;
       }
       //Deal with Divine Escape debuff
@@ -328,13 +324,14 @@ public class VanillaDamageEvent implements Listener {
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      }
-      catch(McRPGPlayerNotFoundException exception){
+      } catch(McRPGPlayerNotFoundException exception){
         return;
       }
-      double damage = e.getDamage();
-      int expAwarded = (int) (damage * McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG).getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));
-      mp.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
+      if(e.getEntity() instanceof Player && !((Player) e.getEntity()).isBlocking()){
+        double damage = e.getDamage();
+        int expAwarded = (int) (damage * McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG).getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));
+        mp.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
+      }
     }
   }
 
@@ -361,8 +358,7 @@ public class VanillaDamageEvent implements Listener {
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(damager.getUniqueId());
-      }
-      catch(McRPGPlayerNotFoundException exception){
+      } catch(McRPGPlayerNotFoundException exception){
         return;
       }
       //Deal with world guard
@@ -392,8 +388,7 @@ public class VanillaDamageEvent implements Listener {
                         e.setCancelled(true);
                         return;
                       }
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    } catch(McRPGPlayerNotFoundException exception){
                     }
                   }
                 }
@@ -430,6 +425,9 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
+        if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
+          expAwarded = (int) (expAwarded * McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getDouble("Configuration.ShieldBlockingModifier"));
+        }
         if(expAwarded > 0){
           mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
         }
@@ -607,8 +605,7 @@ public class VanillaDamageEvent implements Listener {
           McRPGPlayer damagedMcRPGPlayer;
           try{
             damagedMcRPGPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-          }
-          catch(McRPGPlayerNotFoundException exception){
+          } catch(McRPGPlayerNotFoundException exception){
             return;
           }
           if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR){
@@ -738,8 +735,7 @@ public class VanillaDamageEvent implements Listener {
                 McRPGPlayer dmged;
                 try{
                   dmged = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                } catch(McRPGPlayerNotFoundException exception){
                   return;
                 }
                 if(!dmged.isHasBleedImmunity() && bleed.canTarget()){
@@ -782,6 +778,10 @@ public class VanillaDamageEvent implements Listener {
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
+          //Deal with possible shield exploits
+          if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
+            expAwarded = (int) (expAwarded * config.getDouble("Configuration.ShieldBlockingModifier"));
+          }
           if(expAwarded > 0){
             mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
           }
@@ -959,6 +959,9 @@ public class VanillaDamageEvent implements Listener {
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
+          if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
+            expAwarded = (int) (expAwarded * config.getDouble("Configuration.ShieldBlockingModifier"));
+          }
           if(expAwarded > 0){
             mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
           }
@@ -976,8 +979,7 @@ public class VanillaDamageEvent implements Listener {
         McRPGPlayer mp;
         try{
           mp = PlayerManager.getPlayer(shooter.getUniqueId());
-        }
-        catch(McRPGPlayerNotFoundException exception){
+        } catch(McRPGPlayerNotFoundException exception){
           return;
         }
         //give exp
@@ -1061,8 +1063,7 @@ public class VanillaDamageEvent implements Listener {
             McRPGPlayer s;
             try{
               s = PlayerManager.getPlayer(UUID.fromString(arrow.getMetadata("Puncture").get(0).asString()));
-            }
-            catch(McRPGPlayerNotFoundException exception){
+            } catch(McRPGPlayerNotFoundException exception){
               return;
             }
             BleedEvent bleedEvent = new BleedEvent(s, target, (Bleed) s.getBaseAbility(DefaultAbilities.BLEED));

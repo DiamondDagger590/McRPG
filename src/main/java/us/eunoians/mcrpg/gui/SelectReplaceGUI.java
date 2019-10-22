@@ -52,11 +52,8 @@ public class SelectReplaceGUI extends GUI {
           tier = Methods.convertToNumeral(baseAbility.getCurrentTier());
         }
         String path = ab.getName().replaceAll(" ", "") + "Config.Item.";
-        Bukkit.broadcastMessage(path + " " + config.getString(path + "DisplayName"));
-
         ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
                 config.getInt(path + "Amount"));
-        Bukkit.broadcastMessage("Material: " + abilityItem.getType().name());
         ItemMeta abilityMeta = abilityItem.getItemMeta();
 
         abilityMeta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "DisplayName") + " " + tier));
@@ -103,20 +100,18 @@ public class SelectReplaceGUI extends GUI {
         }
         else {
           newLore.add(Methods.color(player.getPlayer(), guiConfig.getString("Ability.IsNotUnlocked")));
-          abilityItem.setType(Material.valueOf(guiConfig.getString("Ability.NotUnlockedMaterial")));
+          abilityItem = new ItemStack(Material.valueOf(guiConfig.getString("Ability.NotUnlockedMaterial")));
+          String displayName = abilityMeta.getDisplayName();
+          abilityMeta = abilityItem.getItemMeta();
+          abilityMeta.setDisplayName(displayName);
+
+          //abilityItem.setType(Material.valueOf(guiConfig.getString("Ability.NotUnlockedMaterial")));
         }
 
         //Debugg
-        Bukkit.broadcastMessage("Counter: " + counter);
         abilities.add(ab);
-        Bukkit.broadcastMessage(newLore.toString());
         abilityMeta.setLore(newLore);
-        Bukkit.broadcastMessage("Material: " + abilityItem.getType().name());
-        Bukkit.broadcastMessage("From Meta: " + abilityMeta.getDisplayName());
         abilityItem.setItemMeta(abilityMeta);
-        Bukkit.broadcastMessage("From Meta Post Set: " + abilityMeta.getDisplayName());
-        Bukkit.broadcastMessage("From Item: " + abilityItem.getItemMeta().getDisplayName());
-        Bukkit.broadcastMessage(abilityItem.getItemMeta().getDisplayName());
         GUIItem item = new GUIItem(abilityItem, counter);
         counter++;
         items.add(item);

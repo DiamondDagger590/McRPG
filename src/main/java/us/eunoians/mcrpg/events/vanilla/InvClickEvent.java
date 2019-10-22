@@ -410,6 +410,13 @@ public class InvClickEvent implements Listener {
             mp.addAbilityToLoadout(selectReplaceGUI.getAbilities().get(e.getSlot()));
           }
           mp.saveData();
+          GUI lastGUI = GUITracker.getPlayersPreviousGUI(p);
+          GUITracker.stopTrackingPlayer(p);
+          selectReplaceGUI.getGui().rebuildGUI();
+          p.openInventory(selectReplaceGUI.getGui().getInv());
+          GUITracker.trackPlayer(p, selectReplaceGUI);
+          GUITracker.setPlayersPreviousGUI(p, lastGUI);
+
           p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", baseAbility.getGenericAbility().getName())));
           return;
         }
