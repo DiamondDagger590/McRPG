@@ -92,6 +92,7 @@ public class McRPGPlayer {
   @Getter @Setter private boolean autoDeny = false;
   @Getter @Setter private boolean requireEmptyOffHand = false;
   @Getter @Setter private boolean ignoreTips;
+  @Getter @Setter private int unarmedIgnoreSlot;
 
   @Getter private Set<TipType> usedTips = new HashSet<>();
 
@@ -175,6 +176,7 @@ public class McRPGPlayer {
           this.autoDeny = rs.getBoolean("auto_deny");
           this.ignoreTips = rs.getBoolean("ignore_tips");
           this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
+          this.unarmedIgnoreSlot = rs.getInt("unarmed_ignore_slot");
         }
       } catch(SQLException e) {
         e.printStackTrace();
@@ -1432,7 +1434,7 @@ public class McRPGPlayer {
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
     @Language("SQL") String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
-            "', health_type = '" + healthbarType.getName() + "' WHERE uuid = '" + uuid.toString() + "'";
+            "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + " WHERE uuid = '" + uuid.toString() + "'";
     database.executeUpdate(query);
     for(UnlockedAbilities ability : pendingUnlockAbilities) {
       query = "UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
@@ -1560,12 +1562,6 @@ public class McRPGPlayer {
 
   public void giveRedeemableLevels(int levels){
     this.redeemableLevels += levels;
-  }
-
-  public void sendConstantUpdate(Skill skill, int expGained){
-    getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Methods.color(getPlayer(), McRPG.getInstance().getConfig()
-            .getString("DisplayConfig.ActionBar." + skill.getName() + ".Message").replace("%Current_Level%", Integer.toString(skill.getCurrentLevel())).replace("%Skill%", skill.getType().getDisplayName())
-                    .replace("%Exp_Gained%", Integer.toString(expGained)).replace("%Exp_To_Level%", Integer.toString(skill.getExpToLevel() - skill.getCurrentExp())))));
   }
 
   @Override

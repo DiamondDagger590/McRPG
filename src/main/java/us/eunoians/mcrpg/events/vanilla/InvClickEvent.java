@@ -255,6 +255,23 @@ public class InvClickEvent implements Listener {
           currentGUI.getGui().getInv().setItem(e.getSlot(), emptyItem);
           p.updateInventory();
         }
+        else if(e.getSlot() == guiConfig.getInt("UnarmedIgnoreSlot.Slot", 14)) {
+          ItemStack ignoreItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+          ItemMeta ignoreMeta = ignoreItem.getItemMeta();
+          mp.setUnarmedIgnoreSlot(mp.getUnarmedIgnoreSlot() == 8 ? -1 : mp.getUnarmedIgnoreSlot() + 1);
+          if(mp.getUnarmedIgnoreSlot() != -1) {
+            ignoreMeta.setDisplayName(Methods.color(guiConfig.getString("UnarmedIgnoreSlot.Enabled", "&aSlot #%Slot% Is Being Kept Empty").replace("%Slot%", Integer.toString(mp.getUnarmedIgnoreSlot() + 1))));
+          }
+          else {
+            ignoreItem.setType(Material.RED_STAINED_GLASS_PANE);
+            ignoreMeta.setDisplayName(Methods.color(guiConfig.getString("UnarmedIgnoreSlot.Disabled", "&cCurrently No Slot Is Being Kept Empty")));
+          }
+          List<String> lore = guiConfig.contains("UnarmedIgnoreSlot.Lore") ? guiConfig.getStringList("UnarmedIgnoreSlot.Lore") : Arrays.asList("&eIf enabled, this setting will keep picked up", "&eitems from going into the selected slo");
+          ignoreMeta.setLore(Methods.colorLore(lore));
+          ignoreItem.setItemMeta(ignoreMeta);
+          currentGUI.getGui().getInv().setItem(e.getSlot(), ignoreItem);
+          p.updateInventory();
+        }
         else if(e.getSlot() == guiConfig.getInt("BackButton.Slot")) {
           HomeGUI main = new HomeGUI(mp);
           currentGUI.setClearData(false);

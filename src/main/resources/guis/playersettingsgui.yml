@@ -42,10 +42,17 @@ EmptyOffHand:
   Lore:
     - '&eIf enabled, then in order to ready'
     - '&eabilities, your offhand must be empty.'
+UnarmedIgnoreSlot:
+  Disabled: '&aCurrently No Slot Is Being Kept Empty'
+  Enabled: '&cSlot #%Slot% Is Being Kept Empty'
+  Slot: 14
+  Lore:
+    - '&eIf enabled, this setting will keep picked up'
+    - '&eitems from going into the selected slot'
 AddLater:
   DisplayName: '&cThis feature will be added later'
   Lore: {}
-  Slot: 14
+  Slot: 16
 BackButton:
   Material: BARRIER
   DisplayName: '&bBack>>'

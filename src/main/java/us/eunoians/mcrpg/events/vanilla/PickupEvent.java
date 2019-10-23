@@ -16,6 +16,9 @@ import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("Duplicates")
 public class PickupEvent implements Listener {
@@ -25,19 +28,26 @@ public class PickupEvent implements Listener {
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || e.getItem().getItemStack().getAmount() < 1 || e.isCancelled()){
       return;
     }
-    if(e.getPlayer().getInventory().getItemInMainHand() == null || e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR) {
-      McRPGPlayer mp;
-      try{
-        mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    McRPGPlayer mp;
+    try{
+      mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
+    }
+    catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
+    if(e.getPlayer().getInventory().getItemInMainHand() == null || e.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR || mp.getUnarmedIgnoreSlot() != -1) {
+      Set<Integer> ignored = new HashSet<>();
+      if(mp.isKeepHandEmpty()){
+        ignored.add(e.getPlayer().getInventory().getHeldItemSlot());
       }
-      catch(McRPGPlayerNotFoundException exception){
-        return;
+      if(mp.getUnarmedIgnoreSlot() != -1){
+        ignored.add(mp.getUnarmedIgnoreSlot());
       }
-      if(mp.isKeepHandEmpty()) {
-        int slot = e.getPlayer().getInventory().getHeldItemSlot();
+      if(ignored.size() > 0) {
+        //int slot = e.getPlayer().getInventory().getHeldItemSlot();
         int firstEmpty = -1;
         for(int i = 0; i < 36; i++) {
-          if(i == slot) {
+          if(ignored.contains(i)) {
             continue;
           }
           ItemStack item = e.getPlayer().getInventory().getItem(i);
@@ -46,7 +56,7 @@ public class PickupEvent implements Listener {
             break;
           }
         }
-        if(slot != firstEmpty && firstEmpty != -1) {
+        if(!ignored.contains(firstEmpty) && firstEmpty != -1) {
           e.setCancelled(true);
           e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
           ItemStack itemToPickup = e.getItem().getItemStack();
@@ -58,7 +68,7 @@ public class PickupEvent implements Listener {
           ItemMeta meta = hasMeta ? itemToPickup.getItemMeta() : null;
           ArrayList<Integer> emptySlots = new ArrayList<>();
           for(int i = 0; i < inv.getSize(); i++) {
-            if(i == e.getPlayer().getInventory().getHeldItemSlot()) {
+            if(ignored.contains(i)){
               continue;
             }
             //if the amount is no longer positive then we are done with this item

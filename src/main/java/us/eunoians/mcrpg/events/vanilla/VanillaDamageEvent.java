@@ -175,7 +175,10 @@ public class VanillaDamageEvent implements Listener {
                 int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
                 int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
                 int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
-                afk = diffInY <= config.getInt("AntiAFK.YRange") && diffInX <= config.getInt("AntiAFK.XRange") && diffInZ <= config.getInt("AntiAFK.ZRange");
+                int numOfDiffAxis = diffInY <= config.getInt("AntiAFK.YRange") ? 1 : 0;
+                numOfDiffAxis += diffInX <= config.getInt("AntiAfk.XRange") ? 1 : 0;
+                numOfDiffAxis += diffInZ <= config.getInt("AntiAfk.ZRange") ? 1 : 0;
+                afk = numOfDiffAxis >= config.getInt("AntiAFK.AmountOfDifferences", 1);
               }
               if(mcRPGPlayer.getLastFallLocation().size() >= 4){
                 while(mcRPGPlayer.getLastFallLocation().size() >= 4){
@@ -345,6 +348,12 @@ public class VanillaDamageEvent implements Listener {
     //TODO do entity/plugin checks
     if(e.isCancelled()){
       return;
+    }
+    //DEBUGG
+    if(e.getEntity() instanceof Player){
+      if(((Player) e.getEntity()).isBlocking()){
+        Bukkit.broadcastMessage("Damage Blocked: " + e.getDamage());
+      }
     }
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)){

@@ -30,8 +30,6 @@ public class RemoteTransfer extends BaseAbility {
   public RemoteTransfer(){
     super(UnlockedAbilities.REMOTE_TRANSFER, true, false);
     itemsToSync = new HashMap<>();
-    /*TODO set a get range method in here and a way to scan in blocks from a setting. Also need to make a gui to toggle items on and off. Also need to save location to player and load it in
-	Make sure to allow for config reloading in this*/
   }
 
   public void updateBlocks(){
@@ -44,5 +42,9 @@ public class RemoteTransfer extends BaseAbility {
 		}
 	  }
 	}
+  }
+
+  public boolean isAbilityLinked(){
+    return linkedChestLocation != null;
   }
 }

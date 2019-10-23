@@ -51,6 +51,9 @@ public class DropItemEvent implements Listener {
         return;
       }
       RemoteTransfer transfer = (RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
+      if(!transfer.isAbilityLinked()){
+        return;
+      }
       Chest chest;
       Block block2 = transfer.getLinkedChestLocation().getBlock();
       if(block2.getType() == Material.CHEST) {
@@ -69,7 +72,7 @@ public class DropItemEvent implements Listener {
         //If the item needs to be transferred and is toggled for transferring
         //Apply fortune and silk touch
         Material mat = item.getItemStack().getType();
-        if((transfer.getItemsToSync().keySet().contains(mat) && transfer.getItemsToSync().get(mat))){
+        if((transfer.getItemsToSync().containsKey(mat) && transfer.getItemsToSync().get(mat))){
           //Get the material of the item we are putting in the chest and the amount
           int amount = item.getItemStack().getAmount();
           //if the chest contents are full, check if there are any stacks we can increase before dropping

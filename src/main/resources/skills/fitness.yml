@@ -19,6 +19,8 @@ AntiAFK:
   XRange: 5
   ZRange: 5
   YRange: 10
+  #How many axis must be different in order to give exp
+  AmountOfDifferences: 1
 #What abilities are enabled
 EnabledAbilities:
   Roll: true

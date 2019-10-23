@@ -1,3 +1,7 @@
+1.1.7-BETA
++ Added player setting to get a slot in the hotbar empty
+= Fixed a NPE with Remote Transfer
+
 1.1.6-BETA
 + Added a new setting in the config.yml in order to lower exp gained when hitting a shield as no actual damage is done
 + Added auto prompts to commands
