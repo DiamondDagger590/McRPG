@@ -1,13 +1,13 @@
 package us.eunoians.mcrpg;
 
-import com.cyr1en.javen.Javen;
+/*import com.cyr1en.javen.Javen;
 import com.cyr1en.javen.annotation.Lib;
 import com.cyr1en.mcutils.PluginUpdater;
 import com.cyr1en.mcutils.initializers.Initializable;
 import com.cyr1en.mcutils.initializers.annotation.Ignore;
 import com.cyr1en.mcutils.initializers.annotation.Initialize;
 import com.cyr1en.mcutils.initializers.annotation.process.Initializer;
-import com.cyr1en.mcutils.logger.Logger;
+import com.cyr1en.mcutils.logger.Logger;*/
 import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,16 +44,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 
-//JAVEN ISSUES
+/*JAVEN ISSUES
 @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
 @Lib(group = "com.github.CyR1en", name = "FlatDB", version = "1.0.5")
 @Lib(group = "org.javassist", name = "javassist", version = "3.21.0-GA")
 @Lib(group = "de.articdive", name = "EnumToYAML", version = "1.0-20190129.130317-1",
-        directURL = "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar")
-public class McRPG extends JavaPlugin implements Initializable {
+        directURL = "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar")*/
+public class McRPG extends JavaPlugin {//implements //Initializable {
 
-  @Ignore private static McRPG instance;
-  @Getter private PluginUpdater pluginUpdater;
+  private static McRPG instance;
+ // @Getter private PluginUpdater pluginUpdater;
   @Getter private FileManager fileManager;
   @Getter private ExpPermissionManager expPermissionManager;
   @Getter private McRPGDb mcRPGDb;
@@ -77,25 +77,19 @@ public class McRPG extends JavaPlugin implements Initializable {
 
   @Override
   public void onEnable() {
-    Logger.init("McRPG");
+   // Logger.init("McRPG");
     if(!getDataFolder().exists()){
       getDataFolder().mkdir();
     }
     //JAVEN ISSUES
     Path path = Paths.get(getDataFolder().getAbsolutePath() + "/libs");
-    Javen javen = new Javen(path);
+    /*Javen javen = new Javen(path);
     javen.addRepository("jitPack", "https://jitpack.io");
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
     new PlayerManager(this);
-    Logger.info("Starting init sequence");
+    Logger.info("Starting init sequence");*/
     McRPG t = this;
-    new BukkitRunnable(){
-      @Override
-      public void run(){
-        Initializer.initAll(t);
-      }
-    }.runTaskLater(this, 1L);
     if(Bukkit.getVersion().contains("1.14")){
       new BukkitRunnable(){
         @Override
@@ -105,15 +99,6 @@ public class McRPG extends JavaPlugin implements Initializable {
         }
       }.runTaskLater(this, 400);
     }
-    new BukkitRunnable(){
-      @Override
-      public void run(){
-        if(bookManager == null){
-          Bukkit.getLogger().log(Level.WARNING, "There was an error on startup for McRPG. Please seek the developer on Discord for support" +
-                  " or a special JAR distribution");
-        }
-      }
-    }.runTaskLater(this, 400);
 
     //Misc
     //localizationFiles = new LocalizationFiles(this, true);
@@ -204,26 +189,35 @@ public class McRPG extends JavaPlugin implements Initializable {
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);
     }
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        if(bookManager == null){
+          Bukkit.getLogger().log(Level.WARNING, "There was an error on startup for McRPG. Please seek the developer on Discord for support" +
+                  " or a special JAR distribution");
+        }
+      }
+    }.runTaskLater(this, 400);
   }
 
   @Override
   public void onDisable() {
-    if (!Initializer.finished())
-      Initializer.interrupt();
+    /*if (!Initializer.finished())
+      Initializer.interrupt();*/
     PlayerManager.shutDownManager();
     placeStore.saveAll();
   }
 
-  @Initialize(priority = 0)
+  /*@Initialize(priority = 0)
   private void preInit() {
-    /*var configManager = new ConfigManager(this);
+    var configManager = new ConfigManager(this);
     mConfigManager = new MConfigManager(configManager);
     /*if (!mConfigManager.setupConfigs(
             GeneralConfig.class, SwordsConfig.class))
-      getServer().shutdown();*/
+      getServer().shutdown();
     //Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
     //Locale.init(mConfigManager);
-  }
+  }*/
 
   /*
   @SuppressWarnings("Duplicates")

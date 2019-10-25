@@ -9,8 +9,6 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.api.util.Methods;
 
 import java.util.*;
@@ -20,11 +18,11 @@ public class FishedItemStackFactory {
 
   private static Random rand = new Random();
 
-  public static ItemStack createItem(@NotNull Material mat){
+  public static ItemStack createItem(Material mat){
     return new ItemStack(mat);
   }
 
-  public static ItemStack createItem(@NotNull Material mat, @NotNull String displayName){
+  public static ItemStack createItem(Material mat, String displayName){
     ItemStack itemStack = new ItemStack(mat);
     ItemMeta itemMeta = itemStack.getItemMeta();
     itemMeta.setDisplayName(Methods.color(displayName));
@@ -32,7 +30,7 @@ public class FishedItemStackFactory {
     return itemStack;
   }
 
-  public static ItemStack createItem(@NotNull Material mat, @Nullable String displayName, @Nullable List<String> lore){
+  public static ItemStack createItem(Material mat, String displayName, List<String> lore){
     if(displayName == null && lore == null){
       return createItem(mat);
     }
@@ -52,7 +50,7 @@ public class FishedItemStackFactory {
     }
   }
 
-  public static ItemStack createItem(@NotNull Material mat, @NotNull List<String> lore){
+  public static ItemStack createItem(Material mat, List<String> lore){
     ItemStack itemStack = new ItemStack(mat);
     ItemMeta itemMeta = itemStack.getItemMeta();
     itemMeta.setLore(Methods.colorLore(lore));
@@ -60,7 +58,7 @@ public class FishedItemStackFactory {
     return itemStack;
   }
 
-  public static ItemStack damageItem(@NotNull ItemStack item, int lowDamage, int highDamage){
+  public static ItemStack damageItem(ItemStack item, int lowDamage, int highDamage){
     if(item.getItemMeta() instanceof Damageable){
       double damage = lowDamage + rand.nextInt(highDamage - lowDamage);
       Damageable meta = (Damageable) item.getItemMeta();
@@ -72,7 +70,7 @@ public class FishedItemStackFactory {
     return item;
   }
 
-  public static ItemStack convertToPotion(@NotNull ItemStack item, @NotNull PotionMeta potionMeta){
+  public static ItemStack convertToPotion(ItemStack item, PotionMeta potionMeta){
     if(potionMeta.isSplash()){
       item.setType(Material.SPLASH_POTION);
     }
@@ -101,7 +99,7 @@ public class FishedItemStackFactory {
     return item;
   }
 
-  public static ItemStack enchantItem(@NotNull ItemStack item, @NotNull EnchantmentMeta enchantmentMeta){
+  public static ItemStack enchantItem(ItemStack item, EnchantmentMeta enchantmentMeta){
     Map<Enchantment, Integer> enchants = enchantmentMeta.generateEnchantmentMap();
     if(item.getType() == Material.BOOK || item.getType() == Material.ENCHANTED_BOOK){
       EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) item.getItemMeta();
