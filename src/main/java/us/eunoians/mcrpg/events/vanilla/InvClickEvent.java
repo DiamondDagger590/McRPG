@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -71,7 +72,10 @@ public class InvClickEvent implements Listener {
         BrewingGUI brewingGUI = (BrewingGUI) currentGUI;
         if(e.getClickedInventory() instanceof PlayerInventory){
           if(PotionUtils.isFuel(e.getCurrentItem())){
-            if(brewingGUI.getFuel())
+            if(brewingGUI.getFuel().getAmount() < 64 && e.getClick() == ClickType.SHIFT_LEFT && brewingGUI.getFuel().isSimilar(e.getCurrentItem())){
+              int maxDiff = 64 - brewingGUI.getFuel().getAmount();
+
+            }
           }
         }
         return;
