@@ -72,8 +72,14 @@ public class InvClickEvent implements Listener {
         BrewingGUI brewingGUI = (BrewingGUI) currentGUI;
         if(e.getClickedInventory() instanceof PlayerInventory){
           if(PotionUtils.isFuel(e.getCurrentItem())){
-            if(brewingGUI.getFuel().getAmount() < 64 && e.getClick() == ClickType.SHIFT_LEFT && brewingGUI.getFuel().isSimilar(e.getCurrentItem())){
-              int maxDiff = 64 - brewingGUI.getFuel().getAmount();
+            if(brewingGUI.getFuel().getAmount() < 64 && e.getClick() == ClickType.SHIFT_LEFT &&
+                    (brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getFuel().isSimilar(e.getCurrentItem()))){
+              int maxSize = brewingGUI.getFuel().getMaxStackSize();
+              int maxDiff = maxSize - brewingGUI.getFuel().getAmount();
+              int actualDiff = e.getCurrentItem().getAmount() + maxDiff >= maxSize ? maxSize - e.getCurrentItem().getAmount() : maxDiff;
+              brewingGUI.getFuel().setAmount(brewingGUI.getFuel().getAmount() + actualDiff);
+              e.getCurrentItem().setAmount(e.getCurrentItem().getAmount() - actualDiff);
+              brewingGUI.updateFuelItems();
 
             }
           }

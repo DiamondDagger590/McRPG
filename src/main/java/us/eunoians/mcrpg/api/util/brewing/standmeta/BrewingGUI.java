@@ -16,6 +16,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.brewing.BasePotion;
+import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.gui.GUI;
 import us.eunoians.mcrpg.gui.GUIBuilder;
 
@@ -170,7 +171,25 @@ public class BrewingGUI extends GUI {
   }
 
   //TODO come back and optimize this. No need to update all five glass each time
-  private void updateFuelItems(){
+  public void updateFuelItems(){
+
+    if(currentFuelLevel == 0){
+      if(fuel.getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+        currentFuelLevel = McRPG.getInstance().getPotionRecipeManager().getFuelAmount(fuel);
+        if(fuel.getAmount() == 1){
+          FileConfiguration guiFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_GUI);
+          fuel = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
+          ItemMeta fuelMeta = fuel.getItemMeta();
+          fuelMeta.setDisplayName(Methods.color(guiFile.getString("FuelPlaceholder.DisplayName")));
+          fuelMeta.setLore(Methods.colorLore(guiFile.getStringList("FuelPlaceholder.Lore")));
+          fuel.setItemMeta(fuelMeta);
+          inv.setItem(0, fuel);
+        }
+        else{
+          fuel.setAmount(fuel.getAmount() - 1);
+        }
+      }
+    }
     double numerator = 20 * currentFuelLevel;
     int usedGlassPanes = (int) (numerator / (maxCurrentFuelLevel != 0 ? maxCurrentFuelLevel : 1));
     int glassToPopulate = numerator != 0 ? 20-usedGlassPanes : 0;
@@ -213,6 +232,10 @@ public class BrewingGUI extends GUI {
   //TODO come back and optimize this. Same reason as the fuel items
   private void updateProgressBar(){
 
+  }
+
+  private boolean canInitBrew(){
+    return false;
   }
 
   private Material getFuelGlass(int fuelForGlass){

@@ -12,11 +12,11 @@ public class PotionRecipeManager {
 
   private Map<Material, Integer> fuelMaterials = new HashMap<>();
 
-  boolean isFuel(ItemStack fuel){
+  public boolean isFuel(ItemStack fuel){
     return fuelMaterials.containsKey(fuel.getType());
   }
 
-  int getFuelAmount(ItemStack fuel){
+  public int getFuelAmount(ItemStack fuel){
     return fuelMaterials.get(fuel.getType());
   }
 }
