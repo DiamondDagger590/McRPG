@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 7, state: 'BETA_SNAPSHOT_PRE_1')
+def versionObj = new Version(major: 1, minor: 1, patch: 7, state: 'BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -30,19 +30,17 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.cyr1en:javen:1.0.2'
-    annotationProcessor 'com.github.cyr1en:javen:1.0.2'
+   // compile 'com.github.cyr1en:javen:1.0.2'
+    //annotationProcessor 'com.github.cyr1en:javen:1.0.2'
 
-    compile 'com.github.CyR1en:McUtils:1.6.11'
-    compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
+    //compile 'com.github.CyR1en:McUtils:1.6.11'
+    //compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
 
-    compileOnly ('com.github.CyR1en:FlatDB:1.0.5') {
-       exclude group: 'com.google.guava'
-    }
+    compile 'com.github.DiamondDagger590:FlatDB:1.0.7'
 
     compile 'de.tr7zw:item-nbt-api:2.0.0-SNAPSHOT'
-    compileOnly 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
-    compileOnly group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
+    compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
+    compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'

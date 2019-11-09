@@ -346,14 +346,8 @@ public class VanillaDamageEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
-    if(e.isCancelled()){
+    if(e.isCancelled() || e.getDamage() >= 1000000){
       return;
-    }
-    //DEBUGG
-    if(e.getEntity() instanceof Player){
-      if(((Player) e.getEntity()).isBlocking()){
-        Bukkit.broadcastMessage("Damage Blocked: " + e.getDamage());
-      }
     }
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)){
