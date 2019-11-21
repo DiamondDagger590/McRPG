@@ -312,6 +312,7 @@ public class FileManager {
     ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
     AXES_CONFIG("axes.yml", "skills/axes.yml"),
     BREWING_GUI("brewinggui.yml", "guis/brewinggui.yml"),
+    BREWING_ITEMS_CONFIG("demo.yml", "skills/demo.yml"),
     CONFIG("config.yml", "config.yml"),
     CUSTOM("custom.yml", "localization/custom.yml"),
     EDIT_DEFAULT_ABILITIES_GUI("editdefaultabilitiesgui.yml", "guis/editdefaultabilitiesgui.yml"),
