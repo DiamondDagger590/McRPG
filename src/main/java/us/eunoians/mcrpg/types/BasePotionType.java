@@ -43,7 +43,6 @@ public enum BasePotionType{
 	@Getter
 	private boolean isVanilla;
 
-	@Getter
 	private String name;
 
 	@Getter
@@ -61,6 +60,14 @@ public enum BasePotionType{
 		this.customColour = customColour;
 		this.potionType = potionType;
 		this.effectType = effectType;
+	}
+
+	public String getDisplayName(){
+		return this.name;
+	}
+
+	public String getName(){
+		return effectType != null ? effectType.getName() : (potionType == PotionType.WATER ? "WATER" : "AWKWARD");
 	}
 
 	public static BasePotionType getFromPotionType(PotionType type){
