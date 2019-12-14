@@ -343,7 +343,8 @@ public class FileManager {
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
-    WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml");
+    WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml"),
+    WORLD_MODIFIER("world_modifier.yml", "world_modifier.yml");
 
     private String fileName;
     private String fileLocation;

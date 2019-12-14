@@ -116,9 +116,9 @@ public class BreakEvent implements Listener{
 
       if(!McRPG.getPlaceStore().isTrue(block)){
         BookManager bookManager = McRPG.getInstance().getBookManager();
-        int bookChance = new Random().nextInt(100000);
+        Random rand = new Random();
+        int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && p.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
         Location playerLoc = p.getLocation();
-
         if(bookManager.getEnabledUnlockEvents().contains("Break")){
           if(!bookManager.getUnlockExcluded().contains(blockType.name())){
             double chance = bookManager.getDefaultUnlockChance();
@@ -188,7 +188,7 @@ public class BreakEvent implements Listener{
           if(DefaultAbilities.EXTRACTION.isEnabled() && mp.getBaseAbility(DefaultAbilities.EXTRACTION).isToggled()){
             if(woodCutting.getStringList("ExtraLumberBlocks").contains(block.getType().toString())){
               Extraction extraction = (Extraction) mp.getBaseAbility(DefaultAbilities.EXTRACTION);
-              Parser parser = DefaultAbilities.EXTRA_LUMBER.getActivationEquation();
+              Parser parser = DefaultAbilities.EXTRACTION.getActivationEquation();
               parser.setVariable("excavation_level", mp.getSkill(Skills.EXCAVATION).getCurrentLevel());
               parser.setVariable("power_level", mp.getPowerLevel());
               int chance = (int) (parser.getValue() * 1000);
@@ -318,6 +318,108 @@ public class BreakEvent implements Listener{
       //Deal with woodcutting
       if(woodCutting.getBoolean("WoodcuttingEnabled")){
         int dropMultiplier = 1;
+        if(mp.isReadying() && mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.TEMPORAL_HARVEST){
+          TemporalHarvest temporalHarvest = (TemporalHarvest) mp.getBaseAbility(UnlockedAbilities.TEMPORAL_HARVEST);
+          Material saplingType = Material.AIR;
+          Material woodType = Material.AIR;
+          Material leafType = Material.AIR;
+          if(block.getType() == Material.ACACIA_SAPLING){
+            saplingType = Material.ACACIA_SAPLING;
+            woodType = Material.ACACIA_LOG;
+            leafType = Material.ACACIA_LEAVES;
+          }
+          else if(block.getType() == Material.SPRUCE_SAPLING){
+            saplingType = Material.SPRUCE_SAPLING;
+            woodType = Material.SPRUCE_LOG;
+            leafType = Material.SPRUCE_LEAVES;
+          }
+          else if(block.getType() == Material.OAK_SAPLING){
+            saplingType = Material.OAK_SAPLING;
+            woodType = Material.OAK_LOG;
+            leafType = Material.OAK_LEAVES;
+          }
+          else if(block.getType() == Material.DARK_OAK_SAPLING){
+            saplingType = Material.DARK_OAK_SAPLING;
+            woodType = Material.DARK_OAK_LOG;
+            leafType = Material.DARK_OAK_LEAVES;
+          }
+          else if(block.getType() == Material.BIRCH_SAPLING){
+            saplingType = Material.BIRCH_SAPLING;
+            woodType = Material.BIRCH_LOG;
+            leafType = Material.BIRCH_LEAVES;
+          }
+          else if(block.getType() == Material.JUNGLE_SAPLING){
+            saplingType = Material.JUNGLE_SAPLING;
+            woodType = Material.JUNGLE_LOG;
+            leafType = Material.JUNGLE_LEAVES;
+          }
+          if(saplingType != Material.AIR){
+            String key = "TemporalHarvestConfig.Tier" + Methods.convertToNumeral(temporalHarvest.getCurrentTier()) + ".";
+            int minWood = woodCutting.getInt(key + "WoodMinDrop");
+            int maxWood = woodCutting.getInt(key + "WoodMaxDrop");
+            int minSapling = woodCutting.getInt(key + "SaplingsMinDrop");
+            int maxSapling = woodCutting.getInt(key + "SaplingsMaxDrop");
+            int minApple = woodCutting.getInt(key + "AppleMinDrop");
+            int maxApple = woodCutting.getInt(key + "AppleMaxDrop");
+            int cooldown = woodCutting.getInt(key + "Cooldown");
+            Random rand = new Random();
+            if(maxWood != 0 && maxSapling != 0 && maxApple != 0){
+              ItemStack wood = new ItemStack(woodType, minWood + rand.nextInt(maxWood - minWood));
+              ItemStack sapling = new ItemStack(saplingType, minSapling + rand.nextInt(maxSapling - minSapling));
+              ItemStack apple = new ItemStack(Material.APPLE, minApple + rand.nextInt(maxApple - minApple));
+              TemporalHarvestEvent temporalHarvestEvent = new TemporalHarvestEvent(mp, temporalHarvest, wood.getAmount(), apple.getAmount(), sapling.getAmount(), cooldown);
+              Bukkit.getPluginManager().callEvent(temporalHarvestEvent);
+              if(!temporalHarvestEvent.isCancelled()){
+                int woodAmount = temporalHarvestEvent.getWoodAmount();
+                while(woodAmount > 0){
+                  if(woodAmount >= 64){
+                    wood.setAmount(64);
+                    woodAmount -= 64;
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), wood);
+                  }
+                  else{
+                    wood.setAmount(woodAmount);
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), wood);
+                    woodAmount = 0;
+                  }
+                }
+                int saplingAmount = temporalHarvestEvent.getSaplingAmount();
+                while(saplingAmount > 0){
+                  if(saplingAmount >= 64){
+                    sapling.setAmount(64);
+                    saplingAmount -= 64;
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), sapling);
+                  }
+                  else{
+                    sapling.setAmount(saplingAmount);
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), sapling);
+                    saplingAmount = 0;
+                  }
+                }
+                int appleAmount = temporalHarvestEvent.getAppleAmount();
+                while(appleAmount > 0){
+                  if(appleAmount >= 64){
+                    apple.setAmount(64);
+                    appleAmount -= 64;
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), apple);
+                  }
+                  else{
+                    apple.setAmount(appleAmount);
+                    block.getLocation().getWorld().dropItemNaturally(block.getLocation(), apple);
+                    appleAmount = 0;
+                  }
+                }
+                p.sendMessage(Methods.color(p, McRPG.getInstance().getLangFile().getString("Messages.Abilities.TemporalHarvest.Activated")));
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.SECOND, temporalHarvestEvent.getCooldown());
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+                mp.setReadying(false);
+                mp.addAbilityOnCooldown(UnlockedAbilities.TEMPORAL_HARVEST, cal.getTimeInMillis());
+              }
+            }
+          }
+        }
         if(!McRPG.getPlaceStore().isTrue(block)){
           if(woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())){
             int expWorth = woodCutting.getInt("ExpAwardedPerBlock." + block.getType().toString());
@@ -356,7 +458,9 @@ public class BreakEvent implements Listener{
               }
             }
           }
-          DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+          if(!DropItemEvent.getBlockDropsToMultiplier().containsKey(block.getLocation()) || dropMultiplier > DropItemEvent.getBlockDropsToMultiplier().get(block.getLocation())){
+            DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+          }
           if(!(event instanceof HeavySwingTestEvent) && UnlockedAbilities.HEAVY_SWING.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HEAVY_SWING)
                   && mp.getBaseAbility(UnlockedAbilities.HEAVY_SWING).isToggled() && block.getType().toString().contains("LOG") && p.getItemInHand().getType().toString().contains("AXE")){
             HeavySwing heavySwing = (HeavySwing) mp.getBaseAbility(UnlockedAbilities.HEAVY_SWING);
@@ -388,107 +492,6 @@ public class BreakEvent implements Listener{
                   if(!heavySwingTestEvent.isCancelled()){
                     b.breakNaturally(p.getItemInHand());
                   }
-                }
-              }
-            }
-          }
-          if(mp.isReadying() && mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.TEMPORAL_HARVEST){
-            TemporalHarvest temporalHarvest = (TemporalHarvest) mp.getBaseAbility(UnlockedAbilities.TEMPORAL_HARVEST);
-            Material saplingType = Material.AIR;
-            Material woodType = Material.AIR;
-            Material leafType = Material.AIR;
-            if(block.getType() == Material.ACACIA_SAPLING){
-              saplingType = Material.ACACIA_SAPLING;
-              woodType = Material.ACACIA_LOG;
-              leafType = Material.ACACIA_LEAVES;
-            }
-            else if(block.getType() == Material.SPRUCE_SAPLING){
-              saplingType = Material.SPRUCE_SAPLING;
-              woodType = Material.SPRUCE_LOG;
-              leafType = Material.SPRUCE_LEAVES;
-            }
-            else if(block.getType() == Material.OAK_SAPLING){
-              saplingType = Material.OAK_SAPLING;
-              woodType = Material.OAK_LOG;
-              leafType = Material.OAK_LEAVES;
-            }
-            else if(block.getType() == Material.DARK_OAK_SAPLING){
-              saplingType = Material.DARK_OAK_SAPLING;
-              woodType = Material.DARK_OAK_LOG;
-              leafType = Material.DARK_OAK_LEAVES;
-            }
-            else if(block.getType() == Material.BIRCH_SAPLING){
-              saplingType = Material.BIRCH_SAPLING;
-              woodType = Material.BIRCH_LOG;
-              leafType = Material.BIRCH_LEAVES;
-            }
-            else if(block.getType() == Material.JUNGLE_SAPLING){
-              saplingType = Material.JUNGLE_SAPLING;
-              woodType = Material.JUNGLE_LOG;
-              leafType = Material.JUNGLE_LEAVES;
-            }
-            if(saplingType != Material.AIR){
-              String key = "TemporalHarvestConfig.Tier" + Methods.convertToNumeral(temporalHarvest.getCurrentTier()) + ".";
-              int minWood = woodCutting.getInt(key + "WoodMinDrop");
-              int maxWood = woodCutting.getInt(key + "WoodMaxDrop");
-              int minSapling = woodCutting.getInt(key + "SaplingsMinDrop");
-              int maxSapling = woodCutting.getInt(key + "SaplingsMaxDrop");
-              int minApple = woodCutting.getInt(key + "AppleMinDrop");
-              int maxApple = woodCutting.getInt(key + "AppleMaxDrop");
-              int cooldown = woodCutting.getInt(key + "Cooldown");
-              Random rand = new Random();
-              if(maxWood != 0 && maxSapling != 0 && maxApple != 0){
-                ItemStack wood = new ItemStack(woodType, minWood + rand.nextInt(maxWood - minWood));
-                ItemStack sapling = new ItemStack(saplingType, minSapling + rand.nextInt(maxSapling - minSapling));
-                ItemStack apple = new ItemStack(saplingType, minApple + rand.nextInt(maxApple - minApple));
-                TemporalHarvestEvent temporalHarvestEvent = new TemporalHarvestEvent(mp, temporalHarvest, wood.getAmount(), apple.getAmount(), sapling.getAmount(), cooldown);
-                Bukkit.getPluginManager().callEvent(temporalHarvestEvent);
-                if(!temporalHarvestEvent.isCancelled()){
-                  int woodAmount = temporalHarvestEvent.getWoodAmount();
-                  while(woodAmount > 0){
-                    if(woodAmount >= 64){
-                      wood.setAmount(64);
-                      woodAmount -= 64;
-                      block.getLocation().getWorld().dropItemNaturally(block.getLocation(), wood);
-                    }
-                    else{
-                      wood.setAmount(woodAmount);
-                      block.getLocation().getWorld().dropItemNaturally(block.getLocation(), wood);
-                      woodAmount = 0;
-                    }
-                  }
-                  int saplingAmount = temporalHarvestEvent.getSaplingAmount();
-                  while(saplingAmount > 0){
-                    if(saplingAmount >= 64){
-                      sapling.setAmount(64);
-                      saplingAmount -= 64;
-                      block.getLocation().getWorld().dropItemNaturally(block.getLocation(), sapling);
-                    }
-                    else{
-                      sapling.setAmount(saplingAmount);
-                      block.getLocation().getWorld().dropItemNaturally(block.getLocation(), sapling);
-                      saplingAmount = 0;
-                    }
-                  }
-                  int appleAmount = temporalHarvestEvent.getAppleAmount();
-                  while(appleAmount > 0){
-                    if(appleAmount >= 64){
-                      apple.setAmount(64);
-                      appleAmount -= 64;
-                      block.getLocation().getWorld().dropItemNaturally(block.getLocation(), apple);
-                    }
-                    else{
-                      apple.setAmount(appleAmount);
-                      block.getLocation().getWorld().dropItemNaturally(block.getLocation(), apple);
-                      appleAmount = 0;
-                    }
-                  }
-                  Calendar cal = Calendar.getInstance();
-                  cal.add(Calendar.SECOND, temporalHarvestEvent.getCooldown());
-                  Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
-                  mp.setReadyingAbilityBit(null);
-                  mp.setReadying(false);
-                  mp.addAbilityOnCooldown(UnlockedAbilities.TEMPORAL_HARVEST, cal.getTimeInMillis());
                 }
               }
             }
@@ -604,7 +607,9 @@ public class BreakEvent implements Listener{
               }
             }
           }
-          DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+          if(!DropItemEvent.getBlockDropsToMultiplier().containsKey(block.getLocation()) || dropMultiplier > DropItemEvent.getBlockDropsToMultiplier().get(block.getLocation())){
+            DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+          }
         }
       }
       //Deal with mining
@@ -617,7 +622,7 @@ public class BreakEvent implements Listener{
             mp.giveExp(Skills.MINING, expWorth, GainReason.BREAK);
           }
           boolean incDrops = mining.getStringList("DoubleDropBlocks").contains(block.getType().toString());
-          if(DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
+          if(incDrops && DefaultAbilities.DOUBLE_DROP.isEnabled() && mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP).isToggled()){
             DoubleDrop doubleDrop = (DoubleDrop) mp.getSkill(Skills.MINING).getAbility(DefaultAbilities.DOUBLE_DROP);
             double boost = 0;
             if(UnlockedAbilities.RICHER_ORES.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.RICHER_ORES)
@@ -646,7 +651,6 @@ public class BreakEvent implements Listener{
               }
             }
           }
-
           if(incDrops && UnlockedAbilities.ITS_A_TRIPLE.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.ITS_A_TRIPLE)
                   && mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE).isToggled()){
             ItsATriple itsATriple = (ItsATriple) mp.getSkill(Skills.MINING).getAbility(UnlockedAbilities.ITS_A_TRIPLE);
@@ -718,7 +722,9 @@ public class BreakEvent implements Listener{
             }
           }
         }
-        DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+        if(!DropItemEvent.getBlockDropsToMultiplier().containsKey(block.getLocation()) || dropMultiplier > DropItemEvent.getBlockDropsToMultiplier().get(block.getLocation())){
+          DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
+        }
       }
     }
   }

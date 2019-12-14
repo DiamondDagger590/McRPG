@@ -30,12 +30,12 @@ public class McRedeem implements CommandExecutor {
         return true;
       }
       else if(plugin.getConfig().getBoolean("Configuration.UseRedeemPerm") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.redeem"))){
-        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getConfig().getString("Messages.Commands.Utility.NoPerms")));
+        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.NoPerms")));
         return true;
       }
       // /mcredeem %skill%
       if(args.length < 1){
-        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcredeem")));
+        p.sendMessage(Methods.color(plugin.getPluginPrefix() + plugin.getLangFile().getString("Messages.Commands.Utility.HelpPrompt").replace("<command>", "mcredeem")));
         return true;
       }
       else{

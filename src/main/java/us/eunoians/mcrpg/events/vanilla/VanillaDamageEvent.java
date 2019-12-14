@@ -102,114 +102,117 @@ public class VanillaDamageEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGH)
   public void fallListener(EntityDamageEvent e){
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
-    if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
-      return;
-    }
-    else{
-      if(e.getEntity() instanceof Player){
-        Player player = (Player) e.getEntity();
-        McRPGPlayer mcRPGPlayer;
-        try{
-          mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-        }
-        catch(McRPGPlayerNotFoundException exception){
-          return;
-        }
-        if(McRPG.getInstance().isWorldGuardEnabled()){
-          WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
+    if(!(e instanceof EntityDamageByEntityEvent)){
+      if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
+        return;
+      }
+      else{
+        if(e.getEntity() instanceof Player){
+          Player player = (Player) e.getEntity();
+          McRPGPlayer mcRPGPlayer;
+          try{
+            mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
+          } catch(McRPGPlayerNotFoundException exception){
+            return;
+          }
+          if(McRPG.getInstance().isWorldGuardEnabled()){
+            WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
 
-          if(wgSupportManager.isWorldTracker(player.getWorld())){
-            RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            Location loc = player.getLocation();
-            RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
-            HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
-            assert manager != null;
-            ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
-            for(ProtectedRegion region : set){
-              if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())){
-                List<String> expressions = regions.get(region.getId()).getAttackExpressions().get(e.getEntity().getType());
-                for(String s : expressions){
-                  if(s.contains("difference")){
-                    if(!(e.getEntity() instanceof Player)){
-                      continue;
-                    }
-                    else{
-                      try{
-                        McRPGPlayer target = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-                        ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer, target);
-                        if(actionLimiterParser.evaluateExpression()){
-                          e.setCancelled(true);
-                          return;
+            if(wgSupportManager.isWorldTracker(player.getWorld())){
+              RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+              Location loc = player.getLocation();
+              RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
+              HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
+              assert manager != null;
+              ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
+              for(ProtectedRegion region : set){
+                if(regions.containsKey(region.getId()) && regions.get(region.getId()).getAttackExpressions().containsKey(e.getEntity().getType())){
+                  List<String> expressions = regions.get(region.getId()).getAttackExpressions().get(e.getEntity().getType());
+                  for(String s : expressions){
+                    if(s.contains("difference")){
+                      if(!(e.getEntity() instanceof Player)){
+                        continue;
+                      }
+                      else{
+                        try{
+                          McRPGPlayer target = PlayerManager.getPlayer(e.getEntity().getUniqueId());
+                          ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer, target);
+                          if(actionLimiterParser.evaluateExpression()){
+                            e.setCancelled(true);
+                            return;
+                          }
+                        } catch(McRPGPlayerNotFoundException exception){
                         }
                       }
-                      catch(McRPGPlayerNotFoundException exception){
-                      }
                     }
-                  }
-                  else{
-                    ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer);
-                    if(actionLimiterParser.evaluateExpression()){
-                      e.setCancelled(true);
-                      return;
+                    else{
+                      ActionLimiterParser actionLimiterParser = new ActionLimiterParser(s, mcRPGPlayer);
+                      if(actionLimiterParser.evaluateExpression()){
+                        e.setCancelled(true);
+                        return;
+                      }
                     }
                   }
                 }
               }
             }
           }
-        }
 
-        int featherFallingLevel = player.getEquipment().getBoots() != null
-                && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
-        int expAwarded;
-        boolean afk = false;
-        if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
-          if(mcRPGPlayer.getLastFallLocation().size() < 4){
-            mcRPGPlayer.getLastFallLocation().add(player.getLocation());
-          }
-          else{
-            Location currentLocation = player.getLocation();
-            for(Location oldLoc : mcRPGPlayer.getLastFallLocation()){
-              if(afk){
-                break;
-              }
-              int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
-              int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
-              int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
-              afk = diffInY <= config.getInt("AntiAFK.YRange") && diffInX <= config.getInt("AntiAFK.XRange") && diffInZ <= config.getInt("AntiAFK.ZRange");
+          int featherFallingLevel = player.getEquipment().getBoots() != null
+                  && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
+          int expAwarded;
+          boolean afk = false;
+          if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
+            if(mcRPGPlayer.getLastFallLocation().size() < 4){
+              mcRPGPlayer.getLastFallLocation().add(player.getLocation());
             }
-            if(mcRPGPlayer.getLastFallLocation().size() >= 4){
-              while(mcRPGPlayer.getLastFallLocation().size() >= 4){
-                mcRPGPlayer.getLastFallLocation().remove(0);
+            else{
+              Location currentLocation = player.getLocation();
+              for(Location oldLoc : mcRPGPlayer.getLastFallLocation()){
+                if(afk){
+                  break;
+                }
+                int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
+                int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
+                int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
+                int numOfDiffAxis = diffInY <= config.getInt("AntiAFK.YRange") ? 1 : 0;
+                numOfDiffAxis += diffInX <= config.getInt("AntiAfk.XRange") ? 1 : 0;
+                numOfDiffAxis += diffInZ <= config.getInt("AntiAfk.ZRange") ? 1 : 0;
+                afk = numOfDiffAxis >= config.getInt("AntiAFK.AmountOfDifferences", 1);
               }
-              mcRPGPlayer.getLastFallLocation().add(currentLocation);
+              if(mcRPGPlayer.getLastFallLocation().size() >= 4){
+                while(mcRPGPlayer.getLastFallLocation().size() >= 4){
+                  mcRPGPlayer.getLastFallLocation().remove(0);
+                }
+                mcRPGPlayer.getLastFallLocation().add(currentLocation);
+              }
             }
-          }
-          if(!afk && player.getHealth() - e.getDamage() > 0){
-            expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
-            Parser equation = new Parser(config.getString("FallEquation"));
-            equation.setVariable("damage", e.getDamage());
-            equation.setVariable("exp_awarded", expAwarded);
-            equation.setVariable("feather_falling_level", featherFallingLevel);
-            expAwarded = (int) equation.getValue();
-            mcRPGPlayer.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
-          }
-          else{
-            expAwarded = 0;
-          }
-          Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
-          if(roll.getGenericAbility().isEnabled() && roll.isToggled()){
-            Parser rollEquation = new Parser(config.getString("RollConfig.RollChanceEquation"));
-            rollEquation.setVariable("fitness_level", mcRPGPlayer.getSkill(Skills.FITNESS).getCurrentLevel());
-            int chance = (int) (rollEquation.getValue() * 1000);
-            Random rand = new Random();
-            int val = rand.nextInt(100000);
-            if(chance >= val){
-              RollEvent rollEvent = new RollEvent(mcRPGPlayer, roll);
-              Bukkit.getPluginManager().callEvent(rollEvent);
-              if(!rollEvent.isCancelled()){
-                e.setDamage(e.getDamage() / 2);
-                player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Roll.Activated")));
+            if(!afk && player.getHealth() - e.getDamage() > 0){
+              expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
+              Parser equation = new Parser(config.getString("FallEquation"));
+              equation.setVariable("damage", e.getDamage());
+              equation.setVariable("exp_awarded", expAwarded);
+              equation.setVariable("feather_falling_level", featherFallingLevel);
+              expAwarded = (int) equation.getValue();
+              mcRPGPlayer.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
+            }
+            else{
+              expAwarded = 0;
+            }
+            Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
+            if(roll.getGenericAbility().isEnabled() && roll.isToggled()){
+              Parser rollEquation = new Parser(config.getString("RollConfig.RollChanceEquation"));
+              rollEquation.setVariable("fitness_level", mcRPGPlayer.getSkill(Skills.FITNESS).getCurrentLevel());
+              int chance = (int) (rollEquation.getValue() * 1000);
+              Random rand = new Random();
+              int val = rand.nextInt(100000);
+              if(chance >= val){
+                RollEvent rollEvent = new RollEvent(mcRPGPlayer, roll);
+                Bukkit.getPluginManager().callEvent(rollEvent);
+                if(!rollEvent.isCancelled()){
+                  e.setDamage(e.getDamage() / 2);
+                  player.sendMessage(Methods.color(player, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Roll.Activated")));
+                }
               }
             }
           }
@@ -228,8 +231,7 @@ public class VanillaDamageEvent implements Listener {
       McRPGPlayer mcRPGPlayer;
       try{
         mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      }
-      catch(McRPGPlayerNotFoundException exception){
+      } catch(McRPGPlayerNotFoundException exception){
         return;
       }
       //Deal with Divine Escape debuff
@@ -318,17 +320,21 @@ public class VanillaDamageEvent implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void awardFitnessExp(EntityDamageByEntityEvent e){
+    if(e.getDamager().getType() == EntityType.ENDER_PEARL && McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableEPearlExp")){
+      return;
+    }
     if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && e.getDamage() >= 1.0 && ((Player) e.getEntity()).getHealth() - e.getDamage() > 0){
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      }
-      catch(McRPGPlayerNotFoundException exception){
+      } catch(McRPGPlayerNotFoundException exception){
         return;
       }
-      double damage = e.getDamage();
-      int expAwarded = (int) (damage * McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG).getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));
-      mp.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
+      if(e.getEntity() instanceof Player && !((Player) e.getEntity()).isBlocking()){
+        double damage = e.getDamage();
+        int expAwarded = (int) (damage * McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG).getInt("ExpAwardedPerDamage.ENTITY_DAMAGE"));
+        mp.giveExp(Skills.FITNESS, expAwarded, GainReason.DAMAGE);
+      }
     }
   }
 
@@ -340,7 +346,7 @@ public class VanillaDamageEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
-    if(e.isCancelled()){
+    if(e.isCancelled() || e.getDamage() >= 1000000){
       return;
     }
     FileConfiguration config;
@@ -355,8 +361,7 @@ public class VanillaDamageEvent implements Listener {
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(damager.getUniqueId());
-      }
-      catch(McRPGPlayerNotFoundException exception){
+      } catch(McRPGPlayerNotFoundException exception){
         return;
       }
       //Deal with world guard
@@ -386,8 +391,7 @@ public class VanillaDamageEvent implements Listener {
                         e.setCancelled(true);
                         return;
                       }
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    } catch(McRPGPlayerNotFoundException exception){
                     }
                   }
                 }
@@ -424,7 +428,12 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
-        mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
+          expAwarded = (int) (expAwarded * McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getDouble("Configuration.ShieldBlockingModifier"));
+        }
+        if(expAwarded > 0){
+          mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        }
         if(mp.isCanSmite()){
           if(!(e.getEntity().getFireTicks() > 0)){
             LivingEntity entity = (LivingEntity) e.getEntity();
@@ -599,8 +608,7 @@ public class VanillaDamageEvent implements Listener {
           McRPGPlayer damagedMcRPGPlayer;
           try{
             damagedMcRPGPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-          }
-          catch(McRPGPlayerNotFoundException exception){
+          } catch(McRPGPlayerNotFoundException exception){
             return;
           }
           if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR){
@@ -730,8 +738,7 @@ public class VanillaDamageEvent implements Listener {
                 McRPGPlayer dmged;
                 try{
                   dmged = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                } catch(McRPGPlayerNotFoundException exception){
                   return;
                 }
                 if(!dmged.isHasBleedImmunity() && bleed.canTarget()){
@@ -774,7 +781,13 @@ public class VanillaDamageEvent implements Listener {
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
-          mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          //Deal with possible shield exploits
+          if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
+            expAwarded = (int) (expAwarded * config.getDouble("Configuration.ShieldBlockingModifier"));
+          }
+          if(expAwarded > 0){
+            mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          }
         }
         else if(weapon.name().contains("AXE")){
           Axes axes = (Axes) mp.getSkill(Skills.AXES);
@@ -949,7 +962,12 @@ public class VanillaDamageEvent implements Listener {
             mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
           }
           int expAwarded = (int) ((dmg * baseExp * multiplier) * mobSpawnValue);
-          mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
+            expAwarded = (int) (expAwarded * config.getDouble("Configuration.ShieldBlockingModifier"));
+          }
+          if(expAwarded > 0){
+            mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          }
         }
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
@@ -958,14 +976,13 @@ public class VanillaDamageEvent implements Listener {
       Arrow arrow = (Arrow) e.getDamager();
       if(arrow.getShooter() instanceof Player){
         Player shooter = (Player) arrow.getShooter();
-        if(shooter.getUniqueId().equals(e.getEntity().getUniqueId())){
+        if(shooter.getUniqueId().equals(e.getEntity().getUniqueId()) || shooter.isInsideVehicle()){
           return;
         }
         McRPGPlayer mp;
         try{
           mp = PlayerManager.getPlayer(shooter.getUniqueId());
-        }
-        catch(McRPGPlayerNotFoundException exception){
+        } catch(McRPGPlayerNotFoundException exception){
           return;
         }
         //give exp
@@ -994,8 +1011,9 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp + (dmg * baseExp * parser.getValue())) * mobSpawnValue);
-        mp.getSkill(Skills.ARCHERY).giveExp(mp, expAwarded, GainReason.DAMAGE);
-
+        if(expAwarded > 0){
+          mp.getSkill(Skills.ARCHERY).giveExp(mp, expAwarded, GainReason.DAMAGE);
+        }
         //Handle the hp bars when dealing with archery
         handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
 
@@ -1048,8 +1066,7 @@ public class VanillaDamageEvent implements Listener {
             McRPGPlayer s;
             try{
               s = PlayerManager.getPlayer(UUID.fromString(arrow.getMetadata("Puncture").get(0).asString()));
-            }
-            catch(McRPGPlayerNotFoundException exception){
+            } catch(McRPGPlayerNotFoundException exception){
               return;
             }
             BleedEvent bleedEvent = new BleedEvent(s, target, (Bleed) s.getBaseAbility(DefaultAbilities.BLEED));

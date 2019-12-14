@@ -13,4 +13,5 @@ public class PlayerSetting {
   @Column(defaultValue = "0") boolean require_empty_offhand;
   @Column(defaultValue = "Scoreboard") String display_type;
   @Column(defaultValue = "Bar") String health_type;
+  @Column(defaultValue = "-1") int unarmed_ignore_slot;
 }

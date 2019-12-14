@@ -16,7 +16,7 @@ BonusDamage: 4
 ExpAwardedPerMob:
   OTHER: 5
   BAT: 5
-  BLAZE: 50
+  BLAZE: 30
   CAVE_SPIDER: 20
   SPIDER: 20
   CHICKEN: 10
@@ -36,11 +36,11 @@ ExpAwardedPerMob:
   MULE: 17
   HORSE: 17
   LLAMA: 17
-  CREEPER: 40
-  GUARDIAN: 45
+  CREEPER: 30
+  GUARDIAN: 30
   ELDER_GUARDIAN: 60
   ENDER_DRAGON: 75
-  ENDERMAN: 50
+  ENDERMAN: 30
   SHULKER: 55
   EVOKER: 45
   VEX: 5
@@ -285,6 +285,7 @@ BerserkConfig:
       - '&eActivate by readying and attacking an enemy'
     MenuLore:
       - '&cIncrease activation rate of Disarm and damage'
+      - '&cdealt by fists for a few seconds'
       - '&aUnlock Level: &e%UnlockLevel%'
 SmitingFistConfig:
   #How many tiers there should be. Highly recommended to keep at 5.

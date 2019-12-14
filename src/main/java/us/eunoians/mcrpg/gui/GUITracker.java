@@ -134,6 +134,13 @@ public class GUITracker {
     guiTracker.put(p, bit);
   }
 
+  public static void setPlayersPreviousGUI(McRPGPlayer p, GUI gui) { guiTracker.get(p.getUuid()).setPreviousGUI(gui);
+  }
+
+  public static void setPlayersPreviousGUI(Player p, GUI gui) {
+    guiTracker.get(p.getUniqueId()).setPreviousGUI(gui);
+  }
+
   private static void setPlayersPreviousGUI(UUID uuid, GUI old) {
     guiTracker.get(uuid).setPreviousGUI(old);
   }

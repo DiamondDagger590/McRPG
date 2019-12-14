@@ -12,7 +12,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.intellij.lang.annotations.Language;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
@@ -82,7 +81,7 @@ public class McRPGPlayer {
   @Getter @Setter private Set<Material> handDiggingBlocks;
 
   //Ready variables
-  @Getter @Setter private boolean isReadying = false;
+  @Setter private boolean isReadying = false;
   @Getter @Setter private PlayerReadyBit readyingAbilityBit = null;
 
   //Settings
@@ -92,6 +91,7 @@ public class McRPGPlayer {
   @Getter @Setter private boolean autoDeny = false;
   @Getter @Setter private boolean requireEmptyOffHand = false;
   @Getter @Setter private boolean ignoreTips;
+  @Getter @Setter private int unarmedIgnoreSlot;
 
   @Getter private Set<TipType> usedTips = new HashSet<>();
 
@@ -127,10 +127,10 @@ public class McRPGPlayer {
     }
     if(isNew) {
       for(Skills type : Skills.values()) {
-        @Language("SQL") String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
+        String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
         database.executeUpdate(query);
       }
-      @Language("SQL") String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
+      String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
       database.executeUpdate(query);
       query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES ('" + uuid.toString() + "')";
       database.executeUpdate(query);
@@ -175,6 +175,7 @@ public class McRPGPlayer {
           this.autoDeny = rs.getBoolean("auto_deny");
           this.ignoreTips = rs.getBoolean("ignore_tips");
           this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
+          this.unarmedIgnoreSlot = rs.getInt("unarmed_ignore_slot");
         }
       } catch(SQLException e) {
         e.printStackTrace();
@@ -187,7 +188,7 @@ public class McRPGPlayer {
       Optional<ResultSet> skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
       try {
         if(!skillSet.isPresent() || !skillSet.get().next()) {
-          @Language("SQL") String query = "INSERT INTO mcrpg_" + skill.getName().toLowerCase() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
+          String query = "INSERT INTO mcrpg_" + skill.getName().toLowerCase() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
           database.executeUpdate(query);
           skillSet = database.executeQuery("SELECT * FROM mcrpg_" + skill.getName().toLowerCase() + "_data WHERE uuid = '" + uuid.toString() + "'");
           skillSet.get().next();
@@ -1197,6 +1198,13 @@ public class McRPGPlayer {
     return Bukkit.getOfflinePlayer(uuid);
   }
 
+  public boolean isReadying(){
+    if(this.readyingAbilityBit == null || this.readyingAbilityBit.getAbilityReady() == null){
+      this.isReadying = false;
+    }
+    return isReadying;
+  }
+
   /**
    * Updates the power level of the player by adding together all of the levels of each skill
    *
@@ -1393,7 +1401,7 @@ public class McRPGPlayer {
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     for(Skills type : Skills.values()) {
       Skill skill = getSkill(type);
-      @Language("SQL") String query = "UPDATE mcrpg_" + skill.getName().toLowerCase() + "_data SET current_level = " + skill.getCurrentLevel() + ", current_exp = " + skill.getCurrentExp();
+      String query = "UPDATE mcrpg_" + skill.getName().toLowerCase() + "_data SET current_level = " + skill.getCurrentLevel() + ", current_exp = " + skill.getCurrentExp();
       for(GenericAbility ability : skill.getAbilityKeys()) {
         if(ability instanceof DefaultAbilities) {
           query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_toggled = " + Methods.convertBool(skill.getAbility(ability).isToggled());
@@ -1423,16 +1431,16 @@ public class McRPGPlayer {
     database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
-    @Language("SQL") String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
+    String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
-            "', health_type = '" + healthbarType.getName() + "' WHERE uuid = '" + uuid.toString() + "'";
+            "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + " WHERE uuid = '" + uuid.toString() + "'";
     database.executeUpdate(query);
     for(UnlockedAbilities ability : pendingUnlockAbilities) {
       query = "UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
               " WHERE uuid = '" + uuid.toString() + "'";
       database.executeUpdate(query);
     }
-    @Language("SQL") String loadoutQuery = "UPDATE mcrpg_loadout SET";
+    String loadoutQuery = "UPDATE mcrpg_loadout SET";
     for(int i = 1; i <= abilityLoadout.size(); i++) {
       if(i != 1) {
         loadoutQuery += ",";
@@ -1553,12 +1561,6 @@ public class McRPGPlayer {
 
   public void giveRedeemableLevels(int levels){
     this.redeemableLevels += levels;
-  }
-
-  public void sendConstantUpdate(Skill skill, int expGained){
-    getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Methods.color(getPlayer(), McRPG.getInstance().getConfig()
-            .getString("DisplayConfig.ActionBar." + skill.getName() + ".Message").replace("%Current_Level%", Integer.toString(skill.getCurrentLevel())).replace("%Skill%", skill.getType().getDisplayName())
-                    .replace("%Exp_Gained%", Integer.toString(expGained)).replace("%Exp_To_Level%", Integer.toString(skill.getExpToLevel() - skill.getCurrentExp())))));
   }
 
   @Override

@@ -17,6 +17,5 @@ public class InvCloseEvent implements Listener {
         GUITracker.stopTrackingPlayer(p);
       }
     }
-
   }
 }

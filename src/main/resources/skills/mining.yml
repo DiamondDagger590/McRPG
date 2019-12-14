@@ -269,10 +269,10 @@ ItsATripleConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&bYou have a &e%ActivationChance%% &bchance'
-      - '&bof getting a triple drop instead of double.'
+      - '&bof tripling drops from natural ores.'
     MenuLore:
-      - '&bThis ability turns double drops'
-      - '&binto triple drops'
+      - '&bThis ability can triple drops'
+      - '&from natural ores'
       - '&aUnlock Level: &e%UnlockLevel%'
 #
 # Config for the ability Super Breaker
@@ -324,6 +324,7 @@ SuperBreakerConfig:
       - '&eActivate by readying and breaking a block'
     MenuLore:
       - '&bGives haste and increases Double Drop'
+      - '&bfor a short duration'
       - '&aUnlock Level: &e%UnlockLevel%'
 BlastMiningConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
@@ -376,7 +377,8 @@ BlastMiningConfig:
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and placing TNT'
     MenuLore:
-      - '&bThis ability mines blocks around you'
+      - '&bThis ability lets you place TNT'
+      - '&band insta-break all blocks around you'
       - '&aUnlock Level: &e%UnlockLevel%'
 OreScannerConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
@@ -421,10 +423,13 @@ OreScannerConfig:
       - '&bScan surrounding area in a'
       - '&b%Radius% radius.'
       - '&bDisplays amount of ores'
-      - '&bAnd points to closest valuable ore'
+      - '&band points to closest valuable ore'
       - '&bCooldown: &e%Cooldown%'
       - '&eActivate by readying and breaking a block'
     MenuLore:
       - '&bScan surrounding area'
-      - '&bfor gold, emerald, and diamonds'
+      - '&bfor gold, emerald, and diamonds.'
+      - '&bAbility will tell you nearby amounts'
+      - '&band point you at the closest'
+      - '&band most valuable ore.'
       - '&aUnlock Level: &e%UnlockLevel%'

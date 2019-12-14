@@ -125,6 +125,21 @@ public class SettingsGUI extends GUI {
       requireEmptyOffhand.setItemMeta(requireEmptyOffhandMeta);
       items.add(new GUIItem(requireEmptyOffhand, settingsFile.getInt("EmptyOffHand.Slot", 12)));
 
+      //Unarmed ignore slot
+      ItemStack unarmedIgnoreSlot = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+      ItemMeta unarmedIgnoreSlotMeta = unarmedIgnoreSlot.getItemMeta();
+      if(player.getUnarmedIgnoreSlot() != -1) {
+        unarmedIgnoreSlotMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("UnarmedIgnoreSlot.Enabled", "&aSlot #%Slot% Is Being Kept Empty").replace("%Slot%", Integer.toString(player.getUnarmedIgnoreSlot() + 1))));
+      }
+      else {
+        unarmedIgnoreSlot.setType(Material.RED_STAINED_GLASS_PANE);
+        unarmedIgnoreSlotMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("UnarmedIgnoreSlot.Disabled", "&cCurrently No Slot Is Being Kept Empty")));
+      }
+      lore = settingsFile.contains("UnarmedIgnoreSlot.Lore") ? settingsFile.getStringList("UnarmedIgnoreSlot.Lore") : Arrays.asList("&eIf enabled, this setting will keep picked up", "&eitems from going into the selected slot");
+      unarmedIgnoreSlotMeta.setLore(Methods.colorLore(lore));
+      unarmedIgnoreSlot.setItemMeta(unarmedIgnoreSlotMeta);
+      items.add(new GUIItem(unarmedIgnoreSlot, settingsFile.getInt("UnarmedIgnoreSlot.Slot", 14)));
+
       ItemStack back = new ItemStack(Material.valueOf(settingsFile.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
       backMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("BackButton.DisplayName")));

@@ -276,6 +276,23 @@ public class InvClickEvent implements Listener {
           currentGUI.getGui().getInv().setItem(e.getSlot(), emptyItem);
           p.updateInventory();
         }
+        else if(e.getSlot() == guiConfig.getInt("UnarmedIgnoreSlot.Slot", 14)) {
+          ItemStack ignoreItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+          ItemMeta ignoreMeta = ignoreItem.getItemMeta();
+          mp.setUnarmedIgnoreSlot(mp.getUnarmedIgnoreSlot() == 8 ? -1 : mp.getUnarmedIgnoreSlot() + 1);
+          if(mp.getUnarmedIgnoreSlot() != -1) {
+            ignoreMeta.setDisplayName(Methods.color(guiConfig.getString("UnarmedIgnoreSlot.Enabled", "&aSlot #%Slot% Is Being Kept Empty").replace("%Slot%", Integer.toString(mp.getUnarmedIgnoreSlot() + 1))));
+          }
+          else {
+            ignoreItem.setType(Material.RED_STAINED_GLASS_PANE);
+            ignoreMeta.setDisplayName(Methods.color(guiConfig.getString("UnarmedIgnoreSlot.Disabled", "&cCurrently No Slot Is Being Kept Empty")));
+          }
+          List<String> lore = guiConfig.contains("UnarmedIgnoreSlot.Lore") ? guiConfig.getStringList("UnarmedIgnoreSlot.Lore") : Arrays.asList("&eIf enabled, this setting will keep picked up", "&eitems from going into the selected slo");
+          ignoreMeta.setLore(Methods.colorLore(lore));
+          ignoreItem.setItemMeta(ignoreMeta);
+          currentGUI.getGui().getInv().setItem(e.getSlot(), ignoreItem);
+          p.updateInventory();
+        }
         else if(e.getSlot() == guiConfig.getInt("BackButton.Slot")) {
           HomeGUI main = new HomeGUI(mp);
           currentGUI.setClearData(false);
@@ -431,6 +448,13 @@ public class InvClickEvent implements Listener {
             mp.addAbilityToLoadout(selectReplaceGUI.getAbilities().get(e.getSlot()));
           }
           mp.saveData();
+          GUI lastGUI = GUITracker.getPlayersPreviousGUI(p);
+          GUITracker.stopTrackingPlayer(p);
+          selectReplaceGUI.getGui().rebuildGUI();
+          p.openInventory(selectReplaceGUI.getGui().getInv());
+          GUITracker.trackPlayer(p, selectReplaceGUI);
+          GUITracker.setPlayersPreviousGUI(p, lastGUI);
+
           p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", baseAbility.getGenericAbility().getName())));
           return;
         }
@@ -702,6 +726,9 @@ public class InvClickEvent implements Listener {
                 e.setCancelled(true);
                 return;
               }
+              if(amount + mp.getSkill(skill).getCurrentLevel() > mp.getSkill(skill).getType().getMaxLevel()){
+                amount = mp.getSkill(skill).getType().getMaxLevel() - mp.getSkill(skill).getCurrentLevel();
+              }
               mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
@@ -727,10 +754,18 @@ public class InvClickEvent implements Listener {
               return;
             }
             else{
-              mp.getSkill(skill).giveLevels(mp, mp.getRedeemableLevels(), McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
+              int amount = 0;
+              if(mp.getRedeemableLevels() + mp.getSkill(skill).getCurrentLevel() > mp.getSkill(skill).getType().getMaxLevel()){
+                amount = mp.getSkill(skill).getType().getMaxLevel() - mp.getSkill(skill).getCurrentLevel();
+                mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
+              }
+              else{
+                amount = mp.getRedeemableLevels();
+                mp.setRedeemableLevels(0);
+              }
+              mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
-                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableLevels()))));
-              mp.setRedeemableLevels(0);
+                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
             }

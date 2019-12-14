@@ -42,6 +42,10 @@ public class ReplaceSkillsGUI extends GUI {
   }
 
   static void skillsPlaceHolders(GUIBuilder guiBuilder, McRPGPlayer player){
+    NumberFormat nf = NumberFormat.getInstance();
+    nf.setMinimumIntegerDigits(1);
+    nf.setMaximumFractionDigits(3);
+    nf.setMinimumFractionDigits(2);
     for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
       ItemStack item = guiBuilder.getInv().getItem(i);
       if(item.hasItemMeta() && item.getItemMeta().hasLore()){
@@ -54,10 +58,7 @@ public class ReplaceSkillsGUI extends GUI {
             Parser equation = skill.getDefaultAbility().getActivationEquation();
             equation.setVariable(skill.getName().toLowerCase() + "_level", player.getSkill(skill).getCurrentLevel());
             equation.setVariable("power_level", player.getPowerLevel());
-            NumberFormat nf = NumberFormat.getInstance();
-            nf.setMinimumIntegerDigits(1);
-            nf.setMaximumFractionDigits(3);
-            nf.setMinimumFractionDigits(2);
+
             s = s.replaceAll("%" + skill.getDefaultAbility().getName().replaceAll(" ", "_") + "_Chance%", nf.format(equation.getValue()));
           }
           lore.add(s.replaceAll("%Power_Level%", Integer.toString(player.getPowerLevel()))
@@ -72,7 +73,7 @@ public class ReplaceSkillsGUI extends GUI {
             if(category.equalsIgnoreCase("Treasure") && DefaultAbilities.GREAT_ROD.isEnabled() && player.getBaseAbility(DefaultAbilities.GREAT_ROD).isToggled()){
               Parser equation = DefaultAbilities.GREAT_ROD.getActivationEquation();
               equation.setVariable("fishing_level", player.getSkill(Skills.FISHING).getCurrentLevel());
-              s2 += Methods.color(" + " + equation.getValue() + "%");
+              s2 += Methods.color(" + " + nf.format(equation.getValue()) + "%");
             }
             lore.add(s2);
           }

@@ -48,6 +48,7 @@ Messages:
     Utility:
       NoPerms: '&cYou do not have the permissions to execute that command'
       PlayerHasNotLoggedIn: '&cThat player has not logged in before'
+      PlayerOffline: '&cThat player is offline right now'
       InvalidAmount: '&cThe amount you entered is invalid. Please try again'
       OnlyPlayers: '&cOnly players can run this command'
       HelpPrompt: '&eUse /mchelp or /mchelp <command> for proper usage'
@@ -116,6 +117,18 @@ Messages:
         - '&3    -Resets a players ability'
         - '&7[&6Reset Player Command &7]&3 /mcadmin reset player {Player}'
         - '&3    -Resets a player'
+        - '&eDo /mchelp mcadmin 4 for more'
+        - '&e--------------------------'
+      McAdmin4:
+        - '&e--------------------------'
+        - '&7[&6Redeemable Exp Give Command &7]&3 /mcadmin give exp {Player} {Amount}'
+        - '&3    -Gives redeemable exp'
+        - '&7[&6Redeemable Level Give Command &7]&3 /mcadmin give level {Player} {Amount}'
+        - '&3    -Gives redeemable levels'
+        - '&7[&6Upgrade Book Give Command &7]&3 /mcadmin give book upgrade {Player}'
+        - '&3    -Give a player an upgrade book'
+        - '&7[&6Unlock Book Give Command &7]&3 /mcadmin give book unlock {Player}'
+        - '&3    -Give a player an upgrade book'
         - '&e--------------------------'
     McDisplay:
       #%String% is the failed input
@@ -135,6 +148,7 @@ Messages:
         HasActive: '&cThe player already has an active ability for that skill'
         RedeemableExp: '&aYou gave %Player% %Amount% redeemable exp'
         RedeemableLevels: '&aYou gave %Player% %Amount% redeemable levels'
+        Book: '&aYou gave %Player% an %Type% book'
       Receive:
         AbilityPoints: '&aYou were given &e%Amount% &aability points'
         Exp: '&aYou were given &e%Amount% &aexp in &5%Skill%'
@@ -143,6 +157,7 @@ Messages:
         RedeemableExp: '&aYou received %Amount% redeemable exp. Use /mcredeem {Skill} to use'
         Ability: '&aYou were given &5%Ability%'
         Replaced: '&aYour %Old_Ability% was replaced with %New_Ability%'
+        Book: '&aYou were given an %Type% book'
       Remove:
         Ability: '&aYou removed &5%Ability% &afrom %Player%s loadout'
       Removed:

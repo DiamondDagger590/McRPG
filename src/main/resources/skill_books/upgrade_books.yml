@@ -8,12 +8,12 @@ ExcludedSkills:
   - ''
 #How should the book look
 BookFormat:
-  DisplayName: '&eUpgrade: %Ability%'
+  DisplayName: '&7[&bUpgrade: &3%Ability%&7]'
   Lore:
-    - '&eRight click this book to upgrade'
-    - '&e%Ability% from %Skill%.'
-    - '&eUpgrade by %UpgradeAmount% tier(s).'
-    - '&eCan be used from Tier %LowTier%-%HighTier%'
+    - '&7Right click this book to upgrade'
+    - '&3%Ability% &7from &3%Skill%.'
+    - '&7Upgrade by &e%UpgradeAmount% tier(s).'
+    - '&7Can be used from &eTier %LowTier%-%HighTier%'
 DropChances:
   #Can be Break, KillSpawned, KillNatural, ExpGain, Fished
   #Kill Spawned/Natural specifies what type of mobs should drop to allow disabling spawner mobs from dropping books

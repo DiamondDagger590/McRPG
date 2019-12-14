@@ -32,7 +32,7 @@ public class EnchantmentMeta {
         String[] enchantmentLevelRange = enchantmentData[1].split("-");
         int lowLevel = Integer.parseInt(enchantmentLevelRange[0]);
         int highLevel = enchantmentLevelRange.length > 1 ? Integer.parseInt(enchantmentLevelRange[1]) : lowLevel;
-        int chance = Integer.parseInt(enchantmentData[2]);
+        double chance = Double.parseDouble(enchantmentData[2]);
         enchants.add(new FishingItemEnchant(enchantmentType, lowLevel, highLevel, chance));
       }
     }

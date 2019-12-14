@@ -9,6 +9,7 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,6 +19,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -38,7 +40,7 @@ public class McRPGExpGain implements Listener {
   @Getter
   private static HashMap<UUID, Double> demetersShrineMultipliers = new HashMap<>();
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void expGain(McRPGPlayerExpGainEvent e) {
     Skills skill = e.getSkillGained().getType();
     Player p = e.getMcRPGPlayer().getPlayer();
@@ -49,7 +51,7 @@ public class McRPGExpGain implements Listener {
     else if(e.getSkillGained().getCurrentLevel() >= McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getInt("MaxLevel")) {
       e.setCancelled(true);
     }
-    else if(McRPG.getInstance().isWorldGuardEnabled()) {
+    else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM) {
       WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
       if(wgSupportManager.isWorldTracker(e.getMcRPGPlayer().getPlayer().getWorld())){
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
@@ -102,9 +104,17 @@ public class McRPGExpGain implements Listener {
       }
     }
 
+    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG);
+    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM){
+      WorldModifierManager.ExpModifierWrapper modifierWrapper = McRPG.getInstance().getWorldModifierManager().getWorldModifiers().get(p.getWorld().getName());
+      if(modifierWrapper.isModified(e.getSkillGained().getType())){
+        e.setExpGained((int) (e.getExpGained() * modifierWrapper.getModifier(e.getSkillGained().getType())));
+      }
+    }
     BookManager bookManager = McRPG.getInstance().getBookManager();
     Random rand = new Random();
-    int bookChance = rand.nextInt(100000);
+    int bookChance = config.getBoolean("Configuration.DisableBooksInEnd", false) && p.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
+    bookChance = e.getGainType() == GainReason.REDEEM ? 0 : bookChance;
     Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
 
     if(bookManager.getEnabledUnlockEvents().contains("ExpGain")){
@@ -133,7 +143,7 @@ public class McRPGExpGain implements Listener {
     }
 
     //Divine Escape exp debuff
-    if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0){
+    if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0 && e.getGainType() != GainReason.REDEEM){
       e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff()/100)));
     }
     if(e.getGainType() == GainReason.BREAK && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){

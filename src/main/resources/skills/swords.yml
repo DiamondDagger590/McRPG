@@ -21,7 +21,7 @@ MaterialBonus:
 ExpAwardedPerMob:
   OTHER: 5
   BAT: 5
-  BLAZE: 50
+  BLAZE: 30
   CAVE_SPIDER: 20
   SPIDER: 20
   CHICKEN: 10
@@ -41,11 +41,11 @@ ExpAwardedPerMob:
   MULE: 17
   HORSE: 17
   LLAMA: 17
-  CREEPER: 40
-  GUARDIAN: 45
+  CREEPER: 30
+  GUARDIAN: 30
   ELDER_GUARDIAN: 60
   ENDER_DRAGON: 75
-  ENDERMAN: 50
+  ENDERMAN: 30
   SHULKER: 55
   EVOKER: 45
   VEX: 5
@@ -148,19 +148,19 @@ Bleed+Config:
     TierV: 500
   TierI:
     #The chance of Bleed+ occurring per tier
-    ActivationChance: 15.0
-    DamageBoost: 1
-  TierII:
-    ActivationChance: 17.5
-    DamageBoost: 1
-  TierIII:
-    ActivationChance: 22.5
-    DamageBoost: 1
-  TierIV:
     ActivationChance: 30.0
     DamageBoost: 1
-  TierV:
+  TierII:
     ActivationChance: 40.0
+    DamageBoost: 1
+  TierIII:
+    ActivationChance: 50.0
+    DamageBoost: 1
+  TierIV:
+    ActivationChance: 75.0
+    DamageBoost: 1
+  TierV:
+    ActivationChance: 100.0
     DamageBoost: 1
   #How much should the damage increase when Bleed+ occurs
   BleedPlusModifier: 1
@@ -328,25 +328,25 @@ RageSpikeConfig:
   #Config for each tier
   TierI:
     #How long the ability takes to charge
-    ChargeTime: 5
+    ChargeTime: 2.5
     #Damage dealt via collision
     Damage: 1
     #Cooldown in seconds
     Cooldown: 140
   TierII:
-    ChargeTime: 4
+    ChargeTime: 2.3
     Damage: 1
     Cooldown: 140
   TierIII:
-    ChargeTime: 3
+    ChargeTime: 2.0
     Damage: 2
     Cooldown: 140
   TierIV:
-    ChargeTime: 2
+    ChargeTime: 1.5
     Damage: 3
     Cooldown: 140
   TierV:
-    ChargeTime: 1
+    ChargeTime: 1.0
     Damage: 3
     Cooldown: 140
   #How this ability should be seen in the GUIS

@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.database;
 import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
 import com.cyr1en.flatdb.util.FastStrings;
-import com.cyr1en.mcutils.logger.Logger;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -62,17 +61,6 @@ public class McRPGDb {
     }
     //listAllTable();
     //Bukkit.getLogger().info("Does generated table exist?: " + database.tableExists("mcrpg_loadout"));
-  }
-
-  private void printClass(Class c) {
-    Logger.info("Class Annotations: " + Arrays.toString(c.getDeclaredAnnotations()));
-
-    for (Field field : c.getDeclaredFields()) {
-      String name = field.getName();
-      Logger.info("Field: " + name);
-      Logger.info("Annotations: %s", Arrays.toString(field.getAnnotations()));
-    }
-
   }
 
   private void listAllTable() {

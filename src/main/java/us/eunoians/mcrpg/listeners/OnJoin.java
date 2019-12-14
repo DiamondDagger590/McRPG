@@ -20,7 +20,7 @@ public class OnJoin implements Listener {
     this.mcRPG = mcRPG;
   }
 
-  @EventHandler(priority = EventPriority.LOW)
+  /*@EventHandler(priority = EventPriority.LOW)
   public void onJoin(PlayerJoinEvent event) {
     Bukkit.getScheduler().runTaskAsynchronously(mcRPG, () -> {
       var newVersionAvailable = mcRPG.getPluginUpdater().needsUpdate();
@@ -53,5 +53,5 @@ public class OnJoin implements Listener {
         }
       }
     });
-  }
+  }*/
 }
