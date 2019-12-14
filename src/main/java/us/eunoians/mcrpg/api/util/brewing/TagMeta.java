@@ -21,7 +21,7 @@ public class TagMeta {
   @Getter @Setter
   private int potionEffectLevel;
 
-  public TagMeta(String prevKey, String tag){
+  TagMeta(String prevKey, String tag){
     this.tag = tag;
     FileConfiguration potionConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_ITEMS_CONFIG);
     String key = prevKey + "." + tag + ".";

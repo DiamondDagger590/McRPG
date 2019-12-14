@@ -72,7 +72,7 @@ public class FishedItemStackFactory {
     return item;
   }
 
-  public static ItemStack convertToPotion(@NotNull ItemStack item, @NotNull PotionMeta potionMeta){
+  public static ItemStack convertToPotion(ItemStack item, PotionMeta potionMeta){
     if(potionMeta.isSplash()){
       item.setType(Material.SPLASH_POTION);
     }

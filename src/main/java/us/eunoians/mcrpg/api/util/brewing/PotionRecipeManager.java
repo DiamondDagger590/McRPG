@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.util.brewing;
 
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -59,4 +60,25 @@ public class PotionRecipeManager {
   public boolean isPotionTypeRegistered(BasePotionType potionType){ return potionRecipeMap.containsKey(potionType); }
 
   public PotionEffectTagWrapper getPotionEffectTagWrapper(BasePotionType potionType){ return potionRecipeMap.get(potionType); }
+
+  public boolean doesMaterialLeadToChild(Material material, ItemStack potion){
+    NBTItem nbtItem = new NBTItem(potion);
+    org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) potion.getItemMeta();
+    PotionEffectType effectType = meta.getBasePotionData().getType().getEffectType();
+    BasePotionType basePotionType = BasePotionType.getFromPotionEffect(effectType);
+
+    if(nbtItem.hasKey("McRPGTag")){
+
+    }
+    else{
+
+    }
+    return false;
+  }
+
+
+  //Validate legacy potions
+  public String validateTag(ItemStack potion){
+    return "";
+  }
 }
