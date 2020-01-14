@@ -41,6 +41,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.mining.SuperBreakerEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingGUI;
 import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -79,12 +80,19 @@ public class InteractHandler implements Listener {
     catch(McRPGPlayerNotFoundException exception){
       return;
     }
-    if(e.getClickedBlock().getType() == Material.BREWING_STAND){
+    if(!e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.BREWING_STAND){
       BrewingStand brewingStand = (BrewingStand) e.getClickedBlock().getState();
-      BrewingGUI gui = new BrewingGUI(brewingStand);
-      GUITracker.trackPlayer(p, gui);
+      BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
+      BrewingGUI brewingGUI;
+      if(brewingStandManager.isBrewingStandLoaded(brewingStand)){
+        brewingGUI = brewingStandManager.getBrewingStandWrapper(brewingStand).getBrewingGUI();
+      }
+      else{
+        brewingGUI = McRPG.getInstance().getBrewingStandManager().initNewBrewingStand(brewingStand).getBrewingGUI();
+      }
+      GUITracker.trackPlayer(p, brewingGUI);
       e.setCancelled(true);
-      p.openInventory(gui.getInv());
+      p.openInventory(brewingGUI.getInv());
       return;
     }
     ItemStack heldItem = e.getItem();

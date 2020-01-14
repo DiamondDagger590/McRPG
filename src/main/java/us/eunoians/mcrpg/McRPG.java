@@ -15,12 +15,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.books.BookManager;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
@@ -66,6 +66,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private LeaderboardHeadManager leaderboardHeadManager;
   @Getter private BookManager bookManager;
   @Getter private PotionRecipeManager potionRecipeManager;
+  @Getter private BrewingStandManager brewingStandManager;
   @Getter private WorldModifierManager worldModifierManager;
 
   //Needed to support McMMO's Healthbars
@@ -90,7 +91,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     javen.addRepository("jitPack", "https://jitpack.io");
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
-    new PlayerManager(this);
     Logger.info("Starting init sequence");*/
     McRPG t = this;
     if(Bukkit.getVersion().contains("1.14")){
@@ -102,7 +102,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }.runTaskLater(this, 400);
     }
-
     //Misc
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
@@ -116,6 +115,10 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     worldModifierManager = new WorldModifierManager();
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
+    brewingStandManager = new BrewingStandManager();
+    getLogger().info("Loading Potions");
+    potionRecipeManager = new PotionRecipeManager();
+    new PlayerManager(this);
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
@@ -139,7 +142,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     BuriedTreasureData.init();
     HiddenConfig.getInstance();
     PlayerManager.startSave(this);
-
     //Commands
     getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
@@ -150,12 +152,10 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcconvert").setExecutor(new McConvert());
     getCommand("mcredeem").setExecutor(new McRedeem());
     getCommand("mcrank").setExecutor(new McRank());
-
     getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());
     getCommand("mcadmin").setTabCompleter(new McAdminPrompt());
-
     //Events
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);

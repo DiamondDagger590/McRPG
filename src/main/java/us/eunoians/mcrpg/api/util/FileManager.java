@@ -338,7 +338,7 @@ public class FileManager {
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
-    POTION_ITEM_CONFIG("potionitems.yml", "guis/potionitems.yml"),
+    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),

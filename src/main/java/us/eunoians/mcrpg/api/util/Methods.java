@@ -299,11 +299,14 @@ public class Methods {
 
   public static void setMetadata(Entity e, String key, Object value) {
     e.setMetadata(key, new FixedMetadataValue(McRPG.getInstance(), value));
-
   }
 
   public static String locToString(Location loc) {
     return loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ() + ":" + loc.getWorld().getName();
+  }
+
+  public static String chunkToLoc(Chunk chunk){
+    return chunk.getX() + ":" + chunk.getZ() + ":" + chunk.getWorld().getName();
   }
 
   public static Location stringToLoc(String loc) {

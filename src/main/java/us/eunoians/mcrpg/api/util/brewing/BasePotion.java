@@ -3,73 +3,120 @@ package us.eunoians.mcrpg.api.util.brewing;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
+import org.bukkit.potion.*;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.types.BasePotionType;
+
+import java.util.Map;
 
 import static us.eunoians.mcrpg.api.util.brewing.PotionFactory.getBasePotionTypeFromItemStack;
 
 public class BasePotion {
 
-  @Getter @Setter
-  private boolean isSplash;
-
-  @Getter @Setter
-  private boolean isLingering;
+  @Getter
+  @Setter
+  private int totalTimesModified;
 
   @Getter
+  @Setter
+  private String tag;
+
+  @Getter
+  @Setter
   private BasePotionType basePotionType;
 
   @Getter
   private ItemStack potionItem;
 
-  @Getter
-  private int timesExtended = 0;
-  @Getter @Setter
-  private int currentExtendedAmount = 0;
-  @Getter
-  private int timesAmplified = 0;
-  @Getter @Setter
-  private int currentAmplifiedAmount = 0;
-  @Getter
-  private int totalTimesModified = 0;
   private NBTItem nbtItem;
 
   BasePotion(ItemStack potion){
+    PotionMeta meta = (PotionMeta) potion.getItemMeta();
+    PotionData data = meta.getBasePotionData();
+    PotionType potionType = data.getType();
+    if(potionType != PotionType.AWKWARD && potionType != PotionType.WATER && potionType != PotionType.UNCRAFTABLE){
+      meta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE));
+      int duration = data.isExtended() ? 480 : data.isUpgraded() ? 90 : potionType.isInstant() ? 0 : 180;
+      if(potionItem.getType() == Material.LINGERING_POTION){
+        duration = duration/4;
+      }
+      int amplifier = data.isUpgraded() ? 1 : 0;
+      meta.addCustomEffect(new PotionEffect(data.getType().getEffectType(), duration, amplifier), true);
+      potion.setItemMeta(meta);
+    }
     this.basePotionType = getBasePotionTypeFromItemStack(potion);
-    this.isSplash = potion.getType() == Material.SPLASH_POTION;
-    this.isLingering = potion.getType() == Material.LINGERING_POTION;
     this.potionItem = potion;
     nbtItem = new NBTItem(potionItem);
-    PotionMeta meta = (PotionMeta) potion.getItemMeta();
-    PotionData data = meta != null ? meta.getBasePotionData() : null;
+
     if(nbtItem.hasNBTData()){
-      currentAmplifiedAmount = nbtItem.hasKey("CurrentAmplified") ? nbtItem.getInteger("CurrentAmplified") : data.isUpgraded() ? 1 : 0;
-      currentExtendedAmount = nbtItem.hasKey("CurrentExtended") ? nbtItem.getInteger("CurrentExtended") : data.isExtended() ? 1 : 0;
-      timesAmplified = nbtItem.hasKey("TimesAmplified") ? nbtItem.getInteger("TimesAmplified") : currentAmplifiedAmount;
-      timesExtended = nbtItem.hasKey("TimesExtended") ? nbtItem.getInteger("TimesExtended") : currentExtendedAmount;
-      totalTimesModified = nbtItem.hasKey("TotalModified") ? nbtItem.getInteger("TotalModified") : timesAmplified + timesExtended;
+      this.tag = nbtItem.hasKey("McRPGTag") ? nbtItem.getString("McRPGTag") : null;
+      totalTimesModified = nbtItem.hasKey("TotalModified") ? nbtItem.getInteger("TotalModified") : 0;
       potionItem = nbtItem.getItem();
     }
     else{
-      if(data != null){
-        timesAmplified = data.isUpgraded() ? 1 : 0;
-        timesExtended = data.isExtended() ? 1 : 0;
-        currentAmplifiedAmount = timesAmplified;
-        currentExtendedAmount = timesExtended;
-        totalTimesModified = timesAmplified + timesExtended;
+      totalTimesModified = 0;
+    }
+    if(tag == null || tag.equalsIgnoreCase("INVALID")){
+      PotionRecipeManager potionRecipeManager = McRPG.getInstance().getPotionRecipeManager();
+      if(basePotionType == BasePotionType.WATER){
+        this.tag = "Default";
+      }
+      else if(basePotionType == BasePotionType.AWKWARD){
+        this.tag = "Default";
+      }
+      else{
+        if(potionRecipeManager.isPotionTypeRegistered(basePotionType)){
+          PotionEffectTagWrapper potionEffectTagWrapper = potionRecipeManager.getPotionEffectTagWrapper(basePotionType);
+          Map<String, TagMeta> allTags = potionEffectTagWrapper.getAllTags();
+          PotionEffectType potionEffect = meta.getBasePotionData().getType().getEffectType();
+          int duration = potionEffect.isInstant() ? 0 : (meta.getBasePotionData().isExtended() ? 480 : (meta.getBasePotionData().isUpgraded() ? 90 : 180));
+          int amplifier = meta.getBasePotionData().isUpgraded() ? 2 : 1;
+          int highestWeight = 0;
+          String highestTag = "";
+          for(String tag : allTags.keySet()){
+            TagMeta tagMeta = allTags.get(tag);
+            int diffInDuration = Math.abs(tagMeta.getDuration() - duration);
+            int diffInAmplifier = Math.abs(tagMeta.getPotionEffectLevel() - amplifier);
+            int weight = (180 - diffInDuration) + (200 - (200 * diffInAmplifier));
+            if(weight > highestWeight){
+              highestTag = tag;
+              highestWeight = weight;
+            }
+          }
+          this.tag = highestTag;
+        }
       }
     }
     saveStack();
   }
 
+  public void updateInfo(){
+    potionItem = nbtItem.getItem();
+    totalTimesModified++;
+    PotionRecipeManager potionRecipeManager = McRPG.getInstance().getPotionRecipeManager();
+    PotionEffectTagWrapper potionEffectTagWrapper = potionRecipeManager.getPotionEffectTagWrapper(basePotionType);
+    TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
+    PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
+    basePotionType = tagMeta.getBasePotionType();
+    Bukkit.broadcastMessage(basePotionType.getName());
+    //Set the new base potion data in order to override with the actual potion info
+    //This is needed since we can not modify the base potion data's duration but we use it in other parts of the code
+    potionMeta.setBasePotionData(new PotionData(basePotionType.getPotionType()));
+    if(basePotionType != BasePotionType.AWKWARD && basePotionType != BasePotionType.WATER){
+      PotionEffect newPotionEffect = new PotionEffect(basePotionType.getEffectType(), tagMeta.getDuration() * 20, tagMeta.getPotionEffectLevel() - 1);
+      potionMeta.addCustomEffect(newPotionEffect, true);
+    }
+    potionItem.setItemMeta(potionMeta);
+    nbtItem = new NBTItem(potionItem);
+    saveStack();
+  }
+
   public void saveStack(){
-    nbtItem.setInteger("CurrentAmplified", currentAmplifiedAmount);
-    nbtItem.setInteger("CurrentExtended", currentExtendedAmount);
-    nbtItem.setInteger("TimesAmplified", timesAmplified);
-    nbtItem.setInteger("TimesExtended", timesExtended);
+    nbtItem.setString("McRPGTag", tag);
     nbtItem.setInteger("TotalModified", totalTimesModified);
   }
 

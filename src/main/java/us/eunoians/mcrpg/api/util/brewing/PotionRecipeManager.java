@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.api.util.brewing;
 
 
-import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -10,13 +9,13 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.types.BasePotionType;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PotionRecipeManager {
 
   private Map<Material, Integer> fuelMaterials = new HashMap<>();
   private Map<BasePotionType, PotionEffectTagWrapper> potionRecipeMap = new HashMap<>();
+  private Set<Material> allPossibleIngredients = new HashSet<>(Collections.singletonList(Material.NETHER_WART));
 
   public PotionRecipeManager(){
     reloadManager();
@@ -31,10 +30,20 @@ public class PotionRecipeManager {
     potionRecipeMap.clear();
     FileConfiguration brewingItemConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_ITEMS_CONFIG);
     for(String s : brewingItemConfig.getConfigurationSection("Potions").getKeys(false)){
-      PotionEffectType potionEffectType = PotionEffectType.getByName(s);
-      BasePotionType basePotionType = BasePotionType.getFromPotionEffect(potionEffectType);
+      BasePotionType basePotionType;
+      if(s.equals("WATER")){
+        basePotionType = BasePotionType.WATER;
+      }
+      else if(s.equals("AWKWARD")){
+        basePotionType = BasePotionType.AWKWARD;
+      }
+      else{
+        PotionEffectType potionEffectType = PotionEffectType.getByName(s);
+        basePotionType = BasePotionType.getFromPotionEffect(potionEffectType);
+      }
       PotionEffectTagWrapper potionEffectTagWrapper = new PotionEffectTagWrapper(basePotionType);
       potionRecipeMap.put(basePotionType, potionEffectTagWrapper);
+      allPossibleIngredients.addAll(potionEffectTagWrapper.getAllChildIgredients());
     }
   }
 
@@ -61,20 +70,27 @@ public class PotionRecipeManager {
 
   public PotionEffectTagWrapper getPotionEffectTagWrapper(BasePotionType potionType){ return potionRecipeMap.get(potionType); }
 
-  public boolean doesMaterialLeadToChild(Material material, ItemStack potion){
-    NBTItem nbtItem = new NBTItem(potion);
-    org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) potion.getItemMeta();
-    PotionEffectType effectType = meta.getBasePotionData().getType().getEffectType();
-    BasePotionType basePotionType = BasePotionType.getFromPotionEffect(effectType);
-
-    if(nbtItem.hasKey("McRPGTag")){
-
+  public boolean doesMaterialLeadToChild(Material ingredient, BasePotion basePotion){
+    if(basePotion.getBasePotionType() == BasePotionType.WATER && ingredient == Material.NETHER_WART){
+      return true;
     }
-    else{
-    }
-    return false;
+    PotionEffectTagWrapper potionEffectTagWrapper = getPotionEffectTagWrapper(basePotion.getBasePotionType());
+    String tag = basePotion.getTag();
+    TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
+    return tagMeta.getChildTag(ingredient) != null;
   }
 
+  public void updateInformation(Material ingredient, BasePotion basePotion){
+    if(basePotion.getBasePotionType() == BasePotionType.WATER && ingredient == Material.NETHER_WART){
+      basePotion.setBasePotionType(BasePotionType.AWKWARD);
+
+      return;
+    }
+  }
+
+  public boolean isValidIngredient(Material ingredient){
+    return allPossibleIngredients.contains(ingredient);
+  }
 
   //Validate legacy potions
   public String validateTag(ItemStack potion){
