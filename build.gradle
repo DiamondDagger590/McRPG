@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 7, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 1, patch: 8, state: 'SNAPSHOT-BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -38,7 +38,7 @@ dependencies {
 
     compile 'com.github.DiamondDagger590:FlatDB:1.0.7'
 
-    compile 'de.tr7zw:item-nbt-api:2.0.0-SNAPSHOT'
+    compile 'de.tr7zw:item-nbt-api:2.2.0-SNAPSHOT'
     compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
     compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
