@@ -130,7 +130,7 @@ public class LeaderboardScoreboard extends GenericDisplay implements ScoreboardB
             for(PlayerLeaderboardData leaderboardData : storedData){
                 String name = leaderboardData.getUUID().equals(player.getUuid()) ? "&6--You--" : Bukkit.getOfflinePlayer(leaderboardData.getUUID()).getName();
                 if(name == null){
-                    continue;
+                    name = "N/A Player #" + i;
                 }
                 objective.getScore(Methods.color(name)).setScore(leaderboardData.getLevel());
                 i++;
@@ -142,7 +142,7 @@ public class LeaderboardScoreboard extends GenericDisplay implements ScoreboardB
             for(PlayerLeaderboardData leaderboardData : storedData){
                 String name = leaderboardData.getUUID().equals(player.getUuid()) ? "&6--You--" : Bukkit.getOfflinePlayer(leaderboardData.getUUID()).getName();
                 if(name == null){
-                    continue;
+                    name = "N/A Player #" + i;
                 }
                 objective.getScore(Methods.color(name)).setScore(leaderboardData.getLevel());
                 i++;
