@@ -9,7 +9,7 @@ public class PlayerData {
   @Column(primaryKey = true) private String uuid;
   @Column(defaultValue = "0") int power_level;
   @Column(defaultValue = "0") int ability_points;
-  @Column(defaultValue = "0") int replace_ability_cooldown;
+  @Column(defaultValue = "0") long replace_ability_cooldown_time;
   @Column(defaultValue = "0") int redeemable_exp;
   @Column(defaultValue = "0") int redeemable_levels;
   @Column(defaultValue = "0") double divine_escape_exp_debuff;

@@ -615,7 +615,7 @@ public class InvClickEvent implements Listener {
               cal.add(Calendar.MINUTE, cooldown);
               mp.setEndTimeForReplaceCooldown(cal.getTimeInMillis());
             }
-          }
+        }
           p.closeInventory();
           if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_OVERRIDE){
             checkAndOpenPending(mp);

@@ -15,7 +15,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;

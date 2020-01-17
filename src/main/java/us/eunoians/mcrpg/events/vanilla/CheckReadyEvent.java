@@ -126,7 +126,6 @@ public class CheckReadyEvent implements Listener {
         }
       }
     }
-
     //verify a proper ready action/special case for archery
     if(e.isCancelled() && e.getAction() != Action.RIGHT_CLICK_AIR) {
       if(e.getHand() != null && e.getAction() != null && heldItem != null && e.getHand() == EquipmentSlot.HAND && (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) && heldItem.getType() == Material.BOW) {
