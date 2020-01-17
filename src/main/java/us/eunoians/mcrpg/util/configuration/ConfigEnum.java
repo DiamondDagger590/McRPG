@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.util.configuration;
 
 import de.articdive.enum_to_yaml.interfaces.ConfigurationEnum;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 public enum ConfigEnum implements ConfigurationEnum {
@@ -52,6 +51,7 @@ public enum ConfigEnum implements ConfigurationEnum {
   BOSSBAR_COLOR_EXCAVATION("DisplayConfig.BossBar.Color.Excavation", "Blue"),
   BOSSBAR_COLOR_AXES("DisplayConfig.BossBar.Color.Axes", "Red"),
   BOSSBAR_COLOR_FISHING("DisplayConfig.BossBar.Color.Fishing", "Blue"),
+  BOSSBAR_COLOR_SORCERY("DisplayConfig.BossBar.Color.Sorcery", "Pink"),
   ACTIONBAR_SWORDS_MESSAGE("DisplayConfig.ActionBar.Swords.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
   ACTIONBAR_MINING_MESSAGE("DisplayConfig.ActionBar.Mining.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
   ACTIONBAR_UNARMED_MESSAGE("DisplayConfig.ActionBar.Unarmed.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),

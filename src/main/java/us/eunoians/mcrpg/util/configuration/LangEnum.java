@@ -17,6 +17,7 @@ public enum LangEnum implements ConfigurationEnum {
     SKILL_NAMES_EXCAVATION("SkillNames.Excavation", "Excavation"),
     SKILL_NAMES_AXES("SkillNames.Axes", "Axes"),
     SKILL_NAMES_FISHING("SkillNames.Fishing", "Fishing"),
+    SKILL_NAMES_SORCERY("SkillNames.Sorcery", "Sorcery"),
     POWER_LINE_1("Signs.PowerLeaderboard.Line1", "&7[&6Power&7]"),
     POWER_LINE_2("Signs.PowerLeaderboard.Line2", "&b#%Rank%"),
     POWER_LINE_3("Signs.PowerLeaderboard.Line3", "&7%Player%"),
@@ -243,6 +244,9 @@ public enum LangEnum implements ConfigurationEnum {
             "&7[&5McRPG Tip&7]: &aAres Blessing will buff you for a short while, but then leave you in a long weakened state!", "&7[&5McRPG Tip&7]: &aDifferent types of axes will give more or less exp per hit!",
             "&7[&5McRPG Tip&7]: &aUse Whirlwind Strike when surrounded to knockback enemies!")),
     TIPS_LEVEL_UP_FISHING("Messages.Tips.LevelUpFishing", Arrays.asList("&7[&5McRPG Tip&7]: &aGreat Rod increases your chance of finding treasure!",
+            "&7[&5McRPG Tip&7]: &aUsing Luck Of The Sea makes it more likely to get treasure and makes junk more rare!", "&7[&5McRPG Tip&7]: &aShake has a small chance of making mobs drop related item!",
+            "&7[&5McRPG Tip&7]: &aSunken Armory can even fish up diamond armor!", "&7[&5McRPG Tip&7]: &aSuper Rod makes treasure found even more amazing!", "&7[&5McRPG Tip&7]: &aMagic Touch will let you fish enchanted books and gear!")),
+    TIPS_LEVEL_UP_SORCERY("Messages.Tips.LevelUpSorcery", Arrays.asList("&7[&5McRPG Tip&7]: &aGreat Rod increases your chance of finding treasure!",
             "&7[&5McRPG Tip&7]: &aUsing Luck Of The Sea makes it more likely to get treasure and makes junk more rare!", "&7[&5McRPG Tip&7]: &aShake has a small chance of making mobs drop related item!",
             "&7[&5McRPG Tip&7]: &aSunken Armory can even fish up diamond armor!", "&7[&5McRPG Tip&7]: &aSuper Rod makes treasure found even more amazing!", "&7[&5McRPG Tip&7]: &aMagic Touch will let you fish enchanted books and gear!"));
 

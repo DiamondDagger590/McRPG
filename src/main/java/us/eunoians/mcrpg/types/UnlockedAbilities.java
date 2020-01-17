@@ -13,7 +13,7 @@ import static us.eunoians.mcrpg.api.util.FileManager.Files;
 /**
  * An enum of every ability that can be unlocked
  */
-public enum UnlockedAbilities implements GenericAbility{
+public enum UnlockedAbilities implements GenericAbility {
 
   ARES_BLESSING("AresBlessing", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
   BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
@@ -24,6 +24,9 @@ public enum UnlockedAbilities implements GenericAbility{
   BLOOD_FRENZY("BloodFrenzy", "Axes", AbilityType.PASSIVE, Files.AXES_CONFIG),
   BULLET_PROOF("BulletProof", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   BURIED_TREASURE("BuriedTreasure", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
+  CIRCES_PROTECTION("CircesProtection", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
+  CIRCES_RECIPES("CircesRecipes", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
+  CIRCES_SHRINE("CircesShrine", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
   COMBO("Combo", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   CRIPPLING_BLOW("CripplingBlow", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
   CURSE_OF_HADES("CurseOfHades", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
@@ -37,6 +40,7 @@ public enum UnlockedAbilities implements GenericAbility{
   DRYADS_GIFT("DryadsGift", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
   FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
   FRENZY_DIG("FrenzyDig", "Excavation", AbilityType.ACTIVE, Files.EXCAVATION_CONFIG),
+  HADES_DOMAIN("HadesDomain", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
   HAND_DIGGING("HandDigging", "Excavation", AbilityType.ACTIVE, Files.EXCAVATION_CONFIG),
   HEAVY_STRIKE("HeavyStrike", "Axes", AbilityType.PASSIVE, Files.AXES_CONFIG),
   HEAVY_SWING("HeavySwing", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
@@ -45,6 +49,8 @@ public enum UnlockedAbilities implements GenericAbility{
   IRON_MUSCLES("IronMuscles", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
   LARGER_SPADE("LargerSpade", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
+  MAGIC_TOUCH("MagicTouch", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  MANA_AFFINITY("ManaAffinity", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
   MANA_DEPOSIT("ManaDeposit", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
   MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
   NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
@@ -52,29 +58,29 @@ public enum UnlockedAbilities implements GenericAbility{
   ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
   PANS_BLESSING("PansBlessing", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
   PANS_SHRINE("PansShrine", "Excavation", AbilityType.ACTIVE, Files.EXCAVATION_CONFIG),
+  POSEIDONS_FAVOR("PoseidonsFavor", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
+  POTION_AFFINITY("PotionAffinity", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
   PUNCTURE("Puncture", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
   REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
   REPLANTING("Replanting", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
   RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
   RUNNERS_DIET("RunnersDiet", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
+  SEA_GODS_BLESSING("SeaGodsBlessing", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
   SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
+  SHAKE("Shake", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
   SHARPER_AXE("SharperAxe", "Axes", AbilityType.PASSIVE, Files.AXES_CONFIG),
   SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
+  SUNKEN_ARMORY("SunkenArmory", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
   SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
+  SUPER_ROD("SuperRod", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
   TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
   TEMPORAL_HARVEST("TemporalHarvest", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
   THICK_SKIN("ThickSkin", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
   TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
   TIPPED_ARROWS("TippedArrows", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
-  WHIRLWIND_STRIKE("WhirlwindStrike", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
-  POSEIDONS_FAVOR("PoseidonsFavor", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  MAGIC_TOUCH("MagicTouch", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SEA_GODS_BLESSING("SeaGodsBlessing", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SUNKEN_ARMORY("SunkenArmory", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SHAKE("Shake", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SUPER_ROD("SuperRod", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG);
+  WHIRLWIND_STRIKE("WhirlwindStrike", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG);
 
   @Getter
   private String name;

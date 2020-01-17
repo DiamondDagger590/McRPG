@@ -35,12 +35,11 @@ public class PotionEffectTagWrapper {
       return;
     }
     String refKey = "Potions." + effectType.getName() + ".Tags";
-    System.out.println(refKey);
     for(String tag : brewingItemConfig.getConfigurationSection(refKey).getKeys(false)){
       TagMeta tagMeta = new TagMeta(refKey, tag, effectType);
       storedTagMeta.put(tag, tagMeta);
     }
-    String key = refKey + ".SpecialModifiers.";
+    String key = "Potions." + effectType.getName() + ".SpecialModifiers.";
     canBeSplash = brewingItemConfig.getBoolean(key + "CanBeSplash", false);
     canBeLingering = brewingItemConfig.getBoolean(key + "CanBeLingering", false);
     splashDurationModifier = brewingItemConfig.getDouble(key + "SplashDurationModifier", 0.5d);

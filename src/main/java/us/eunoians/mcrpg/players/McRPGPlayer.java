@@ -3,8 +3,6 @@ package us.eunoians.mcrpg.players;
 import com.cyr1en.flatdb.Database;
 import lombok.Getter;
 import lombok.Setter;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,6 +19,7 @@ import us.eunoians.mcrpg.abilities.fishing.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
+import us.eunoians.mcrpg.abilities.sorcery.*;
 import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
@@ -1075,6 +1074,7 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(axes);
           }
+          //init fishing
           else if(skill.equals(Skills.FISHING)) {
             //Initialize Great Rod
             GreatRod greatRod = new GreatRod();
@@ -1151,6 +1151,84 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(fishing);
           }
+          //init sorcery
+          else if(skill.equals(Skills.SORCERY)) {
+            //Initialize Hasty Brew
+            HastyBrew hastyBrew = new HastyBrew();
+            hastyBrew.setToggled(rs.getBoolean("is_hasty_brew_toggled"));
+            //Initialize Circes Recipes
+            CircesRecipes circesRecipes = new CircesRecipes();
+            circesRecipes.setToggled(rs.getBoolean("is_circes_recipes_toggled"));
+            circesRecipes.setCurrentTier(rs.getInt("circes_recipes_tier"));
+            if(circesRecipes.getCurrentTier() != 0) {
+              circesRecipes.setUnlocked(true);
+            }
+            //Initialize Potion Affinity
+            PotionAffinity potionAffinity = new PotionAffinity();
+            potionAffinity.setToggled(rs.getBoolean("is_potion_affinity_toggled"));
+            potionAffinity.setCurrentTier(rs.getInt("potion_affinity_tier"));
+            if(potionAffinity.getCurrentTier() != 0) {
+              potionAffinity.setUnlocked(true);
+            }
+            //Initialize Mana Affinity
+            ManaAffinity manaAffinity = new ManaAffinity();
+            manaAffinity.setToggled(rs.getBoolean("is_mana_affinity_toggled"));
+            manaAffinity.setCurrentTier(rs.getInt("mana_affinity_tier"));
+            if(manaAffinity.getCurrentTier() != 0) {
+              manaAffinity.setUnlocked(true);
+            }
+            //Initialize Circes Protection
+            CircesProtection circesProtection = new CircesProtection();
+            circesProtection.setToggled(rs.getBoolean("is_circes_protection_toggled"));
+            circesProtection.setCurrentTier(rs.getInt("circes_protection_tier"));
+            if(circesProtection.getCurrentTier() != 0) {
+              circesProtection.setUnlocked(true);
+            }
+            //Initialize Hades Domain
+            HadesDomain hadesDomain = new HadesDomain();
+            hadesDomain.setToggled(rs.getBoolean("is_hades_domain_toggled"));
+            hadesDomain.setCurrentTier(rs.getInt("hades_domain_tier"));
+            if(hadesDomain.getCurrentTier() != 0) {
+              hadesDomain.setUnlocked(true);
+            }
+            //Initialize Circes Shrine
+            CircesShrine circesShrine = new CircesShrine();
+            circesShrine.setToggled(rs.getBoolean("is_circes_shrine_toggled"));
+            circesShrine.setCurrentTier(rs.getInt("circes_shrine_tier"));
+            if(circesShrine.getCurrentTier() != 0) {
+              circesShrine.setUnlocked(true);
+            }
+
+            if(rs.getBoolean("is_circes_recipes_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_RECIPES);
+            }
+            if(rs.getBoolean("is_potion_affinity_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.POTION_AFFINITY);
+            }
+            if(rs.getBoolean("is_mana_affinity_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.MANA_AFFINITY);
+            }
+            if(rs.getBoolean("is_circes_protection_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_PROTECTION);
+            }
+            if(rs.getBoolean("is_hades_domain_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.HADES_DOMAIN);
+            }
+            if(rs.getBoolean("is_circes_shrine_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_SHRINE);
+            }
+            abilityMap.put(DefaultAbilities.HASTY_BREW, hastyBrew);
+            abilityMap.put(UnlockedAbilities.CIRCES_RECIPES, circesRecipes);
+            abilityMap.put(UnlockedAbilities.POTION_AFFINITY, potionAffinity);
+            abilityMap.put(UnlockedAbilities.MANA_AFFINITY, manaAffinity);
+            abilityMap.put(UnlockedAbilities.CIRCES_PROTECTION, circesProtection);
+            abilityMap.put(UnlockedAbilities.HADES_DOMAIN, hadesDomain);
+            abilityMap.put(UnlockedAbilities.CIRCES_SHRINE, circesShrine);
+            Sorcery sorcery = new Sorcery(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(sorcery);
+          }
+
 
         } catch(SQLException e) {
           e.printStackTrace();

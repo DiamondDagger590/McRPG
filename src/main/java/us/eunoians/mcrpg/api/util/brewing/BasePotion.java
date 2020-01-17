@@ -4,6 +4,7 @@ import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -136,6 +137,45 @@ public class BasePotion {
     }
     potionItem.setItemMeta(potionMeta);
     nbtItem = new NBTItem(potionItem);
+    saveStack();
+  }
+
+  public void setSplash(){
+    if(basePotionType == BasePotionType.AWKWARD || basePotionType == BasePotionType.WATER){
+      return;
+    }
+    potionItem = nbtItem.getItem();
+    potionItem.setType(Material.SPLASH_POTION);
+    double splashModifier = McRPG.getInstance().getPotionRecipeManager().getPotionEffectTagWrapper(basePotionType).getSplashDurationModifier();
+    PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
+    potionMeta.setDisplayName(Methods.color("&fSplash " + ChatColor.stripColor(potionMeta.getDisplayName())));
+    PotionEffect customEffect = potionMeta.getCustomEffects().get(0);
+    PotionEffect newEffect = new PotionEffect(basePotionType.getEffectType(), (int) (customEffect.getDuration() * splashModifier), customEffect.getAmplifier());
+    potionMeta.clearCustomEffects();
+    potionMeta.addCustomEffect(newEffect, true);
+    potionItem.setItemMeta(potionMeta);
+    nbtItem = new NBTItem(potionItem);
+    totalTimesModified++;
+    saveStack();
+  }
+
+  public void setLingering(){
+    if(basePotionType == BasePotionType.AWKWARD || basePotionType == BasePotionType.WATER){
+      return;
+    }
+    potionItem = nbtItem.getItem();
+    potionItem.setType(Material.LINGERING_POTION);
+    double lingeringModifier = McRPG.getInstance().getPotionRecipeManager().getPotionEffectTagWrapper(basePotionType).getLingeringDurationModifier();
+    PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
+    potionMeta.setDisplayName(Methods.color("&fLingering Potion of " + basePotionType.getDisplayName()));
+    PotionEffect customEffect = potionMeta.getCustomEffects().get(0);
+    Bukkit.broadcastMessage(customEffect.getDuration() + " " + customEffect.getDuration() * lingeringModifier);
+    PotionEffect newEffect = new PotionEffect(basePotionType.getEffectType(), (int) (customEffect.getDuration() * lingeringModifier), customEffect.getAmplifier());
+    potionMeta.clearCustomEffects();
+    potionMeta.addCustomEffect(newEffect, true);
+    potionItem.setItemMeta(potionMeta);
+    nbtItem = new NBTItem(potionItem);
+    totalTimesModified++;
     saveStack();
   }
 

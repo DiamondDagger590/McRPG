@@ -15,7 +15,7 @@ public class PotionRecipeManager {
 
   private Map<Material, Integer> fuelMaterials = new HashMap<>();
   private Map<BasePotionType, PotionEffectTagWrapper> potionRecipeMap = new HashMap<>();
-  private Set<Material> allPossibleIngredients = new HashSet<>(Collections.singletonList(Material.NETHER_WART));
+  private Set<Material> allPossibleIngredients = new HashSet<>();
 
   public PotionRecipeManager(){
     reloadManager();
@@ -28,6 +28,9 @@ public class PotionRecipeManager {
 
   private void initRecipes(){
     potionRecipeMap.clear();
+    allPossibleIngredients.add(Material.NETHER_WART);
+    allPossibleIngredients.add(Material.GUNPOWDER);
+    allPossibleIngredients.add(Material.DRAGON_BREATH);
     FileConfiguration brewingItemConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_ITEMS_CONFIG);
     for(String s : brewingItemConfig.getConfigurationSection("Potions").getKeys(false)){
       BasePotionType basePotionType;
@@ -75,6 +78,12 @@ public class PotionRecipeManager {
       return true;
     }
     PotionEffectTagWrapper potionEffectTagWrapper = getPotionEffectTagWrapper(basePotion.getBasePotionType());
+    if(basePotion.getAsItem().getType() == Material.POTION && ingredient == Material.GUNPOWDER && potionEffectTagWrapper.isCanBeSplash()){
+      return true;
+    }
+    else if(basePotion.getAsItem().getType() == Material.SPLASH_POTION && ingredient == Material.DRAGON_BREATH && potionEffectTagWrapper.isCanBeLingering()){
+      return true;
+    }
     String tag = basePotion.getTag();
     TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
     return tagMeta.getChildTag(ingredient) != null;

@@ -20,7 +20,8 @@ public enum DefaultAbilities implements GenericAbility {
   SHRED("Shred", "Axes", AbilityType.PASSIVE, FileManager.Files.AXES_CONFIG),
   ROLL("Roll", "Fitness", AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG),
   EXTRACTION("Extraction", "Excavation", AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
-  GREAT_ROD("Great Rod", "Fishing", AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG);
+  GREAT_ROD("Great Rod", "Fishing", AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG),
+  HASTY_BREW("Hasty Brew", "Sorcery", AbilityType.PASSIVE, FileManager.Files.SORCERY_CONFIG);
 
   @Getter
   private String name;

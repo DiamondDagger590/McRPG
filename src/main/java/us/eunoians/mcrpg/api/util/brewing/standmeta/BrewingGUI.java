@@ -450,6 +450,16 @@ public class BrewingGUI extends GUI {
       BasePotion basePotion = potionItems[i];
       if(basePotion != null){
         PotionEffectTagWrapper potionEffectTagWrapper = potionRecipeManager.getPotionEffectTagWrapper(basePotion.getBasePotionType());
+        if(basePotion.getAsItem().getType() == Material.POTION && ingredient.getType() == Material.GUNPOWDER && potionEffectTagWrapper.isCanBeSplash()){
+          basePotion.setSplash();
+          potionItems[i] = basePotion;
+          continue;
+        }
+        if(basePotion.getAsItem().getType() == Material.SPLASH_POTION && ingredient.getType() == Material.DRAGON_BREATH && potionEffectTagWrapper.isCanBeLingering()){
+          basePotion.setLingering();
+          potionItems[i] = basePotion;
+          continue;
+        }
         TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(basePotion.getTag());
         String newTag = potionEffectTagWrapper.getTagMeta(basePotion.getTag()).getChildTag(ingredient.getType());
         if(newTag != null){
@@ -511,7 +521,14 @@ public class BrewingGUI extends GUI {
     PotionRecipeManager potionRecipeManager = McRPG.getInstance().getPotionRecipeManager();
     for(BasePotion basePotion : potionItems){
       if(basePotion != null){
-        if(potionRecipeManager.doesMaterialLeadToChild(ingredientType, basePotion)){
+        PotionEffectTagWrapper potionEffectTagWrapper = potionRecipeManager.getPotionEffectTagWrapper(basePotion.getBasePotionType());
+        if(basePotion.getAsItem().getType() == Material.POTION && ingredient.getType() == Material.GUNPOWDER && potionEffectTagWrapper.isCanBeSplash()){
+          return true;
+        }
+        else if(basePotion.getAsItem().getType() == Material.SPLASH_POTION && ingredient.getType() == Material.DRAGON_BREATH && potionEffectTagWrapper.isCanBeLingering()){
+          return true;
+        }
+        else if(potionRecipeManager.doesMaterialLeadToChild(ingredientType, basePotion)){
           return true;
         }
       }

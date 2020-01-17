@@ -335,6 +335,7 @@ public class FileManager {
     SETTINGS_GUI("playersettingsgui.yml", "guis/playersettingsgui.yml"),
     SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
+    SORCERY_CONFIG("sorcery.yml", "skills/sorcery.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
