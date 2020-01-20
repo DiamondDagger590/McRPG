@@ -9,7 +9,10 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.types.BasePotionType;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class PotionRecipeManager {
 

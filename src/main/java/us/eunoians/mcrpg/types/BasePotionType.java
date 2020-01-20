@@ -31,7 +31,7 @@ public enum BasePotionType{
 	LUCK("Luck", false, "51:153:0", PotionType.UNCRAFTABLE, PotionEffectType.LUCK),
 	UNLUCK("Unluck", false, "18:98:73", PotionType.UNCRAFTABLE, PotionEffectType.UNLUCK),
 	DOLPHINS_GRACE("Dolphins Grace", false, "136:163:190", PotionType.UNCRAFTABLE, PotionEffectType.DOLPHINS_GRACE),
-	INCREASE_DAMAGE("Strength", true, "147:36:35", PotionType.UNCRAFTABLE, PotionEffectType.INCREASE_DAMAGE),
+	INCREASE_DAMAGE("Strength", true, "147:36:35", PotionType.STRENGTH, PotionEffectType.INCREASE_DAMAGE),
 	WEAKNESS("Weakness", true, "72:77:72", PotionType.WEAKNESS, PotionEffectType.WEAKNESS),
 	RESISTANCE("Resistance", false, "153:69:58", PotionType.UNCRAFTABLE, PotionEffectType.DAMAGE_RESISTANCE),
 	FIRE_RESISTANCE("Fire Resistance", true, "228:154:58", PotionType.FIRE_RESISTANCE, PotionEffectType.FIRE_RESISTANCE),

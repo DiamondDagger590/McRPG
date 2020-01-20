@@ -1,0 +1,400 @@
+Fuel:
+  BlazePowder:
+    Material: BLAZE_POWDER
+    FuelAmount: 20
+Potions:
+  PotionBrewDuration: 10
+  WATER:
+    Tags:
+      Default:
+        ChildTags:
+          - 'AWKWARD.Default'
+  AWKWARD:
+    Tags:
+      Default:
+        Ingredients:
+          - 'NETHER_WART'
+        ChildTags:
+          - 'SPEED.Default'
+          - 'INCREASE_DAMAGE.Default'
+          - 'JUMP.Default'
+  #Potion effect
+  SPEED:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'SUGAR'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'SLOWNESS.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'SLOW.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Extended'
+          - 'SLOW.Extended.FERMENTED_SPIDER_EYE'
+  SLOW:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Extended'
+  INCREASE_DAMAGE:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'BLAZE_POWDER'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'WEAKNESS.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'WEAKNESS.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+          - 'WEAKNESS.Extended.FERMENTED_SPIDER_EYE'
+  WEAKNESS:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  JUMP:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'RABBITS_FOOT'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  REGENERATION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GHAST_TEAR'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  FIRE_RESISTANCE:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'BLAZE_POWDER'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  WATER_BREATHING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'PUFFERFISH'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 320
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  HEALING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GLISTERING_MELON'
+        #If duration is not specified, it defaults to 180
+        Duration: 1
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Amplified'
+          - 'HARM.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'HARM.Amplified.FERMENTED_SPIDER_EYE'
+  HARM:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 1
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:

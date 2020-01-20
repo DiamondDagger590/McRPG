@@ -409,7 +409,7 @@ CircesShrineConfig:
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Circes Shrine'
-    Material: ENCHANTMENT_TABLE
+    Material: ENCHANTING_TABLE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:

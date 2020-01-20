@@ -57,6 +57,12 @@ public class PotionEffectTagWrapper {
   public Set<Material> getAllChildIgredients(){
     Set<Material> returnSet = new HashSet<>();
     for(TagMeta tagMeta : storedTagMeta.values()){
+      for(String child : tagMeta.getChildren()){
+        String[] childData = child.split("\\.");
+        if(childData.length == 3){
+          returnSet.add(Material.getMaterial(childData[2]));
+        }
+      }
       returnSet.addAll(tagMeta.getIngredients());
     }
     return returnSet;

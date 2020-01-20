@@ -252,7 +252,6 @@ public class BrewingGUI extends GUI {
       if(fuel.getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
         currentFuelLevel = McRPG.getInstance().getPotionRecipeManager().getFuelAmount(fuel);
         maxCurrentFuelLevel = currentFuelLevel;
-        Bukkit.broadcastMessage("Fuel: " + currentFuelLevel);
         if(fuel.getAmount() == 1){
           FileConfiguration guiFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_GUI);
           fuel = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
@@ -466,7 +465,6 @@ public class BrewingGUI extends GUI {
           String[] tagData = newTag.split("\\.");
           if(tagData.length > 1){
             BasePotionType basePotionType;
-            Bukkit.broadcastMessage("Conversion");
             if(tagData[0].equals("AWKWARD")){
               basePotionType = BasePotionType.AWKWARD;
             }

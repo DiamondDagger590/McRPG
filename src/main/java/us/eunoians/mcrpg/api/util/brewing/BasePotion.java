@@ -117,7 +117,6 @@ public class BasePotion {
     TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
     PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
     basePotionType = tagMeta.getBasePotionType();
-    Bukkit.broadcastMessage(basePotionType.getName());
     //Set the new base potion data in order to override with the actual potion info
     //This is needed since we can not modify the base potion data's duration but we use it in other parts of the code
     if(basePotionType == BasePotionType.AWKWARD){

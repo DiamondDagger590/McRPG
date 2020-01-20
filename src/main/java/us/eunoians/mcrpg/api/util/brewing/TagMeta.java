@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.api.util.brewing;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.potion.PotionEffectType;
@@ -10,7 +9,6 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.types.BasePotionType;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +16,7 @@ public class TagMeta {
 
   @Getter
   private Set<Material> ingredients = new HashSet<>();
+  @Getter
   private Set<String> children;
   @Getter
   private String tag;
@@ -34,12 +33,10 @@ public class TagMeta {
     FileConfiguration potionConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_ITEMS_CONFIG);
     String key = prevKey + "." + tag + ".";
     System.out.println(key);
-    System.out.println("Ingredient List: " + potionConfig.getStringList(key + "Ingredients"));
     potionConfig.getStringList(key + "Ingredients").stream().map(Material::getMaterial).forEach(m -> ingredients.add(m));
     duration = potionConfig.getInt(key + "Duration", 180);
     potionEffectLevel = potionConfig.getInt(key + "PotionEffectLevel", 1);
     children = potionConfig.contains(key + "ChildTags") ? new HashSet<>(potionConfig.getStringList(key + "ChildTags")) : new HashSet<>();
-    System.out.println("Data for " + basePotionType.getName() + " " + duration + " " + potionEffectLevel + " " + children.toString());
   }
 
   public boolean isValidIngredient(Material material){
@@ -64,9 +61,14 @@ public class TagMeta {
       BasePotionType tempType = basePotionType;
       String tagToUse = s;
       if(tagData.length > 1){
-        Bukkit.broadcastMessage("Split: " + Arrays.asList(tagData).toString());
         tempType = tagData[0].equals("AWKWARD") ? BasePotionType.AWKWARD : BasePotionType.getFromPotionEffect(PotionEffectType.getByName(tagData[0]));
         tagToUse = tagData[1];
+      }
+      if(tagData.length == 3){
+        Material branchMaterial = Material.getMaterial(tagData[2]);
+        if(material == branchMaterial){
+          return s;
+        }
       }
       TagMeta tagMeta = potionRecipeManager.getPotionEffectTagWrapper(tempType).getTagMeta(tagToUse);
       if(tagMeta.isValidIngredient(material)){
