@@ -326,7 +326,9 @@ public class McRPGPlayer {
               remoteTransfer.updateBlocks();
             }
             if(RemoteTransferTracker.isTracked(uuid)) {
+              remoteTransfer.isAbilityLinked();
               remoteTransfer.setLinkedChestLocation(RemoteTransferTracker.getLocation(uuid));
+              this.isLinkedToRemoteTransfer = true;
             }
             File file = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
             FileConfiguration remoteTransferFile = YamlConfiguration.loadConfiguration(file);
@@ -1440,17 +1442,16 @@ public class McRPGPlayer {
       database.executeUpdate(query);
     }
     String loadoutQuery = "UPDATE mcrpg_loadout SET";
-    for(int i = 1; i <= abilityLoadout.size(); i++) {
+    for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities"); i++) {
       if(i != 1) {
         loadoutQuery += ",";
       }
-      loadoutQuery += " Slot" + i + " = '" + abilityLoadout.get(i - 1).getName() + "'";
+      String toAdd = "null";
+      loadoutQuery += " Slot" + i + " = '" + (abilityLoadout.size() >= i ? abilityLoadout.get(i - 1).getName() : toAdd) + "'";
 
     }
     loadoutQuery += " WHERE uuid = '" + uuid.toString() + "'";
-    if(abilityLoadout.size()>0) {
-      database.executeUpdate(loadoutQuery);
-    }
+    database.executeUpdate(loadoutQuery);
 
     RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
     if(transfer.isUnlocked()) {

@@ -8,11 +8,14 @@ import com.cyr1en.mcutils.initializers.annotation.Ignore;
 import com.cyr1en.mcutils.initializers.annotation.Initialize;
 import com.cyr1en.mcutils.initializers.annotation.process.Initializer;
 import com.cyr1en.mcutils.logger.Logger;*/
+import com.cyr1en.javen.Javen;
+import com.cyr1en.javen.annotation.Lib;
 import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
@@ -43,12 +46,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 
-/*JAVEN ISSUES
+/*JAVEN ISSUES*/
 @Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
-@Lib(group = "com.github.CyR1en", name = "FlatDB", version = "1.0.5")
-@Lib(group = "org.javassist", name = "javassist", version = "3.21.0-GA")
-@Lib(group = "de.articdive", name = "EnumToYAML", version = "1.0-20190129.130317-1",
-        directURL = "https://nexus.articdive.de/repository/maven-public/de/articdive/EnumToYAML/1.0-SNAPSHOT/EnumToYAML-1.0-20190129.130317-1.jar")*/
+@Lib(group = "com.github.DiamondDagger590", name = "FlatDB", version = "1.0.7")
+//@Lib(group = "org.javassist", name = "javassist", version = "3.21.0-GA")
+@Lib(group = "com.github.DiamondDagger590", name = "EnumToYAML", version = "1.0")
+
 public class McRPG extends JavaPlugin {//implements //Initializable {
 
   private static McRPG instance;
@@ -70,6 +73,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private boolean healthBarPluginEnabled = false;
   @Getter private boolean mvdwEnabled = false;
   @Getter private boolean papiEnabled = false;
+  @Getter private boolean ncpEnabled = false;
   @Getter private boolean sickleEnabled = false;
   @Getter private boolean worldGuardEnabled = false;
   @Getter @Setter private WGSupportManager wgSupportManager;
@@ -82,12 +86,11 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     }
     //JAVEN ISSUES
     Path path = Paths.get(getDataFolder().getAbsolutePath() + "/libs");
-    /*Javen javen = new Javen(path);
+    Javen javen = new Javen(path);
     javen.addRepository("jitPack", "https://jitpack.io");
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
-    new PlayerManager(this);
-    Logger.info("Starting init sequence");*/
+    
     McRPG t = this;
     if(Bukkit.getVersion().contains("1.14")){
       new BukkitRunnable(){
@@ -120,6 +123,15 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
       getLogger().info("Papi PlaceholderAPI found... registering hooks");
       new McRPGPlaceHolders().register();
     }
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        if(Bukkit.getPluginManager().isPluginEnabled("NoCheatPlus")){
+          ncpEnabled = true;
+          getLogger().info("NoCheatPlus found... will enable anticheat support");
+        }
+      }
+    }.runTaskLater(this, 10 * 20);
     if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
       worldGuardEnabled = true;
       wgSupportManager = new WGSupportManager(this);
