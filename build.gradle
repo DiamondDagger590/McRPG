@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 7, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 1, patch: 8, state: 'BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -27,25 +27,28 @@ repositories {
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://repo.codemc.org/repository/maven-public/' }
+    maven { url 'https://repo.md-5.net/content/repositories/snapshots/' }
+    maven { url 'https://repo.md-5.net/content/repositories/releases/' }
 }
 
 dependencies {
-   // compile 'com.github.cyr1en:javen:1.0.2'
-    //annotationProcessor 'com.github.cyr1en:javen:1.0.2'
+    compile 'com.github.cyr1en:javen:1.0.2'
+    annotationProcessor 'com.github.cyr1en:javen:1.0.2'
 
     //compile 'com.github.CyR1en:McUtils:1.6.11'
     //compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
 
-    compile 'com.github.DiamondDagger590:FlatDB:1.0.7'
-
-    compile 'de.tr7zw:item-nbt-api:2.0.0-SNAPSHOT'
-    compile 'de.articdive:EnumToYAML:1.0-SNAPSHOT'
+    compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
+    compileOnly 'com.github.DiamondDagger590:FlatDB:1.0.7'
+    compileOnly 'com.github.DiamondDagger590:EnumToYaml:1.0'
+    compile 'de.tr7zw:item-nbt-api:2.2.0-SNAPSHOT'
     compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
     compileOnly 'org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT'
     compileOnly files('libs/Sickle.jar')
+    compileOnly files('libs/SpartanAPI.jar')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
