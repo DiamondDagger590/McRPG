@@ -46,6 +46,19 @@ public class BrewingStandManager {
     return brewingStandWrapper;
   }
 
+  public void unloadChunk(Chunk chunk){
+    String chunkKey = Methods.chunkToLoc(chunk);
+    if(brewingStandWrapperMap.containsKey(chunkKey)){
+      for(Location loc : brewingStandWrapperMap.get(chunkKey).keySet()){
+        BrewingStandWrapper brewingStandWrapper = brewingStandWrapperMap.get(chunkKey).get(loc);
+        brewingStandWrapper.finishBrew();
+        brewingStandWrapper.saveToFile();
+      }
+    }
+    brewingStandWrapperMap.remove(chunkKey);
+    chunkToSaveFile.remove(chunkKey);
+  }
+  
   public void breakBrewingStand(Location location){
     String chunkKey = Methods.chunkToLoc(location.getChunk());
     if(brewingStandWrapperMap.containsKey(chunkKey) && brewingStandWrapperMap.get(chunkKey).containsKey(location)){

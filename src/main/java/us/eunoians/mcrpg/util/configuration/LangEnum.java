@@ -246,9 +246,9 @@ public enum LangEnum implements ConfigurationEnum {
     TIPS_LEVEL_UP_FISHING("Messages.Tips.LevelUpFishing", Arrays.asList("&7[&5McRPG Tip&7]: &aGreat Rod increases your chance of finding treasure!",
             "&7[&5McRPG Tip&7]: &aUsing Luck Of The Sea makes it more likely to get treasure and makes junk more rare!", "&7[&5McRPG Tip&7]: &aShake has a small chance of making mobs drop related item!",
             "&7[&5McRPG Tip&7]: &aSunken Armory can even fish up diamond armor!", "&7[&5McRPG Tip&7]: &aSuper Rod makes treasure found even more amazing!", "&7[&5McRPG Tip&7]: &aMagic Touch will let you fish enchanted books and gear!")),
-    TIPS_LEVEL_UP_SORCERY("Messages.Tips.LevelUpSorcery", Arrays.asList("&7[&5McRPG Tip&7]: &aGreat Rod increases your chance of finding treasure!",
-            "&7[&5McRPG Tip&7]: &aUsing Luck Of The Sea makes it more likely to get treasure and makes junk more rare!", "&7[&5McRPG Tip&7]: &aShake has a small chance of making mobs drop related item!",
-            "&7[&5McRPG Tip&7]: &aSunken Armory can even fish up diamond armor!", "&7[&5McRPG Tip&7]: &aSuper Rod makes treasure found even more amazing!", "&7[&5McRPG Tip&7]: &aMagic Touch will let you fish enchanted books and gear!"));
+    TIPS_LEVEL_UP_SORCERY("Messages.Tips.LevelUpSorcery", Arrays.asList("&7[&5McRPG Tip&7]: &aHasty Brew increases the speed at which your potions brew!",
+            "&7[&5McRPG Tip&7]: &aHades Domain increases all exp gain while in the nether!", "&7[&5McRPG Tip&7]: &aCirces Recipes will allow you to brew a wide range of unique potions!",
+            "&7[&5McRPG Tip&7]: &aYou can get rare items such as skill books or artifacts from brewing!", "&7[&5McRPG Tip&7]: &aEnchanting will give Sorcery exp!", "&7[&5McRPG Tip&7]: &aArtifacts are consumables that can be found from brewing!"));
 
     private String path;
     private Object defaultValue;

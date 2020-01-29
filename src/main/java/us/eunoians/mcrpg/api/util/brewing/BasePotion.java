@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.api.util.brewing;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -13,6 +12,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.BasePotionType;
 
@@ -39,7 +39,7 @@ public class BasePotion {
 
   @Getter
   private ItemStack potionItem;
-
+  
   private NBTItem nbtItem;
 
   BasePotion(ItemStack potion){
@@ -89,6 +89,9 @@ public class BasePotion {
           Map<String, TagMeta> allTags = potionEffectTagWrapper.getAllTags();
           PotionEffect potionEffect = meta.getCustomEffects().get(0);
           int duration = potionEffect.getDuration()/20;
+          if(potion.getType() == Material.LINGERING_POTION){
+            duration *= 4;
+          }
           int amplifier = potionEffect.getAmplifier();
           int highestWeight = 0;
           String highestTag = "";
@@ -111,7 +114,9 @@ public class BasePotion {
 
   public void updateInfo(){
     potionItem = nbtItem.getItem();
-    totalTimesModified++;
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG).getInt("MaxBrewAmountForExp") > totalTimesModified){
+      totalTimesModified++;
+    }
     PotionRecipeManager potionRecipeManager = McRPG.getInstance().getPotionRecipeManager();
     PotionEffectTagWrapper potionEffectTagWrapper = potionRecipeManager.getPotionEffectTagWrapper(basePotionType);
     TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
@@ -126,7 +131,10 @@ public class BasePotion {
       potionMeta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE));
     }
     if(basePotionType != BasePotionType.AWKWARD && basePotionType != BasePotionType.WATER){
-      PotionEffect newPotionEffect = new PotionEffect(basePotionType.getEffectType(), tagMeta.getDuration() * 20, tagMeta.getPotionEffectLevel() - 1);
+      PotionEffect newPotionEffect = new PotionEffect(basePotionType.getEffectType(),
+        (int) (tagMeta.getDuration() * 20 * (potionItem.getType() == Material.LINGERING_POTION ? potionEffectTagWrapper.getLingeringDurationModifier() * 2
+                                        : (potionItem.getType() == Material.SPLASH_POTION ? potionEffectTagWrapper.getSplashDurationModifier() : 1))),
+        tagMeta.getPotionEffectLevel() - 1);
       potionMeta.clearCustomEffects();
       potionMeta.addCustomEffect(newPotionEffect, true);
       String name = (potionItem.getType() == Material.LINGERING_POTION ? "Lingering " : potionItem.getType() == Material.SPLASH_POTION ? "Splash " : "") + "Potion of " + basePotionType.getDisplayName();
@@ -154,7 +162,9 @@ public class BasePotion {
     potionMeta.addCustomEffect(newEffect, true);
     potionItem.setItemMeta(potionMeta);
     nbtItem = new NBTItem(potionItem);
-    totalTimesModified++;
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG).getInt("MaxBrewAmountForExp") > totalTimesModified){
+      totalTimesModified++;
+    }
     saveStack();
   }
 
@@ -168,13 +178,14 @@ public class BasePotion {
     PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
     potionMeta.setDisplayName(Methods.color("&fLingering Potion of " + basePotionType.getDisplayName()));
     PotionEffect customEffect = potionMeta.getCustomEffects().get(0);
-    Bukkit.broadcastMessage(customEffect.getDuration() + " " + customEffect.getDuration() * lingeringModifier);
-    PotionEffect newEffect = new PotionEffect(basePotionType.getEffectType(), (int) (customEffect.getDuration() * lingeringModifier), customEffect.getAmplifier());
+    PotionEffect newEffect = new PotionEffect(basePotionType.getEffectType(), (int) (customEffect.getDuration() * lingeringModifier * 2), customEffect.getAmplifier());
     potionMeta.clearCustomEffects();
     potionMeta.addCustomEffect(newEffect, true);
     potionItem.setItemMeta(potionMeta);
     nbtItem = new NBTItem(potionItem);
-    totalTimesModified++;
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG).getInt("MaxBrewAmountForExp") > totalTimesModified){
+      totalTimesModified++;
+    }
     saveStack();
   }
 

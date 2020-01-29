@@ -41,7 +41,17 @@ public class BrewingStandWrapper {
     McRPG.getInstance().getBrewingStandManager().save(brewingStand.getChunk());
   }
 
+  public void finishBrew(){
+    if(brewingGUI.getBrewTask() != null){
+      brewingGUI.cancelBrewTask();
+      brewingGUI.finishBrewTask();
+    }
+  }
+  
   public void deleteData(){
     brewingGUI.breakGUI();
+    String key = "BrewingStands." + Methods.locToString(brewingStand.getLocation());
+    fileConfiguration.set(key, null);
+    McRPG.getInstance().getBrewingStandManager().save(brewingStand.getChunk());
   }
 }

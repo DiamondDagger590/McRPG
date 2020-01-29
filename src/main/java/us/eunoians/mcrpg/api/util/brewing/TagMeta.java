@@ -34,7 +34,7 @@ public class TagMeta {
     String key = prevKey + "." + tag + ".";
     System.out.println(key);
     potionConfig.getStringList(key + "Ingredients").stream().map(Material::getMaterial).forEach(m -> ingredients.add(m));
-    duration = potionConfig.getInt(key + "Duration", 180);
+    duration = potionConfig.getInt(key + "Duration", 0);
     potionEffectLevel = potionConfig.getInt(key + "PotionEffectLevel", 1);
     children = potionConfig.contains(key + "ChildTags") ? new HashSet<>(potionConfig.getStringList(key + "ChildTags")) : new HashSet<>();
   }
@@ -69,6 +69,7 @@ public class TagMeta {
         if(material == branchMaterial){
           return s;
         }
+        return null;
       }
       TagMeta tagMeta = potionRecipeManager.getPotionEffectTagWrapper(tempType).getTagMeta(tagToUse);
       if(tagMeta.isValidIngredient(material)){

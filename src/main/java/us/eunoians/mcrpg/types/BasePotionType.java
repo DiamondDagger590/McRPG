@@ -80,4 +80,9 @@ public enum BasePotionType{
 	public static BasePotionType getFromPotionEffect(PotionEffectType type){
 		return Arrays.stream(values()).filter(p -> p.getEffectType() != null).filter(p -> p.getEffectType().equals(type)).findFirst().orElse(BasePotionType.AWKWARD);
 	}
+	
+	@Override
+	public String toString(){
+		return "[" + (effectType != null ? effectType.toString() : "null") + "-" + customColour + "-" + (potionType != null ? potionType.toString() : "null") + "]";
+	}
 }

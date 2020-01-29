@@ -189,6 +189,9 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
     getServer().getPluginManager().registerEvents(new SignEvent(), this);
     getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
+    getServer().getPluginManager().registerEvents(new PotionDrinkEvent(), this);
+    getServer().getPluginManager().registerEvents(new PotionEffectEvent(), this);
+    
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);
     }

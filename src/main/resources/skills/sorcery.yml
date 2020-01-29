@@ -1,8 +1,8 @@
-#Is herbalism enabled
-HerbalismEnabled: true
+#Is sorcery enabled
+SorceryEnabled: true
 #Should this skill be locked behind a permission?
 RequirePermission: false
-#Exp equation for herbalism. Allowed placeholders are:
+#Exp equation for sorcery. Allowed placeholders are:
 #
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
@@ -133,40 +133,45 @@ CircesRecipesConfig:
   #Config for each Tier
   TierI:
     #What non-vanilla potion effects the player can brew
-    - 'HUNGER'
-    - 'SATURATION'
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
   TierII:
-    - 'HUNGER'
-    - 'SATURATION'
-    - 'LEVITATION'
-    - 'NAUSEA'
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
   TierIII:
-    - 'HUNGER'
-    - 'SATURATION'
-    - 'LEVITATION'
-    - 'NAUSEA'
-    - 'BLINDNESS'
-    - 'ABSORPTION'
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
   TierIV:
-    - 'HUNGER'
-    - 'SATURATION'
-    - 'LEVITATION'
-    - 'NAUSEA'
-    - 'BLINDNESS'
-    - 'ABSORPTION'
-    - 'DOLPHINS_GRACE'
-    - 'HEALTH_BOOST'
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
+      - 'DOLPHINS_GRACE'
+      - 'HEALTH_BOOST'
   TierV:
-    - 'HUNGER'
-    - 'SATURATION'
-    - 'LEVITATION'
-    - 'NAUSEA'
-    - 'BLINDNESS'
-    - 'ABSORPTION'
-    - 'DOLPHINS_GRACE'
-    - 'HEALTH_BOOST'
-    - 'FAST_DIGGING'
-    - 'SLOW_DIGGING'
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
+      - 'DOLPHINS_GRACE'
+      - 'HEALTH_BOOST'
+      - 'FAST_DIGGING'
+      - 'SLOW_DIGGING'
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Circes Recipes'
@@ -248,7 +253,7 @@ ManaAffinityConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bYou have a &e%DiscoverychanceIncrease%% &bchance'
+      - '&bYou have a &e%DiscoveryChanceIncrease%% &bchance'
       - '&bof finding skill books and artifacts'
       - '&bwhen enchanting or brewing.'
     MenuLore:
@@ -271,15 +276,15 @@ CircesProtectionConfig:
   #Config for each tier
   TierI:
     #2% Chance of resisting negative potion effects
-    ChanceOfResisting: 2
+    ChanceOfResisting: 2.0
   TierII:
-    ChanceOfResisting: 4
+    ChanceOfResisting: 4.0
   TierIII:
-    ChanceOfResisting: 6
+    ChanceOfResisting: 6.0
   TierIV:
-    ChanceOfResisting: 10
+    ChanceOfResisting: 10.0
   TierV:
-    ChanceOfResisting: 15
+    ChanceOfResisting: 15.0
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Circes Protection'
@@ -308,21 +313,21 @@ HadesDomainConfig:
   #Config for each tier
   TierI:
     #Vanilla experience in the nether is boosted by 5%
-    VanillaExpBoost: 5
+    VanillaExpBoost: 5.0
     #McRPG experience in the nether is boosted by 2%
-    McRPGExpBoost: 2
+    McRPGExpBoost: 2.0
   TierII:
-    VanillaExpBoost: 7
-    McRPGExpBoost: 3
+    VanillaExpBoost: 7.0
+    McRPGExpBoost: 3.0
   TierIII:
-    VanillaExpBoost: 10
-    McRPGExpBoost: 5
+    VanillaExpBoost: 10.0
+    McRPGExpBoost: 5.0
   TierIV:
-    VanillaExpBoost: 15
-    McRPGExpBoost: 7
+    VanillaExpBoost: 15.0
+    McRPGExpBoost: 7.0
   TierV:
-    VanillaExpBoost: 20
-    McRPGExpBoost: 10
+    VanillaExpBoost: 20.0
+    McRPGExpBoost: 10.0
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Hades Domain'
@@ -368,6 +373,7 @@ CircesShrineConfig:
     ConsumeItemOnFail: true
     #If half of the levels should be consumed on failure
     ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
     #Cooldown in seconds
     Cooldown: 14400
   TierII:
@@ -378,6 +384,7 @@ CircesShrineConfig:
     ConversionRateRange: '15-35'
     ConsumeItemOnFail: true
     ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
     Cooldown: 14400
   TierIII:
     SacrificialItem: DIAMOND_BLOCK
@@ -387,6 +394,7 @@ CircesShrineConfig:
     ConversionRateRange: '25-35'
     ConsumeItemOnFail: true
     ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
     Cooldown: 14400
   TierIV:
     SacrificialItem: DIAMOND_BLOCK
@@ -396,6 +404,7 @@ CircesShrineConfig:
     ConversionRateRange: '30-40'
     ConsumeItemOnFail: true
     ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
     Cooldown: 14400
   TierV:
     SacrificialItem: DIAMOND_BLOCK
@@ -405,6 +414,7 @@ CircesShrineConfig:
     ConversionRateRange: '40-50'
     ConsumeItemOnFail: true
     ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
     Cooldown: 14400
   #How this ability should be seen in the GUIS
   Item:

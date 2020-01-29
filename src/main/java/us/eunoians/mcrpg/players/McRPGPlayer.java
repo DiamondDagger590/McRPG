@@ -1228,8 +1228,6 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(sorcery);
           }
-
-
         } catch(SQLException e) {
           e.printStackTrace();
         }

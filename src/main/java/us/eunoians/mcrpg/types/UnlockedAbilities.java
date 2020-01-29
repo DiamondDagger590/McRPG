@@ -26,7 +26,7 @@ public enum UnlockedAbilities implements GenericAbility {
   BURIED_TREASURE("BuriedTreasure", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
   CIRCES_PROTECTION("CircesProtection", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
   CIRCES_RECIPES("CircesRecipes", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
-  CIRCES_SHRINE("CircesShrine", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
+  CIRCES_SHRINE("CircesShrine", "Sorcery", AbilityType.ACTIVE, Files.SORCERY_CONFIG),
   COMBO("Combo", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
   CRIPPLING_BLOW("CripplingBlow", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
   CURSE_OF_HADES("CurseOfHades", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),

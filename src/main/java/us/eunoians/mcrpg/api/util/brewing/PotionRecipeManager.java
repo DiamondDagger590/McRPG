@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.BasePotionType;
 
 import java.util.HashMap;
@@ -19,6 +20,8 @@ public class PotionRecipeManager {
   private Map<Material, Integer> fuelMaterials = new HashMap<>();
   private Map<BasePotionType, PotionEffectTagWrapper> potionRecipeMap = new HashMap<>();
   private Set<Material> allPossibleIngredients = new HashSet<>();
+  private Set<BasePotionType> extraRecipes = new HashSet<>();
+  private HashMap<Integer, Set<BasePotionType>> tierToTypes = new HashMap<>();
 
   public PotionRecipeManager(){
     reloadManager();
@@ -31,6 +34,8 @@ public class PotionRecipeManager {
 
   private void initRecipes(){
     potionRecipeMap.clear();
+    extraRecipes.clear();
+    tierToTypes.clear();
     allPossibleIngredients.add(Material.NETHER_WART);
     allPossibleIngredients.add(Material.GUNPOWDER);
     allPossibleIngredients.add(Material.DRAGON_BREATH);
@@ -51,6 +56,18 @@ public class PotionRecipeManager {
       potionRecipeMap.put(basePotionType, potionEffectTagWrapper);
       allPossibleIngredients.addAll(potionEffectTagWrapper.getAllChildIgredients());
     }
+    FileConfiguration sorceryConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
+    int maxTier = sorceryConfig.getInt("CircesRecipesConfig.TierAmount");
+    for(int i = 1; i <= maxTier; i++){
+      Set<BasePotionType> typeSet = new HashSet<>();
+      for(String effect : sorceryConfig.getStringList("CircesRecipesConfig.Tier" + Methods.convertToNumeral(i) + ".PotionEffects")){
+        PotionEffectType effectType = PotionEffectType.getByName(effect);
+        BasePotionType basePotionType = BasePotionType.getFromPotionEffect(effectType);
+        extraRecipes.add(basePotionType);
+        typeSet.add(basePotionType);
+      }
+      tierToTypes.put(i, typeSet);
+    }
   }
 
   private void initFuelItems(){
@@ -68,6 +85,14 @@ public class PotionRecipeManager {
     return fuelMaterials.containsKey(fuel.getType());
   }
 
+  public boolean isLockedRecipe(BasePotionType basePotionType){
+    return extraRecipes.contains(basePotionType);
+  }
+  
+  public Set<BasePotionType> getTypesForTier(int tier){
+    return tierToTypes.get(tier);
+  }
+  
   public int getFuelAmount(ItemStack fuel){
     return fuelMaterials.get(fuel.getType());
   }
@@ -90,6 +115,28 @@ public class PotionRecipeManager {
     String tag = basePotion.getTag();
     TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
     return tagMeta.getChildTag(ingredient) != null;
+  }
+  
+  public BasePotionType getChildPotionType(Material ingredient, BasePotion basePotion){
+    if(basePotion.getBasePotionType() == BasePotionType.WATER && ingredient == Material.NETHER_WART){
+      return BasePotionType.AWKWARD;
+    }
+    PotionEffectTagWrapper potionEffectTagWrapper = getPotionEffectTagWrapper(basePotion.getBasePotionType());
+    if(basePotion.getAsItem().getType() == Material.POTION && ingredient == Material.GUNPOWDER && potionEffectTagWrapper.isCanBeSplash()){
+      return basePotion.getBasePotionType();
+    }
+    else if(basePotion.getAsItem().getType() == Material.SPLASH_POTION && ingredient == Material.DRAGON_BREATH && potionEffectTagWrapper.isCanBeLingering()){
+      return basePotion.getBasePotionType();
+    }
+    String tag = basePotion.getTag();
+    TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
+    String child = tagMeta.getChildTag(ingredient);
+    if(child.split("\\.").length >= 2){
+      return BasePotionType.getFromPotionEffect(PotionEffectType.getByName(child.split("\\.")[0]));
+    }
+    else{
+      return tagMeta.getBasePotionType();
+    }
   }
 
   public void updateInformation(Material ingredient, BasePotion basePotion){

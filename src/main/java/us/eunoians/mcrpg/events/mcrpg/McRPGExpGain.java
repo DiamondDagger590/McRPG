@@ -9,6 +9,7 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,12 +17,16 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.sorcery.HadesDomainEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
+import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.Skills;
@@ -44,6 +49,7 @@ public class McRPGExpGain implements Listener {
   public void expGain(McRPGPlayerExpGainEvent e) {
     Skills skill = e.getSkillGained().getType();
     Player p = e.getMcRPGPlayer().getPlayer();
+    McRPGPlayer mp = e.getMcRPGPlayer();
     if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseLevelPerms") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
       || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".level"))) {
       e.setCancelled(true);
@@ -150,6 +156,21 @@ public class McRPGExpGain implements Listener {
       Skills type = e.getSkillGained().getType();
       if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION) {
         e.setExpGained((int) (e.getExpGained() * demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid())));
+      }
+    }
+    FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
+    if(sorceryFile.getBoolean("SorceryEnabled") && p.getLocation().getBlock().getBiome() == Biome.NETHER
+         && UnlockedAbilities.HADES_DOMAIN.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HADES_DOMAIN) && mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN).isToggled() &&
+         e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.PLUGIN){
+      HadesDomain hadesDomain = (HadesDomain) mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN);
+      double multiplier = sorceryFile.getDouble("HadesDomainConfiguration.Tier" + Methods.convertToNumeral(hadesDomain.getCurrentTier()) + ".McRPGExpBoost");
+      HadesDomainEvent hadesDomainEvent = new HadesDomainEvent(mp, hadesDomain, multiplier, true);
+      Bukkit.getPluginManager().callEvent(hadesDomainEvent);
+      if(!hadesDomainEvent.isCancelled()){
+        multiplier = hadesDomainEvent.getPercentBonusMcRPGExp();
+        multiplier /= 100;
+        multiplier += 1;
+        e.setExpGained((int) (e.getExpGained() * multiplier));
       }
     }
     e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));

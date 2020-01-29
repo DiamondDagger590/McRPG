@@ -90,6 +90,7 @@ public class InteractHandler implements Listener {
       else{
         brewingGUI = McRPG.getInstance().getBrewingStandManager().initNewBrewingStand(brewingStand).getBrewingGUI();
       }
+      brewingGUI.setLastInteractedPlayer(p);
       GUITracker.trackPlayer(p, brewingGUI);
       e.setCancelled(true);
       p.openInventory(brewingGUI.getInv());

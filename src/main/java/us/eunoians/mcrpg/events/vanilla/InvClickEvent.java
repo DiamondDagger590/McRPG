@@ -40,15 +40,15 @@ import java.util.Calendar;
 import java.util.List;
 
 @SuppressWarnings("SuspiciousMethodCalls")
-public class InvClickEvent implements Listener {
-
+public class InvClickEvent implements Listener{
+  
   private FileConfiguration config;
-
+  
   public InvClickEvent(McRPG plugin){
     config = McRPG.getInstance().getLangFile();
-
+    
   }
-
+  
   @SuppressWarnings("Duplicates")
   @EventHandler(priority = EventPriority.HIGHEST)
   public void invClickEvent(InventoryClickEvent e){
@@ -63,12 +63,12 @@ public class InvClickEvent implements Listener {
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(p.getUniqueId());
-      } catch(McRPGPlayerNotFoundException exception){
+      }catch(McRPGPlayerNotFoundException exception){
         return;
       }
-
+      
       GUI currentGUI = GUITracker.getPlayersGUI(p);
-
+      
       //Brewing GUI comes before player inventory checks
       if(currentGUI instanceof BrewingGUI){
         BrewingGUI brewingGUI = (BrewingGUI) currentGUI;
@@ -78,9 +78,6 @@ public class InvClickEvent implements Listener {
         ItemStack itemStack = e.getClickedInventory().getItem(e.getSlot());
         if(itemStack != null){
           NBTItem nbtItem = new NBTItem(itemStack);
-          if(nbtItem.hasKey("McRPGTag")){
-            Bukkit.broadcastMessage(nbtItem.getString("McRPGTag"));
-          }
         }
         if(e.getClickedInventory() instanceof PlayerInventory){
           e.setCancelled(false);
@@ -105,7 +102,7 @@ public class InvClickEvent implements Listener {
             }
           }*/
           if(e.getCurrentItem() != null && PotionUtils.isIngredient(e.getCurrentItem()) && e.getClick() == ClickType.SHIFT_LEFT &&
-                  (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCurrentItem()))){
+               (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCurrentItem()))){
             int currentAmount = brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getIngredient().getAmount();
             int maxSize = brewingGUI.getIngredient().getMaxStackSize();
             int maxDiff = maxSize - currentAmount;
@@ -144,18 +141,19 @@ public class InvClickEvent implements Listener {
               if(brewingGUI.getFuel().getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack fuel = brewingGUI.getFuel().clone();
                 brewingGUI.resetFuelGlass();
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     e.setCursor(fuel);
                   }
                 }.runTaskLater(McRPG.getInstance(), 1);
               }
+              brewingGUI.save();
               return;
             }
             else if(PotionUtils.isFuel(e.getCursor())){
               if(brewingGUI.getFuel().getAmount() < 64 &&
-                      (brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getFuel().isSimilar(e.getCursor()))){
+                   (brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getFuel().isSimilar(e.getCursor()))){
                 if(e.getClick() == ClickType.LEFT){
                   int currentAmount = brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getFuel().getAmount();
                   int maxSize = brewingGUI.getFuel().getMaxStackSize();
@@ -187,6 +185,10 @@ public class InvClickEvent implements Listener {
                   brewingGUI.updateFuelItems();
                 }
               }
+              if(brewingGUI.checkForBrewingTask()){
+                brewingGUI.startBrewTask();
+              }
+              brewingGUI.save();
             }
           }
           else if(e.getSlot() == 13){
@@ -194,7 +196,7 @@ public class InvClickEvent implements Listener {
               if(brewingGUI.getIngredient().getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack ingredient = brewingGUI.getIngredient().clone();
                 brewingGUI.resetIngredientGlass();
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     e.setCursor(ingredient);
@@ -206,7 +208,7 @@ public class InvClickEvent implements Listener {
             }
             else if(PotionUtils.isIngredient(e.getCursor())){
               if(brewingGUI.getIngredient().getAmount() < 64 &&
-                      (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCursor()))){
+                   (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCursor()))){
                 if(e.getClick() == ClickType.LEFT){
                   int currentAmount = brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getIngredient().getAmount();
                   int maxSize = brewingGUI.getIngredient().getMaxStackSize();
@@ -240,6 +242,16 @@ public class InvClickEvent implements Listener {
                   e.getCursor().setAmount(e.getCursor().getAmount() - 1);
                   brewingGUI.updateIngredient();
                 }
+              }
+              else{
+                ItemStack temp = brewingGUI.getIngredient().clone();
+                ItemStack old = e.getCursor().clone();
+                brewingGUI.setIngredient(old);
+                e.setCursor(temp);
+              }
+              brewingGUI.setLastInteractedPlayer(p);
+              if(brewingGUI.checkForBrewingTask()){
+                brewingGUI.startBrewTask();
               }
             }
           }
@@ -248,7 +260,7 @@ public class InvClickEvent implements Listener {
               if(brewingGUI.getPotion(e.getSlot()).getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack potion = brewingGUI.getPotion(e.getSlot()).clone();
                 brewingGUI.removePotion(e.getSlot());
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     e.setCursor(potion);
@@ -257,51 +269,37 @@ public class InvClickEvent implements Listener {
               }
               return;
             }
-            //TODO finish the gui interaction for this
             else if(PotionUtils.isPotionItem(e.getCursor())){
-              if(brewingGUI.getIngredient().getAmount() < 64 &&
-                      (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCursor()))){
-                if(e.getClick() == ClickType.LEFT){
-                  int currentAmount = brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getIngredient().getAmount();
-                  int maxSize = brewingGUI.getIngredient().getMaxStackSize();
-                  int maxDiff = maxSize - currentAmount;
-                  int actualDiff = Math.min(e.getCursor().getAmount(), maxDiff);
-                  if(brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
-                    ItemStack newIngredient = new ItemStack(e.getCursor().getType(), actualDiff);
-                    brewingGUI.setIngredient(newIngredient);
-                  }
-                  else{
-                    brewingGUI.getIngredient().setAmount(brewingGUI.getIngredient().getAmount() + actualDiff);
-                    brewingGUI.setIngredient(brewingGUI.getIngredient());
-                  }
-                  e.getCursor().setAmount(e.getCursor().getAmount() - actualDiff);
+              if(e.getClick() == ClickType.LEFT){
+                if(brewingGUI.getPotion(e.getSlot()).getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+                  ItemStack potion = e.getCursor().clone();
+                  potion.setAmount(1);
+                  brewingGUI.setPotion(potion, e.getSlot());
                 }
-                if(e.getClick() == ClickType.RIGHT){
-                  int currentAmount = brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getIngredient().getAmount();
-                  if(currentAmount == 64){
-                    return;
+                else{
+                  if(e.getCursor().getAmount() == 1){
+                    ItemStack temp = e.getInventory().getItem(e.getSlot()).clone();
+                    ItemStack potion = e.getCursor().clone();
+                    brewingGUI.setPotion(potion, e.getSlot());
+                    e.setCursor(temp);
                   }
-                  if(brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
-                    ItemStack newIngredient = new ItemStack(e.getCursor().getType(), 1);
-                    brewingGUI.setIngredient(newIngredient);
-                  }
-                  else{
-                    brewingGUI.getIngredient().setAmount(brewingGUI.getIngredient().getAmount() + 1);
-                    //TODO fix this
-                    brewingGUI.setIngredient(brewingGUI.getIngredient());
-                  }
-                  e.getCursor().setAmount(e.getCursor().getAmount() - 1);
+                  return;
                 }
+                e.getCursor().setAmount(e.getCursor().getAmount() - 1);
               }
             }
           }
-
+          else if(brewingGUI.isSpecialItemSlot(e.getSlot()) && (e.getCursor() == null || e.getCursor().getType() == Material.AIR)){
+            if(brewingGUI.getSpecialItem(e.getSlot()) != null){
+              e.setCursor(brewingGUI.getSpecialItem(e.getSlot()));
+              brewingGUI.removeSpecialReward(e.getSlot());
+            }
+          }
         }
         return;
       }
       //Cuz null errors are fun
       if(e.getCurrentItem() == null){
-
         return;
       }
       //Ignore player inventory
@@ -342,7 +340,7 @@ public class InvClickEvent implements Listener {
           }
         }
       }
-
+      
       //Selecting what loadout to edit
       if(currentGUI instanceof EditLoadoutSelectGUI){
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EDIT_LOADOUT_SELECT_GUI);
@@ -380,7 +378,7 @@ public class InvClickEvent implements Listener {
           }
         }
       }
-
+      
       if(currentGUI instanceof SettingsGUI){
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SETTINGS_GUI);
         if(e.getSlot() == guiConfig.getInt("ChangeDisplaySettings.Slot")){
@@ -519,7 +517,7 @@ public class InvClickEvent implements Listener {
         }
         return;
       }
-
+      
       //Dealing with ability accepting
       if(currentGUI instanceof AcceptAbilityGUI){
         AcceptAbilityGUI acceptAbilityGUI = (AcceptAbilityGUI) currentGUI;
@@ -582,7 +580,7 @@ public class InvClickEvent implements Listener {
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
             mp.saveData();
             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
-                    .replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
+                                                                                     .replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
             if(mp.getAbilityPoints() > 0){
               GUI gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
               currentGUI.setClearData(false);
@@ -598,7 +596,7 @@ public class InvClickEvent implements Listener {
           }
         }
       }
-
+      
       else if(currentGUI instanceof SubSkillGUI){
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SUBSKILL_GUI);
         if(e.getSlot() == guiConfig.getInt("BackButton.Slot")){
@@ -612,7 +610,7 @@ public class InvClickEvent implements Listener {
           }
         }
       }
-
+      
       if(currentGUI instanceof SelectReplaceGUI){
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SELECT_REPLACE_SKILLS_GUI);
         SelectReplaceGUI selectReplaceGUI = (SelectReplaceGUI) currentGUI;
@@ -672,7 +670,7 @@ public class InvClickEvent implements Listener {
           p.openInventory(selectReplaceGUI.getGui().getInv());
           GUITracker.trackPlayer(p, selectReplaceGUI);
           GUITracker.setPlayersPreviousGUI(p, lastGUI);
-
+          
           p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.AcceptedAbility").replace("%Ability%", baseAbility.getGenericAbility().getName())));
           return;
         }
@@ -684,7 +682,7 @@ public class InvClickEvent implements Listener {
         }
         return;
       }
-
+      
       //Remote Transfer GUI
       if(currentGUI instanceof RemoteTransferGUI){
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.REMOTE_TRANSFER_GUI);
@@ -935,7 +933,7 @@ public class InvClickEvent implements Listener {
               mp.giveExp(skill, amount, GainReason.REDEEM);
               mp.setRedeemableExp(mp.getRedeemableExp() - amount);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
-                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
+                                                                                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
             }
@@ -950,7 +948,7 @@ public class InvClickEvent implements Listener {
               mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               mp.setRedeemableLevels(mp.getRedeemableLevels() - amount);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
-                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
+                                                                                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
             }
@@ -966,7 +964,7 @@ public class InvClickEvent implements Listener {
             if(redeemType == RedeemType.EXP){
               mp.giveExp(skill, mp.getRedeemableExp(), GainReason.REDEEM);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedExp")
-                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableExp()))));
+                                                                                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(mp.getRedeemableExp()))));
               mp.setRedeemableExp(0);
               p.closeInventory();
               return;
@@ -983,7 +981,7 @@ public class InvClickEvent implements Listener {
               }
               mp.getSkill(skill).giveLevels(mp, amount, McRPG.getInstance().getConfig().getBoolean("Configuration.Redeeming.RedeemLevelsResetExp"));
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.CustomRedeem.RedeemedLevels")
-                      .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
+                                                                                       .replace("%Skill%", skill.getName()).replace("%Amount%", Integer.toString(amount))));
               p.closeInventory();
               return;
             }
@@ -1094,7 +1092,7 @@ public class InvClickEvent implements Listener {
       }
     }
   }
-
+  
   private void checkAndOpenPending(McRPGPlayer mp){
     Player p = mp.getPlayer();
     if(mp.hasPendingAbility()){
