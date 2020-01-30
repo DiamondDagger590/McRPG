@@ -36,7 +36,7 @@ dependencies {
     annotationProcessor 'com.github.cyr1en:javen:1.0.2'
 
     //compile 'com.github.CyR1en:McUtils:1.6.11'
-    //compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
+    compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
 
     compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
     compileOnly 'com.github.DiamondDagger590:FlatDB:1.0.7'
