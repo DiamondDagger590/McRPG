@@ -305,11 +305,12 @@ public class FileManager {
 
     }
   }
-
-  public enum Files {
+  
+  public enum Files{
     ABILITY_OVERRIDE_GUI("abilityoverridegui.yml", "guis/abilityoverridegui.yml"),
     ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
     ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
+    ARTIFACT_FILE("artifacts.yml", "artifacts/artifacts.yml"),
     AXES_CONFIG("axes.yml", "skills/axes.yml"),
     BREWING_GUI("brewinggui.yml", "guis/brewinggui.yml"),
     BREWING_ITEMS_CONFIG("demo.yml", "skills/demo.yml"),
@@ -328,6 +329,7 @@ public class FileManager {
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),
+    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
@@ -339,17 +341,16 @@ public class FileManager {
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
     ,
-    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
     WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml"),
     WORLD_MODIFIER("world_modifier.yml", "world_modifier.yml");
-
+    
     private String fileName;
     private String fileLocation;
-
+    
     /**
      * The files that the server will try and load.
      *
@@ -360,7 +361,7 @@ public class FileManager {
       this.fileName = fileName;
       this.fileLocation = fileLocation;
     }
-
+    
     /**
      * Get the name of the file.
      *
@@ -369,7 +370,7 @@ public class FileManager {
     public String getFileName(){
       return fileName;
     }
-
+    
     /**
      * The location the jar it is at.
      *
@@ -378,7 +379,7 @@ public class FileManager {
     public String getFileLocation(){
       return fileLocation;
     }
-
+    
     /**
      * Gets the file from the system.
      *
@@ -387,7 +388,7 @@ public class FileManager {
     public FileConfiguration getFile(){
       return getInstance().getFile(this);
     }
-
+    
     public static Files fromString(String file){
       for(Files f : Files.values()){
         if(f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)){
@@ -396,27 +397,27 @@ public class FileManager {
       }
       return null;
     }
-
+    
     /**
      * Saves the file from the loaded state to the file system.
      */
     public void saveFile(){
       getInstance().saveFile(this);
     }
-
+    
     /**
      * Overrides the loaded state file and loads the file systems file.
      */
     public void reloadFile(){
       getInstance().reloadFile(this);
     }
-
+    
     public static Files getSkillFile(Skills skill){
       return fromString(skill.getName());
     }
-
+    
   }
-
+  
   public class CustomFile {
 
     private String name;
