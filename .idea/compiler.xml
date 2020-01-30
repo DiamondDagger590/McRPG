@@ -3,11 +3,23 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+      <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
-        <module name="McMMOx" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.4/7103ab519b1cdbb0642ad4eaf1db209d905d0f96/lombok-1.18.4.jar" />
+        </processorPath>
+        <module name="McRPG.test" />
+      </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.atteo.classindex/classindex/3.6/907f96dc0dac8fa716a75ba144de7347696e62b6/classindex-3.6.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.4/7103ab519b1cdbb0642ad4eaf1db209d905d0f96/lombok-1.18.4.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/me.tongfei/progressbar/0.7.1/cc9500f07c67112a9619d1c2536b3e30598d9477/progressbar-0.7.1.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jline/jline/3.7.0/1238f7a1e5361b15600d64dc33c33bccfc58e69f/jline-3.7.0.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.cyr1en/javen/1.0.2/15d69b96ed217647483c7ddd6a55dbf7755bd983/javen-1.0.2.jar" />
+        </processorPath>
+        <module name="McRPG.main" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

@@ -8,14 +8,15 @@ import com.cyr1en.mcutils.initializers.annotation.Ignore;
 import com.cyr1en.mcutils.initializers.annotation.Initialize;
 import com.cyr1en.mcutils.initializers.annotation.process.Initializer;
 import com.cyr1en.mcutils.logger.Logger;*/
+
 import com.cyr1en.javen.Javen;
 import com.cyr1en.javen.annotation.Lib;
 import com.google.common.base.Charsets;
 import lombok.Getter;
 import lombok.Setter;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
@@ -55,6 +56,8 @@ import java.util.logging.Level;
 public class McRPG extends JavaPlugin {//implements //Initializable {
 
   private static McRPG instance;
+  private static final int id = 6386;
+  
  // @Getter private PluginUpdater pluginUpdater;
   @Getter private FileManager fileManager;
   @Getter private ExpPermissionManager expPermissionManager;
@@ -115,6 +118,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     worldModifierManager = new WorldModifierManager();
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
+    Metrics metrics = new Metrics(this, id);
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
