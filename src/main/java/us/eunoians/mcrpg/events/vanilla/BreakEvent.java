@@ -8,6 +8,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
 import org.bukkit.*;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -30,6 +31,7 @@ import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
 import us.eunoians.mcrpg.abilities.mining.ItsATriple;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.abilities.mining.RicherOres;
+import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
 import us.eunoians.mcrpg.abilities.woodcutting.DryadsGift;
 import us.eunoians.mcrpg.abilities.woodcutting.ExtraLumber;
 import us.eunoians.mcrpg.abilities.woodcutting.HeavySwing;
@@ -47,6 +49,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.herbalism.TooManyPlantsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.DoubleDropEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.ItsATripleEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.mining.RicherOresEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.sorcery.HadesDomainEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.DryadsGiftEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.ExtraLumberEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.HeavySwingEvent;
@@ -55,6 +58,7 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.*;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -178,6 +182,7 @@ public class BreakEvent implements Listener{
       FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
       FileConfiguration woodCutting = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG);
       FileConfiguration excavationConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EXCAVATION_CONFIG);
+      FileConfiguration sorceryConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
       if(excavationConfig.getBoolean("ExcavationEnabled")){
         int dropMultiplier = 1;
         if(!McRPG.getPlaceStore().isTrue(block)){
@@ -726,9 +731,34 @@ public class BreakEvent implements Listener{
           DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
         }
       }
+      if(block.getBiome() == Biome.NETHER){
+        if(sorceryConfig.getBoolean("SorceryEnabled") && UnlockedAbilities.HADES_DOMAIN.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HADES_DOMAIN)
+             && mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN).isToggled()){
+          HadesDomain hadesDomain = (HadesDomain) mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN);
+          FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
+          double multiplier = sorceryFile.getDouble("HadesDomainConfiguration.Tier" + Methods.convertToNumeral(hadesDomain.getCurrentTier()) + ".VanillaExpBoost");
+          HadesDomainEvent hadesDomainEvent = new HadesDomainEvent(mp, hadesDomain, multiplier, false);
+          Bukkit.getPluginManager().callEvent(hadesDomainEvent);
+          if(!hadesDomainEvent.isCancelled()){
+            multiplier = hadesDomainEvent.getPercentBonusVanillaExp();
+            multiplier /= 100;
+            multiplier += 1;
+            event.setExpToDrop((int) (event.getExpToDrop() * multiplier));
+          }
+        }
+      }
     }
   }
 
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void brewingStandBreak(BlockBreakEvent e){
+    Block block = e.getBlock();
+    if(block.getType() == Material.BREWING_STAND){
+      BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
+      brewingStandManager.breakBrewingStand(block.getLocation());
+    }
+  }
+  
   private enum EasterEgg{
     VERUM("HOE");
 

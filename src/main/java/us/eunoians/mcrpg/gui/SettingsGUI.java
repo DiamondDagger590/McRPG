@@ -146,13 +146,15 @@ public class SettingsGUI extends GUI {
       backMeta.setLore(Methods.colorLore(settingsFile.getStringList("BackButton.Lore")));
       back.setItemMeta(backMeta);
       items.add(new GUIItem(back, settingsFile.getInt("BackButton.Slot")));
-
-      ItemStack filler = new ItemStack(Material.valueOf(settingsFile.getString("FillerItem.Material")), settingsFile.getInt("FillerItem.Amount"));
-      ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("FillerItem.DisplayName")));
-      fillerMeta.setLore(Methods.colorLore(settingsFile.getStringList("FillerItem.Lore")));
-      filler.setItemMeta(fillerMeta);
-
+  
+      ItemStack filler = new ItemStack(Material.AIR);
+      if(settingsFile.contains("FillerItem")){
+        filler = new ItemStack(Material.valueOf(settingsFile.getString("FillerItem.Material")), settingsFile.getInt("FillerItem.Amount"));
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("FillerItem.DisplayName")));
+        fillerMeta.setLore(Methods.colorLore(settingsFile.getStringList("FillerItem.Lore")));
+        filler.setItemMeta(fillerMeta);
+      }
       return Methods.fillInventory(inv, filler, items);
     };
     this.getGui().setBuildGUIFunction(function);

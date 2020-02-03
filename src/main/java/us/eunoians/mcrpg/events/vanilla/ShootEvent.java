@@ -80,7 +80,9 @@ public class ShootEvent implements Listener {
               mp.setReadying(false);
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
               mp.setReadyingAbilityBit(null);
-              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WOLF_GROWL, 2, 2);
+              FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Sound")),
+                soundFile.getInt("Sounds.Archery.BlessingOfArtemis.Volume"), soundFile.getInt("Sounds.Archery.BlessingOfArtemis.Pitch"));
               p.getLocation().getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getEyeLocation(), 1);
               trackArrowParticles(arrow, Particle.SMOKE_NORMAL);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Activated")));
@@ -105,7 +107,9 @@ public class ShootEvent implements Listener {
               mp.setReadying(false);
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
               mp.setReadyingAbilityBit(null);
-              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 2, 2);
+              FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.BlessingOfApollo.Sound")),
+                soundFile.getInt("Sounds.Archery.BlessingOfApollo.Volume"), soundFile.getInt("Sounds.Archery.BlessingOfApollo.Pitch"));
               trackArrowParticles(arrow, Particle.FLAME);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Activated")));
             }
@@ -137,7 +141,9 @@ public class ShootEvent implements Listener {
               mp.setReadying(false);
               Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
               mp.setReadyingAbilityBit(null);
-              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SHOOT, 2, 2);
+              FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.CurseOfHades.Sound")),
+                soundFile.getInt("Sounds.Archery.CurseOfHades.Volume"), soundFile.getInt("Sounds.Archery.CurseOfHades.Pitch"));
               trackArrowParticles(arrow, Particle.SQUID_INK);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CurseOfHades.Activated")));
             }

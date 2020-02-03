@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.util.configuration;
 
 import de.articdive.enum_to_yaml.interfaces.ConfigurationEnum;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 public enum ConfigEnum implements ConfigurationEnum {
@@ -15,6 +14,9 @@ public enum ConfigEnum implements ConfigurationEnum {
           "#   - This plugin supports player name place holders as %Player%", "# If you receive an error when McRPG loads, ensure that:",
           "#   - No tabs are present: YAML only allows spaces", "#   - Indents are correct: YAML hierarchy is based entirely on indentation",
           "###################################"),
+  MCMMO_CONVERSION_EQUATION("Configuration.McMMOConversionEquation", "((skill_exp)*0.5)", "#Converts a players level to exp and then convert that into boosted experience using the equation below"),
+  BOOSTED_EXP_USAGE_RATE("Configuration.BoostedExpUsageRate", "((gained_exp)*2.25)", "#When a player gains exp, this equation is factored in and if there is remaining boosted exp,", "#then it will add this equation value to the gained amount"),
+  MAX_DAMAGE_CAP("Configuration.MaxDamageCap", 1000000, "#The maximum amount of damage allowed for giving experience"),
   SHIELD_BLOCKING_MODIFIER("Configuration.ShieldBlockingModifier", 0.5, "#How much exp gain should be modified if the target is blocking with a shield."),
   DISABLE_ENDER_PEARL_EXP("Configuration.DisableEPearlExp", true, "#If exp should be disabled for damage from ender pearls"),
   DISABLE_BOOKS_IN_END("Configuration.DisableBooksInEnd", true, "#If skill books should be undroppable in the end"),
@@ -52,6 +54,7 @@ public enum ConfigEnum implements ConfigurationEnum {
   BOSSBAR_COLOR_EXCAVATION("DisplayConfig.BossBar.Color.Excavation", "Blue"),
   BOSSBAR_COLOR_AXES("DisplayConfig.BossBar.Color.Axes", "Red"),
   BOSSBAR_COLOR_FISHING("DisplayConfig.BossBar.Color.Fishing", "Blue"),
+  BOSSBAR_COLOR_SORCERY("DisplayConfig.BossBar.Color.Sorcery", "Pink"),
   ACTIONBAR_SWORDS_MESSAGE("DisplayConfig.ActionBar.Swords.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
   ACTIONBAR_MINING_MESSAGE("DisplayConfig.ActionBar.Mining.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),
   ACTIONBAR_UNARMED_MESSAGE("DisplayConfig.ActionBar.Unarmed.Message", "&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining"),

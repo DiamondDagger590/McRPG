@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.IOUtil;
 import us.eunoians.mcrpg.util.configuration.ConfigEnum;
 import us.eunoians.mcrpg.util.configuration.LangEnum;
+import us.eunoians.mcrpg.util.configuration.SoundEnum;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,10 +49,13 @@ public class FileManager {
     //Auto gen some configs
     EnumConfigurationBuilder config = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "config.yml"), ConfigEnum.class);
     EnumConfigurationBuilder enConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "localization" + File.separator + "en.yml"), LangEnum.class);
+    EnumConfigurationBuilder soundConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder()  + File.separator + "sounds.yml"), SoundEnum.class);
     config.setWidth(100000);
     enConfig.setWidth(100000);
+    soundConfig.setWidth(100000);
     config.build();
     enConfig.build();
+    soundConfig.build();
     prefix = "[" + plugin.getName() + "] ";
     this.plugin = plugin;
     if (!plugin.getDataFolder().exists()) {
@@ -305,12 +309,15 @@ public class FileManager {
 
     }
   }
-
-  public enum Files {
+  
+  public enum Files{
     ABILITY_OVERRIDE_GUI("abilityoverridegui.yml", "guis/abilityoverridegui.yml"),
     ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
     ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
+    ARTIFACT_FILE("artifacts.yml", "artifacts/artifacts.yml"),
     AXES_CONFIG("axes.yml", "skills/axes.yml"),
+    BREWING_GUI("brewinggui.yml", "guis/brewinggui.yml"),
+    BREWING_ITEMS_CONFIG("potionitems.yml", "skills/potionitems.yml"),
     CONFIG("config.yml", "config.yml"),
     CUSTOM("custom.yml", "localization/custom.yml"),
     EDIT_DEFAULT_ABILITIES_GUI("editdefaultabilitiesgui.yml", "guis/editdefaultabilitiesgui.yml"),
@@ -326,6 +333,7 @@ public class FileManager {
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),
+    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
@@ -333,19 +341,20 @@ public class FileManager {
     SETTINGS_GUI("playersettingsgui.yml", "guis/playersettingsgui.yml"),
     SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
+    SORCERY_CONFIG("sorcery.yml", "skills/sorcery.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
-    SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
-    ,
+    SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
+    SOUNDS_FILE("sounds.yml", "sounds.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
     WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml"),
     WORLD_MODIFIER("world_modifier.yml", "world_modifier.yml");
-
+    
     private String fileName;
     private String fileLocation;
-
+    
     /**
      * The files that the server will try and load.
      *
@@ -356,7 +365,7 @@ public class FileManager {
       this.fileName = fileName;
       this.fileLocation = fileLocation;
     }
-
+    
     /**
      * Get the name of the file.
      *
@@ -365,7 +374,7 @@ public class FileManager {
     public String getFileName(){
       return fileName;
     }
-
+    
     /**
      * The location the jar it is at.
      *
@@ -374,7 +383,7 @@ public class FileManager {
     public String getFileLocation(){
       return fileLocation;
     }
-
+    
     /**
      * Gets the file from the system.
      *
@@ -383,7 +392,7 @@ public class FileManager {
     public FileConfiguration getFile(){
       return getInstance().getFile(this);
     }
-
+    
     public static Files fromString(String file){
       for(Files f : Files.values()){
         if(f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)){
@@ -392,27 +401,27 @@ public class FileManager {
       }
       return null;
     }
-
+    
     /**
      * Saves the file from the loaded state to the file system.
      */
     public void saveFile(){
       getInstance().saveFile(this);
     }
-
+    
     /**
      * Overrides the loaded state file and loads the file systems file.
      */
     public void reloadFile(){
       getInstance().reloadFile(this);
     }
-
+    
     public static Files getSkillFile(Skills skill){
       return fromString(skill.getName());
     }
-
+    
   }
-
+  
   public class CustomFile {
 
     private String name;

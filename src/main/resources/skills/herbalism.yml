@@ -80,7 +80,7 @@ UsePermsForAbilites:
   MassHarvest: false
   NaturesWrath: false
   PansBlessing: false
-#At what swords level should these abilities be unlocked at
+#At what herbalism level should these abilities be unlocked at
 UnlockLevelForAbility:
   DiamondFlowers: 250
   Replanting: 150
@@ -92,7 +92,7 @@ UnlockLevelForAbility:
 # Too Many Plants is the default ability that every player has. This ability will increase every time the players Herbalism level is increased
 #
 TooManyPlantsConfig:
-  #Equation for Double Drop chance. Default gives 50% at level 1000.
+  #Equation for Too Many Plants chance. Default gives 50% at level 1000.
   TooManyPlantsChanceEquation: (herbalism_level)*.05
   #How this ability should be seen in the GUIS
   Item:
@@ -412,7 +412,7 @@ ReplantingConfig:
     PlayerLore:
       - '&bYou have a &e%ActivationChance%% &bchance'
       - '&bof replanting and a &e%StageGrowthChance%%'
-      - 'baof the crop being slightly grown.'
+      - '&baof the crop being slightly grown.'
     MenuLore:
       - '&bThis ability replants crops'
       - '&boccassionally at a higher growth level'

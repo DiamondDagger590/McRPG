@@ -81,6 +81,7 @@ public class McRPGStub implements CommandExecutor {
             DiamondFlowersData.init();
             BuriedTreasureData.init();
             McRPG.getInstance().getBookManager().reload();
+            McRPG.getInstance().getArtifactManager().reload();
             McRPG.getInstance().getExpPermissionManager().reload();
             McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
             return true;
@@ -109,6 +110,7 @@ public class McRPGStub implements CommandExecutor {
           DiamondFlowersData.init();
           BuriedTreasureData.init();
           McRPG.getInstance().getBookManager().reload();
+          McRPG.getInstance().getArtifactManager().reload();
           McRPG.getInstance().getExpPermissionManager().reload();
           McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
           return true;

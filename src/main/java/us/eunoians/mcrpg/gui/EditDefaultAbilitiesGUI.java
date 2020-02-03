@@ -64,12 +64,15 @@ public class EditDefaultAbilitiesGUI extends GUI {
         }
         items.add(new GUIItem(abilityItem, i));
       }
-      ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
-      ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
-      fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
-      filler.setItemMeta(fillerMeta);
-
+  
+      ItemStack filler = new ItemStack(Material.AIR);
+      if(guiConfig.contains("FillerItem")){
+        filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
+        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
+        filler.setItemMeta(fillerMeta);
+      }
       ItemStack back = new ItemStack(Material.valueOf(guiConfig.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
       backMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("BackButton.DisplayName")));

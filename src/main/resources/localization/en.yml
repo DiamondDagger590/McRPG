@@ -13,6 +13,16 @@ SkillNames:
   Excavation: 'Excavation'
   Axes: 'Axes'
   Fishing: 'Fishing'
+  Sorcery: 'Sorcery'
+SkillItemNames:
+  Swords: "Sword"
+  Mining: "Pickaxe"
+  Unarmed: "Fist"
+  Excavation: "Shovel"
+  Herbalism: "Hoe"
+  Archery: "Bow"
+  Woodcutting: "Axe"
+  Axes: "Battle Axe"
 Signs:
   PowerLeaderboard:
     Line1: '&7[&6Power&7]'
@@ -31,6 +41,18 @@ Messages:
   #Messages that dont fit anywhere
   Misc:
     PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
+    PoseidonsGuardianName: '&bPoseidons Guardian'
+  Artifacts:
+    ArtifactCreated: '&5A &e%ArtifactType% &5artifact has been created!'
+    RedeemableExpArtifactUsed: '&aYou have used the artifact to gain &e%RedeemableExpAmount% &aredeemable exp.'
+    SkillMaxed: '&cYou can not use that artifact because you are already at the max level for this skill.'
+    SkillExpArtifactUsed: '&aYou have used the artifact to gain &e%SkillExpAmount% &aexp in &e%Skill%&a.'
+    RedeemableLevelArtifactUsed: '&aYou have used the artifact to gain &e%RedeemableLevelAmount% &aredeemable level(s).'
+    AbilityPointArtifactUsed: '&aYou have used the artifact to gain &e%AbilityPointAmount% &aability points(s).'
+    UnlockBookArtifactUsed: '&aYou have used the artifact to gain &e%UnlockBookAmount% &aunlock books(s).'
+    UpgradeBookArtifactUsed: '&aYou have used the artifact to gain &e%UpgradeBookAmount% &aupgrade books(s).'
+    CooldownArtifactUsed: '&aYou have used the artifact to reset all your cooldowns.'
+    MagnetArtifactUsed: '&aYou have used the magnet artifact to draw in nearby items.'
   SkillBooks:
     Upgraded: '&aYou upgraded %Ability% from Tier &e%OldTier% &ato &e%NewTier%&a!'
     Unlocked: '&aYou unlocked &e%Ability% &aTier &e%Tier%&a!'
@@ -361,3 +383,10 @@ Messages:
       - '&7[&5McRPG Tip&7]: &aSunken Armory can even fish up diamond armor!'
       - '&7[&5McRPG Tip&7]: &aSuper Rod makes treasure found even more amazing!'
       - '&7[&5McRPG Tip&7]: &aMagic Touch will let you fish enchanted books and gear!'
+    LevelUpSorcery:
+      - '&7[&5McRPG Tip&7]: &aHasty Brew increases the speed at which your potions brew!'
+      - '&7[&5McRPG Tip&7]: &aHades Domain increases all exp gain while in the nether!'
+      - '&7[&5McRPG Tip&7]: &aCirces Recipes will allow you to brew a wide range of unique potions!'
+      - '&7[&5McRPG Tip&7]: &aYou can get rare items such as skill books or artifacts from brewing!'
+      - '&7[&5McRPG Tip&7]: &aEnchanting will give Sorcery exp!'
+      - '&7[&5McRPG Tip&7]: &aArtifacts are consumables that can be found from brewing!'

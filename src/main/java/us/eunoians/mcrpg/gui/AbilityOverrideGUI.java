@@ -94,11 +94,14 @@ public class AbilityOverrideGUI extends GUI{
       abilityItem1.setItemMeta(abilityMeta1);
       items.add(new GUIItem(abilityItem1, guiConfig.getInt("AbilityReplacingItem.Slot")));
       
-      ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
-      ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
-      fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
-      filler.setItemMeta(fillerMeta);
+      ItemStack filler = new ItemStack(Material.AIR);
+      if(guiConfig.contains("FillerItem")){
+        filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(Methods.color(player.getPlayer(), guiConfig.getString("FillerItem.DisplayName")));
+        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
+        filler.setItemMeta(fillerMeta);
+      }
       return Methods.fillInventory(inv, filler, items);
     };
     this.getGui().setBuildGUIFunction(buildGUIFunction);

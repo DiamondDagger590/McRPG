@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.events.vanilla;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,13 +11,14 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("Duplicates")
@@ -58,7 +59,9 @@ public class PickupEvent implements Listener {
         }
         if(!ignored.contains(firstEmpty) && firstEmpty != -1) {
           e.setCancelled(true);
-          e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, 1, 1);
+          FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+          e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.Pickup.Sound")),
+            soundFile.getInt("Sounds.Misc.Pickup.Volume"), soundFile.getInt("Sounds.Misc.Pickup.Pitch"));
           ItemStack itemToPickup = e.getItem().getItemStack();
           Inventory inv = e.getPlayer().getInventory();
           // e.getPlayer().getInventory().setItem(firstEmpty, e.getItem().getItemStack());

@@ -124,13 +124,15 @@ public class SelectReplaceGUI extends GUI {
       backMeta.setLore(Methods.colorLore(guiConfig.getStringList("BackButton.Lore")));
       back.setItemMeta(backMeta);
       items.add(new GUIItem(back, guiConfig.getInt("BackButton.Slot")));
-
-      ItemStack filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
-      ItemMeta fillerMeta = filler.getItemMeta();
-      fillerMeta.setDisplayName(guiConfig.getString("FillerItem.DisplayName"));
-      fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
-      filler.setItemMeta(fillerMeta);
-
+  
+      ItemStack filler = new ItemStack(Material.AIR);
+      if(guiConfig.contains("FillerItem")){
+        filler = new ItemStack(Material.valueOf(guiConfig.getString("FillerItem.Material")), guiConfig.getInt("FillerItem.Amount"));
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(guiConfig.getString("FillerItem.DisplayName"));
+        fillerMeta.setLore(Methods.colorLore(guiConfig.getStringList("FillerItem.Lore")));
+        filler.setItemMeta(fillerMeta);
+      }
       return Methods.fillInventory(inv, filler, items);
     };
     this.getGui().setBuildGUIFunction(buildGUIFunction);

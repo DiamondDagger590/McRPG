@@ -15,6 +15,7 @@ import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.util.blockmeta.conversion.BlockStoreConversionMain;
 
 import java.io.File;
@@ -85,6 +86,8 @@ public class WorldListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onChunkUnload(ChunkUnloadEvent event) {
     Chunk chunk = event.getChunk();
+    BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
+    
     //Some edge case was happening here
     if(chunk == null || event.getWorld() == null) {
       return;

@@ -12,18 +12,24 @@ import com.cyr1en.mcutils.logger.Logger;*/
 import com.cyr1en.javen.Javen;
 import com.cyr1en.javen.annotation.Lib;
 import com.google.common.base.Charsets;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
 import us.eunoians.mcrpg.api.util.*;
+import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
+import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
 import us.eunoians.mcrpg.commands.*;
@@ -69,7 +75,11 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private LeaderboardManager leaderboardManager;
   @Getter private LeaderboardHeadManager leaderboardHeadManager;
   @Getter private BookManager bookManager;
+  @Getter private ArtifactManager artifactManager;
+  @Getter private PotionRecipeManager potionRecipeManager;
+  @Getter private BrewingStandManager brewingStandManager;
   @Getter private WorldModifierManager worldModifierManager;
+
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
   @Getter private final String customVisibleKey = "mcMMO: Name Visibility";
@@ -79,6 +89,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private boolean ncpEnabled = false;
   @Getter private boolean sickleEnabled = false;
   @Getter private boolean worldGuardEnabled = false;
+  @Getter private boolean mcmmoEnabled = false;
   @Getter @Setter private WGSupportManager wgSupportManager;
 
   @Override
@@ -93,7 +104,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     javen.addRepository("jitPack", "https://jitpack.io");
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
-    
     McRPG t = this;
     if(Bukkit.getVersion().contains("1.14")){
       new BukkitRunnable(){
@@ -104,7 +114,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }.runTaskLater(this, 400);
     }
-
     //Misc
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
@@ -115,10 +124,15 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
     fishingItemManager = new FishingItemManager();
     bookManager = new BookManager(this);
+    artifactManager = new ArtifactManager(this);
     worldModifierManager = new WorldModifierManager();
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
     Metrics metrics = new Metrics(this, id);
+    brewingStandManager = new BrewingStandManager();
+    getLogger().info("Loading Potions");
+    potionRecipeManager = new PotionRecipeManager();
+    new PlayerManager(this);
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
@@ -136,6 +150,14 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }
     }.runTaskLater(this, 10 * 20);
+    new BukkitRunnable(){
+      public void run(){
+        if(Bukkit.getPluginManager().isPluginEnabled("mcMMO")){
+          mcmmoEnabled = true;
+          getLogger().info("McMMO found... ready to convert.");
+        }
+      }
+    }.runTaskLater(this, 400);
     if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
       worldGuardEnabled = true;
       wgSupportManager = new WGSupportManager(this);
@@ -151,7 +173,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     BuriedTreasureData.init();
     HiddenConfig.getInstance();
     PlayerManager.startSave(this);
-
     //Commands
     getCommand("mcrpg").setExecutor(new McRPGStub());
     getCommand("mcdisplay").setExecutor(new McDisplay());
@@ -162,12 +183,10 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcconvert").setExecutor(new McConvert());
     getCommand("mcredeem").setExecutor(new McRedeem());
     getCommand("mcrank").setExecutor(new McRank());
-
     getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());
     getCommand("mcadmin").setTabCompleter(new McAdminPrompt());
-
     //Events
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
@@ -201,6 +220,11 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
     getServer().getPluginManager().registerEvents(new SignEvent(), this);
     getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
+    getServer().getPluginManager().registerEvents(new PotionDrinkEvent(), this);
+    getServer().getPluginManager().registerEvents(new PotionEffectEvent(), this);
+    getServer().getPluginManager().registerEvents(new EnchantingEvent(), this);
+    getServer().getPluginManager().registerEvents(new MoveItemEvent(), this);
+    
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);
     }
@@ -213,6 +237,11 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }
     }.runTaskLater(this, 400);
+  
+    //Preload nbt class
+    ItemStack itemStack = new ItemStack(Material.DIAMOND);
+    NBTItem item = new NBTItem(itemStack);
+    item.setString("temp", "temp");
   }
 
   @Override
@@ -220,6 +249,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     /*if (!Initializer.finished())
       Initializer.interrupt();*/
     PlayerManager.shutDownManager();
+    brewingStandManager.shutDown();
     placeStore.saveAll();
   }
 
