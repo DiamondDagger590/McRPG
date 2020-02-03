@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.api.util.brewing.standmeta;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.*;
@@ -24,6 +25,8 @@ import us.eunoians.mcrpg.api.events.mcrpg.sorcery.ManaAffinityEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.artifacts.ArtifactFactory;
+import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.api.util.brewing.*;
@@ -250,7 +253,9 @@ public class BrewingGUI extends GUI{
       dropLocation.getWorld().dropItemNaturally(dropLocation, fuel);
     }
     for(ItemStack itemStack : specialRewards){
-      dropLocation.getWorld().dropItemNaturally(dropLocation, itemStack);
+      if(itemStack != null){
+        dropLocation.getWorld().dropItemNaturally(dropLocation, itemStack);
+      }
     }
   }
   
@@ -491,6 +496,7 @@ public class BrewingGUI extends GUI{
       specialRewards[3] = null;
     }
     resetSpecialItemGlass();
+    save();
   }
   
   public void removePotion(int slot){
@@ -575,6 +581,9 @@ public class BrewingGUI extends GUI{
     BrewEvent brewEvent = new BrewEvent(holder.getBlock(), snapshotInventory, currentFuelLevel);
     Bukkit.getPluginManager().callEvent(brewEvent);
     if(!brewEvent.isCancelled()){
+      FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+      holder.getLocation().getWorld().playSound(holder.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Brewing.FinishBrewSound.Sound")),
+        soundFile.getInt("Sounds.Brewing.FinishBrewSound.Volume"), soundFile.getInt("Sounds.Brewing.FinishBrewSound.Pitch"));
       int expToAward = 0;
       FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
       String expKey = "ExpAwardedPerBrewAmount.";
@@ -660,9 +669,10 @@ public class BrewingGUI extends GUI{
         }
         if(mp != null){
           BookManager bookManager = McRPG.getInstance().getBookManager();
+          ArtifactManager artifactManager = McRPG.getInstance().getArtifactManager();
           Random rand = new Random();
-          int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && holder.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
           if(!specialItemSlotsFull() && bookManager.getEnabledUnlockEvents().contains("Brewing")){
+            int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && holder.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
             double chance = bookManager.getDefaultUnlockChance();
             if(sorceryFile.getBoolean("SorceryEnabled") && UnlockedAbilities.MANA_AFFINITY.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MANA_AFFINITY)
                  && mp.getBaseAbility(UnlockedAbilities.MANA_AFFINITY).isToggled()){
@@ -699,6 +709,7 @@ public class BrewingGUI extends GUI{
             }
           }
           if(!specialItemSlotsFull() && bookManager.getEnabledUpgradeEvents().contains("Brewing")){
+            int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && holder.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
             double chance = bookManager.getDefaultUpgradeChance();
             if(sorceryFile.getBoolean("SorceryEnabled") && UnlockedAbilities.MANA_AFFINITY.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MANA_AFFINITY)
                  && mp.getBaseAbility(UnlockedAbilities.MANA_AFFINITY).isToggled()){
@@ -730,6 +741,43 @@ public class BrewingGUI extends GUI{
                 if(slot == MCRPG_SPECIAL_ITEM_SLOT_4){
                   inv.setItem(MCRPG_SPECIAL_ITEM_SLOT_4, book);
                   specialRewards[3] = book;
+                }
+              }
+            }
+          }
+          if(!specialItemSlotsFull()){
+            double chance = artifactManager.getArtifactTypeChance("BrewingArtifacts");
+            if(sorceryFile.getBoolean("SorceryEnabled") && UnlockedAbilities.MANA_AFFINITY.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.MANA_AFFINITY)
+                 && mp.getBaseAbility(UnlockedAbilities.MANA_AFFINITY).isToggled()){
+              ManaAffinity manaAffinity = (ManaAffinity) mp.getBaseAbility(UnlockedAbilities.MANA_AFFINITY);
+              double discoveryChanceIncrease = sorceryFile.getDouble("ManaAffinityConfig.Tier" + Methods.convertToNumeral(manaAffinity.getCurrentTier()) + ".DiscoveryChanceIncrease");
+              ManaAffinityEvent manaAffinityEvent = new ManaAffinityEvent(mp, manaAffinity, discoveryChanceIncrease);
+              Bukkit.getPluginManager().callEvent(manaAffinityEvent);
+              if(!manaAffinityEvent.isCancelled()){
+                chance += manaAffinityEvent.getDiscoveryChanceIncrease();
+              }
+            }
+            chance *= 1000;
+            if(chance >= rand.nextInt(100000)){
+              int slot = getFirstEmptySpecialItemSlot();
+              if(slot != 0){
+                ItemStack artifact = ArtifactFactory.generateArtifact("BrewingArtifacts");
+                NBTItem nbtItem = new NBTItem(artifact);
+                if(slot == MCRPG_SPECIAL_ITEM_SLOT_1){
+                  inv.setItem(MCRPG_SPECIAL_ITEM_SLOT_1, artifact);
+                  specialRewards[0] = artifact;
+                }
+                if(slot == MCRPG_SPECIAL_ITEM_SLOT_2){
+                  inv.setItem(MCRPG_SPECIAL_ITEM_SLOT_2, artifact);
+                  specialRewards[1] = artifact;
+                }
+                if(slot == MCRPG_SPECIAL_ITEM_SLOT_3){
+                  inv.setItem(MCRPG_SPECIAL_ITEM_SLOT_3, artifact);
+                  specialRewards[2] = artifact;
+                }
+                if(slot == MCRPG_SPECIAL_ITEM_SLOT_4){
+                  inv.setItem(MCRPG_SPECIAL_ITEM_SLOT_4, artifact);
+                  specialRewards[3] = artifact;
                 }
               }
             }

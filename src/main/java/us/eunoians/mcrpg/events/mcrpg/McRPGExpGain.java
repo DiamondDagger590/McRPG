@@ -50,12 +50,18 @@ public class McRPGExpGain implements Listener {
     Skills skill = e.getSkillGained().getType();
     Player p = e.getMcRPGPlayer().getPlayer();
     McRPGPlayer mp = e.getMcRPGPlayer();
+    if(!skill.isEnabled()){
+      e.setCancelled(true);
+      return;
+    }
     if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseLevelPerms") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
       || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".level"))) {
       e.setCancelled(true);
+      return;
     }
     else if(e.getSkillGained().getCurrentLevel() >= McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getInt("MaxLevel")) {
       e.setCancelled(true);
+      return;
     }
     else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM) {
       WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
@@ -152,9 +158,9 @@ public class McRPGExpGain implements Listener {
     if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0 && e.getGainType() != GainReason.REDEEM){
       e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff()/100)));
     }
-    if(e.getGainType() == GainReason.BREAK && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
+    if((e.getGainType() == GainReason.BREAK || e.getGainType() == GainReason.ENCHANTING || e.getGainType() == GainReason.FISHING || e.getGainType() == GainReason.BREW) && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
       Skills type = e.getSkillGained().getType();
-      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION) {
+      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION || type == Skills.FISHING || type == Skills.SORCERY) {
         e.setExpGained((int) (e.getExpGained() * demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid())));
       }
     }

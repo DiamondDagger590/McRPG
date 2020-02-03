@@ -18,11 +18,11 @@ MaxBrewAmountForExp: 5
 #Speed -> Splash Speed II = 4
 #Speed -> Lingering Speed II = 5
 ExpAwardedPerBrewAmount:
-  1: 200
-  2: 300
-  3: 400
-  4: 500
-  5: 750
+  1: 75
+  2: 150
+  3: 250
+  4: 400
+  5: 500
 #How much should the base enchantment exp be multiplied by.
 #Ex) ARROW_DAMAGE(Power) 5 gives 100 * 5.5 exp. So 550 experience is granted
 EnchantmentLevelModifier:
@@ -134,12 +134,12 @@ CircesRecipesConfig:
   TierI:
     #What non-vanilla potion effects the player can brew
     PotionEffects:
-      - 'HUNGER'
-      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
   TierII:
     PotionEffects:
-      - 'HUNGER'
-      - 'SATURATION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
       - 'LEVITATION'
       - 'CONFUSION'
   TierIII:

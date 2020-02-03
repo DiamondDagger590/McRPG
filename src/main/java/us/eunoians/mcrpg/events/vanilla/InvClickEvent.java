@@ -55,6 +55,7 @@ public class InvClickEvent implements Listener{
     if(PlayerManager.isPlayerFrozen(e.getWhoClicked().getUniqueId())){
       return;
     }
+    FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
     Player p = (Player) e.getWhoClicked();
     //If this is a gui
     if(GUITracker.isPlayerTracked(p)){
@@ -137,6 +138,16 @@ public class InvClickEvent implements Listener{
         else{
           e.setCancelled(true);
           if(e.getSlot() == 0){
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1){
+              e.setCancelled(false);
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  brewingGUI.resetFuelGlass();
+                }
+              }.runTaskLater(McRPG.getInstance(), 1);
+              return;
+            }
             if(e.getCursor() == null || e.getCursor().getType() == Material.AIR){
               if(brewingGUI.getFuel().getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack fuel = brewingGUI.getFuel().clone();
@@ -192,6 +203,16 @@ public class InvClickEvent implements Listener{
             }
           }
           else if(e.getSlot() == 13){
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1){
+              e.setCancelled(false);
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  brewingGUI.resetIngredientGlass();
+                }
+              }.runTaskLater(McRPG.getInstance(), 1);
+              return;
+            }
             if(e.getCursor() == null || e.getCursor().getType() == Material.AIR){
               if(brewingGUI.getIngredient().getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack ingredient = brewingGUI.getIngredient().clone();
@@ -256,6 +277,16 @@ public class InvClickEvent implements Listener{
             }
           }
           else if(brewingGUI.isPotionSlot(e.getSlot())){
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1){
+              e.setCancelled(false);
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  brewingGUI.removePotion(e.getSlot());
+                }
+              }.runTaskLater(McRPG.getInstance(), 1);
+              return;
+            }
             if(e.getCursor() == null || e.getCursor().getType() == Material.AIR){
               if(brewingGUI.getPotion(e.getSlot()).getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack potion = brewingGUI.getPotion(e.getSlot()).clone();
@@ -353,7 +384,8 @@ public class InvClickEvent implements Listener{
         }
         else if(slot == guiConfig.getInt("ReplaceAbilitiesItem.Slot")){
           if(mp.getEndTimeForReplaceCooldown() != 0){
-            p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
+            p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.ReplaceCooldownPending.Sound")),
+              soundFile.getInt("Sounds.Misc.ReplaceCooldownPending.Volume"), soundFile.getInt("Sounds.Misc.ReplaceCooldownPending.Pitch"));
             return;
           }
           ReplaceSkillsGUI replaceSkillsGUI = new ReplaceSkillsGUI(mp);
@@ -577,7 +609,9 @@ public class InvClickEvent implements Listener{
             }
             mp.setAbilityPoints(mp.getAbilityPoints() - 1);
             acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
-            p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_YES, 5, 1);
+            
+            p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.UpgradeAbility.Sound")),
+              soundFile.getInt("Sounds.Misc.UpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.UpgradeAbility.Pitch"));
             mp.saveData();
             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
                                                                                      .replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
@@ -816,7 +850,8 @@ public class InvClickEvent implements Listener{
           UnlockedAbilities unlockedAbility = (UnlockedAbilities) abilityToChange.getGenericAbility();
           if(abilityToChange.getCurrentTier() < unlockedAbility.getMaxTier()){
             if(unlockedAbility.tierUnlockLevel(abilityToChange.getCurrentTier() + 1) > mp.getSkill(unlockedAbility.getSkill()).getCurrentLevel()){
-              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
+                soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));
               return;
             }
             AcceptAbilityGUI gui = new AcceptAbilityGUI(mp, abilityToChange, AcceptAbilityGUI.AcceptType.ACCEPT_UPGRADE);
@@ -826,8 +861,8 @@ public class InvClickEvent implements Listener{
             return;
           }
           else{
-            p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
-            return;
+            p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
+              soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));            return;
           }
         }
         else{
@@ -835,7 +870,8 @@ public class InvClickEvent implements Listener{
             for(int i = 0; i < mp.getAbilityLoadout().size(); i++){
               UnlockedAbilities unlockedAbilities = mp.getAbilityLoadout().get(i);
               if(e.getSlot() != i && unlockedAbilities.getAbilityType() == AbilityType.ACTIVE && unlockedAbilities.getSkill().equalsIgnoreCase(editLoadoutGUI.getReplaceAbility().getGenericAbility().getSkill())){
-                p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
+                p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.DenyReplace.Sound")),
+                  soundFile.getInt("Sounds.Misc.DenyReplace.Volume"), soundFile.getInt("Sounds.Misc.DenyReplace.Pitch"));
                 p.closeInventory();
                 p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.HasActive")));
                 return;
@@ -1045,8 +1081,8 @@ public class InvClickEvent implements Listener{
           }
           else if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
             if(mp.getAbilityPoints() == 0){
-              p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 5, 1);
-              return;
+              p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
+                soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));               return;
             }
             gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
             currentGUI.setClearData(false);

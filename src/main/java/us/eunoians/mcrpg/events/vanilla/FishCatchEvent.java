@@ -230,7 +230,7 @@ public class FishCatchEvent implements Listener {
             //entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(config.getDouble(key + "Health"));
             entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(config.getDouble(key + "Health"));
             entity.setHealth(config.getDouble(key + "Health"));
-            entity.setCustomName(Methods.color("&bPoseidon's Guardian"));
+            entity.setCustomName(Methods.color(McRPG.getInstance().getLangFile().getString("Messages.Misc.PoseidonsGuardianName")));
             ItemStack weapon = new ItemStack(Material.valueOf(config.getString(key + "Weapon")));
             if(config.getBoolean(key + "Enchanted")){
               for(String ench : config.getStringList(key + "Enchants")){

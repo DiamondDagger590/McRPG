@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -17,6 +18,7 @@ import us.eunoians.mcrpg.abilities.swords.RageSpike;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.PreRageSpikeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.RageSpikeDamageEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -71,7 +73,9 @@ public class ShiftToggle implements Listener {
         public void run(){
           //get vector and make them go voom
           Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
-          player.getLocation().getWorld().playSound(player.getLocation(), Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 5, 1);
+          FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+          player.getLocation().getWorld().playSound(player.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.RageSpike.Sound")),
+            soundFile.getInt("Sounds.Swords.RageSpike.Volume"), soundFile.getInt("Sounds.Swords.RageSpike.Pitch"));
           //voom code
           e.getPlayer().setVelocity(unitVector.multiply(5));
           e.getPlayer().setVelocity(unitVector.multiply(5));

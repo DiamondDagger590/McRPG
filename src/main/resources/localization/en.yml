@@ -14,6 +14,15 @@ SkillNames:
   Axes: 'Axes'
   Fishing: 'Fishing'
   Sorcery: 'Sorcery'
+SkillItemNames:
+  Swords: "Sword"
+  Mining: "Pickaxe"
+  Unarmed: "Fist"
+  Excavation: "Shovel"
+  Herbalism: "Hoe"
+  Archery: "Bow"
+  Woodcutting: "Axe"
+  Axes: "Battle Axe"
 Signs:
   PowerLeaderboard:
     Line1: '&7[&6Power&7]'
@@ -32,6 +41,18 @@ Messages:
   #Messages that dont fit anywhere
   Misc:
     PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
+    PoseidonsGuardianName: '&bPoseidons Guardian'
+  Artifacts:
+    ArtifactCreated: '&5A &e%ArtifactType% &5artifact has been created!'
+    RedeemableExpArtifactUsed: '&aYou have used the artifact to gain &e%RedeemableExpAmount% &aredeemable exp.'
+    SkillMaxed: '&cYou can not use that artifact because you are already at the max level for this skill.'
+    SkillExpArtifactUsed: '&aYou have used the artifact to gain &e%SkillExpAmount% &aexp in &e%Skill%&a.'
+    RedeemableLevelArtifactUsed: '&aYou have used the artifact to gain &e%RedeemableLevelAmount% &aredeemable level(s).'
+    AbilityPointArtifactUsed: '&aYou have used the artifact to gain &e%AbilityPointAmount% &aability points(s).'
+    UnlockBookArtifactUsed: '&aYou have used the artifact to gain &e%UnlockBookAmount% &aunlock books(s).'
+    UpgradeBookArtifactUsed: '&aYou have used the artifact to gain &e%UpgradeBookAmount% &aupgrade books(s).'
+    CooldownArtifactUsed: '&aYou have used the artifact to reset all your cooldowns.'
+    MagnetArtifactUsed: '&aYou have used the magnet artifact to draw in nearby items.'
   SkillBooks:
     Upgraded: '&aYou upgraded %Ability% from Tier &e%OldTier% &ato &e%NewTier%&a!'
     Unlocked: '&aYou unlocked &e%Ability% &aTier &e%Tier%&a!'

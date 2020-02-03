@@ -12,5 +12,7 @@ public enum GainReason {
   PLUGIN,
   ABILITY,
   FISHING,
-  BREW
+  BREW,
+  ARTIFACT,
+  ENCHANTING
 }

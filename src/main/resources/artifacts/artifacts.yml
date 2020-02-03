@@ -1,3 +1,7 @@
+#How many seconds should there be a delay on certain artifacts to prevent expending multiple uses on accident
+Cooldowns:
+  Magnet: 3
+  CooldownReset: 5
 #This section is for all artifacts that can spawn from brewing
 #It is set up like this to allow for artifacts from other sources in the future and allows for a more adaptive approach when I need to revisit
 BrewingArtifacts:
@@ -9,20 +13,20 @@ BrewingArtifacts:
     #Use the artifact to gain redeemable experience
     RedeemableExp:
       #LowEnd-HighEnd -> the range of exp an artifact can be worth
-      RedeemableExpRange: '100-5000'
+      RedeemableExpRange: '3000-10000'
       #Chance of it being added to the loot table
       Chance: 70.0
       #If an artifact should spawn with this effect
       Enabled: true
       #Material for the artifact
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       #If it should be glowing
       IsGlowing: true
       #The display name of the artifact
       DisplayName: '&7[&5Redeemable Exp Artifact&7]'
       #The lore of the artifact. %RedeemableExpAmount% is the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to gain &e%RedeemableExpAmount% &5redeemable experience'
+        - '&7Use this artifact to gain &e%RedeemableExpAmount% &7redeemable experience'
       #If when this artifact spawns, should a broadcast message be sent out? Uses a line from the language file
       BroadcastOnSpawn: false
       #What string to use to replace the placeholder in the broadcast string.
@@ -30,7 +34,7 @@ BrewingArtifacts:
     #Use the artifact to gain experience in a certain skill. Worth more than redeemable exp since it is for one skill only
     SkillSpecificExp:
       #LowEnd-HighEnd -> the range of exp an artifact can be worth
-      ExpRange: '2500-20000'
+      ExpRange: '5000-20000'
       #What skills can the artifact not be used for
       ExcludedSkills: []
       #Chance of it being added to the loot table
@@ -38,15 +42,15 @@ BrewingArtifacts:
       #If an artifact should spawn with this effect
       Enabled: true
       #Material for the artifact
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       #If it should be glowing
       IsGlowing: true
       #The display name of the artifact
       DisplayName: '&7[&5Skill Exp Artifact&7]'
       #The lore of the artifact. %SkillExpAmount% is the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to gain &e%SkillExpAmount% &5experience'
-        - '&5in your &e%Skill% &5skill'
+        - '&7Use this artifact to gain &e%SkillExpAmount% &7experience'
+        - '&7in your &e%Skill% &5skill'
       #If when this artifact spawns, should a broadcast message be sent out? Uses a line from the language file
       BroadcastOnSpawn: false
       #What string to use to replace the placeholder in the broadcast string.
@@ -56,12 +60,12 @@ BrewingArtifacts:
       LevelRange: '1'
       Chance: 1.0
       Enabled: true
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Redeemable Level Artifact&7]'
       #The lore of the artifact. %RedeemableLevelAmount% is the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to gain &e%RedeemableLevelAmount% &5redeemable level(s)'
+        - '&7Use this artifact to gain &e%RedeemableLevelAmount% &7redeemable level(s)'
       BroadcastOnSpawn: true
       BroadcastPlaceHolder: 'Redeemable Level'
     #Use the artifact to gain an ability point
@@ -70,12 +74,12 @@ BrewingArtifacts:
       AmountRange: '1'
       Chance: 1.0
       Enabled: true
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Ability Point Artifact&7]'
       #The lore of the artifact. %AbilityPointAmount% is the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to gain &e%AbilityPointAmount% &5ability point(s)'
+        - '&7Use this artifact to gain &e%AbilityPointAmount% &7ability point(s)'
       BroadcastOnSpawn: true
       BroadcastPlaceHolder: 'Ability Point'
     #Use the artifact to summon unlock ability books near the player
@@ -84,12 +88,12 @@ BrewingArtifacts:
       AmountRange: '1-2'
       Chance: 10.0
       Enabled: true
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Unlock Book Artifact&7]'
       #The lore of the artifact. %UnlockBookAmount% is the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to summon &e%UnlockBookAmount% &5Unlock Skill book(s)'
+        - '&7Use this artifact to summon &e%UnlockBookAmount% &7Unlock Skill book(s)'
       BroadcastOnSpawn: false
       BroadcastPlaceHolder: 'Unlock Book'
     #Use the artifact to summon upgrade ability books near the player
@@ -98,23 +102,25 @@ BrewingArtifacts:
       AmountRange: '1-2'
       Chance: 10.0
       Enabled: true
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Upgrade Book Artifact&7]'
       #The lore of the artifact. %UpgradeBookAmount% is the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to summon &e%UpgradeBookAmount% &5Upgrade Skill book(s)'
+        - '&7Use this artifact to summon &e%UpgradeBookAmount% &7Upgrade Skill book(s)'
       BroadcastOnSpawn: false
       BroadcastPlaceHolder: 'Upgrade Book'
     #Use the artifact to reset all ability cooldowns the user has
     CooldownReset:
+      UseAmountRange: '1-5'
       Chance: 5.0
       Enabled: true
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Cooldown Artifact&7]'
       Lore:
-        - '&5Use this artifact to reset all of your ability cooldowns'
+        - '&7Use this artifact to reset all of your ability cooldowns'
+        - '&e%RemainingUsesAmount%&7/&a%MaxUsesAmount% &5uses remaining'
       BroadcastOnSpawn: false
       BroadcastPlaceHolder: 'Cooldown'
     #Use the artifact to draw in nearby items on the ground
@@ -125,13 +131,13 @@ BrewingArtifacts:
       UseAmountRange: '50-200'
       Chance: 7.5
       Enabled: true
-      Material: GOLD_INGOT
+      Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Magnet Artifact&7]'
       #The lore of the artifact. %RemainingMagnetUses%, %MagnetRadius% and %MaxMagnetUses% are the only accepted placeholder for this setting
       Lore:
-        - '&5Use this artifact to draw items in a &e%MagnetRadius% &5radius'
-        - '&5towards you.'
+        - '75Use this artifact to draw items in a &e%MagnetRadius% &7block radius'
+        - '&7towards you.'
         - '&5Uses Remaining: &e%RemainingMagnetUses%&7/&a%MaxMagnetUses%'
       BroadcastOnSpawn: false
       BroadcastPlaceHolder: 'Magnet'

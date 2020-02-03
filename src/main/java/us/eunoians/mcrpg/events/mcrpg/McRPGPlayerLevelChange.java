@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.events.mcrpg;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,6 +14,7 @@ import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.displays.ExpDisplayType;
 import us.eunoians.mcrpg.api.events.mcrpg.AbilityUnlockEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerLevelChangeEvent;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
@@ -50,7 +52,9 @@ public class McRPGPlayerLevelChange implements Listener {
       if (i % mcRPG.getConfig().getInt("PlayerConfiguration.AbilityPointInterval") == 0) {
         mp.setAbilityPoints(mp.getAbilityPoints() + 1);
         //Need to fiddle with this sound
-        mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VILLAGER_YES, 2, 1);
+        FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+        mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.AbilityPointGain.Sound")),
+          soundFile.getInt("Sounds.Misc.AbilityPointGain.Volume"), soundFile.getInt("Sounds.Misc.AbilityPointGain.Pitch"));
         mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcRPGPlayer().getAbilityPoints()))));
         mp.saveData();
@@ -114,7 +118,9 @@ public class McRPGPlayerLevelChange implements Listener {
       Player p = e.getMcRPGPlayer().getPlayer();
       p.sendMessage(message);
       World w = p.getWorld();
-      w.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 2, 1);
+      FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+      w.playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.LevelUp.Sound")),
+        soundFile.getInt("Sounds.Misc.LevelUp.Volume"), soundFile.getInt("Sounds.Misc.LevelUp.Pitch"));
       if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(e.getMcRPGPlayer().getPlayer())) {
         return;
       }
@@ -158,7 +164,9 @@ public class McRPGPlayerLevelChange implements Listener {
               else {
                 p.sendMessage(Methods.color(mp.getPlayer(),mcRPG.getPluginPrefix() +
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
-                p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 3, 1);
+                FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.AbilityUnlocked.Sound")),
+                  soundFile.getInt("Sounds.Misc.AbilityUnlocked.Volume"), soundFile.getInt("Sounds.Misc.AbilityUnlocked.Pitch"));
                 mp.addPendingAbilityUnlock(ab);
               }
             }

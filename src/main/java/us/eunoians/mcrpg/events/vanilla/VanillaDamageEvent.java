@@ -346,7 +346,7 @@ public class VanillaDamageEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGH)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
-    if(e.isCancelled() || e.getDamage() >= 1000000){
+    if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
       return;
     }
     FileConfiguration config;
@@ -449,7 +449,9 @@ public class VanillaDamageEvent implements Listener {
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited").replace("%Player%", entity.getName())));
               }
-              entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 5, 1);
+              FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+              entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFist.Sound")),
+                soundFile.getInt("Sounds.Unarmed.SmitingFist.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFist.Pitch"));
             }
           }
         }
@@ -488,7 +490,9 @@ public class VanillaDamageEvent implements Listener {
                 //Tell player ability started
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Activated")));
-                mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 5, 1);
+                FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.Berserk.Sound")),
+                  soundFile.getInt("Sounds.Unarmed.Berserk.Volume"), soundFile.getInt("Sounds.Unarmed.Berserk.Pitch"));
                 new BukkitRunnable() {
                   @Override
                   public void run(){
@@ -501,7 +505,9 @@ public class VanillaDamageEvent implements Listener {
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Cooldown"));
-                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 5, 1);
+                    FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.BerserkEnded.Sound")),
+                      soundFile.getInt("Sounds.Unarmed.BerserkEnded.Volume"), soundFile.getInt("Sounds.Unarmed.BerserkEnded.Pitch"));
                     mp.getActiveAbilities().add(UnlockedAbilities.BERSERK);
                     mp.addAbilityOnCooldown(UnlockedAbilities.BERSERK, cal.getTimeInMillis());
                   }
@@ -529,7 +535,9 @@ public class VanillaDamageEvent implements Listener {
                 mp.getActiveAbilities().add(UnlockedAbilities.SMITING_FIST);
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Activated")));
-                mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_CAST_SPELL, 5, 1);
+                FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Sound")),
+                  soundFile.getInt("Sounds.Unarmed.SmitingFistActivated.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFistActivated.Pitch"));
                 mp.setSmitingFistData(smitingFistEvent);
                 mp.setCanSmite(true);
                 if(smitingFistEvent.isRemoveDebuffs()){
@@ -553,7 +561,9 @@ public class VanillaDamageEvent implements Listener {
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             smitingFistEvent.getCooldown());
-                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ILLUSIONER_DEATH, 5, 1);
+                    FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Sound")),
+                      soundFile.getInt("Sounds.Unarmed.SmitingFistEnded.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFistEnded.Pitch"));
                     mp.getActiveAbilities().remove(UnlockedAbilities.SMITING_FIST);
                     mp.addAbilityOnCooldown(UnlockedAbilities.SMITING_FIST, cal.getTimeInMillis());
                   }
@@ -576,7 +586,9 @@ public class VanillaDamageEvent implements Listener {
                 mp.getActiveAbilities().add(UnlockedAbilities.DENSE_IMPACT);
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Activated")));
-                mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 5, 1);
+                FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Sound")),
+                  soundFile.getInt("Sounds.Unarmed.DenseImpactActivated.Volume"), soundFile.getInt("Sounds.Unarmed.DenseImpactActivated.Pitch"));
                 mp.setCanDenseImpact(true);
                 mp.setArmourDmg(denseImpactEvent.getArmourDmg());
                 new BukkitRunnable() {
@@ -592,7 +604,8 @@ public class VanillaDamageEvent implements Listener {
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             cooldown);
-                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_IRON_GOLEM_DEATH, 5, 1);
+                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Sound")),
+                      soundFile.getInt("Sounds.Unarmed.DenseImpactEnded.Volume"), soundFile.getInt("Sounds.Unarmed.DenseImpactEnded.Pitch"));
                     mp.getActiveAbilities().remove(UnlockedAbilities.DENSE_IMPACT);
                     mp.addAbilityOnCooldown(UnlockedAbilities.DENSE_IMPACT, cal.getTimeInMillis());
                   }
@@ -698,7 +711,9 @@ public class VanillaDamageEvent implements Listener {
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
                             event.getCooldown());
-                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_SHULKER_HURT, 5, 1);
+                    FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                    mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Sound")),
+                      soundFile.getInt("Sounds.Swords.SerratedStrikesEnded.Volume"), soundFile.getInt("Sounds.Swords.SerratedStrikesEnded.Pitch"));
                     mp.getActiveAbilities().remove(UnlockedAbilities.SERRATED_STRIKES);
                     mp.addAbilityOnCooldown(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
                   }
@@ -723,7 +738,9 @@ public class VanillaDamageEvent implements Listener {
                 Calendar cal = Calendar.getInstance();
                 cal.add(Calendar.SECOND,
                         event.getCooldown());
-                p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_WITHER_SKELETON_HURT, 5, 1);
+                FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Sound")),
+                  soundFile.getInt("Sounds.Swords.TaintedBladeEnd.Volume"), soundFile.getInt("Sounds.Swords.TaintedBladeEnd.Pitch"));
                 mp.getActiveAbilities().remove(UnlockedAbilities.TAINTED_BLADE);
                 mp.addAbilityOnCooldown(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
               }

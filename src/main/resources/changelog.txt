@@ -1,3 +1,5 @@
+1.2.0-BETA
+= Added fishing and sorcery to Demeters Shrine buffs
 1.1.7-BETA
 + Added player setting to get a slot in the hotbar empty
 + New PlaceHolders

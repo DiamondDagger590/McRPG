@@ -30,7 +30,7 @@ public class PotionEffectEvent implements Listener{
   
   @EventHandler
   public void potionEffectEvent(EntityPotionEffectEvent e){
-    if(e.getEntity() instanceof Player && debuffs.contains(e.getNewEffect().getType())){
+    if(e.getEntity() instanceof Player && e.getNewEffect() != null && debuffs.contains(e.getNewEffect().getType())){
       try{
         McRPGPlayer mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
         FileConfiguration sorceryConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);

@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.IOUtil;
 import us.eunoians.mcrpg.util.configuration.ConfigEnum;
 import us.eunoians.mcrpg.util.configuration.LangEnum;
+import us.eunoians.mcrpg.util.configuration.SoundEnum;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,10 +49,13 @@ public class FileManager {
     //Auto gen some configs
     EnumConfigurationBuilder config = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "config.yml"), ConfigEnum.class);
     EnumConfigurationBuilder enConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "localization" + File.separator + "en.yml"), LangEnum.class);
+    EnumConfigurationBuilder soundConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder()  + File.separator + "sounds.yml"), SoundEnum.class);
     config.setWidth(100000);
     enConfig.setWidth(100000);
+    soundConfig.setWidth(100000);
     config.build();
     enConfig.build();
+    soundConfig.build();
     prefix = "[" + plugin.getName() + "] ";
     this.plugin = plugin;
     if (!plugin.getDataFolder().exists()) {
@@ -339,8 +343,8 @@ public class FileManager {
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
     SORCERY_CONFIG("sorcery.yml", "skills/sorcery.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
-    SWORDS_CONFIG("swords.yml", "skills/swords.yml") //SOUNDS_GUI("sounds.yml", "sounds.yml"),
-    ,
+    SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
+    SOUNDS_FILE("sounds.yml", "sounds.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),

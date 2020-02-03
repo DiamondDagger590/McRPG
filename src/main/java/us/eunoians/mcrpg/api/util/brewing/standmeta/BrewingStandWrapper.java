@@ -34,9 +34,7 @@ public class BrewingStandWrapper {
     }
     for(int i = 0; i < brewingGUI.getSpecialRewards().size(); i++){
       ItemStack specialItem = brewingGUI.getSpecialRewards().get(i);
-      if(specialItem != null){
-        fileConfiguration.set(key + "BonusItems." + i, specialItem);
-      }
+      fileConfiguration.set(key + "BonusItems." + i, specialItem);
     }
     McRPG.getInstance().getBrewingStandManager().save(brewingStand.getChunk());
   }

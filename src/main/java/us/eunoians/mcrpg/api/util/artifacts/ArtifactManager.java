@@ -19,6 +19,8 @@ public class ArtifactManager{
   
   public ArtifactManager(McRPG mcRPG){
     this.mcRPG = mcRPG;
+    init();
+    instance = this;
   }
   
   private void init(){

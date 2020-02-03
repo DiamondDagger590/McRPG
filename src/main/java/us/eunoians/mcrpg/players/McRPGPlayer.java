@@ -106,6 +106,10 @@ public class McRPGPlayer {
 
   //Fitness Data
   @Getter private List<Location> lastFallLocation = new ArrayList<>();
+  
+  //Artifact variables
+  @Getter @Setter private long magnetArtifactCooldownTime = 0;
+  @Getter @Setter private long cooldownResetArtifactCooldownTime = 0;
 
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
@@ -1457,13 +1461,13 @@ public class McRPGPlayer {
                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
         }
         database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
-                + "_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+                + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
 
       }
     }
     abilitiesOnCooldown.clear();
     endTimeForReplaceCooldown = 0;
-    database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+    database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
     if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
       this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
               McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));

@@ -100,6 +100,11 @@ public class BrewingStandManager {
     }
   }
 
+  public void shutDown(){
+    for(FileWrapper fileWrapper : chunkToSaveFile.values()){
+      fileWrapper.save();
+    }
+  }
   private class FileWrapper {
 
     @Getter

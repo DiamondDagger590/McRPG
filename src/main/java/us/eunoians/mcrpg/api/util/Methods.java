@@ -350,6 +350,11 @@ public class Methods {
     NBTItem item = new NBTItem(itemStack);
     return item.hasKey("UpgradeSkill") || item.hasKey("UnlockSkill");
   }
+  
+  public static boolean isArtifact(ItemStack itemStack){
+    NBTItem item = new NBTItem(itemStack);
+    return item.getBoolean("McRPGArtifact");
+  }
 
   //Following three methods is from the following thread: https://www.spigotmc.org/threads/how-to-get-players-exp-points.239171/#post-2406336
 

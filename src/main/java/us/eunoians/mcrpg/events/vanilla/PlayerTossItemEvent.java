@@ -69,7 +69,9 @@ public class PlayerTossItemEvent implements Listener {
                     item.remove();
                   }
                   loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
-                  loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
+                  FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                  loc.getWorld().playSound(loc, Sound.valueOf(soundFile.getString("Sounds.Woodcutting.DemetersShrine.Sound")),
+                    soundFile.getInt("Sounds.Woodcutting.DemetersShrine.Volume"), soundFile.getInt("Sounds.Woodcutting.DemetersShrine.Pitch"));
                   int duration = woodcuttingConfig.getInt(key + "Duration");
                   double multiplier = woodcuttingConfig.getDouble(key + "ExpBoost");
                   int cooldown = woodcuttingConfig.getInt(key + "Cooldown");
@@ -119,7 +121,9 @@ public class PlayerTossItemEvent implements Listener {
                       item.remove();
                     }
                     loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
-                    loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
+                    FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                    loc.getWorld().playSound(loc, Sound.valueOf(soundFile.getString("Sounds.Excavation.PansShrine.Sound")),
+                      soundFile.getInt("Sounds.Excavation.PansShrine.Volume"), soundFile.getInt("Sounds.Excavation.PansShrine.Pitch"));
                     Block b = item.getLocation().getBlock();
                     for(int y = Yradius * -1; y <= Yradius; y++) {
                       for(int x = radius * -1; x <= radius; x++) {
@@ -178,7 +182,9 @@ public class PlayerTossItemEvent implements Listener {
                     item.remove();
                   }
                   loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
-                  loc.getWorld().playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 5, 5);
+                  FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                  loc.getWorld().playSound(loc, Sound.valueOf(soundFile.getString("Sounds.Brewing.CircesShrine.Sound")),
+                    soundFile.getInt("Sounds.Brewing.CircesShrine.Volume"), soundFile.getInt("Sounds.Brewing.CircesShrine.Pitch"));
                   int minAmount = sorceryConfig.getInt(key + "MinimumAmountToSacrifice");
                   double percentAdded = sorceryConfig.getDouble(key + "AdditionalPercentagePerItem");
                   List<Integer> successRange = Arrays.stream(sorceryConfig.getString(key + "SuccessRateRange").split("-")).map(Integer::parseInt).collect(Collectors.toList());
@@ -223,8 +229,10 @@ public class PlayerTossItemEvent implements Listener {
                       p.setLevel(0);
                       p.setExp(0);
                       mp.giveRedeemableExp(exp);
+                      p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CircesShrine.Activated")));
                     }
                     else{
+                      p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CircesShrine.Failed")));
                       if(!circesShrineEvent.isConsumeItemsOnFail()){
                         newItemAmount = e.getItemDrop().getItemStack().getAmount();
                       }

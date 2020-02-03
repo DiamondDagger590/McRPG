@@ -1003,7 +1003,8 @@ public class McAdmin implements CommandExecutor {
                 mp.getPendingUnlockAbilities().clear();
                 mp.getAbilityLoadout().clear();
                 mp.setAbilityPoints(0);
-
+                mp.setRedeemableExp(0);
+                mp.setRedeemableLevels(0);
                 if(mp.getReadyingAbilityBit() != null) {
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
@@ -1041,7 +1042,8 @@ public class McAdmin implements CommandExecutor {
                 Arrays.stream(values()).forEach(s -> mp.getSkill(s).updateExpToLevel());
                 mp.getAbilityLoadout().clear();
                 mp.setAbilityPoints(0);
-
+                mp.setRedeemableExp(0);
+                mp.setRedeemableLevels(0);
                 if(mp.getReadyingAbilityBit() != null) {
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
@@ -1949,7 +1951,8 @@ public class McAdmin implements CommandExecutor {
                 }                Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
                 mp.getAbilityLoadout().clear();
                 mp.setAbilityPoints(0);
-
+                mp.setRedeemableExp(0);
+                mp.setRedeemableLevels(0);
                 if(mp.getReadyingAbilityBit() != null) {
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
@@ -1988,7 +1991,8 @@ public class McAdmin implements CommandExecutor {
                 Arrays.stream(values()).forEach(s -> mp.getSkill(s).updateExpToLevel());
                 mp.getAbilityLoadout().clear();
                 mp.setAbilityPoints(0);
-
+                mp.setRedeemableExp(0);
+                mp.setRedeemableLevels(0);
                 if(mp.getReadyingAbilityBit() != null) {
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);

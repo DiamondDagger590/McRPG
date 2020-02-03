@@ -14,6 +14,7 @@ public enum ConfigEnum implements ConfigurationEnum {
           "#   - This plugin supports player name place holders as %Player%", "# If you receive an error when McRPG loads, ensure that:",
           "#   - No tabs are present: YAML only allows spaces", "#   - Indents are correct: YAML hierarchy is based entirely on indentation",
           "###################################"),
+  MAX_DAMAGE_CAP("Configuration.MaxDamageCap", 1000000, "#The maximum amount of damage allowed for giving experience"),
   SHIELD_BLOCKING_MODIFIER("Configuration.ShieldBlockingModifier", 0.5, "#How much exp gain should be modified if the target is blocking with a shield."),
   DISABLE_ENDER_PEARL_EXP("Configuration.DisableEPearlExp", true, "#If exp should be disabled for damage from ender pearls"),
   DISABLE_BOOKS_IN_END("Configuration.DisableBooksInEnd", true, "#If skill books should be undroppable in the end"),
