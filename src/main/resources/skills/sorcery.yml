@@ -194,10 +194,10 @@ PotionAffinityConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 400
-    TierIII: 550
-    TierIV: 700
-    TierV: 850
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
   TierI:
     #Increases the duration by 2%
     PotionDurationBonus: 2
@@ -306,10 +306,10 @@ HadesDomainConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 475
+    TierII: 400
     TierIII: 650
-    TierIV: 825
-    TierV: 1000
+    TierIV: 700
+    TierV: 850
   #Config for each tier
   TierI:
     #Vanilla experience in the nether is boosted by 5%
@@ -350,10 +350,10 @@ CircesShrineConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 500
-    TierV: 650
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
   #Config for each tier
   TierI:
     #What item should be sacrificed into the shrine

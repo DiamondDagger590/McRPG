@@ -317,7 +317,7 @@ public class FileManager {
     ARTIFACT_FILE("artifacts.yml", "artifacts/artifacts.yml"),
     AXES_CONFIG("axes.yml", "skills/axes.yml"),
     BREWING_GUI("brewinggui.yml", "guis/brewinggui.yml"),
-    BREWING_ITEMS_CONFIG("demo.yml", "skills/demo.yml"),
+    BREWING_ITEMS_CONFIG("potionitems.yml", "skills/potionitems.yml"),
     CONFIG("config.yml", "config.yml"),
     CUSTOM("custom.yml", "localization/custom.yml"),
     EDIT_DEFAULT_ABILITIES_GUI("editdefaultabilitiesgui.yml", "guis/editdefaultabilitiesgui.yml"),

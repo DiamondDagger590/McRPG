@@ -111,6 +111,9 @@ public class McRPGPlayer {
   @Getter @Setter private long magnetArtifactCooldownTime = 0;
   @Getter @Setter private long cooldownResetArtifactCooldownTime = 0;
 
+  //mcMMO conversion
+  @Getter @Setter private int boostedExp;
+  
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
     this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
@@ -152,6 +155,7 @@ public class McRPGPlayer {
         this.abilityPoints = resultSet.getInt("ability_points");
         this.redeemableExp = resultSet.getInt("redeemable_exp");
         this.redeemableLevels = resultSet.getInt("redeemable_levels");
+        this.boostedExp = resultSet.getInt("boosted_exp");
         int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
         this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
@@ -1508,7 +1512,7 @@ public class McRPGPlayer {
       int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
       database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = '" + uuid.toString() + "'");
     }
-    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
+    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", boosted_exp = " + boostedExp + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
     String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)

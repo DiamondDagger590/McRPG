@@ -113,8 +113,10 @@ public class LeaderboardHeadManager {
                         .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                 sign.update();
                 Skull skull = (Skull) skullLoc.getBlock().getState();
-                skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
-                skull.update();
+                if(!skull.getOwningPlayer().getUniqueId().equals(playerLeaderboardData.getUUID())){
+                    skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
+                    skull.update();
+                }
             }
         }
         for(Location loc : skillLevelSigns.keySet()){
@@ -154,8 +156,10 @@ public class LeaderboardHeadManager {
                         .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                 sign.update();
                 Skull skull = (Skull) skullLoc.getBlock().getState();
-                skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
-                skull.update();
+                if(!skull.getOwningPlayer().getUniqueId().equals(playerLeaderboardData.getUUID())){
+                    skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
+                    skull.update();
+                }
             }
         }
         for(Location loc : removePowerLocs){

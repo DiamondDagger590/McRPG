@@ -76,7 +76,7 @@ public class VanillaDamageEvent implements Listener {
 
   /**
    * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
-   * Modified by  * This code has been modified from it source material
+   * This code has been modified from it source material
    * It was released under the GPLv3 license
    */
   /**
@@ -350,7 +350,7 @@ public class VanillaDamageEvent implements Listener {
       return;
     }
     FileConfiguration config;
-    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand)){
+    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && !isNPCEntity(e.getEntity())){
       Player damager = (Player) e.getDamager();
       if(damager.isInsideVehicle()){
         return;

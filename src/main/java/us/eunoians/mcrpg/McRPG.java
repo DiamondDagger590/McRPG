@@ -82,6 +82,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private boolean papiEnabled = false;
   @Getter private boolean sickleEnabled = false;
   @Getter private boolean worldGuardEnabled = false;
+  @Getter private boolean mcmmoEnabled = false;
   @Getter @Setter private WGSupportManager wgSupportManager;
 
   @Override
@@ -133,6 +134,14 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
       getLogger().info("Papi PlaceholderAPI found... registering hooks");
       new McRPGPlaceHolders().register();
     }
+    new BukkitRunnable(){
+      public void run(){
+        if(Bukkit.getPluginManager().isPluginEnabled("mcMMO")){
+          mcmmoEnabled = true;
+          getLogger().info("McMMO found... ready to convert.");
+        }
+      }
+    }.runTaskLater(this, 400);
     if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
       worldGuardEnabled = true;
       wgSupportManager = new WGSupportManager(this);
@@ -198,6 +207,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new PotionDrinkEvent(), this);
     getServer().getPluginManager().registerEvents(new PotionEffectEvent(), this);
     getServer().getPluginManager().registerEvents(new EnchantingEvent(), this);
+    getServer().getPluginManager().registerEvents(new MoveItemEvent(), this);
     
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);

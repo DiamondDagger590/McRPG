@@ -12,6 +12,7 @@ public class PlayerData {
   @Column(defaultValue = "0") int replace_ability_cooldown;
   @Column(defaultValue = "0") int redeemable_exp;
   @Column(defaultValue = "0") int redeemable_levels;
+  @Column(defaultValue = "0") int boosted_exp;
   @Column(defaultValue = "0") double divine_escape_exp_debuff;
   @Column(defaultValue = "0") double divine_escape_damage_debuff;
   @Column(defaultValue = "0") long divine_escape_exp_end_time;

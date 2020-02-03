@@ -138,7 +138,8 @@ public class InvClickEvent implements Listener{
         else{
           e.setCancelled(true);
           if(e.getSlot() == 0){
-            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1){
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
+            && !(brewingGUI.getFuel() == null ||  brewingGUI.getFuel().getType() == Material.AIR || brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
               e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
@@ -203,8 +204,8 @@ public class InvClickEvent implements Listener{
             }
           }
           else if(e.getSlot() == 13){
-            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1){
-              e.setCancelled(false);
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
+                 && !(brewingGUI.getIngredient() == null ||  brewingGUI.getIngredient().getType() == Material.AIR || brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){              e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
                 public void run(){
@@ -277,7 +278,8 @@ public class InvClickEvent implements Listener{
             }
           }
           else if(brewingGUI.isPotionSlot(e.getSlot())){
-            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1){
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
+                 && !(brewingGUI.getPotion(e.getSlot()) == null ||  brewingGUI.getPotion(e.getSlot()).getType() == Material.AIR || brewingGUI.getPotion(e.getSlot()).getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
               e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
@@ -321,6 +323,17 @@ public class InvClickEvent implements Listener{
             }
           }
           else if(brewingGUI.isSpecialItemSlot(e.getSlot()) && (e.getCursor() == null || e.getCursor().getType() == Material.AIR)){
+            if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
+                 && !(brewingGUI.getSpecialItem(e.getSlot()) == null ||  brewingGUI.getSpecialItem(e.getSlot()).getType() == Material.AIR || brewingGUI.getSpecialItem(e.getSlot()).getType() == Material.PURPLE_STAINED_GLASS_PANE)){
+              e.setCancelled(false);
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  brewingGUI.removeSpecialReward(e.getSlot());
+                }
+              }.runTaskLater(McRPG.getInstance(), 1);
+              return;
+            }
             if(brewingGUI.getSpecialItem(e.getSlot()) != null){
               e.setCursor(brewingGUI.getSpecialItem(e.getSlot()));
               brewingGUI.removeSpecialReward(e.getSlot());

@@ -1,916 +1,1069 @@
 Fuel:
   BlazePowder:
-    Material: 'BLAZE_POWDER'
+    Material: BLAZE_POWDER
     FuelAmount: 20
-Recipies:
-  Speed:
-    BrewableItems:
-      - 'SUGAR'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'SPEED'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Slowness:
-    BrewableItems:
-      - 'SUGAR'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'SPEED'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Poison:
-    BrewableItems:
-      - 'SPIDER_EYE'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'POISON'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Heal:
-    BrewableItems:
-      - 'GLISTENING_MELON'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'HEAL'
-    BaseDuration: 0
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Harming:
-    BrewableItems:
-      - 'FERMENTED_SPIDER_EYE'
-    ParentPotion:
-      - 'POTION:HEAL'
-    BaseEffect: 'DAMAGE'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Strength:
-    BrewableItems:
-      - 'BLAZE_POWDER'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'DAMAGE'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Weakness:
-    BrewableItems:
-      - 'FERMENTED_SPIDER_EYE'
-    ParentPotion:
-      - 'Potion:Damage'
-    BaseEffect: 'WEAKNESS'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  WaterBreathing:
-    BrewableItems:
-      - 'PUFFER_FISH'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'WATER_BREATHING'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  NightVision:
-    BrewableItems:
-      - 'GOLDEN_CARROT'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'NIGHT_VISION'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Invisibility:
-    BrewableItems:
-      - 'FERMENTED_SPIDER_EYE'
-    ParentPotion:
-      - 'Potion:NIGHT_VISION'
-    BaseEffect: 'INVISIBILITY'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Regeneration:
-    BrewableItems:
-      - 'GHAST_TEAR'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'REGENERATION'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  FireResistance:
-    BrewableItems:
-      - 'MAGMA_CREAM'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'FIRE_RESISTENCE'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Jump:
-    BrewableItems:
-      - 'RABBITS_FOOT'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'JUMP'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  SlowFall:
-    BrewableItems:
-      - 'PHANTOM_MEMBRANE'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'SLOW_FALLING'
-    BaseDuration: 180
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Haste:
-    BrewableItems:
-      - 'CARROT'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'HASTE'
-    BaseDuration: 180
-    ArcaneBrewingTier: 1
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  MiningFatigue:
-    BrewableItems:
-      - 'SLIME_BALL'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'MINING_FATIGUE'
-    BaseDuration: 180
-    ArcaneBrewingTier: 1
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  DolphinsGrace:
-    BrewableItems:
-      - 'LILY_PAD'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'DOLPHINS_GRACE'
-    BaseDuration: 15
-    ArcaneBrewingTier: 2
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 20'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Absorption:
-    BrewableItems:
-      - 'NETHER_QUARTZ'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'ABSORPTION'
-    BaseDuration: 180
-    ArcaneBrewingTier: 2
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  HealthBoost:
-    BrewableItems:
-      - 'APPLE'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'HEALTH_BOOST'
-    BaseDuration: 180
-    ArcaneBrewingTier: 3
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Hunger:
-    BrewableItems:
-      - 'ROTTEN_FLESH'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'HUNGER'
-    BaseDuration: 180
-    ArcaneBrewingTier: 3
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Blindness:
-    BrewableItems:
-      - 'INC_SAC'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'BLINDNESS'
-    BaseDuration: 180
-    ArcaneBrewingTier: 4
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Nausea:
-    BrewableItems:
-      - 'BROWN_MUSHROOM'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'NAUSEA'
-    BaseDuration: 180
-    ArcaneBrewingTier: 4
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Saturation:
-    BrewableItems:
-      - 'EMERALD_BLOCK'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'SATURATION'
-    BaseDuration: 180
-    ArcaneBrewingTier: 5
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Decay:
-    BrewableItems:
-      - 'GOLD_BLOCK'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'WITHER'
-    BaseDuration: 180
-    ArcaneBrewingTier: 5
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
-  Resistance:
-    BrewableItems:
-      - 'IRON_BLOCK'
-    ParentPotion:
-      - 'Potion:Awkward'
-    BaseEffect: 'RESISTANCE'
-    BaseDuration: 180
-    ArcaneBrewingTier: 5
-    #How much fuel needs to be used in order to
-    FuelConsumption: 1
-    DurationAmplifier:
-      #How many times redstone can be applied
-      MaxAmount: 1
-      #When using redstone, how should the duration be modified
-      DurationModification: '(duration * 2) + 180'
-      #How much fuel should be consumed when redstone is used
-      FuelConsumption: 2
-      #If the effect amplifier should be decremented by 1
-      LowerEffectOnUse: true
-    EffectAmplifier:
-      #How many times glowstone can be applied
-      MaxAmount: 1
-      #When using glowstone, how should the effect be modified
-      EffectModification: 'effect + 1'
-      #How much fuel should be consumed when glowstone is used
-      FuelConsumption: 2
-      LowerDurationOnUse: true
-      #If the duration is already not extended, then how much should the duration be decreased by
-      LowerDurationIfNotExtended: 'duration/2'
-    Splash:
-      CanSplash: true
-      FuelConsumption: 2
-      DurationModifier: 'duration * .66'
-    Lingering:
-      CanLinger: true
-      FuelConsumption: 5
-      DurationModifier: 'duration * .66'
+Potions:
+  PotionBrewDuration: 10
+  WATER:
+    Tags:
+      Default:
+        ChildTags:
+          - 'AWKWARD.Default'
+  AWKWARD:
+    Tags:
+      Default:
+        Ingredients:
+          - 'NETHER_WART'
+        ChildTags:
+          - 'SPEED.Default'
+          - 'INCREASE_DAMAGE.Default'
+          - 'JUMP.Default'
+          - 'HEAL.Default'
+          - 'REGENERATION.Default'
+          - 'FIRE_RESISTANCE.Default'
+          - 'WATER_BREATHING.Default'
+          - 'FAST_DIGGING.Default'
+          - 'SLOW_DIGGING.Default'
+          - 'CONFUSION.Default'
+          - 'NIGHT_VISION.Default'
+          - 'INVISIBILITY.Default'
+          - 'BLINDNESS.Default'
+          - 'SATURATION.Default'
+          - 'HUNGER.Default'
+          - 'WITHER.Default'
+          - 'HEALTH_BOOST.Default'
+          - 'ABSORPTION.Default'
+          - 'LUCK.Default'
+          - 'UNLUCK.Default'
+          - 'GLOWING.Default'
+          - 'DOLPHINS_GRACE.Default'
+          - 'DAMAGE_RESISTANCE.Default'
+          - 'LEVITATION.Default'
+          - 'SLOW_FALLING.Default'
+          - 'POISON.Default'
+  #Potion effect
+  SPEED:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'SUGAR'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'SLOW.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'SLOW.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+          - 'SLOW.Extended.FERMENTED_SPIDER_EYE'
+  SLOW:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  INCREASE_DAMAGE:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'BLAZE_POWDER'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'WEAKNESS.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'WEAKNESS.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+          - 'WEAKNESS.Extended.FERMENTED_SPIDER_EYE'
+  WEAKNESS:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  JUMP:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'RABBITS_FOOT'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  REGENERATION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GHAST_TEAR'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  FIRE_RESISTANCE:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'MAGMA_CREAM'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  WATER_BREATHING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'PUFFERFISH'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  HEAL:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GLISTERING_MELON_SLICE'
+        #If duration is not specified, it defaults to 180
+        Duration: 1
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Amplified'
+          - 'HARM.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'HARM.Amplified.FERMENTED_SPIDER_EYE'
+  HARM:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      #Default is a required tag for every potion. This is what is needed to get it from an awkward potion
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 1
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        PotionEffectLevel: 2
+        ChildTags:
+  FAST_DIGGING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'CARROT'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'SLOW_DIGGING.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'SLOW_DIGGING.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+          - 'SLOW_DIGGING.Extended.FERMENTED_SPIDER_EYE'
+  SLOW_DIGGING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        Ingredients:
+          - 'SLIME_BALL'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  CONFUSION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'BROWN_MUSHROOM'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  NIGHT_VISION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GOLDEN_CARROT'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'INVISIBILITY.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'INVISIBILITY.Extended.FERMENTED_SPIDER_EYE'
+  INVISIBILITY:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  BLINDNESS:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'INK_SAC'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  SATURATION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'FERN'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'HUNGER.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'HUNGER.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+          - 'HUNGER.Extended.FERMENTED_SPIDER_EYE'
+  HUNGER:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'ROTTEN_FLESH'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  WITHER:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'POISONOUS_POTATO'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  HEALTH_BOOST:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'APPLE'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  ABSORPTION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'QUARTZ'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  LUCK:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'LILY_PAD'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+          - 'UNLUCK.Default.FERMENTED_SPIDER_EYE'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+          - 'UNLUCK.Amplified.FERMENTED_SPIDER_EYE'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Extended'
+          - 'UNLUCK.Extended.FERMENTED_SPIDER_EYE'
+  UNLUCK:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        Ingredients:
+          - 'BONE'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  GLOWING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GLOWSTONE'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  DOLPHINS_GRACE:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'TROPICAL_FISH'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  DAMAGE_RESISTANCE:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'GOLDEN_APPLE'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
+  LEVITATION:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'ENDER_PEARL'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  SLOW_FALLING:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'PHANTOM_MEMBRANE'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+  POISON:
+    SpecialModifiers:
+      #If the potion can be made into a splash potion
+      CanBeSplash: true
+      #If the potion can be made into a lingering potion
+      CanBeLingering: true
+      #If the potion is splash, how much duration should the potion be able to keep
+      SplashDurationModifier: 1.0
+      #If the potion is lingering, how much duration should the potion be able to keep
+      LingeringDurationModifier: 0.25
+    Tags:
+      Default:
+        #What ingredients can be used to get to this stage
+        Ingredients:
+          - 'SPIDER_EYE'
+        #If duration is not specified, it defaults to 180
+        Duration: 180
+        #If potion level is not specified, it defaults to 1
+        PotionEffectLevel: 1
+        #A potion with this tag can be brewed into these children
+        ChildTags:
+          - 'Extended'
+          - 'Amplified'
+      #Only required tag is Default, without it, the plugin won't allow that effect to be brewed.
+      #Further tags can be given any name, removing a tag however is unadvised as it can break many things
+      Amplified:
+        Ingredients:
+          - 'GLOWSTONE_DUST'
+        Duration: 90
+        PotionEffectLevel: 2
+        ChildTags:
+          - 'Extended'
+      Extended:
+        Ingredients:
+          - 'REDSTONE'
+        Duration: 480
+        PotionEffectLevel: 1
+        ChildTags:
+          - 'Amplified'
