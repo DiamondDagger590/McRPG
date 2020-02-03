@@ -330,7 +330,6 @@ public class InteractHandler implements Listener {
         if(oreScannerEvent.isCancelled()) {
           return;
         }
-        mp.getActiveAbilities().add(UnlockedAbilities.ORE_SCANNER);
         Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
         mp.setReadyingAbilityBit(null);
         mp.setReadying(false);
@@ -409,7 +408,6 @@ public class InteractHandler implements Listener {
           p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                   McRPG.getInstance().getLangFile().getString("Messages.Abilities.OreScanner.DiamondsFound").replace("%Amount%", Integer.toString(diamondOreAmount))));
         }
-        mp.getActiveAbilities().remove(UnlockedAbilities.ORE_SCANNER);
         p.teleport(Methods.lookAt(p.getLocation(), lookAt));
       }
       else if(abilityType == UnlockedAbilities.MASS_HARVEST && (e.getAction() == Action.LEFT_CLICK_BLOCK)) {

@@ -6,6 +6,16 @@
 = Attempted a performance fix for leaderboard heads
 = Added fishing and sorcery to Demeters Shrine buffs
 
+1.1.8-BETA
+= Readd Javen. Link to dependencies for broken users
+= Fix Remote Transfer not saving location on restart
+= Fix 1.15 incompatibility with skill books
+= Fix Ore Scanner not being able to be used multiple times per login session in some cases
+= Set cooldown on changing abilities to use real time and not play time
+= Fix error with resetting players where it could result in two of the same abilities existing in the same loadout
+= Probably a few minor bug fixes I forgot to document
+= Attempted NoCheatPlus support
+
 1.1.7-BETA
 + Added player setting to get a slot in the hotbar empty
 + New PlaceHolders

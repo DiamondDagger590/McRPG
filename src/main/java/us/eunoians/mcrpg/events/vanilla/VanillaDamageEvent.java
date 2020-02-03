@@ -343,7 +343,7 @@ public class VanillaDamageEvent implements Listener {
    * This code has been modified from it source material
    * It was released under the GPLv3 license
    */
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
     if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){

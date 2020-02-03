@@ -155,16 +155,18 @@ public class McRPGPlayer {
         this.abilityPoints = resultSet.getInt("ability_points");
         this.redeemableExp = resultSet.getInt("redeemable_exp");
         this.redeemableLevels = resultSet.getInt("redeemable_levels");
+        long replaceCooldown = resultSet.getLong("replace_ability_cooldown_time");
         this.boostedExp = resultSet.getInt("boosted_exp");
         int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
         this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
         this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
         this.divineEscapeDamageEnd = resultSet.getInt("divine_escape_damage_end_time");
-        if(replaceCooldown > 0) {
-          Calendar cal = Calendar.getInstance();
-          cal.add(Calendar.SECOND, replaceCooldown);
-          this.endTimeForReplaceCooldown = cal.getTimeInMillis();
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
+        cal1.setTimeInMillis(replaceCooldown);
+        if(cal.getTimeInMillis() < cal1.getTimeInMillis()) {
+          this.endTimeForReplaceCooldown = cal1.getTimeInMillis();
           //}
         }
       } catch(SQLException e) {
@@ -334,7 +336,9 @@ public class McRPGPlayer {
               remoteTransfer.updateBlocks();
             }
             if(RemoteTransferTracker.isTracked(uuid)) {
+              remoteTransfer.isAbilityLinked();
               remoteTransfer.setLinkedChestLocation(RemoteTransferTracker.getLocation(uuid));
+              this.isLinkedToRemoteTransfer = true;
             }
             File file = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
             FileConfiguration remoteTransferFile = YamlConfiguration.loadConfiguration(file);
@@ -1431,24 +1435,27 @@ public class McRPGPlayer {
         abilitiesOnCooldown.remove(ab);
       }
     }
-    long timeToEnd = this.endTimeForReplaceCooldown;
-    if(timeToEnd != 0 && Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
+    if(endTimeForReplaceCooldown != 0 && Calendar.getInstance().getTimeInMillis() >= endTimeForReplaceCooldown) {
       this.endTimeForReplaceCooldown = 0;
       if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
         this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
       }
-      if(divineEscapeExpEnd != 0 && divineEscapeExpEnd <= Calendar.getInstance().getTimeInMillis()){
-        divineEscapeExpEnd = 0;
-        divineEscapeExpDebuff = 0;
+      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = 0 WHERE uuid = '" + uuid.toString() + "'");
+    }
+    if(divineEscapeExpEnd != 0 && divineEscapeExpEnd <= Calendar.getInstance().getTimeInMillis()){
+      divineEscapeExpEnd = 0;
+      divineEscapeExpDebuff = 0;
+      if(Bukkit.getOfflinePlayer(uuid).isOnline()){
         getPlayer().sendMessage(Methods.color(getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DivineEscape.ExpDebuffExpire")));
+        }
       }
-      if(divineEscapeDamageEnd != 0 && divineEscapeDamageEnd <= Calendar.getInstance().getTimeInMillis()){
-        divineEscapeDamageEnd = 0;
-        divineEscapeDamageDebuff = 0;
+    if(divineEscapeDamageEnd != 0 && divineEscapeDamageEnd <= Calendar.getInstance().getTimeInMillis()){
+      divineEscapeDamageEnd = 0;
+      divineEscapeDamageDebuff = 0;
+      if(Bukkit.getOfflinePlayer(uuid).isOnline()){
         getPlayer().sendMessage(Methods.color(getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DivineEscape.DamageDebuffExpire")));
       }
-      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
     }
   }
 
@@ -1471,7 +1478,7 @@ public class McRPGPlayer {
     }
     abilitiesOnCooldown.clear();
     endTimeForReplaceCooldown = 0;
-    database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
+    database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = 0 WHERE uuid = `" + uuid.toString() + "`");
     if(Bukkit.getOfflinePlayer(uuid).isOnline()) {
       this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
               McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
@@ -1507,10 +1514,7 @@ public class McRPGPlayer {
       database.executeUpdate(query);
     }
     if(endTimeForReplaceCooldown != 0) {
-      Calendar temp = Calendar.getInstance();
-      temp.setTimeInMillis(endTimeForReplaceCooldown);
-      int seconds = (int) (temp.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) / 1000;
-      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown = " + seconds + " WHERE uuid = '" + uuid.toString() + "'");
+      database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = " + endTimeForReplaceCooldown + " WHERE uuid = '" + uuid.toString() + "'");
     }
     database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", boosted_exp = " + boostedExp + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
@@ -1525,17 +1529,16 @@ public class McRPGPlayer {
       database.executeUpdate(query);
     }
     String loadoutQuery = "UPDATE mcrpg_loadout SET";
-    for(int i = 1; i <= abilityLoadout.size(); i++) {
+    for(int i = 1; i <= McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities"); i++) {
       if(i != 1) {
         loadoutQuery += ",";
       }
-      loadoutQuery += " Slot" + i + " = '" + abilityLoadout.get(i - 1).getName() + "'";
+      String toAdd = "null";
+      loadoutQuery += " Slot" + i + " = '" + (abilityLoadout.size() >= i ? abilityLoadout.get(i - 1).getName() : toAdd) + "'";
 
     }
     loadoutQuery += " WHERE uuid = '" + uuid.toString() + "'";
-    if(abilityLoadout.size()>0) {
-      database.executeUpdate(loadoutQuery);
-    }
+    database.executeUpdate(loadoutQuery);
 
     RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
     if(transfer.isUnlocked()) {
