@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.abilities.fishing.*;
 import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
+import us.eunoians.mcrpg.abilities.sorcery.*;
 import us.eunoians.mcrpg.abilities.swords.*;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
@@ -105,7 +106,14 @@ public class McRPGPlayer {
 
   //Fitness Data
   @Getter private List<Location> lastFallLocation = new ArrayList<>();
+  
+  //Artifact variables
+  @Getter @Setter private long magnetArtifactCooldownTime = 0;
+  @Getter @Setter private long cooldownResetArtifactCooldownTime = 0;
 
+  //mcMMO conversion
+  @Getter @Setter private int boostedExp;
+  
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
     this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
@@ -148,6 +156,8 @@ public class McRPGPlayer {
         this.redeemableExp = resultSet.getInt("redeemable_exp");
         this.redeemableLevels = resultSet.getInt("redeemable_levels");
         long replaceCooldown = resultSet.getLong("replace_ability_cooldown_time");
+        this.boostedExp = resultSet.getInt("boosted_exp");
+        int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
         this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
         this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
@@ -1076,6 +1086,7 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(axes);
           }
+          //init fishing
           else if(skill.equals(Skills.FISHING)) {
             //Initialize Great Rod
             GreatRod greatRod = new GreatRod();
@@ -1152,7 +1163,83 @@ public class McRPGPlayer {
                     rs.getInt("current_exp"), abilityMap, this);
             skills.add(fishing);
           }
+          //init sorcery
+          else if(skill.equals(Skills.SORCERY)) {
+            //Initialize Hasty Brew
+            HastyBrew hastyBrew = new HastyBrew();
+            hastyBrew.setToggled(rs.getBoolean("is_hasty_brew_toggled"));
+            //Initialize Circes Recipes
+            CircesRecipes circesRecipes = new CircesRecipes();
+            circesRecipes.setToggled(rs.getBoolean("is_circes_recipes_toggled"));
+            circesRecipes.setCurrentTier(rs.getInt("circes_recipes_tier"));
+            if(circesRecipes.getCurrentTier() != 0) {
+              circesRecipes.setUnlocked(true);
+            }
+            //Initialize Potion Affinity
+            PotionAffinity potionAffinity = new PotionAffinity();
+            potionAffinity.setToggled(rs.getBoolean("is_potion_affinity_toggled"));
+            potionAffinity.setCurrentTier(rs.getInt("potion_affinity_tier"));
+            if(potionAffinity.getCurrentTier() != 0) {
+              potionAffinity.setUnlocked(true);
+            }
+            //Initialize Mana Affinity
+            ManaAffinity manaAffinity = new ManaAffinity();
+            manaAffinity.setToggled(rs.getBoolean("is_mana_affinity_toggled"));
+            manaAffinity.setCurrentTier(rs.getInt("mana_affinity_tier"));
+            if(manaAffinity.getCurrentTier() != 0) {
+              manaAffinity.setUnlocked(true);
+            }
+            //Initialize Circes Protection
+            CircesProtection circesProtection = new CircesProtection();
+            circesProtection.setToggled(rs.getBoolean("is_circes_protection_toggled"));
+            circesProtection.setCurrentTier(rs.getInt("circes_protection_tier"));
+            if(circesProtection.getCurrentTier() != 0) {
+              circesProtection.setUnlocked(true);
+            }
+            //Initialize Hades Domain
+            HadesDomain hadesDomain = new HadesDomain();
+            hadesDomain.setToggled(rs.getBoolean("is_hades_domain_toggled"));
+            hadesDomain.setCurrentTier(rs.getInt("hades_domain_tier"));
+            if(hadesDomain.getCurrentTier() != 0) {
+              hadesDomain.setUnlocked(true);
+            }
+            //Initialize Circes Shrine
+            CircesShrine circesShrine = new CircesShrine();
+            circesShrine.setToggled(rs.getBoolean("is_circes_shrine_toggled"));
+            circesShrine.setCurrentTier(rs.getInt("circes_shrine_tier"));
+            if(circesShrine.getCurrentTier() != 0) {
+              circesShrine.setUnlocked(true);
+            }
 
+            if(rs.getBoolean("is_circes_recipes_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_RECIPES);
+            }
+            if(rs.getBoolean("is_potion_affinity_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.POTION_AFFINITY);
+            }
+            if(rs.getBoolean("is_mana_affinity_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.MANA_AFFINITY);
+            }
+            if(rs.getBoolean("is_circes_protection_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_PROTECTION);
+            }
+            if(rs.getBoolean("is_hades_domain_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.HADES_DOMAIN);
+            }
+            if(rs.getBoolean("is_circes_shrine_pending")) {
+              pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_SHRINE);
+            }
+            abilityMap.put(DefaultAbilities.HASTY_BREW, hastyBrew);
+            abilityMap.put(UnlockedAbilities.CIRCES_RECIPES, circesRecipes);
+            abilityMap.put(UnlockedAbilities.POTION_AFFINITY, potionAffinity);
+            abilityMap.put(UnlockedAbilities.MANA_AFFINITY, manaAffinity);
+            abilityMap.put(UnlockedAbilities.CIRCES_PROTECTION, circesProtection);
+            abilityMap.put(UnlockedAbilities.HADES_DOMAIN, hadesDomain);
+            abilityMap.put(UnlockedAbilities.CIRCES_SHRINE, circesShrine);
+            Sorcery sorcery = new Sorcery(rs.getInt("current_level"),
+                    rs.getInt("current_exp"), abilityMap, this);
+            skills.add(sorcery);
+          }
         } catch(SQLException e) {
           e.printStackTrace();
         }
@@ -1385,7 +1472,7 @@ public class McRPGPlayer {
                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
         }
         database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
-                + "_cooldown = 0 WHERE uuid = `" + uuid.toString() + "`");
+                + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
 
       }
     }
@@ -1429,7 +1516,7 @@ public class McRPGPlayer {
     if(endTimeForReplaceCooldown != 0) {
       database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = " + endTimeForReplaceCooldown + " WHERE uuid = '" + uuid.toString() + "'");
     }
-    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
+    database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", boosted_exp = " + boostedExp + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
     String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)

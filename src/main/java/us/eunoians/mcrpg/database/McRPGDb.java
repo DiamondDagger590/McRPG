@@ -17,13 +17,15 @@ import us.eunoians.mcrpg.database.tables.PlayerSetting;
 import us.eunoians.mcrpg.database.tables.skills.*;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class McRPGDb {
@@ -52,6 +54,7 @@ public class McRPGDb {
     dbBuilder.appendTable(ExcavationTable.class);
     dbBuilder.appendTable(AxesTable.class);
     dbBuilder.appendTable(FishingTable.class);
+    dbBuilder.appendTable(SorceryTable.class);
 
     dbBuilder.appendTable(generated);
     try {

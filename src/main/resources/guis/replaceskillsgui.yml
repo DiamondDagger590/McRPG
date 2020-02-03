@@ -23,6 +23,8 @@ Gui:
         - 'OpenNative:SelectReplaceGUI:Axes'
       39:
         - 'OpenNative:SelectReplaceGUI:Fishing'
+      41:
+        - 'OpenNative:SubSkillGUI:Sorcery'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -106,6 +108,14 @@ Gui:
           - '&eCurrent Fishing level: &a%Fishing_Level%'
           - '&eGreat Rod chance: &c%Great_Rod_Chance%%'
         Slot: 39
+      SorcerySkill:
+        Name: '&5Sorcery Skill'
+        Material: BREWING_STAND
+        Lore:
+          - '&eClick this to view your sorcery abilities'
+          - '&eCurrent Sorcery level: &a%Sorcery_Level%'
+          - '&eHasty Brew chance: &c%Hasty_Brew_Chance%%'
+        Slot: 41
       Back:
         Name: '&bHome>>'
         Material: BARRIER

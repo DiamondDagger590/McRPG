@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.mcrpg;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -55,7 +56,9 @@ public class DisarmHandler implements Listener{
         if(!stickyFingersEvent.isCancelled()){
           Player targ = target.getPlayer();
           e.setCancelled(true);
-          targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.ENTITY_SLIME_ATTACK, 5, 1);
+          FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+          targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.StickyFingers.Sound")),
+            soundFile.getInt("Sounds.Unarmed.StickyFingers.Volume"), soundFile.getInt("Sounds.Unarmed.StickyFingers.Pitch"));
           targ.sendMessage(Methods.color(targ, McRPG.getInstance().getPluginPrefix()
                   + McRPG.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
           return;

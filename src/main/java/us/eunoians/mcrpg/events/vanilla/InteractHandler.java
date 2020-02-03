@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BrewingStand;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -40,6 +41,9 @@ import us.eunoians.mcrpg.api.events.mcrpg.mining.SuperBreakerEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
+import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingGUI;
+import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
@@ -74,6 +78,22 @@ public class InteractHandler implements Listener {
       mp = PlayerManager.getPlayer(p.getUniqueId());
     }
     catch(McRPGPlayerNotFoundException exception){
+      return;
+    }
+    if(!e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.BREWING_STAND && !p.isSneaking()){
+      BrewingStand brewingStand = (BrewingStand) e.getClickedBlock().getState();
+      BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
+      BrewingGUI brewingGUI;
+      if(brewingStandManager.isBrewingStandLoaded(brewingStand)){
+        brewingGUI = brewingStandManager.getBrewingStandWrapper(brewingStand).getBrewingGUI();
+      }
+      else{
+        brewingGUI = McRPG.getInstance().getBrewingStandManager().initNewBrewingStand(brewingStand).getBrewingGUI();
+      }
+      brewingGUI.setLastInteractedPlayer(p);
+      GUITracker.trackPlayer(p, brewingGUI);
+      e.setCancelled(true);
+      p.openInventory(brewingGUI.getInv());
       return;
     }
     ItemStack heldItem = e.getItem();
@@ -143,7 +163,9 @@ public class InteractHandler implements Listener {
               heldItem.setType(Material.AIR);
             }
             p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, p.getLocation(), 30);
-            p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 5, 1);
+            FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+            p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.BlastMining.Sound")),
+              soundFile.getInt("Sounds.Mining.BlastMining.Volume"), soundFile.getInt("Sounds.Mining.BlastMining.Pitch"));
             ItemStack pick = new ItemStack(Material.DIAMOND_PICKAXE, 1);
             for(Block b : blastMiningEvent.getBlocks()) {
               Material material = b.getType();
@@ -206,7 +228,9 @@ public class InteractHandler implements Listener {
             if(mp.isOnline()) {
               mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Deactivated")));
-              mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
+              FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+              mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.SuperBreaker.Sound")),
+                soundFile.getInt("Sounds.Mining.SuperBreaker.Volume"), soundFile.getInt("Sounds.Mining.SuperBreaker.Pitch"));
             }
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND,
@@ -246,7 +270,9 @@ public class InteractHandler implements Listener {
             if(mp.isOnline()) {
               mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.FrenzyDig.Deactivated")));
-              mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.ENTITY_VEX_CHARGE, 10, 1);
+              FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+              mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Excavation.FrenzyDig.Sound")),
+                soundFile.getInt("Sounds.Excavation.FrenzyDig.Volume"), soundFile.getInt("Sounds.Excavation.FrenzyDig.Pitch"));
             }
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND,

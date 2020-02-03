@@ -15,14 +15,15 @@ An enum that stores a type of every skill
 public enum Skills {
   ARCHERY("Archery", DefaultAbilities.DAZE),
   AXES("Axes", DefaultAbilities.SHRED),
-  HERBALISM("Herbalism", DefaultAbilities.TOO_MANY_PLANTS),
   EXCAVATION("Excavation", DefaultAbilities.EXTRACTION),
+  FISHING("Fishing", DefaultAbilities.GREAT_ROD),
+  FITNESS("Fitness", DefaultAbilities.ROLL),
+  HERBALISM("Herbalism", DefaultAbilities.TOO_MANY_PLANTS),
   MINING("Mining", DefaultAbilities.DOUBLE_DROP),
+  SORCERY("Sorcery", DefaultAbilities.HASTY_BREW),
   SWORDS("Swords", DefaultAbilities.BLEED),
   UNARMED("Unarmed", DefaultAbilities.STICKY_FINGERS),
-  WOODCUTTING("Woodcutting", DefaultAbilities.EXTRA_LUMBER),
-  FITNESS("Fitness", DefaultAbilities.ROLL),
-  FISHING("Fishing", DefaultAbilities.GREAT_ROD);
+  WOODCUTTING("Woodcutting", DefaultAbilities.EXTRA_LUMBER);
 
   @Getter
   private String name;
@@ -31,36 +32,36 @@ public enum Skills {
   private DefaultAbilities defaultAbility;
 
   Skills(String name, DefaultAbilities defaultAbility){
-	this.name = name;
-	this.defaultAbility = defaultAbility;
+    this.name = name;
+    this.defaultAbility = defaultAbility;
   }
 
   public Parser getExpEquation(){
-	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-	return new Parser(McRPG.getInstance().getFileManager().getFile(file).getString("ExpEquation"));
+    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return new Parser(McRPG.getInstance().getFileManager().getFile(file).getString("ExpEquation"));
   }
 
   public String getDisplayName(){
-      return McRPG.getInstance().getLangFile().getString("SkillNames." + this.name);
+    return McRPG.getInstance().getLangFile().getString("SkillNames." + this.name);
   }
 
   public boolean isEnabled(){
-	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-	return McRPG.getInstance().getFileManager().getFile(file).getBoolean(name + "Enabled");
+    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return McRPG.getInstance().getFileManager().getFile(file).getBoolean(name + "Enabled");
   }
 
   public List<String> getEnabledAbilities(){
-	FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-	return McRPG.getInstance().getFileManager().getFile(file).getConfigurationSection("EnabledAbilities").getKeys(false)
-		.stream().filter(ability -> file.getFile().getBoolean("EnabledAbilities." + ability)).collect(Collectors.toList());
+    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return McRPG.getInstance().getFileManager().getFile(file).getConfigurationSection("EnabledAbilities").getKeys(false)
+            .stream().filter(ability -> file.getFile().getBoolean("EnabledAbilities." + ability)).collect(Collectors.toList());
   }
 
   public static Skills fromString(String skill){
-	return Arrays.stream(Skills.values()).filter(type -> type.getDisplayName().equalsIgnoreCase(skill) || type.getName().equalsIgnoreCase(skill)).findAny().orElse(null);
+    return Arrays.stream(Skills.values()).filter(type -> type.getDisplayName().equalsIgnoreCase(skill) || type.getName().equalsIgnoreCase(skill)).findAny().orElse(null);
   }
 
   public static boolean isSkill(String skill){
-	return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase()) || Arrays.stream(Skills.values()).map(type -> type.getDisplayName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
+    return Arrays.stream(Skills.values()).map(type -> type.getName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase()) || Arrays.stream(Skills.values()).map(type -> type.getDisplayName().toLowerCase()).collect(Collectors.toList()).contains(skill.toLowerCase());
   }
 
   public boolean usePerm(){
@@ -69,8 +70,8 @@ public enum Skills {
   }
 
   public int getMaxLevel(){
-      FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
-      return file.getFile().getInt("MaxLevel");
+    FileManager.Files file = Arrays.stream(FileManager.Files.values()).filter(f -> f.getFileName().contains(name.toLowerCase())).findFirst().orElse(FileManager.Files.SWORDS_CONFIG);
+    return file.getFile().getInt("MaxLevel");
   }
 
 }

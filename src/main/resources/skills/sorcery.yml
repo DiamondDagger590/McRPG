@@ -1,0 +1,438 @@
+#Is sorcery enabled
+SorceryEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
+#Exp equation for sorcery. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+#
+ExpEquation: '2000+(20*(skill_level))'
+MaxLevel: 1000
+#How many times can a brewed potion grant exp
+MaxBrewAmountForExp: 5
+#How much exp should be awarded per brew level.
+#Water -> Awkward = 1
+#Awkward -> Speed = 2
+#Speed -> Speed II = 3
+#Speed -> Splash Speed II = 4
+#Speed -> Lingering Speed II = 5
+ExpAwardedPerBrewAmount:
+  1: 75
+  2: 150
+  3: 250
+  4: 400
+  5: 500
+#How much should the base enchantment exp be multiplied by.
+#Ex) ARROW_DAMAGE(Power) 5 gives 100 * 5.5 exp. So 550 experience is granted
+EnchantmentLevelModifier:
+  1: 1.0
+  2: 2.0
+  3: 3.0
+  4: 4.3
+  5: 5.5
+#If multiple enchantments are to come from the table, should exp be awarded for all of them
+AwardExpPerMultipleEnchants: true
+#The base exp awarded per enchantment
+ExpAwardedPerEnchantment:
+  ARROW_DAMAGE: 100
+  ARROW_FIRE: 500
+  ARROW_INFINITE: 1500
+  ARROW_KNOCKBACK: 250
+  BINDING_CURSE: 500
+  CHANNELING: 750
+  DAMAGE_ALL: 100
+  DAMAGE_ARTHROPODS: 75
+  DAMAGE_UNDEAD: 75
+  DEPTH_STRIDER: 300
+  DIG_SPEED: 100
+  DURABILITY: 100
+  FIRE_ASPECT: 250
+  FROST_WALKER: 600
+  IMPALING: 150
+  KNOCKBACK: 250
+  LOOT_BONUS_BLOCKS: 400
+  LOOT_BONUS_MOBS: 400
+  LOYALTY: 1000
+  LUCK: 250
+  LURE: 250
+  MENDING: 1000
+  MULTISHOT: 750
+  OXYGEN: 500
+  PIERCING: 100
+  PROTECTION_ENVIRONMENTAL: 150
+  PROTECTION_EXPLOSIONS: 200
+  PROTECTION_FALL: 300
+  PROTECTION_FIRE: 200
+  PROTECTION_PROJECTILE: 200
+  QUICK_CHARGE: 225
+  RIPTIDE: 1000
+  SILK_TOUCH: 1000
+  SWEEPING_EDGE: 200
+  THORNS: 150
+  VANISHING_CURSE: 600
+  WATER_WORKER: 500
+#What abilities are enabled
+EnabledAbilities:
+  HastyBrew: true
+  HadesDomain: true
+  CircesRecipes: true
+  ManaAffinity: true
+  PotionAffinity: true
+  CircesProtection: true
+  CircesShrine: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.sorcery.unlock{ability} and mcrpg.sorcery.use.{ability}
+UsePermsForAbilites:
+  HadesDomain: false
+  CircesRecipes: false
+  ManaAffinity: false
+  PotionAffinity: false
+  CircesProtection: false
+  CircesShrine: false
+#At what sorcery level should these abilities be unlocked at
+UnlockLevelForAbility:
+  CircesRecipes: 50
+  PotionAffinity: 100
+  ManaAffinity: 150
+  CircesProtection: 200
+  HadesDomain: 250
+  CircesShrine: 300
+#
+# Hasty Brew is the default ability that every player has. This ability will increase every time the players Sorcery level is increased
+# This ability increases the speed at which potions brew for the player
+#
+HastyBrewConfig:
+  #Equation for Hasty Brew chance. Default gives 20% at level 1000.
+  HastyBrewChanceEquation: (sorcery_level)*.02
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Hasty Brew'
+    Material: BLAZE_POWDER
+    Amount: 2
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYour brewing speed will be'
+      - '&bincreased by &e%HastyBrew_Chance%%'
+    MenuLore:
+      - '&bThis ability increases the speed'
+      - '&bof potions brewing'
+#
+# Config for the ability Circes Recipes
+# This passive ability adds in new recipes for the player to use
+#
+CircesRecipesConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
+  #Config for each Tier
+  TierI:
+    #What non-vanilla potion effects the player can brew
+    PotionEffects:
+      - 'LEVITATION'
+      - 'CONFUSION'
+  TierII:
+    PotionEffects:
+      - 'BLINDNESS'
+      - 'ABSORPTION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+  TierIII:
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
+  TierIV:
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
+      - 'DOLPHINS_GRACE'
+      - 'HEALTH_BOOST'
+  TierV:
+    PotionEffects:
+      - 'HUNGER'
+      - 'SATURATION'
+      - 'LEVITATION'
+      - 'CONFUSION'
+      - 'BLINDNESS'
+      - 'ABSORPTION'
+      - 'DOLPHINS_GRACE'
+      - 'HEALTH_BOOST'
+      - 'FAST_DIGGING'
+      - 'SLOW_DIGGING'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Circes Recipes'
+    Material: DRAGON_BREATH
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bThis ability unlocks new recipes.'
+      - '&bDo &e/mcbrew &bfor a list of special potions you can brew'
+    MenuLore:
+      - '&bThis ability allows you to brew'
+      - '&bspecial potions!'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Potion Affinity
+# This ability gives the user longer durations for potions they drank
+#
+PotionAffinityConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
+  TierI:
+    #Increases the duration by 2%
+    PotionDurationBonus: 2
+  TierII:
+    PotionDurationBonus: 3
+  TierIII:
+    PotionDurationBonus: 5
+  TierIV:
+    PotionDurationBonus: 7
+  TierV:
+    PotionDurationBonus: 10
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Potion Affinity'
+    Material: NETHER_WART
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bIncreases the duration of potions you drink'
+      - '&bDuration increased by &e%PotionDurationBonus%%'
+    MenuLore:
+      - '&bThis ability increases the duration of potions you drink'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Mana Affinity
+# This passive ability increases chance of books and artifacts to be discovered when brewing
+#
+ManaAffinityConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
+  #Config for each tier
+  TierI:
+    #Increases chance to find special items by .25%
+    DiscoveryChanceIncrease: 0.25
+  TierII:
+    DiscoveryChanceIncrease: 0.5
+  TierIII:
+    DiscoveryChanceIncrease: 0.75
+  TierIV:
+    DiscoveryChanceIncrease: 1.25
+  TierV:
+    DiscoveryChanceIncrease: 2.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Mana Affinity'
+    Material: TOTEM_OF_UNDYING
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bYou have a &e%DiscoveryChanceIncrease%% &bchance'
+      - '&bof finding skill books and artifacts'
+      - '&bwhen enchanting or brewing.'
+    MenuLore:
+      - '&bThis ability increases chances of finding'
+      - '&bskill books and artifacts from enchanting or brewing'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Circes Protection
+# This passive ability provides a chance to resist negative potion effects
+#
+CircesProtectionConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
+  #Config for each tier
+  TierI:
+    #2% Chance of resisting negative potion effects
+    ChanceOfResisting: 2.0
+  TierII:
+    ChanceOfResisting: 4.0
+  TierIII:
+    ChanceOfResisting: 6.0
+  TierIV:
+    ChanceOfResisting: 10.0
+  TierV:
+    ChanceOfResisting: 15.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Circes Protection'
+    Material: GOLDEN_CHESTPLATE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bHas a &e%ChanceOfResisting%% &bchance of'
+      - '&bignoring negative potion effects'
+    MenuLore:
+      - '&bProvides a chance to ignore debuff effects'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Hades Domain
+# This passive ability grants extra vanilla and mcrpg exp while in the nether
+#
+HadesDomainConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 400
+    TierIII: 650
+    TierIV: 700
+    TierV: 850
+  #Config for each tier
+  TierI:
+    #Vanilla experience in the nether is boosted by 5%
+    VanillaExpBoost: 5.0
+    #McRPG experience in the nether is boosted by 2%
+    McRPGExpBoost: 2.0
+  TierII:
+    VanillaExpBoost: 7.0
+    McRPGExpBoost: 3.0
+  TierIII:
+    VanillaExpBoost: 10.0
+    McRPGExpBoost: 5.0
+  TierIV:
+    VanillaExpBoost: 15.0
+    McRPGExpBoost: 7.0
+  TierV:
+    VanillaExpBoost: 20.0
+    McRPGExpBoost: 10.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Hades Domain'
+    Material: NETHER_BRICKS
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bGain additional experience while in the nether'
+      - '&bVanilla experience increased by &e%VanillaExpBoost%%'
+      - '&bMcRPG experience increased by &e%McRPGExpBoost%%'
+    MenuLore:
+      - '&bGain additional experience while in the nether'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Circes Shrine
+# This active ability uses a shrine to attempt to convert exp into levels
+#
+CircesShrineConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
+  #Config for each tier
+  TierI:
+    #What item should be sacrificed into the shrine
+    SacrificialItem: DIAMOND_BLOCK
+    #The smallest amount of items to sacrifice to the shrine in order to activate it
+    MinimumAmountToSacrifice: 1
+    #How much extra % is added per item.
+    #If the minimum is 1 item, then the chance starts at 10%. Every item in the stack added after that is +1%. So 13 Diamond Blocks is 22% success rate
+    AdditionalPercentagePerItem: 1
+    #What is the range of success for the sacrifice
+    #LowEnd-HighEnd -> 10%-70%
+    SuccessRateRange: '10-70'
+    #The percentage of experience to be converted to redeemable exp
+    #LowEnd-HighEnd -> 10%-30%
+    ConversionRateRange: '10-30'
+    #If the items should be consumed irregardless of success or failure
+    ConsumeItemOnFail: true
+    #If half of the levels should be consumed on failure
+    ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
+    #Cooldown in seconds
+    Cooldown: 14400
+  TierII:
+    SacrificialItem: DIAMOND_BLOCK
+    MinimumAmountToSacrifice: 1
+    AdditionalPercentagePerItem: 1
+    SuccessRateRange: '20-75'
+    ConversionRateRange: '15-35'
+    ConsumeItemOnFail: true
+    ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
+    Cooldown: 14400
+  TierIII:
+    SacrificialItem: DIAMOND_BLOCK
+    MinimumAmountToSacrifice: 1
+    AdditionalPercentagePerItem: 1
+    SuccessRateRange: '25-80'
+    ConversionRateRange: '25-35'
+    ConsumeItemOnFail: true
+    ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
+    Cooldown: 14400
+  TierIV:
+    SacrificialItem: DIAMOND_BLOCK
+    MinimumAmountToSacrifice: 1
+    AdditionalPercentagePerItem: 1
+    SuccessRateRange: '30-90'
+    ConversionRateRange: '30-40'
+    ConsumeItemOnFail: true
+    ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
+    Cooldown: 14400
+  TierV:
+    SacrificialItem: DIAMOND_BLOCK
+    MinimumAmountToSacrifice: 1
+    AdditionalPercentagePerItem: 1
+    SuccessRateRange: '40-100'
+    ConversionRateRange: '40-50'
+    ConsumeItemOnFail: true
+    ConsumeLevelsOnFail: true
+    LevelConsumePercent: 50
+    Cooldown: 14400
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&3Circes Shrine'
+    Material: ENCHANTING_TABLE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&bSacrifice diamond blocks to a shrine in order'
+      - '&bto have a chance of converting exp to redeemable exp'
+      - '&bShrine is Nether Quartz Ore surrounding a block of water'
+      - '&bFailure will consume items and some levels'
+      - '&bSacrifice more blocks to increase success rate'
+      - '&bSuccess Rate: &e%SuccessRateRange%%'
+      - '&bConversion Rate: &e%ConversionRateRange%%'
+      - '&bCooldown: &e%Cooldown%'
+    MenuLore:
+      - '&bSacrifice diamond blocks to a shrine'
+      - '&bto attempt to convert vanilla exp'
+      - '&bto McRPG exp'
+      - '&aUnlock Level: &e%UnlockLevel%'

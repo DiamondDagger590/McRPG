@@ -4,7 +4,7 @@ author: Eunoians
 description: A RPG plugin for 1.13+
 main: us.eunoians.mcrpg.McRPG
 api-version: 1.13
-soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus]
+soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO]
 commands:
   mcrpg:
     description: Opens the main menu for McRPG
@@ -19,7 +19,7 @@ commands:
   mcunlink:
     description: Unlinks a chest from a players Remote Transfer
   mcconvert:
-    description: Converts flatfile to SQL
+    description: Converts mcMMO to McRPG
   mchelp:
     description: Displays help info for commands
   mcredeem:

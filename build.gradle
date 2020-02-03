@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 1, patch: 9, state: 'SNAPSHOT-BETA')
+def versionObj = new Version(major: 1, minor: 2, patch: 0, state: 'BETA-SNAPSHOT')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -50,6 +50,7 @@ dependencies {
     compile 'org.bstats:bstats-bukkit:1.7'
     compileOnly files('libs/Sickle.jar')
     compileOnly files('libs/SpartanAPI.jar')
+    compileOnly files('libs/mcMMO.jar')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
