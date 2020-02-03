@@ -12,6 +12,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -309,6 +310,11 @@ public class BreakEvent implements Listener{
                         int range = buriedTreasureEvent.getMaxAmount() - buriedTreasureEvent.getMinAmount();
                         int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
                         ItemStack itemToDrop = new ItemStack(buriedTreasureEvent.getMaterial(), buriedTreasureEvent.getMinAmount() + bonusAmount);
+                        if(!buriedTreasureItem.getEnchants().isEmpty()){
+                          for(Enchantment enchantment : buriedTreasureItem.getEnchants().keySet()){
+                            itemToDrop.addEnchantment(enchantment, buriedTreasureItem.getEnchants().get(enchantment));
+                          }
+                        }
                         p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
                         p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
                       }

@@ -3,10 +3,12 @@ package us.eunoians.mcrpg.api.util;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import us.eunoians.mcrpg.McRPG;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class BuriedTreasureData {
 
@@ -25,7 +27,16 @@ public class BuriedTreasureData {
         int maxAmount = config.getInt(key + ".MaxAmount");
         int minAmount = config.getInt(key + ".MinAmount");
         Material itemMaterial = Material.getMaterial(config.getString(key + ".Material"));
-        BuriedTreasureData.BuriedTreasureItem buriedTreasureItem = new BuriedTreasureData.BuriedTreasureItem(exp, dropChance, maxAmount, minAmount, itemMaterial);
+        Map<Enchantment, Integer> enchants = new HashMap<>();
+        if(config.contains(key + ".Enchants")){
+          for(String s : config.getStringList(key + ".Enchants")){
+            String[] data = s.split(":");
+            //Legacy file
+            String ench = data[0].equalsIgnoreCase("EFFICIENCY") ? "DIG_SPEED" : data[0];
+            enchants.put(Enchantment.getByName(ench), Integer.parseInt(data[1]));
+          }
+        }
+        BuriedTreasureData.BuriedTreasureItem buriedTreasureItem = new BuriedTreasureData.BuriedTreasureItem(exp, dropChance, maxAmount, minAmount, itemMaterial, enchants);
         for(String block : config.getStringList(key + ".Blocks")){
           Material mat = Material.getMaterial(block);
           if(mat == null) continue;
@@ -68,13 +79,17 @@ public class BuriedTreasureData {
 
     @Getter
     private Material material;
+    
+    @Getter
+    private Map<Enchantment, Integer> enchants;
 
-    public BuriedTreasureItem(int exp, double dropChance, int maxAmount, int minAmount, Material material){
+    public BuriedTreasureItem(int exp, double dropChance, int maxAmount, int minAmount, Material material, Map<Enchantment, Integer> enchants){
       this.exp = exp;
       this.dropChance = dropChance;
       this.maxAmount = maxAmount;
       this.minAmount = minAmount;
       this.material = material;
+      this.enchants = enchants;
     }
   }
 }

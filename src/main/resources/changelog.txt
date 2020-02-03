@@ -12,6 +12,9 @@
 = Added fishing and sorcery to Demeters Shrine buffs
 = Fixed null message when using Pans Shrine
 = Fixed console message with NBT Item API
+= Added ability to remove filler items from guis
+= Diamond shovels was dropping from wrong items with Buried Treasure
+= Buried Treasure items would not be enchanted
 
 1.1.8-BETA
 = Readd Javen. Link to dependencies for broken users

@@ -215,13 +215,13 @@ BuriedTreasureConfig:
         MaxAmount: 1
         MinAmount: 1
         Enchants:
-          - 'EFFICIENCY:5'
+          - 'DIG_SPEED:5'
           - 'SILK_TOUCH:1'
         Material: DIAMOND_SHOVEL
         Blocks:
-          - 'CARROT'
-          - 'GRASS'
-          - 'DEAD_BUSH'
+          - 'GRASS_BLOCK'
+          - 'SAND'
+          - 'RED_SAND'
       GoldBlocks:
         Exp: 5000
         DropChance: 10.5
