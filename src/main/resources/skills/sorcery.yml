@@ -200,15 +200,15 @@ PotionAffinityConfig:
     TierV: 650
   TierI:
     #Increases the duration by 2%
-    PotionDurationBonus: 2
-  TierII:
     PotionDurationBonus: 3
-  TierIII:
+  TierII:
     PotionDurationBonus: 5
-  TierIV:
+  TierIII:
     PotionDurationBonus: 7
-  TierV:
+  TierIV:
     PotionDurationBonus: 10
+  TierV:
+    PotionDurationBonus: 15
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Potion Affinity'

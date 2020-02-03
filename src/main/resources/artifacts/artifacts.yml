@@ -13,7 +13,7 @@ BrewingArtifacts:
     #Use the artifact to gain redeemable experience
     RedeemableExp:
       #LowEnd-HighEnd -> the range of exp an artifact can be worth
-      RedeemableExpRange: '3000-10000'
+      RedeemableExpRange: '5000-25000'
       #Chance of it being added to the loot table
       Chance: 70.0
       #If an artifact should spawn with this effect
@@ -34,7 +34,7 @@ BrewingArtifacts:
     #Use the artifact to gain experience in a certain skill. Worth more than redeemable exp since it is for one skill only
     SkillSpecificExp:
       #LowEnd-HighEnd -> the range of exp an artifact can be worth
-      ExpRange: '5000-20000'
+      ExpRange: '10000-50000'
       #What skills can the artifact not be used for
       ExcludedSkills: []
       #Chance of it being added to the loot table
@@ -72,7 +72,7 @@ BrewingArtifacts:
     AbilityPoint:
       #LowEnd-HighEnd -> Also allows for a single number. The range of ability points to be awarded
       AmountRange: '1'
-      Chance: 1.0
+      Chance: 2.5
       Enabled: true
       Material: PRISMARINE_CRYSTALS
       IsGlowing: true
@@ -86,7 +86,7 @@ BrewingArtifacts:
     UnlockBookSummon:
       #LowEnd-HighEnd -> Range of how many books should the artifact summon.
       AmountRange: '1-2'
-      Chance: 10.0
+      Chance: 20.0
       Enabled: true
       Material: PRISMARINE_CRYSTALS
       IsGlowing: true
@@ -100,7 +100,7 @@ BrewingArtifacts:
     UpgradeBookSummon:
       #LowEnd-HighEnd -> Range of how many books should the artifact summon.
       AmountRange: '1-2'
-      Chance: 10.0
+      Chance: 20.0
       Enabled: true
       Material: PRISMARINE_CRYSTALS
       IsGlowing: true
@@ -126,17 +126,17 @@ BrewingArtifacts:
     #Use the artifact to draw in nearby items on the ground
     Magnet:
       #How far should the magnet be able to pull items from in blocks
-      MagnetRadiusRange: '4-8'
+      MagnetRadiusRange: '5-8'
       #The range of how many uses the magnet artifact should have
       UseAmountRange: '50-200'
-      Chance: 7.5
+      Chance: 15.0
       Enabled: true
       Material: PRISMARINE_CRYSTALS
       IsGlowing: true
       DisplayName: '&7[&5Magnet Artifact&7]'
       #The lore of the artifact. %RemainingMagnetUses%, %MagnetRadius% and %MaxMagnetUses% are the only accepted placeholder for this setting
       Lore:
-        - '75Use this artifact to draw items in a &e%MagnetRadius% &7block radius'
+        - '&7Use this artifact to draw items in a &e%MagnetRadius% &7block radius'
         - '&7towards you.'
         - '&5Uses Remaining: &e%RemainingMagnetUses%&7/&a%MaxMagnetUses%'
       BroadcastOnSpawn: false

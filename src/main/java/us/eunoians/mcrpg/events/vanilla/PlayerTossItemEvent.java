@@ -55,7 +55,9 @@ public class PlayerTossItemEvent implements Listener {
           @Override
           public void run() {
             if(mp.getCooldown(UnlockedAbilities.DEMETERS_SHRINE) != -1) {
-              p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DemetersShrine.StillOnCooldown")));
+              if(item.getLocation().getBlock().getType() == Material.WATER){
+                p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DemetersShrine.StillOnCooldown")));
+              }
               return;
             }
             if(item.isValid()) {
@@ -99,7 +101,9 @@ public class PlayerTossItemEvent implements Listener {
           @Override
           public void run() {
             if(mp.getCooldown(UnlockedAbilities.PANS_SHRINE) != -1){
-              p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.PansShrine.StillOnCooldown")));
+              if(item.getLocation().getBlock().getType() == Material.WATER){
+                p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.PansShrine.StillOnCooldown")));
+              }
               return;
             }
             if(item.isValid()){
@@ -169,7 +173,9 @@ public class PlayerTossItemEvent implements Listener {
           @Override
           public void run() {
             if(mp.getCooldown(UnlockedAbilities.CIRCES_SHRINE) != -1) {
-              p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CircesShrine.StillOnCooldown")));
+              if(item.getLocation().getBlock().getType() == Material.WATER){
+                p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CircesShrine.StillOnCooldown")));
+              }
               return;
             }
             if(item.isValid()) {
@@ -239,7 +245,8 @@ public class PlayerTossItemEvent implements Listener {
                       if(circesShrineEvent.isConsumeLevelsOnFail()){
                         exp *= (circesShrineEvent.getPercentLevelsToConsume() / 100);
                         p.setLevel(0);
-                        p.setExp(exp);
+                        p.setExp(0);
+                        p.giveExp(exp);
                       }
                     }
                     e.getItemDrop().getItemStack().setAmount(newItemAmount);

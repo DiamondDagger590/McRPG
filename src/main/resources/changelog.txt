@@ -1,10 +1,17 @@
 1.2.0-BETA
++ Added sorcery skill
++ Added artifact system
++ Added sound configuration file
++ Added bStats
++ Added configuration for damage cap. Was hardcoded to prevent parrot exploit but is now configurable for those who need it
 + Added language option for Poseidons Guardian's name
 + Added language option for skill item names for ability readying
 + Added mcMMO conversion. Start server with both jars and run /mcconvert. It is recommended to purge old mcMMO users before this. Consult the config for two conversion options
 + Added boosted exp system for mcMMO conversion. Experience gained is multiplied until boosted experience is gone.
 = Attempted a performance fix for leaderboard heads
 = Added fishing and sorcery to Demeters Shrine buffs
+= Fixed null message when using Pans Shrine
+= Fixed console message with NBT Item API
 
 1.1.8-BETA
 = Readd Javen. Link to dependencies for broken users

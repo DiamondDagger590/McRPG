@@ -150,6 +150,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }
     }.runTaskLater(this, 10 * 20);
+    new BukkitRunnable(){
       public void run(){
         if(Bukkit.getPluginManager().isPluginEnabled("mcMMO")){
           mcmmoEnabled = true;
@@ -239,7 +240,8 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   
     //Preload nbt class
     ItemStack itemStack = new ItemStack(Material.DIAMOND);
-    new NBTItem(itemStack);
+    NBTItem item = new NBTItem(itemStack);
+    item.setString("temp", "temp");
   }
 
   @Override

@@ -32,7 +32,6 @@ public class TagMeta {
     this.tag = tag;
     FileConfiguration potionConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_ITEMS_CONFIG);
     String key = prevKey + "." + tag + ".";
-    System.out.println(key);
     potionConfig.getStringList(key + "Ingredients").stream().map(Material::getMaterial).forEach(m -> ingredients.add(m));
     duration = potionConfig.getInt(key + "Duration", 0);
     potionEffectLevel = potionConfig.getInt(key + "PotionEffectLevel", 1);

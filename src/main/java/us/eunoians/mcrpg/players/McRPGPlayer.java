@@ -157,7 +157,6 @@ public class McRPGPlayer {
         this.redeemableLevels = resultSet.getInt("redeemable_levels");
         long replaceCooldown = resultSet.getLong("replace_ability_cooldown_time");
         this.boostedExp = resultSet.getInt("boosted_exp");
-        int replaceCooldown = resultSet.getInt("replace_ability_cooldown");
         this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
         this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
