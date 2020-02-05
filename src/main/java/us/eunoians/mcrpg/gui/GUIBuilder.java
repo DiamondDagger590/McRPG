@@ -43,6 +43,9 @@ public class GUIBuilder{
     if(guiBuilder.getRawPath().equalsIgnoreCase("MainGUI")){
       for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
         ItemStack item = guiBuilder.getInv().getItem(i);
+        if(item == null){
+          continue;
+        }
         if(item.hasItemMeta() && item.getItemMeta().hasLore()){
           ItemMeta meta = item.getItemMeta();
           List<String> lore = new ArrayList<>();
@@ -83,20 +86,19 @@ public class GUIBuilder{
       GUIItem i = new GUIItem(item, config.getInt(path + ".Items." + itemName + ".Slot"));
       items.add(i);
     }
-    ItemStack filler;
-    if(!config.contains(path + "FillerItem")){
-      return inv;
-    }
-    Material fillerType = Material.getMaterial(config.getString(path + "FillerItem.Material"));
-    filler = new ItemStack(fillerType, 1);
-    ItemMeta meta = filler.getItemMeta();
-    meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "FillerItem.Name")));
-    filler.setItemMeta(meta);
-    if(config.contains(path + "FillerItem.Lore")){
-      List<String> lore = config.getStringList(path + "FillerItem.Lore");
-      lore = Methods.colorLore(lore);
-      meta.setLore(lore);
+    ItemStack filler = new ItemStack(Material.AIR);
+    if(config.contains(path + "FillerItem")){
+      Material fillerType = Material.getMaterial(config.getString(path + "FillerItem.Material"));
+      filler = new ItemStack(fillerType, 1);
+      ItemMeta meta = filler.getItemMeta();
+      meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "FillerItem.Name")));
       filler.setItemMeta(meta);
+      if(config.contains(path + "FillerItem.Lore")){
+        List<String> lore = config.getStringList(path + "FillerItem.Lore");
+        lore = Methods.colorLore(lore);
+        meta.setLore(lore);
+        filler.setItemMeta(meta);
+      }
     }
     return Methods.fillInventory(inv, filler, items);
   };

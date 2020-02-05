@@ -105,19 +105,20 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     javen.addClassLoader(this.getClass().getClassLoader());
     javen.loadDependencies();
     McRPG t = this;
-    if(Bukkit.getVersion().contains("1.14")){
-      new BukkitRunnable(){
-        @Override
-        public void run(){
-          Bukkit.getLogger().log(Level.WARNING, "You are on 1.14. Please ensure in the swords.yml that you have changed ROSE_RED to RED_DYE" +
-                  ", otherwise the plugin will error. Make these changes and then do /mcrpg reload");
-        }
-      }.runTaskLater(this, 400);
-    }
     //Misc
     //localizationFiles = new LocalizationFiles(this, true);
     instance = this;
     fileManager = FileManager.getInstance().setup(this);
+    if((Bukkit.getVersion().contains("1.14") || Bukkit.getVersion().contains("1.15")) &&
+         fileManager.getFile(FileManager.Files.SWORDS_CONFIG).getString("DeeperWoundConfig.Item.Material").equals("ROSE_RED")){
+      new BukkitRunnable(){
+        @Override
+        public void run(){
+          Bukkit.getLogger().log(Level.WARNING, "You are on 1.14+. Please ensure in the swords.yml that you have changed ROSE_RED to RED_DYE" +
+                                                  ". A fix has been put in place to retroactively handle this but it is still better to manually change it.");
+        }
+      }.runTaskLater(this, 400);
+    }
     expPermissionManager = ExpPermissionManager.getInstance().setup(this);
     this.mcRPGDb = new McRPGDb(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;

@@ -15,3 +15,4 @@ SpecialItemPlaceholder:
   DisplayName: '&bSpecial Item Slot'
   Lore:
     - '&aSpecial items like skill books will spawn here'
+RemoveFillerGlass: false

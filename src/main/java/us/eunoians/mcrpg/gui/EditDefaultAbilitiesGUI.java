@@ -35,8 +35,12 @@ public class EditDefaultAbilitiesGUI extends GUI {
               title);
       ArrayList<GUIItem> items = new ArrayList<>();
       Skills[] skills = Skills.values();
+      int slot = 0;
       for(int i = 0; i < skills.length; i++) {
         Skill skill = player.getSkill(skills[i]);
+        if(!skills[i].isEnabled()){
+          continue;
+        }
         BaseAbility ability = skill.getDefaultAbility();
         defaultAbilityList.add(ability);
         FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(skill.getName()));
@@ -62,7 +66,8 @@ public class EditDefaultAbilitiesGUI extends GUI {
           abilityMeta.setLore(lore);
           abilityItem.setItemMeta(abilityMeta);
         }
-        items.add(new GUIItem(abilityItem, i));
+        items.add(new GUIItem(abilityItem, slot));
+        slot++;
       }
   
       ItemStack filler = new ItemStack(Material.AIR);

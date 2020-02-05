@@ -172,6 +172,7 @@ CircesRecipesConfig:
       - 'HEALTH_BOOST'
       - 'FAST_DIGGING'
       - 'SLOW_DIGGING'
+      - 'DAMAGE_RESISTANCE'
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Circes Recipes'

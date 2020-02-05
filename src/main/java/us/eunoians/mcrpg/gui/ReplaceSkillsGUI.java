@@ -48,6 +48,9 @@ public class ReplaceSkillsGUI extends GUI {
     nf.setMinimumFractionDigits(2);
     for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
       ItemStack item = guiBuilder.getInv().getItem(i);
+      if(item == null){
+        continue;
+      }
       if(item.hasItemMeta() && item.getItemMeta().hasLore()){
         ItemMeta meta = item.getItemMeta();
         boolean isFish = meta.hasLore() && meta.getLore().stream().filter(s -> s.contains("%Fishing")).count() >= 1;

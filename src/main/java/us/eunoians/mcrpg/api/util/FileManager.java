@@ -77,7 +77,13 @@ public class FileManager {
         }
       }
       files.put(file, newFile);
-      configurations.put(file, YamlConfiguration.loadConfiguration(newFile));
+      YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(newFile);
+      if(file == Files.SWORDS_CONFIG){
+        if(yamlConfiguration.getString("DeeperWoundConfig.Item.Material").equals("ROSE_RED")){
+          yamlConfiguration.set("DeeperWoundConfig.Item.Material", "RED_DYE");
+        }
+      }
+      configurations.put(file, yamlConfiguration);
       if (log) System.out.println(prefix + "Successfully loaded " + file.getFileName());
     }
     //Starts to load all the custom files.
@@ -258,11 +264,17 @@ public class FileManager {
    * Overrides the loaded state file and loads the file systems file.
    */
   public void reloadFile(Files file) {
-    configurations.put(file, YamlConfiguration.loadConfiguration(files.get(file)));
+    YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(files.get(file));
+    if(file == Files.SWORDS_CONFIG){
+      if(yamlConfiguration.getString("DeeperWoundConfig.Item.Material").equals("ROSE_RED")){
+        yamlConfiguration.set("DeeperWoundConfig.Item.Material", "RED_DYE");
+      }
+    }
+    configurations.put(file, yamlConfiguration);
   }
 
   public void reloadFiles() {
-    Arrays.stream(Files.values()).forEach(file -> reloadFile(file));
+    Arrays.stream(Files.values()).forEach(this::reloadFile);
   }
 
   /**
@@ -273,7 +285,7 @@ public class FileManager {
     if (file != null) {
       try {
         file.file = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "/" + file.getHomeFolder() + "/" + file.getFileName()));
-        if (log) System.out.println(prefix + "Successfuly reload the " + file.getFileName() + ".");
+        if (log) System.out.println(prefix + "Successfully reload the " + file.getFileName() + ".");
       } catch (Exception e) {
         System.out.println(prefix + "Could not reload the " + file.getFileName() + "!");
         e.printStackTrace();

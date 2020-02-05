@@ -208,17 +208,18 @@ public class BrewingGUI extends GUI{
       inv.setItem(index, itemToSet == null ? specialItemGlass : itemToSet);
     }
     
-    ItemStack placeholder = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-    ItemMeta placeholderMeta = placeholder.getItemMeta();
-    placeholderMeta.setDisplayName(" ");
-    placeholder.setItemMeta(placeholderMeta);
-    
-    for(int i = 0; i < inv.getSize(); i++){
-      if(inv.getItem(i) == null || inv.getItem(i).getType() == Material.AIR){
-        inv.setItem(i, placeholder);
+    if(!guiFile.getBoolean("RemoveFillerGlass", false)){
+      ItemStack placeholder = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+      ItemMeta placeholderMeta = placeholder.getItemMeta();
+      placeholderMeta.setDisplayName(" ");
+      placeholder.setItemMeta(placeholderMeta);
+  
+      for(int i = 0; i < inv.getSize(); i++){
+        if(inv.getItem(i) == null || inv.getItem(i).getType() == Material.AIR){
+          inv.setItem(i, placeholder);
+        }
       }
     }
-    
     getGui().setNewInventory(inv);
   }
   

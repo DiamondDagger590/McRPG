@@ -1,3 +1,11 @@
+1.2.1-BETA
++ In brewinggui.yml added a setting to remove the filler glass. Either add 'RemoveFillerGlass: false' to the file or delete it for regeneration.
+    The plugin will function fine without it and will assume it to be false if not present
+= When skills are disabled, the default ability does not appear for toggling anymore
+= Fixed issues with removing filler items
+= Fixed issue with swords config on 1.14+. Added a workaround and will no longer error/notify console
+= Resistance potion was missing from Circes Recipes and has been added to Tier V. To add it yourself simply add DAMAGE_RESISTANCE to the list for that tier.
+
 1.2.0-BETA
 + Added sorcery skill
 + Added artifact system
