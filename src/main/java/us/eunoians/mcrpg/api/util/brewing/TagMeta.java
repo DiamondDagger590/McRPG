@@ -68,7 +68,7 @@ public class TagMeta {
         if(material == branchMaterial){
           return s;
         }
-        return null;
+        continue;
       }
       TagMeta tagMeta = potionRecipeManager.getPotionEffectTagWrapper(tempType).getTagMeta(tagToUse);
       if(tagMeta.isValidIngredient(material)){

@@ -1,3 +1,8 @@
+1.2.2-BETA
+= Fixed NCP flagging custom brew GUI
+= Fix potions with branch options not working
+= Fix where players without circes recpies could brew any potion
+
 1.2.1-BETA
 + In brewinggui.yml added a setting to remove the filler glass. Either add 'RemoveFillerGlass: false' to the file or delete it for regeneration.
     The plugin will function fine without it and will assume it to be false if not present

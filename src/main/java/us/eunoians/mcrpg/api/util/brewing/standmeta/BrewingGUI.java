@@ -827,11 +827,12 @@ public class BrewingGUI extends GUI{
                   return potionRecipeManager.getTypesForTier(circesRecipes.getCurrentTier()).contains(basePotionType);
                 }
               }catch(McRPGPlayerNotFoundException e){
-                return false;
+                continue;
               }
+              continue;
             }
             else{
-              return false;
+              continue;
             }
           }
           return true;

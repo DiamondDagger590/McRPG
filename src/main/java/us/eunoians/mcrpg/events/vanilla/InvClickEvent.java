@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import fr.neatmonster.nocheatplus.hooks.NCPExemptionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -35,13 +36,12 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("SuspiciousMethodCalls")
 public class InvClickEvent implements Listener{
   
+  static Map<UUID, BukkitTask> antiCheatTasks = new HashMap<>();
   private FileConfiguration config;
   
   public InvClickEvent(McRPG plugin){
@@ -72,6 +72,21 @@ public class InvClickEvent implements Listener{
       
       //Brewing GUI comes before player inventory checks
       if(currentGUI instanceof BrewingGUI){
+        if(McRPG.getInstance().isNcpEnabled()){
+          UUID uuid = p.getUniqueId();
+          NCPExemptionManager.exemptPermanently(uuid);
+          if(antiCheatTasks.containsKey(uuid)){
+            antiCheatTasks.remove(uuid).cancel();
+          }
+          BukkitTask bukkitTask = new BukkitRunnable(){
+            @Override
+            public void run(){
+              NCPExemptionManager.unexempt(uuid);
+              antiCheatTasks.remove(uuid).cancel();
+            }
+          }.runTaskLater(McRPG.getInstance(), 5 * 20);
+          antiCheatTasks.put(uuid, bukkitTask);
+        }
         BrewingGUI brewingGUI = (BrewingGUI) currentGUI;
         if(e.getClickedInventory() == null){
           return;
@@ -139,7 +154,7 @@ public class InvClickEvent implements Listener{
           e.setCancelled(true);
           if(e.getSlot() == 0){
             if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
-            && !(brewingGUI.getFuel() == null ||  brewingGUI.getFuel().getType() == Material.AIR || brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
+                 && !(brewingGUI.getFuel() == null || brewingGUI.getFuel().getType() == Material.AIR || brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
               e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
@@ -205,7 +220,8 @@ public class InvClickEvent implements Listener{
           }
           else if(e.getSlot() == 13){
             if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
-                 && !(brewingGUI.getIngredient() == null ||  brewingGUI.getIngredient().getType() == Material.AIR || brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){              e.setCancelled(false);
+                 && !(brewingGUI.getIngredient() == null || brewingGUI.getIngredient().getType() == Material.AIR || brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
+              e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
                 public void run(){
@@ -279,7 +295,7 @@ public class InvClickEvent implements Listener{
           }
           else if(brewingGUI.isPotionSlot(e.getSlot())){
             if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
-                 && !(brewingGUI.getPotion(e.getSlot()) == null ||  brewingGUI.getPotion(e.getSlot()).getType() == Material.AIR || brewingGUI.getPotion(e.getSlot()).getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
+                 && !(brewingGUI.getPotion(e.getSlot()) == null || brewingGUI.getPotion(e.getSlot()).getType() == Material.AIR || brewingGUI.getPotion(e.getSlot()).getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
               e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
@@ -324,7 +340,7 @@ public class InvClickEvent implements Listener{
           }
           else if(brewingGUI.isSpecialItemSlot(e.getSlot()) && (e.getCursor() == null || e.getCursor().getType() == Material.AIR)){
             if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
-                 && !(brewingGUI.getSpecialItem(e.getSlot()) == null ||  brewingGUI.getSpecialItem(e.getSlot()).getType() == Material.AIR || brewingGUI.getSpecialItem(e.getSlot()).getType() == Material.PURPLE_STAINED_GLASS_PANE)){
+                 && !(brewingGUI.getSpecialItem(e.getSlot()) == null || brewingGUI.getSpecialItem(e.getSlot()).getType() == Material.AIR || brewingGUI.getSpecialItem(e.getSlot()).getType() == Material.PURPLE_STAINED_GLASS_PANE)){
               e.setCancelled(false);
               new BukkitRunnable(){
                 @Override
@@ -875,7 +891,8 @@ public class InvClickEvent implements Listener{
           }
           else{
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
-              soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));            return;
+              soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));
+            return;
           }
         }
         else{
@@ -901,7 +918,7 @@ public class InvClickEvent implements Listener{
               cal.add(Calendar.MINUTE, cooldown);
               mp.setEndTimeForReplaceCooldown(cal.getTimeInMillis());
             }
-        }
+          }
           p.closeInventory();
           if(editLoadoutGUI.getEditType() == EditLoadoutGUI.EditType.ABILITY_OVERRIDE){
             checkAndOpenPending(mp);
@@ -1095,7 +1112,8 @@ public class InvClickEvent implements Listener{
           else if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
             if(mp.getAbilityPoints() == 0){
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
-                soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));               return;
+                soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));
+              return;
             }
             gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
             currentGUI.setClearData(false);
