@@ -21,7 +21,7 @@ DropChances:
     - 'KillNatural'
   #The default chance of a book being dropped when an action occurs
   #Chances can be up to 3 decimal places
-  Default: 0.001
+  Default: 0.2
   #When you want the chance to be modified for certain things.
   #For Break you can have MATERIAL:CHANCE
   #For any Kill, have ENTITY_TYPE:CHANCE

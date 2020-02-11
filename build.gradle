@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 2, patch: 2, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 2, patch: 3, state: 'BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -64,7 +64,7 @@ processResources {
 
 shadowJar {
     archiveName = "McRPG-${version}.jar"
-    relocate 'de.tr7zw.changeme.nbtapi', 'us,eunoians.mcrpg.nbtapi'
+    relocate 'de.tr7zw.changeme.nbtapi', 'us.eunoians.mcrpg.nbtapi'
     relocate 'org.slf4j', 'us.eunoians.mcrpg'
     relocate 'org.bstats', 'us.eunoians.mcrpg'
 }
