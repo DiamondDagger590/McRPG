@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import sun.misc.Queue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.archery.*;
@@ -29,6 +30,7 @@ import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.skills.*;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
@@ -114,12 +116,15 @@ public class McRPGPlayer {
   //mcMMO conversion
   @Getter @Setter private int boostedExp;
   
+  //party invites
+  @Getter private Queue<PartyInvite> partyInvites = new Queue<>();
+  
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
     this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
-
+    
     boolean isNew = false;
     try {
       if(playerDataSet.isPresent()) {
