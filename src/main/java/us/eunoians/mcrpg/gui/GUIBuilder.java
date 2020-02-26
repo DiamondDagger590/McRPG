@@ -157,8 +157,6 @@ public class GUIBuilder{
   public GUIBuilder(){
   }
   
-  ;
-  
   /**
    * Construct a new gui from the provided elements. Reuse the FileConfiguration so that way it doesnt have to do an I/O
    *

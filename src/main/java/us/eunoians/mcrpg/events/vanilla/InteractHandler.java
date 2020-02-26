@@ -80,7 +80,10 @@ public class InteractHandler implements Listener {
     catch(McRPGPlayerNotFoundException exception){
       return;
     }
-    if(!e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.BREWING_STAND && !p.isSneaking()){
+    if(!e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.BREWING_STAND){
+      if(p.isSneaking() && !(p.getInventory().getItemInMainHand() == null || p.getInventory().getItemInMainHand().getType() == Material.AIR)){
+        return;
+      }
       BrewingStand brewingStand = (BrewingStand) e.getClickedBlock().getState();
       BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
       BrewingGUI brewingGUI;

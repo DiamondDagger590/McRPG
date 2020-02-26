@@ -105,7 +105,8 @@ public class BrewingStandManager {
       fileWrapper.save();
     }
   }
-  private class FileWrapper {
+  
+  private static class FileWrapper {
 
     @Getter
     private File file;
