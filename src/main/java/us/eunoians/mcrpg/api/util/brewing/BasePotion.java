@@ -46,6 +46,7 @@ public class BasePotion {
     PotionMeta meta = (PotionMeta) potion.getItemMeta();
     PotionData data = meta.getBasePotionData();
     PotionType potionType = data.getType();
+    potionItem = potion;
     if(potionType != PotionType.AWKWARD && potionType != PotionType.WATER && potionType != PotionType.UNCRAFTABLE){
       meta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE));
       int duration = data.isExtended() ? 480 : data.isUpgraded() ? 90 : potionType.isInstant() ? 0 : 180;
@@ -58,8 +59,11 @@ public class BasePotion {
     }
     this.basePotionType = getBasePotionTypeFromItemStack(potion);
     if(basePotionType != BasePotionType.AWKWARD && basePotionType != BasePotionType.WATER){
-      String name = (potion.getType() == Material.LINGERING_POTION ? "Lingering " : potion.getType() == Material.SPLASH_POTION ? "Splash " : "") + "Potion of " + basePotionType.getDisplayName();
-      meta.setDisplayName(Methods.color("&f" + name));
+      String displayName = (potionItem.getType() == Material.LINGERING_POTION ? McRPG.getInstance().getLangFile().getString("Potions.Lingering") + " "
+                              : potionItem.getType() == Material.SPLASH_POTION ?
+                                  McRPG.getInstance().getLangFile().getString("Potions.Splash") + " " : "")  +  McRPG.getInstance().getLangFile().getString("Potions.PotionNamePrefix").replace("%PotionName%", basePotionType.getDisplayName());
+      //String name = (potion.getType() == Material.LINGERING_POTION ? "Lingering " : potion.getType() == Material.SPLASH_POTION ? "Splash " : "") + "Potion of " + basePotionType.getDisplayName();
+      meta.setDisplayName(Methods.color(displayName));
       List<Integer> rgb = Arrays.stream(basePotionType.getCustomColour().split(":")).map(Integer::parseInt).collect(Collectors.toList());
       meta.setColor(Color.fromRGB(rgb.get(0), rgb.get(1), rgb.get(2)));
     }
@@ -137,8 +141,11 @@ public class BasePotion {
         tagMeta.getPotionEffectLevel() - 1);
       potionMeta.clearCustomEffects();
       potionMeta.addCustomEffect(newPotionEffect, true);
-      String name = (potionItem.getType() == Material.LINGERING_POTION ? "Lingering " : potionItem.getType() == Material.SPLASH_POTION ? "Splash " : "") + "Potion of " + basePotionType.getDisplayName();
-      potionMeta.setDisplayName(Methods.color("&f" + name));
+      String displayName = (potionItem.getType() == Material.LINGERING_POTION ? McRPG.getInstance().getLangFile().getString("Potions.Lingering") + " "
+                              : potionItem.getType() == Material.SPLASH_POTION ?
+                                  McRPG.getInstance().getLangFile().getString("Potions.Splash") + " " : "") + McRPG.getInstance().getLangFile().getString("Potions.PotionNamePrefix").replace("%PotionName%", basePotionType.getDisplayName());
+     // String name = (potionItem.getType() == Material.LINGERING_POTION ? "Lingering " : potionItem.getType() == Material.SPLASH_POTION ? "Splash " : "") + "Potion of " + basePotionType.getDisplayName();
+      potionMeta.setDisplayName(Methods.color(displayName));
       List<Integer> rgb = Arrays.stream(basePotionType.getCustomColour().split(":")).map(Integer::parseInt).collect(Collectors.toList());
       potionMeta.setColor(Color.fromRGB(rgb.get(0), rgb.get(1), rgb.get(2)));
     }
@@ -176,7 +183,8 @@ public class BasePotion {
     potionItem.setType(Material.LINGERING_POTION);
     double lingeringModifier = McRPG.getInstance().getPotionRecipeManager().getPotionEffectTagWrapper(basePotionType).getLingeringDurationModifier();
     PotionMeta potionMeta = (PotionMeta) potionItem.getItemMeta();
-    potionMeta.setDisplayName(Methods.color("&fLingering Potion of " + basePotionType.getDisplayName()));
+    potionMeta.setDisplayName(Methods.color(McRPG.getInstance().getLangFile().getString("Potions.Lingering") + " " +
+                                              McRPG.getInstance().getLangFile().getString("Potions.PotionNamePrefix").replace("%PotionName%", basePotionType.getDisplayName())));
     PotionEffect customEffect = potionMeta.getCustomEffects().get(0);
     PotionEffect newEffect = new PotionEffect(basePotionType.getEffectType(), (int) (customEffect.getDuration() * lingeringModifier * 2), customEffect.getAmplifier());
     potionMeta.clearCustomEffects();

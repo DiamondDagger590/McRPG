@@ -34,6 +34,46 @@ Signs:
     Line2: '&b#%Rank%'
     Line3: '&7%Player%'
     Line4: '&7LV. %Level%'
+Potions:
+  #The name of the potion that should be displayed when brewing the potion
+  PotionNames:
+    Water: 'Water'
+    Awkward: 'Awkward'
+    Haste: 'Haste'
+    MiningFatigue: 'Mining Fatigue'
+    Speed: 'Speed'
+    Slowness: 'Slowness'
+    Jump: 'Jump'
+    Nausea: 'Nausea'
+    Regeneration: 'Regeneration'
+    WaterBreathing: 'Water Breathing'
+    Invisibility: 'Invisibility'
+    Blindness: 'Blindness'
+    NightVision: 'Night Vision'
+    Hunger: 'Hunger'
+    Saturation: 'Saturation'
+    InstantHealth: 'Instant Health'
+    InstantDamage: 'Instant Damage'
+    Wither: 'Wither'
+    HealthBoost: 'Health Boost'
+    Absorption: 'Absorption'
+    Glowing: 'Glowing'
+    Luck: 'Luck'
+    Unluck: 'Unluck'
+    DolphinsGrace: 'Dolphins Grace'
+    Strength: 'Increase Damage'
+    Weakness: 'Weakness'
+    Resistance: 'Resistance'
+    FireResistance: 'Fire Resistance'
+    Levitation: 'Levitation'
+    SlowFalling: 'Slow Falling'
+    Poison: 'Poison'
+  #The translation and color code for lingering and splash potions
+  Lingering: '&fLingering'
+  Splash: '&fSplash'
+  #A full name would be the Splash/Lingering + the Potion Name Prefix and then replace the placeholder of %PotionName% with
+  #the potion name defined in the configuration
+  PotionNamePrefix: '&fPotion Of %PotionName%'
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:

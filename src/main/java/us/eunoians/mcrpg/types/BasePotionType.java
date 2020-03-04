@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.types;
 import lombok.Getter;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import us.eunoians.mcrpg.McRPG;
 
 import java.util.Arrays;
 
@@ -61,9 +62,9 @@ public enum BasePotionType{
 		this.potionType = potionType;
 		this.effectType = effectType;
 	}
-
+	
 	public String getDisplayName(){
-		return this.name;
+		return McRPG.getInstance().getLangFile().getString("Potions.PotionNames." + this.name.replace(" ", ""), "");
 	}
 
 	public String getName(){
