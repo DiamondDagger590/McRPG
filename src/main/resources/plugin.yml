@@ -26,3 +26,5 @@ commands:
     description: Allows redeeming of exp
   mcrank:
     description: Shows a leaderboard
+  mcparty:
+    description: The stub command for all various party commands

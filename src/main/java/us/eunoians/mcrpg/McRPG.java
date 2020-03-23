@@ -41,6 +41,7 @@ import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.external.sickle.Sickle;
 import us.eunoians.mcrpg.events.mcrpg.*;
 import us.eunoians.mcrpg.events.vanilla.*;
+import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
@@ -79,6 +80,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private PotionRecipeManager potionRecipeManager;
   @Getter private BrewingStandManager brewingStandManager;
   @Getter private WorldModifierManager worldModifierManager;
+  @Getter private PartyManager partyManager;
 
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
@@ -129,6 +131,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     worldModifierManager = new WorldModifierManager();
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
+    this.partyManager = new PartyManager();
     Metrics metrics = new Metrics(this, id);
     brewingStandManager = new BrewingStandManager();
     getLogger().info("Loading Potions");
@@ -184,6 +187,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcconvert").setExecutor(new McConvert());
     getCommand("mcredeem").setExecutor(new McRedeem());
     getCommand("mcrank").setExecutor(new McRank());
+    getCommand("mcparty").setExecutor(new McParty());
     getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());

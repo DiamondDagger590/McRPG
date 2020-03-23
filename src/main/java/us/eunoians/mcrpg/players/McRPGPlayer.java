@@ -118,6 +118,7 @@ public class McRPGPlayer {
   
   //party invites
   @Getter private Queue<PartyInvite> partyInvites = new Queue<>();
+  @Getter @Setter private UUID partyID;
   
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
@@ -166,6 +167,13 @@ public class McRPGPlayer {
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
         this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
         this.divineEscapeDamageEnd = resultSet.getInt("divine_escape_damage_end_time");
+        String partyIDString = resultSet.getString("party_uuid");
+        if(partyIDString.equalsIgnoreCase("nu")){
+           partyID = null;
+        }
+        else{
+          partyID = UUID.fromString(partyIDString);
+        }
         Calendar cal1 = Calendar.getInstance();
         Calendar cal = Calendar.getInstance();
         cal1.setTimeInMillis(replaceCooldown);
@@ -1522,7 +1530,7 @@ public class McRPGPlayer {
     }
     database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", boosted_exp = " + boostedExp + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
-            ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
+            ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + ", party_uuid = " + (partyID == null ? "nu" : partyID.toString()) + " WHERE uuid = '" + uuid.toString() + "'");
     String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
             "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + " WHERE uuid = '" + uuid.toString() + "'";
