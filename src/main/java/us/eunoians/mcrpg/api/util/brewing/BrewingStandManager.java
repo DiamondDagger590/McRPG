@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.util.brewing;
 
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.BrewingStand;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class BrewingStandManager {
 
@@ -122,6 +124,9 @@ public class BrewingStandManager {
       try{
         fileConfiguration.save(file);
       } catch(IOException e){
+        Bukkit.getLogger().log(Level.SEVERE, "MCRPG WARNING: PLEASE REPORT TO THE DEVELOPER");
+        Bukkit.getLogger().log(Level.SEVERE, "FILE: " + file.toString());
+        Bukkit.getLogger().log(Level.SEVERE, "FILE CONFIGURATION: " + fileConfiguration.toString());
         e.printStackTrace();
       }
     }

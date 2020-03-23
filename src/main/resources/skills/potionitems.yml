@@ -41,6 +41,7 @@ Potions:
           - 'LEVITATION.Default'
           - 'SLOW_FALLING.Default'
           - 'POISON.Default'
+          - 'WEAKNESS.Default.FERMENTED_SPIDER_EYE'
   #Potion effect
   SPEED:
     SpecialModifiers:
