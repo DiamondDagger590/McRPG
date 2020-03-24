@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingStandWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -122,7 +123,13 @@ public class BrewingStandManager {
         List<File> filesToRename = Arrays.stream(files).filter(f -> f.getName().contains(":")).collect(Collectors.toList());
         if (filesToRename.size() > 0) {
           McRPG.getInstance().getLogger().info("Found pre-1.2.4 brewing stand storage format. Converting...");
-          filesToRename.forEach(f -> f.renameTo(new File(folder, f.getName().replaceAll(":", "@"))));
+          filesToRename.forEach(f -> {
+            try {
+              Files.move(f.toPath(), f.toPath().resolveSibling(f.getName().replaceAll(":", "@")));
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
           McRPG.getInstance().getLogger().info("1.2.4 brewing stand storage format converted successfully!");
         }
       }
