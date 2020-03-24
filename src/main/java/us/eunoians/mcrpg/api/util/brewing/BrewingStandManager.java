@@ -133,7 +133,7 @@ public class BrewingStandManager {
             }
           }
           if (errored) {
-            McRPG.getInstance().getLogger().info("Oops! 1.2.4 brewing stand storage format did not convert successfully :(");
+            McRPG.getInstance().getLogger().severe("Oops! 1.2.4 brewing stand storage format did not convert successfully :(");
           } else {
             McRPG.getInstance().getLogger().info("1.2.4 brewing stand storage format converted successfully!");
           }
