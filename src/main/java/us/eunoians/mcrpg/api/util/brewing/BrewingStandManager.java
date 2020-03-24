@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.api.util.brewing;
 
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.BrewingStand;
@@ -13,9 +12,12 @@ import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingStandWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class BrewingStandManager {
 
@@ -107,6 +109,32 @@ public class BrewingStandManager {
       fileWrapper.save();
     }
   }
+
+  /**
+   * This method was written to be used for conversion from pre-1.2.4 brewing stand file naming to 1.2.4
+   * Prior to 1.2.4, the brewing stand file names used colons (":") as delimiters. This was incompatible with Windows.
+   * In 1.2.4, this behavior was changed to use at symbols ("@") as delimiters, which is compatible with Windows.
+   */
+  public void updateNamingFormat() {
+    File folder = new File(McRPG.getInstance().getDataFolder(), "brewing_storage");
+    if (folder.exists()) {
+      File[] files = folder.listFiles();
+      if (files != null && files.length > 0) {
+        List<File> filesToRename = Arrays.stream(files).filter(f -> f.getName().contains(":")).collect(Collectors.toList());
+        if (filesToRename.size() > 0) {
+          McRPG.getInstance().getLogger().info("Found pre-1.2.4 brewing stand storage format. Converting...");
+          filesToRename.forEach(f -> {
+            try {
+              Files.move(f.toPath(), f.toPath().resolveSibling(f.getName().replaceAll(":", "@")));
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
+          McRPG.getInstance().getLogger().info("1.2.4 brewing stand storage format converted successfully!");
+        }
+      }
+    }
+  }
   
   private static class FileWrapper {
 
@@ -124,9 +152,6 @@ public class BrewingStandManager {
       try{
         fileConfiguration.save(file);
       } catch(IOException e){
-        Bukkit.getLogger().log(Level.SEVERE, "MCRPG WARNING: PLEASE REPORT TO THE DEVELOPER");
-        Bukkit.getLogger().log(Level.SEVERE, "FILE: " + file.toString());
-        Bukkit.getLogger().log(Level.SEVERE, "FILE CONFIGURATION: " + fileConfiguration.toString());
         e.printStackTrace();
       }
     }
