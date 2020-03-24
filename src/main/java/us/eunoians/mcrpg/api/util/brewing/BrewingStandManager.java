@@ -123,14 +123,20 @@ public class BrewingStandManager {
         List<File> filesToRename = Arrays.stream(files).filter(f -> f.getName().contains(":")).collect(Collectors.toList());
         if (filesToRename.size() > 0) {
           McRPG.getInstance().getLogger().info("Found pre-1.2.4 brewing stand storage format. Converting...");
-          filesToRename.forEach(f -> {
+          boolean errored = false;
+          for (File f : filesToRename) {
             try {
               Files.move(f.toPath(), f.toPath().resolveSibling(f.getName().replaceAll(":", "@")));
             } catch (IOException e) {
+              errored = true;
               e.printStackTrace();
             }
-          });
-          McRPG.getInstance().getLogger().info("1.2.4 brewing stand storage format converted successfully!");
+          }
+          if (errored) {
+            McRPG.getInstance().getLogger().info("Oops! 1.2.4 brewing stand storage format did not convert successfully :(");
+          } else {
+            McRPG.getInstance().getLogger().info("1.2.4 brewing stand storage format converted successfully!");
+          }
         }
       }
     }
