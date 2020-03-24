@@ -306,7 +306,8 @@ public class Methods {
   }
 
   public static String chunkToLoc(Chunk chunk){
-    return chunk.getX() + ":" + chunk.getZ() + ":" + chunk.getWorld().getName();
+    // use @ instead of : as delimiters here because Windows doesn't like colons in filenames
+    return chunk.getX() + "@" + chunk.getZ() + "@" + chunk.getWorld().getName();
   }
 
   public static Location stringToLoc(String loc) {
