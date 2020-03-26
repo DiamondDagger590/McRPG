@@ -250,11 +250,11 @@ public class BrewingGUI extends GUI{
     if(ingredient != null && ingredient.getType() != Material.AIR){
       dropLocation.getWorld().dropItemNaturally(dropLocation, ingredient);
     }*/
-    if(holder.getInventory().getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+    if(holder.getInventory().getIngredient() != null && holder.getInventory().getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+      updateHolder();
       holder.getInventory().setIngredient(new ItemStack(Material.AIR));
       holder.update();
     }
-    
     if(fuel != null && fuel.getType() != Material.AIR && fuel.getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
       dropLocation.getWorld().dropItemNaturally(dropLocation, fuel);
     }
