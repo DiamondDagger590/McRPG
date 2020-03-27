@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.party;
 
+import org.bukkit.Bukkit;
 import us.eunoians.mcrpg.McRPG;
 
 import java.io.File;
@@ -43,11 +44,12 @@ public class PartyManager{
   
   public Party addParty(String name, UUID partyCreator){
     Party party = new Party(partyCreator, name);
-    return partyMap.put(party.getPartyID(), party);
+    partyMap.put(party.getPartyID(), party);
+    return party;
   }
   
   public void removeParty(UUID partyID){
-    partyMap.remove(partyID).disband();
+    partyMap.remove(partyID).disband(true);
   }
   
 }

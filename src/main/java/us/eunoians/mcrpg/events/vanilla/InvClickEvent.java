@@ -796,6 +796,7 @@ public class InvClickEvent implements Listener{
           }
         }
       }
+      
       else if(currentGUI instanceof EditDefaultAbilitiesGUI){
         EditDefaultAbilitiesGUI editDefaultAbilitiesGUI = (EditDefaultAbilitiesGUI) currentGUI;
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EDIT_DEFAULT_ABILITIES_GUI);
@@ -835,6 +836,7 @@ public class InvClickEvent implements Listener{
         }
         return;
       }
+      
       //Deal with the various editloadout guis
       else if(currentGUI instanceof EditLoadoutGUI){
         EditLoadoutGUI editLoadoutGUI = (EditLoadoutGUI) currentGUI;
@@ -927,6 +929,7 @@ public class InvClickEvent implements Listener{
         mp.saveData();
         return;
       }
+      
       GUIEventBinder binder = null;
       if(currentGUI.getGui().getBoundEvents() != null){
         binder = currentGUI.getGui().getBoundEvents().stream().filter(guiBinder -> guiBinder.getSlot() == e.getSlot()).findFirst().orElse(null);
@@ -1136,6 +1139,9 @@ public class InvClickEvent implements Listener{
             p.openInventory(gui.getGui().getInv());
             GUITracker.replacePlayersGUI(mp, gui);
             return;
+          }
+          else if(events[1].equalsIgnoreCase("PartyMemberGUI")){
+          
           }
         }
         else if(event.equalsIgnoreCase("OpenFile")){

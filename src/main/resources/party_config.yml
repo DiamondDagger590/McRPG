@@ -2,6 +2,7 @@ MemberCountUpgrade:
   MaxTier: 5
   #The amount of members per tier
   #Tier 0 is the default tier
+  #The member count should not be allowed to go above 54 lest the gui break
   MembersPerTier:
     0: 5
     1: 6

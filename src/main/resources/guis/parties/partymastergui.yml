@@ -1,0 +1,33 @@
+Gui:
+  MainGUI:
+    Size: 27
+    Title: '&bParty Menu'
+    Events:
+      10:
+        - 'Command:console:cmi broadcast &5worked'
+    Items:
+      MemberItem:
+        Name: '&5Party Members'
+        Material: PLAYER_HEAD
+        Owner: '%Player%'
+        Lore:
+          - '&eClick this to view info'
+          - '&eon party members'
+          - '&7%Online_Members%&e/&a%Total_Members% &emembers online'
+        Slot: 10
+      BankItem:
+        Name: '&5Party Bank'
+        Material: CHEST
+        Lore:
+          - '&eClick this to access the bank.'
+        Slot: 13
+      UpgradesItem:
+        Name: '&5Party Upgrades'
+        Material: NETHER_STAR
+        Lore:
+          - '&eClick this to view upgrades.'
+          - '&eCurrent points: &7%Party_Points%'
+        Slot: 16
+    FillerItem:
+      Material: GRAY_STAINED_GLASS_PANE
+      Name: ' '

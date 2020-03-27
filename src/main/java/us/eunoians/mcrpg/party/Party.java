@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
@@ -19,9 +21,7 @@ import us.eunoians.mcrpg.types.PartyUpgrades;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class Party{
@@ -106,13 +106,17 @@ public class Party{
     for(String upgrade : partyFileConfiguration.getConfigurationSection("Upgrades").getKeys(false)){
       partyUpgrades.put(PartyUpgrades.getPartyUpgrades(upgrade), partyFileConfiguration.getInt("Upgrades." + upgrade));
     }
-    for(String s : partyFileConfiguration.getConfigurationSection("PartyBank").getKeys(false)){
-      int i = Integer.parseInt(s.replace("Item", ""));
-      partyBank.setItem(i, partyFileConfiguration.getItemStack("PartyBank." + s));
+    if(partyFileConfiguration.contains("PartyBank")){
+      for(String s : partyFileConfiguration.getConfigurationSection("PartyBank").getKeys(false)){
+        int i = Integer.parseInt(s.replace("Item", ""));
+        partyBank.setItem(i, partyFileConfiguration.getItemStack("PartyBank." + s));
+      }
     }
-    for(String s : partyFileConfiguration.getConfigurationSection("PrivateBank").getKeys(false)){
-      int i = Integer.parseInt(s.replace("Item", ""));
-      privateBank.setItem(i, partyFileConfiguration.getItemStack("PrivateBank." + s));
+    if(partyFileConfiguration.contains("PrivateBank")){
+      for(String s : partyFileConfiguration.getConfigurationSection("PrivateBank").getKeys(false)){
+        int i = Integer.parseInt(s.replace("Item", ""));
+        privateBank.setItem(i, partyFileConfiguration.getItemStack("PrivateBank." + s));
+      }
     }
   }
   
@@ -135,11 +139,27 @@ public class Party{
     privateBank = Bukkit.createInventory(null, 27, Methods.color("&5Private Bank"));
   }
   
+  /**
+   * This will add a player internally to the party.
+   * When calling this method, you must set the McRPGPlayer's partyID to the parties UUID manually
+   * @see McRPGPlayer#setPartyID(UUID)
+   * @see #getPartyID()
+   * @param uuid The uuid of the player to add to the party
+   */
   public void addPlayer(UUID uuid){
     PartyMember newMember = new PartyMember(uuid);
     partyMembers.put(uuid, newMember);
   }
   
+  /**
+   * This will internally remove a player from the party
+   * This method will attempt to promote the oldest party member of the highest rank to owner if the owner somehow is kicked
+   * If there is only one person in the party pre kick, then this method will also disband the party
+   * When calling this method, you must set the McRPGPlayer's partyID to null manually
+   * @see McRPGPlayer#setPartyID(UUID)
+   * @param uuid The uuid of the player to kick from the party
+   * @return true if the player was successfully kicked.
+   */
   public boolean kickPlayer(UUID uuid){
     if(partyMembers.containsKey(uuid)){
       PartyMember member = partyMembers.remove(uuid);
@@ -164,6 +184,11 @@ public class Party{
             Bukkit.getLogger().log(Level.WARNING, Methods.color("&cThere was an issue with promoting a new player to owner"));
           }
         }
+        //If it is null then we can assume there are no players left in the party
+        if(oldestMember == null){
+          McRPG.getInstance().getPartyManager().removeParty(this.partyID);
+          return true;
+        }
         oldestMember.setPartyRole(PartyRoles.OWNER);
       }
       return true;
@@ -185,7 +210,7 @@ public class Party{
     }
   }
   
-  public void disband(){
+  public void disband(boolean deleteData){
     for(UUID playerUUID : partyMembers.keySet()){
       McRPGPlayer mp;
       try{
@@ -196,6 +221,20 @@ public class Party{
       mp.setPartyID(null);
       mp.saveData();
     }
+    if(deleteData){
+      partyFile.delete();
+    }
+  }
+  
+  public List<Player> getOnlinePlayers(){
+    List<Player> onlinePlayers = new ArrayList<>();
+    for(UUID uuid : partyMembers.keySet()){
+      OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+      if(offlinePlayer.isOnline()){
+        onlinePlayers.add((Player) offlinePlayer);
+      }
+    }
+    return onlinePlayers;
   }
   
   public void saveParty(){
@@ -209,7 +248,7 @@ public class Party{
     }
     String permKey = "Permissions.";
     for(PartyPermissions partyPermission : partyPermissions.keySet()){
-      partyFileConfiguration.set(permKey + partyPermission.getName().replace(" ", ""), partyPermission.getId());
+      partyFileConfiguration.set(permKey + partyPermission.getName().replace(" ", ""), partyPermissions.get(partyPermission).getId());
     }
     String upgradeKey = "Upgrades.";
     for(PartyUpgrades partyUpgrade : PartyUpgrades.values()){

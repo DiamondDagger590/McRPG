@@ -13,7 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.PartyPermissions;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,8 +51,34 @@ public class GUIBuilder{
         if(item.hasItemMeta() && item.getItemMeta().hasLore()){
           ItemMeta meta = item.getItemMeta();
           List<String> lore = new ArrayList<>();
-          meta.getLore().stream().forEach(s -> lore.add(s.replaceAll("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
-                                                          .replaceAll("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))));
+          meta.getLore().forEach(s -> {
+            int onlinePartyMembers = 0;
+            int totalMembers = 0;
+            int partyUpgradePoints = 0;
+            String bankRole = "N/A", kickRole = "N/A", pvpRole = "N/A", inviteRole = "N/A", upgradeRole = "N/A";
+            if(guiBuilder.getPlayer().getPartyID() != null){
+              Party party = McRPG.getInstance().getPartyManager().getParty(guiBuilder.getPlayer().getPartyID());
+              onlinePartyMembers = party.getOnlinePlayers().size();
+              totalMembers = party.getPartyMembers().size();
+              partyUpgradePoints = party.getPartyUpgradePoints();
+              bankRole = party.getPartyPermissions().get(PartyPermissions.PRIVATE_BANK).getName();
+              kickRole = party.getPartyPermissions().get(PartyPermissions.KICK_PLAYERS).getName();
+              pvpRole = party.getPartyPermissions().get(PartyPermissions.PVP).getName();
+              inviteRole = party.getPartyPermissions().get(PartyPermissions.INVITE_PLAYERS).getName();
+              upgradeRole = party.getPartyPermissions().get(PartyPermissions.UPGRADE_PARTY).getName();
+            }
+            lore.add(s.replace("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
+                       .replace("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))
+                                                      .replace("%Online_Members%", Integer.toString(onlinePartyMembers))
+                                                      .replace("%Total_Members%", Integer.toString(totalMembers))
+                                                      .replace("%Party_Points%", Integer.toString(partyUpgradePoints))
+                                                      .replace("%Bank_Role%", bankRole)
+                                                      .replace("%Kick_Role%", kickRole)
+                                                      .replace("%Pvp_Role%", pvpRole)
+                                                      .replace("%Invite_Role%", inviteRole)
+                                                      .replace("%Upgrade_Role%", upgradeRole));
+            
+          });
           meta.setLore(lore);
           item.setItemMeta(meta);
           guiBuilder.getInv().setItem(i, item);
