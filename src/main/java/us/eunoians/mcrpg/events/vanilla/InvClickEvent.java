@@ -239,8 +239,8 @@ public class InvClickEvent implements Listener{
                     e.setCursor(ingredient);
                   }
                 }.runTaskLater(McRPG.getInstance(), 1);
+                brewingGUI.updateIngredient();
               }
-              brewingGUI.updateIngredient();
               return;
             }
             else if(PotionUtils.isIngredient(e.getCursor())){
@@ -323,6 +323,9 @@ public class InvClickEvent implements Listener{
                   ItemStack potion = e.getCursor().clone();
                   potion.setAmount(1);
                   brewingGUI.setPotion(potion, e.getSlot());
+                  if(brewingGUI.checkForBrewingTask()){
+                    brewingGUI.startBrewTask();
+                  }
                 }
                 else{
                   if(e.getCursor().getAmount() == 1){
@@ -330,6 +333,9 @@ public class InvClickEvent implements Listener{
                     ItemStack potion = e.getCursor().clone();
                     brewingGUI.setPotion(potion, e.getSlot());
                     e.setCursor(temp);
+                    if(brewingGUI.checkForBrewingTask()){
+                      brewingGUI.startBrewTask();
+                    }
                   }
                   return;
                 }

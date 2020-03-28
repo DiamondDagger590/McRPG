@@ -47,6 +47,9 @@ public class BrewingStandWrapper {
   }
   
   public void deleteData(){
+    if(brewingGUI.getBrewTask() != null){
+      brewingGUI.cancelBrewTask();
+    }
     brewingGUI.breakGUI();
     String key = "BrewingStands." + Methods.locToString(brewingStand.getLocation());
     fileConfiguration.set(key, null);

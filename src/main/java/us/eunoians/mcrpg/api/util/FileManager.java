@@ -345,7 +345,6 @@ public class FileManager {
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),
-    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),

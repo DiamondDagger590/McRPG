@@ -462,8 +462,10 @@ public class BrewingGUI extends GUI{
   
   public void updateIngredient(){
     updateHolder();
-    holder.getSnapshotInventory().setIngredient(ingredient);
-    holder.update();
+    if(ingredient.getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+      holder.getSnapshotInventory().setIngredient(ingredient);
+      holder.update();
+    }
     inv.setItem(MCRPG_INGREDIENT_SLOT, ingredient);
   }
   
