@@ -4,15 +4,13 @@ Title: '&bMember Menu'
 Strings:
   #Used to replace %Last_Login% if the player is online currently
   CurrentlyOnline: '&a&lOnline'
-  Offline: '%Hour_Amount% hours ago'
 PartyMemberItem:
   Material: PLAYER_HEAD
   Owner: '%Player%'
   DisplayName: '&5%Player%'
   Lore:
-    - '&eThis player was last seen:'
-    - '      &7%Last_Login%'
-    - '&eCurrent Role: &7%Party_Role%'
+    - '&eHours since last login: &7%Last_Login%'
+    - '&eCurrent Role: &c%Party_Role%'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

@@ -26,6 +26,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.GainReason;
@@ -192,6 +193,15 @@ public class McRPGExpGain implements Listener {
       }
     }
     e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));
+    
+    if(e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.COMMAND){
+      if(mp.getPartyID() != null){
+        Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+        if(party != null){
+          party.giveExp(e.getExpGained());
+        }
+      }
+    }
   }
 
   public static void addDemetersShrineEffect(UUID uuid, double multiplier, int duration){

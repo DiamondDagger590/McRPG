@@ -8,14 +8,14 @@ import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 
-public class PartyBankGUI extends GUI{
+public class PartyPrivateBankGUI extends GUI{
   
   private GUIInventoryFunction buildGUIFunction;
   
   @Getter
   private Party party;
   
-  public PartyBankGUI(McRPGPlayer mcRPGPlayer) throws PartyNotFoundException{
+  public PartyPrivateBankGUI(McRPGPlayer mcRPGPlayer) throws PartyNotFoundException{
     super(new GUIBuilder(mcRPGPlayer));
     PartyManager partyManager = McRPG.getInstance().getPartyManager();
     if(mcRPGPlayer.getPartyID() == null || partyManager.getParty(mcRPGPlayer.getPartyID()) == null){
@@ -23,7 +23,7 @@ public class PartyBankGUI extends GUI{
     }
     party = partyManager.getParty(mcRPGPlayer.getPartyID());
     buildGUIFunction = (GUIBuilder guiBuilder) -> {
-      Inventory inventory = party.getPartyBank();
+      Inventory inventory = party.getPrivateBank();
       return inventory;
     };
     getGui().setBuildGUIFunction(buildGUIFunction);

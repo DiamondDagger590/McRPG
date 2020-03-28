@@ -10,7 +10,8 @@ public enum PartyUpgrades{
   
   MEMBER_COUNT("Member Count"),
   EXP_SHARE_RANGE("Exp Share Range"),
-  EXP_SHARE_AMOUNT("Exp Share Amount");
+  EXP_SHARE_AMOUNT("Exp Share Amount"),
+  PRIVATE_BANK_SIZE("Private Bank Size");
   
   @Getter
   private String name;
@@ -43,6 +44,23 @@ public enum PartyUpgrades{
    */
   public static int getMaxMemberUpgradeTier(){
     return McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("MemberCountUpgrade.MaxTier", 5);
+  }
+  
+  /**
+   *
+   * @param tier The tier that you want to check the private bank size at
+   * @return The private bank size at the tier provided. If the tier is not defined, 5 will be returned
+   */
+  public static int getPrivateBankSizeAtTier(int tier){
+    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PrivateBankSize.SlotsPerTier." + tier, 5);
+  }
+  
+  /**
+   * Use this method to get the max tier that a party can upgrade the private bank size upgrade to
+   * @return The integer representing the max upgrade tier. If the setting is missing, 5 is returned
+   */
+  public static int getMaxPrivateBankUpgradeTier(){
+    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PrivateBankSize.MaxTier", 5);
   }
   
   /**

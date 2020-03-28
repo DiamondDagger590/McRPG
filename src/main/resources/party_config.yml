@@ -1,6 +1,14 @@
 PartyBank:
   Size: 27
   Title: '&5Party Bank'
+InactivePurge:
+  #If the amount of hours since a player last logged in is >= this number, they will be removed from the party
+  TimeInHoursToPurge: 168
+  #How long in minutes should a purge task take?
+  PurgeTaskDelay: 120
+PartyExp:
+  ExpEquation: '10000 + 10000 * (party_level)'
+  MaxLevel: 10
 MemberCountUpgrade:
   MaxTier: 5
   #The amount of members per tier
@@ -39,3 +47,14 @@ ExpSharePercent:
     3: 20.0
     4: 27.5
     5: 35.0
+PrivateBankSize:
+  MaxTier: 5
+  #The amount of slots per tier
+  #Tier 0 is the default tier
+  SlotsPerTier:
+    0: 5
+    1: 9
+    2: 18
+    3: 27
+    4: 36
+    5: 45

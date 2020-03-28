@@ -1,7 +1,7 @@
 Gui:
   MainGUI:
     Size: 27
-    Title: '&bParty Menu'
+    Title: '&5Party Menu Lv: %Party_Level%'
     Events:
       10:
         - 'OpenNative:PartyMemberGUI'

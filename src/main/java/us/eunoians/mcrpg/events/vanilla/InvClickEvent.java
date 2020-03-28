@@ -31,13 +31,45 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.brewing.PotionUtils;
 import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingGUI;
-import us.eunoians.mcrpg.gui.*;
+import us.eunoians.mcrpg.gui.AbilityOverrideGUI;
+import us.eunoians.mcrpg.gui.AcceptAbilityGUI;
+import us.eunoians.mcrpg.gui.AllGUI;
+import us.eunoians.mcrpg.gui.AmountGUI;
+import us.eunoians.mcrpg.gui.EditDefaultAbilitiesGUI;
+import us.eunoians.mcrpg.gui.EditLoadoutGUI;
+import us.eunoians.mcrpg.gui.EditLoadoutSelectGUI;
+import us.eunoians.mcrpg.gui.GUI;
+import us.eunoians.mcrpg.gui.GUIEventBinder;
+import us.eunoians.mcrpg.gui.GUITracker;
+import us.eunoians.mcrpg.gui.HomeGUI;
+import us.eunoians.mcrpg.gui.PartyBankGUI;
+import us.eunoians.mcrpg.gui.PartyMemberGUI;
+import us.eunoians.mcrpg.gui.PartyPrivateBankGUI;
+import us.eunoians.mcrpg.gui.RedeemStoredGUI;
+import us.eunoians.mcrpg.gui.RemoteTransferGUI;
+import us.eunoians.mcrpg.gui.ReplaceSkillsGUI;
+import us.eunoians.mcrpg.gui.SelectReplaceGUI;
+import us.eunoians.mcrpg.gui.SettingsGUI;
+import us.eunoians.mcrpg.gui.SkillGUI;
+import us.eunoians.mcrpg.gui.SubSkillGUI;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
-import us.eunoians.mcrpg.types.*;
+import us.eunoians.mcrpg.types.AbilityType;
+import us.eunoians.mcrpg.types.DisplayType;
+import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.PartyUpgrades;
+import us.eunoians.mcrpg.types.RedeemType;
+import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @SuppressWarnings("SuspiciousMethodCalls")
 public class InvClickEvent implements Listener{
@@ -365,7 +397,13 @@ public class InvClickEvent implements Listener{
         return;
       }
       
-      if(currentGUI instanceof PartyBankGUI){
+      if(currentGUI instanceof PartyBankGUI || currentGUI instanceof PartyPrivateBankGUI){
+        Party party = currentGUI instanceof PartyBankGUI ? ((PartyBankGUI) currentGUI).getParty() : ((PartyPrivateBankGUI) currentGUI).getParty();
+        int maxSlot = PartyUpgrades.getPrivateBankSizeAtTier(party.getPartyUpgrades().get(PartyUpgrades.PRIVATE_BANK_SIZE));
+        if(e.getSlot() > maxSlot && !(e.getClickedInventory() instanceof PlayerInventory)){
+          p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
+          return;
+        }
         e.setCancelled(false);
         return;
       }

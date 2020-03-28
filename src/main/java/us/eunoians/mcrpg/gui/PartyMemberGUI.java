@@ -77,8 +77,8 @@ public class PartyMemberGUI extends GUI{
         }
         List<String> lore = new ArrayList<>();
         for(String s : memberFile.getStringList("PartyMemberItem.Lore")){
-          lore.add(s.replace("%Last_Login%", offlinePlayer.isOnline() ? memberFile.getString("Strings.CurrentlyOnline", "Online")
-                                               : memberFile.getString("Strings.Offline").replace("%Hour_Amount%", Integer.toString(Methods.findHoursDiffFromCurrent(offlinePlayer.getLastPlayed()))))
+          lore.add(s.replace("%Last_Login%", offlinePlayer.isOnline() ? memberFile.getString("Strings.CurrentlyOnline", "&a&lOnline")
+                                               : Methods.getLastLoginDay(offlinePlayer))
           .replace("%Party_Role%", partyMemberMap.get(uuid).getPartyRole().getName()));
         }
         meta.setLore(Methods.colorLore(lore));

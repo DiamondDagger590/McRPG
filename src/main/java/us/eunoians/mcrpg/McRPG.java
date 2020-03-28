@@ -312,12 +312,12 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
               cancel();
             }
             else{
-              amountToKick.addAndGet(iterator.next().purgeInactive(8));
+              amountToKick.addAndGet(iterator.next().purgeInactive(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.TimeInHoursToPurge", 168)));
             }
           }
         }.runTaskTimer(McRPG.getInstance(), 10 * 20, 10 * 20);
       }
-    }.runTaskTimer(this, 5 * 60 * 20, 30 * 60 * 20);
+    }.runTaskTimer(this, 5 * 60 * 20, McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.PurgeTaskDelay", 30) * 60 * 20);
   
     //Preload nbt class
     ItemStack itemStack = new ItemStack(Material.DIAMOND);
@@ -331,113 +331,9 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
       Initializer.interrupt();*/
     PlayerManager.shutDownManager();
     brewingStandManager.shutDown();
+    partyManager.saveAllParties();
     placeStore.saveAll();
   }
-
-  /*@Initialize(priority = 0)
-  private void preInit() {
-    var configManager = new ConfigManager(this);
-    mConfigManager = new MConfigManager(configManager);
-    /*if (!mConfigManager.setupConfigs(
-            GeneralConfig.class, SwordsConfig.class))
-      getServer().shutdown();
-    //Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
-    //Locale.init(mConfigManager);
-  }*/
-
-  /*
-  @SuppressWarnings("Duplicates")
-  @Initialize(priority = 2)
-  private void initPrimaryInstance() {
-    //localizationFiles = new LocalizationFiles(this, true);
-    instance = this;
-    fileManager = FileManager.getInstance().setup(this);
-    expPermissionManager = ExpPermissionManager.getInstance().setup(this);
-    this.mcRPGDb = new McRPGDb(this);
-    healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
-    sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
-    fishingItemManager = new FishingItemManager();
-    bookManager = new BookManager(this);
-    worldModifierManager = new WorldModifierManager();
-    leaderboardManager = new LeaderboardManager(this);
-    leaderboardHeadManager = new LeaderboardHeadManager();
-    if (healthBarPluginEnabled) {
-      getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
-    }
-    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-      papiEnabled = true;
-      getLogger().info("Papi PlaceholderAPI found... registering hooks");
-      new McRPGPlaceHolders().register();
-    }
-    if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
-      worldGuardEnabled = true;
-      wgSupportManager = new WGSupportManager(this);
-    }
-    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
-    remoteTransferTracker = new RemoteTransferTracker();
-    File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
-    if (!folder.exists()) {
-      folder.mkdir();
-    }
-    displayManager = DisplayManager.getInstance();
-    DiamondFlowersData.init();
-    BuriedTreasureData.init();
-    HiddenConfig.getInstance();
-    PlayerManager.startSave(this);
-  }*/
-
-/*  @Initialize(priority = 3)
-  private void initCmds() {
-    getCommand("mcrpg").setExecutor(new McRPGStub());
-    getCommand("mcdisplay").setExecutor(new McDisplay());
-    getCommand("mcadmin").setExecutor(new McAdmin());
-    getCommand("mclink").setExecutor(new McLink());
-    getCommand("mcunlink").setExecutor(new McUnlink());
-    getCommand("mchelp").setExecutor(new McHelp());
-    getCommand("mcconvert").setExecutor(new McConvert());
-    getCommand("mcredeem").setExecutor(new McRedeem());
-    getCommand("mcrank").setExecutor(new McRank());
-  }*/
-
-  /*
-  @Initialize(priority = 4)
-  private void initListener() {
-    getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
-    getServer().getPluginManager().registerEvents(new MoveEvent(), this);
-    getServer().getPluginManager().registerEvents(new PlayerLogoutEvent(), this);
-    getServer().getPluginManager().registerEvents(new InvClickEvent(this), this);
-    getServer().getPluginManager().registerEvents(new AbilityActivate(), this);
-    getServer().getPluginManager().registerEvents(new McRPGPlayerLevelChange(), this);
-    getServer().getPluginManager().registerEvents(new VanillaDamageEvent(), this);
-    getServer().getPluginManager().registerEvents(new McRPGExpGain(), this);
-    getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
-    getServer().getPluginManager().registerEvents(new BleedHandler(), this);
-    getServer().getPluginManager().registerEvents(new CheckReadyEvent(), this);
-    getServer().getPluginManager().registerEvents(new ShiftToggle(), this);
-    getServer().getPluginManager().registerEvents(new WorldListener(this), this);
-    getServer().getPluginManager().registerEvents(new McLink(), this);
-    getServer().getPluginManager().registerEvents(new BreakEvent(), this);
-    getServer().getPluginManager().registerEvents(new AbilityUpgrade(), this);
-    getServer().getPluginManager().registerEvents(new LoadoutAdd(), this);
-    getServer().getPluginManager().registerEvents(new InteractHandler(), this);
-    getServer().getPluginManager().registerEvents(new DisarmHandler(), this);
-    getServer().getPluginManager().registerEvents(new PlayerNomNomEvent(), this);
-    getServer().getPluginManager().registerEvents(new AbilityUnlock(), this);
-    getServer().getPluginManager().registerEvents(new PickupEvent(), this);
-    getServer().getPluginManager().registerEvents(new DropItemEvent(), this);
-    getServer().getPluginManager().registerEvents(new ShootEvent(), this);
-    getServer().getPluginManager().registerEvents(new ArrowHitEvent(), this);
-    getServer().getPluginManager().registerEvents(new ChatEvent(), this);
-    getServer().getPluginManager().registerEvents(new PlayerTossItemEvent(), this);
-    getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
-    getServer().getPluginManager().registerEvents(new DeathEvent(), this);
-    getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
-    getServer().getPluginManager().registerEvents(new SignEvent(), this);
-    getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
-    if(sickleEnabled){
-      getServer().getPluginManager().registerEvents(new Sickle(), this);
-    }
-  }*/
 
   public static McRPG getInstance() {
     if (instance == null)

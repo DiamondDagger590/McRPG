@@ -8,9 +8,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.exceptions.PartyNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.gui.PartyMainGUI;
+import us.eunoians.mcrpg.gui.PartyPrivateBankGUI;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.party.PartyMember;
@@ -348,7 +351,6 @@ public class McParty implements CommandExecutor{
         else if(args[0].equalsIgnoreCase("leave")){
           if(mp.getPartyID() == null){
             p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
-            return true;
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
@@ -373,8 +375,8 @@ public class McParty implements CommandExecutor{
                 }
               }
             }
-            return true;
           }
+          return true;
         }
         else if(args[0].equalsIgnoreCase("promote")){
           if(mp.getPartyID() == null){
@@ -408,7 +410,6 @@ public class McParty implements CommandExecutor{
                   }
                   if(target.getPartyRole() == PartyRoles.MOD){
                     p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not promote a mod to owner. Use the /mcparty setowner command instead"));
-                    return true;
                   }
                   else{
                     target.setPartyRole(PartyRoles.MOD);
@@ -416,8 +417,8 @@ public class McParty implements CommandExecutor{
                     if(offlinePlayer.isOnline()){
                       ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been promoted to a party moderator!"));
                     }
-                    return true;
                   }
+                  return true;
                 }
                 else{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
@@ -467,7 +468,6 @@ public class McParty implements CommandExecutor{
                   }
                   if(target.getPartyRole() == PartyRoles.MEMBER){
                     p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not demote a member."));
-                    return true;
                   }
                   else{
                     target.setPartyRole(PartyRoles.MEMBER);
@@ -476,8 +476,8 @@ public class McParty implements CommandExecutor{
                     if(offlinePlayer.isOnline()){
                       ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&cYou have been demoted by your party owner!"));
                     }
-                    return true;
                   }
+                  return true;
                 }
                 else{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
@@ -532,12 +532,11 @@ public class McParty implements CommandExecutor{
                   if(offlinePlayer.isOnline()){
                     ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been set as your partys owner!"));
                   }
-                  return true;
                 }
                 else{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
-                  return true;
                 }
+                return true;
               }
               else{
                 p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));
@@ -549,6 +548,34 @@ public class McParty implements CommandExecutor{
               return true;
             }
           }
+        }
+        else if(args[0].equalsIgnoreCase("storage")){
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              return true;
+            }
+            PartyMember partyMember = party.getPartyMembers().get(p.getUniqueId());
+            if(partyMember.getPartyRole().getId() <= party.getPartyPermissions().get(PartyPermissions.PRIVATE_BANK).getId()){
+              try{
+                PartyPrivateBankGUI partyPrivateBankGUI = new PartyPrivateBankGUI(mp);
+                p.openInventory(partyPrivateBankGUI.getGui().getInv());
+                GUITracker.trackPlayer(p, partyPrivateBankGUI);
+              }catch(PartyNotFoundException e){
+                mp.setPartyID(null);
+                p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              }
+            }
+            else{
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly members with the role of " + party.getPartyPermissions().get(PartyPermissions.PRIVATE_BANK).getName() + "+ can use the private bank."));
+            }
+          }
+          return true;
         }
       }
       return true;

@@ -24,8 +24,10 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.Skills;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -441,6 +443,11 @@ public class Methods{
     minutes = seconds / 60;
     hours = minutes / 60;
     return (int) hours;
+  }
+  
+  public static String getLastLoginDay(OfflinePlayer offlinePlayer){
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+    return simpleDateFormat.format(new Date(offlinePlayer.getLastPlayed()));
   }
   
   public static boolean canPlayersPVP(Player player1, Player player2){

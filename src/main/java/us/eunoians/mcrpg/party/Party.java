@@ -11,6 +11,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.events.mcrpg.party.PartyDisbandEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.party.PartyExpGainEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.party.PartyLevelUpEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.party.PlayerJoinPartyEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.party.PlayerKickPartyEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -19,10 +24,17 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.PartyUpgrades;
+import us.eunoians.mcrpg.util.Parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class Party{
@@ -50,6 +62,18 @@ public class Party{
   
   @Getter
   private Inventory privateBank;
+  
+  @Getter
+  @Setter
+  private int partyLevel;
+  
+  @Getter
+  @Setter
+  private int partyExp;
+  
+  @Getter
+  @Setter
+  private int expToLevel;
   
   private FileConfiguration partyFileConfiguration;
   private File partyFile;
@@ -80,10 +104,13 @@ public class Party{
     
     this.name = partyName;
     this.partyUpgradePoints = 0;
+    this.partyExp = 0;
+    this.partyLevel = 0;
     
-    initBanks();
     initPerms();
     initUpgrades();
+    initBanks();
+    calculateExpToLevel();
     saveParty();
   }
   
@@ -100,6 +127,9 @@ public class Party{
     }
     this.name = partyFileConfiguration.getString("PartyName");
     this.partyUpgradePoints = partyFileConfiguration.getInt("PartyUpgradePoints");
+    this.partyExp = partyFileConfiguration.getInt("PartyExp");
+    this.partyLevel = partyFileConfiguration.getInt("PartyLevel");
+    calculateExpToLevel();
     for(String partyPerm : partyFileConfiguration.getConfigurationSection("Permissions").getKeys(false)){
       PartyPermissions partyPermission = PartyPermissions.getPartyPermission(partyPerm);
       partyPermissions.put(partyPermission, PartyRoles.getRoleFromId(partyFileConfiguration.getInt("Permissions." + partyPerm)));
@@ -133,22 +163,28 @@ public class Party{
     partyUpgrades.put(PartyUpgrades.MEMBER_COUNT, 0);
     partyUpgrades.put(PartyUpgrades.EXP_SHARE_AMOUNT, 0);
     partyUpgrades.put(PartyUpgrades.EXP_SHARE_RANGE, 0);
+    partyUpgrades.put(PartyUpgrades.PRIVATE_BANK_SIZE, 0);
   }
   
   private void initBanks(){
     FileConfiguration partyConfiguration = McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG);
     partyBank = Bukkit.createInventory(null, partyConfiguration.getInt("PartyBank.Size"), Methods.color(partyConfiguration.getString("PartyBank.Title")));
-    privateBank = Bukkit.createInventory(null, 27, Methods.color("&5Private Bank"));
+    int size = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE));
+    size += size % 9 != 0 ? (9 - (size % 9)) : 0;
+    privateBank = Bukkit.createInventory(null, size, Methods.color("&5Private Bank"));
   }
   
   /**
    * This will add a player internally to the party.
    * When calling this method, you must set the McRPGPlayer's partyID to the parties UUID manually
+   *
+   * @param uuid The uuid of the player to add to the party
    * @see McRPGPlayer#setPartyID(UUID)
    * @see #getPartyID()
-   * @param uuid The uuid of the player to add to the party
    */
   public void addPlayer(UUID uuid){
+    PlayerJoinPartyEvent playerJoinPartyEvent = new PlayerJoinPartyEvent(uuid, this);
+    Bukkit.getPluginManager().callEvent(playerJoinPartyEvent);
     PartyMember newMember = new PartyMember(uuid);
     partyMembers.put(uuid, newMember);
   }
@@ -158,12 +194,18 @@ public class Party{
    * This method will attempt to promote the oldest party member of the highest rank to owner if the owner somehow is kicked
    * If there is only one person in the party pre kick, then this method will also disband the party
    * When calling this method, you must set the McRPGPlayer's partyID to null manually
-   * @see McRPGPlayer#setPartyID(UUID)
+   *
    * @param uuid The uuid of the player to kick from the party
    * @return true if the player was successfully kicked.
+   * @see McRPGPlayer#setPartyID(UUID)
    */
   public boolean kickPlayer(UUID uuid){
     if(partyMembers.containsKey(uuid)){
+      PlayerKickPartyEvent playerKickPartyEvent = new PlayerKickPartyEvent(uuid, this);
+      Bukkit.getPluginManager().callEvent(playerKickPartyEvent);
+      if(playerKickPartyEvent.isCancelled()){
+        return false;
+      }
       PartyMember member = partyMembers.remove(uuid);
       if(member.getPartyRole() == PartyRoles.OWNER){
         PartyMember oldestMember = null;
@@ -213,6 +255,8 @@ public class Party{
   }
   
   public void disband(boolean deleteData){
+    PartyDisbandEvent partyDisbandEvent = new PartyDisbandEvent(this);
+    Bukkit.getPluginManager().callEvent(partyDisbandEvent);
     for(UUID playerUUID : partyMembers.keySet()){
       McRPGPlayer mp;
       try{
@@ -226,6 +270,36 @@ public class Party{
     if(deleteData){
       partyFile.delete();
     }
+  }
+  
+  public void giveExp(int exp){
+    if(exp <= 0){
+      return;
+    }
+    if(partyLevel >= McRPG.getInstance().getPartyManager().getMaxLevel()){
+      return;
+    }
+    PartyExpGainEvent partyExpGainEvent = new PartyExpGainEvent(this, exp);
+    Bukkit.getPluginManager().callEvent(partyExpGainEvent);
+    if(!partyExpGainEvent.isCancelled()){
+      partyExp += partyExpGainEvent.getExpGained();
+      int levelsGained = 0;
+      while(partyExp >= expToLevel){
+        partyLevel++;
+        levelsGained++;
+        partyExp -= expToLevel;
+      }
+      PartyLevelUpEvent partyLevelUpEvent = new PartyLevelUpEvent(this, partyLevel - levelsGained, partyLevel);
+      Bukkit.getPluginManager().callEvent(partyLevelUpEvent);
+      partyUpgradePoints += Math.max(0, partyLevelUpEvent.getNewLevel() - partyLevel);
+      partyLevel = partyLevelUpEvent.getNewLevel();
+    }
+  }
+  
+  private void calculateExpToLevel(){
+    Parser parser = McRPG.getInstance().getPartyManager().getExpEquation();
+    parser.setVariable("party_level", partyLevel);
+    expToLevel = (int) parser.getValue();
   }
   
   public List<Player> getOnlinePlayers(){
@@ -278,6 +352,8 @@ public class Party{
     }
     partyFileConfiguration.set("PartyName", name);
     partyFileConfiguration.set("PartyUpgradePoints", partyUpgradePoints);
+    partyFileConfiguration.set("PartyExp", partyExp);
+    partyFileConfiguration.set("PartyLevel", partyLevel);
     //Save the public party bank
     for(int i = 0; i < partyBank.getSize(); i++){
       ItemStack item = partyBank.getItem(i);

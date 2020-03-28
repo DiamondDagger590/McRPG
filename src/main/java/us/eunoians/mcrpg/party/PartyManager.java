@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.party;
 
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.util.Parser;
 
 import java.io.File;
 import java.util.Collection;
@@ -48,11 +50,25 @@ public class PartyManager{
     return party;
   }
   
+  public Parser getExpEquation(){
+    return new Parser(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getString("PartyExp.ExpEquation"));
+  }
+  
+  public int getMaxLevel(){
+    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.MaxLevel", 10);
+  }
+  
   public void removeParty(UUID partyID){
     partyMap.remove(partyID).disband(true);
   }
   
   public Collection<Party> getParties(){
     return partyMap.values();
+  }
+  
+  public void saveAllParties(){
+    for(Party party : partyMap.values()){
+      party.saveParty();
+    }
   }
 }
