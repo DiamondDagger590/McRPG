@@ -16,6 +16,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.PartyPermissions;
+import us.eunoians.mcrpg.util.SkullCache;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -100,8 +101,16 @@ public class GUIBuilder{
       item = new ItemStack(type, 1);
       ItemMeta meta = item.getItemMeta();
       if(type.equals(Material.PLAYER_HEAD)){
-        SkullMeta sm = (SkullMeta) meta;
-        sm.setOwningPlayer(player.getOfflineMcRPGPlayer());
+        if(SkullCache.headMap.containsKey(player.getUuid())){
+          item = SkullCache.headMap.get(player.getUuid());
+          meta = item.getItemMeta();
+        }
+        else{
+          SkullMeta sm = (SkullMeta) meta;
+          sm.setOwningPlayer(player.getOfflineMcRPGPlayer());
+          item.setItemMeta(sm);
+          SkullCache.headMap.put(player.getUuid(), item.clone());
+        }
       }
       meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "Items." + itemName + ".Name")));
       if(config.contains(path + "Items." + itemName + ".Lore")){

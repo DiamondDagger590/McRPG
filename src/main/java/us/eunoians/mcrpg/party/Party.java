@@ -12,6 +12,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -135,7 +136,8 @@ public class Party{
   }
   
   private void initBanks(){
-    partyBank = Bukkit.createInventory(null, 27, Methods.color("&5Party Bank"));
+    FileConfiguration partyConfiguration = McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG);
+    partyBank = Bukkit.createInventory(null, partyConfiguration.getInt("PartyBank.Size"), Methods.color(partyConfiguration.getString("PartyBank.Title")));
     privateBank = Bukkit.createInventory(null, 27, Methods.color("&5Private Bank"));
   }
   

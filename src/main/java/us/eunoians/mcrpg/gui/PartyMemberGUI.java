@@ -16,8 +16,9 @@ import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.party.PartyMember;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.util.SkullCache;
 
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,30 +46,50 @@ public class PartyMemberGUI extends GUI{
       Map<UUID, PartyMember> partyMemberMap = party.getPartyMembers();
       int size = (Math.min(54, partyMemberMap.size() + (partyMemberMap.size() % 9 != 0 ? ((9 - (partyMemberMap.size() % 9))) : 0)));
       Inventory inventory = Bukkit.createInventory(null, size, Methods.color(memberFile.getString("Title")));
+      int i = 0;
       for(UUID uuid : partyMemberMap.keySet()){
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
         ItemStack item = new ItemStack(Material.matchMaterial(memberFile.getString("PartyMemberItem.Material", "PLAYER_HEAD")));
         ItemMeta meta = item.getItemMeta();
         if(item.getType().equals(Material.PLAYER_HEAD)){
-          SkullMeta sm = (SkullMeta) meta;
-          if(memberFile.contains("PartyMemberItem.Owner")){
-            if(memberFile.getString("PartyMemberItem.Owner").equalsIgnoreCase("%Player%")){
-              sm.setOwningPlayer(offlinePlayer);
-            }
-            else{
-              sm.setOwningPlayer(Bukkit.getOfflinePlayer(memberFile.getString("PartyMemberItem.Owner")));
-            }
+          if(SkullCache.headMap.containsKey(uuid)){
+            item = SkullCache.headMap.get(uuid).clone();
+            meta = item.getItemMeta();
           }
           else{
-            sm.setOwningPlayer(offlinePlayer);
+            SkullMeta sm = (SkullMeta) meta;
+            if(memberFile.contains("PartyMemberItem.Owner")){
+              if(memberFile.getString("PartyMemberItem.Owner").equalsIgnoreCase("%Player%")){
+                sm.setOwningPlayer(offlinePlayer);
+              }
+              else{
+                sm.setOwningPlayer(Bukkit.getOfflinePlayer(memberFile.getString("PartyMemberItem.Owner")));
+              }
+            }
+            else{
+              sm.setOwningPlayer(offlinePlayer);
+            }
+            item.setItemMeta(sm);
+            SkullCache.headMap.put(uuid, item);
+            item = item.clone();
+            meta = item.getItemMeta();
           }
         }
-        List<String> lore = Methods.colorLore(memberFile.getStringList("PartyMemberItem.Lore"));
-        Methods
-        meta.setLore(lore);
+        List<String> lore = new ArrayList<>();
+        for(String s : memberFile.getStringList("PartyMemberItem.Lore")){
+          lore.add(s.replace("%Last_Login%", offlinePlayer.isOnline() ? memberFile.getString("Strings.CurrentlyOnline", "Online")
+                                               : memberFile.getString("Strings.Offline").replace("%Hour_Amount%", Integer.toString(Methods.findHoursDiffFromCurrent(offlinePlayer.getLastPlayed()))))
+          .replace("%Party_Role%", partyMemberMap.get(uuid).getPartyRole().getName()));
+        }
+        meta.setLore(Methods.colorLore(lore));
         meta.setDisplayName(Methods.color(memberFile.getString("PartyMemberItem.DisplayName", "&5" + offlinePlayer.getName()).replace("%Player%", offlinePlayer.getName())));
+        item.setItemMeta(meta);
+        inventory.setItem(i, item);
+        i++;
       }
       return inventory;
     };
+    this.getGui().setBuildGUIFunction(guiInventoryFunction);
+    this.getGui().rebuildGUI();
   }
 }

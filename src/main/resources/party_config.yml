@@ -1,3 +1,6 @@
+PartyBank:
+  Size: 27
+  Title: '&5Party Bank'
 MemberCountUpgrade:
   MaxTier: 5
   #The amount of members per tier

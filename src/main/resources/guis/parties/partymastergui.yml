@@ -4,7 +4,9 @@ Gui:
     Title: '&bParty Menu'
     Events:
       10:
-        - 'Command:console:cmi broadcast &5worked'
+        - 'OpenNative:PartyMemberGUI'
+      13:
+        - 'OpenNative:PartyBankGUI'
     Items:
       MemberItem:
         Name: '&5Party Members'

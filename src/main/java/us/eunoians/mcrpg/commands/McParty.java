@@ -121,7 +121,22 @@ public class McParty implements CommandExecutor{
                   else{
                     party.addPlayer(p.getUniqueId());
                     party.saveParty();
+                    try{
+                      mp.getPartyInvites().dequeue();
+                    }catch(InterruptedException e){
+                      e.printStackTrace();
+                    }
+                    mp.setPartyID(party.getPartyID());
                     p.sendMessage(Methods.color(p, pluginPrefix + "&aYou joined " + party.getName()));
+                    for(UUID uuid : party.getPartyMembers().keySet()){
+                      if(uuid.equals(p.getUniqueId())){
+                        continue;
+                      }
+                      OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+                      if(offlinePlayer.isOnline()){
+                        ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&a" + p.getName() + " has joined your party!"));
+                      }
+                    }
                     return true;
                   }
                 }

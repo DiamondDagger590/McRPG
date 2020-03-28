@@ -1,6 +1,10 @@
 #This is the hard coded gui for the members menu
 #This gui will expand with the current amount of members up until 54 so there is not a size setting to configure
 Title: '&bMember Menu'
+Strings:
+  #Used to replace %Last_Login% if the player is online currently
+  CurrentlyOnline: '&a&lOnline'
+  Offline: '%Hour_Amount% hours ago'
 PartyMemberItem:
   Material: PLAYER_HEAD
   Owner: '%Player%'
@@ -9,7 +13,6 @@ PartyMemberItem:
     - '&eThis player was last seen:'
     - '      &7%Last_Login%'
     - '&eCurrent Role: &7%Party_Role%'
-    - '&aClick me to edit role'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

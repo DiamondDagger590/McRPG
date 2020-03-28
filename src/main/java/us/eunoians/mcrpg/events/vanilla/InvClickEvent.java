@@ -25,6 +25,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.AbilityAddToLoadoutEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.AbilityRemovedFromLoadoutEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.AbilityUpgradeEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.exceptions.PartyNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
@@ -355,6 +356,11 @@ public class InvClickEvent implements Listener{
             }
           }
         }
+        return;
+      }
+      
+      if(currentGUI instanceof PartyBankGUI){
+        e.setCancelled(false);
         return;
       }
       //Cuz null errors are fun
@@ -1140,7 +1146,24 @@ public class InvClickEvent implements Listener{
             return;
           }
           else if(events[1].equalsIgnoreCase("PartyMemberGUI")){
-          
+            try{
+              gui = new PartyMemberGUI(mp);
+              currentGUI.setClearData(false);
+              p.openInventory(gui.getGui().getInv());
+              GUITracker.replacePlayersGUI(mp, gui);
+            }catch(PartyNotFoundException ex){
+              ex.printStackTrace();
+            }
+          }
+          else if(events[1].equalsIgnoreCase("PartyBankGUI")){
+            try{
+              gui = new PartyBankGUI(mp);
+              currentGUI.setClearData(false);
+              p.openInventory(gui.getGui().getInv());
+              GUITracker.replacePlayersGUI(mp, gui);
+            }catch(PartyNotFoundException ex){
+              ex.printStackTrace();
+            }
           }
         }
         else if(event.equalsIgnoreCase("OpenFile")){
