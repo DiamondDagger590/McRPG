@@ -1294,7 +1294,7 @@ public class McRPGPlayer {
     }
   }
 
-  public OfflinePlayer getOfflineMcMMOPlayer() {
+  public OfflinePlayer getOfflineMcRPGPlayer() {
     return Bukkit.getOfflinePlayer(uuid);
   }
 

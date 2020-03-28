@@ -101,7 +101,7 @@ public class GUIBuilder{
       ItemMeta meta = item.getItemMeta();
       if(type.equals(Material.PLAYER_HEAD)){
         SkullMeta sm = (SkullMeta) meta;
-        sm.setOwningPlayer(player.getOfflineMcMMOPlayer());
+        sm.setOwningPlayer(player.getOfflineMcRPGPlayer());
       }
       meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "Items." + itemName + ".Name")));
       if(config.contains(path + "Items." + itemName + ".Lore")){

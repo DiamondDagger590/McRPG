@@ -393,5 +393,11 @@ public class Methods {
 
     return exp;
   }
+  
+  public static int findHoursDiffFromCurrent(long time){
+    Calendar calendar = Calendar.getInstance();
+    
+    return 0;
+  }
 
 }
