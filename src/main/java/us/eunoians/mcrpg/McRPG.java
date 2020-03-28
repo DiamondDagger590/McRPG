@@ -134,6 +134,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     this.partyManager = new PartyManager();
     Metrics metrics = new Metrics(this, id);
     brewingStandManager = new BrewingStandManager();
+    brewingStandManager.updateNamingFormat();
     getLogger().info("Loading Potions");
     potionRecipeManager = new PotionRecipeManager();
     new PlayerManager(this);

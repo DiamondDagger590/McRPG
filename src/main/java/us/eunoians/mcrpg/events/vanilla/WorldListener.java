@@ -87,7 +87,6 @@ public class WorldListener implements Listener {
   public void onChunkUnload(ChunkUnloadEvent event) {
     Chunk chunk = event.getChunk();
     BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
-    
     //Some edge case was happening here
     if(chunk == null || event.getWorld() == null) {
       return;
@@ -98,6 +97,7 @@ public class WorldListener implements Listener {
     else{
       McRPG.resetPlaceStore();
     }
+    brewingStandManager.unloadChunk(chunk);
   }
 
   /**

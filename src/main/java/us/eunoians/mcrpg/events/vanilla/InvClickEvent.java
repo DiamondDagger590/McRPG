@@ -146,7 +146,6 @@ public class InvClickEvent implements Listener{
           if(brewingGUI.checkForBrewingTask()){
             brewingGUI.setPlayerStartingBrew((Player) e.getWhoClicked());
             BukkitTask brewingTask = brewingGUI.startBrewTask();
-            //TODO add canceling code
           }
           return;
         }
