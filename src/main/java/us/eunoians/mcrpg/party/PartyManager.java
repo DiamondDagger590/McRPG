@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.party;
 
-import org.bukkit.Bukkit;
 import us.eunoians.mcrpg.McRPG;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -52,4 +52,7 @@ public class PartyManager{
     partyMap.remove(partyID).disband(true);
   }
   
+  public Collection<Party> getParties(){
+    return partyMap.values();
+  }
 }

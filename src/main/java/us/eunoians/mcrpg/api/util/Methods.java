@@ -2,17 +2,33 @@ package us.eunoians.mcrpg.api.util;
 
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.gui.GUIItem;
+import us.eunoians.mcrpg.party.Party;
+import us.eunoians.mcrpg.party.PartyMember;
+import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.players.PlayerManager;
+import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.Skills;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.UUID;
 
 public class Methods{
   
@@ -425,6 +441,32 @@ public class Methods{
     minutes = seconds / 60;
     hours = minutes / 60;
     return (int) hours;
+  }
+  
+  public static boolean canPlayersPVP(Player player1, Player player2){
+    try{
+      McRPGPlayer mcRPGPlayer1 = PlayerManager.getPlayer(player1.getUniqueId());
+      McRPGPlayer mcRPGPlayer2 = PlayerManager.getPlayer(player2.getUniqueId());
+      if(mcRPGPlayer1.getPartyID() != null && mcRPGPlayer2.getPartyID() != null && mcRPGPlayer1.getPartyID().equals(mcRPGPlayer2.getPartyID())){
+        Party party = McRPG.getInstance().getPartyManager().getParty(mcRPGPlayer1.getPartyID());
+        if(party != null){
+          PartyMember partyMember1 = party.getPartyMembers().get(player1.getUniqueId());
+          PartyMember partyMember2 = party.getPartyMembers().get(player2.getUniqueId());
+          if(partyMember1 != null && partyMember2 != null){
+            int role = Math.max(partyMember1.getPartyRole().getId(), partyMember2.getPartyRole().getId());
+            if(role <= party.getPartyPermissions().get(PartyPermissions.PVP).getId()){
+              return true;
+            }
+            else{
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }catch(McRPGPlayerNotFoundException e){
+      return true;
+    }
   }
   
 }

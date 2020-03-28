@@ -239,6 +239,26 @@ public class Party{
     return onlinePlayers;
   }
   
+  public int purgeInactive(int hoursLimit){
+    Set<UUID> toKick = new HashSet<>();
+    for(UUID uuid : partyMembers.keySet()){
+      if(Methods.findHoursDiffFromCurrent(Bukkit.getOfflinePlayer(uuid).getLastPlayed()) >= hoursLimit){
+        toKick.add(uuid);
+      }
+    }
+    toKick.forEach(this::kickPlayer);
+    if(toKick.size() > 0){
+      for(UUID uuid : partyMembers.keySet()){
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+        if(offlinePlayer.isOnline()){
+          ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&c" + toKick.size() + " players were removed from your party due to inactivity"));
+        }
+      }
+    }
+    saveParty();
+    return toKick.size();
+  }
+  
   public void saveParty(){
     partyFileConfiguration.set("PartyMembers", null);
     String partyMemberKey = "PartyMembers.";

@@ -10,36 +10,131 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import sun.misc.Queue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
-import us.eunoians.mcrpg.abilities.archery.*;
-import us.eunoians.mcrpg.abilities.axes.*;
-import us.eunoians.mcrpg.abilities.excavation.*;
-import us.eunoians.mcrpg.abilities.fishing.*;
-import us.eunoians.mcrpg.abilities.fitness.*;
-import us.eunoians.mcrpg.abilities.herbalism.*;
-import us.eunoians.mcrpg.abilities.mining.*;
-import us.eunoians.mcrpg.abilities.sorcery.*;
-import us.eunoians.mcrpg.abilities.swords.*;
-import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.abilities.woodcutting.*;
+import us.eunoians.mcrpg.abilities.archery.BlessingOfApollo;
+import us.eunoians.mcrpg.abilities.archery.BlessingOfArtemis;
+import us.eunoians.mcrpg.abilities.archery.Combo;
+import us.eunoians.mcrpg.abilities.archery.CurseOfHades;
+import us.eunoians.mcrpg.abilities.archery.Daze;
+import us.eunoians.mcrpg.abilities.archery.Puncture;
+import us.eunoians.mcrpg.abilities.archery.TippedArrows;
+import us.eunoians.mcrpg.abilities.axes.AresBlessing;
+import us.eunoians.mcrpg.abilities.axes.BloodFrenzy;
+import us.eunoians.mcrpg.abilities.axes.CripplingBlow;
+import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
+import us.eunoians.mcrpg.abilities.axes.SharperAxe;
+import us.eunoians.mcrpg.abilities.axes.Shred;
+import us.eunoians.mcrpg.abilities.axes.WhirlwindStrike;
+import us.eunoians.mcrpg.abilities.excavation.BuriedTreasure;
+import us.eunoians.mcrpg.abilities.excavation.Extraction;
+import us.eunoians.mcrpg.abilities.excavation.FrenzyDig;
+import us.eunoians.mcrpg.abilities.excavation.HandDigging;
+import us.eunoians.mcrpg.abilities.excavation.LargerSpade;
+import us.eunoians.mcrpg.abilities.excavation.ManaDeposit;
+import us.eunoians.mcrpg.abilities.excavation.PansShrine;
+import us.eunoians.mcrpg.abilities.fishing.GreatRod;
+import us.eunoians.mcrpg.abilities.fishing.MagicTouch;
+import us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor;
+import us.eunoians.mcrpg.abilities.fishing.SeaGodsBlessing;
+import us.eunoians.mcrpg.abilities.fishing.Shake;
+import us.eunoians.mcrpg.abilities.fishing.SunkenArmory;
+import us.eunoians.mcrpg.abilities.fishing.SuperRod;
+import us.eunoians.mcrpg.abilities.fitness.BulletProof;
+import us.eunoians.mcrpg.abilities.fitness.DivineEscape;
+import us.eunoians.mcrpg.abilities.fitness.Dodge;
+import us.eunoians.mcrpg.abilities.fitness.IronMuscles;
+import us.eunoians.mcrpg.abilities.fitness.Roll;
+import us.eunoians.mcrpg.abilities.fitness.RunnersDiet;
+import us.eunoians.mcrpg.abilities.fitness.ThickSkin;
+import us.eunoians.mcrpg.abilities.herbalism.DiamondFlowers;
+import us.eunoians.mcrpg.abilities.herbalism.FarmersDiet;
+import us.eunoians.mcrpg.abilities.herbalism.MassHarvest;
+import us.eunoians.mcrpg.abilities.herbalism.NaturesWrath;
+import us.eunoians.mcrpg.abilities.herbalism.PansBlessing;
+import us.eunoians.mcrpg.abilities.herbalism.Replanting;
+import us.eunoians.mcrpg.abilities.herbalism.TooManyPlants;
+import us.eunoians.mcrpg.abilities.mining.BlastMining;
+import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
+import us.eunoians.mcrpg.abilities.mining.ItsATriple;
+import us.eunoians.mcrpg.abilities.mining.OreScanner;
+import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
+import us.eunoians.mcrpg.abilities.mining.RicherOres;
+import us.eunoians.mcrpg.abilities.mining.SuperBreaker;
+import us.eunoians.mcrpg.abilities.sorcery.CircesProtection;
+import us.eunoians.mcrpg.abilities.sorcery.CircesRecipes;
+import us.eunoians.mcrpg.abilities.sorcery.CircesShrine;
+import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
+import us.eunoians.mcrpg.abilities.sorcery.HastyBrew;
+import us.eunoians.mcrpg.abilities.sorcery.ManaAffinity;
+import us.eunoians.mcrpg.abilities.sorcery.PotionAffinity;
+import us.eunoians.mcrpg.abilities.swords.Bleed;
+import us.eunoians.mcrpg.abilities.swords.BleedPlus;
+import us.eunoians.mcrpg.abilities.swords.DeeperWound;
+import us.eunoians.mcrpg.abilities.swords.RageSpike;
+import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
+import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
+import us.eunoians.mcrpg.abilities.swords.Vampire;
+import us.eunoians.mcrpg.abilities.unarmed.Berserk;
+import us.eunoians.mcrpg.abilities.unarmed.DenseImpact;
+import us.eunoians.mcrpg.abilities.unarmed.Disarm;
+import us.eunoians.mcrpg.abilities.unarmed.IronArm;
+import us.eunoians.mcrpg.abilities.unarmed.SmitingFist;
+import us.eunoians.mcrpg.abilities.unarmed.StickyFingers;
+import us.eunoians.mcrpg.abilities.unarmed.TighterGrip;
+import us.eunoians.mcrpg.abilities.woodcutting.DemetersShrine;
+import us.eunoians.mcrpg.abilities.woodcutting.DryadsGift;
+import us.eunoians.mcrpg.abilities.woodcutting.ExtraLumber;
+import us.eunoians.mcrpg.abilities.woodcutting.HeavySwing;
+import us.eunoians.mcrpg.abilities.woodcutting.HesperidesApples;
+import us.eunoians.mcrpg.abilities.woodcutting.NymphsVitality;
+import us.eunoians.mcrpg.abilities.woodcutting.TemporalHarvest;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
-import us.eunoians.mcrpg.skills.*;
-import us.eunoians.mcrpg.types.*;
+import us.eunoians.mcrpg.skills.Archery;
+import us.eunoians.mcrpg.skills.Axes;
+import us.eunoians.mcrpg.skills.Excavation;
+import us.eunoians.mcrpg.skills.Fishing;
+import us.eunoians.mcrpg.skills.Fitness;
+import us.eunoians.mcrpg.skills.Herbalism;
+import us.eunoians.mcrpg.skills.Mining;
+import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.skills.Sorcery;
+import us.eunoians.mcrpg.skills.Swords;
+import us.eunoians.mcrpg.skills.Unarmed;
+import us.eunoians.mcrpg.skills.Woodcutting;
+import us.eunoians.mcrpg.types.AbilityType;
+import us.eunoians.mcrpg.types.DefaultAbilities;
+import us.eunoians.mcrpg.types.DisplayType;
+import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.GenericAbility;
+import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.TipType;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -173,6 +268,29 @@ public class McRPGPlayer {
         }
         else{
           partyID = UUID.fromString(partyIDString);
+          Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
+          StringBuilder nullPartyMessage = new StringBuilder();
+          if(party == null){
+            partyID = null;
+            nullPartyMessage.append("&cYour party no longer exists.");
+          }
+          else{
+            if(!party.getPartyMembers().containsKey(uuid)){
+              partyID = null;
+              nullPartyMessage.append("&cYou were removed from your party whilst offline.");
+            }
+          }
+          if(nullPartyMessage.length() != 0){
+            new BukkitRunnable(){
+              @Override
+              public void run(){
+                OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
+                if(offlinePlayer.isOnline()){
+                  ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
+                }
+              }
+            }.runTaskLater(McRPG.getInstance(), 2 * 20);
+          }
         }
         Calendar cal1 = Calendar.getInstance();
         Calendar cal = Calendar.getInstance();

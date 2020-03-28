@@ -25,22 +25,71 @@ import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
-import us.eunoians.mcrpg.api.util.*;
+import us.eunoians.mcrpg.api.util.BuriedTreasureData;
+import us.eunoians.mcrpg.api.util.DiamondFlowersData;
+import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.HiddenConfig;
+import us.eunoians.mcrpg.api.util.McRPGPlaceHolders;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
-import us.eunoians.mcrpg.commands.*;
+import us.eunoians.mcrpg.commands.McAdmin;
+import us.eunoians.mcrpg.commands.McConvert;
+import us.eunoians.mcrpg.commands.McDisplay;
+import us.eunoians.mcrpg.commands.McHelp;
+import us.eunoians.mcrpg.commands.McLink;
+import us.eunoians.mcrpg.commands.McParty;
+import us.eunoians.mcrpg.commands.McRPGStub;
+import us.eunoians.mcrpg.commands.McRank;
+import us.eunoians.mcrpg.commands.McRedeem;
+import us.eunoians.mcrpg.commands.McUnlink;
 import us.eunoians.mcrpg.commands.prompts.McAdminPrompt;
 import us.eunoians.mcrpg.commands.prompts.McDisplayPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRankPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRedeemPrompt;
 import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.external.sickle.Sickle;
-import us.eunoians.mcrpg.events.mcrpg.*;
-import us.eunoians.mcrpg.events.vanilla.*;
+import us.eunoians.mcrpg.events.mcrpg.AbilityActivate;
+import us.eunoians.mcrpg.events.mcrpg.AbilityUnlock;
+import us.eunoians.mcrpg.events.mcrpg.AbilityUpgrade;
+import us.eunoians.mcrpg.events.mcrpg.BleedHandler;
+import us.eunoians.mcrpg.events.mcrpg.DisarmHandler;
+import us.eunoians.mcrpg.events.mcrpg.LoadoutAdd;
+import us.eunoians.mcrpg.events.mcrpg.McRPGExpGain;
+import us.eunoians.mcrpg.events.mcrpg.McRPGPlayerLevelChange;
+import us.eunoians.mcrpg.events.vanilla.ArrowHitEvent;
+import us.eunoians.mcrpg.events.vanilla.BreakEvent;
+import us.eunoians.mcrpg.events.vanilla.ChatEvent;
+import us.eunoians.mcrpg.events.vanilla.CheckReadyEvent;
+import us.eunoians.mcrpg.events.vanilla.DeathEvent;
+import us.eunoians.mcrpg.events.vanilla.DropItemEvent;
+import us.eunoians.mcrpg.events.vanilla.EnchantingEvent;
+import us.eunoians.mcrpg.events.vanilla.EntityDeathEvent;
+import us.eunoians.mcrpg.events.vanilla.FishCatchEvent;
+import us.eunoians.mcrpg.events.vanilla.InteractHandler;
+import us.eunoians.mcrpg.events.vanilla.InvClickEvent;
+import us.eunoians.mcrpg.events.vanilla.InvCloseEvent;
+import us.eunoians.mcrpg.events.vanilla.MoveEvent;
+import us.eunoians.mcrpg.events.vanilla.MoveItemEvent;
+import us.eunoians.mcrpg.events.vanilla.PickupEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerLoginEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerLogoutEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerNomNomEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerTossItemEvent;
+import us.eunoians.mcrpg.events.vanilla.PotionDrinkEvent;
+import us.eunoians.mcrpg.events.vanilla.PotionEffectEvent;
+import us.eunoians.mcrpg.events.vanilla.ShiftToggle;
+import us.eunoians.mcrpg.events.vanilla.ShootEvent;
+import us.eunoians.mcrpg.events.vanilla.SignEvent;
+import us.eunoians.mcrpg.events.vanilla.SpawnEvent;
+import us.eunoians.mcrpg.events.vanilla.VanillaDamageEvent;
+import us.eunoians.mcrpg.events.vanilla.WorldListener;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
@@ -52,6 +101,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /*JAVEN ISSUES*/
@@ -243,6 +295,29 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }
     }.runTaskLater(this, 400);
+    
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        Bukkit.getLogger().log(Level.INFO, "Purging parties of inactive players...");
+        AtomicInteger amountToKick = new AtomicInteger(0);
+        Collection<Party> parties = partyManager.getParties();
+        Iterator<Party> iterator = parties.iterator();
+        //This will run over time and not cause as much lag
+        new BukkitRunnable(){
+          @Override
+          public void run(){
+            if(!iterator.hasNext()){
+              Bukkit.getLogger().log(Level.INFO, "Purged " + amountToKick.get() + " players from parties.");
+              cancel();
+            }
+            else{
+              amountToKick.addAndGet(iterator.next().purgeInactive(8));
+            }
+          }
+        }.runTaskTimer(McRPG.getInstance(), 10 * 20, 10 * 20);
+      }
+    }.runTaskTimer(this, 5 * 60 * 20, 30 * 60 * 20);
   
     //Preload nbt class
     ItemStack itemStack = new ItemStack(Material.DIAMOND);
