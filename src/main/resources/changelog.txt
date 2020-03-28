@@ -1,3 +1,13 @@
+1.2.4-BETA
+= Fixed error when breaking a brewing stand that is brewing
+= Putting a potion into a gui now can start the brew task
+= Fixed obtaining glass from breaking a brewing stand
+= Added weakness to the awkward potion children. Will need to be manually added
+= Removed an old test file
+
+1.2.3-BETA
+Uhhh idk what i did
+
 1.2.2-BETA
 = Fixed NCP flagging custom brew GUI
 = Fix potions with branch options not working

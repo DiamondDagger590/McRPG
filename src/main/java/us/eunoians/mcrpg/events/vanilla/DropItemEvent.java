@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -11,10 +10,8 @@ import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
-import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
@@ -40,6 +37,13 @@ public class DropItemEvent implements Listener{
   public void dropItem(BlockDropItemEvent e){
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
       return;
+    }
+    if(e.getBlock().getType() == Material.BREWING_STAND){
+      for(Item i : e.getItems()){
+        if(i.getItemStack().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+          i.setItemStack(new ItemStack(Material.AIR));
+        }
+      }
     }
     Location loc = e.getBlock().getLocation();
     if(blockDropsToMultiplier.containsKey(loc)){

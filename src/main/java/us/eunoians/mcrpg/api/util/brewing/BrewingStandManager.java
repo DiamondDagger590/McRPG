@@ -12,8 +12,12 @@ import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingStandWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BrewingStandManager {
 
@@ -103,6 +107,38 @@ public class BrewingStandManager {
   public void shutDown(){
     for(FileWrapper fileWrapper : chunkToSaveFile.values()){
       fileWrapper.save();
+    }
+  }
+
+  /**
+   * This method was written to be used for conversion from pre-1.2.4 brewing stand file naming to 1.2.4
+   * Prior to 1.2.4, the brewing stand file names used colons (":") as delimiters. This was incompatible with Windows.
+   * In 1.2.4, this behavior was changed to use at symbols ("@") as delimiters, which is compatible with Windows.
+   */
+  public void updateNamingFormat() {
+    File folder = new File(McRPG.getInstance().getDataFolder(), "brewing_storage");
+    if (folder.exists()) {
+      File[] files = folder.listFiles();
+      if (files != null && files.length > 0) {
+        List<File> filesToRename = Arrays.stream(files).filter(f -> f.getName().contains(":")).collect(Collectors.toList());
+        if (filesToRename.size() > 0) {
+          McRPG.getInstance().getLogger().info("Found pre-1.2.4 brewing stand storage format. Converting...");
+          boolean errored = false;
+          for (File f : filesToRename) {
+            try {
+              Files.move(f.toPath(), f.toPath().resolveSibling(f.getName().replaceAll(":", "@")));
+            } catch (IOException e) {
+              errored = true;
+              e.printStackTrace();
+            }
+          }
+          if (errored) {
+            McRPG.getInstance().getLogger().severe("Oops! 1.2.4 brewing stand storage format did not convert successfully :(");
+          } else {
+            McRPG.getInstance().getLogger().info("1.2.4 brewing stand storage format converted successfully!");
+          }
+        }
+      }
     }
   }
   

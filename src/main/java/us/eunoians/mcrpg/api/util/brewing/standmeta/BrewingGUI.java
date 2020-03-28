@@ -250,6 +250,11 @@ public class BrewingGUI extends GUI{
     if(ingredient != null && ingredient.getType() != Material.AIR){
       dropLocation.getWorld().dropItemNaturally(dropLocation, ingredient);
     }*/
+    if(holder.getInventory().getIngredient() != null && holder.getInventory().getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+      updateHolder();
+      holder.getInventory().setIngredient(new ItemStack(Material.AIR));
+      holder.update();
+    }
     if(fuel != null && fuel.getType() != Material.AIR && fuel.getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
       dropLocation.getWorld().dropItemNaturally(dropLocation, fuel);
     }
@@ -457,8 +462,10 @@ public class BrewingGUI extends GUI{
   
   public void updateIngredient(){
     updateHolder();
-    holder.getSnapshotInventory().setIngredient(ingredient);
-    holder.update();
+    if(ingredient.getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
+      holder.getSnapshotInventory().setIngredient(ingredient);
+      holder.update();
+    }
     inv.setItem(MCRPG_INGREDIENT_SLOT, ingredient);
   }
   
