@@ -14,13 +14,11 @@ import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
-import us.eunoians.mcrpg.party.PartyMember;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.util.SkullCache;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class PartyMemberGUI extends GUI{
@@ -43,11 +41,11 @@ public class PartyMemberGUI extends GUI{
     Party party = partyManager.getParty(mcRPGPlayer.getPartyID());
     guiInventoryFunction = (GUIBuilder builder) -> {
       FileConfiguration memberFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_MEMBER_GUI);
-      Map<UUID, PartyMember> partyMemberMap = party.getPartyMembers();
-      int size = (Math.min(54, partyMemberMap.size() + (partyMemberMap.size() % 9 != 0 ? ((9 - (partyMemberMap.size() % 9))) : 0)));
+      int memberCount = party.getAllMemberUUIDs().size();
+      int size = (Math.min(54, memberCount + (memberCount % 9 != 0 ? ((9 - (memberCount % 9))) : 0)));
       Inventory inventory = Bukkit.createInventory(null, size, Methods.color(memberFile.getString("Title")));
       int i = 0;
-      for(UUID uuid : partyMemberMap.keySet()){
+      for(UUID uuid : party.getAllMemberUUIDs()){
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
         ItemStack item = new ItemStack(Material.matchMaterial(memberFile.getString("PartyMemberItem.Material", "PLAYER_HEAD")));
         ItemMeta meta = item.getItemMeta();
@@ -79,7 +77,7 @@ public class PartyMemberGUI extends GUI{
         for(String s : memberFile.getStringList("PartyMemberItem.Lore")){
           lore.add(s.replace("%Last_Login%", offlinePlayer.isOnline() ? memberFile.getString("Strings.CurrentlyOnline", "&a&lOnline")
                                                : Methods.getLastLoginDay(offlinePlayer))
-          .replace("%Party_Role%", partyMemberMap.get(uuid).getPartyRole().getName()));
+          .replace("%Party_Role%", party.getPartyMember(uuid).getPartyRole().getName()));
         }
         meta.setLore(Methods.colorLore(lore));
         meta.setDisplayName(Methods.color(memberFile.getString("PartyMemberItem.DisplayName", "&5" + offlinePlayer.getName()).replace("%Player%", offlinePlayer.getName())));

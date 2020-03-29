@@ -25,7 +25,6 @@ import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.Skills;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -178,7 +177,7 @@ public class Methods{
    * @param items  The array list of GUIItems to put in the inventory
    * @return
    */
-  public static Inventory fillInventory(Inventory inv, ItemStack filler, ArrayList<GUIItem> items){
+  public static Inventory fillInventory(Inventory inv, ItemStack filler, List<GUIItem> items){
     for(GUIItem item : items){
       if(item.getItemStack() == null){
         continue;
@@ -457,11 +456,11 @@ public class Methods{
       if(mcRPGPlayer1.getPartyID() != null && mcRPGPlayer2.getPartyID() != null && mcRPGPlayer1.getPartyID().equals(mcRPGPlayer2.getPartyID())){
         Party party = McRPG.getInstance().getPartyManager().getParty(mcRPGPlayer1.getPartyID());
         if(party != null){
-          PartyMember partyMember1 = party.getPartyMembers().get(player1.getUniqueId());
-          PartyMember partyMember2 = party.getPartyMembers().get(player2.getUniqueId());
+          PartyMember partyMember1 = party.getPartyMember(player1.getUniqueId());
+          PartyMember partyMember2 = party.getPartyMember(player2.getUniqueId());
           if(partyMember1 != null && partyMember2 != null){
             int role = Math.max(partyMember1.getPartyRole().getId(), partyMember2.getPartyRole().getId());
-            if(role <= party.getPartyPermissions().get(PartyPermissions.PVP).getId()){
+            if(role <= party.getRoleForPermission(PartyPermissions.PVP).getId()){
               return true;
             }
             else{

@@ -60,13 +60,13 @@ public class GUIBuilder{
             if(guiBuilder.getPlayer().getPartyID() != null){
               Party party = McRPG.getInstance().getPartyManager().getParty(guiBuilder.getPlayer().getPartyID());
               onlinePartyMembers = party.getOnlinePlayers().size();
-              totalMembers = party.getPartyMembers().size();
+              totalMembers = party.getAllMembers().size();
               partyUpgradePoints = party.getPartyUpgradePoints();
-              bankRole = party.getPartyPermissions().get(PartyPermissions.PRIVATE_BANK).getName();
-              kickRole = party.getPartyPermissions().get(PartyPermissions.KICK_PLAYERS).getName();
-              pvpRole = party.getPartyPermissions().get(PartyPermissions.PVP).getName();
-              inviteRole = party.getPartyPermissions().get(PartyPermissions.INVITE_PLAYERS).getName();
-              upgradeRole = party.getPartyPermissions().get(PartyPermissions.UPGRADE_PARTY).getName();
+              bankRole = party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getName();
+              kickRole = party.getRoleForPermission(PartyPermissions.KICK_PLAYERS).getName();
+              pvpRole = party.getRoleForPermission(PartyPermissions.PVP).getName();
+              inviteRole = party.getRoleForPermission(PartyPermissions.INVITE_PLAYERS).getName();
+              upgradeRole = party.getRoleForPermission(PartyPermissions.UPGRADE_PARTY).getName();
             }
             lore.add(s.replace("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
                        .replace("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))
@@ -92,8 +92,15 @@ public class GUIBuilder{
   @Getter
   @Setter
   private GUIInventoryFunction buildGUIFunction = (GUIBuilder builder) -> {
+    String partyLevel = "0";
+    if(player.getPartyID() != null){
+      Party party = McRPG.getInstance().getPartyManager().getParty(player.getPartyID());
+      if(party != null){
+        partyLevel = Integer.toString(party.getPartyLevel());
+      }
+    }
     Inventory inv = Bukkit.createInventory(null, config.getInt(path + "Size"),
-      Methods.color(player.getPlayer(), config.getString(path + "Title")));
+      Methods.color(player.getPlayer(), config.getString(path + "Title").replace("%Party_Level%", partyLevel)));
     items = new ArrayList<>();
     for(String itemName : config.getConfigurationSection(path + "Items").getKeys(false)){
       ItemStack item;

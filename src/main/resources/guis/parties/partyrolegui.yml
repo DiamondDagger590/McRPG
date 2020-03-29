@@ -2,11 +2,11 @@ Title: '&5Admin GUI'
 Size: 27
 InvitePlayers:
   Slot: 0
-  Admin:
+  Owner:
     Material: RED_WOOL
     DisplayName: '&4Invite Players'
     Lore:
-      - '&cOnly admins can invite other players'
+      - '&cOnly owners can invite other players'
   Mod:
     Material: BLUE_WOOL
     DisplayName: '&1Invite Players'
@@ -21,11 +21,11 @@ InvitePlayers:
       - '&acan invite players'
 KickPlayers:
   Slot: 1
-  Admin:
+  Owner:
     Material: RED_WOOL
     DisplayName: '&4Kick Players'
     Lore:
-      - '&cOnly admins can kick other players'
+      - '&cOnly owners can kick other players'
   Mod:
     Material: BLUE_WOOL
     DisplayName: '&1Kick Players'
@@ -40,11 +40,11 @@ KickPlayers:
       - '&acan kick players'
 PrivateBank:
   Slot: 9
-  Admin:
+  Owner:
     Material: RED_WOOL
     DisplayName: '&4Private Bank'
     Lore:
-      - '&cOnly admins can use the private bank'
+      - '&cOnly owners can use the private bank'
       - '&c/mcparty storage'
   Mod:
     Material: BLUE_WOOL
@@ -62,11 +62,11 @@ PrivateBank:
       - '&a/mcparty storage'
 UpgradeParty:
   Slot: 18
-  Admin:
+  Owner:
     Material: RED_WOOL
     DisplayName: '&4Upgrade Party'
     Lore:
-      - '&cOnly admins can upgrade the party'
+      - '&cOnly owners can upgrade the party'
   Mod:
     Material: BLUE_WOOL
     DisplayName: '&1Upgrade Party'
@@ -79,25 +79,24 @@ UpgradeParty:
     Lore:
       - '&aAny member of the party'
       - '&acan upgrade the party'
-PVP:
+Pvp:
   Slot: 19
-  Admin:
+  Owner:
     Material: RED_WOOL
     DisplayName: '&4PVP'
     Lore:
       - '&cOnly the owner can pvp'
   Mod:
     Material: BLUE_WOOL
-    DisplayName: '&1Kick Players'
+    DisplayName: '&1PVP'
     Lore:
-      - '&bMods and up can kick'
-      - '&bplayers from the party'
+      - '&bMods and up can pvp'
   Member:
     Material: GREEN_WOOL
-    DisplayName: '&2Kick Players'
+    DisplayName: '&2PVP'
     Lore:
       - '&aAny member of the party'
-      - '&acan kick players'
+      - '&acan pvp'
 
 
 

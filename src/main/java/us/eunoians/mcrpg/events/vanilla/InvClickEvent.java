@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -45,6 +46,7 @@ import us.eunoians.mcrpg.gui.HomeGUI;
 import us.eunoians.mcrpg.gui.PartyBankGUI;
 import us.eunoians.mcrpg.gui.PartyMemberGUI;
 import us.eunoians.mcrpg.gui.PartyPrivateBankGUI;
+import us.eunoians.mcrpg.gui.PartyRoleGUI;
 import us.eunoians.mcrpg.gui.RedeemStoredGUI;
 import us.eunoians.mcrpg.gui.RemoteTransferGUI;
 import us.eunoians.mcrpg.gui.ReplaceSkillsGUI;
@@ -58,6 +60,8 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.PartyPermissions;
+import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.PartyUpgrades;
 import us.eunoians.mcrpg.types.RedeemType;
 import us.eunoians.mcrpg.types.Skills;
@@ -399,14 +403,16 @@ public class InvClickEvent implements Listener{
       
       if(currentGUI instanceof PartyBankGUI || currentGUI instanceof PartyPrivateBankGUI){
         Party party = currentGUI instanceof PartyBankGUI ? ((PartyBankGUI) currentGUI).getParty() : ((PartyPrivateBankGUI) currentGUI).getParty();
-        int maxSlot = PartyUpgrades.getPrivateBankSizeAtTier(party.getPartyUpgrades().get(PartyUpgrades.PRIVATE_BANK_SIZE));
+        int maxSlot = PartyUpgrades.getPrivateBankSizeAtTier(party.getUpgradeTier(PartyUpgrades.PRIVATE_BANK_SIZE));
         if(e.getSlot() > maxSlot && !(e.getClickedInventory() instanceof PlayerInventory)){
+          e.setCancelled(true);
           p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
           return;
         }
         e.setCancelled(false);
         return;
       }
+      
       //Cuz null errors are fun
       if(e.getCurrentItem() == null){
         return;
@@ -976,6 +982,39 @@ public class InvClickEvent implements Listener{
           }
         }
         mp.saveData();
+        return;
+      }
+      
+      else if(currentGUI instanceof PartyRoleGUI){
+        PartyRoleGUI partyRoleGUI = (PartyRoleGUI) currentGUI;
+        if(partyRoleGUI.getPartyPermissionsMap().containsKey(e.getSlot())){
+          FileConfiguration partyRoleFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_ROLE_GUI);
+          PartyPermissions partyPermission = partyRoleGUI.getPartyPermissionsMap().get(e.getSlot());
+          Party party = partyRoleGUI.getParty();
+          PartyRoles currentRole = party.getRoleForPermission(partyPermission);
+          PartyRoles nextRole;
+          if(currentRole == PartyRoles.OWNER){
+            nextRole = PartyRoles.MOD;
+          }
+          else if(currentRole == PartyRoles.MOD){
+            nextRole = PartyRoles.MEMBER;
+          }
+          else{
+            nextRole = PartyRoles.OWNER;
+          }
+          String key = partyPermission.getName().replace(" ", "") + "." + nextRole.getName() + ".";
+          ItemStack itemStack = e.getCurrentItem();
+          itemStack.setType(Material.matchMaterial(partyRoleFile.getString(key + "Material")));
+          ItemMeta itemMeta = itemStack.getItemMeta();
+          itemMeta.setDisplayName(Methods.color(partyRoleFile.getString(key + "DisplayName")));
+          itemMeta.setLore(Methods.colorLore(partyRoleFile.getStringList(key + "Lore")));
+          itemStack.setItemMeta(itemMeta);
+          e.setCurrentItem(itemStack);
+          party.setRoleForPermission(partyPermission, nextRole);
+          for(HumanEntity viewer : e.getInventory().getViewers()){
+            ((Player) viewer).updateInventory();
+          }
+        }
         return;
       }
       

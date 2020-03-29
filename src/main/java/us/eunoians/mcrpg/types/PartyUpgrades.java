@@ -52,7 +52,7 @@ public enum PartyUpgrades{
    * @return The private bank size at the tier provided. If the tier is not defined, 5 will be returned
    */
   public static int getPrivateBankSizeAtTier(int tier){
-    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PrivateBankSize.SlotsPerTier." + tier, 5);
+    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PrivateBankSize.SlotsPerTier" + tier, 5);
   }
   
   /**

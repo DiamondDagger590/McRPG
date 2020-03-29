@@ -19,10 +19,9 @@ public class PartyManager{
     if(!partyFolder.exists()){
       partyFolder.mkdirs();
     }
-    init();
   }
   
-  private void init(){
+  public void init(){
     if(partyFolder.listFiles() != null && partyFolder.listFiles().length > 0){
       for(File file : partyFolder.listFiles()){
         Party party = new Party(file);

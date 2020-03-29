@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.util.Parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,11 +40,8 @@ import java.util.logging.Level;
 
 public class Party{
   
-  @Getter
   private Map<PartyPermissions, PartyRoles> partyPermissions = new HashMap<>();
-  @Getter
   private Map<PartyUpgrades, Integer> partyUpgrades = new HashMap<>();
-  @Getter
   private Map<UUID, PartyMember> partyMembers = new HashMap<>();
   
   @Getter
@@ -118,7 +116,6 @@ public class Party{
     this.partyID = UUID.fromString(partyFile.getName().replace(".yml", ""));
     this.partyFile = partyFile;
     this.partyFileConfiguration = YamlConfiguration.loadConfiguration(partyFile);
-    initBanks();
     for(String uuid : partyFileConfiguration.getConfigurationSection("PartyMembers").getKeys(false)){
       UUID playerUUID = UUID.fromString(uuid);
       PartyRoles partyRole = PartyRoles.getRoleFromId(partyFileConfiguration.getInt("PartyMembers." + uuid + ".Role"));
@@ -137,6 +134,7 @@ public class Party{
     for(String upgrade : partyFileConfiguration.getConfigurationSection("Upgrades").getKeys(false)){
       partyUpgrades.put(PartyUpgrades.getPartyUpgrades(upgrade), partyFileConfiguration.getInt("Upgrades." + upgrade));
     }
+    initBanks();
     if(partyFileConfiguration.contains("PartyBank")){
       for(String s : partyFileConfiguration.getConfigurationSection("PartyBank").getKeys(false)){
         int i = Integer.parseInt(s.replace("Item", ""));
@@ -333,6 +331,34 @@ public class Party{
     return toKick.size();
   }
   
+  public PartyRoles getRoleForPermission(PartyPermissions partyPermission){
+    return partyPermissions.get(partyPermission);
+  }
+  
+  public void setRoleForPermission(PartyPermissions permission, PartyRoles role){
+    partyPermissions.replace(permission, role);
+  }
+  
+  public int getUpgradeTier(PartyUpgrades partyUpgrade){
+    return partyUpgrades.get(partyUpgrade);
+  }
+  
+  public PartyMember getPartyMember(UUID uuid){
+    return partyMembers.get(uuid);
+  }
+  
+  public boolean isPlayerInParty(UUID uuid){
+    return partyMembers.containsKey(uuid);
+  }
+  
+  public Set<UUID> getAllMemberUUIDs(){
+    return partyMembers.keySet();
+  }
+  
+  public Collection<PartyMember> getAllMembers(){
+    return partyMembers.values();
+  }
+  
   public void saveParty(){
     partyFileConfiguration.set("PartyMembers", null);
     String partyMemberKey = "PartyMembers.";
@@ -362,7 +388,7 @@ public class Party{
       }
     }
     //Save the private bank
-    for(int i = 0; i < privateBank.getSize(); i++){
+    for(int i = 0; i < PartyUpgrades.getPrivateBankSizeAtTier(getUpgradeTier(PartyUpgrades.PRIVATE_BANK_SIZE)); i++){
       ItemStack item = privateBank.getItem(i);
       if(item != null && item.getType() != Material.AIR){
         partyFileConfiguration.set("PrivateBank.Item" + i, item);

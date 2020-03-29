@@ -275,7 +275,7 @@ public class McRPGPlayer {
             nullPartyMessage.append("&cYour party no longer exists.");
           }
           else{
-            if(!party.getPartyMembers().containsKey(uuid)){
+            if(!party.isPlayerInParty(uuid)){
               partyID = null;
               nullPartyMessage.append("&cYou were removed from your party whilst offline.");
             }

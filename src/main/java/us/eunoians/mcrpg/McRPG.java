@@ -184,6 +184,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
     this.partyManager = new PartyManager();
+    partyManager.init();
     Metrics metrics = new Metrics(this, id);
     brewingStandManager = new BrewingStandManager();
     brewingStandManager.updateNamingFormat();

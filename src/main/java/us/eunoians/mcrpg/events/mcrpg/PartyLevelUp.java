@@ -17,7 +17,7 @@ public class PartyLevelUp implements Listener{
   
   @EventHandler(priority = EventPriority.MONITOR)
   public void onLevelUp(PartyLevelUpEvent event){
-    for(UUID uuid : event.getParty().getPartyMembers().keySet()){
+    for(UUID uuid : event.getParty().getAllMemberUUIDs()){
       OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
       if(offlinePlayer.isOnline()){
         Player player = (Player) offlinePlayer;

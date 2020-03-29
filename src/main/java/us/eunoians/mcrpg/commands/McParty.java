@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.gui.PartyMainGUI;
 import us.eunoians.mcrpg.gui.PartyPrivateBankGUI;
+import us.eunoians.mcrpg.gui.PartyRoleGUI;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.party.PartyMember;
@@ -112,7 +113,7 @@ public class McParty implements CommandExecutor{
                   return true;
                 }
                 else{
-                  if(party.getPartyMembers().size() >= PartyUpgrades.getMemberCountAtTier(party.getPartyUpgrades().get(PartyUpgrades.MEMBER_COUNT))){
+                  if(party.getAllMemberUUIDs().size() >= PartyUpgrades.getMemberCountAtTier(party.getUpgradeTier(PartyUpgrades.MEMBER_COUNT))){
                     try{
                       mp.getPartyInvites().dequeue();
                       p.sendMessage(Methods.color(p, pluginPrefix + "&cThe party you were invited is full."));
@@ -131,7 +132,7 @@ public class McParty implements CommandExecutor{
                     }
                     mp.setPartyID(party.getPartyID());
                     p.sendMessage(Methods.color(p, pluginPrefix + "&aYou joined " + party.getName()));
-                    for(UUID uuid : party.getPartyMembers().keySet()){
+                    for(UUID uuid : party.getAllMemberUUIDs()){
                       if(uuid.equals(p.getUniqueId())){
                         continue;
                       }
@@ -183,9 +184,9 @@ public class McParty implements CommandExecutor{
               return true;
             }
             else{
-              PartyMember partyPlayer = party.getPartyMembers().get(p.getUniqueId());
-              if(partyPlayer.getPartyRole().getId() <= party.getPartyPermissions().get(PartyPermissions.INVITE_PLAYERS).getId()){
-                if(party.getPartyMembers().size() >= PartyUpgrades.getMemberCountAtTier(party.getPartyUpgrades().get(PartyUpgrades.MEMBER_COUNT))){
+              PartyMember partyPlayer = party.getPartyMember(p.getUniqueId());
+              if(partyPlayer.getPartyRole().getId() <= party.getRoleForPermission(PartyPermissions.INVITE_PLAYERS).getId()){
+                if(party.getAllMemberUUIDs().size() >= PartyUpgrades.getMemberCountAtTier(party.getUpgradeTier(PartyUpgrades.MEMBER_COUNT))){
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cThere are too many players in your party to invite someone else."));
                   return true;
                 }
@@ -264,21 +265,21 @@ public class McParty implements CommandExecutor{
             return true;
           }
           else{
-            PartyMember partyPlayer = party.getPartyMembers().get(p.getUniqueId());
-            if(partyPlayer.getPartyRole().getId() <= party.getPartyPermissions().get(PartyPermissions.KICK_PLAYERS).getId()){
+            PartyMember partyPlayer = party.getPartyMember(p.getUniqueId());
+            if(partyPlayer.getPartyRole().getId() <= party.getRoleForPermission(PartyPermissions.KICK_PLAYERS).getId()){
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                 if(offlinePlayer.getUniqueId().equals(p.getUniqueId())){
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not kick yourself from the party"));
                   return true;
                 }
-                if(!party.getPartyMembers().containsKey(offlinePlayer.getUniqueId())){
+                if(!party.isPlayerInParty(offlinePlayer.getUniqueId())){
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
                   return true;
                 }
-                PartyMember playerToKick = party.getPartyMembers().get(offlinePlayer.getUniqueId());
+                PartyMember playerToKick = party.getPartyMember(offlinePlayer.getUniqueId());
                 //This lets members kick other members if for some reason people decide to let members have kicking power. I don't control the people
-                if(playerToKick.getPartyRole().getId() <= partyPlayer.getPartyRole().getId() && party.getPartyPermissions().get(PartyPermissions.KICK_PLAYERS) != PartyRoles.MEMBER){
+                if(playerToKick.getPartyRole().getId() <= partyPlayer.getPartyRole().getId() && party.getRoleForPermission(PartyPermissions.KICK_PLAYERS) != PartyRoles.MEMBER){
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not kick people at the same rank or higher than you"));
                   return true;
                 }
@@ -327,14 +328,14 @@ public class McParty implements CommandExecutor{
               return true;
             }
             else{
-              PartyMember partyMember = party.getPartyMembers().get(p.getUniqueId());
+              PartyMember partyMember = party.getPartyMember(p.getUniqueId());
               if(partyMember.getPartyRole() != PartyRoles.OWNER){
                 p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly party owners can disband the party."));
                 return true;
               }
               else{
                 McRPG.getInstance().getPartyManager().removeParty(party.getPartyID());
-                for(UUID uuid : party.getPartyMembers().keySet()){
+                for(UUID uuid : party.getAllMemberUUIDs()){
                   if(!uuid.equals(p.getUniqueId())){
                     OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
                     if(offlinePlayer.isOnline()){
@@ -360,7 +361,7 @@ public class McParty implements CommandExecutor{
               return true;
             }
             else{
-              if(party.getPartyMembers().size() == 1){
+              if(party.getAllMemberUUIDs().size() == 1){
                 p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have disbanded your party."));
               }
               else{
@@ -368,7 +369,7 @@ public class McParty implements CommandExecutor{
               }
               mp.setPartyID(null);
               party.kickPlayer(p.getUniqueId());
-              for(UUID uuid : party.getPartyMembers().keySet()){
+              for(UUID uuid : party.getAllMemberUUIDs()){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
                 if(offlinePlayer.isOnline()){
                   ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&c" + p.getName() + " has left your party."));
@@ -394,7 +395,7 @@ public class McParty implements CommandExecutor{
               p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command for proper usage."));
               return true;
             }
-            PartyMember partyMember = party.getPartyMembers().get(p.getUniqueId());
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
             if(partyMember.getPartyRole() == PartyRoles.OWNER){
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
@@ -402,8 +403,8 @@ public class McParty implements CommandExecutor{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not promote yourself"));
                   return true;
                 }
-                if(party.getPartyMembers().containsKey(offlinePlayer.getUniqueId())){
-                  PartyMember target = party.getPartyMembers().get(offlinePlayer.getUniqueId());
+                if(party.isPlayerInParty(offlinePlayer.getUniqueId())){
+                  PartyMember target = party.getPartyMember(offlinePlayer.getUniqueId());
                   //Handle possible edge case where there are two owners
                   if(target.getPartyRole() == PartyRoles.OWNER){
                     target.setPartyRole(PartyRoles.MOD);
@@ -452,7 +453,7 @@ public class McParty implements CommandExecutor{
               p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command for proper usage."));
               return true;
             }
-            PartyMember partyMember = party.getPartyMembers().get(p.getUniqueId());
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
             if(partyMember.getPartyRole() == PartyRoles.OWNER){
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
@@ -460,8 +461,8 @@ public class McParty implements CommandExecutor{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not demote yourself"));
                   return true;
                 }
-                if(party.getPartyMembers().containsKey(offlinePlayer.getUniqueId())){
-                  PartyMember target = party.getPartyMembers().get(offlinePlayer.getUniqueId());
+                if(party.isPlayerInParty(offlinePlayer.getUniqueId())){
+                  PartyMember target = party.getPartyMember(offlinePlayer.getUniqueId());
                   //Handle possible edge case where there are two owners
                   if(target.getPartyRole() == PartyRoles.OWNER){
                     target.setPartyRole(PartyRoles.MOD);
@@ -511,7 +512,7 @@ public class McParty implements CommandExecutor{
               p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command for proper usage."));
               return true;
             }
-            PartyMember partyMember = party.getPartyMembers().get(p.getUniqueId());
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
             if(partyMember.getPartyRole() == PartyRoles.OWNER){
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
@@ -519,8 +520,8 @@ public class McParty implements CommandExecutor{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not promote yourself"));
                   return true;
                 }
-                if(party.getPartyMembers().containsKey(offlinePlayer.getUniqueId())){
-                  PartyMember target = party.getPartyMembers().get(offlinePlayer.getUniqueId());
+                if(party.isPlayerInParty(offlinePlayer.getUniqueId())){
+                  PartyMember target = party.getPartyMember(offlinePlayer.getUniqueId());
                   //Handle possible edge case where there are two owners
                   if(target.getPartyRole() == PartyRoles.OWNER){
                     target.setPartyRole(PartyRoles.MOD);
@@ -560,8 +561,8 @@ public class McParty implements CommandExecutor{
               p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
               return true;
             }
-            PartyMember partyMember = party.getPartyMembers().get(p.getUniqueId());
-            if(partyMember.getPartyRole().getId() <= party.getPartyPermissions().get(PartyPermissions.PRIVATE_BANK).getId()){
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
+            if(partyMember.getPartyRole().getId() <= party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getId()){
               try{
                 PartyPrivateBankGUI partyPrivateBankGUI = new PartyPrivateBankGUI(mp);
                 p.openInventory(partyPrivateBankGUI.getGui().getInv());
@@ -572,10 +573,34 @@ public class McParty implements CommandExecutor{
               }
             }
             else{
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly members with the role of " + party.getPartyPermissions().get(PartyPermissions.PRIVATE_BANK).getName() + "+ can use the private bank."));
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly members with the role of " + party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getName() + "+ can use the private bank."));
             }
           }
           return true;
+        }
+        else if(args[0].equalsIgnoreCase("roles")){
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              return true;
+            }
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
+            if(partyMember.getPartyRole() != PartyRoles.OWNER){
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly owners can edit roles."));
+              return true;
+            }
+            else{
+              PartyRoleGUI partyRoleGUI = new PartyRoleGUI(mp, party);
+              p.openInventory(partyRoleGUI.getGui().getInv());
+              GUITracker.trackPlayer(p, partyRoleGUI);
+              return true;
+            }
+          }
         }
       }
       return true;

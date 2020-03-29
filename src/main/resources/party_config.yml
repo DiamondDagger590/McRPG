@@ -7,7 +7,7 @@ InactivePurge:
   #How long in minutes should a purge task take?
   PurgeTaskDelay: 120
 PartyExp:
-  ExpEquation: '10000 + 10000 * (party_level)'
+  ExpEquation: '10000+(10000*(party_level))'
   MaxLevel: 10
 MemberCountUpgrade:
   MaxTier: 5
