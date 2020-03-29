@@ -63,6 +63,12 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.RedeemType;
+import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
+import us.eunoians.mcrpg.types.AbilityType;
+import us.eunoians.mcrpg.types.DisplayType;
+import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.PartyUpgrades;
@@ -137,26 +143,6 @@ public class InvClickEvent implements Listener{
         }
         if(e.getClickedInventory() instanceof PlayerInventory){
           e.setCancelled(false);
-          /*
-          if(e.getCurrentItem() != null && PotionUtils.isFuel(e.getCurrentItem())){
-            if(brewingGUI.getFuel().getAmount() < 64 && e.getClick() == ClickType.SHIFT_LEFT &&
-                    (brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getFuel().isSimilar(e.getCurrentItem()))){
-              int currentAmount = brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getFuel().getAmount();
-              int maxSize = brewingGUI.getFuel().getMaxStackSize();
-              int maxDiff = maxSize - currentAmount;
-              int actualDiff = Math.min(e.getCurrentItem().getAmount(), maxDiff);
-              if(brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE){
-                ItemStack newFuel = new ItemStack(e.getCurrentItem().getType(), actualDiff);
-                brewingGUI.setFuel(newFuel);
-              }
-              else{
-                brewingGUI.getFuel().setAmount(brewingGUI.getFuel().getAmount() + actualDiff);
-                Bukkit.broadcastMessage(brewingGUI.getFuel().getAmount() + " Amount");
-              }
-              e.getCurrentItem().setAmount(e.getCurrentItem().getAmount() - actualDiff);
-              brewingGUI.updateFuelItems();
-            }
-          }*/
           if(e.getCurrentItem() != null && PotionUtils.isIngredient(e.getCurrentItem()) && e.getClick() == ClickType.SHIFT_LEFT &&
                (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCurrentItem()))){
             int currentAmount = brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getIngredient().getAmount();
@@ -195,24 +181,27 @@ public class InvClickEvent implements Listener{
             if((e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.NUMBER_KEY) && p.getInventory().firstEmpty() != -1
                  && !(brewingGUI.getFuel() == null || brewingGUI.getFuel().getType() == Material.AIR || brewingGUI.getFuel().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE)){
               e.setCancelled(false);
+              brewingGUI.setFuel(new ItemStack(Material.AIR));
               new BukkitRunnable(){
                 @Override
                 public void run(){
                   brewingGUI.resetFuelGlass();
                 }
               }.runTaskLater(McRPG.getInstance(), 1);
+              brewingGUI.save();
               return;
             }
             if(e.getCursor() == null || e.getCursor().getType() == Material.AIR){
               if(brewingGUI.getFuel().getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack fuel = brewingGUI.getFuel().clone();
                 brewingGUI.resetFuelGlass();
-                new BukkitRunnable(){
+                e.setCursor(fuel);
+                /*new BukkitRunnable(){
                   @Override
                   public void run(){
                     e.setCursor(fuel);
                   }
-                }.runTaskLater(McRPG.getInstance(), 1);
+                }.runTaskLater(McRPG.getInstance(), 1);*/
               }
               brewingGUI.save();
               return;
@@ -273,12 +262,13 @@ public class InvClickEvent implements Listener{
               if(brewingGUI.getIngredient().getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack ingredient = brewingGUI.getIngredient().clone();
                 brewingGUI.resetIngredientGlass();
-                new BukkitRunnable(){
+                e.setCursor(ingredient);
+                /*new BukkitRunnable(){
                   @Override
                   public void run(){
                     e.setCursor(ingredient);
                   }
-                }.runTaskLater(McRPG.getInstance(), 1);
+                }.runTaskLater(McRPG.getInstance(), 1);*/
                 brewingGUI.updateIngredient();
               }
               return;
@@ -348,12 +338,13 @@ public class InvClickEvent implements Listener{
               if(brewingGUI.getPotion(e.getSlot()).getType() != Material.LIGHT_BLUE_STAINED_GLASS_PANE){
                 ItemStack potion = brewingGUI.getPotion(e.getSlot()).clone();
                 brewingGUI.removePotion(e.getSlot());
-                new BukkitRunnable(){
+                e.setCursor(potion);
+                /*new BukkitRunnable(){
                   @Override
                   public void run(){
                     e.setCursor(potion);
                   }
-                }.runTaskLater(McRPG.getInstance(), 1);
+                }.runTaskLater(McRPG.getInstance(), 1);*/
               }
               return;
             }
