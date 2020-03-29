@@ -30,6 +30,7 @@ import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.PartyUpgrades;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.Parser;
@@ -65,7 +66,7 @@ public class McRPGExpGain implements Listener {
       e.setCancelled(true);
       return;
     }
-    else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND) {
+    else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY) {
       WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
       if(wgSupportManager.isWorldTracker(e.getMcRPGPlayer().getPlayer().getWorld())){
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
@@ -119,14 +120,14 @@ public class McRPGExpGain implements Listener {
     }
 
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG);
-    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM){
+    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM&& e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       WorldModifierManager.ExpModifierWrapper modifierWrapper = McRPG.getInstance().getWorldModifierManager().getWorldModifiers().get(p.getWorld().getName());
       if(modifierWrapper.isModified(e.getSkillGained().getType())){
         e.setExpGained((int) (e.getExpGained() * modifierWrapper.getModifier(e.getSkillGained().getType())));
       }
     }
     
-    if(e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && mp.getBoostedExp() > 0){
+    if(e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY && mp.getBoostedExp() > 0){
       Parser boostedExpParser = new Parser(config.getString("Configuration.BoostedExpUsageRate"));
       boostedExpParser.setVariable("gained_exp", e.getExpGained());
       int extraExp = (int) boostedExpParser.getValue();
@@ -180,7 +181,7 @@ public class McRPGExpGain implements Listener {
     FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
     if(sorceryFile.getBoolean("SorceryEnabled") && p.getLocation().getBlock().getBiome() == Biome.NETHER
          && UnlockedAbilities.HADES_DOMAIN.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HADES_DOMAIN) && mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN).isToggled() &&
-         e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND){
+         e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       HadesDomain hadesDomain = (HadesDomain) mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN);
       double multiplier = sorceryFile.getDouble("HadesDomainConfiguration.Tier" + Methods.convertToNumeral(hadesDomain.getCurrentTier()) + ".McRPGExpBoost");
       HadesDomainEvent hadesDomainEvent = new HadesDomainEvent(mp, hadesDomain, multiplier, true);
@@ -194,11 +195,37 @@ public class McRPGExpGain implements Listener {
     }
     e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));
     
-    if(e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.COMMAND){
+    if(e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       if(mp.getPartyID() != null){
         Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
         if(party != null){
           party.giveExp(e.getExpGained());
+          int expToGive = (int) (e.getExpGained() * PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT)));
+          int expForPlayer = (int) (e.getExpGained() * PartyUpgrades.getExpHolderPercent());
+          boolean expGiven = false;
+          for(Player player : party.getOnlinePlayers()){
+            if(player.getUniqueId().equals(p.getUniqueId())){
+              continue;
+            }
+            else{
+              Location loc1 = p.getLocation();
+              Location loc2 = player.getLocation();
+              if(loc1.getWorld().equals(loc2.getWorld())){
+                if(loc1.distance(loc2) <= PartyUpgrades.getExpShareRangeAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_RANGE))){
+                  expGiven = true;
+                  try{
+                    McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
+                    mcRPGPlayer.giveExp(e.getSkillGained().getType(), expToGive, GainReason.PARTY);
+                  }catch(McRPGPlayerNotFoundException ex){
+                    continue;
+                  }
+                }
+              }
+            }
+          }
+          if(expGiven){
+            e.setExpGained(expForPlayer);
+          }
         }
       }
     }

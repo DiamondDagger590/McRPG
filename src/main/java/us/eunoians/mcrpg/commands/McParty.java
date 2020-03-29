@@ -602,6 +602,40 @@ public class McParty implements CommandExecutor{
             }
           }
         }
+        else if(args[0].equalsIgnoreCase("chat")){
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              return true;
+            }
+            if(args.length == 1){
+              mp.setUsePartyChat(!mp.isUsePartyChat());
+              if(mp.isUsePartyChat()){
+                p.sendMessage(Methods.color(p, pluginPrefix + "&aParty chat is now enabled"));
+              }
+              else{
+                p.sendMessage(Methods.color(p, pluginPrefix + "&cParty chat is now disabled."));
+              }
+            }
+            else{
+              StringBuilder message = new StringBuilder(Methods.color(p, McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getString("PartyChatPrefix").replace("%Player_Name%", p.getName())));
+              Bukkit.getConsoleSender().sendMessage(message.toString());
+              for(int i = 1; i < args.length; i++){
+                message.append(args[i]);
+              }
+              for(Player player : Bukkit.getOnlinePlayers()){
+                if(party.isPlayerInParty(player.getUniqueId()) || player.hasPermission("mcrpg.*") || player.hasPermission("mcparty.*") || player.hasPermission("mcadmin.*") || player.hasPermission("mcparty.spy")){
+                  player.sendMessage(message.toString());
+                }
+              }
+            }
+          }
+        }
       }
       return true;
     }

@@ -7,6 +7,8 @@ Gui:
         - 'OpenNative:PartyMemberGUI'
       13:
         - 'OpenNative:PartyBankGUI'
+      16:
+        - 'OpenNative:PartyUpgradesGUI'
     Items:
       MemberItem:
         Name: '&5Party Members'

@@ -40,6 +40,7 @@ public class PartyMemberGUI extends GUI{
     }
     Party party = partyManager.getParty(mcRPGPlayer.getPartyID());
     guiInventoryFunction = (GUIBuilder builder) -> {
+      List<GUIItem> guiItems = new ArrayList<>();
       FileConfiguration memberFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_MEMBER_GUI);
       int memberCount = party.getAllMemberUUIDs().size();
       int size = (Math.min(54, memberCount + (memberCount % 9 != 0 ? ((9 - (memberCount % 9))) : 0)));
@@ -47,7 +48,7 @@ public class PartyMemberGUI extends GUI{
       int i = 0;
       for(UUID uuid : party.getAllMemberUUIDs()){
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-        ItemStack item = new ItemStack(Material.matchMaterial(memberFile.getString("PartyMemberItem.Material", "PLAYER_HEAD")));
+        ItemStack item = new ItemStack(Material.getMaterial(memberFile.getString("PartyMemberItem.Material", "PLAYER_HEAD")));
         ItemMeta meta = item.getItemMeta();
         if(item.getType().equals(Material.PLAYER_HEAD)){
           if(SkullCache.headMap.containsKey(uuid)){
@@ -82,10 +83,22 @@ public class PartyMemberGUI extends GUI{
         meta.setLore(Methods.colorLore(lore));
         meta.setDisplayName(Methods.color(memberFile.getString("PartyMemberItem.DisplayName", "&5" + offlinePlayer.getName()).replace("%Player%", offlinePlayer.getName())));
         item.setItemMeta(meta);
-        inventory.setItem(i, item);
+        guiItems.add(new GUIItem(item, i));
         i++;
       }
-      return inventory;
+      ItemStack filler = new ItemStack(Material.AIR);
+      if(memberFile.contains("FillerItem")){
+        Material fillerType = Material.getMaterial(memberFile.getString("FillerItem.Material"));
+        filler = new ItemStack(fillerType, 1);
+        ItemMeta meta = filler.getItemMeta();
+        meta.setDisplayName(Methods.color(memberFile.getString("FillerItem.DisplayName", "")));
+        filler.setItemMeta(meta);
+        if(memberFile.contains("FillerItem.Lore")){
+          meta.setLore(Methods.colorLore(memberFile.getStringList("FillerItem.Lore")));
+          filler.setItemMeta(meta);
+        }
+      }
+      return Methods.fillInventory(inventory, filler, guiItems);
     };
     this.getGui().setBuildGUIFunction(guiInventoryFunction);
     this.getGui().rebuildGUI();

@@ -97,6 +97,11 @@ Pvp:
     Lore:
       - '&aAny member of the party'
       - '&acan pvp'
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore: {}
 
 
 

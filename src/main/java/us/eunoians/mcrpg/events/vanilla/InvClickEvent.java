@@ -44,9 +44,11 @@ import us.eunoians.mcrpg.gui.GUIEventBinder;
 import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.gui.HomeGUI;
 import us.eunoians.mcrpg.gui.PartyBankGUI;
+import us.eunoians.mcrpg.gui.PartyMainGUI;
 import us.eunoians.mcrpg.gui.PartyMemberGUI;
 import us.eunoians.mcrpg.gui.PartyPrivateBankGUI;
 import us.eunoians.mcrpg.gui.PartyRoleGUI;
+import us.eunoians.mcrpg.gui.PartyUpgradesGUI;
 import us.eunoians.mcrpg.gui.RedeemStoredGUI;
 import us.eunoians.mcrpg.gui.RemoteTransferGUI;
 import us.eunoians.mcrpg.gui.ReplaceSkillsGUI;
@@ -55,6 +57,7 @@ import us.eunoians.mcrpg.gui.SettingsGUI;
 import us.eunoians.mcrpg.gui.SkillGUI;
 import us.eunoians.mcrpg.gui.SubSkillGUI;
 import us.eunoians.mcrpg.party.Party;
+import us.eunoians.mcrpg.party.PartyMember;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
@@ -408,6 +411,12 @@ public class InvClickEvent implements Listener{
           e.setCancelled(true);
           p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
           return;
+        }
+        else if(e.getClickedInventory() instanceof PlayerInventory && e.getClick() == ClickType.SHIFT_LEFT){
+          if(currentGUI.getGui().getInv().firstEmpty() > maxSlot){
+            e.setCancelled(true);
+            return;
+          }
         }
         e.setCancelled(false);
         return;
@@ -1004,7 +1013,7 @@ public class InvClickEvent implements Listener{
           }
           String key = partyPermission.getName().replace(" ", "") + "." + nextRole.getName() + ".";
           ItemStack itemStack = e.getCurrentItem();
-          itemStack.setType(Material.matchMaterial(partyRoleFile.getString(key + "Material")));
+          itemStack.setType(Material.getMaterial(partyRoleFile.getString(key + "Material")));
           ItemMeta itemMeta = itemStack.getItemMeta();
           itemMeta.setDisplayName(Methods.color(partyRoleFile.getString(key + "DisplayName")));
           itemMeta.setLore(Methods.colorLore(partyRoleFile.getStringList(key + "Lore")));
@@ -1014,6 +1023,60 @@ public class InvClickEvent implements Listener{
           for(HumanEntity viewer : e.getInventory().getViewers()){
             ((Player) viewer).updateInventory();
           }
+        }
+        return;
+      }
+      
+      else if(currentGUI instanceof PartyUpgradesGUI){
+        PartyUpgradesGUI partyUpgradesGUI = (PartyUpgradesGUI) currentGUI;
+        if(partyUpgradesGUI.getPartyUpgradesMap().containsKey(e.getSlot())){
+          Party party = partyUpgradesGUI.getParty();
+          PartyMember partyMember = party.getPartyMember(p.getUniqueId());
+          if(party.getPartyUpgradePoints() > 0){
+            PartyUpgrades partyUpgrades = partyUpgradesGUI.getPartyUpgradesMap().get(e.getSlot());
+            int maxTier = PartyUpgrades.getMaxTier(partyUpgrades);
+            int currentTier = party.getUpgradeTier(partyUpgrades);
+            if(currentTier < maxTier){
+              if(partyMember.getPartyRole().getId() <= party.getRoleForPermission(PartyPermissions.UPGRADE_PARTY).getId()){
+                party.setPartyUpgradePoints(party.getPartyUpgradePoints() - 1);
+                party.setUpgradeTier(partyUpgrades, currentTier + 1);
+                p.closeInventory();
+                new BukkitRunnable(){
+                  @Override
+                  public void run(){
+                    try{
+                      PartyUpgradesGUI newGUI = new PartyUpgradesGUI(mp);
+                      p.openInventory(newGUI.getGui().getInv());
+                      GUITracker.trackPlayer(p, newGUI);
+                    }catch(PartyNotFoundException ex){
+                    }
+                  }
+                }.runTaskLater(McRPG.getInstance(), 1);
+                p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
+                for(Player player : party.getOnlinePlayers()){
+                  player.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&a" + p.getName() + " has upgraded " + partyUpgrades.getName() + " Upgrade to Level " + (currentTier + 1)));
+                }
+              }
+              else{
+                p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&cOnly " + party.getRoleForPermission(PartyPermissions.UPGRADE_PARTY).getName() + " and up can upgrade the party"));
+              }
+            }
+          }
+        }
+        else if(e.getSlot() == McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_UPGRADES_GUI).getInt("BackButton.Slot", 55)){
+          if(GUITracker.doesPlayerHavePrevious(p)){
+            GUI previousGUI = GUITracker.getPlayersPreviousGUI(p);
+            previousGUI.setClearData(true);
+            currentGUI.setClearData(false);
+            p.openInventory(previousGUI.getGui().getInv());
+            GUITracker.replacePlayersGUI(p, previousGUI);
+          }
+          else{
+            GUI previousGUI = new PartyMainGUI(mp);
+            previousGUI.setClearData(true);
+            currentGUI.setClearData(false);
+            p.openInventory(previousGUI.getGui().getInv());
+            GUITracker.replacePlayersGUI(p, previousGUI);          }
         }
         return;
       }
@@ -1241,6 +1304,16 @@ public class InvClickEvent implements Listener{
           else if(events[1].equalsIgnoreCase("PartyBankGUI")){
             try{
               gui = new PartyBankGUI(mp);
+              currentGUI.setClearData(false);
+              p.openInventory(gui.getGui().getInv());
+              GUITracker.replacePlayersGUI(mp, gui);
+            }catch(PartyNotFoundException ex){
+              ex.printStackTrace();
+            }
+          }
+          else if(events[1].equalsIgnoreCase("PartyUpgradesGUI")){
+            try{
+              gui = new PartyUpgradesGUI(mp);
               currentGUI.setClearData(false);
               p.openInventory(gui.getGui().getInv());
               GUITracker.replacePlayersGUI(mp, gui);

@@ -215,6 +215,8 @@ public class McRPGPlayer {
   @Getter private Queue<PartyInvite> partyInvites = new Queue<>();
   @Getter @Setter private UUID partyID;
   
+  @Getter @Setter private boolean usePartyChat = false;
+  
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
     this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");

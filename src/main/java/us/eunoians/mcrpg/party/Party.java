@@ -7,9 +7,11 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.party.PartyDisbandEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.party.PartyExpGainEvent;
@@ -286,11 +288,14 @@ public class Party{
         partyLevel++;
         levelsGained++;
         partyExp -= expToLevel;
+        calculateExpToLevel();
       }
-      PartyLevelUpEvent partyLevelUpEvent = new PartyLevelUpEvent(this, partyLevel - levelsGained, partyLevel);
-      Bukkit.getPluginManager().callEvent(partyLevelUpEvent);
-      partyUpgradePoints += Math.max(0, partyLevelUpEvent.getNewLevel() - partyLevel);
-      partyLevel = partyLevelUpEvent.getNewLevel();
+      if(levelsGained > 0){
+        PartyLevelUpEvent partyLevelUpEvent = new PartyLevelUpEvent(this, partyLevel - levelsGained, partyLevel);
+        Bukkit.getPluginManager().callEvent(partyLevelUpEvent);
+        partyUpgradePoints += Math.max(0, partyLevelUpEvent.getNewLevel() - partyLevelUpEvent.getPreviousLevel());
+        partyLevel = partyLevelUpEvent.getNewLevel();
+      }
     }
   }
   
@@ -341,6 +346,27 @@ public class Party{
   
   public int getUpgradeTier(PartyUpgrades partyUpgrade){
     return partyUpgrades.get(partyUpgrade);
+  }
+  
+  public void setUpgradeTier(PartyUpgrades partyUpgrade, int newTier) {
+    partyUpgrades.replace(partyUpgrade, newTier);
+    if(partyUpgrade == PartyUpgrades.PRIVATE_BANK_SIZE){
+      int size = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE));
+      size += size % 9 != 0 ? (9 - (size % 9)) : 0;
+      Inventory newInventory = Bukkit.createInventory(null, size, Methods.color("&5Private Bank"));
+      newInventory.setContents(privateBank.getContents());
+      List<HumanEntity> viewers = privateBank.getViewers();
+      privateBank = newInventory;
+      for(HumanEntity viewer : viewers){
+        viewer.closeInventory();
+        new BukkitRunnable(){
+          @Override
+          public void run(){
+            viewer.openInventory(privateBank);
+          }
+        }.runTaskLater(McRPG.getInstance(), 1);
+      }
+    }
   }
   
   public PartyMember getPartyMember(UUID uuid){

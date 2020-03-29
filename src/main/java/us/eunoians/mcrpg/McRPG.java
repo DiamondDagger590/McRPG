@@ -62,6 +62,7 @@ import us.eunoians.mcrpg.events.mcrpg.DisarmHandler;
 import us.eunoians.mcrpg.events.mcrpg.LoadoutAdd;
 import us.eunoians.mcrpg.events.mcrpg.McRPGExpGain;
 import us.eunoians.mcrpg.events.mcrpg.McRPGPlayerLevelChange;
+import us.eunoians.mcrpg.events.mcrpg.PartyLevelUp;
 import us.eunoians.mcrpg.events.vanilla.ArrowHitEvent;
 import us.eunoians.mcrpg.events.vanilla.BreakEvent;
 import us.eunoians.mcrpg.events.vanilla.ChatEvent;
@@ -283,6 +284,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new PotionEffectEvent(), this);
     getServer().getPluginManager().registerEvents(new EnchantingEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveItemEvent(), this);
+    getServer().getPluginManager().registerEvents(new PartyLevelUp(), this);
     
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);

@@ -41,7 +41,7 @@ public class PartyRoleGUI extends GUI{
         String key = partyPermission.getName().replace(" ", "") + ".";
         int slot = partyRoleFile.getInt(key + "Slot");
         key +=  party.getRoleForPermission(partyPermission).getName() + ".";
-        ItemStack itemStack = new ItemStack(Material.matchMaterial(partyRoleFile.getString(key + "Material")));
+        ItemStack itemStack = new ItemStack(Material.getMaterial(partyRoleFile.getString(key + "Material")));
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.setDisplayName(Methods.color(partyRoleFile.getString(key + "DisplayName")));
         itemMeta.setLore(Methods.colorLore(partyRoleFile.getStringList(key + "Lore")));
@@ -57,7 +57,7 @@ public class PartyRoleGUI extends GUI{
         meta.setDisplayName(Methods.color(partyRoleFile.getString("FillerItem.DisplayName", "")));
         filler.setItemMeta(meta);
         if(partyRoleFile.contains("FillerItem.Lore")){
-          meta.setLore(partyRoleFile.getStringList("FillerItem.Lore"));
+          meta.setLore(Methods.colorLore(partyRoleFile.getStringList("FillerItem.Lore")));
           filler.setItemMeta(meta);
         }
       }

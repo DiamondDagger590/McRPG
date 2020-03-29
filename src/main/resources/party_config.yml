@@ -1,3 +1,4 @@
+PartyChatPrefix: '&bParty Chat&f>> &7%Player_Name%: &3'
 PartyBank:
   Size: 27
   Title: '&5Party Bank'
@@ -8,7 +9,7 @@ InactivePurge:
   PurgeTaskDelay: 120
 PartyExp:
   ExpEquation: '10000+(10000*(party_level))'
-  MaxLevel: 10
+  MaxLevel: 20
 MemberCountUpgrade:
   MaxTier: 5
   #The amount of members per tier
