@@ -43,13 +43,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-public class McRPGExpGain implements Listener {
-
+public class McRPGExpGain implements Listener{
+  
   @Getter
   private static HashMap<UUID, Double> demetersShrineMultipliers = new HashMap<>();
-
+  
   @EventHandler(priority = EventPriority.HIGHEST)
-  public void expGain(McRPGPlayerExpGainEvent e) {
+  public void expGain(McRPGPlayerExpGainEvent e){
     Skills skill = e.getSkillGained().getType();
     Player p = e.getMcRPGPlayer().getPlayer();
     McRPGPlayer mp = e.getMcRPGPlayer();
@@ -58,21 +58,21 @@ public class McRPGExpGain implements Listener {
       return;
     }
     if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseLevelPerms") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
-      || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".level"))) {
+                                                                                        || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".level"))){
       e.setCancelled(true);
       return;
     }
-    else if(e.getSkillGained().getCurrentLevel() >= McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getInt("MaxLevel")) {
+    else if(e.getSkillGained().getCurrentLevel() >= McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getInt("MaxLevel")){
       e.setCancelled(true);
       return;
     }
-    else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY) {
+    else if(McRPG.getInstance().isWorldGuardEnabled() && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
       if(wgSupportManager.isWorldTracker(e.getMcRPGPlayer().getPlayer().getWorld())){
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
         Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
         RegionManager manager = container.get(BukkitAdapter.adapt(loc.getWorld()));
-
+        
         HashMap<String, WGRegion> regions = wgSupportManager.getRegionManager().get(loc.getWorld());
         assert manager != null;
         ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(loc));
@@ -118,9 +118,9 @@ public class McRPGExpGain implements Listener {
         e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
       }
     }
-
+    
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG);
-    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM&& e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
+    if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       WorldModifierManager.ExpModifierWrapper modifierWrapper = McRPG.getInstance().getWorldModifierManager().getWorldModifiers().get(p.getWorld().getName());
       if(modifierWrapper.isModified(e.getSkillGained().getType())){
         e.setExpGained((int) (e.getExpGained() * modifierWrapper.getModifier(e.getSkillGained().getType())));
@@ -142,7 +142,7 @@ public class McRPGExpGain implements Listener {
     int bookChance = config.getBoolean("Configuration.DisableBooksInEnd", false) && p.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
     bookChance = (e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND) ? 0 : bookChance;
     Location loc = e.getMcRPGPlayer().getPlayer().getLocation();
-
+    
     if(bookManager.getEnabledUnlockEvents().contains("ExpGain")){
       if(!bookManager.getUnlockExcluded().contains(skill.getName())){
         double chance = bookManager.getDefaultUnlockChance();
@@ -150,7 +150,7 @@ public class McRPGExpGain implements Listener {
           chance = bookManager.getExpChances().get("Unlock").get(skill);
         }
         chance *= 1000;
-        if (chance >= bookChance) {
+        if(chance >= bookChance){
           loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUnlockBook());
         }
       }
@@ -162,19 +162,19 @@ public class McRPGExpGain implements Listener {
           chance = bookManager.getExpChances().get("Upgrade").get(skill);
         }
         chance *= 1000;
-        if (chance >= bookChance) {
+        if(chance >= bookChance){
           loc.getWorld().dropItemNaturally(loc, SkillBookFactory.generateUpgradeBook());
         }
       }
     }
-
+    
     //Divine Escape exp debuff
     if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0 && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND){
-      e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff()/100)));
+      e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff() / 100)));
     }
     if((e.getGainType() == GainReason.BREAK || e.getGainType() == GainReason.ENCHANTING || e.getGainType() == GainReason.FISHING || e.getGainType() == GainReason.BREW) && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
       Skills type = e.getSkillGained().getType();
-      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION || type == Skills.FISHING || type == Skills.SORCERY) {
+      if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION || type == Skills.FISHING || type == Skills.SORCERY){
         e.setExpGained((int) (e.getExpGained() * demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid())));
       }
     }
@@ -196,12 +196,15 @@ public class McRPGExpGain implements Listener {
     e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));
     
     if(e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
+      if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+        return;
+      }
       if(mp.getPartyID() != null){
         Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
         if(party != null){
           party.giveExp(e.getExpGained());
-          int expToGive = (int) (e.getExpGained() * (PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT))/100d));
-          int expForPlayer = (int) (e.getExpGained() * (PartyUpgrades.getExpHolderPercent()/100));
+          int expToGive = (int) (e.getExpGained() * (PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT)) / 100d));
+          int expForPlayer = (int) (e.getExpGained() * (PartyUpgrades.getExpHolderPercent() / 100));
           boolean expGiven = false;
           for(Player player : party.getOnlinePlayers()){
             if(player.getUniqueId().equals(p.getUniqueId())){
@@ -230,7 +233,7 @@ public class McRPGExpGain implements Listener {
       }
     }
   }
-
+  
   public static void addDemetersShrineEffect(UUID uuid, double multiplier, int duration){
     demetersShrineMultipliers.put(uuid, multiplier);
     new BukkitRunnable(){
@@ -241,8 +244,7 @@ public class McRPGExpGain implements Listener {
           if(PlayerManager.isPlayerStored(uuid)){
             try{
               PlayerManager.getPlayer(uuid).getActiveAbilities().remove(UnlockedAbilities.DEMETERS_SHRINE);
-            }
-            catch(McRPGPlayerNotFoundException exception){
+            }catch(McRPGPlayerNotFoundException exception){
               return;
             }
           }

@@ -31,6 +31,10 @@ public class McParty implements CommandExecutor{
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
     String pluginPrefix = McRPG.getInstance().getPluginPrefix();
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+      sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&cParties are disabled for this server."));
+      return true;
+    }
     if(sender instanceof Player){
       Player p = (Player) sender;
       if(PlayerManager.isPlayerFrozen(p.getUniqueId())){

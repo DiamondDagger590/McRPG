@@ -1,4 +1,5 @@
 PartyChatPrefix: '&bParty Chat&f>> &7%Player_Name%: &3'
+PartiesEnabled: true
 PartyBank:
   Size: 27
   Title: '&5Party Bank'

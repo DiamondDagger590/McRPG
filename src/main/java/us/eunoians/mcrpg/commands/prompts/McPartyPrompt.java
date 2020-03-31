@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyMember;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -23,6 +24,9 @@ public class McPartyPrompt implements TabCompleter{
   
   @Override
   public List<String> onTabComplete(CommandSender sender, Command command, String commandLable, String[] args){
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+      return null;
+    }
     List<String> completions = new ArrayList<>();
     Player p = (Player) sender;
     McRPGPlayer mp;

@@ -450,6 +450,9 @@ public class Methods{
   }
   
   public static boolean canPlayersPVP(Player player1, Player player2){
+    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+      return true;
+    }
     try{
       McRPGPlayer mcRPGPlayer1 = PlayerManager.getPlayer(player1.getUniqueId());
       McRPGPlayer mcRPGPlayer2 = PlayerManager.getPlayer(player2.getUniqueId());
