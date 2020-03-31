@@ -63,12 +63,6 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.GainReason;
-import us.eunoians.mcrpg.types.RedeemType;
-import us.eunoians.mcrpg.types.Skills;
-import us.eunoians.mcrpg.types.UnlockedAbilities;
-import us.eunoians.mcrpg.types.AbilityType;
-import us.eunoians.mcrpg.types.DisplayType;
-import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.PartyUpgrades;
@@ -1054,7 +1048,7 @@ public class InvClickEvent implements Listener{
             }
           }
         }
-        else if(e.getSlot() == McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_UPGRADES_GUI).getInt("BackButton.Slot", 55)){
+        else if(e.getSlot() == McRPG.getInstance().getFileManager().getFile(FileManager.Files. PARTY_UPGRADES_GUI).getInt("BackButton.Slot", 55)){
           if(GUITracker.doesPlayerHavePrevious(p)){
             GUI previousGUI = GUITracker.getPlayersPreviousGUI(p);
             previousGUI.setClearData(true);

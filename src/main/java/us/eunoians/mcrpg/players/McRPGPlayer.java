@@ -99,6 +99,7 @@ import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
+import us.eunoians.mcrpg.party.TeleportRequest;
 import us.eunoians.mcrpg.skills.Archery;
 import us.eunoians.mcrpg.skills.Axes;
 import us.eunoians.mcrpg.skills.Excavation;
@@ -216,6 +217,9 @@ public class McRPGPlayer {
   @Getter @Setter private UUID partyID;
   
   @Getter @Setter private boolean usePartyChat = false;
+  
+  @Getter private List<TeleportRequest> teleportRequests = new ArrayList<>();
+  @Getter private Map<UUID, TeleportRequest> teleportRequestMap = new HashMap<>();
   
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
