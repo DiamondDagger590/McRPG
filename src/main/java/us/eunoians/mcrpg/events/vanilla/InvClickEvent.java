@@ -392,15 +392,17 @@ public class InvClickEvent implements Listener{
       if(currentGUI instanceof PartyBankGUI || currentGUI instanceof PartyPrivateBankGUI){
         Party party = currentGUI instanceof PartyBankGUI ? ((PartyBankGUI) currentGUI).getParty() : ((PartyPrivateBankGUI) currentGUI).getParty();
         int maxSlot = PartyUpgrades.getPrivateBankSizeAtTier(party.getUpgradeTier(PartyUpgrades.PRIVATE_BANK_SIZE));
-        if(e.getSlot() > maxSlot && !(e.getClickedInventory() instanceof PlayerInventory)){
-          e.setCancelled(true);
-          p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
-          return;
-        }
-        else if(e.getClickedInventory() instanceof PlayerInventory && e.getClick() == ClickType.SHIFT_LEFT){
-          if(currentGUI.getGui().getInv().firstEmpty() > maxSlot){
+        if(currentGUI instanceof PartyPrivateBankGUI){
+          if(e.getSlot() > maxSlot && !(e.getClickedInventory() instanceof PlayerInventory)){
             e.setCancelled(true);
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 2);
             return;
+          }
+          else if(e.getClickedInventory() instanceof PlayerInventory && e.getClick() == ClickType.SHIFT_LEFT){
+            if(currentGUI.getGui().getInv().firstEmpty() > maxSlot){
+              e.setCancelled(true);
+              return;
+            }
           }
         }
         e.setCancelled(false);

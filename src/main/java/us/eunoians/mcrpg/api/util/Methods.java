@@ -445,7 +445,7 @@ public class Methods{
   }
   
   public static String getLastLoginDay(OfflinePlayer offlinePlayer){
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     return simpleDateFormat.format(new Date(offlinePlayer.getLastPlayed()));
   }
   

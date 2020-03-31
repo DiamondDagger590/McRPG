@@ -283,26 +283,26 @@ public class McParty implements CommandExecutor{
                   p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not kick people at the same rank or higher than you"));
                   return true;
                 }
-                party.kickPlayer(offlinePlayer.getUniqueId());
+                boolean kicked = party.kickPlayer(offlinePlayer.getUniqueId());
+                if(!kicked){
+                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue with kicking that player from your party."));
+                  return true;
+                }
                 party.saveParty();
                 p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have kicked " + offlinePlayer.getName() + " from your party."));
+                try{
+                  McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                  target.setPartyID(null);
+                  target.saveData();
+                }catch(McRPGPlayerNotFoundException e){
+                  McRPGPlayer target = new McRPGPlayer(offlinePlayer.getUniqueId());
+                  target.setPartyID(null);
+                  target.saveData();
+                }
                 if(offlinePlayer.isOnline()){
-                  try{
-                    McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    target.setPartyID(null);
-                    target.saveData();
-                    ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been kicked from " + party.getName() + "."));
-                  }catch(McRPGPlayerNotFoundException e){
-                    McRPGPlayer target = new McRPGPlayer(offlinePlayer.getUniqueId());
-                    target.setPartyID(null);
-                    target.saveData();
-                  }
-                  return true;
+                  ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been kicked from " + party.getName() + "."));
                 }
-                else{
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not currently online and as such could not be invited"));
-                  return true;
-                }
+                return true;
               }
               else{
                 p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));

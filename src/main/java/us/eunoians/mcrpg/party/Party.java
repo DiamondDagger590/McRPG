@@ -11,6 +11,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.party.PartyDisbandEvent;
@@ -27,6 +29,7 @@ import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.PartyUpgrades;
 import us.eunoians.mcrpg.util.Parser;
+import us.eunoians.mcrpg.util.SkullCache;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,6 +151,22 @@ public class Party{
         int i = Integer.parseInt(s.replace("Item", ""));
         privateBank.setItem(i, partyFileConfiguration.getItemStack("PrivateBank." + s));
       }
+    }
+  
+    //Preload heads
+    for(UUID uuid : getAllMemberUUIDs()){
+      OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+      ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+      ItemMeta meta = item.getItemMeta();
+        if(SkullCache.headMap.containsKey(uuid)){
+          continue;
+        }
+        else{
+          SkullMeta sm = (SkullMeta) meta;
+          sm.setOwningPlayer(offlinePlayer);
+          item.setItemMeta(sm);
+          SkullCache.headMap.put(uuid, item);
+        }
     }
   }
   

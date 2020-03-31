@@ -234,6 +234,11 @@ public class VanillaDamageEvent implements Listener {
       } catch(McRPGPlayerNotFoundException exception){
         return;
       }
+      if(e.getDamager() instanceof Player){
+        if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
+          return;
+        }
+      }
       //Deal with Divine Escape debuff
       if(mcRPGPlayer.getDivineEscapeDamageDebuff() > 0){
         double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff() / 100 + 1;
@@ -323,6 +328,11 @@ public class VanillaDamageEvent implements Listener {
     if(e.getDamager().getType() == EntityType.ENDER_PEARL && McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableEPearlExp")){
       return;
     }
+    if(e.getDamager() instanceof Player){
+      if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
+        return;
+      }
+    }
     if(!e.isCancelled() && Skills.FITNESS.isEnabled() && e.getEntity() instanceof Player && e.getDamage() >= 1.0 && ((Player) e.getEntity()).getHealth() - e.getDamage() > 0){
       McRPGPlayer mp;
       try{
@@ -348,6 +358,11 @@ public class VanillaDamageEvent implements Listener {
     //TODO do entity/plugin checks
     if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
       return;
+    }
+    if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){
+      if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
+        return;
+      }
     }
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && !isNPCEntity(e.getEntity())){

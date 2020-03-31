@@ -200,8 +200,8 @@ public class McRPGExpGain implements Listener {
         Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
         if(party != null){
           party.giveExp(e.getExpGained());
-          int expToGive = (int) (e.getExpGained() * PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT)));
-          int expForPlayer = (int) (e.getExpGained() * PartyUpgrades.getExpHolderPercent());
+          int expToGive = (int) (e.getExpGained() * (PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT))/100d));
+          int expForPlayer = (int) (e.getExpGained() * (PartyUpgrades.getExpHolderPercent()/100));
           boolean expGiven = false;
           for(Player player : party.getOnlinePlayers()){
             if(player.getUniqueId().equals(p.getUniqueId())){
