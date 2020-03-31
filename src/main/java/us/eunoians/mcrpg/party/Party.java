@@ -152,21 +152,21 @@ public class Party{
         privateBank.setItem(i, partyFileConfiguration.getItemStack("PrivateBank." + s));
       }
     }
-  
+    
     //Preload heads
     for(UUID uuid : getAllMemberUUIDs()){
       OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
       ItemStack item = new ItemStack(Material.PLAYER_HEAD);
       ItemMeta meta = item.getItemMeta();
-        if(SkullCache.headMap.containsKey(uuid)){
-          continue;
-        }
-        else{
-          SkullMeta sm = (SkullMeta) meta;
-          sm.setOwningPlayer(offlinePlayer);
-          item.setItemMeta(sm);
-          SkullCache.headMap.put(uuid, item);
-        }
+      if(SkullCache.headMap.containsKey(uuid)){
+        continue;
+      }
+      else{
+        SkullMeta sm = (SkullMeta) meta;
+        sm.setOwningPlayer(offlinePlayer);
+        item.setItemMeta(sm);
+        SkullCache.headMap.put(uuid, item);
+      }
     }
   }
   
@@ -367,7 +367,7 @@ public class Party{
     return partyUpgrades.get(partyUpgrade);
   }
   
-  public void setUpgradeTier(PartyUpgrades partyUpgrade, int newTier) {
+  public void setUpgradeTier(PartyUpgrades partyUpgrade, int newTier){
     partyUpgrades.replace(partyUpgrade, newTier);
     if(partyUpgrade == PartyUpgrades.PRIVATE_BANK_SIZE){
       int size = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE));

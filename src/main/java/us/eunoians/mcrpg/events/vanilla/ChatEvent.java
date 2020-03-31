@@ -109,6 +109,12 @@ public class ChatEvent implements Listener {
           e.setCancelled(true);
         }
       }
+      else{
+        mp.setUsePartyChat(false);
+        e.setCancelled(true);
+        e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + "&cYou are no longer in a party so party chat is now disabled."));
+        return;
+      }
     }
   }
 }

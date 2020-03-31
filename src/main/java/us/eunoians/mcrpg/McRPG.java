@@ -50,6 +50,7 @@ import us.eunoians.mcrpg.commands.McRedeem;
 import us.eunoians.mcrpg.commands.McUnlink;
 import us.eunoians.mcrpg.commands.prompts.McAdminPrompt;
 import us.eunoians.mcrpg.commands.prompts.McDisplayPrompt;
+import us.eunoians.mcrpg.commands.prompts.McPartyPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRankPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRedeemPrompt;
 import us.eunoians.mcrpg.database.McRPGDb;
@@ -247,6 +248,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());
     getCommand("mcadmin").setTabCompleter(new McAdminPrompt());
+    getCommand("mcparty").setTabCompleter(new McPartyPrompt());
     //Events
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);

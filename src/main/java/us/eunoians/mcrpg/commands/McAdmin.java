@@ -1070,6 +1070,8 @@ public class McAdmin implements CommandExecutor {
           // /mcadmin party fkick %player%
           // /mcadmin party give exp %exp%
           // /mcadmin party give level %level%
+          // /mcadmin party name %player% %name%
+          // /mcadmin party fsetowner %player%
         }
         else {
           sendHelpMessage(admin);
