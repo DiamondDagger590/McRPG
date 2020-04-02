@@ -97,6 +97,7 @@ import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.party.TeleportRequest;
@@ -220,6 +221,11 @@ public class McRPGPlayer {
   
   @Getter private List<TeleportRequest> teleportRequests = new ArrayList<>();
   @Getter private Map<UUID, TeleportRequest> teleportRequestMap = new HashMap<>();
+  
+  /**
+   * This represents the teleport request for a player. If null then they don't have a request accepted
+   */
+  @Getter @Setter private AcceptedTeleportRequest acceptedTeleportRequest = null;
   
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
@@ -1786,6 +1792,16 @@ public class McRPGPlayer {
     this.redeemableLevels += levels;
   }
 
+  public void addTeleportRequest(TeleportRequest teleportRequest){
+    teleportRequests.add(teleportRequest);
+    teleportRequestMap.put(teleportRequest.getSender(), teleportRequest);
+  }
+  
+  public void emptyTeleportRequests(){
+    teleportRequestMap = new HashMap<>();
+    teleportRequests = new ArrayList<>();
+  }
+  
   @Override
   public boolean equals(Object object) {
     if(object instanceof McRPGPlayer) {

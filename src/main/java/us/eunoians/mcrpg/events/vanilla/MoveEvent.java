@@ -48,7 +48,13 @@ public class MoveEvent implements Listener{
     catch(McRPGPlayerNotFoundException exception){
       return;
     }
-    if(player == null || player.getAbilityLoadout() == null){
+    if(player.getAcceptedTeleportRequest() != null && (e.getFrom().getX() != e.getTo().getX() ||
+                                                         e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getTo().getZ())){
+      player.getAcceptedTeleportRequest().getWaitTask().cancel();
+      player.setAcceptedTeleportRequest(null);
+      player.getPlayer().sendMessage(Methods.color(player.getPlayer(), McRPG.getInstance().getPluginPrefix() + "&cYou moved and cancelled the teleport request."));
+    }
+    if(player.getAbilityLoadout() == null){
       return;
     }
     if(player.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&

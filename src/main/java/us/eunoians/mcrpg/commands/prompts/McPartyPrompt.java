@@ -42,6 +42,8 @@ public class McPartyPrompt implements TabCompleter{
       completions.add("invites");
       if(isInParty){
         completions.add("leave");
+        completions.add("tpa");
+        completions.add("tpaccept");
         completions.add("chat");
         PartyRoles partyRole = partyMember.getPartyRole();
         if(partyRole.getId() <= party.getRoleForPermission(PartyPermissions.INVITE_PLAYERS).getId()){
@@ -119,6 +121,13 @@ public class McPartyPrompt implements TabCompleter{
                 }
               }
               break;
+          }
+        }
+        if(args[0].equalsIgnoreCase("tpa") || args[0].equalsIgnoreCase("tpahere")){
+          for(UUID uuid : party.getAllMemberUUIDs()){
+            if(!uuid.equals(p.getUniqueId())){
+              completions.add(Bukkit.getOfflinePlayer(uuid).getName());
+            }
           }
         }
       }

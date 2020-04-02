@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.gui.PartyRoleGUI;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.party.PartyMember;
+import us.eunoians.mcrpg.party.TeleportRequest;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.PartyPermissions;
@@ -297,6 +298,7 @@ public class McParty implements CommandExecutor{
                 try{
                   McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                   target.setPartyID(null);
+                  target.emptyTeleportRequests();
                   target.saveData();
                 }catch(McRPGPlayerNotFoundException e){
                   McRPGPlayer target = new McRPGPlayer(offlinePlayer.getUniqueId());
@@ -372,6 +374,7 @@ public class McParty implements CommandExecutor{
                 p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have left your party."));
               }
               mp.setPartyID(null);
+              mp.emptyTeleportRequests();
               party.kickPlayer(p.getUniqueId());
               for(UUID uuid : party.getAllMemberUUIDs()){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
@@ -636,6 +639,136 @@ public class McParty implements CommandExecutor{
                 if(party.isPlayerInParty(player.getUniqueId()) || player.hasPermission("mcrpg.*") || player.hasPermission("mcparty.*") || player.hasPermission("mcadmin.*") || player.hasPermission("mcparty.spy")){
                   player.sendMessage(message.toString());
                 }
+              }
+            }
+          }
+        }
+        else if(args[0].equalsIgnoreCase("tpahere")){
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              return true;
+            }
+            if(args.length == 1){
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command."));
+              return true;
+            }
+            else{
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+              if(!party.isPlayerInParty(offlinePlayer.getUniqueId())){
+                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                return true;
+              }
+              else{
+                if(!offlinePlayer.isOnline()){
+                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not online."));
+                  return true;
+                }
+                else{
+                  try{
+                    McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    TeleportRequest teleportRequest = new TeleportRequest(offlinePlayer.getUniqueId(), p.getUniqueId(), false);
+                    target.addTeleportRequest(teleportRequest);
+                    target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + "&eYou have been requested to teleport to " + p.getName() + ". Do /mcparty tpaccept to accept."));
+                    p.sendMessage(Methods.color(p, pluginPrefix + "&eYou have requested " + target.getPlayer().getName() + " to teleport to you."));
+                    return true;
+                  }catch(McRPGPlayerNotFoundException e){
+                    return true;
+                  }
+                }
+              }
+            }
+          }
+        }
+        else if(args[0].equalsIgnoreCase("tpa")){
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              return true;
+            }
+            if(args.length == 1){
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command."));
+              return true;
+            }
+            else{
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+              if(!party.isPlayerInParty(offlinePlayer.getUniqueId())){
+                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                return true;
+              }
+              else{
+                if(!offlinePlayer.isOnline()){
+                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not online."));
+                  return true;
+                }
+                else{
+                  try{
+                    McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    TeleportRequest teleportRequest = new TeleportRequest(offlinePlayer.getUniqueId(), p.getUniqueId(), true);
+                    target.addTeleportRequest(teleportRequest);
+                    target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + "&eYou have received a tp request from " + p.getName() + ". Do /mcparty tpaccept to accept."));
+                    p.sendMessage(Methods.color(p, pluginPrefix + "&eYou have requested to tp to " + target.getPlayer().getName() + "."));
+                    return true;
+                  }catch(McRPGPlayerNotFoundException e){
+                    return true;
+                  }
+                }
+              }
+            }
+          }
+        }
+        else if(args[0].equalsIgnoreCase("tpaccept")){
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              mp.emptyTeleportRequests();
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              return true;
+            }
+            if(mp.getTeleportRequests().size() == 0){
+              p.sendMessage(Methods.color(p, pluginPrefix + "&cThere are no pending teleport requests"));
+              return true;
+            }
+            if(args.length == 1){
+              TeleportRequest teleportRequest = mp.getTeleportRequests().get(0);
+              if(!teleportRequest.accept()){
+                p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue accepting the request"));
+                return true;
+              }
+            }
+            else{
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+              if(offlinePlayer.isOnline()){
+                if(mp.getTeleportRequestMap().containsKey(offlinePlayer.getUniqueId())){
+                  TeleportRequest teleportRequest = mp.getTeleportRequestMap().remove(offlinePlayer.getUniqueId());
+                  mp.getTeleportRequests().remove(teleportRequest);
+                  if(!teleportRequest.accept()){
+                    p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue accepting the request"));
+                    return true;
+                  }
+                }
+                else{
+                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player did not give you a request."));
+                  return true;
+                }
+              }
+              else{
+                p.sendMessage(Methods.color(p, "&cThat player is not online anymore."));
+                return true;
               }
             }
           }

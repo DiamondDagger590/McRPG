@@ -280,6 +280,7 @@ public class Party{
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(playerUUID);
+        mp.emptyTeleportRequests();
       }catch(McRPGPlayerNotFoundException e){
         mp = new McRPGPlayer(playerUUID);
       }

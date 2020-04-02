@@ -46,7 +46,7 @@ dependencies {
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
-    compileOnly 'org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT'
     compile 'org.bstats:bstats-bukkit:1.7'
     compileOnly files('libs/Sickle.jar')
     compileOnly files('libs/SpartanAPI.jar')

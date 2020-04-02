@@ -497,7 +497,7 @@ public class InvClickEvent implements Listener{
           ItemStack displayItem = new ItemStack(Material.BLAZE_ROD);
           ItemMeta displayMeta = displayItem.getItemMeta();
           if(mp.getDisplayType() == DisplayType.ACTION_BAR){
-            displayItem.setType(Material.SIGN);
+            displayItem.setType(Material.OAK_SIGN);
             displayMeta.setDisplayName(Methods.color(guiConfig.getString("ChangeDisplaySettings.ScoreBoard")));
             mp.setDisplayType(DisplayType.SCOREBOARD);
           }
