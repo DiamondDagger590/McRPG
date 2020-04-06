@@ -52,7 +52,7 @@ public class MoveEvent implements Listener{
                                                          e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getTo().getZ())){
       player.getAcceptedTeleportRequest().getWaitTask().cancel();
       player.setAcceptedTeleportRequest(null);
-      player.getPlayer().sendMessage(Methods.color(player.getPlayer(), McRPG.getInstance().getPluginPrefix() + "&cYou moved and cancelled the teleport request."));
+      player.getPlayer().sendMessage(Methods.color(player.getPlayer(),McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TeleportationCanceled")));
     }
     if(player.getAbilityLoadout() == null){
       return;

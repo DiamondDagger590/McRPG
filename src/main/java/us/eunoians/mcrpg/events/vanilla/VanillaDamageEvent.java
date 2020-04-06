@@ -99,7 +99,7 @@ public class VanillaDamageEvent implements Listener {
     return (entity == null || entity.hasMetadata("NPC") || entity instanceof NPC || entity.getClass().getName().equalsIgnoreCase("cofh.entity.PlayerFake"));
   }
 
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
   public void fallListener(EntityDamageEvent e){
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(!(e instanceof EntityDamageByEntityEvent)){
@@ -221,7 +221,7 @@ public class VanillaDamageEvent implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.HIGH)
+  @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
   public void fitnessEvent(EntityDamageByEntityEvent e){
     if(e.isCancelled()){
       return;
@@ -234,7 +234,7 @@ public class VanillaDamageEvent implements Listener {
       } catch(McRPGPlayerNotFoundException exception){
         return;
       }
-      if(e.getDamager() instanceof Player){
+      if(e.getDamager() instanceof Player && e.getEntity() instanceof Player){
         if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
           return;
         }
@@ -323,12 +323,12 @@ public class VanillaDamageEvent implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void awardFitnessExp(EntityDamageByEntityEvent e){
     if(e.getDamager().getType() == EntityType.ENDER_PEARL && McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableEPearlExp")){
       return;
     }
-    if(e.getDamager() instanceof Player){
+    if(e.getDamager() instanceof Player && e.getEntity() instanceof Player){
       if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
         return;
       }
@@ -353,7 +353,7 @@ public class VanillaDamageEvent implements Listener {
    * This code has been modified from it source material
    * It was released under the GPLv3 license
    */
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
     if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){

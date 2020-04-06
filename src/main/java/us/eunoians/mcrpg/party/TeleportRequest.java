@@ -82,26 +82,26 @@ public class TeleportRequest{
         public void run(){
           if(iterations.get() == 0){
             if(!toRecipient){
-              onlineSender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&a" + onlineRecipient.getName() + " accepted your request."));
-              onlineRecipient.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&eAccepted teleport request... Please stand still for 5 seconds..."));
+              onlineSender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpWasAccepted").replace("%Player%", onlineRecipient.getName())));
+              onlineRecipient.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpAcceptedAndStandStill")));
             }
             else{
-              onlineRecipient.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&aAccepted teleport request..."));
-              onlineSender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&e" +  onlineRecipient.getName() + " accepted your request. Please stand still for 5 seconds..."));
+              onlineRecipient.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpAccepted")));
+              onlineSender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpWasAcceptedAndStandStill").replace("%Player%", onlineRecipient.getName())));
             }
           }
           else{
             if(!onlineRecipient.isOnline() || !onlineSender.isOnline()){
               if(!onlineRecipient.isOnline()){
                 if(onlineSender.isOnline()){
-                  onlineSender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&cThe teleportation request has been cancelled"));
+                  onlineSender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TeleportationCanceled")));
                   cancel();
                   return;
                 }
               }
               else{
                 if(onlineRecipient.isOnline()){
-                  onlineRecipient.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&cThe teleportation request has been cancelled"));
+                  onlineRecipient.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TeleportationCanceled")));
                   cancel();
                   return;
                 }

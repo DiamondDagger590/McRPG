@@ -24,7 +24,7 @@ public class McPartyPrompt implements TabCompleter{
   
   @Override
   public List<String> onTabComplete(CommandSender sender, Command command, String commandLable, String[] args){
-    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+    if(!McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
       return null;
     }
     List<String> completions = new ArrayList<>();
@@ -61,6 +61,7 @@ public class McPartyPrompt implements TabCompleter{
           completions.add("demote");
           completions.add("setowner");
           completions.add("roles");
+          completions.add("rename");
         }
       }
       else{

@@ -5,6 +5,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
@@ -32,8 +33,8 @@ public class McParty implements CommandExecutor{
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
     String pluginPrefix = McRPG.getInstance().getPluginPrefix();
-    if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
-      sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + "&cParties are disabled for this server."));
+    if(!McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+      sender.sendMessage(Methods.color(pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartiesDisabled")));
       return true;
     }
     if(sender instanceof Player){
@@ -57,11 +58,11 @@ public class McParty implements CommandExecutor{
       if(args.length == 0){
         if(mp.getPartyID() == null){
           if(mp.getPartyInvites().isEmpty()){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou have no pending party invites and are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoPendingInvites")));
             return true;
           }
           else{
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou have party invites waiting for you to accept using /mcparty invites"));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.WaitingPartyInvites")));
             return true;
           }
         }
@@ -75,7 +76,7 @@ public class McParty implements CommandExecutor{
         if(args[0].equalsIgnoreCase("invites")){
           if(args.length == 1){
             if(mp.getPartyInvites().isEmpty()){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cYou do not have any pending invites."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoPendingInvites")));
               return true;
             }
             else{
@@ -84,25 +85,24 @@ public class McParty implements CommandExecutor{
               if(party == null){
                 try{
                   mp.getPartyInvites().dequeue();
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThe party you were invited to no longer exists and the invite has been removed."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullPartyInviteRemoved")));
                 }catch(InterruptedException e){
                   e.printStackTrace();
                 }
                 return true;
               }
-              p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have a pending invite from &e" + party.getName() +
-                                               "&a. To accept, do /mcparty invites accept. To deny it and view the next invitation, do /mcparty invites deny"));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PendingPartyInvite").replace("%Party%", party.getName())));
               return true;
             }
           }
           else{
             if(args[1].equalsIgnoreCase("accept")){
               if(mp.getPartyID() != null){
-                p.sendMessage(Methods.color(p, Methods.color("&cYou are already in a party and can not accept any invites.")));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.AlreadyInParty")));
                 return true;
               }
               if(mp.getPartyInvites().isEmpty()){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cYou do not have any pending invites."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoPendingInvites")));
                 return true;
               }
               else{
@@ -111,7 +111,7 @@ public class McParty implements CommandExecutor{
                 if(party == null){
                   try{
                     mp.getPartyInvites().dequeue();
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&cThe party you were invited to no longer exists and the invite has been removed."));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullPartyInviteRemoved")));
                   }catch(InterruptedException e){
                     e.printStackTrace();
                   }
@@ -121,7 +121,7 @@ public class McParty implements CommandExecutor{
                   if(party.getAllMemberUUIDs().size() >= PartyUpgrades.getMemberCountAtTier(party.getUpgradeTier(PartyUpgrades.MEMBER_COUNT))){
                     try{
                       mp.getPartyInvites().dequeue();
-                      p.sendMessage(Methods.color(p, pluginPrefix + "&cThe party you were invited is full."));
+                      p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.FullPartyInvite")));
                     }catch(InterruptedException e){
                       e.printStackTrace();
                     }
@@ -136,14 +136,14 @@ public class McParty implements CommandExecutor{
                       e.printStackTrace();
                     }
                     mp.setPartyID(party.getPartyID());
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&aYou joined " + party.getName()));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyJoined").replace("%Party%", party.getName())));
                     for(UUID uuid : party.getAllMemberUUIDs()){
                       if(uuid.equals(p.getUniqueId())){
                         continue;
                       }
                       OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
                       if(offlinePlayer.isOnline()){
-                        ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&a" + p.getName() + " has joined your party!"));
+                        ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerHasJoinedParty").replace("%Player%", p.getName())));
                       }
                     }
                     return true;
@@ -153,16 +153,16 @@ public class McParty implements CommandExecutor{
             }
             else if(args[1].equalsIgnoreCase("decline")){
               if(mp.getPartyInvites().isEmpty()){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cYou have no party invites."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoPendingInvites")));
                 return true;
               }
               try{
                 Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyInvites().dequeue().getPartyID());
                 if(party == null){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat party no longer exists."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullPartyInviteRemoved")));
                 }
                 else{
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have declined the party invite from " + party.getName()));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.InviteDeclined").replace("%Party%", party.getName())));
                 }
               }catch(InterruptedException e){
                 e.printStackTrace();
@@ -174,25 +174,25 @@ public class McParty implements CommandExecutor{
         // /mcparty invite player name
         else if(args[0].equalsIgnoreCase("invite")){
           if(args.length < 2){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cSee /mcparty help for more context."));
+            sendHelpMessage(p);
             return true;
           }
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party so you could not send an invite."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
             return true;
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             else{
               PartyMember partyPlayer = party.getPartyMember(p.getUniqueId());
               if(partyPlayer.getPartyRole().getId() <= party.getRoleForPermission(PartyPermissions.INVITE_PLAYERS).getId()){
                 if(party.getAllMemberUUIDs().size() >= PartyUpgrades.getMemberCountAtTier(party.getUpgradeTier(PartyUpgrades.MEMBER_COUNT))){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThere are too many players in your party to invite someone else."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.FullParty")));
                   return true;
                 }
                 else{
@@ -201,26 +201,26 @@ public class McParty implements CommandExecutor{
                     if(offlinePlayer.isOnline()){
                       try{
                         PlayerManager.getPlayer(offlinePlayer.getUniqueId()).getPartyInvites().enqueue(new PartyInvite(party.getPartyID(), offlinePlayer.getUniqueId()));
-                        p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have invited the player successfully!"));
-                        ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been invited by &e" + p.getDisplayName() + " &ato their party! To join do &e/mcparty invites accept"));
+                        p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.InvitedPlayer")));
+                        ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.BeenInvited").replace("%Player%", p.getName())));
                       }catch(McRPGPlayerNotFoundException e){
-                        p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue inviting that player. Please wait a few seconds and try again."));
+                        p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.IssueInviting")));
                       }
                       return true;
                     }
                     else{
-                      p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not currently online and as such could not be invited"));
+                      p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                       return true;
                     }
                   }
                   else{
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                     return true;
                   }
                 }
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cYou do not have permission to invite people to your party"));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoInvitePermission")));
                 return true;
               }
             }
@@ -228,45 +228,45 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("create")){
           if(mp.getPartyID() != null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are currently in a party and as such could not make a new one."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.AlreadyInParty")));
             return true;
           }
           else{
             if(args.length < 2){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cSee the help command"));
+              sendHelpMessage(p);
               return true;
             }
             if(McRPG.getInstance().getPartyManager().isPartyNameUsed(args[1])){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cThat name is already in use, please use another."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyNameInUse")));
               return true;
             }
             String lowerCaseName = args[1].toLowerCase();
             for(String s : McRPG.getInstance().getFileManager().getFile(FileManager.Files.FILTER).getStringList("BannedPartyStrings")){
               if(lowerCaseName.contains(s.toLowerCase())){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cYour party name contains an invalid string and could not be accepted."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.InvalidPartyName")));
                 return true;
               }
             }
             Party party = McRPG.getInstance().getPartyManager().addParty(args[1], p.getUniqueId());
             mp.setPartyID(party.getPartyID());
             mp.saveData();
-            p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have successfully created the " + party.getName() + " party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyCreated").replace("%Party%", party.getName())));
             return true;
           }
         }
         else if(args[0].equalsIgnoreCase("kick")){
           if(args.length < 2){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cSee /mcparty help for more context."));
+            sendHelpMessage(p);
             return true;
           }
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
             return true;
           }
           Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
           if(party == null){
             mp.setPartyID(null);
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
             return true;
           }
           else{
@@ -275,26 +275,26 @@ public class McParty implements CommandExecutor{
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                 if(offlinePlayer.getUniqueId().equals(p.getUniqueId())){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not kick yourself from the party"));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantKickSelf")));
                   return true;
                 }
                 if(!party.isPlayerInParty(offlinePlayer.getUniqueId())){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
                   return true;
                 }
                 PartyMember playerToKick = party.getPartyMember(offlinePlayer.getUniqueId());
                 //This lets members kick other members if for some reason people decide to let members have kicking power. I don't control the people
                 if(playerToKick.getPartyRole().getId() <= partyPlayer.getPartyRole().getId() && party.getRoleForPermission(PartyPermissions.KICK_PLAYERS) != PartyRoles.MEMBER){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not kick people at the same rank or higher than you"));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantKickPlayer")));
                   return true;
                 }
                 boolean kicked = party.kickPlayer(offlinePlayer.getUniqueId());
                 if(!kicked){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue with kicking that player from your party."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.IssueKicking")));
                   return true;
                 }
                 party.saveParty();
-                p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have kicked " + offlinePlayer.getName() + " from your party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.KickedPlayer").replace("%Player%", offlinePlayer.getName())));
                 try{
                   McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                   target.setPartyID(null);
@@ -306,37 +306,37 @@ public class McParty implements CommandExecutor{
                   target.saveData();
                 }
                 if(offlinePlayer.isOnline()){
-                  ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been kicked from " + party.getName() + "."));
+                  ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.KickedFromParty").replace("%Party%", party.getName())));
                 }
                 return true;
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                 return true;
               }
             }
             else{
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cYou do not have permission to kick people from your party"));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoKickPermissions")));
               return true;
             }
           }
         }
         else if(args[0].equalsIgnoreCase("disband")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party so you could not send an invite."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
             return true;
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             else{
               PartyMember partyMember = party.getPartyMember(p.getUniqueId());
               if(partyMember.getPartyRole() != PartyRoles.OWNER){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly party owners can disband the party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantDisband")));
                 return true;
               }
               else{
@@ -345,11 +345,11 @@ public class McParty implements CommandExecutor{
                   if(!uuid.equals(p.getUniqueId())){
                     OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
                     if(offlinePlayer.isOnline()){
-                      ((Player) offlinePlayer).sendMessage(Methods.color(pluginPrefix + "&cYour party was disbanded."));
+                      ((Player) offlinePlayer).sendMessage(Methods.color(pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyWasDisbanded")));
                     }
                   }
                 }
-                p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have disbanded your party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.DisbandedParty")));
                 return true;
               }
             }
@@ -357,21 +357,21 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("leave")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             else{
               if(party.getAllMemberUUIDs().size() == 1){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have disbanded your party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.DisbandedParty")));
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have left your party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.LeftParty")));
               }
               mp.setPartyID(null);
               mp.emptyTeleportRequests();
@@ -379,7 +379,7 @@ public class McParty implements CommandExecutor{
               for(UUID uuid : party.getAllMemberUUIDs()){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
                 if(offlinePlayer.isOnline()){
-                  ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&c" + p.getName() + " has left your party."));
+                  ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerLeftParty").replace("%Player%", p.getName())));
                 }
               }
             }
@@ -388,18 +388,18 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("promote")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
             return true;
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(args.length < 2){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command for proper usage."));
+              sendHelpMessage(p);
               return true;
             }
             PartyMember partyMember = party.getPartyMember(p.getUniqueId());
@@ -407,7 +407,7 @@ public class McParty implements CommandExecutor{
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                 if(offlinePlayer.getUniqueId().equals(p.getUniqueId())){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not promote yourself"));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantSelfPromote")));
                   return true;
                 }
                 if(party.isPlayerInParty(offlinePlayer.getUniqueId())){
@@ -417,47 +417,47 @@ public class McParty implements CommandExecutor{
                     target.setPartyRole(PartyRoles.MOD);
                   }
                   if(target.getPartyRole() == PartyRoles.MOD){
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not promote a mod to owner. Use the /mcparty setowner command instead"));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantPromoteMod")));
                   }
                   else{
                     target.setPartyRole(PartyRoles.MOD);
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have promoted " + offlinePlayer.getName() + " to mod!"));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PromotedPlayer").replace("%Player%", offlinePlayer.getName())));
                     if(offlinePlayer.isOnline()){
-                      ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been promoted to a party moderator!"));
+                      ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.BeenPromoted")));
                     }
                   }
                   return true;
                 }
                 else{
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotInParty")));
                   return true;
                 }
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                 return true;
               }
             }
             else{
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly party owners can promote players."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantPromote")));
               return true;
             }
           }
         }
         else if(args[0].equalsIgnoreCase("demote")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
             return true;
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(args.length < 2){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command for proper usage."));
+              sendHelpMessage(p);
               return true;
             }
             PartyMember partyMember = party.getPartyMember(p.getUniqueId());
@@ -465,7 +465,7 @@ public class McParty implements CommandExecutor{
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                 if(offlinePlayer.getUniqueId().equals(p.getUniqueId())){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not demote yourself"));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantSelfDemote")));
                   return true;
                 }
                 if(party.isPlayerInParty(offlinePlayer.getUniqueId())){
@@ -475,48 +475,48 @@ public class McParty implements CommandExecutor{
                     target.setPartyRole(PartyRoles.MOD);
                   }
                   if(target.getPartyRole() == PartyRoles.MEMBER){
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not demote a member."));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantDemoteMember")));
                   }
                   else{
                     target.setPartyRole(PartyRoles.MEMBER);
                     party.saveParty();
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have demoted " + offlinePlayer.getName() + "!"));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantDemoteMember").replace("%Player%", offlinePlayer.getName())));
                     if(offlinePlayer.isOnline()){
-                      ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&cYou have been demoted by your party owner!"));
+                      ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix +  McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.BeenDemoted")));
                     }
                   }
                   return true;
                 }
                 else{
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotInParty")));
                   return true;
                 }
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                 return true;
               }
             }
             else{
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly party owners can demote players."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantDemote")));
               return true;
             }
           }
         }
         else if(args[0].equalsIgnoreCase("setowner")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
             return true;
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(args.length < 2){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command for proper usage."));
+              sendHelpMessage(p);
               return true;
             }
             PartyMember partyMember = party.getPartyMember(p.getUniqueId());
@@ -524,7 +524,7 @@ public class McParty implements CommandExecutor{
               if(Methods.hasPlayerLoggedInBefore(args[1])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                 if(offlinePlayer.getUniqueId().equals(p.getUniqueId())){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cYou can not promote yourself"));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantSelfPromote")));
                   return true;
                 }
                 if(party.isPlayerInParty(offlinePlayer.getUniqueId())){
@@ -536,36 +536,36 @@ public class McParty implements CommandExecutor{
                   partyMember.setPartyRole(PartyRoles.MOD);
                   target.setPartyRole(PartyRoles.OWNER);
                   party.saveParty();
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&aYou have promoted " + offlinePlayer.getName() + " to owner!"));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.SetPlayerOwner").replace("%Player%", offlinePlayer.getName())));
                   if(offlinePlayer.isOnline()){
-                    ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + "&aYou have been set as your partys owner!"));
+                    ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.BeenSetOwner")));
                   }
                 }
                 else{
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotInParty")));
                 }
                 return true;
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player has not logged in before."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                 return true;
               }
             }
             else{
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly party owners can promote players."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantPromote")));
               return true;
             }
           }
         }
         else if(args[0].equalsIgnoreCase("storage")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             PartyMember partyMember = party.getPartyMember(p.getUniqueId());
@@ -576,29 +576,29 @@ public class McParty implements CommandExecutor{
                 GUITracker.trackPlayer(p, partyPrivateBankGUI);
               }catch(PartyNotFoundException e){
                 mp.setPartyID(null);
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               }
             }
             else{
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly members with the role of " + party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getName() + "+ can use the private bank."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantAccessBank").replace("%Bank_Role%", party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getName())));
             }
           }
           return true;
         }
         else if(args[0].equalsIgnoreCase("roles")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             PartyMember partyMember = party.getPartyMember(p.getUniqueId());
             if(partyMember.getPartyRole() != PartyRoles.OWNER){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cOnly owners can edit roles."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantEditRoles")));
               return true;
             }
             else{
@@ -611,22 +611,22 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("chat")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(args.length == 1){
               mp.setUsePartyChat(!mp.isUsePartyChat());
               if(mp.isUsePartyChat()){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&aParty chat is now enabled"));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyChatEnabled")));
               }
               else{
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cParty chat is now disabled."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyChatDisabled")));
               }
             }
             else{
@@ -645,28 +645,28 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("tpahere")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(args.length == 1){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command."));
+              sendHelpMessage(p);
               return true;
             }
             else{
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
               if(!party.isPlayerInParty(offlinePlayer.getUniqueId())){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotInParty")));
                 return true;
               }
               else{
                 if(!offlinePlayer.isOnline()){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not online."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                   return true;
                 }
                 else{
@@ -674,8 +674,8 @@ public class McParty implements CommandExecutor{
                     McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                     TeleportRequest teleportRequest = new TeleportRequest(offlinePlayer.getUniqueId(), p.getUniqueId(), false);
                     target.addTeleportRequest(teleportRequest);
-                    target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + "&eYou have been requested to teleport to " + p.getName() + ". Do /mcparty tpaccept to accept."));
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&eYou have requested " + target.getPlayer().getName() + " to teleport to you."));
+                    target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ReceivedTpahereRequest").replace("%Player%", p.getName())));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.RequestedTpahere").replace("%Player%", offlinePlayer.getName())));
                     return true;
                   }catch(McRPGPlayerNotFoundException e){
                     return true;
@@ -687,28 +687,28 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("tpa")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(args.length == 1){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cPlease see the help command."));
+              sendHelpMessage(p);
               return true;
             }
             else{
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
               if(!party.isPlayerInParty(offlinePlayer.getUniqueId())){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not in your party."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotInParty")));
                 return true;
               }
               else{
                 if(!offlinePlayer.isOnline()){
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player is not online."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                   return true;
                 }
                 else{
@@ -716,8 +716,8 @@ public class McParty implements CommandExecutor{
                     McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
                     TeleportRequest teleportRequest = new TeleportRequest(offlinePlayer.getUniqueId(), p.getUniqueId(), true);
                     target.addTeleportRequest(teleportRequest);
-                    target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + "&eYou have received a tp request from " + p.getName() + ". Do /mcparty tpaccept to accept."));
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&eYou have requested to tp to " + target.getPlayer().getName() + "."));
+                    target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ReceivedTpaRequest").replace("%Player%", p.getName())));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.RequestedTpa").replace("%Player%", offlinePlayer.getName())));
                     return true;
                   }catch(McRPGPlayerNotFoundException e){
                     return true;
@@ -729,24 +729,24 @@ public class McParty implements CommandExecutor{
         }
         else if(args[0].equalsIgnoreCase("tpaccept")){
           if(mp.getPartyID() == null){
-            p.sendMessage(Methods.color(p, pluginPrefix + "&cYou are not in a party."));
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
           }
           else{
             Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
             if(party == null){
               mp.setPartyID(null);
               mp.emptyTeleportRequests();
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cFor some reason your party does not exist so you were removed."));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
               return true;
             }
             if(mp.getTeleportRequests().size() == 0){
-              p.sendMessage(Methods.color(p, pluginPrefix + "&cThere are no pending teleport requests"));
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NoPendingTeleportRequests")));
               return true;
             }
             if(args.length == 1){
               TeleportRequest teleportRequest = mp.getTeleportRequests().get(0);
               if(!teleportRequest.accept()){
-                p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue accepting the request"));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.IssueAcceptingRequest")));
                 return true;
               }
             }
@@ -757,19 +757,57 @@ public class McParty implements CommandExecutor{
                   TeleportRequest teleportRequest = mp.getTeleportRequestMap().remove(offlinePlayer.getUniqueId());
                   mp.getTeleportRequests().remove(teleportRequest);
                   if(!teleportRequest.accept()){
-                    p.sendMessage(Methods.color(p, pluginPrefix + "&cThere was an issue accepting the request"));
+                    p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.IssueAcceptingRequest")));
                     return true;
                   }
                 }
                 else{
-                  p.sendMessage(Methods.color(p, pluginPrefix + "&cThat player did not give you a request."));
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerDidNotRequest")));
                   return true;
                 }
               }
               else{
-                p.sendMessage(Methods.color(p, "&cThat player is not online anymore."));
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerOffline")));
                 return true;
               }
+            }
+          }
+        }
+        else if(args[0].equalsIgnoreCase("rename")){
+          if(args.length < 2){
+            sendHelpMessage(p);
+            return true;
+          }
+          if(mp.getPartyID() == null){
+            p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NotInParty")));
+          }
+          else{
+            Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+            if(party == null){
+              mp.setPartyID(null);
+              mp.emptyTeleportRequests();
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullParty")));
+              return true;
+            }
+            else{
+              if(party.getPartyMember(p.getUniqueId()).getPartyRole() != PartyRoles.OWNER){
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.CantRename")));
+                return true;
+              }
+              if(McRPG.getInstance().getPartyManager().isPartyNameUsed(args[1])){
+                p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyNameInUse")));
+                return true;
+              }
+              String lowerCaseName = args[1].toLowerCase();
+              for(String s : McRPG.getInstance().getFileManager().getFile(FileManager.Files.FILTER).getStringList("BannedPartyStrings")){
+                if(lowerCaseName.contains(s.toLowerCase())){
+                  p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.InvalidPartyName")));
+                  return true;
+                }
+              }
+              party.setName(lowerCaseName);
+              p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.RenamedParty")));
+              return true;
             }
           }
         }
@@ -780,5 +818,11 @@ public class McParty implements CommandExecutor{
       sender.sendMessage(Methods.color("&cYou can not send a party command via console"));
       return true;
     }
+  }
+  
+  private void sendHelpMessage(CommandSender p) {
+    McRPG plugin = McRPG.getInstance();
+    FileConfiguration config = plugin.getLangFile();
+    p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcparty")));
   }
 }

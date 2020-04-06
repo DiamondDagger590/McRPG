@@ -196,7 +196,7 @@ public class McRPGExpGain implements Listener{
     e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));
     
     if(e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
-      if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
+      if(!McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
         return;
       }
       if(mp.getPartyID() != null){

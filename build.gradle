@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 3, patch: 0, state: 'BETA-SNAPSHOT')
+def versionObj = new Version(major: 1, minor: 3, patch: 0, fix: 2, state: 'BETA-SNAPSHOT')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -84,10 +84,10 @@ tasks.withType(JavaCompile) {
 
 class Version {
 
-    String major, minor, patch, state, full
+    String major, minor, patch, fix, state, full
 
     String getFullVersion() {
-        full = "$major.$minor.$patch-$state"
+        full = "$major.$minor.$patch.$fix-$state"
         return full
     }
 

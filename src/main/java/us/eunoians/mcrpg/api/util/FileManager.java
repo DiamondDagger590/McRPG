@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author BadBones69
@@ -28,11 +30,11 @@ public class FileManager {
   private Plugin plugin;
   private String prefix = "";
   private Boolean log = false;
-  private HashMap<Files, File> files = new HashMap<>();
-  private ArrayList<String> homeFolders = new ArrayList<>();
-  private ArrayList<CustomFile> customFiles = new ArrayList<>();
-  private HashMap<String, String> autoGenerateFiles = new HashMap<>();
-  private HashMap<Files, FileConfiguration> configurations = new HashMap<>();
+  private Map<Files, File> files = new HashMap<>();
+  private List<String> homeFolders = new ArrayList<>();
+  private List<CustomFile> customFiles = new ArrayList<>();
+  private Map<String, String> autoGenerateFiles = new HashMap<>();
+  private Map<Files, FileConfiguration> configurations = new HashMap<>();
 
   private static FileManager instance = new FileManager();
 
