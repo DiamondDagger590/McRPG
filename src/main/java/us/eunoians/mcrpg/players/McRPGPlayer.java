@@ -330,7 +330,7 @@ public class McRPGPlayer {
    * @return The instance of the players skill of the type provided
    */
   public Skill getSkill(Skills skill) {
-    return skills.stream().filter(n -> n.getName().equalsIgnoreCase(skill.getName())).findFirst().orElse(null);
+    return skills.stream().filter(n -> n.getType().equals(skill)).findFirst().orElse(null);
   }
 
   /**
@@ -627,7 +627,7 @@ public class McRPGPlayer {
    * @return The UnlockedAbilities instance of the active ability belonging to the provided skill a player has, or null if they dont have any
    */
   public UnlockedAbilities getActiveAbilityForSkill(Skills skill) {
-    return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill.getName()))
+    return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill))
             .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
   }
 
