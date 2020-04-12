@@ -6,6 +6,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
+import static us.eunoians.mcrpg.types.Skills.*;
+
 public class PlayerReadyBit {
 
   @Getter
@@ -26,31 +28,31 @@ public class PlayerReadyBit {
         player.setReadying(false);
         player.setReadyingAbilityBit(null);
         String replaceName = "";
-        if(abilityReady.getSkill().equalsIgnoreCase("swords")){
+        if(abilityReady.getSkill().equals(SWORDS)){
           replaceName = "Sword";
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("mining")){
+        else if(abilityReady.getSkill().equals(MINING)){
           replaceName = "Pickaxe";
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("unarmed")){
+        else if(abilityReady.getSkill().equals(UNARMED)){
           replaceName = "Fist";
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("herbalism")){
+        else if(abilityReady.getSkill().equals(HERBALISM)){
           replaceName = "Hoe";
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("archery")){
+        else if(abilityReady.getSkill().equals(ARCHERY)){
           replaceName = "Bow";
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("woodcutting")){
+        else if(abilityReady.getSkill().equals(WOODCUTTING)){
           replaceName = "Axe";
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("excavation")){
+        else if(abilityReady.getSkill().equals(EXCAVATION)){
           replaceName = "Shovel";
           if(abilityReady == UnlockedAbilities.HAND_DIGGING){
             replaceName = "Fist";
           }
         }
-        else if(abilityReady.getSkill().equalsIgnoreCase("axes")){
+        else if(abilityReady.getSkill().equals(AXES)){
           replaceName = "Battle Axe";
         }
         player.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +

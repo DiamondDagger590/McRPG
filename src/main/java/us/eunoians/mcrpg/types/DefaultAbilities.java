@@ -17,24 +17,23 @@ import us.eunoians.mcrpg.abilities.woodcutting.ExtraLumber;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.util.Parser;
 
-import java.sql.ResultSet;
 import java.util.Arrays;
 
 /**
  * All abilities that come default with a skill should be stored in this enum
  */
 public enum DefaultAbilities implements GenericAbility {
-  BLEED("Bleed", Bleed.class, "Swords", AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  DAZE("Daze", Daze.class, "Archery", AbilityType.PASSIVE, FileManager.Files.ARCHERY_CONFIG),
-  DOUBLE_DROP("Double Drop", DoubleDrop.class,"Mining", AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  STICKY_FINGERS("Sticky Fingers", StickyFingers.class, "Unarmed", AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  TOO_MANY_PLANTS("Too Many Plants", TooManyPlants.class,"Herbalism", AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
-  EXTRA_LUMBER("Extra Lumber", ExtraLumber.class, "Woodcutting", AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG),
-  SHRED("Shred", Shred.class, "Axes", AbilityType.PASSIVE, FileManager.Files.AXES_CONFIG),
-  ROLL("Roll", Roll.class, "Fitness", AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG),
-  EXTRACTION("Extraction", Extraction.class,"Excavation", AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
-  GREAT_ROD("Great Rod", GreatRod.class, "Fishing", AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG),
-  HASTY_BREW("Hasty Brew", HastyBrew.class, "Sorcery", AbilityType.PASSIVE, FileManager.Files.SORCERY_CONFIG);
+  BLEED("Bleed", Bleed.class, Skills.SWORDS, AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
+  DAZE("Daze", Daze.class, Skills.ARCHERY, AbilityType.PASSIVE, FileManager.Files.ARCHERY_CONFIG),
+  DOUBLE_DROP("Double Drop", DoubleDrop.class, Skills.MINING, AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  STICKY_FINGERS("Sticky Fingers", StickyFingers.class, Skills.UNARMED, AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  TOO_MANY_PLANTS("Too Many Plants", TooManyPlants.class,Skills.HERBALISM, AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
+  EXTRA_LUMBER("Extra Lumber", ExtraLumber.class, Skills.WOODCUTTING, AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG),
+  SHRED("Shred", Shred.class, Skills.AXES, AbilityType.PASSIVE, FileManager.Files.AXES_CONFIG),
+  ROLL("Roll", Roll.class, Skills.FITNESS, AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG),
+  EXTRACTION("Extraction", Extraction.class,Skills.EXCAVATION, AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
+  GREAT_ROD("Great Rod", GreatRod.class, Skills.FISHING, AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG),
+  HASTY_BREW("Hasty Brew", HastyBrew.class, Skills.SORCERY, AbilityType.PASSIVE, FileManager.Files.SORCERY_CONFIG);
 
   @Getter
   private String name;
@@ -42,7 +41,7 @@ public enum DefaultAbilities implements GenericAbility {
   @Getter
   private Class<? extends BaseAbility> clazz;
   @Getter
-  private String skill;
+  private Skills skill;
   @Getter
   private AbilityType abilityType;
   @Getter
@@ -50,7 +49,7 @@ public enum DefaultAbilities implements GenericAbility {
   @Getter
   private boolean cooldown = false; // no default abilities have cooldowns
 
-  DefaultAbilities(String name, Class<? extends BaseAbility> clazz, String skill, AbilityType type, FileManager.Files file) {
+  DefaultAbilities(String name, Class<? extends BaseAbility> clazz, Skills skill, AbilityType type, FileManager.Files file) {
     this.name = name;
     this.clazz = clazz;
     this.skill = skill;
@@ -65,7 +64,7 @@ public enum DefaultAbilities implements GenericAbility {
    */
   @Override
   public boolean isEnabled() {
-    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(Skills.fromString(skill))).getBoolean("EnabledAbilities." + name.replace(" ", "").replace("_", ""));
+    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("EnabledAbilities." + name.replace(" ", "").replace("_", ""));
   }
 
   /**
@@ -74,8 +73,8 @@ public enum DefaultAbilities implements GenericAbility {
    * @param skill The skill you want the default ability of
    * @return The enum value of the default ability the skill owns
    */
-  public static DefaultAbilities getSkillsDefaultAbility(String skill) {
-    return Arrays.stream(DefaultAbilities.values()).filter(n -> n.getSkill().equalsIgnoreCase(skill)).findFirst().orElse(null);
+  public static DefaultAbilities getSkillsDefaultAbility(Skills skill) {
+    return Arrays.stream(DefaultAbilities.values()).filter(n -> n.getSkill().equals(skill)).findFirst().orElse(null);
   }
 
   public Parser getActivationEquation(){

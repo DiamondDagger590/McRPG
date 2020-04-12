@@ -46,8 +46,8 @@ public class McRPGStub implements CommandExecutor {
           UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
           if(ability.getAbilityType() == AbilityType.ACTIVE) {
             BaseAbility baseAbility = mp.getBaseAbility(ability);
-            if(mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
-              BaseAbility oldAbility = mp.getBaseAbility(mp.getActiveAbilityForSkill(Skills.fromString(ability.getSkill())));
+            if(mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
+              BaseAbility oldAbility = mp.getBaseAbility(mp.getActiveAbilityForSkill(ability.getSkill()));
               AbilityOverrideGUI overrideGUI = new AbilityOverrideGUI(mp, oldAbility, baseAbility);
               p.openInventory(overrideGUI.getGui().getInv());
               GUITracker.trackPlayer(p, overrideGUI);

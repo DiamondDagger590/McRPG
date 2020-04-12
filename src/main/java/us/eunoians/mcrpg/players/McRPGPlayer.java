@@ -370,7 +370,7 @@ public class McRPGPlayer {
    */
   public long getCooldown(Skills skill) {
     for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()) {
-      if(ab.getSkill().equalsIgnoreCase(skill.getName())) {
+      if(ab.getSkill().equals(skill)) {
         return TimeUnit.MILLISECONDS.toSeconds(abilitiesOnCooldown.get(ab) - Calendar.getInstance().getTimeInMillis());
       }
     }
@@ -395,7 +395,7 @@ public class McRPGPlayer {
   public void removeAbilityOnCooldown(Skills skill){
     UnlockedAbilities remove = null;
     for(UnlockedAbilities ab : abilitiesOnCooldown.keySet()) {
-      if(ab.getSkill().equalsIgnoreCase(skill.getName())) {
+      if(ab.getSkill().equals(skill)) {
         remove = ab;
         break;
       }
@@ -433,7 +433,7 @@ public class McRPGPlayer {
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     if(!toRemove.isEmpty()) {
       for(UnlockedAbilities ab : toRemove) {
-        database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().toLowerCase() + "_data SET "
+        database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().getName().toLowerCase() + "_data SET "
                 + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
         abilitiesOnCooldown.remove(ab);
       }
@@ -474,7 +474,7 @@ public class McRPGPlayer {
           this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
         }
-        database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
+        database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
                 + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
 
       }
@@ -527,7 +527,7 @@ public class McRPGPlayer {
             "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + " WHERE uuid = '" + uuid.toString() + "'";
     database.executeUpdate(query);
     for(UnlockedAbilities ability : pendingUnlockAbilities) {
-      query = "UPDATE mcrpg_" + ability.getSkill().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
+      query = "UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
               " WHERE uuid = '" + uuid.toString() + "'";
       database.executeUpdate(query);
     }
@@ -618,7 +618,7 @@ public class McRPGPlayer {
    * @return true if the player has an active ability, false if not
    */
   public boolean doesPlayerHaveActiveAbilityFromSkill(Skills skill) {
-    return abilityLoadout.stream().filter(ability -> ability.getSkill().equalsIgnoreCase(skill.getName()))
+    return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill))
             .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
   }
 

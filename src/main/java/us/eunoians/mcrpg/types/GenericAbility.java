@@ -8,7 +8,7 @@ public interface GenericAbility {
 
   Class<? extends BaseAbility> getClazz();
 
-  String getSkill();
+  Skills getSkill();
 
   AbilityType getAbilityType();
 

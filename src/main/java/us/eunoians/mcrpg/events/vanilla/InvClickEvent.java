@@ -393,7 +393,7 @@ public class InvClickEvent implements Listener{
             if(abilityRemovedFromLoadoutEvent.isCancelled()){
               return;
             }
-            if(mp.getCooldown(Skills.fromString(overrideGUI.getAbiltyToReplace().getGenericAbility().getSkill())) != -1){
+            if(mp.getCooldown(overrideGUI.getAbiltyToReplace().getGenericAbility().getSkill()) != -1){
               mp.removeAbilityOnCooldown((UnlockedAbilities) overrideGUI.getAbiltyToReplace().getGenericAbility());
             }
             mp.replaceAbility((UnlockedAbilities) overrideGUI.getAbiltyToReplace().getGenericAbility(), (UnlockedAbilities) overrideGUI.getReplaceAbility().getGenericAbility());
@@ -722,7 +722,7 @@ public class InvClickEvent implements Listener{
           boolean hasActive = false;
           for(int i = 0; i < mp.getAbilityLoadout().size(); i++){
             UnlockedAbilities ab = mp.getAbilityLoadout().get(i);
-            if((ab.getAbilityType() == AbilityType.ACTIVE && baseAbility.getGenericAbility().getAbilityType() == AbilityType.ACTIVE) && ab.getSkill().equalsIgnoreCase(baseAbility.getGenericAbility().getSkill())){
+            if((ab.getAbilityType() == AbilityType.ACTIVE && baseAbility.getGenericAbility().getAbilityType() == AbilityType.ACTIVE) && ab.getSkill().equals(baseAbility.getGenericAbility().getSkill())){
               mp.getAbilityLoadout().set(i, (UnlockedAbilities) baseAbility.getGenericAbility());
               hasActive = true;
               break;
@@ -904,7 +904,7 @@ public class InvClickEvent implements Listener{
           if(editLoadoutGUI.getReplaceAbility().getGenericAbility().getAbilityType() == AbilityType.ACTIVE){
             for(int i = 0; i < mp.getAbilityLoadout().size(); i++){
               UnlockedAbilities unlockedAbilities = mp.getAbilityLoadout().get(i);
-              if(e.getSlot() != i && unlockedAbilities.getAbilityType() == AbilityType.ACTIVE && unlockedAbilities.getSkill().equalsIgnoreCase(editLoadoutGUI.getReplaceAbility().getGenericAbility().getSkill())){
+              if(e.getSlot() != i && unlockedAbilities.getAbilityType() == AbilityType.ACTIVE && unlockedAbilities.getSkill().equals(editLoadoutGUI.getReplaceAbility().getGenericAbility().getSkill())){
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.DenyReplace.Sound")),
                   soundFile.getInt("Sounds.Misc.DenyReplace.Volume"), soundFile.getInt("Sounds.Misc.DenyReplace.Pitch"));
                 p.closeInventory();
@@ -1171,8 +1171,8 @@ public class InvClickEvent implements Listener{
       UnlockedAbilities ability = mp.getPendingUnlockAbilities().get(0);
       if(ability.getAbilityType() == AbilityType.ACTIVE){
         BaseAbility baseAbility = mp.getBaseAbility(ability);
-        if(mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))){
-          BaseAbility oldAbility = mp.getBaseAbility(mp.getActiveAbilityForSkill(Skills.fromString(ability.getSkill())));
+        if(mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())){
+          BaseAbility oldAbility = mp.getBaseAbility(mp.getActiveAbilityForSkill(ability.getSkill()));
           AbilityOverrideGUI overrideGUI = new AbilityOverrideGUI(mp, oldAbility, baseAbility);
           p.openInventory(overrideGUI.getGui().getInv());
           GUITracker.trackPlayer(p, overrideGUI);
