@@ -12,21 +12,37 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
-import us.eunoians.mcrpg.abilities.mining.*;
+import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
-import us.eunoians.mcrpg.skills.*;
-import us.eunoians.mcrpg.types.*;
+import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.types.AbilityType;
+import us.eunoians.mcrpg.types.DefaultAbilities;
+import us.eunoians.mcrpg.types.DisplayType;
+import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.GenericAbility;
+import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.TipType;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -206,7 +222,8 @@ public class McRPGPlayer {
               if (ability instanceof DefaultAbilities) {
                 abilityInstance = abilityClazz.getConstructor(boolean.class)
                     .newInstance(isToggled);
-              } else if (ability instanceof UnlockedAbilities) {
+              }
+              else if (ability instanceof UnlockedAbilities) {
                 int tier = rs.getInt(ability.name().toLowerCase() + "_tier");
 
                 if (ability.equals(UnlockedAbilities.REMOTE_TRANSFER)) { // yes, i know this is quirky. deal with it. this ability should be re-worked in the future anyways
@@ -214,7 +231,8 @@ public class McRPGPlayer {
                       .newInstance(uuid, isToggled, tier);
 
                   this.isLinkedToRemoteTransfer = ((RemoteTransfer) abilityInstance).isAbilityLinked();
-                } else {
+                }
+                else {
                   abilityInstance = abilityClazz.getConstructor(boolean.class, int.class)
                       .newInstance(isToggled, tier);
                 }
