@@ -27,11 +27,11 @@ public enum DefaultAbilities implements GenericAbility {
   DAZE("Daze", Daze.class, Skills.ARCHERY, AbilityType.PASSIVE, FileManager.Files.ARCHERY_CONFIG),
   DOUBLE_DROP("Double Drop", DoubleDrop.class, Skills.MINING, AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
   STICKY_FINGERS("Sticky Fingers", StickyFingers.class, Skills.UNARMED, AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  TOO_MANY_PLANTS("Too Many Plants", TooManyPlants.class,Skills.HERBALISM, AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
+  TOO_MANY_PLANTS("Too Many Plants", TooManyPlants.class, Skills.HERBALISM, AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
   EXTRA_LUMBER("Extra Lumber", ExtraLumber.class, Skills.WOODCUTTING, AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG),
   SHRED("Shred", Shred.class, Skills.AXES, AbilityType.PASSIVE, FileManager.Files.AXES_CONFIG),
   ROLL("Roll", Roll.class, Skills.FITNESS, AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG),
-  EXTRACTION("Extraction", Extraction.class,Skills.EXCAVATION, AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
+  EXTRACTION("Extraction", Extraction.class, Skills.EXCAVATION, AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
   GREAT_ROD("Great Rod", GreatRod.class, Skills.FISHING, AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG),
   HASTY_BREW("Hasty Brew", HastyBrew.class, Skills.SORCERY, AbilityType.PASSIVE, FileManager.Files.SORCERY_CONFIG);
 
