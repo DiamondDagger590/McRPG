@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class HeavySwing extends BaseAbility {
 
-  public HeavySwing(){ super(UnlockedAbilities.HEAVY_SWING, true, false);}
+  public HeavySwing(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.HEAVY_SWING, isToggled, currentTier);
+  }
 }

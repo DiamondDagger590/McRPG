@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class BlessingOfApollo extends BaseAbility {
 
-  public BlessingOfApollo(){
-    super(UnlockedAbilities.BLESSING_OF_APOLLO, true, false);
+  public BlessingOfApollo(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.BLESSING_OF_APOLLO, isToggled, currentTier);
   }
 }

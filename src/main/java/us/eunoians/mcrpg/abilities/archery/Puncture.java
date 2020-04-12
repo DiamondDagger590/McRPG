@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class Puncture extends BaseAbility {
 
-  public Puncture(){
-    super(UnlockedAbilities.PUNCTURE, true, false);
+  public Puncture(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.PUNCTURE, isToggled, currentTier);
   }
 }

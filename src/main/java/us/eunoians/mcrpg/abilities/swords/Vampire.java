@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class Vampire extends BaseAbility {
 
-  public Vampire(){super(UnlockedAbilities.VAMPIRE, true, false);}
+  public Vampire(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.VAMPIRE, isToggled, currentTier);
+  }
 }

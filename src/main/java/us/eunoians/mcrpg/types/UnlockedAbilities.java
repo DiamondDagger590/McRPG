@@ -3,6 +3,18 @@ package us.eunoians.mcrpg.types;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.BaseAbility;
+import us.eunoians.mcrpg.abilities.archery.*;
+import us.eunoians.mcrpg.abilities.axes.*;
+import us.eunoians.mcrpg.abilities.excavation.*;
+import us.eunoians.mcrpg.abilities.fishing.*;
+import us.eunoians.mcrpg.abilities.fitness.*;
+import us.eunoians.mcrpg.abilities.herbalism.*;
+import us.eunoians.mcrpg.abilities.mining.*;
+import us.eunoians.mcrpg.abilities.sorcery.*;
+import us.eunoians.mcrpg.abilities.swords.*;
+import us.eunoians.mcrpg.abilities.unarmed.*;
+import us.eunoians.mcrpg.abilities.woodcutting.*;
 import us.eunoians.mcrpg.api.util.Methods;
 
 import java.io.File;
@@ -15,94 +27,100 @@ import static us.eunoians.mcrpg.api.util.FileManager.Files;
  */
 public enum UnlockedAbilities implements GenericAbility {
 
-  ARES_BLESSING("AresBlessing", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
-  BERSERK("Berserk", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
-  BLAST_MINING("BlastMining", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
-  BLEED_PLUS("Bleed+", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
-  BLESSING_OF_APOLLO("BlessingOfApollo", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
-  BLESSING_OF_ARTEMIS("BlessingOfArtemis", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
-  BLOOD_FRENZY("BloodFrenzy", "Axes", AbilityType.PASSIVE, Files.AXES_CONFIG),
-  BULLET_PROOF("BulletProof", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
-  BURIED_TREASURE("BuriedTreasure", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
-  CIRCES_PROTECTION("CircesProtection", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
-  CIRCES_RECIPES("CircesRecipes", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
-  CIRCES_SHRINE("CircesShrine", "Sorcery", AbilityType.ACTIVE, Files.SORCERY_CONFIG),
-  COMBO("Combo", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
-  CRIPPLING_BLOW("CripplingBlow", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG),
-  CURSE_OF_HADES("CurseOfHades", "Archery", AbilityType.ACTIVE, Files.ARCHERY_CONFIG),
-  DEEPER_WOUND("DeeperWound", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
-  DEMETERS_SHRINE("DemetersShrine", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
-  DENSE_IMPACT("DenseImpact", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
-  DIAMOND_FLOWERS("DiamondFlowers", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
-  DISARM("Disarm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
-  DIVINE_ESCAPE("DivineEscape", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
-  DODGE("Dodge", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
-  DRYADS_GIFT("DryadsGift", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
-  FARMERS_DIET("FarmersDiet", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
-  FRENZY_DIG("FrenzyDig", "Excavation", AbilityType.ACTIVE, Files.EXCAVATION_CONFIG),
-  HADES_DOMAIN("HadesDomain", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
-  HAND_DIGGING("HandDigging", "Excavation", AbilityType.ACTIVE, Files.EXCAVATION_CONFIG),
-  HEAVY_STRIKE("HeavyStrike", "Axes", AbilityType.PASSIVE, Files.AXES_CONFIG),
-  HEAVY_SWING("HeavySwing", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
-  HESPERIDES_APPLES("HesperidesApples", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
-  IRON_ARM("IronArm", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
-  IRON_MUSCLES("IronMuscles", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
-  ITS_A_TRIPLE("ItsATriple", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
-  LARGER_SPADE("LargerSpade", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
-  MAGIC_TOUCH("MagicTouch", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  MANA_AFFINITY("ManaAffinity", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
-  MANA_DEPOSIT("ManaDeposit", "Excavation", AbilityType.PASSIVE, Files.EXCAVATION_CONFIG),
-  MASS_HARVEST("MassHarvest", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
-  NATURES_WRATH("NaturesWrath", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
-  NYMPHS_VITALITY("NymphsVitality", "Woodcutting", AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG),
-  ORE_SCANNER("OreScanner", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
-  PANS_BLESSING("PansBlessing", "Herbalism", AbilityType.ACTIVE, Files.HERBALISM_CONFIG),
-  PANS_SHRINE("PansShrine", "Excavation", AbilityType.ACTIVE, Files.EXCAVATION_CONFIG),
-  POSEIDONS_FAVOR("PoseidonsFavor", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  POTION_AFFINITY("PotionAffinity", "Sorcery", AbilityType.PASSIVE, Files.SORCERY_CONFIG),
-  PUNCTURE("Puncture", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
-  RAGE_SPIKE("RageSpike", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
-  REMOTE_TRANSFER("RemoteTransfer", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
-  REPLANTING("Replanting", "Herbalism", AbilityType.PASSIVE, Files.HERBALISM_CONFIG),
-  RICHER_ORES("RicherOres", "Mining", AbilityType.PASSIVE, Files.MINING_CONFIG),
-  RUNNERS_DIET("RunnersDiet", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
-  SEA_GODS_BLESSING("SeaGodsBlessing", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SERRATED_STRIKES("SerratedStrikes", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
-  SHAKE("Shake", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SHARPER_AXE("SharperAxe", "Axes", AbilityType.PASSIVE, Files.AXES_CONFIG),
-  SMITING_FIST("SmitingFist", "Unarmed", AbilityType.ACTIVE, Files.UNARMED_CONFIG),
-  SUNKEN_ARMORY("SunkenArmory", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  SUPER_BREAKER("SuperBreaker", "Mining", AbilityType.ACTIVE, Files.MINING_CONFIG),
-  SUPER_ROD("SuperRod", "Fishing", AbilityType.PASSIVE, Files.FISHING_CONFIG),
-  TAINTED_BLADE("TaintedBlade", "Swords", AbilityType.ACTIVE, Files.SWORDS_CONFIG),
-  TEMPORAL_HARVEST("TemporalHarvest", "Woodcutting", AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG),
-  THICK_SKIN("ThickSkin", "Fitness", AbilityType.PASSIVE, Files.FITNESS_CONFIG),
-  TIGHTER_GRIP("TighterGrip", "Unarmed", AbilityType.PASSIVE, Files.UNARMED_CONFIG),
-  TIPPED_ARROWS("TippedArrows", "Archery", AbilityType.PASSIVE, Files.ARCHERY_CONFIG),
-  VAMPIRE("Vampire", "Swords", AbilityType.PASSIVE, Files.SWORDS_CONFIG),
-  WHIRLWIND_STRIKE("WhirlwindStrike", "Axes", AbilityType.ACTIVE, Files.AXES_CONFIG);
+  ARES_BLESSING("AresBlessing", AresBlessing.class, AbilityType.ACTIVE, Files.AXES_CONFIG, true),
+  BERSERK("Berserk", Berserk.class, AbilityType.ACTIVE, Files.UNARMED_CONFIG, true),
+  BLAST_MINING("BlastMining", BlastMining.class, AbilityType.ACTIVE, Files.MINING_CONFIG, true),
+  BLEED_PLUS("Bleed+", BleedPlus.class, AbilityType.PASSIVE, Files.SWORDS_CONFIG, false),
+  BLESSING_OF_APOLLO("BlessingOfApollo", BlessingOfApollo.class, AbilityType.ACTIVE, Files.ARCHERY_CONFIG, true),
+  BLESSING_OF_ARTEMIS("BlessingOfArtemis", BlessingOfArtemis.class, AbilityType.ACTIVE, Files.ARCHERY_CONFIG, true),
+  BLOOD_FRENZY("BloodFrenzy", BloodFrenzy.class, AbilityType.PASSIVE, Files.AXES_CONFIG, false),
+  BULLET_PROOF("BulletProof", BulletProof.class, AbilityType.PASSIVE, Files.FITNESS_CONFIG, false),
+  BURIED_TREASURE("BuriedTreasure", BuriedTreasure.class, AbilityType.PASSIVE, Files.EXCAVATION_CONFIG, false),
+  CIRCES_PROTECTION("CircesProtection", CircesProtection.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
+  CIRCES_RECIPES("CircesRecipes", CircesRecipes.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
+  CIRCES_SHRINE("CircesShrine", CircesShrine.class, AbilityType.ACTIVE, Files.SORCERY_CONFIG, false),
+  COMBO("Combo", Combo.class, AbilityType.PASSIVE, Files.ARCHERY_CONFIG, false),
+  CRIPPLING_BLOW("CripplingBlow", CripplingBlow.class, AbilityType.ACTIVE, Files.AXES_CONFIG, true),
+  CURSE_OF_HADES("CurseOfHades", CurseOfHades.class, AbilityType.ACTIVE, Files.ARCHERY_CONFIG, true),
+  DEEPER_WOUND("DeeperWound", DeeperWound.class, AbilityType.PASSIVE, Files.SWORDS_CONFIG, false),
+  DEMETERS_SHRINE("DemetersShrine", DemetersShrine.class, AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG, true),
+  DENSE_IMPACT("DenseImpact", DenseImpact.class, AbilityType.ACTIVE, Files.UNARMED_CONFIG, true),
+  DIAMOND_FLOWERS("DiamondFlowers", DiamondFlowers.class, AbilityType.PASSIVE, Files.HERBALISM_CONFIG, false),
+  DISARM("Disarm", Disarm.class, AbilityType.PASSIVE, Files.UNARMED_CONFIG, false),
+  DIVINE_ESCAPE("DivineEscape", DivineEscape.class, AbilityType.PASSIVE, Files.FITNESS_CONFIG, true),
+  DODGE("Dodge", Dodge.class, AbilityType.PASSIVE, Files.FITNESS_CONFIG, false),
+  DRYADS_GIFT("DryadsGift", DryadsGift.class, AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG, false),
+  FARMERS_DIET("FarmersDiet", FarmersDiet.class, AbilityType.PASSIVE, Files.HERBALISM_CONFIG, false),
+  FRENZY_DIG("FrenzyDig", FrenzyDig.class, AbilityType.ACTIVE, Files.EXCAVATION_CONFIG, true),
+  HADES_DOMAIN("HadesDomain", HadesDomain.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
+  HAND_DIGGING("HandDigging", HandDigging.class, AbilityType.ACTIVE, Files.EXCAVATION_CONFIG, true),
+  HEAVY_STRIKE("HeavyStrike", HeavyStrike.class, AbilityType.PASSIVE, Files.AXES_CONFIG, false),
+  HEAVY_SWING("HeavySwing", HeavySwing.class, AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG, false),
+  HESPERIDES_APPLES("HesperidesApples", HesperidesApples.class, AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG, true),
+  IRON_ARM("IronArm", IronArm.class, AbilityType.PASSIVE, Files.UNARMED_CONFIG, false),
+  IRON_MUSCLES("IronMuscles", IronMuscles.class, AbilityType.PASSIVE, Files.FITNESS_CONFIG, false),
+  ITS_A_TRIPLE("ItsATriple", ItsATriple.class, AbilityType.PASSIVE, Files.MINING_CONFIG, false),
+  LARGER_SPADE("LargerSpade", LargerSpade.class, AbilityType.PASSIVE, Files.EXCAVATION_CONFIG, false),
+  MAGIC_TOUCH("MagicTouch", MagicTouch.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
+  MANA_AFFINITY("ManaAffinity", ManaAffinity.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
+  MANA_DEPOSIT("ManaDeposit", ManaDeposit.class, AbilityType.PASSIVE, Files.EXCAVATION_CONFIG, false),
+  MASS_HARVEST("MassHarvest", MassHarvest.class, AbilityType.ACTIVE, Files.HERBALISM_CONFIG, true),
+  NATURES_WRATH("NaturesWrath", NaturesWrath.class, AbilityType.ACTIVE, Files.HERBALISM_CONFIG, false),
+  NYMPHS_VITALITY("NymphsVitality", NymphsVitality.class, AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG, false),
+  ORE_SCANNER("OreScanner", OreScanner.class, AbilityType.ACTIVE, Files.MINING_CONFIG, true),
+  PANS_BLESSING("PansBlessing", PansBlessing.class, AbilityType.ACTIVE, Files.HERBALISM_CONFIG, true),
+  PANS_SHRINE("PansShrine", PansShrine.class, AbilityType.ACTIVE, Files.EXCAVATION_CONFIG, true),
+  POSEIDONS_FAVOR("PoseidonsFavor", PoseidonsFavor.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
+  POTION_AFFINITY("PotionAffinity", PotionAffinity.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
+  PUNCTURE("Puncture", Puncture.class, AbilityType.PASSIVE, Files.ARCHERY_CONFIG, false),
+  RAGE_SPIKE("RageSpike", RageSpike.class, AbilityType.ACTIVE, Files.SWORDS_CONFIG, true),
+  REMOTE_TRANSFER("RemoteTransfer", RemoteTransfer.class, AbilityType.PASSIVE, Files.MINING_CONFIG, false),
+  REPLANTING("Replanting", Replanting.class, AbilityType.PASSIVE, Files.HERBALISM_CONFIG, false),
+  RICHER_ORES("RicherOres", RicherOres.class, AbilityType.PASSIVE, Files.MINING_CONFIG, false),
+  RUNNERS_DIET("RunnersDiet", RunnersDiet.class, AbilityType.PASSIVE, Files.FITNESS_CONFIG, false),
+  SEA_GODS_BLESSING("SeaGodsBlessing", SeaGodsBlessing.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
+  SERRATED_STRIKES("SerratedStrikes", SerratedStrikes.class, AbilityType.ACTIVE, Files.SWORDS_CONFIG, true),
+  SHAKE("Shake", Shake.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
+  SHARPER_AXE("SharperAxe", SharperAxe.class, AbilityType.PASSIVE, Files.AXES_CONFIG, false),
+  SMITING_FIST("SmitingFist", SmitingFist.class, AbilityType.ACTIVE, Files.UNARMED_CONFIG, true),
+  SUNKEN_ARMORY("SunkenArmory", SunkenArmory.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
+  SUPER_BREAKER("SuperBreaker", SuperBreaker.class, AbilityType.ACTIVE, Files.MINING_CONFIG, true),
+  SUPER_ROD("SuperRod", SuperRod.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
+  TAINTED_BLADE("TaintedBlade", TaintedBlade.class, AbilityType.ACTIVE, Files.SWORDS_CONFIG, true),
+  TEMPORAL_HARVEST("TemporalHarvest", TemporalHarvest.class, AbilityType.ACTIVE, Files.WOODCUTTING_CONFIG, true),
+  THICK_SKIN("ThickSkin", ThickSkin.class, AbilityType.PASSIVE, Files.FITNESS_CONFIG, false),
+  TIGHTER_GRIP("TighterGrip", TighterGrip.class, AbilityType.PASSIVE, Files.UNARMED_CONFIG, false),
+  TIPPED_ARROWS("TippedArrows", TippedArrows.class, AbilityType.PASSIVE, Files.ARCHERY_CONFIG, false),
+  VAMPIRE("Vampire", Vampire.class, AbilityType.PASSIVE, Files.SWORDS_CONFIG, false),
+  WHIRLWIND_STRIKE("WhirlwindStrike", WhirlwindStrike.class, AbilityType.ACTIVE, Files.AXES_CONFIG, true);
 
   @Getter
   private String name;
   @Getter
-  private String skill;
+  private Class<? extends BaseAbility> clazz;
   @Getter
   private AbilityType abilityType;
   private Files file;
+  @Getter
+  private boolean cooldown;
 
   /**
    * @param name
-   * @param skill
    * @param type
    * @param config
    */
-  UnlockedAbilities(String name, String skill, AbilityType type, Files config){
+  UnlockedAbilities(String name, Class<? extends BaseAbility> clazz, AbilityType type, Files config, boolean cooldown){
     this.name = name;
-    this.skill = skill;
+    this.clazz = clazz;
     this.abilityType = type;
     this.file = config;
+    this.cooldown = cooldown;
   }
 //TODO FIX FILES HERE BOI
+
+  public Skills getSkill() {
+    return Arrays.stream(Skills.values()).filter(skill -> Arrays.asList(skill.getUnlockedAbilities()).contains(this)).findFirst().orElse(null);
+  }
 
   /**
    * Check if the ability is passive or not
@@ -150,7 +168,7 @@ public enum UnlockedAbilities implements GenericAbility {
    */
   public boolean usePerm(){
     return YamlConfiguration.loadConfiguration(new File(McRPG.getInstance().getDataFolder(),
-            File.separator + "skills" + File.separator + this.skill.toLowerCase() + ".yml")).getBoolean("UsePermsForAbility." + name);
+            File.separator + "skills" + File.separator + this.getSkill().getName() + ".yml")).getBoolean("UsePermsForAbility." + name);
   }
 
   /**

@@ -54,7 +54,7 @@ public class EditLoadoutGUI extends GUI{
         UnlockedAbilities unlockedAbilities = player.getAbilityLoadout().get(i);
         BaseAbility ability = player.getBaseAbility(unlockedAbilities);
         
-        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill().getName()));
         String path = ability.getGenericAbility().getName() + "Config.Item.";
         ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
           config.getInt(path + "Amount"));
@@ -105,7 +105,7 @@ public class EditLoadoutGUI extends GUI{
             for(String s : guiConfig.getStringList("AbilityItem.LevelPromptLore")){
               s = s.replace("%Level%", Integer.toString(((UnlockedAbilities) ability.getGenericAbility()).tierUnlockLevel(ability.getCurrentTier() + 1)));
               s = s.replace("%Tier%", Methods.convertToNumeral(ability.getCurrentTier() + 1));
-              s = s.replace("%Skill%", Skills.fromString(ability.getGenericAbility().getSkill()).getDisplayName());
+              s = s.replace("%Skill%", ability.getGenericAbility().getSkill().getDisplayName());
               newLore.add(Methods.color(player.getPlayer(), s));
             }
           }
@@ -171,7 +171,7 @@ public class EditLoadoutGUI extends GUI{
         UnlockedAbilities unlockedAbilities = player.getAbilityLoadout().get(i);
         BaseAbility ability = player.getBaseAbility(unlockedAbilities);
         
-        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill().getName()));
         String path = ability.getGenericAbility().getName() + "Config.Item.";
         ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
           config.getInt(path + "Amount"));

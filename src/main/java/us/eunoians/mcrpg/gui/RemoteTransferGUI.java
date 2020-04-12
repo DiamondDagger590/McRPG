@@ -37,7 +37,7 @@ public class RemoteTransferGUI extends GUI {
     }
 
     buildGUIFunction = (GUIBuilder builder) -> {
-      FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(remoteTransfer.getGenericAbility().getSkill()));
+      FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(remoteTransfer.getGenericAbility().getSkill().getName()));
       FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.REMOTE_TRANSFER_GUI);
       Inventory inv = Bukkit.createInventory(null, config.getInt("RemoteTransferConfig.Tier" + Methods.convertToNumeral(remoteTransfer.getCurrentTier()) + ".InvSize"),
               Methods.color(getPlayer().getPlayer(), guiConfig.getString("Title")));

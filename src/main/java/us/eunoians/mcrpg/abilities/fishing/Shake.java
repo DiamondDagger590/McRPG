@@ -6,6 +6,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class Shake extends BaseAbility {
 
-    public Shake(){ super(UnlockedAbilities.SHAKE, true, false); }
-
+  public Shake(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.SHAKE, isToggled, currentTier);
+  }
 }

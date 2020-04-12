@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class IronArm extends BaseAbility {
 
-  public IronArm(){
-    super(UnlockedAbilities.IRON_ARM, true, false);
+  public IronArm(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.IRON_ARM, isToggled, currentTier);
   }
 }

@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class SuperBreaker extends BaseAbility {
 
-  public SuperBreaker(){
-    super(UnlockedAbilities.SUPER_BREAKER, true, false);
+  public SuperBreaker(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.SUPER_BREAKER, isToggled, currentTier);
   }
 }

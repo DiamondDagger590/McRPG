@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class DenseImpact extends BaseAbility {
 
-  public DenseImpact(){
-    super(UnlockedAbilities.DENSE_IMPACT, true, false);
+  public DenseImpact(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DENSE_IMPACT, isToggled, currentTier);
   }
 }
