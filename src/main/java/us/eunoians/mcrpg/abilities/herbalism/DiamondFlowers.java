@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class DiamondFlowers extends BaseAbility {
 
-  public DiamondFlowers(){
-    super(UnlockedAbilities.DIAMOND_FLOWERS, true, false);
+  public DiamondFlowers(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DIAMOND_FLOWERS, isToggled, currentTier);
   }
 }

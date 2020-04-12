@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class RunnersDiet extends BaseAbility {
 
-  public RunnersDiet(){
-    super(UnlockedAbilities.RUNNERS_DIET, true, false);
+  public RunnersDiet(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.RUNNERS_DIET, isToggled, currentTier);
   }
 }

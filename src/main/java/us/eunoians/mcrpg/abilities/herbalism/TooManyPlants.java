@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.DefaultAbilities;
 
 public class TooManyPlants extends BaseAbility {
 
-  public TooManyPlants(){
-    super(DefaultAbilities.TOO_MANY_PLANTS, true, true);
+  public TooManyPlants(boolean isToggled) {
+    super(DefaultAbilities.TOO_MANY_PLANTS, isToggled, 0, true);
   }
 }

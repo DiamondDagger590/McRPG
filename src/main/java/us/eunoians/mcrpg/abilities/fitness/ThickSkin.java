@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class ThickSkin extends BaseAbility {
 
-  public ThickSkin(){
-    super(UnlockedAbilities.THICK_SKIN, true, false);
+  public ThickSkin(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.THICK_SKIN, isToggled, currentTier);
   }
 }

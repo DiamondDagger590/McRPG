@@ -5,6 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class MagicTouch extends BaseAbility {
 
-    public MagicTouch(){ super(UnlockedAbilities.MAGIC_TOUCH, true, false); }
-
+  public MagicTouch(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.MAGIC_TOUCH, isToggled, currentTier);
+  }
 }

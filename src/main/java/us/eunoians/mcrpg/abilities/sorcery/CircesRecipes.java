@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class CircesRecipes extends BaseAbility {
 
-  public CircesRecipes(){ super(UnlockedAbilities.CIRCES_RECIPES, true, false);}
+  public CircesRecipes(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.CIRCES_RECIPES, isToggled, currentTier);
+  }
 }

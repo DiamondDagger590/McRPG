@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class BleedPlus extends BaseAbility {
 
-  public BleedPlus(){super(UnlockedAbilities.BLEED_PLUS, true, false);}
+  public BleedPlus(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.BLEED_PLUS, isToggled, currentTier);
+  }
 }

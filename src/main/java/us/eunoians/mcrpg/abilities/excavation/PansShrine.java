@@ -4,7 +4,8 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class PansShrine extends BaseAbility {
-  public PansShrine(){
-    super(UnlockedAbilities.PANS_SHRINE, true, false);
+
+  public PansShrine(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.PANS_SHRINE, isToggled, currentTier);
   }
 }

@@ -4,7 +4,8 @@ import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class BuriedTreasure extends BaseAbility {
-  public BuriedTreasure(){
-    super(UnlockedAbilities.BURIED_TREASURE, true, false);
+
+  public BuriedTreasure(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.BURIED_TREASURE, isToggled, currentTier);
   }
 }

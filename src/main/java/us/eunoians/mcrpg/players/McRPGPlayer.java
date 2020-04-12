@@ -208,51 +208,13 @@ public class McRPGPlayer {
         try {
           //if(rs.next()) {
           if(skill.equals(Skills.SWORDS)) {
-            //Initialize bleed
-            Bleed bleed = new Bleed();
-            bleed.setToggled(rs.getBoolean("is_bleed_toggled"));
-            //Initialize Deeper Wound
-            DeeperWound deeperWound = new DeeperWound();
-            deeperWound.setToggled(rs.getBoolean("is_deeper_wound_toggled"));
-            deeperWound.setCurrentTier(rs.getInt("deeper_wound_tier"));
-            if(deeperWound.getCurrentTier() != 0) {
-              deeperWound.setUnlocked(true);
-            }
-            //Initialize Bleed+
-            BleedPlus bleedPlus = new BleedPlus();
-            bleedPlus.setToggled(rs.getBoolean("is_bleed_plus_toggled"));
-            bleedPlus.setCurrentTier(rs.getInt("bleed_plus_tier"));
-            if(bleedPlus.getCurrentTier() != 0) {
-              bleedPlus.setUnlocked(true);
-            }
-            //Initialize Vampire
-            Vampire vampire = new Vampire();
-            vampire.setToggled(rs.getBoolean("is_vampire_toggled"));
-            vampire.setCurrentTier(rs.getInt("vampire_tier"));
-            if(vampire.getCurrentTier() != 0) {
-              vampire.setUnlocked(true);
-            }
-            //Initialize Serrated Strikes
-            SerratedStrikes serratedStrikes = new SerratedStrikes();
-            serratedStrikes.setToggled(rs.getBoolean("is_serrated_strikes_toggled"));
-            serratedStrikes.setCurrentTier(rs.getInt("serrated_strikes_tier"));
-            if(serratedStrikes.getCurrentTier() != 0) {
-              serratedStrikes.setUnlocked(true);
-            }
-            //Initialize Rage Spike
-            RageSpike rageSpike = new RageSpike();
-            rageSpike.setToggled(rs.getBoolean("is_rage_spike_toggled"));
-            rageSpike.setCurrentTier(rs.getInt("rage_spike_tier"));
-            if(rageSpike.getCurrentTier() != 0) {
-              rageSpike.setUnlocked(true);
-            }
-            //Initialize Tainted Blade
-            TaintedBlade taintedBlade = new TaintedBlade();
-            taintedBlade.setToggled(rs.getBoolean("is_tainted_blade_toggled"));
-            taintedBlade.setCurrentTier(rs.getInt("tainted_blade_tier"));
-            if(taintedBlade.getCurrentTier() != 0) {
-              taintedBlade.setUnlocked(true);
-            }
+            Bleed bleed = new Bleed(rs.getBoolean("is_bleed_toggled"));
+            DeeperWound deeperWound = new DeeperWound(rs.getBoolean("is_deeper_wound_toggled"), rs.getInt("deeper_wound_tier"));
+            BleedPlus bleedPlus = new BleedPlus(rs.getBoolean("is_bleed_plus_toggled"), rs.getInt("bleed_plus_tier"));
+            Vampire vampire = new Vampire(rs.getBoolean("is_vampire_toggled"), rs.getInt("vampire_tier"));
+            SerratedStrikes serratedStrikes = new SerratedStrikes(rs.getBoolean("is_serrated_strikes_toggled"), rs.getInt("serrated_strikes_tier"));
+            RageSpike rageSpike = new RageSpike(rs.getBoolean("is_rage_spike_toggled"), rs.getInt("rage_spike_tier"));
+            TaintedBlade taintedBlade = new TaintedBlade(rs.getBoolean("is_tainted_blade_toggled"), rs.getInt("tainted_blade_tier"));
 
             int serratedStrikesCooldown = rs.getInt("serrated_strikes_cooldown");
             int rageSpikeCooldown = rs.getInt("rage_spike_cooldown");
@@ -306,71 +268,16 @@ public class McRPGPlayer {
           }
           //Init mining
           else if(skill.equals(Skills.MINING)) {
-            //Initialize DoubleDrops
-            DoubleDrop doubleDrop = new DoubleDrop();
-            doubleDrop.setToggled(rs.getBoolean("is_double_drop_toggled"));
+            DoubleDrop doubleDrop = new DoubleDrop(rs.getBoolean("is_double_drop_toggled"));
+            RicherOres richerOres = new RicherOres(rs.getBoolean("is_richer_ores_toggled"), rs.getInt("richer_ores_tier"));
+            ItsATriple itsATriple = new ItsATriple(rs.getBoolean("is_its_a_triple_toggled"), rs.getInt("its_a_triple_tier"));
 
-            //Initialize RicherOres
-            RicherOres richerOres = new RicherOres();
-            richerOres.setToggled(rs.getBoolean("is_richer_ores_toggled"));
-            richerOres.setCurrentTier(rs.getInt("richer_ores_tier"));
-            if(richerOres.getCurrentTier() != 0) {
-              richerOres.setUnlocked(true);
-            }
+            RemoteTransfer remoteTransfer = new RemoteTransfer(uuid, rs.getBoolean("is_remote_transfer_toggled"), rs.getInt("remote_transfer_tier"));
+            this.isLinkedToRemoteTransfer = remoteTransfer.isAbilityLinked();
 
-            //Initialize ItsATriple
-            ItsATriple itsATriple = new ItsATriple();
-            itsATriple.setToggled(rs.getBoolean("is_its_a_triple_toggled"));
-            itsATriple.setCurrentTier(rs.getInt("its_a_triple_tier"));
-            if(itsATriple.getCurrentTier() != 0) {
-              itsATriple.setUnlocked(true);
-            }
-
-            //Initialize RemoteTransfer
-            RemoteTransfer remoteTransfer = new RemoteTransfer();
-            remoteTransfer.setToggled(rs.getBoolean("is_remote_transfer_toggled"));
-            remoteTransfer.setCurrentTier(rs.getInt("remote_transfer_tier"));
-            if(remoteTransfer.getCurrentTier() != 0) {
-              remoteTransfer.setUnlocked(true);
-              remoteTransfer.updateBlocks();
-            }
-            if(RemoteTransferTracker.isTracked(uuid)) {
-              remoteTransfer.isAbilityLinked();
-              remoteTransfer.setLinkedChestLocation(RemoteTransferTracker.getLocation(uuid));
-              this.isLinkedToRemoteTransfer = true;
-            }
-            File file = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
-            FileConfiguration remoteTransferFile = YamlConfiguration.loadConfiguration(file);
-            if(remoteTransferFile.contains("RemoteTransferBlocks")) {
-              for(String s : remoteTransferFile.getConfigurationSection("RemoteTransferBlocks").getKeys(false)) {
-                remoteTransfer.getItemsToSync().put(Material.getMaterial(s), remoteTransferFile.getBoolean("RemoteTransferBlocks." + s));
-              }
-            }
-
-
-            //Initialize SuperBreaker
-            SuperBreaker superBreaker = new SuperBreaker();
-            superBreaker.setToggled(rs.getBoolean("is_super_breaker_toggled"));
-            superBreaker.setCurrentTier(rs.getInt("super_breaker_tier"));
-            if(superBreaker.getCurrentTier() != 0) {
-              superBreaker.setUnlocked(true);
-            }
-
-            //Initialize BlastMining
-            BlastMining blastMining = new BlastMining();
-            blastMining.setToggled(rs.getBoolean("is_blast_mining_toggled"));
-            blastMining.setCurrentTier(rs.getInt("blast_mining_tier"));
-            if(blastMining.getCurrentTier() != 0) {
-              blastMining.setUnlocked(true);
-            }
-
-            //Initilize OreScanner
-            OreScanner oreScanner = new OreScanner();
-            oreScanner.setToggled(rs.getBoolean("is_ore_scanner_toggled"));
-            oreScanner.setCurrentTier(rs.getInt("ore_scanner_tier"));
-            if(oreScanner.getCurrentTier() != 0) {
-              oreScanner.setUnlocked(true);
-            }
+            SuperBreaker superBreaker = new SuperBreaker(rs.getBoolean("is_super_breaker_toggled"), rs.getInt("super_breaker_tier"));
+            BlastMining blastMining = new BlastMining(rs.getBoolean("is_blast_mining_toggled"), rs.getInt("blast_mining_tier"));
+            OreScanner oreScanner = new OreScanner(rs.getBoolean("is_ore_scanner_toggled"), rs.getInt("ore_scanner_tier"));
 
             int superBreakerCooldown = rs.getInt("super_breaker_cooldown");
             int blastMiningCooldown = rs.getInt("blast_mining_cooldown");
@@ -422,53 +329,14 @@ public class McRPGPlayer {
           }
           //Init unarmed
           else if(skill.equals(Skills.UNARMED)) {
-            //Initialize Sticky Fingers
-            StickyFingers stickyFingers = new StickyFingers();
-            stickyFingers.setToggled(rs.getBoolean("is_sticky_fingers_toggled"));
+            StickyFingers stickyFingers = new StickyFingers(rs.getBoolean("is_sticky_fingers_toggled"));
+            TighterGrip tighterGrip = new TighterGrip(rs.getBoolean("is_tighter_grip_toggled"), rs.getInt("tighter_grip_tier"));
+            Disarm disarm = new Disarm(rs.getBoolean("is_disarm_toggled"), rs.getInt("disarm_tier"));
+            IronArm ironArm = new IronArm(rs.getBoolean("is_iron_arm_toggled"), rs.getInt("iron_arm_tier"));
+            Berserk berserk = new Berserk(rs.getBoolean("is_berserk_toggled"), rs.getInt("berserk_tier"));
+            SmitingFist smitingFist = new SmitingFist(rs.getBoolean("is_smiting_fist_toggled"), rs.getInt("smiting_fist_tier"));
+            DenseImpact denseImpact = new DenseImpact(rs.getBoolean("is_dense_impact_toggled"), rs.getInt("dense_impact_tier"));
 
-            //Initialize Tighter Grip
-            TighterGrip tighterGrip = new TighterGrip();
-            tighterGrip.setToggled(rs.getBoolean("is_tighter_grip_toggled"));
-            tighterGrip.setCurrentTier(rs.getInt("tighter_grip_tier"));
-            if(tighterGrip.getCurrentTier() != 0) {
-              tighterGrip.setUnlocked(true);
-            }
-
-            //Initialize Disarm
-            Disarm disarm = new Disarm();
-            disarm.setToggled(rs.getBoolean("is_disarm_toggled"));
-            disarm.setCurrentTier(rs.getInt("disarm_tier"));
-            if(disarm.getCurrentTier() != 0) {
-              disarm.setUnlocked(true);
-            }
-            //Initialize Iron Arm
-            IronArm ironArm = new IronArm();
-            ironArm.setToggled(rs.getBoolean("is_iron_arm_toggled"));
-            ironArm.setCurrentTier(rs.getInt("iron_arm_tier"));
-            if(ironArm.getCurrentTier() != 0) {
-              ironArm.setUnlocked(true);
-            }
-            //Initialize Berserk
-            Berserk berserk = new Berserk();
-            berserk.setToggled(rs.getBoolean("is_berserk_toggled"));
-            berserk.setCurrentTier(rs.getInt("berserk_tier"));
-            if(berserk.getCurrentTier() != 0) {
-              berserk.setUnlocked(true);
-            }
-            //Initialize Smiting Fist
-            SmitingFist smitingFist = new SmitingFist();
-            smitingFist.setToggled(rs.getBoolean("is_smiting_fist_toggled"));
-            smitingFist.setCurrentTier(rs.getInt("smiting_fist_tier"));
-            if(smitingFist.getCurrentTier() != 0) {
-              smitingFist.setUnlocked(true);
-            }
-            //Initialize Dense Impact
-            DenseImpact denseImpact = new DenseImpact();
-            denseImpact.setToggled(rs.getBoolean("is_dense_impact_toggled"));
-            denseImpact.setCurrentTier(rs.getInt("dense_impact_tier"));
-            if(denseImpact.getCurrentTier() != 0) {
-              denseImpact.setUnlocked(true);
-            }
             int berserkCooldown = rs.getInt("berserk_cooldown");
             int smitingFistCooldown = rs.getInt("smiting_fist_cooldown");
             int denseImpactCooldown = rs.getInt("dense_impact_cooldown");
@@ -521,51 +389,13 @@ public class McRPGPlayer {
           }
           //Add herbalism
           else if(skill.equals(Skills.HERBALISM)) {
-            //Initialize Too Many Plants
-            TooManyPlants tooManyPlants = new TooManyPlants();
-            tooManyPlants.setToggled(rs.getBoolean("is_too_many_plants_toggled"));
-            //Initialize Replanting
-            Replanting replanting = new Replanting();
-            replanting.setToggled(rs.getBoolean("is_replanting_toggled"));
-            replanting.setCurrentTier(rs.getInt("replanting_tier"));
-            if(replanting.getCurrentTier() != 0) {
-              replanting.setUnlocked(true);
-            }
-            //Initialize Farmers Diet
-            FarmersDiet farmersDiet = new FarmersDiet();
-            farmersDiet.setToggled(rs.getBoolean("is_farmers_diet_toggled"));
-            farmersDiet.setCurrentTier(rs.getInt("farmers_diet_tier"));
-            if(farmersDiet.getCurrentTier() != 0) {
-              farmersDiet.setUnlocked(true);
-            }
-            //Initialize Diamond Flowers
-            DiamondFlowers diamondFlowers = new DiamondFlowers();
-            diamondFlowers.setToggled(rs.getBoolean("is_diamond_flowers_toggled"));
-            diamondFlowers.setCurrentTier(rs.getInt("diamond_flowers_tier"));
-            if(diamondFlowers.getCurrentTier() != 0) {
-              diamondFlowers.setUnlocked(true);
-            }
-            //Initialize Mass Harvest
-            MassHarvest massHarvest = new MassHarvest();
-            massHarvest.setToggled(rs.getBoolean("is_mass_harvest_toggled"));
-            massHarvest.setCurrentTier(rs.getInt("mass_harvest_tier"));
-            if(massHarvest.getCurrentTier() != 0) {
-              massHarvest.setUnlocked(true);
-            }
-            //Initialize Pans Blessing
-            PansBlessing pansBlessing = new PansBlessing();
-            pansBlessing.setToggled(rs.getBoolean("is_pans_blessing_toggled"));
-            pansBlessing.setCurrentTier(rs.getInt("pans_blessing_tier"));
-            if(pansBlessing.getCurrentTier() != 0) {
-              pansBlessing.setUnlocked(true);
-            }
-            //Initialize Natures Wrath
-            NaturesWrath naturesWrath = new NaturesWrath();
-            naturesWrath.setToggled(rs.getBoolean("is_natures_wrath_toggled"));
-            naturesWrath.setCurrentTier(rs.getInt("natures_wrath_tier"));
-            if(naturesWrath.getCurrentTier() != 0) {
-              naturesWrath.setUnlocked(true);
-            }
+            TooManyPlants tooManyPlants = new TooManyPlants(rs.getBoolean("is_too_many_plants_toggled"));
+            Replanting replanting = new Replanting(rs.getBoolean("is_replanting_toggled"), rs.getInt("replanting_tier"));
+            FarmersDiet farmersDiet = new FarmersDiet(rs.getBoolean("is_farmers_diet_toggled"), rs.getInt("farmers_diet_tier"));
+            DiamondFlowers diamondFlowers = new DiamondFlowers(rs.getBoolean("is_diamond_flowers_toggled"), rs.getInt("diamond_flowers_tier"));
+            MassHarvest massHarvest = new MassHarvest(rs.getBoolean("is_mass_harvest_toggled"), rs.getInt("mass_harvest_tier"));
+            PansBlessing pansBlessing = new PansBlessing(rs.getBoolean("is_pans_blessing_toggled"), rs.getInt("pans_blessing_tier"));
+            NaturesWrath naturesWrath = new NaturesWrath(rs.getBoolean("is_natures_wrath_toggled"), rs.getInt("natures_wrath_tier"));
 
             int massHarvestCooldown = rs.getInt("mass_harvest_cooldown");
             int pansBlessingCooldown = rs.getInt("pans_blessing_cooldown");
@@ -613,51 +443,13 @@ public class McRPGPlayer {
           }
           //init archery
           else if(skill.equals(Skills.ARCHERY)) {
-            //Initialize Daze
-            Daze daze = new Daze();
-            daze.setToggled(rs.getBoolean("is_daze_toggled"));
-            //Initialize Combo
-            Combo combo = new Combo();
-            combo.setToggled(rs.getBoolean("is_combo_toggled"));
-            combo.setCurrentTier(rs.getInt("combo_tier"));
-            if(combo.getCurrentTier() != 0) {
-              combo.setUnlocked(true);
-            }
-            //Initialize Puncture
-            Puncture puncture = new Puncture();
-            puncture.setToggled(rs.getBoolean("is_puncture_toggled"));
-            puncture.setCurrentTier(rs.getInt("puncture_tier"));
-            if(puncture.getCurrentTier() != 0) {
-              puncture.setUnlocked(true);
-            }
-            //Initialize Tipped Arrows
-            TippedArrows tippedArrows = new TippedArrows();
-            tippedArrows.setToggled(rs.getBoolean("is_tipped_arrows_toggled"));
-            tippedArrows.setCurrentTier(rs.getInt("tipped_arrows_tier"));
-            if(tippedArrows.getCurrentTier() != 0) {
-              tippedArrows.setUnlocked(true);
-            }
-            //Initialize Blessing of Apollo
-            BlessingOfApollo blessingOfApollo = new BlessingOfApollo();
-            blessingOfApollo.setToggled(rs.getBoolean("is_blessing_of_apollo_toggled"));
-            blessingOfApollo.setCurrentTier(rs.getInt("blessing_of_apollo_tier"));
-            if(blessingOfApollo.getCurrentTier() != 0) {
-              blessingOfApollo.setUnlocked(true);
-            }
-            //Initialize Blessing of Artemis
-            BlessingOfArtemis blessingOfArtemis = new BlessingOfArtemis();
-            blessingOfArtemis.setToggled(rs.getBoolean("is_blessing_of_artemis_toggled"));
-            blessingOfArtemis.setCurrentTier(rs.getInt("blessing_of_artemis_tier"));
-            if(blessingOfArtemis.getCurrentTier() != 0) {
-              blessingOfArtemis.setUnlocked(true);
-            }
-            //Initialize Curse of Hades
-            CurseOfHades curseOfHades = new CurseOfHades();
-            curseOfHades.setToggled(rs.getBoolean("is_curse_of_hades_toggled"));
-            curseOfHades.setCurrentTier(rs.getInt("curse_of_hades_tier"));
-            if(curseOfHades.getCurrentTier() != 0) {
-              curseOfHades.setUnlocked(true);
-            }
+            Daze daze = new Daze(rs.getBoolean("is_daze_toggled"));
+            Combo combo = new Combo(rs.getBoolean("is_combo_toggled"), rs.getInt("combo_tier"));
+            Puncture puncture = new Puncture(rs.getBoolean("is_puncture_toggled"), rs.getInt("puncture_tier"));
+            TippedArrows tippedArrows = new TippedArrows(rs.getBoolean("is_tipped_arrows_toggled"), rs.getInt("tipped_arrows_tier"));
+            BlessingOfApollo blessingOfApollo = new BlessingOfApollo(rs.getBoolean("is_blessing_of_apollo_toggled"), rs.getInt("blessing_of_apollo_tier"));
+            BlessingOfArtemis blessingOfArtemis = new BlessingOfArtemis(rs.getBoolean("is_blessing_of_artemis_toggled"), rs.getInt("blessing_of_artemis_tier"));
+            CurseOfHades curseOfHades = new CurseOfHades(rs.getBoolean("is_curse_of_hades_toggled"), rs.getInt("curse_of_hades_tier"));
 
             int blessingOfApolloCooldown = rs.getInt("blessing_of_apollo_cooldown");
             int blessingOfArtemisCooldown = rs.getInt("blessing_of_artemis_cooldown");
@@ -710,51 +502,13 @@ public class McRPGPlayer {
           }
           //init woodcutting
           else if(skill.equals(Skills.WOODCUTTING)) {
-            //Initialize Extra Lumber
-            ExtraLumber extraLumber = new ExtraLumber();
-            extraLumber.setToggled(rs.getBoolean("is_extra_lumber_toggled"));
-            //Initialize Heavy Swing
-            HeavySwing heavySwing = new HeavySwing();
-            heavySwing.setToggled(rs.getBoolean("is_heavy_swing_toggled"));
-            heavySwing.setCurrentTier(rs.getInt("heavy_swing_tier"));
-            if(heavySwing.getCurrentTier() != 0) {
-              heavySwing.setUnlocked(true);
-            }
-            //Initialize Nymphs Vitality
-            NymphsVitality nymphsVitality = new NymphsVitality();
-            nymphsVitality.setToggled(rs.getBoolean("is_nymphs_vitality_toggled"));
-            nymphsVitality.setCurrentTier(rs.getInt("nymphs_vitality_tier"));
-            if(nymphsVitality.getCurrentTier() != 0) {
-              nymphsVitality.setUnlocked(true);
-            }
-            //Initialize Dryads Gift
-            DryadsGift dryadsGift = new DryadsGift();
-            dryadsGift.setToggled(rs.getBoolean("is_dryads_gift_toggled"));
-            dryadsGift.setCurrentTier(rs.getInt("dryads_gift_tier"));
-            if(dryadsGift.getCurrentTier() != 0) {
-              dryadsGift.setUnlocked(true);
-            }
-            //Initialize Hesperides Apples
-            HesperidesApples hesperidesApples = new HesperidesApples();
-            hesperidesApples.setToggled(rs.getBoolean("is_hesperides_apples_toggled"));
-            hesperidesApples.setCurrentTier(rs.getInt("hesperides_apples_tier"));
-            if(hesperidesApples.getCurrentTier() != 0) {
-              hesperidesApples.setUnlocked(true);
-            }
-            //Initialize Temporal Harvest
-            TemporalHarvest temporalHarvest = new TemporalHarvest();
-            temporalHarvest.setToggled(rs.getBoolean("is_temporal_harvest_toggled"));
-            temporalHarvest.setCurrentTier(rs.getInt("temporal_harvest_tier"));
-            if(temporalHarvest.getCurrentTier() != 0) {
-              temporalHarvest.setUnlocked(true);
-            }
-            //Initialize Demeters Shrine
-            DemetersShrine demetersShrine = new DemetersShrine();
-            demetersShrine.setToggled(rs.getBoolean("is_demeters_shrine_toggled"));
-            demetersShrine.setCurrentTier(rs.getInt("demeters_shrine_tier"));
-            if(demetersShrine.getCurrentTier() != 0) {
-              demetersShrine.setUnlocked(true);
-            }
+            ExtraLumber extraLumber = new ExtraLumber(rs.getBoolean("is_extra_lumber_toggled"));
+            HeavySwing heavySwing = new HeavySwing(rs.getBoolean("is_heavy_swing_toggled"), rs.getInt("heavy_swing_tier"));
+            NymphsVitality nymphsVitality = new NymphsVitality(rs.getBoolean("is_nymphs_vitality_toggled"), rs.getInt("nymphs_vitality_tier"));
+            DryadsGift dryadsGift = new DryadsGift(rs.getBoolean("is_dryads_gift_toggled"), rs.getInt("dryads_gift_tier"));
+            HesperidesApples hesperidesApples = new HesperidesApples(rs.getBoolean("is_hesperides_apples_toggled"), rs.getInt("hesperides_apples_tier"));
+            TemporalHarvest temporalHarvest = new TemporalHarvest(rs.getBoolean("is_temporal_harvest_toggled"), rs.getInt("temporal_harvest_tier"));
+            DemetersShrine demetersShrine = new DemetersShrine(rs.getBoolean("is_demeters_shrine_toggled"), rs.getInt("demeters_shrine_tier"));
 
             int hesperidesApplesCooldown = rs.getInt("hesperides_apples_cooldown");
             int temporalHarvestCooldown = rs.getInt("temporal_harvest_cooldown");
@@ -807,51 +561,13 @@ public class McRPGPlayer {
           }
           //Initialize Fitness
           else if(skill.equals(Skills.FITNESS)) {
-            //Initialize Roll
-            Roll roll = new Roll();
-            roll.setToggled(rs.getBoolean("is_roll_toggled"));
-            //Initialize Thick Skin
-            ThickSkin thickSkin = new ThickSkin();
-            thickSkin.setToggled(rs.getBoolean("is_thick_skin_toggled"));
-            thickSkin.setCurrentTier(rs.getInt("thick_skin_tier"));
-            if(thickSkin.getCurrentTier() != 0) {
-              thickSkin.setUnlocked(true);
-            }
-            //Initialize Bullet Proof
-            BulletProof bulletProof = new BulletProof();
-            bulletProof.setToggled(rs.getBoolean("is_bullet_proof_toggled"));
-            bulletProof.setCurrentTier(rs.getInt("bullet_proof_tier"));
-            if(bulletProof.getCurrentTier() != 0) {
-              bulletProof.setUnlocked(true);
-            }
-            //Initialize Dodge
-            Dodge dodge = new Dodge();
-            dodge.setToggled(rs.getBoolean("is_dodge_toggled"));
-            dodge.setCurrentTier(rs.getInt("dodge_tier"));
-            if(dodge.getCurrentTier() != 0) {
-              dodge.setUnlocked(true);
-            }
-            //Initialize Iron Muscles
-            IronMuscles ironMuscles = new IronMuscles();
-            ironMuscles.setToggled(rs.getBoolean("is_iron_muscles_toggled"));
-            ironMuscles.setCurrentTier(rs.getInt("iron_muscles_tier"));
-            if(ironMuscles.getCurrentTier() != 0) {
-              ironMuscles.setUnlocked(true);
-            }
-            //Initialize Runners Diet
-            RunnersDiet runnersDiet = new RunnersDiet();
-            runnersDiet.setToggled(rs.getBoolean("is_runners_diet_toggled"));
-            runnersDiet.setCurrentTier(rs.getInt("runners_diet_tier"));
-            if(runnersDiet.getCurrentTier() != 0) {
-              runnersDiet.setUnlocked(true);
-            }
-            //Initialize Tainted Blade
-            DivineEscape divineEscape = new DivineEscape();
-            divineEscape.setToggled(rs.getBoolean("is_divine_escape_toggled"));
-            divineEscape.setCurrentTier(rs.getInt("divine_escape_tier"));
-            if(divineEscape.getCurrentTier() != 0) {
-              divineEscape.setUnlocked(true);
-            }
+            Roll roll = new Roll(rs.getBoolean("is_roll_toggled"));
+            ThickSkin thickSkin = new ThickSkin(rs.getBoolean("is_thick_skin_toggled"), rs.getInt("thick_skin_tier"));
+            BulletProof bulletProof = new BulletProof(rs.getBoolean("is_bullet_proof_toggled"), rs.getInt("bullet_proof_tier"));
+            Dodge dodge = new Dodge(rs.getBoolean("is_dodge_toggled"), rs.getInt("dodge_tier"));
+            IronMuscles ironMuscles = new IronMuscles(rs.getBoolean("is_iron_muscles_toggled"), rs.getInt("iron_muscles_tier"));
+            RunnersDiet runnersDiet = new RunnersDiet(rs.getBoolean("is_runners_diet_toggled"), rs.getInt("runners_diet_tier"));
+            DivineEscape divineEscape = new DivineEscape(rs.getBoolean("is_divine_escape_toggled"), rs.getInt("divine_escape_tier"));
 
             int divineEscapeCooldown = rs.getInt("divine_escape_cooldown");
 
@@ -893,51 +609,13 @@ public class McRPGPlayer {
           }
           //init excavation
           else if(skill.equals(Skills.EXCAVATION)) {
-            //Initialize Extraction
-            Extraction extraction = new Extraction();
-            extraction.setToggled(rs.getBoolean("is_extraction_toggled"));
-            //Initialize Buried Treasure
-            BuriedTreasure buriedTreasure = new BuriedTreasure();
-            buriedTreasure.setToggled(rs.getBoolean("is_buried_treasure_toggled"));
-            buriedTreasure.setCurrentTier(rs.getInt("buried_treasure_tier"));
-            if(buriedTreasure.getCurrentTier() != 0) {
-              buriedTreasure.setUnlocked(true);
-            }
-            //Initialize Larger Spade
-            LargerSpade largerSpade = new LargerSpade();
-            largerSpade.setToggled(rs.getBoolean("is_larger_spade_toggled"));
-            largerSpade.setCurrentTier(rs.getInt("larger_spade_tier"));
-            if(largerSpade.getCurrentTier() != 0) {
-              largerSpade.setUnlocked(true);
-            }
-            //Initialize Mana Deposit
-            ManaDeposit manaDeposit = new ManaDeposit();
-            manaDeposit.setToggled(rs.getBoolean("is_mana_deposit_toggled"));
-            manaDeposit.setCurrentTier(rs.getInt("mana_deposit_tier"));
-            if(manaDeposit.getCurrentTier() != 0) {
-              manaDeposit.setUnlocked(true);
-            }
-            //Initialize Hand Digging
-            HandDigging handDigging = new HandDigging();
-            handDigging.setToggled(rs.getBoolean("is_hand_digging_toggled"));
-            handDigging.setCurrentTier(rs.getInt("hand_digging_tier"));
-            if(handDigging.getCurrentTier() != 0) {
-              handDigging.setUnlocked(true);
-            }
-            //Initialize Pans Shrine
-            PansShrine pansShrine = new PansShrine();
-            pansShrine.setToggled(rs.getBoolean("is_pans_shrine_toggled"));
-            pansShrine.setCurrentTier(rs.getInt("pans_shrine_tier"));
-            if(pansShrine.getCurrentTier() != 0) {
-              pansShrine.setUnlocked(true);
-            }
-            //Initialize Frenzy Dig
-            FrenzyDig frenzyDig = new FrenzyDig();
-            frenzyDig.setToggled(rs.getBoolean("is_frenzy_dig_toggled"));
-            frenzyDig.setCurrentTier(rs.getInt("frenzy_dig_tier"));
-            if(frenzyDig.getCurrentTier() != 0) {
-              frenzyDig.setUnlocked(true);
-            }
+            Extraction extraction = new Extraction(rs.getBoolean("is_extraction_toggled"));
+            BuriedTreasure buriedTreasure = new BuriedTreasure(rs.getBoolean("is_buried_treasure_toggled"), rs.getInt("buried_treasure_tier"));
+            LargerSpade largerSpade = new LargerSpade(rs.getBoolean("is_larger_spade_toggled"), rs.getInt("larger_spade_tier"));
+            ManaDeposit manaDeposit = new ManaDeposit(rs.getBoolean("is_mana_deposit_toggled"), rs.getInt("mana_deposit_tier"));
+            HandDigging handDigging = new HandDigging(rs.getBoolean("is_hand_digging_toggled"), rs.getInt("hand_digging_tier"));
+            PansShrine pansShrine = new PansShrine(rs.getBoolean("is_pans_shrine_toggled"), rs.getInt("pans_shrine_tier"));
+            FrenzyDig frenzyDig = new FrenzyDig(rs.getBoolean("is_frenzy_dig_toggled"), rs.getInt("frenzy_dig_tier"));
 
             int handDiggingCooldown = rs.getInt("hand_digging_cooldown");
             int pansShrineCooldown = rs.getInt("pans_shrine_cooldown");
@@ -990,51 +668,13 @@ public class McRPGPlayer {
           }
           //init axes
           else if(skill.equals(Skills.AXES)) {
-            //Initialize Shred
-            Shred shred = new Shred();
-            shred.setToggled(rs.getBoolean("is_shred_toggled"));
-            //Initialize Heavy Strike
-            HeavyStrike heavyStrike = new HeavyStrike();
-            heavyStrike.setToggled(rs.getBoolean("is_heavy_strike_toggled"));
-            heavyStrike.setCurrentTier(rs.getInt("heavy_strike_tier"));
-            if(heavyStrike.getCurrentTier() != 0) {
-              heavyStrike.setUnlocked(true);
-            }
-            //Initialize Blood Frenzy
-            BloodFrenzy bloodFrenzy = new BloodFrenzy();
-            bloodFrenzy.setToggled(rs.getBoolean("is_blood_frenzy_toggled"));
-            bloodFrenzy.setCurrentTier(rs.getInt("blood_frenzy_tier"));
-            if(bloodFrenzy.getCurrentTier() != 0) {
-              bloodFrenzy.setUnlocked(true);
-            }
-            //Initialize Sharper Axe
-            SharperAxe sharperAxe = new SharperAxe();
-            sharperAxe.setToggled(rs.getBoolean("is_sharper_axe_toggled"));
-            sharperAxe.setCurrentTier(rs.getInt("sharper_axe_tier"));
-            if(sharperAxe.getCurrentTier() != 0) {
-              sharperAxe.setUnlocked(true);
-            }
-            //Initialize Whirlwind Strike
-            WhirlwindStrike whirlwindStrike = new WhirlwindStrike();
-            whirlwindStrike.setToggled(rs.getBoolean("is_whirlwind_strike_toggled"));
-            whirlwindStrike.setCurrentTier(rs.getInt("whirlwind_strike_tier"));
-            if(whirlwindStrike.getCurrentTier() != 0) {
-              whirlwindStrike.setUnlocked(true);
-            }
-            //Initialize Ares Blessing
-            AresBlessing aresBlessing = new AresBlessing();
-            aresBlessing.setToggled(rs.getBoolean("is_ares_blessing_toggled"));
-            aresBlessing.setCurrentTier(rs.getInt("ares_blessing_tier"));
-            if(aresBlessing.getCurrentTier() != 0) {
-              aresBlessing.setUnlocked(true);
-            }
-            //Initialize Crippling Blow
-            CripplingBlow cripplingBlow = new CripplingBlow();
-            cripplingBlow.setToggled(rs.getBoolean("is_crippling_blow_toggled"));
-            cripplingBlow.setCurrentTier(rs.getInt("crippling_blow_tier"));
-            if(cripplingBlow.getCurrentTier() != 0) {
-              cripplingBlow.setUnlocked(true);
-            }
+            Shred shred = new Shred(rs.getBoolean("is_shred_toggled"));
+            HeavyStrike heavyStrike = new HeavyStrike(rs.getBoolean("is_heavy_strike_toggled"), rs.getInt("heavy_strike_tier"));
+            BloodFrenzy bloodFrenzy = new BloodFrenzy(rs.getBoolean("is_blood_frenzy_toggled"), rs.getInt("blood_frenzy_tier"));
+            SharperAxe sharperAxe = new SharperAxe(rs.getBoolean("is_sharper_axe_toggled"), rs.getInt("sharper_axe_tier"));
+            WhirlwindStrike whirlwindStrike = new WhirlwindStrike(rs.getBoolean("is_whirlwind_strike_toggled"), rs.getInt("whirlwind_strike_tier"));
+            AresBlessing aresBlessing = new AresBlessing(rs.getBoolean("is_ares_blessing_toggled"), rs.getInt("ares_blessing_tier"));
+            CripplingBlow cripplingBlow = new CripplingBlow(rs.getBoolean("is_crippling_blow_toggled"), rs.getInt("crippling_blow_tier"));
 
             int whirlwindStrikeCooldown = rs.getInt("whirlwind_strike_cooldown");
             int aresBlessingCooldown = rs.getInt("ares_blessing_cooldown");
@@ -1087,51 +727,13 @@ public class McRPGPlayer {
           }
           //init fishing
           else if(skill.equals(Skills.FISHING)) {
-            //Initialize Great Rod
-            GreatRod greatRod = new GreatRod();
-            greatRod.setToggled(rs.getBoolean("is_great_rod_toggled"));
-            //Initialize Poseidons Favor
-            PoseidonsFavor poseidonsFavor = new PoseidonsFavor();
-            poseidonsFavor.setToggled(rs.getBoolean("is_poseidons_favor_toggled"));
-            poseidonsFavor.setCurrentTier(rs.getInt("poseidons_favor_tier"));
-            if(poseidonsFavor.getCurrentTier() != 0) {
-              poseidonsFavor.setUnlocked(true);
-            }
-            //Initialize Magic Touch
-            MagicTouch magicTouch = new MagicTouch();
-            magicTouch.setToggled(rs.getBoolean("is_magic_touch_toggled"));
-            magicTouch.setCurrentTier(rs.getInt("magic_touch_tier"));
-            if(magicTouch.getCurrentTier() != 0) {
-              magicTouch.setUnlocked(true);
-            }
-            //Initialize Sea Gods Blessing
-            SeaGodsBlessing seaGodsBlessing = new SeaGodsBlessing();
-            seaGodsBlessing.setToggled(rs.getBoolean("is_sea_gods_blessing_toggled"));
-            seaGodsBlessing.setCurrentTier(rs.getInt("sea_gods_blessing_tier"));
-            if(seaGodsBlessing.getCurrentTier() != 0) {
-              seaGodsBlessing.setUnlocked(true);
-            }
-            //Initialize Sunken Armory
-            SunkenArmory sunkenArmory = new SunkenArmory();
-            sunkenArmory.setToggled(rs.getBoolean("is_sunken_armory_toggled"));
-            sunkenArmory.setCurrentTier(rs.getInt("sunken_armory_tier"));
-            if(sunkenArmory.getCurrentTier() != 0) {
-              sunkenArmory.setUnlocked(true);
-            }
-            //Initialize Shake
-            Shake shake = new Shake();
-            shake.setToggled(rs.getBoolean("is_shake_toggled"));
-            shake.setCurrentTier(rs.getInt("shake_tier"));
-            if(shake.getCurrentTier() != 0) {
-              shake.setUnlocked(true);
-            }
-            //Initialize Super Rod
-            SuperRod superRod = new SuperRod();
-            superRod.setToggled(rs.getBoolean("is_super_rod_toggled"));
-            superRod.setCurrentTier(rs.getInt("super_rod_tier"));
-            if(superRod.getCurrentTier() != 0) {
-              superRod.setUnlocked(true);
-            }
+            GreatRod greatRod = new GreatRod(rs.getBoolean("is_great_rod_toggled"));
+            PoseidonsFavor poseidonsFavor = new PoseidonsFavor(rs.getBoolean("is_poseidons_favor_toggled"), rs.getInt("poseidons_favor_tier"));
+            MagicTouch magicTouch = new MagicTouch(rs.getBoolean("is_magic_touch_toggled"), rs.getInt("magic_touch_tier"));
+            SeaGodsBlessing seaGodsBlessing = new SeaGodsBlessing(rs.getBoolean("is_sea_gods_blessing_toggled"), rs.getInt("sea_gods_blessing_tier"));
+            SunkenArmory sunkenArmory = new SunkenArmory(rs.getBoolean("is_sunken_armory_toggled"), rs.getInt("sunken_armory_tier"));
+            Shake shake = new Shake(rs.getBoolean("is_shake_toggled"), rs.getInt("shake_tier"));
+            SuperRod superRod = new SuperRod(rs.getBoolean("is_super_rod_toggled"), rs.getInt("super_rod_tier"));
 
             if(rs.getBoolean("is_poseidons_favor_pending")) {
               pendingUnlockAbilities.add(UnlockedAbilities.POSEIDONS_FAVOR);
@@ -1164,51 +766,13 @@ public class McRPGPlayer {
           }
           //init sorcery
           else if(skill.equals(Skills.SORCERY)) {
-            //Initialize Hasty Brew
-            HastyBrew hastyBrew = new HastyBrew();
-            hastyBrew.setToggled(rs.getBoolean("is_hasty_brew_toggled"));
-            //Initialize Circes Recipes
-            CircesRecipes circesRecipes = new CircesRecipes();
-            circesRecipes.setToggled(rs.getBoolean("is_circes_recipes_toggled"));
-            circesRecipes.setCurrentTier(rs.getInt("circes_recipes_tier"));
-            if(circesRecipes.getCurrentTier() != 0) {
-              circesRecipes.setUnlocked(true);
-            }
-            //Initialize Potion Affinity
-            PotionAffinity potionAffinity = new PotionAffinity();
-            potionAffinity.setToggled(rs.getBoolean("is_potion_affinity_toggled"));
-            potionAffinity.setCurrentTier(rs.getInt("potion_affinity_tier"));
-            if(potionAffinity.getCurrentTier() != 0) {
-              potionAffinity.setUnlocked(true);
-            }
-            //Initialize Mana Affinity
-            ManaAffinity manaAffinity = new ManaAffinity();
-            manaAffinity.setToggled(rs.getBoolean("is_mana_affinity_toggled"));
-            manaAffinity.setCurrentTier(rs.getInt("mana_affinity_tier"));
-            if(manaAffinity.getCurrentTier() != 0) {
-              manaAffinity.setUnlocked(true);
-            }
-            //Initialize Circes Protection
-            CircesProtection circesProtection = new CircesProtection();
-            circesProtection.setToggled(rs.getBoolean("is_circes_protection_toggled"));
-            circesProtection.setCurrentTier(rs.getInt("circes_protection_tier"));
-            if(circesProtection.getCurrentTier() != 0) {
-              circesProtection.setUnlocked(true);
-            }
-            //Initialize Hades Domain
-            HadesDomain hadesDomain = new HadesDomain();
-            hadesDomain.setToggled(rs.getBoolean("is_hades_domain_toggled"));
-            hadesDomain.setCurrentTier(rs.getInt("hades_domain_tier"));
-            if(hadesDomain.getCurrentTier() != 0) {
-              hadesDomain.setUnlocked(true);
-            }
-            //Initialize Circes Shrine
-            CircesShrine circesShrine = new CircesShrine();
-            circesShrine.setToggled(rs.getBoolean("is_circes_shrine_toggled"));
-            circesShrine.setCurrentTier(rs.getInt("circes_shrine_tier"));
-            if(circesShrine.getCurrentTier() != 0) {
-              circesShrine.setUnlocked(true);
-            }
+            HastyBrew hastyBrew = new HastyBrew(rs.getBoolean("is_hasty_brew_toggled"));
+            CircesRecipes circesRecipes = new CircesRecipes(rs.getBoolean("is_circes_recipes_toggled"), rs.getInt("circes_recipes_tier"));
+            PotionAffinity potionAffinity = new PotionAffinity(rs.getBoolean("is_potion_affinity_toggled"), rs.getInt("potion_affinity_tier"));
+            ManaAffinity manaAffinity = new ManaAffinity(rs.getBoolean("is_mana_affinity_toggled"), rs.getInt("mana_affinity_tier"));
+            CircesProtection circesProtection = new CircesProtection(rs.getBoolean("is_circes_protection_toggled"), rs.getInt("circes_protection_tier"));
+            HadesDomain hadesDomain = new HadesDomain(rs.getBoolean("is_hades_domain_toggled"), rs.getInt("hades_domain_tier"));
+            CircesShrine circesShrine = new CircesShrine(rs.getBoolean("is_circes_shrine_toggled"), rs.getInt("circes_shrine_tier"));
 
             if(rs.getBoolean("is_circes_recipes_pending")) {
               pendingUnlockAbilities.add(UnlockedAbilities.CIRCES_RECIPES);

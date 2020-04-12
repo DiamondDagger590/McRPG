@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class HesperidesApples extends BaseAbility {
 
-  public HesperidesApples(){super(UnlockedAbilities.HESPERIDES_APPLES, true, false);}
+  public HesperidesApples(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.HESPERIDES_APPLES, isToggled, currentTier);
+  }
 }

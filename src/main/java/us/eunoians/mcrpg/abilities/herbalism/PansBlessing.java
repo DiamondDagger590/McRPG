@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class PansBlessing extends BaseAbility {
 
-  public PansBlessing(){
-    super(UnlockedAbilities.PANS_BLESSING, true, false);
+  public PansBlessing(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.PANS_BLESSING, isToggled, currentTier);
   }
 }

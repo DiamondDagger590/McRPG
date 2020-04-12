@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class TippedArrows extends BaseAbility {
 
-  public TippedArrows(){
-    super(UnlockedAbilities.TIPPED_ARROWS, true, false);
+  public TippedArrows(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.TIPPED_ARROWS, isToggled, currentTier);
   }
 }
