@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.abilities;
 
 import lombok.Getter;
 import lombok.Setter;
-import us.eunoians.mcrpg.database.tables.AbilityDbMapping;
 import us.eunoians.mcrpg.types.GenericAbility;
 
 public abstract class BaseAbility {
