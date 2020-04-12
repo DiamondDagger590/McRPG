@@ -188,12 +188,12 @@ public class ShootEvent implements Listener {
           }
           if(UnlockedAbilities.TIPPED_ARROWS.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.TIPPED_ARROWS) && mp.getBaseAbility(UnlockedAbilities.TIPPED_ARROWS).isToggled()){
             int chance = archeryConfiguration.getInt("TippedArrowsConfig.Tier" +
-                    Methods.convertToNumeral(mp.getBaseAbility(UnlockedAbilities.PUNCTURE).getCurrentTier()) + ".ActivationChance") * 1000;
+                    Methods.convertToNumeral(mp.getBaseAbility(UnlockedAbilities.TIPPED_ARROWS).getCurrentTier()) + ".ActivationChance") * 1000;
             Random rand = new Random();
             int val = rand.nextInt(100000);
             if(chance >= val){
               List<String> effects = archeryConfiguration.getStringList("TippedArrowsConfig.Tier" +
-                      Methods.convertToNumeral(mp.getBaseAbility(UnlockedAbilities.PUNCTURE).getCurrentTier()) + ".PossibleEffects");
+                      Methods.convertToNumeral(mp.getBaseAbility(UnlockedAbilities.TIPPED_ARROWS).getCurrentTier()) + ".PossibleEffects");
               int i = rand.nextInt(effects.size());
               TippedArrowsEvent tippedArrowsEvent = new TippedArrowsEvent(mp, (TippedArrows) mp.getBaseAbility(UnlockedAbilities.TIPPED_ARROWS), effects.get(i));
               if(!tippedArrowsEvent.isCancelled()) {
