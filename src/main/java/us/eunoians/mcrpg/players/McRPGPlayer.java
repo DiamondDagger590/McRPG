@@ -228,7 +228,7 @@ public class McRPGPlayer {
                   }
                 }
 
-                if (rs.getBoolean(ability.name().toLowerCase() + "_pending")) { // set up pending unlock
+                if (rs.getBoolean("is_" + ability.name().toLowerCase() + "_pending")) { // set up pending unlock
                   pendingUnlockAbilities.add((UnlockedAbilities) ability);
                 }
               }
