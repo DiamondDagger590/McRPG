@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class FarmersDiet extends BaseAbility {
 
-  public FarmersDiet(){
-    super(UnlockedAbilities.FARMERS_DIET, true, false);
+  public FarmersDiet(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.FARMERS_DIET, isToggled, currentTier);
   }
 }

@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class DemetersShrine extends BaseAbility {
 
-  public DemetersShrine(){super(UnlockedAbilities.DEMETERS_SHRINE, true, false);}
+  public DemetersShrine(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DEMETERS_SHRINE, isToggled, currentTier);
+  }
 }

@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class DivineEscape extends BaseAbility {
 
-  public DivineEscape(){
-    super(UnlockedAbilities.DIVINE_ESCAPE, true, false);
+  public DivineEscape(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DIVINE_ESCAPE, isToggled, currentTier);
   }
 }

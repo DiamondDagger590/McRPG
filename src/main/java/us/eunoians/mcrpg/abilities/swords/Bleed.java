@@ -20,8 +20,8 @@ public class Bleed extends BaseAbility {
   @Setter
   private double bonusChance = 0.0;
 
-  public Bleed() {
-    super(DefaultAbilities.BLEED, true, true);
+  public Bleed(boolean isToggled) {
+    super(DefaultAbilities.BLEED, isToggled, 0, true);
     targeted = new ArrayList<>();
   }
 

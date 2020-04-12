@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class OreScanner extends BaseAbility {
 
-  public OreScanner(){
-    super(UnlockedAbilities.ORE_SCANNER, true, false);
+  public OreScanner(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.ORE_SCANNER, isToggled, currentTier);
   }
 }

@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class ItsATriple extends BaseAbility {
 
-  public ItsATriple(){
-    super(UnlockedAbilities.ITS_A_TRIPLE, true, false);
+  public ItsATriple(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.ITS_A_TRIPLE, isToggled, currentTier);
   }
 }

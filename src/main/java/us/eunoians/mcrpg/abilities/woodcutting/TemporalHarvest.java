@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class TemporalHarvest extends BaseAbility {
 
-  public TemporalHarvest(){super(UnlockedAbilities.TEMPORAL_HARVEST, true, false);}
+  public TemporalHarvest(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.TEMPORAL_HARVEST, isToggled, currentTier);
+  }
 }

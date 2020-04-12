@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class DryadsGift extends BaseAbility {
 
-  public DryadsGift(){super(UnlockedAbilities.DRYADS_GIFT, true, false);}
+  public DryadsGift(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DRYADS_GIFT, isToggled, currentTier);
+  }
 }

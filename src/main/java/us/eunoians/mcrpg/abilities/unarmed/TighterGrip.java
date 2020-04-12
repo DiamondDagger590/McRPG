@@ -5,8 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class TighterGrip extends BaseAbility {
 
-  public TighterGrip(){
-    super(UnlockedAbilities.TIGHTER_GRIP, true, false);
-
+  public TighterGrip(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.TIGHTER_GRIP, isToggled, currentTier);
   }
 }

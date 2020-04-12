@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class SuperRod extends BaseAbility {
 
-    public SuperRod(){ super(UnlockedAbilities.SUPER_ROD, true, false); }
+  public SuperRod(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.SUPER_ROD, isToggled, currentTier);
+  }
 }

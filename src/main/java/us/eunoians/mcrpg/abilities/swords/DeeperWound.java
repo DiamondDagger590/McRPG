@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class DeeperWound extends BaseAbility {
 
-  public DeeperWound(){
-    super(UnlockedAbilities.DEEPER_WOUND, true, false);
+  public DeeperWound(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DEEPER_WOUND, isToggled, currentTier);
   }
 }

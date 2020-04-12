@@ -5,6 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class PoseidonsFavor extends BaseAbility {
 
-    public PoseidonsFavor(){ super(UnlockedAbilities.POSEIDONS_FAVOR, true, false); }
-
+  public PoseidonsFavor(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.POSEIDONS_FAVOR, isToggled, currentTier);
+  }
 }

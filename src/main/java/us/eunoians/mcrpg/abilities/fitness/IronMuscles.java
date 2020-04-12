@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class IronMuscles extends BaseAbility {
 
-  public IronMuscles(){
-    super(UnlockedAbilities.IRON_MUSCLES, true, false);
+  public IronMuscles(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.IRON_MUSCLES, isToggled, currentTier);
   }
 }

@@ -11,7 +11,7 @@ public class Disarm extends BaseAbility {
   @Setter
   private double bonusChance;
 
-  public Disarm(){
-    super(UnlockedAbilities.DISARM, true, false);
+  public Disarm(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DISARM, isToggled, currentTier);
   }
 }

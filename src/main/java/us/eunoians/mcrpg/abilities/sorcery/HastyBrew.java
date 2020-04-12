@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.DefaultAbilities;
 
 public class HastyBrew extends BaseAbility {
 
-  public HastyBrew(){ super(DefaultAbilities.HASTY_BREW, true, true); }
+  public HastyBrew(boolean isToggled) {
+    super(DefaultAbilities.HASTY_BREW, isToggled, 0, true);
+  }
 }

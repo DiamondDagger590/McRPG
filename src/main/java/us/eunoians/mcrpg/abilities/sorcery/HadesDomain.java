@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class HadesDomain extends BaseAbility {
 
-  public HadesDomain(){ super(UnlockedAbilities.HADES_DOMAIN, true, false); }
+  public HadesDomain(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.HADES_DOMAIN, isToggled, currentTier);
+  }
 }

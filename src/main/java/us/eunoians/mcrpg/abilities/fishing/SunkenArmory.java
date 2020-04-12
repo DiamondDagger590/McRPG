@@ -5,6 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class SunkenArmory extends BaseAbility {
 
-    public SunkenArmory(){ super(UnlockedAbilities.SUNKEN_ARMORY, true, false); }
-
+  public SunkenArmory(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.SUNKEN_ARMORY, isToggled, currentTier);
+  }
 }

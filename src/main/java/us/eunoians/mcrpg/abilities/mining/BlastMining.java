@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class BlastMining extends BaseAbility {
 
-  public BlastMining(){
-    super(UnlockedAbilities.BLAST_MINING, true, false);
+  public BlastMining(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.BLAST_MINING, isToggled, currentTier);
   }
 }

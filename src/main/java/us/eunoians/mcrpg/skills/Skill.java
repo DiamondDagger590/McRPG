@@ -90,7 +90,7 @@ public abstract class Skill {
    * @return The default ability for this skill
    */
   public BaseAbility getDefaultAbility(){
-    return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
+    return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getType()));
   }
 
   /**

@@ -317,7 +317,7 @@ public class McAdmin implements CommandExecutor {
                 catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
@@ -349,7 +349,7 @@ public class McAdmin implements CommandExecutor {
               }
               else {
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
@@ -859,7 +859,7 @@ public class McAdmin implements CommandExecutor {
                 skill.setCurrentExp(0);
                 skill.setCurrentLevel(0);
                 skill.updateExpToLevel();
-                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase(skill.getName())).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
                 for(UnlockedAbilities remove : toRemove) {
                   mp.getAbilityLoadout().remove(remove);
                 }
@@ -891,7 +891,7 @@ public class McAdmin implements CommandExecutor {
                     RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                   }
                 }
-                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase(skill.getName())).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
                 for(UnlockedAbilities remove : toRemove) {
                   mp.getAbilityLoadout().remove(remove);
                 }
@@ -1324,7 +1324,7 @@ public class McAdmin implements CommandExecutor {
                 catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
@@ -1356,7 +1356,7 @@ public class McAdmin implements CommandExecutor {
               }
               else {
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(Skills.fromString(ability.getSkill()))) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
@@ -1826,7 +1826,7 @@ public class McAdmin implements CommandExecutor {
                 skill.setCurrentExp(0);
                 skill.setCurrentLevel(0);
                 skill.updateExpToLevel();
-                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase(skill.getName())).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
                 for(UnlockedAbilities remove : toRemove) {
                   mp.getAbilityLoadout().remove(remove);
                 }
@@ -1858,7 +1858,7 @@ public class McAdmin implements CommandExecutor {
                     RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                   }
                 }
-                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equalsIgnoreCase(skill.getName())).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
                 for(UnlockedAbilities remove : toRemove) {
                   mp.getAbilityLoadout().remove(remove);
                 }

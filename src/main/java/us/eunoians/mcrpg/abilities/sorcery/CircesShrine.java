@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class CircesShrine extends BaseAbility {
 
-  public CircesShrine(){ super(UnlockedAbilities.CIRCES_SHRINE, true, false); }
+  public CircesShrine(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.CIRCES_SHRINE, isToggled, currentTier);
+  }
 }
