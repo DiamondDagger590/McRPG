@@ -10,15 +10,111 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import sun.misc.Queue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
+import us.eunoians.mcrpg.abilities.archery.BlessingOfApollo;
+import us.eunoians.mcrpg.abilities.archery.BlessingOfArtemis;
+import us.eunoians.mcrpg.abilities.archery.Combo;
+import us.eunoians.mcrpg.abilities.archery.CurseOfHades;
+import us.eunoians.mcrpg.abilities.archery.Daze;
+import us.eunoians.mcrpg.abilities.archery.Puncture;
+import us.eunoians.mcrpg.abilities.archery.TippedArrows;
+import us.eunoians.mcrpg.abilities.axes.AresBlessing;
+import us.eunoians.mcrpg.abilities.axes.BloodFrenzy;
+import us.eunoians.mcrpg.abilities.axes.CripplingBlow;
+import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
+import us.eunoians.mcrpg.abilities.axes.SharperAxe;
+import us.eunoians.mcrpg.abilities.axes.Shred;
+import us.eunoians.mcrpg.abilities.axes.WhirlwindStrike;
+import us.eunoians.mcrpg.abilities.excavation.BuriedTreasure;
+import us.eunoians.mcrpg.abilities.excavation.Extraction;
+import us.eunoians.mcrpg.abilities.excavation.FrenzyDig;
+import us.eunoians.mcrpg.abilities.excavation.HandDigging;
+import us.eunoians.mcrpg.abilities.excavation.LargerSpade;
+import us.eunoians.mcrpg.abilities.excavation.ManaDeposit;
+import us.eunoians.mcrpg.abilities.excavation.PansShrine;
+import us.eunoians.mcrpg.abilities.fishing.GreatRod;
+import us.eunoians.mcrpg.abilities.fishing.MagicTouch;
+import us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor;
+import us.eunoians.mcrpg.abilities.fishing.SeaGodsBlessing;
+import us.eunoians.mcrpg.abilities.fishing.Shake;
+import us.eunoians.mcrpg.abilities.fishing.SunkenArmory;
+import us.eunoians.mcrpg.abilities.fishing.SuperRod;
+import us.eunoians.mcrpg.abilities.fitness.BulletProof;
+import us.eunoians.mcrpg.abilities.fitness.DivineEscape;
+import us.eunoians.mcrpg.abilities.fitness.Dodge;
+import us.eunoians.mcrpg.abilities.fitness.IronMuscles;
+import us.eunoians.mcrpg.abilities.fitness.Roll;
+import us.eunoians.mcrpg.abilities.fitness.RunnersDiet;
+import us.eunoians.mcrpg.abilities.fitness.ThickSkin;
+import us.eunoians.mcrpg.abilities.herbalism.DiamondFlowers;
+import us.eunoians.mcrpg.abilities.herbalism.FarmersDiet;
+import us.eunoians.mcrpg.abilities.herbalism.MassHarvest;
+import us.eunoians.mcrpg.abilities.herbalism.NaturesWrath;
+import us.eunoians.mcrpg.abilities.herbalism.PansBlessing;
+import us.eunoians.mcrpg.abilities.herbalism.Replanting;
+import us.eunoians.mcrpg.abilities.herbalism.TooManyPlants;
+import us.eunoians.mcrpg.abilities.mining.BlastMining;
+import us.eunoians.mcrpg.abilities.mining.DoubleDrop;
+import us.eunoians.mcrpg.abilities.mining.ItsATriple;
+import us.eunoians.mcrpg.abilities.mining.OreScanner;
+import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
+import us.eunoians.mcrpg.abilities.mining.RicherOres;
+import us.eunoians.mcrpg.abilities.mining.SuperBreaker;
+import us.eunoians.mcrpg.abilities.sorcery.CircesProtection;
+import us.eunoians.mcrpg.abilities.sorcery.CircesRecipes;
+import us.eunoians.mcrpg.abilities.sorcery.CircesShrine;
+import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
+import us.eunoians.mcrpg.abilities.sorcery.HastyBrew;
+import us.eunoians.mcrpg.abilities.sorcery.ManaAffinity;
+import us.eunoians.mcrpg.abilities.sorcery.PotionAffinity;
+import us.eunoians.mcrpg.abilities.swords.Bleed;
+import us.eunoians.mcrpg.abilities.swords.BleedPlus;
+import us.eunoians.mcrpg.abilities.swords.DeeperWound;
+import us.eunoians.mcrpg.abilities.swords.RageSpike;
+import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
+import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
+import us.eunoians.mcrpg.abilities.swords.Vampire;
+import us.eunoians.mcrpg.abilities.unarmed.Berserk;
+import us.eunoians.mcrpg.abilities.unarmed.DenseImpact;
+import us.eunoians.mcrpg.abilities.unarmed.Disarm;
+import us.eunoians.mcrpg.abilities.unarmed.IronArm;
+import us.eunoians.mcrpg.abilities.unarmed.SmitingFist;
+import us.eunoians.mcrpg.abilities.unarmed.StickyFingers;
+import us.eunoians.mcrpg.abilities.unarmed.TighterGrip;
+import us.eunoians.mcrpg.abilities.woodcutting.DemetersShrine;
+import us.eunoians.mcrpg.abilities.woodcutting.DryadsGift;
+import us.eunoians.mcrpg.abilities.woodcutting.ExtraLumber;
+import us.eunoians.mcrpg.abilities.woodcutting.HeavySwing;
+import us.eunoians.mcrpg.abilities.woodcutting.HesperidesApples;
+import us.eunoians.mcrpg.abilities.woodcutting.NymphsVitality;
+import us.eunoians.mcrpg.abilities.woodcutting.TemporalHarvest;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
+import us.eunoians.mcrpg.party.Party;
+import us.eunoians.mcrpg.party.PartyInvite;
+import us.eunoians.mcrpg.party.TeleportRequest;
+import us.eunoians.mcrpg.skills.Archery;
+import us.eunoians.mcrpg.skills.Axes;
+import us.eunoians.mcrpg.skills.Excavation;
+import us.eunoians.mcrpg.skills.Fishing;
+import us.eunoians.mcrpg.skills.Fitness;
+import us.eunoians.mcrpg.skills.Herbalism;
+import us.eunoians.mcrpg.skills.Mining;
+import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.skills.Sorcery;
+import us.eunoians.mcrpg.skills.Swords;
+import us.eunoians.mcrpg.skills.Unarmed;
+import us.eunoians.mcrpg.skills.Woodcutting;
 import us.eunoians.mcrpg.types.AbilityType;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.DisplayType;
@@ -119,12 +215,26 @@ public class McRPGPlayer {
   //mcMMO conversion
   @Getter @Setter private int boostedExp;
   
+  //party invites
+  @Getter private Queue<PartyInvite> partyInvites = new Queue<>();
+  @Getter @Setter private UUID partyID;
+  
+  @Getter @Setter private boolean usePartyChat = false;
+  
+  @Getter private List<TeleportRequest> teleportRequests = new ArrayList<>();
+  @Getter private Map<UUID, TeleportRequest> teleportRequestMap = new HashMap<>();
+  
+  /**
+   * This represents the teleport request for a player. If null then they don't have a request accepted
+   */
+  @Getter @Setter private AcceptedTeleportRequest acceptedTeleportRequest = null;
+  
   public McRPGPlayer(UUID uuid) {
     this.uuid = uuid;
     this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
     Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
     Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
-
+    
     boolean isNew = false;
     try {
       if(playerDataSet.isPresent()) {
@@ -166,6 +276,36 @@ public class McRPGPlayer {
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
         this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
         this.divineEscapeDamageEnd = resultSet.getInt("divine_escape_damage_end_time");
+        String partyIDString = resultSet.getString("party_uuid");
+        if(partyIDString.equalsIgnoreCase("nu")){
+           partyID = null;
+        }
+        else{
+          partyID = UUID.fromString(partyIDString);
+          Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
+          StringBuilder nullPartyMessage = new StringBuilder();
+          if(party == null){
+            partyID = null;
+            nullPartyMessage.append("&cYour party no longer exists.");
+          }
+          else{
+            if(!party.isPlayerInParty(uuid)){
+              partyID = null;
+              nullPartyMessage.append("&cYou were removed from your party whilst offline.");
+            }
+          }
+          if(nullPartyMessage.length() != 0){
+            new BukkitRunnable(){
+              @Override
+              public void run(){
+                OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
+                if(offlinePlayer.isOnline()){
+                  ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
+                }
+              }
+            }.runTaskLater(McRPG.getInstance(), 2 * 20);
+          }
+        }
         Calendar cal1 = Calendar.getInstance();
         Calendar cal = Calendar.getInstance();
         cal1.setTimeInMillis(replaceCooldown);
@@ -303,7 +443,7 @@ public class McRPGPlayer {
     }
   }
 
-  public OfflinePlayer getOfflineMcMMOPlayer() {
+  public OfflinePlayer getOfflineMcRPGPlayer() {
     return Bukkit.getOfflinePlayer(uuid);
   }
 
@@ -539,7 +679,7 @@ public class McRPGPlayer {
     }
     database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", boosted_exp = " + boostedExp + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
             + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
-            ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + " WHERE uuid = '" + uuid.toString() + "'");
+            ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + ", party_uuid = '" + (partyID == null ? "nu" : partyID.toString()) + "' WHERE uuid = '" + uuid.toString() + "'");
     String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
             "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + " WHERE uuid = '" + uuid.toString() + "'";
@@ -671,6 +811,16 @@ public class McRPGPlayer {
     this.redeemableLevels += levels;
   }
 
+  public void addTeleportRequest(TeleportRequest teleportRequest){
+    teleportRequests.add(teleportRequest);
+    teleportRequestMap.put(teleportRequest.getSender(), teleportRequest);
+  }
+  
+  public void emptyTeleportRequests(){
+    teleportRequestMap = new HashMap<>();
+    teleportRequests = new ArrayList<>();
+  }
+  
   @Override
   public boolean equals(Object object) {
     if(object instanceof McRPGPlayer) {

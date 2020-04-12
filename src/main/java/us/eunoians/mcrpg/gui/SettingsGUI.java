@@ -39,7 +39,7 @@ public class SettingsGUI extends GUI {
       ItemStack displayItem = new ItemStack(Material.BLAZE_ROD);
       ItemMeta displayMeta = displayItem.getItemMeta();
       if(player.getDisplayType() == DisplayType.SCOREBOARD) {
-        displayItem.setType(Material.SIGN);
+        displayItem.setType(Material.OAK_SIGN);
         displayMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("ChangeDisplaySettings.ScoreBoard")));
       }
       else if(player.getDisplayType() == DisplayType.BOSS_BAR) {

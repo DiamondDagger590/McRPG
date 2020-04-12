@@ -1,0 +1,18 @@
+PartyMembers:
+  uuid:
+    JoinDate: 10492524
+    Role: 0
+Permissions:
+  UpgradeParty: 0
+  Pvp: 2
+  PrivateBank: 1
+  KickPlayers: 1
+  InvitePlayers: 1
+PartyName: TestCase
+PartyUpgradePoints: 0
+PartyBank: []
+PrivateBank: []
+Upgrades:
+  MemberCount: 0
+  ExpShareRange: 0
+  ExpShareAmount: 0

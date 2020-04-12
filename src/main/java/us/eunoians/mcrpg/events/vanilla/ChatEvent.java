@@ -1,13 +1,17 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.GainReason;
@@ -89,6 +93,27 @@ public class ChatEvent implements Listener {
           e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getConfig().getString("Messages.Commands.Utility.NotAnInt")));
           return;
         }
+      }
+    }
+    else if(mp.isUsePartyChat()){
+      if(mp.getPartyID() != null){
+        Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+        String message = Methods.color(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getString("PartyChatPrefix").replace("%Player_Name%", e.getPlayer().getName()))+ e.getMessage();
+        if(party != null){
+          Bukkit.getConsoleSender().sendMessage(message);
+          for(Player player : Bukkit.getOnlinePlayers()){
+            if(party.isPlayerInParty(player.getUniqueId()) || player.hasPermission("mcrpg.*") || player.hasPermission("mcparty.*") || player.hasPermission("mcadmin.*") || player.hasPermission("mcparty.spy")){
+              player.sendMessage(message);
+            }
+          }
+          e.setCancelled(true);
+        }
+      }
+      else{
+        mp.setUsePartyChat(false);
+        e.setCancelled(true);
+        e.getPlayer().sendMessage(Methods.color(e.getPlayer(), McRPG.getInstance().getPluginPrefix() + "&cYou are no longer in a party so party chat is now disabled."));
+        return;
       }
     }
   }

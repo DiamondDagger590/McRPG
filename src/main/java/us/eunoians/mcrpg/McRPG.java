@@ -25,22 +25,74 @@ import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardHeadManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
-import us.eunoians.mcrpg.api.util.*;
+import us.eunoians.mcrpg.api.util.BuriedTreasureData;
+import us.eunoians.mcrpg.api.util.DiamondFlowersData;
+import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.HiddenConfig;
+import us.eunoians.mcrpg.api.util.McRPGPlaceHolders;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
+import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
-import us.eunoians.mcrpg.commands.*;
+import us.eunoians.mcrpg.commands.McAdmin;
+import us.eunoians.mcrpg.commands.McConvert;
+import us.eunoians.mcrpg.commands.McDisplay;
+import us.eunoians.mcrpg.commands.McHelp;
+import us.eunoians.mcrpg.commands.McLink;
+import us.eunoians.mcrpg.commands.McParty;
+import us.eunoians.mcrpg.commands.McRPGStub;
+import us.eunoians.mcrpg.commands.McRank;
+import us.eunoians.mcrpg.commands.McRedeem;
+import us.eunoians.mcrpg.commands.McUnlink;
 import us.eunoians.mcrpg.commands.prompts.McAdminPrompt;
 import us.eunoians.mcrpg.commands.prompts.McDisplayPrompt;
+import us.eunoians.mcrpg.commands.prompts.McPartyPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRankPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRedeemPrompt;
 import us.eunoians.mcrpg.database.McRPGDb;
 import us.eunoians.mcrpg.events.external.sickle.Sickle;
-import us.eunoians.mcrpg.events.mcrpg.*;
-import us.eunoians.mcrpg.events.vanilla.*;
+import us.eunoians.mcrpg.events.mcrpg.AbilityActivate;
+import us.eunoians.mcrpg.events.mcrpg.AbilityUnlock;
+import us.eunoians.mcrpg.events.mcrpg.AbilityUpgrade;
+import us.eunoians.mcrpg.events.mcrpg.BleedHandler;
+import us.eunoians.mcrpg.events.mcrpg.DisarmHandler;
+import us.eunoians.mcrpg.events.mcrpg.LoadoutAdd;
+import us.eunoians.mcrpg.events.mcrpg.McRPGExpGain;
+import us.eunoians.mcrpg.events.mcrpg.McRPGPlayerLevelChange;
+import us.eunoians.mcrpg.events.mcrpg.PartyLevelUp;
+import us.eunoians.mcrpg.events.vanilla.ArrowHitEvent;
+import us.eunoians.mcrpg.events.vanilla.BreakEvent;
+import us.eunoians.mcrpg.events.vanilla.ChatEvent;
+import us.eunoians.mcrpg.events.vanilla.CheckReadyEvent;
+import us.eunoians.mcrpg.events.vanilla.DeathEvent;
+import us.eunoians.mcrpg.events.vanilla.DropItemEvent;
+import us.eunoians.mcrpg.events.vanilla.EnchantingEvent;
+import us.eunoians.mcrpg.events.vanilla.EntityDeathEvent;
+import us.eunoians.mcrpg.events.vanilla.FishCatchEvent;
+import us.eunoians.mcrpg.events.vanilla.InteractHandler;
+import us.eunoians.mcrpg.events.vanilla.InvClickEvent;
+import us.eunoians.mcrpg.events.vanilla.InvCloseEvent;
+import us.eunoians.mcrpg.events.vanilla.MoveEvent;
+import us.eunoians.mcrpg.events.vanilla.MoveItemEvent;
+import us.eunoians.mcrpg.events.vanilla.PickupEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerLoginEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerLogoutEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerNomNomEvent;
+import us.eunoians.mcrpg.events.vanilla.PlayerTossItemEvent;
+import us.eunoians.mcrpg.events.vanilla.PotionDrinkEvent;
+import us.eunoians.mcrpg.events.vanilla.PotionEffectEvent;
+import us.eunoians.mcrpg.events.vanilla.ShiftToggle;
+import us.eunoians.mcrpg.events.vanilla.ShootEvent;
+import us.eunoians.mcrpg.events.vanilla.SignEvent;
+import us.eunoians.mcrpg.events.vanilla.SpawnEvent;
+import us.eunoians.mcrpg.events.vanilla.VanillaDamageEvent;
+import us.eunoians.mcrpg.events.vanilla.WorldListener;
+import us.eunoians.mcrpg.party.Party;
+import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
@@ -51,6 +103,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /*JAVEN ISSUES*/
@@ -79,6 +134,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
   @Getter private PotionRecipeManager potionRecipeManager;
   @Getter private BrewingStandManager brewingStandManager;
   @Getter private WorldModifierManager worldModifierManager;
+  @Getter private PartyManager partyManager;
 
   //Needed to support McMMO's Healthbars
   @Getter private final String customNameKey = "mcMMO: Custom Name";
@@ -129,6 +185,8 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     worldModifierManager = new WorldModifierManager();
     leaderboardManager = new LeaderboardManager(this);
     leaderboardHeadManager = new LeaderboardHeadManager();
+    this.partyManager = new PartyManager();
+    partyManager.init();
     Metrics metrics = new Metrics(this, id);
     brewingStandManager = new BrewingStandManager();
     brewingStandManager.updateNamingFormat();
@@ -185,10 +243,12 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcconvert").setExecutor(new McConvert());
     getCommand("mcredeem").setExecutor(new McRedeem());
     getCommand("mcrank").setExecutor(new McRank());
+    getCommand("mcparty").setExecutor(new McParty());
     getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());
     getCommand("mcadmin").setTabCompleter(new McAdminPrompt());
+    getCommand("mcparty").setTabCompleter(new McPartyPrompt());
     //Events
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);
@@ -226,6 +286,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new PotionEffectEvent(), this);
     getServer().getPluginManager().registerEvents(new EnchantingEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveItemEvent(), this);
+    getServer().getPluginManager().registerEvents(new PartyLevelUp(), this);
     
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);
@@ -239,6 +300,29 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         }
       }
     }.runTaskLater(this, 400);
+    
+    new BukkitRunnable(){
+      @Override
+      public void run(){
+        Bukkit.getLogger().log(Level.INFO, "Purging parties of inactive players...");
+        AtomicInteger amountToKick = new AtomicInteger(0);
+        Collection<Party> parties = partyManager.getParties();
+        Iterator<Party> iterator = parties.iterator();
+        //This will run over time and not cause as much lag
+        new BukkitRunnable(){
+          @Override
+          public void run(){
+            if(!iterator.hasNext()){
+              Bukkit.getLogger().log(Level.INFO, "Purged " + amountToKick.get() + " players from parties.");
+              cancel();
+            }
+            else{
+              amountToKick.addAndGet(iterator.next().purgeInactive(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.TimeInHoursToPurge", 168)));
+            }
+          }
+        }.runTaskTimer(McRPG.getInstance(), 10 * 20, 10 * 20);
+      }
+    }.runTaskTimer(this, 5 * 60 * 20, McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.PurgeTaskDelay", 30) * 60 * 20);
   
     //Preload nbt class
     ItemStack itemStack = new ItemStack(Material.DIAMOND);
@@ -252,113 +336,9 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
       Initializer.interrupt();*/
     PlayerManager.shutDownManager();
     brewingStandManager.shutDown();
+    partyManager.saveAllParties();
     placeStore.saveAll();
   }
-
-  /*@Initialize(priority = 0)
-  private void preInit() {
-    var configManager = new ConfigManager(this);
-    mConfigManager = new MConfigManager(configManager);
-    /*if (!mConfigManager.setupConfigs(
-            GeneralConfig.class, SwordsConfig.class))
-      getServer().shutdown();
-    //Logger.setDebugMode(mConfigManager.getGeneralConfig().isDebugMode());
-    //Locale.init(mConfigManager);
-  }*/
-
-  /*
-  @SuppressWarnings("Duplicates")
-  @Initialize(priority = 2)
-  private void initPrimaryInstance() {
-    //localizationFiles = new LocalizationFiles(this, true);
-    instance = this;
-    fileManager = FileManager.getInstance().setup(this);
-    expPermissionManager = ExpPermissionManager.getInstance().setup(this);
-    this.mcRPGDb = new McRPGDb(this);
-    healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
-    sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
-    fishingItemManager = new FishingItemManager();
-    bookManager = new BookManager(this);
-    worldModifierManager = new WorldModifierManager();
-    leaderboardManager = new LeaderboardManager(this);
-    leaderboardHeadManager = new LeaderboardHeadManager();
-    if (healthBarPluginEnabled) {
-      getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
-    }
-    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-      papiEnabled = true;
-      getLogger().info("Papi PlaceholderAPI found... registering hooks");
-      new McRPGPlaceHolders().register();
-    }
-    if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
-      worldGuardEnabled = true;
-      wgSupportManager = new WGSupportManager(this);
-    }
-    placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
-    remoteTransferTracker = new RemoteTransferTracker();
-    File folder = new File(getDataFolder(), File.separator + "remote_transfer_data");
-    if (!folder.exists()) {
-      folder.mkdir();
-    }
-    displayManager = DisplayManager.getInstance();
-    DiamondFlowersData.init();
-    BuriedTreasureData.init();
-    HiddenConfig.getInstance();
-    PlayerManager.startSave(this);
-  }*/
-
-/*  @Initialize(priority = 3)
-  private void initCmds() {
-    getCommand("mcrpg").setExecutor(new McRPGStub());
-    getCommand("mcdisplay").setExecutor(new McDisplay());
-    getCommand("mcadmin").setExecutor(new McAdmin());
-    getCommand("mclink").setExecutor(new McLink());
-    getCommand("mcunlink").setExecutor(new McUnlink());
-    getCommand("mchelp").setExecutor(new McHelp());
-    getCommand("mcconvert").setExecutor(new McConvert());
-    getCommand("mcredeem").setExecutor(new McRedeem());
-    getCommand("mcrank").setExecutor(new McRank());
-  }*/
-
-  /*
-  @Initialize(priority = 4)
-  private void initListener() {
-    getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
-    getServer().getPluginManager().registerEvents(new MoveEvent(), this);
-    getServer().getPluginManager().registerEvents(new PlayerLogoutEvent(), this);
-    getServer().getPluginManager().registerEvents(new InvClickEvent(this), this);
-    getServer().getPluginManager().registerEvents(new AbilityActivate(), this);
-    getServer().getPluginManager().registerEvents(new McRPGPlayerLevelChange(), this);
-    getServer().getPluginManager().registerEvents(new VanillaDamageEvent(), this);
-    getServer().getPluginManager().registerEvents(new McRPGExpGain(), this);
-    getServer().getPluginManager().registerEvents(new InvCloseEvent(), this);
-    getServer().getPluginManager().registerEvents(new BleedHandler(), this);
-    getServer().getPluginManager().registerEvents(new CheckReadyEvent(), this);
-    getServer().getPluginManager().registerEvents(new ShiftToggle(), this);
-    getServer().getPluginManager().registerEvents(new WorldListener(this), this);
-    getServer().getPluginManager().registerEvents(new McLink(), this);
-    getServer().getPluginManager().registerEvents(new BreakEvent(), this);
-    getServer().getPluginManager().registerEvents(new AbilityUpgrade(), this);
-    getServer().getPluginManager().registerEvents(new LoadoutAdd(), this);
-    getServer().getPluginManager().registerEvents(new InteractHandler(), this);
-    getServer().getPluginManager().registerEvents(new DisarmHandler(), this);
-    getServer().getPluginManager().registerEvents(new PlayerNomNomEvent(), this);
-    getServer().getPluginManager().registerEvents(new AbilityUnlock(), this);
-    getServer().getPluginManager().registerEvents(new PickupEvent(), this);
-    getServer().getPluginManager().registerEvents(new DropItemEvent(), this);
-    getServer().getPluginManager().registerEvents(new ShootEvent(), this);
-    getServer().getPluginManager().registerEvents(new ArrowHitEvent(), this);
-    getServer().getPluginManager().registerEvents(new ChatEvent(), this);
-    getServer().getPluginManager().registerEvents(new PlayerTossItemEvent(), this);
-    getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
-    getServer().getPluginManager().registerEvents(new DeathEvent(), this);
-    getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
-    getServer().getPluginManager().registerEvents(new SignEvent(), this);
-    getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
-    if(sickleEnabled){
-      getServer().getPluginManager().registerEvents(new Sickle(), this);
-    }
-  }*/
 
   public static McRPG getInstance() {
     if (instance == null)

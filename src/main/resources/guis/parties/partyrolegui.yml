@@ -1,0 +1,107 @@
+Title: '&5Admin GUI'
+Size: 27
+InvitePlayers:
+  Slot: 0
+  Owner:
+    Material: RED_WOOL
+    DisplayName: '&4Invite Players'
+    Lore:
+      - '&cOnly owners can invite other players'
+  Mod:
+    Material: BLUE_WOOL
+    DisplayName: '&1Invite Players'
+    Lore:
+      - '&bMods and up can invite'
+      - '&bplayers to the party'
+  Member:
+    Material: GREEN_WOOL
+    DisplayName: '&2Invite Players'
+    Lore:
+      - '&aAny member of the party'
+      - '&acan invite players'
+KickPlayers:
+  Slot: 1
+  Owner:
+    Material: RED_WOOL
+    DisplayName: '&4Kick Players'
+    Lore:
+      - '&cOnly owners can kick other players'
+  Mod:
+    Material: BLUE_WOOL
+    DisplayName: '&1Kick Players'
+    Lore:
+      - '&bMods and up can kick'
+      - '&bplayers from the party'
+  Member:
+    Material: GREEN_WOOL
+    DisplayName: '&2Kick Players'
+    Lore:
+      - '&aAny member of the party'
+      - '&acan kick players'
+PrivateBank:
+  Slot: 9
+  Owner:
+    Material: RED_WOOL
+    DisplayName: '&4Private Bank'
+    Lore:
+      - '&cOnly owners can use the private bank'
+      - '&c/mcparty storage'
+  Mod:
+    Material: BLUE_WOOL
+    DisplayName: '&1Private Bank'
+    Lore:
+      - '&bMods and up can use'
+      - '&bthe private bank'
+      - '&b/mcparty storage'
+  Member:
+    Material: GREEN_WOOL
+    DisplayName: '&2Party Bank'
+    Lore:
+      - '&aAny member of the party'
+      - '&acan use the private bank'
+      - '&a/mcparty storage'
+UpgradeParty:
+  Slot: 18
+  Owner:
+    Material: RED_WOOL
+    DisplayName: '&4Upgrade Party'
+    Lore:
+      - '&cOnly owners can upgrade the party'
+  Mod:
+    Material: BLUE_WOOL
+    DisplayName: '&1Upgrade Party'
+    Lore:
+      - '&bMods and up can upgrade'
+      - '&bthe party.'
+  Member:
+    Material: GREEN_WOOL
+    DisplayName: '&2Upgrade Party'
+    Lore:
+      - '&aAny member of the party'
+      - '&acan upgrade the party'
+Pvp:
+  Slot: 19
+  Owner:
+    Material: RED_WOOL
+    DisplayName: '&4PVP'
+    Lore:
+      - '&cOnly the owner can pvp'
+  Mod:
+    Material: BLUE_WOOL
+    DisplayName: '&1PVP'
+    Lore:
+      - '&bMods and up can pvp'
+  Member:
+    Material: GREEN_WOOL
+    DisplayName: '&2PVP'
+    Lore:
+      - '&aAny member of the party'
+      - '&acan pvp'
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore: {}
+
+
+

@@ -7,6 +7,7 @@ import com.cyr1en.flatdb.annotations.Table;
 public class PlayerData {
   @Column(autoIncrement = true) private int id;
   @Column(primaryKey = true) private String uuid;
+  @Column(defaultValue = "nu") private String party_uuid;
   @Column(defaultValue = "0") int power_level;
   @Column(defaultValue = "0") int ability_points;
   @Column(defaultValue = "0") long replace_ability_cooldown_time;

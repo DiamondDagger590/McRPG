@@ -1,0 +1,62 @@
+PartyChatPrefix: '&bParty Chat&f>> &7%Player_Name%: &3'
+PartiesEnabled: true
+PartyBank:
+  Size: 27
+  Title: '&5Party Bank'
+InactivePurge:
+  #If the amount of hours since a player last logged in is >= this number, they will be removed from the party
+  TimeInHoursToPurge: 168
+  #How long in minutes should a purge task take?
+  PurgeTaskDelay: 120
+PartyExp:
+  ExpEquation: '10000+(10000*(party_level))'
+  MaxLevel: 20
+MemberCountUpgrade:
+  MaxTier: 5
+  #The amount of members per tier
+  #Tier 0 is the default tier
+  #The member count should not be allowed to go above 54 lest the gui break
+  MembersPerTier:
+    0: 5
+    1: 6
+    2: 7
+    3: 8
+    4: 9
+    5: 10
+ExpShareRange:
+  MaxTier: 5
+  #The range of exp sharing per tier
+  #Tier 0 is the default tier
+  RangePerTier:
+    0: 10.0
+    1: 50.0
+    2: 60.0
+    3: 75.0
+    4: 100.0
+    5: 150.0
+ExpSharePercent:
+  MaxTier: 5
+  #This is the percentage of the exp given to the person who earned it
+  #If player A mines coal and gets 100 exp, the player will get 70 exp if there are people within sharing distance
+  #If there is no one within sharing distance, then the player will gain the whole 100 exp
+  PercentGivenToEarner: 70.0
+  #The percentage of exp per tier
+  #Tier 0 is the default tier
+  ShareAmountPerTier:
+    0: 5.0
+    1: 10.0
+    2: 15.0
+    3: 20.0
+    4: 27.5
+    5: 35.0
+PrivateBankSize:
+  MaxTier: 5
+  #The amount of slots per tier
+  #Tier 0 is the default tier
+  SlotsPerTier:
+    0: 5
+    1: 9
+    2: 18
+    3: 27
+    4: 36
+    5: 45

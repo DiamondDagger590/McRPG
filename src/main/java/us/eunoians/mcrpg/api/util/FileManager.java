@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author BadBones69
@@ -28,11 +30,11 @@ public class FileManager {
   private Plugin plugin;
   private String prefix = "";
   private Boolean log = false;
-  private HashMap<Files, File> files = new HashMap<>();
-  private ArrayList<String> homeFolders = new ArrayList<>();
-  private ArrayList<CustomFile> customFiles = new ArrayList<>();
-  private HashMap<String, String> autoGenerateFiles = new HashMap<>();
-  private HashMap<Files, FileConfiguration> configurations = new HashMap<>();
+  private Map<Files, File> files = new HashMap<>();
+  private List<String> homeFolders = new ArrayList<>();
+  private List<CustomFile> customFiles = new ArrayList<>();
+  private Map<String, String> autoGenerateFiles = new HashMap<>();
+  private Map<Files, FileConfiguration> configurations = new HashMap<>();
 
   private static FileManager instance = new FileManager();
 
@@ -338,6 +340,7 @@ public class FileManager {
     ENGLISH_FILE("en.yml", "localization/en.yml"),
     EXCAVATION_CONFIG("excavation.yml", "skills/excavation.yml"),
     EXP_PERM_FILE("exp_perms.yml", "exp_perms.yml"),
+    FILTER("filter.yml", "filter.yml"),
     FISHING_CONFIG("fishing.yml", "skills/fishing.yml"),
     FISHING_LOOT("fishingloot.yml", "skills/fishingloot.yml"),
     FITNESS_CONFIG("fitness.yml", "skills/fitness.yml"),
@@ -345,6 +348,12 @@ public class FileManager {
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),
+    PARTY_CONFIG("party_config.yml", "party_config.yml"),
+    PARTY_MAIN_GUI("partymastergui.yml", "guis/parties/partymastergui.yml"),
+    PARTY_MEMBER_GUI("partymembergui.yml", "guis/parties/partymembergui.yml"),
+    PARTY_ROLE_GUI("partyrolegui.yml", "guis/parties/partyrolegui.yml"),
+    PARTY_UPGRADES_GUI("partyupgradesgui.yml", "guis/parties/partyupgradesgui.yml"),
+    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
@@ -353,9 +362,9 @@ public class FileManager {
     SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
     SORCERY_CONFIG("sorcery.yml", "skills/sorcery.yml"),
+    SOUNDS_FILE("sounds.yml", "sounds.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
-    SOUNDS_FILE("sounds.yml", "sounds.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),

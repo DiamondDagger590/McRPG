@@ -1,0 +1,5 @@
+#Use this to ban certain strings from being in a party name
+#Do not remove the & otherwise people are going to be able to make coloured names and can bypass filter system that way
+BannedPartyStrings:
+  - 'VerumSucks'
+  - '&'
