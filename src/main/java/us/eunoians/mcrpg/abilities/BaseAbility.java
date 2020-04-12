@@ -20,7 +20,7 @@ public abstract class BaseAbility {
 
   /**
    * Defines an ability that unlocks when currentTier > 0
-   * If the ability needs to be unlocked with a non-0 currentTier, see {@link #BaseAbility(GenericAbility, boolean, int, boolean)} instead
+   * If the ability needs to be unlocked with currentTier <= 0, see {@link #BaseAbility(GenericAbility, boolean, int, boolean)} instead
    *
    * @param genericAbility The enum value of what ability this instance represents
    * @param isToggled If the player has this ability toggled
@@ -44,4 +44,5 @@ public abstract class BaseAbility {
     this.currentTier = currentTier;
     this.isUnlocked = isUnlocked;
   }
+
 }
