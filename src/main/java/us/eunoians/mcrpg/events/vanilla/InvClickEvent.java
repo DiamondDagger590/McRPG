@@ -404,6 +404,10 @@ public class InvClickEvent implements Listener{
               return;
             }
           }
+          else if(e.getCurrentItem() != null && e.getCurrentItem().equals(Party.getFillerGlass())){
+            e.setCancelled(true);
+            return;
+          }
         }
         e.setCancelled(false);
         return;

@@ -3,6 +3,8 @@ PartiesEnabled: true
 PartyBank:
   Size: 27
   Title: '&5Party Bank'
+PrivateBanke:
+  Title: '&5Private Bank'
 InactivePurge:
   #If the amount of hours since a player last logged in is >= this number, they will be removed from the party
   TimeInHoursToPurge: 168

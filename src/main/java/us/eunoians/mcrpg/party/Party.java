@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.party;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -34,6 +35,7 @@ import us.eunoians.mcrpg.util.SkullCache;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +46,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 public class Party{
+  
+  @Getter
+  private static ItemStack fillerGlass;
   
   private Map<PartyPermissions, PartyRoles> partyPermissions = new HashMap<>();
   private Map<PartyUpgrades, Integer> partyUpgrades = new HashMap<>();
@@ -190,7 +195,19 @@ public class Party{
     partyBank = Bukkit.createInventory(null, partyConfiguration.getInt("PartyBank.Size"), Methods.color(partyConfiguration.getString("PartyBank.Title")));
     int size = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE));
     size += size % 9 != 0 ? (9 - (size % 9)) : 0;
-    privateBank = Bukkit.createInventory(null, size, Methods.color("&5Private Bank"));
+    privateBank = Bukkit.createInventory(null, size, Methods.color(partyConfiguration.getString("PrivateBank.Title", "&5Private Bank")));
+    if(fillerGlass == null){
+      fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+      ItemMeta itemMeta = fillerGlass.getItemMeta();
+      itemMeta.setDisplayName(" ");
+      fillerGlass.setItemMeta(itemMeta);
+      NBTItem nbtItem = new NBTItem(fillerGlass);
+      nbtItem.setBoolean("PlaceHolder", true);
+      fillerGlass = nbtItem.getItem();
+    }
+    for(int i = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE)); i < privateBank.getSize(); i++){
+      privateBank.setItem(i, fillerGlass);
+    }
   }
   
   /**
@@ -374,7 +391,16 @@ public class Party{
       int size = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE));
       size += size % 9 != 0 ? (9 - (size % 9)) : 0;
       Inventory newInventory = Bukkit.createInventory(null, size, Methods.color("&5Private Bank"));
-      newInventory.setContents(privateBank.getContents());
+      ItemStack[] contents = privateBank.getContents();
+      for(int i = 0; i < contents.length; i++){
+        if(contents[i] != null && contents[i].equals(fillerGlass)){
+          contents[i] = null;
+        }
+      }
+      newInventory.setContents(contents);
+      for(int i = PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE)); i < newInventory.getSize(); i++){
+        newInventory.setItem(i, fillerGlass);
+      }
       List<HumanEntity> viewers = privateBank.getViewers();
       privateBank = newInventory;
       for(HumanEntity viewer : viewers){
@@ -427,7 +453,7 @@ public class Party{
     partyFileConfiguration.set("PartyExp", partyExp);
     partyFileConfiguration.set("PartyLevel", partyLevel);
     //Save the public party bank
-    for(int i = 0; i < partyBank.getSize(); i++){
+    for(int i = 0; i < PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE)); i++){
       ItemStack item = partyBank.getItem(i);
       if(item != null && item.getType() != Material.AIR){
         partyFileConfiguration.set("PartyBank.Item" + i, item);
@@ -435,6 +461,10 @@ public class Party{
     }
     //Save the private bank
     for(int i = 0; i < PartyUpgrades.getPrivateBankSizeAtTier(getUpgradeTier(PartyUpgrades.PRIVATE_BANK_SIZE)); i++){
+      if(i > privateBank.getSize()){
+        Bukkit.getLogger().log(Level.WARNING, "Private bank size is mismatched");
+        return;
+      }
       ItemStack item = privateBank.getItem(i);
       if(item != null && item.getType() != Material.AIR){
         partyFileConfiguration.set("PrivateBank.Item" + i, item);
