@@ -23,17 +23,17 @@ import java.util.Arrays;
  * All abilities that come default with a skill should be stored in this enum
  */
 public enum DefaultAbilities implements GenericAbility {
-  BLEED("Bleed", Bleed.class, Skills.SWORDS, AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
-  DAZE("Daze", Daze.class, Skills.ARCHERY, AbilityType.PASSIVE, FileManager.Files.ARCHERY_CONFIG),
-  DOUBLE_DROP("Double Drop", DoubleDrop.class, Skills.MINING, AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
-  STICKY_FINGERS("Sticky Fingers", StickyFingers.class, Skills.UNARMED, AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
-  TOO_MANY_PLANTS("Too Many Plants", TooManyPlants.class, Skills.HERBALISM, AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
-  EXTRA_LUMBER("Extra Lumber", ExtraLumber.class, Skills.WOODCUTTING, AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG),
-  SHRED("Shred", Shred.class, Skills.AXES, AbilityType.PASSIVE, FileManager.Files.AXES_CONFIG),
-  ROLL("Roll", Roll.class, Skills.FITNESS, AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG),
-  EXTRACTION("Extraction", Extraction.class, Skills.EXCAVATION, AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
-  GREAT_ROD("Great Rod", GreatRod.class, Skills.FISHING, AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG),
-  HASTY_BREW("Hasty Brew", HastyBrew.class, Skills.SORCERY, AbilityType.PASSIVE, FileManager.Files.SORCERY_CONFIG);
+  BLEED("Bleed", Bleed.class, AbilityType.PASSIVE, FileManager.Files.SWORDS_CONFIG),
+  DAZE("Daze", Daze.class, AbilityType.PASSIVE, FileManager.Files.ARCHERY_CONFIG),
+  DOUBLE_DROP("Double Drop", DoubleDrop.class, AbilityType.PASSIVE, FileManager.Files.MINING_CONFIG),
+  STICKY_FINGERS("Sticky Fingers", StickyFingers.class, AbilityType.PASSIVE, FileManager.Files.UNARMED_CONFIG),
+  TOO_MANY_PLANTS("Too Many Plants", TooManyPlants.class, AbilityType.PASSIVE, FileManager.Files.HERBALISM_CONFIG),
+  EXTRA_LUMBER("Extra Lumber", ExtraLumber.class, AbilityType.PASSIVE, FileManager.Files.WOODCUTTING_CONFIG),
+  SHRED("Shred", Shred.class, AbilityType.PASSIVE, FileManager.Files.AXES_CONFIG),
+  ROLL("Roll", Roll.class, AbilityType.PASSIVE, FileManager.Files.FITNESS_CONFIG),
+  EXTRACTION("Extraction", Extraction.class, AbilityType.PASSIVE, FileManager.Files.EXCAVATION_CONFIG),
+  GREAT_ROD("Great Rod", GreatRod.class, AbilityType.PASSIVE, FileManager.Files.FISHING_CONFIG),
+  HASTY_BREW("Hasty Brew", HastyBrew.class, AbilityType.PASSIVE, FileManager.Files.SORCERY_CONFIG);
 
   @Getter
   private String name;
@@ -41,20 +41,21 @@ public enum DefaultAbilities implements GenericAbility {
   @Getter
   private Class<? extends BaseAbility> clazz;
   @Getter
-  private Skills skill;
-  @Getter
   private AbilityType abilityType;
   @Getter
   private FileManager.Files file;
   @Getter
   private boolean cooldown = false; // no default abilities have cooldowns
 
-  DefaultAbilities(String name, Class<? extends BaseAbility> clazz, Skills skill, AbilityType type, FileManager.Files file) {
+  DefaultAbilities(String name, Class<? extends BaseAbility> clazz, AbilityType type, FileManager.Files file) {
     this.name = name;
     this.clazz = clazz;
-    this.skill = skill;
     this.abilityType = type;
     this.file = file;
+  }
+
+  public Skills getSkill() {
+    return Arrays.stream(Skills.values()).filter(skill -> skill.getDefaultAbility().equals(this)).findFirst().orElse(null);
   }
 
   /**
@@ -64,7 +65,7 @@ public enum DefaultAbilities implements GenericAbility {
    */
   @Override
   public boolean isEnabled() {
-    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("EnabledAbilities." + name.replace(" ", "").replace("_", ""));
+    return McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(getSkill())).getBoolean("EnabledAbilities." + name.replace(" ", "").replace("_", ""));
   }
 
   /**
