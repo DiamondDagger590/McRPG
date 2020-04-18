@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
@@ -18,17 +19,21 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
+import us.eunoians.mcrpg.party.Party;
+import us.eunoians.mcrpg.party.PartyMember;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static us.eunoians.mcrpg.types.Skills.*;
@@ -1067,11 +1072,249 @@ public class McAdmin implements CommandExecutor {
         }
         else if(args[0].equalsIgnoreCase("party")){
           // /mcadmin party fdisband %player%
+          if(args[1].equalsIgnoreCase("fdisband")){
+            if(!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.fdisband"))){
+              admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+              return true;
+            }
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+              McRPGPlayer mp;
+              try{
+                mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+              }catch(McRPGPlayerNotFoundException e){
+                mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+              }
+              if(mp.getPartyID() != null){
+                Party party = plugin.getPartyManager().getParty(mp.getPartyID());
+                for(UUID uuid : party.getAllMemberUUIDs()){
+                  if(!uuid.equals(admin.getUniqueId())){
+                    OfflinePlayer targ = Bukkit.getOfflinePlayer(uuid);
+                    if(targ.isOnline()){
+                      ((Player) targ).sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyWasForceDisbanded")));
+                    }
+                  }
+                }
+                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceDisbandedParty")));
+                plugin.getPartyManager().removeParty(party.getPartyID());
+              }
+              else{
+                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+              }
+            }
+            else{
+              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+            }
+            return true;
+          }
           // /mcadmin party fkick %player%
-          // /mcadmin party give exp %exp%
-          // /mcadmin party give level %level%
-          // /mcadmin party name %player% %name%
+          if(args[1].equalsIgnoreCase("fkick")){
+            if(!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.fkick"))){
+              admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+              return true;
+            }
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+              McRPGPlayer mp;
+              try{
+                mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+              }catch(McRPGPlayerNotFoundException e){
+                mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+              }
+              if(mp.getPartyID() != null){
+                Party party = plugin.getPartyManager().getParty(mp.getPartyID());
+                party.kickPlayer(mp.getPartyID());
+                if(offlinePlayer.isOnline()){
+                  ((Player) offlinePlayer).sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceKickedFromParty")));
+                }
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceKickedPlayer").replace("%Player%", offlinePlayer.getName())));
+              }
+              else{
+                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+              }
+            }
+            else{
+              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+            }
+            return true;
+          }
           // /mcadmin party fsetowner %player%
+          if(args[1].equalsIgnoreCase("fsetowner")){
+            if(!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.fsetowner"))){
+              admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+              return true;
+            }
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+              McRPGPlayer mp;
+              try{
+                mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+              }catch(McRPGPlayerNotFoundException e){
+                mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+              }
+              if(mp.getPartyID() != null){
+                Party party = plugin.getPartyManager().getParty(mp.getPartyID());
+                PartyMember target = party.getPartyMember(offlinePlayer.getUniqueId());
+                if(target.getPartyRole() == PartyRoles.OWNER){
+                  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + "&cThat player is already the owner of their party"));
+                  return true;
+                }
+                PartyMember previousOwner = null;
+                for(PartyMember partyMember : party.getAllMembers()){
+                  if(partyMember.getPartyRole() == PartyRoles.OWNER){
+                    previousOwner = partyMember;
+                    break;
+                  }
+                }
+                if(previousOwner != null){
+                  previousOwner.setPartyRole(PartyRoles.MOD);
+                  OfflinePlayer offlinePrevOwner = Bukkit.getOfflinePlayer(previousOwner.getUuid());
+                  if(offlinePrevOwner.isOnline()){
+                    ((Player) offlinePrevOwner).sendMessage(Methods.color(plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyOwnerForciblySet")));
+                  }
+                }
+                target.setPartyRole(PartyRoles.OWNER);
+                if(offlinePlayer.isOnline()){
+                  ((Player) offlinePlayer).sendMessage(Methods.color(plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.BeenSetOwner")));
+                }
+                party.saveParty();
+                if(offlinePlayer.isOnline()){
+                  ((Player) offlinePlayer).sendMessage(Methods.color( plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetOwnerFromParty")));
+                }
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetOwner").replace("%Player%", offlinePlayer.getName())));
+              }
+              else{
+                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+              }
+            }
+            else{
+              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+            }
+            return true;
+          }
+          if(args.length < 4){
+            sendHelpMessage(admin);
+            return true;
+          }
+          // /mcadmin party name %player% %name%
+          if(args[1].equalsIgnoreCase("name")){
+            if(!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.name"))){
+              admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+              return true;
+            }
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+              McRPGPlayer mp;
+              try{
+                mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+              }catch(McRPGPlayerNotFoundException e){
+                mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+              }
+              if(mp.getPartyID() != null){
+                Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+                party.setName(args[3]);
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetPartyName")
+                .replace("%Player%", offlinePlayer.getName()).replace("%Name%", args[3])));
+              }
+              else{
+                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+              }
+            }
+            else{
+              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+            }
+            return true;
+          }
+          if(args.length < 5){
+            sendHelpMessage(admin);
+            return true;
+          }
+          // /mcadmin party give exp %exp% %player%
+          // /mcadmin party give level %level% %player%
+          if(args[1].equalsIgnoreCase("give")){
+            // /mcadmin party give exp %exp% %player%
+            if(args[2].equalsIgnoreCase("exp")){
+              if(!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.partyexp"))){
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+                return true;
+              }
+              if(!Methods.isInt(args[3])){
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                return true;
+              }
+              else{
+                int expToGive = Integer.parseInt(args[3]);
+                if(expToGive <= 0){
+                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyExpInvalid")));
+                  return true;
+                }
+                if(Methods.hasPlayerLoggedInBefore(args[4])){
+                  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[4]);
+                  McRPGPlayer mp;
+                  try{
+                    mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                  }catch(McRPGPlayerNotFoundException e){
+                    mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                  }
+                  if(mp.getPartyID() != null){
+                    Party party = plugin.getPartyManager().getParty(mp.getPartyID());
+                    party.giveExp(expToGive);
+                    admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyExpGiven")
+                                                                                        .replace("%Exp%", Integer.toString(expToGive)).replace("%Player%", offlinePlayer.getName())));
+                    
+                  }
+                  else{
+                    admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                  }
+                }
+                else{
+                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+                }
+              }
+              return true;
+            }
+            // /mcadmin party give level %level% %player%
+            else if(args[2].equalsIgnoreCase("level")){
+              if(!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.partylevel"))){
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+                return true;
+              }
+              if(!Methods.isInt(args[3])){
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+                return true;
+              }
+              else{
+                int levelsToGive = Integer.parseInt(args[3]);
+                if(levelsToGive <= 0){
+                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsInvalid")));
+                  return true;
+                }
+                if(Methods.hasPlayerLoggedInBefore(args[4])){
+                  OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[4]);
+                  McRPGPlayer mp;
+                  try{
+                    mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                  }catch(McRPGPlayerNotFoundException e){
+                    mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                  }
+                  if(mp.getPartyID() != null){
+                    Party party = plugin.getPartyManager().getParty(mp.getPartyID());
+                    party.setPartyLevel(Math.min(party.getPartyLevel() + levelsToGive, McRPG.getInstance().getPartyManager().getMaxLevel()));
+                    admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsGiven")
+                                                                                        .replace("%Levels%", Integer.toString(levelsToGive)).replace("%Player%", offlinePlayer.getName())));
+        
+                  }
+                  else{
+                    admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                  }
+                }
+                else{
+                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+                }
+              }
+              return true;
+            }
+          }
         }
         else {
           sendHelpMessage(admin);

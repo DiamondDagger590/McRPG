@@ -30,6 +30,7 @@ public class McAdminPrompt implements TabCompleter {
       completions.add("view");
       completions.add("cooldown");
       completions.add("reset");
+      completions.add("party");
       return StringUtil.copyPartialMatches(args[0], completions, new ArrayList<>());
     }
     else if(args.length == 2){
@@ -67,6 +68,13 @@ public class McAdminPrompt implements TabCompleter {
           completions.add("ability");
           completions.add("player");
           break;
+        case "party":
+          completions.add("fdisband");
+          completions.add("fkick");
+          completions.add("fsetowner");
+          completions.add("name");
+          completions.add("give");
+          break;
       }
       return StringUtil.copyPartialMatches(args[1], completions, new ArrayList<>());
     }
@@ -100,6 +108,7 @@ public class McAdminPrompt implements TabCompleter {
             } catch(McRPGPlayerNotFoundException e){
             }
           }
+          break;
         case "remove":
           if(Bukkit.getOfflinePlayer(args[1]).isOnline()){
             Player player = (Player) Bukkit.getOfflinePlayer(args[1]);
@@ -111,6 +120,7 @@ public class McAdminPrompt implements TabCompleter {
             } catch(McRPGPlayerNotFoundException e){
             }
           }
+          break;
         case "view":
           if(args[1].equalsIgnoreCase("loadout") || Skills.isSkill(args[1])){
             for(Player player : Bukkit.getOnlinePlayers()){
@@ -118,6 +128,7 @@ public class McAdminPrompt implements TabCompleter {
             }
             break;
           }
+          break;
         case "cooldown":
           switch(args[1].toLowerCase()){
             case "set":
@@ -128,6 +139,7 @@ public class McAdminPrompt implements TabCompleter {
               }
               break;
           }
+          break;
         case "reset":
           switch(args[1].toLowerCase()){
             case "skill":
@@ -137,6 +149,35 @@ public class McAdminPrompt implements TabCompleter {
                 completions.add(player.getName());
               }
           }
+          break;
+        case "party":
+          switch(args[1].toLowerCase()){
+            case "fdisband":
+              for(Player player : Bukkit.getOnlinePlayers()){
+                completions.add(player.getName());
+              }
+              break;
+            case "fkick":
+              for(Player player : Bukkit.getOnlinePlayers()){
+                completions.add(player.getName());
+              }
+              break;
+            case "fsetowner":
+              for(Player player : Bukkit.getOnlinePlayers()){
+                completions.add(player.getName());
+              }
+              break;
+            case "name":
+              for(Player player : Bukkit.getOnlinePlayers()){
+                completions.add(player.getName());
+              }
+              break;
+            case "give":
+              completions.add("exp");
+              completions.add("level");
+              break;
+          }
+          break;
       }
       return StringUtil.copyPartialMatches(args[2], completions, new ArrayList<>());
     }
@@ -179,6 +220,7 @@ public class McAdminPrompt implements TabCompleter {
             } catch(McRPGPlayerNotFoundException e){
             }
           }
+          break;
         case "cooldown":
           switch(args[1].toLowerCase()){
             case "set":
@@ -198,6 +240,7 @@ public class McAdminPrompt implements TabCompleter {
               }
 
           }
+          break;
         case "reset":
           switch(args[1].toLowerCase()){
             case "skill":
@@ -211,6 +254,22 @@ public class McAdminPrompt implements TabCompleter {
               }
               break;
           }
+          break;
+        case "party":
+          switch(args[1].toLowerCase()){
+            case "name":
+              completions.add("name");
+              break;
+            case "give":
+              switch(args[2].toLowerCase()){
+                case "exp":
+                case "level":
+                  completions.add("1");
+                  break;
+              }
+              break;
+          }
+          break;
       }
       return StringUtil.copyPartialMatches(args[3], completions, new ArrayList<>());
     }
@@ -233,6 +292,21 @@ public class McAdminPrompt implements TabCompleter {
             case "add":
               completions.add("1");
           }
+          break;
+        case "party":
+          switch(args[1].toLowerCase()){
+            case "give":
+              switch(args[2].toLowerCase()){
+                case "exp":
+                case "level":
+                  for(Player player : Bukkit.getOnlinePlayers()){
+                    completions.add(player.getName());
+                  }
+                  break;
+              }
+              break;
+          }
+          break;
       }
       return StringUtil.copyPartialMatches(args[4], completions, new ArrayList<>());
     }

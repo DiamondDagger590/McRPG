@@ -149,18 +149,18 @@ public class McRPGPlayer {
   @Getter private int powerLevel;
   @Getter @Setter private int abilityPoints;
 
-  private ArrayList<Skill> skills = new ArrayList<>();
+  private final List<Skill> skills = new ArrayList<>();
 
-  @Getter private ArrayList<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
-  private HashMap<UnlockedAbilities, Long> abilitiesOnCooldown = new HashMap<>();
-  @Getter private ArrayList<UnlockedAbilities> abilityLoadout = new ArrayList<>();
+  @Getter private final List<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
+  private final Map<UnlockedAbilities, Long> abilitiesOnCooldown = new HashMap<>();
+  @Getter private final List<UnlockedAbilities> abilityLoadout = new ArrayList<>();
   @Getter @Setter private long endTimeForReplaceCooldown;
-  @Getter private ArrayList<UnlockedAbilities> activeAbilities = new ArrayList<>();
+  @Getter private final List<UnlockedAbilities> activeAbilities = new ArrayList<>();
 
   @Getter @Setter
   private PlayerRank powerRank;
   @Getter
-  private Map<Skills, PlayerRank> skillRanks = new HashMap<>();
+  private final Map<Skills, PlayerRank> skillRanks = new HashMap<>();
   @Getter
   private boolean isLoadingRankData = false;
 
@@ -206,7 +206,7 @@ public class McRPGPlayer {
   @Getter @Setter private Location lastFishCaughtLoc = null;
 
   //Fitness Data
-  @Getter private List<Location> lastFallLocation = new ArrayList<>();
+  @Getter private final List<Location> lastFallLocation = new ArrayList<>();
   
   //Artifact variables
   @Getter @Setter private long magnetArtifactCooldownTime = 0;
