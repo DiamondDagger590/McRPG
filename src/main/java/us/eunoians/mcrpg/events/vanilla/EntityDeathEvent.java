@@ -24,6 +24,11 @@ public class EntityDeathEvent implements Listener{
   @EventHandler
   public void deathEvent(org.bukkit.event.entity.EntityDeathEvent e){
     LivingEntity entity = e.getEntity();
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+      return;
+    }
     if(entity.getKiller() != null && entity.hasMetadata("GuardianExp")){
       int exp = entity.getMetadata("GuardianExp").get(0).asInt();
       Player p = entity.getKiller();

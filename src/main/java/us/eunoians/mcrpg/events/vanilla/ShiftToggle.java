@@ -3,7 +3,11 @@ package us.eunoians.mcrpg.events.vanilla;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.NPC;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -24,12 +28,13 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ShiftToggle implements Listener {
 
-  private static HashMap<UUID, Integer> playersCharging = new HashMap<>();
+  private static Map<UUID, Integer> playersCharging = new HashMap<>();
 
   public static boolean isPlayerCharging(Player p){
     return playersCharging.containsKey(p.getUniqueId());
@@ -40,6 +45,11 @@ public class ShiftToggle implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void shiftToggle(PlayerToggleSneakEvent e){
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
+      return;
+    }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
       return;
     }
     //Get the player and the McRPGPlayer

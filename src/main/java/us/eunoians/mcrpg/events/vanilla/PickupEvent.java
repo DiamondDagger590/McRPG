@@ -29,6 +29,11 @@ public class PickupEvent implements Listener {
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || e.getItem().getItemStack().getAmount() < 1){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
+      return;
+    }
     McRPGPlayer mp;
     try{
       mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());

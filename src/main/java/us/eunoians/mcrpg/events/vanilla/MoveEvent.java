@@ -57,6 +57,11 @@ public class MoveEvent implements Listener{
     if(player.getAbilityLoadout() == null){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
+      return;
+    }
     if(player.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&
             UnlockedAbilities.NYMPHS_VITALITY.isEnabled() && player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY).isToggled()){
       Biome biome = e.getPlayer().getLocation().getBlock().getBiome();

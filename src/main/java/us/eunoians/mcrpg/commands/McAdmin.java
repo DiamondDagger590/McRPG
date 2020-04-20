@@ -7,7 +7,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
@@ -36,51 +35,52 @@ import java.util.Calendar;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static us.eunoians.mcrpg.types.Skills.*;
+import static us.eunoians.mcrpg.types.Skills.fromString;
+import static us.eunoians.mcrpg.types.Skills.isSkill;
+import static us.eunoians.mcrpg.types.Skills.values;
 
 @SuppressWarnings("Duplicates")
-public class McAdmin implements CommandExecutor {
-
+public class McAdmin implements CommandExecutor{
+  
   @Override
-  public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+  public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
     McRPG plugin = McRPG.getInstance();
     FileConfiguration config = plugin.getLangFile();
-    if(sender instanceof Player) {
+    if(sender instanceof Player){
       Player admin = (Player) sender;
       //Disabled worlds
       String world = admin.getWorld().getName();
       if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
-              McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)) {
+           McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(world)){
         return true;
       }
-      if(args.length < 3) {
+      if(args.length < 3){
         sendHelpMessage(admin);
         return true;
       }
-      else {
-        if(args[0].equalsIgnoreCase("give")) {
-          if(args[1].equalsIgnoreCase("abilitypoints")) {
-            if(args.length < 4) {
+      else{
+        if(args[0].equalsIgnoreCase("give")){
+          if(args[1].equalsIgnoreCase("abilitypoints")){
+            if(args.length < 4){
               sendHelpMessage(admin);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!Methods.isInt(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!Methods.isInt(args[3])){
                 admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
-              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.points"))) {
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.points"))){
                 admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               int amount = Integer.parseInt(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 mp.setAbilityPoints(mp.getAbilityPoints() + amount);
@@ -89,7 +89,7 @@ public class McAdmin implements CommandExecutor {
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.setAbilityPoints(mp.getAbilityPoints() + amount);
                 admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
@@ -97,35 +97,34 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("exp")) {
+          else if(args[1].equalsIgnoreCase("exp")){
             //If the command does not include the skill parameter
-            if(args.length < 5) {
-              if(args.length < 4) {
+            if(args.length < 5){
+              if(args.length < 4){
                 sendHelpMessage(admin);
                 return true;
               }
-              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.exp"))) {
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.exp"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
-                if(!Methods.isInt(args[3])) {
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
+                if(!Methods.isInt(args[3])){
                   admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                   return true;
                 }
-                else {
+                else{
                   OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-                  if(offlinePlayer.isOnline()) {
+                  if(offlinePlayer.isOnline()){
                     McRPGPlayer mp;
                     try{
                       mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                       return true;
                     }
                     mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
@@ -134,7 +133,7 @@ public class McAdmin implements CommandExecutor {
                     ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableExp").replace("%Amount%", args[3])));
                     return true;
                   }
-                  else {
+                  else{
                     McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                     mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
                     mp.saveData();
@@ -144,84 +143,83 @@ public class McAdmin implements CommandExecutor {
                 }
               }
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!Methods.isInt(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!Methods.isInt(args[3])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
-              if(!isSkill(args[4])) {
+              if(!isSkill(args[4])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
                 return true;
               }
-              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.exp"))) {
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.exp"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               int amount = Integer.parseInt(args[3]);
               Skills skill = fromString(args[4]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
-                }                Skill s = mp.getSkill(skill);
+                }
+                Skill s = mp.getSkill(skill);
                 s.giveExp(mp, amount, GainReason.COMMAND);
                 s.updateExpToLevel();
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), amount);
                   }
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                             .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Exp")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
+                                                                                                 .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.getSkill(skill).giveExp(mp, amount, GainReason.COMMAND);
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                             .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("level")) {
-            if(args.length < 5) {
-              if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("level")){
+            if(args.length < 5){
+              if(args.length < 4){
                 sendHelpMessage(admin);
                 return true;
               }
-              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.level"))) {
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.level"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
-                if(!Methods.isInt(args[3])) {
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
+                if(!Methods.isInt(args[3])){
                   admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                   return true;
                 }
-                else {
+                else{
                   OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-                  if(offlinePlayer.isOnline()) {
+                  if(offlinePlayer.isOnline()){
                     McRPGPlayer mp;
                     try{
                       mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                       return true;
                     }
                     mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
@@ -230,7 +228,7 @@ public class McAdmin implements CommandExecutor {
                     ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableLevels").replace("%Amount%", args[3])));
                     return true;
                   }
-                  else {
+                  else{
                     McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                     mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
                     mp.saveData();
@@ -240,28 +238,27 @@ public class McAdmin implements CommandExecutor {
                 }
               }
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!Methods.isInt(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!Methods.isInt(args[3])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
-              if(!isSkill(args[4])) {
+              if(!isSkill(args[4])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
                 return true;
               }
-              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.level"))) {
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.give.*") || admin.hasPermission("mcadmin.give.level"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               int amount = Integer.parseInt(args[3]);
               Skills skill = fromString(args[4]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Skill s = mp.getSkill(skill);
@@ -269,81 +266,80 @@ public class McAdmin implements CommandExecutor {
                 s.updateExpToLevel();
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), 0);
                   }
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                             .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Level")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
+                                                                                                 .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.getSkill(skill).giveLevels(mp, amount, true);
                 mp.getSkill(skill).updateExpToLevel();
-
+                
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                             .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("ability")) {
-            if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("ability")){
+            if(args.length < 4){
               sendHelpMessage(admin);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!UnlockedAbilities.isAbility(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!UnlockedAbilities.isAbility(args[3])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAbility")));
                 return true;
               }
-              if(!(admin.hasPermission("admin.*") || admin.hasPermission("admin.give.*") || admin.hasPermission("admin.give.ability"))) {
+              if(!(admin.hasPermission("admin.*") || admin.hasPermission("admin.give.*") || admin.hasPermission("admin.give.ability"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
-                if(mp.getAbilityLoadout().size() ==  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")) {
+                if(mp.getAbilityLoadout().size() == McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.LoadoutFull")));
                   return true;
                 }
-                if(mp.getAbilityLoadout().contains(ability)) {
+                if(mp.getAbilityLoadout().contains(ability)){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AlreadyHave")));
                   return true;
                 }
                 BaseAbility baseAbility = mp.getBaseAbility(ability);
-                if(!baseAbility.isUnlocked()) {
+                if(!baseAbility.isUnlocked()){
                   baseAbility.setCurrentTier(1);
                 }
-                if(baseAbility.getCurrentTier() == 0) {
+                if(baseAbility.getCurrentTier() == 0){
                   baseAbility.setCurrentTier(1);
                 }
                 baseAbility.setUnlocked(true);
                 baseAbility.setToggled(true);
-                if(baseAbility instanceof RemoteTransfer) {
+                if(baseAbility instanceof RemoteTransfer){
                   ((RemoteTransfer) baseAbility).updateBlocks();
                 }
                 mp.getAbilityLoadout().add(ability);
@@ -352,14 +348,14 @@ public class McAdmin implements CommandExecutor {
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
                 BaseAbility baseAbility = mp.getBaseAbility(ability);
-                if(!baseAbility.isUnlocked()) {
+                if(!baseAbility.isUnlocked()){
                   baseAbility.setCurrentTier(1);
                 }
                 baseAbility.setUnlocked(true);
@@ -370,23 +366,23 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
           else if(args[1].equalsIgnoreCase("book")){
             //mcadmin give book %type% %player%
-            if(args.length < 4) {
+            if(args.length < 4){
               sendHelpMessage(admin);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[3])) {
-              if(!(args[2].equalsIgnoreCase("unlock") || args[2].equalsIgnoreCase("upgrade"))) {
+            if(Methods.hasPlayerLoggedInBefore(args[3])){
+              if(!(args[2].equalsIgnoreCase("unlock") || args[2].equalsIgnoreCase("upgrade"))){
                 sendHelpMessage(admin);
                 return true;
               }
-              if(!(admin.hasPermission("admin.*") || admin.hasPermission("admin.give.*") || admin.hasPermission("admin.give.book"))) {
+              if(!(admin.hasPermission("admin.*") || admin.hasPermission("admin.give.*") || admin.hasPermission("admin.give.book"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
@@ -395,7 +391,7 @@ public class McAdmin implements CommandExecutor {
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerOffline")));
                 return true;
               }
-              else {
+              else{
                 Player p = (Player) offlinePlayer;
                 ItemStack book = args[2].equalsIgnoreCase("unlock") ? SkillBookFactory.generateUnlockBook() : SkillBookFactory.generateUpgradeBook();
                 p.getWorld().dropItemNaturally(p.getLocation(), book);
@@ -404,196 +400,192 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else {
+          else{
             sendHelpMessage(admin);
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("replace")) {
-          if(args.length < 4) {
+        else if(args[0].equalsIgnoreCase("replace")){
+          if(args.length < 4){
             sendHelpMessage(admin);
             return true;
           }
-          if(Methods.hasPlayerLoggedInBefore(args[1])) {
-            if(!UnlockedAbilities.isAbility(args[2]) && !UnlockedAbilities.isAbility(args[3])) {
+          if(Methods.hasPlayerLoggedInBefore(args[1])){
+            if(!UnlockedAbilities.isAbility(args[2]) && !UnlockedAbilities.isAbility(args[3])){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAbility")));
               return true;
             }
-            else {
-              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.replace.*") || admin.hasPermission("mcadmin.replace.ability"))) {
+            else{
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.replace.*") || admin.hasPermission("mcadmin.replace.ability"))){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
               UnlockedAbilities old = UnlockedAbilities.fromString(args[2]);
               UnlockedAbilities newAbility = UnlockedAbilities.fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
-                if(!mp.getAbilityLoadout().contains(old)) {
+                if(!mp.getAbilityLoadout().contains(old)){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                          .replace("%Ability%", old.getName())));
+                                                                               .replace("%Ability%", old.getName())));
                   return true;
                 }
-                else {
+                else{
                   BaseAbility ab = mp.getBaseAbility(newAbility);
-                  if(!ab.isUnlocked()) {
+                  if(!ab.isUnlocked()){
                     ab.setCurrentTier(1);
                   }
                   ab.setToggled(true);
                   ab.setUnlocked(true);
                   mp.getAbilityLoadout().set(mp.getAbilityLoadout().indexOf(old), newAbility);
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Replaced").replace("%Player%", offlinePlayer.getName())
-                          .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
+                                                                               .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
                   offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Replaced")
-                          .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
+                                                                                                   .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
                   return true;
                 }
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                if(!mp.getAbilityLoadout().contains(old)) {
+                if(!mp.getAbilityLoadout().contains(old)){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                          .replace("%Ability%", old.getName())));
+                                                                               .replace("%Ability%", old.getName())));
                   return true;
                 }
-                else {
+                else{
                   BaseAbility ab = mp.getBaseAbility(newAbility);
-                  if(!ab.isUnlocked()) {
+                  if(!ab.isUnlocked()){
                     ab.setCurrentTier(1);
                   }
                   ab.setToggled(true);
                   ab.setUnlocked(true);
                   mp.getAbilityLoadout().set(mp.getAbilityLoadout().indexOf(old), newAbility);
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Replaced")
-                          .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
+                                                                               .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
                   return true;
                 }
               }
             }
           }
-          else {
+          else{
             admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("remove")) {
-          if(Methods.hasPlayerLoggedInBefore(args[1])) {
-            if(!UnlockedAbilities.isAbility(args[2])) {
+        else if(args[0].equalsIgnoreCase("remove")){
+          if(Methods.hasPlayerLoggedInBefore(args[1])){
+            if(!UnlockedAbilities.isAbility(args[2])){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAbility")));
               return true;
             }
-            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.remove.*") || admin.hasPermission("mcadmin.remove.ability"))) {
+            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.remove.*") || admin.hasPermission("mcadmin.remove.ability"))){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
               return true;
             }
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
             UnlockedAbilities ability = UnlockedAbilities.fromString(args[2]);
-            if(offlinePlayer.isOnline()) {
+            if(offlinePlayer.isOnline()){
               McRPGPlayer mp;
               try{
                 mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-              }
-              catch(McRPGPlayerNotFoundException exception){
+              }catch(McRPGPlayerNotFoundException exception){
                 return true;
               }
-              if(!mp.getAbilityLoadout().contains(ability)) {
+              if(!mp.getAbilityLoadout().contains(ability)){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                        .replace("%Ability%", ability.getName())));
+                                                                             .replace("%Ability%", ability.getName())));
                 return true;
               }
-              else {
+              else{
                 mp.getAbilityLoadout().remove(ability);
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Remove.Ability")
-                        .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Removed.Ability")
-                        .replace("%Ability%", ability.getName())));
+                                                                                                 .replace("%Ability%", ability.getName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-              if(!mp.getAbilityLoadout().contains(ability)) {
+              if(!mp.getAbilityLoadout().contains(ability)){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                        .replace("%Ability%", ability.getName())));
+                                                                             .replace("%Ability%", ability.getName())));
                 return true;
               }
-              else {
+              else{
                 mp.getAbilityLoadout().remove(ability);
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Remove.Ability")
-                        .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
           }
-          else {
+          else{
             admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             return true;
           }
-
+          
         }
-        else if(args[0].equalsIgnoreCase("view")) {
-          if(args[1].equalsIgnoreCase("loadout")) {
-            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.view.*") || admin.hasPermission("mcadmin.view.loadout"))) {
+        else if(args[0].equalsIgnoreCase("view")){
+          if(args[1].equalsIgnoreCase("loadout")){
+            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.view.*") || admin.hasPermission("mcadmin.view.loadout"))){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-                if(offlinePlayer.isOnline()) {
+                if(offlinePlayer.isOnline()){
                   McRPGPlayer mp;
                   try{
                     mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                  }
-                  catch(McRPGPlayerNotFoundException exception){
+                  }catch(McRPGPlayerNotFoundException exception){
                     return true;
                   }
                   admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
                   mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(admin::sendMessage);
                   return true;
                 }
-                else {
+                else{
                   McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                   admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
                   mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(admin::sendMessage);
                   return true;
                 }
               }
-              else {
+              else{
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else if(isSkill(args[1])) {
+          else if(isSkill(args[1])){
             if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.view.*") || admin.hasPermission("mcadmin.view." + fromString(args[1])
-                    .getName().toLowerCase()))) {
+                                                                                                                                      .getName().toLowerCase()))){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 Skills skill = fromString(args[1]);
-                if(offlinePlayer.isOnline()) {
+                if(offlinePlayer.isOnline()){
                   McRPGPlayer mp;
                   try{
                     mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                  }
-                  catch(McRPGPlayerNotFoundException exception){
+                  }catch(McRPGPlayerNotFoundException exception){
                     return true;
                   }
                   Skill skillInfo = mp.getSkill(skill);
@@ -604,7 +596,7 @@ public class McAdmin implements CommandExecutor {
                   skillInfo.getAbilities().stream().map(ability -> Methods.color("&e" + ability.getGenericAbility().getName() + ": Unlocked-" + ability.isUnlocked() + " Tier-" + ability.getCurrentTier())).forEach(admin::sendMessage);
                   return true;
                 }
-                else {
+                else{
                   McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                   Skill skillInfo = mp.getSkill(skill);
                   admin.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
@@ -615,178 +607,217 @@ public class McAdmin implements CommandExecutor {
                   return true;
                 }
               }
-              else {
+              else{
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else {
+          else{
             admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("cooldown")) {
-          if(args[1].equalsIgnoreCase("set")) {
-            if(args.length < 5) {
+        else if(args[0].equalsIgnoreCase("cooldown")){
+          if(args[1].equalsIgnoreCase("set")){
+            if(args.length < 5){
               sendHelpMessage(admin);
               return true;
             }
-            if(!UnlockedAbilities.isAbility(args[3])) {
+            if(!UnlockedAbilities.isAbility(args[3])){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()) {
+                if(ability.isPassiveAbility()){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
-                else {
-                  if(!Methods.isInt(args[4])) {
+                else{
+                  if(!Methods.isInt(args[4])){
                     admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAInt")));
                     return true;
                   }
-                  else {
-                    if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.set"))) {
+                  else{
+                    if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.set"))){
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
                       return true;
                     }
                     int cooldown = Integer.parseInt(args[4]);
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND, cooldown);
-                    if(offlinePlayer.isOnline()) {
+                    if(offlinePlayer.isOnline()){
                       McRPGPlayer mp;
                       try{
                         mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                      }
-                      catch(McRPGPlayerNotFoundException exception){
+                      }catch(McRPGPlayerNotFoundException exception){
                         return true;
                       }
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                   .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.WasSet")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
+                                                                                                       .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
                       mp.saveData();
                       return true;
                     }
-                    else {
+                    else{
                       McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                   .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       mp.saveData();
                       return true;
                     }
                   }
                 }
               }
-              else {
+              else{
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else if(args[1].equalsIgnoreCase("remove")) {
-            if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("remove")){
+            if(args.length < 4){
               sendHelpMessage(admin);
               return true;
             }
-            if(!UnlockedAbilities.isAbility(args[3])) {
+            if(args[3].equalsIgnoreCase("replace")){
+              if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.remove"))){
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+                return true;
+              }
+              OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
+              if(offlinePlayer.isOnline()){
+                McRPGPlayer mp;
+                try{
+                  mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                }catch(McRPGPlayerNotFoundException exception){
+                  return true;
+                }
+                if(mp.getEndTimeForReplaceCooldown() <= 0){
+                  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.NoReplaceCooldown")
+                                                                               .replace("%Player%", offlinePlayer.getName())));
+                  return true;
+                }
+                mp.setEndTimeForReplaceCooldown(0);
+                mp.updateCooldowns();
+                mp.saveData();
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.ReplaceRemove")
+                                                                             .replace("%Player%", offlinePlayer.getName())));
+                offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.ReplaceRemoved")));
+                return true;
+              }
+              else{
+                McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
+                if(mp.getEndTimeForReplaceCooldown() <= 0){
+                  admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.NoReplaceCooldown")
+                                                                               .replace("%Player%", offlinePlayer.getName())));
+                  return true;
+                }
+                mp.setEndTimeForReplaceCooldown(0);
+                mp.updateCooldowns();
+                mp.saveData();
+                admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.ReplaceRemove")
+                                                                             .replace("%Player%", offlinePlayer.getName())));
+                mp.saveData();
+                return true;
+              }
+            }
+            if(!UnlockedAbilities.isAbility(args[3])){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()) {
+                if(ability.isPassiveAbility()){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
-                else {
-                  if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.remove"))) {
+                else{
+                  if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.remove"))){
                     admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
                     return true;
                   }
-                  if(offlinePlayer.isOnline()) {
+                  if(offlinePlayer.isOnline()){
                     McRPGPlayer mp;
                     try{
                       mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                       return true;
                     }
-                    if(mp.getCooldown(ability) == -1) {
+                    if(mp.getCooldown(ability) == -1){
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
                       return true;
                     }
                     mp.removeAbilityOnCooldown(ability);
                     admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Remove")
-                            .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                                 .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                     offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Removed")
-                            .replace("%Ability%", ability.getName())));
+                                                                                                     .replace("%Ability%", ability.getName())));
                     mp.saveData();
                     return true;
                   }
-                  else {
+                  else{
                     McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                    if(mp.getCooldown(ability) == -1) {
+                    if(mp.getCooldown(ability) == -1){
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
                       return true;
                     }
                     mp.removeAbilityOnCooldown(ability);
                     admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Remove")
-                            .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                                 .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                     mp.saveData();
                     return true;
                   }
                 }
               }
-              else {
+              else{
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else if(args[1].equalsIgnoreCase("add")) {
-            if(args.length < 5) {
+          else if(args[1].equalsIgnoreCase("add")){
+            if(args.length < 5){
               sendHelpMessage(admin);
               return true;
             }
-            if(!UnlockedAbilities.isAbility(args[2])) {
+            if(!UnlockedAbilities.isAbility(args[2])){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()) {
+                if(ability.isPassiveAbility()){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
-                else {
-                  if(!Methods.isInt(args[4])) {
+                else{
+                  if(!Methods.isInt(args[4])){
                     admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAInt")));
                     return true;
                   }
-                  else {
-                    if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.add"))) {
+                  else{
+                    if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.cooldown.*") || admin.hasPermission("mcadmin.cooldown.add"))){
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
                       return true;
                     }
                     int cooldown = Integer.parseInt(args[4]);
                     Calendar cal = Calendar.getInstance();
-                    if(offlinePlayer.isOnline()) {
+                    if(offlinePlayer.isOnline()){
                       McRPGPlayer mp;
                       try{
                         mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                      }
-                      catch(McRPGPlayerNotFoundException exception){
+                      }catch(McRPGPlayerNotFoundException exception){
                         return true;
                       }
                       long oldCooldown = mp.getCooldown(ability);
@@ -794,68 +825,67 @@ public class McAdmin implements CommandExecutor {
                       cal.add(Calendar.SECOND, cooldown);
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Add")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                   .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Added")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
+                                                                                                       .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
                       mp.saveData();
                       return true;
                     }
-                    else {
+                    else{
                       McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                       long oldCooldown = mp.getCooldown(ability);
                       cal.setTimeInMillis(oldCooldown);
                       cal.add(Calendar.SECOND, cooldown);
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Add")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                   .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       mp.saveData();
                       return true;
                     }
                   }
                 }
               }
-              else {
+              else{
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else {
+          else{
             sendHelpMessage(admin);
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("reset")) {
-          if(args[1].equalsIgnoreCase("skill")) {
-            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.skill"))) {
+        else if(args[0].equalsIgnoreCase("reset")){
+          if(args[1].equalsIgnoreCase("skill")){
+            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.skill"))){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
               return true;
             }
-            if(args.length < 4) {
+            if(args.length < 4){
               sendHelpMessage(admin);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(!isSkill(args[3])) {
+              if(!isSkill(args[3])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
                 return true;
               }
               Skills skillEnum = fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Skill skill = mp.getSkill(skillEnum);
-                for(BaseAbility baseAbility : skill.getAbilities()) {
+                for(BaseAbility baseAbility : skill.getAbilities()){
                   baseAbility.setUnlocked(false);
                   baseAbility.setCurrentTier(0);
                   baseAbility.setToggled(true);
-                  if(baseAbility instanceof RemoteTransfer) {
+                  if(baseAbility instanceof RemoteTransfer){
                     ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                     mp.setLinkedToRemoteTransfer(false);
                     RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
@@ -865,17 +895,17 @@ public class McAdmin implements CommandExecutor {
                 skill.setCurrentLevel(0);
                 skill.updateExpToLevel();
                 ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
-                for(UnlockedAbilities remove : toRemove) {
+                for(UnlockedAbilities remove : toRemove){
                   mp.getAbilityLoadout().remove(remove);
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillWasReset")
-                        .replace("%Skill%", skill.getType().getDisplayName())));
+                                                                                                 .replace("%Skill%", skill.getType().getDisplayName())));
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
                   }
@@ -883,21 +913,21 @@ public class McAdmin implements CommandExecutor {
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 Skill skill = mp.getSkill(skillEnum);
-                for(BaseAbility baseAbility : skill.getAbilities()) {
+                for(BaseAbility baseAbility : skill.getAbilities()){
                   baseAbility.setUnlocked(false);
                   baseAbility.setCurrentTier(0);
                   baseAbility.setToggled(true);
-                  if(baseAbility instanceof RemoteTransfer) {
+                  if(baseAbility instanceof RemoteTransfer){
                     ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                     mp.setLinkedToRemoteTransfer(false);
                     RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                   }
                 }
                 ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
-                for(UnlockedAbilities remove : toRemove) {
+                for(UnlockedAbilities remove : toRemove){
                   mp.getAbilityLoadout().remove(remove);
                 }
                 skill.setCurrentExp(0);
@@ -905,101 +935,99 @@ public class McAdmin implements CommandExecutor {
                 mp.updatePowerLevel();
                 skill.updateExpToLevel();
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("ability")) {
-            if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("ability")){
+            if(args.length < 4){
               sendHelpMessage(admin);
               return true;
             }
-            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.ability"))) {
+            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.ability"))){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(!UnlockedAbilities.isAbility(args[3])) {
+              if(!UnlockedAbilities.isAbility(args[3])){
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
                 return true;
               }
               UnlockedAbilities abilityEnum = UnlockedAbilities.fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
                 baseAbility.setUnlocked(false);
                 baseAbility.setCurrentTier(0);
                 baseAbility.setToggled(true);
-
-                if(baseAbility instanceof RemoteTransfer) {
+                
+                if(baseAbility instanceof RemoteTransfer){
                   ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                   mp.setLinkedToRemoteTransfer(false);
                   RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                 }
-
+                
                 UnlockedAbilities abilities = (UnlockedAbilities) baseAbility.getGenericAbility();
                 mp.getAbilityLoadout().remove(abilities);
-
+                
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityReset")
-                        .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityWasReset")
-                        .replace("%Ability%", abilities.getName())));
+                                                                                                 .replace("%Ability%", abilities.getName())));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-
+                
                 BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
                 baseAbility.setUnlocked(false);
                 baseAbility.setCurrentTier(0);
                 baseAbility.setToggled(true);
-
-                if(baseAbility instanceof RemoteTransfer) {
+                
+                if(baseAbility instanceof RemoteTransfer){
                   ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                   mp.setLinkedToRemoteTransfer(false);
                   RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                 }
-
+                
                 UnlockedAbilities abilities = (UnlockedAbilities) baseAbility.getGenericAbility();
                 mp.getAbilityLoadout().remove(abilities);
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityReset")
-                        .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("player")) {
-            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.player"))) {
+          else if(args[1].equalsIgnoreCase("player")){
+            if(!(admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.reset.*") || admin.hasPermission("mcadmin.reset.player"))){
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Arrays.stream(values()).forEach(s -> {
@@ -1010,38 +1038,38 @@ public class McAdmin implements CommandExecutor {
                 mp.setAbilityPoints(0);
                 mp.setRedeemableExp(0);
                 mp.setRedeemableLevels(0);
-                if(mp.getReadyingAbilityBit() != null) {
+                if(mp.getReadyingAbilityBit() != null){
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
                 }
-
+                
                 ((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
                 mp.setLinkedToRemoteTransfer(false);
                 RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
-
+                
                 mp.setReadying(false);
                 mp.setLinkedToRemoteTransfer(false);
-
+                
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     Skill skill = mp.getSkill(expDisplayType.getSkill());
                     expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
                   }
                 }
                 mp.setDisplayType(DisplayType.SCOREBOARD);
-
+                
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
-                        .replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerWasReset")));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-
+                
                 Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
                 mp.updatePowerLevel();
                 Arrays.stream(values()).forEach(s -> mp.getSkill(s).updateExpToLevel());
@@ -1049,7 +1077,7 @@ public class McAdmin implements CommandExecutor {
                 mp.setAbilityPoints(0);
                 mp.setRedeemableExp(0);
                 mp.setRedeemableLevels(0);
-                if(mp.getReadyingAbilityBit() != null) {
+                if(mp.getReadyingAbilityBit() != null){
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
                 }
@@ -1057,14 +1085,14 @@ public class McAdmin implements CommandExecutor {
                 mp.setLinkedToRemoteTransfer(false);
                 RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
-                        .replace("%Player%", offlinePlayer.getName())));
+                                                                             .replace("%Player%", offlinePlayer.getName())));
                 mp.setReadying(false);
                 mp.setDisplayType(DisplayType.SCOREBOARD);
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
@@ -1091,19 +1119,19 @@ public class McAdmin implements CommandExecutor {
                   if(!uuid.equals(admin.getUniqueId())){
                     OfflinePlayer targ = Bukkit.getOfflinePlayer(uuid);
                     if(targ.isOnline()){
-                      ((Player) targ).sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyWasForceDisbanded")));
+                      ((Player) targ).sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyWasForceDisbanded")));
                     }
                   }
                 }
-                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceDisbandedParty")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceDisbandedParty")));
                 plugin.getPartyManager().removeParty(party.getPartyID());
               }
               else{
-                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
               }
             }
             else{
-              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             }
             return true;
           }
@@ -1125,16 +1153,16 @@ public class McAdmin implements CommandExecutor {
                 Party party = plugin.getPartyManager().getParty(mp.getPartyID());
                 party.kickPlayer(mp.getPartyID());
                 if(offlinePlayer.isOnline()){
-                  ((Player) offlinePlayer).sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceKickedFromParty")));
+                  ((Player) offlinePlayer).sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceKickedFromParty")));
                 }
                 admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceKickedPlayer").replace("%Player%", offlinePlayer.getName())));
               }
               else{
-                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
               }
             }
             else{
-              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             }
             return true;
           }
@@ -1179,16 +1207,16 @@ public class McAdmin implements CommandExecutor {
                 }
                 party.saveParty();
                 if(offlinePlayer.isOnline()){
-                  ((Player) offlinePlayer).sendMessage(Methods.color( plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetOwnerFromParty")));
+                  ((Player) offlinePlayer).sendMessage(Methods.color(plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetOwnerFromParty")));
                 }
                 admin.sendMessage(Methods.color(plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetOwner").replace("%Player%", offlinePlayer.getName())));
               }
               else{
-                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
               }
             }
             else{
-              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             }
             return true;
           }
@@ -1214,14 +1242,14 @@ public class McAdmin implements CommandExecutor {
                 Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
                 party.setName(args[3]);
                 admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ForceSetPartyName")
-                .replace("%Player%", offlinePlayer.getName()).replace("%Name%", args[3])));
+                                                                                    .replace("%Player%", offlinePlayer.getName()).replace("%Name%", args[3])));
               }
               else{
-                admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
               }
             }
             else{
-              admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+              admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             }
             return true;
           }
@@ -1245,7 +1273,7 @@ public class McAdmin implements CommandExecutor {
               else{
                 int expToGive = Integer.parseInt(args[3]);
                 if(expToGive <= 0){
-                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyExpInvalid")));
+                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyExpInvalid")));
                   return true;
                 }
                 if(Methods.hasPlayerLoggedInBefore(args[4])){
@@ -1264,11 +1292,11 @@ public class McAdmin implements CommandExecutor {
                     
                   }
                   else{
-                    admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                    admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
                   }
                 }
                 else{
-                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 }
               }
               return true;
@@ -1286,7 +1314,7 @@ public class McAdmin implements CommandExecutor {
               else{
                 int levelsToGive = Integer.parseInt(args[3]);
                 if(levelsToGive <= 0){
-                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsInvalid")));
+                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsInvalid")));
                   return true;
                 }
                 if(Methods.hasPlayerLoggedInBefore(args[4])){
@@ -1302,59 +1330,59 @@ public class McAdmin implements CommandExecutor {
                     party.setPartyLevel(Math.min(party.getPartyLevel() + levelsToGive, McRPG.getInstance().getPartyManager().getMaxLevel()));
                     admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsGiven")
                                                                                         .replace("%Levels%", Integer.toString(levelsToGive)).replace("%Player%", offlinePlayer.getName())));
-        
+                    
                   }
                   else{
-                    admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
+                    admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PlayerNotHaveParty")));
                   }
                 }
                 else{
-                  admin.sendMessage(Methods.color(admin,plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
+                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 }
               }
               return true;
             }
           }
         }
-        else {
+        else{
           sendHelpMessage(admin);
           return true;
         }
       }
     }
-    else {
-      if(args.length < 3) {
+    else{
+      if(args.length < 3){
         sendHelpMessage(sender);
         return true;
       }
-      else {
-        if(args[0].equalsIgnoreCase("give")) {
-          if(args[1].equalsIgnoreCase("abilitypoints")) {
-            if(args.length < 4) {
+      else{
+        if(args[0].equalsIgnoreCase("give")){
+          if(args[1].equalsIgnoreCase("abilitypoints")){
+            if(args.length < 4){
               sendHelpMessage(sender);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!Methods.isInt(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!Methods.isInt(args[3])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               int amount = Integer.parseInt(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
-                }                mp.setAbilityPoints(mp.getAbilityPoints() + amount);
+                }
+                mp.setAbilityPoints(mp.getAbilityPoints() + amount);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.AbilityPoints").replace("%Amount%", args[3])));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.setAbilityPoints(mp.getAbilityPoints() + amount);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AbilityPoints").replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName())));
@@ -1362,30 +1390,29 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("exp")) {
-            if(args.length < 5) {
-              if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("exp")){
+            if(args.length < 5){
+              if(args.length < 4){
                 sendHelpMessage(sender);
                 return true;
               }
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
-                if(!Methods.isInt(args[3])) {
-                  sender.sendMessage(Methods.color( plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
+                if(!Methods.isInt(args[3])){
+                  sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                   return true;
                 }
-                else {
+                else{
                   OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-                  if(offlinePlayer.isOnline()) {
+                  if(offlinePlayer.isOnline()){
                     McRPGPlayer mp;
                     try{
                       mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                       return true;
                     }
                     mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
@@ -1394,7 +1421,7 @@ public class McAdmin implements CommandExecutor {
                     ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableExp").replace("%Amount%", args[3])));
                     return true;
                   }
-                  else {
+                  else{
                     McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                     mp.setRedeemableExp(mp.getRedeemableExp() + Integer.parseInt(args[3]));
                     mp.saveData();
@@ -1404,24 +1431,23 @@ public class McAdmin implements CommandExecutor {
                 }
               }
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!Methods.isInt(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!Methods.isInt(args[3])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
-              if(!isSkill(args[4])) {
+              if(!isSkill(args[4])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               int amount = Integer.parseInt(args[3]);
               Skills skill = fromString(args[4]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Skill s = mp.getSkill(skill);
@@ -1429,52 +1455,51 @@ public class McAdmin implements CommandExecutor {
                 s.updateExpToLevel();
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), amount);
                   }
                 }
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                              .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Exp")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
+                                                                                                 .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.getSkill(skill).giveExp(mp, amount, GainReason.COMMAND);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Exp")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                              .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("level")) {
-            if(args.length < 5) {
-              if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("level")){
+            if(args.length < 5){
+              if(args.length < 4){
                 sendHelpMessage(sender);
                 return true;
               }
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
-                if(!Methods.isInt(args[3])) {
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
+                if(!Methods.isInt(args[3])){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                   return true;
                 }
-                else {
+                else{
                   OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-                  if(offlinePlayer.isOnline()) {
+                  if(offlinePlayer.isOnline()){
                     McRPGPlayer mp;
                     try{
                       mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                       return true;
                     }
                     mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
@@ -1483,7 +1508,7 @@ public class McAdmin implements CommandExecutor {
                     ((Player) offlinePlayer).sendMessage(Methods.color((Player) offlinePlayer, plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.RedeemableLevels").replace("%Amount%", args[3])));
                     return true;
                   }
-                  else {
+                  else{
                     McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                     mp.setRedeemableLevels(mp.getRedeemableLevels() + Integer.parseInt(args[3]));
                     mp.saveData();
@@ -1493,24 +1518,23 @@ public class McAdmin implements CommandExecutor {
                 }
               }
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!Methods.isInt(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!Methods.isInt(args[3])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnInt")));
                 return true;
               }
-              if(!isSkill(args[4])) {
+              if(!isSkill(args[4])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               int amount = Integer.parseInt(args[3]);
               Skills skill = fromString(args[4]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Skill s = mp.getSkill(skill);
@@ -1518,77 +1542,76 @@ public class McAdmin implements CommandExecutor {
                 s.updateExpToLevel();
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     expDisplayType.sendUpdate(s.getCurrentExp(), s.getExpToLevel(), s.getCurrentLevel(), 0);
                   }
                 }
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                              .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Level")
-                        .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
+                                                                                                 .replace("%Amount%", args[3]).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 mp.getSkill(skill).giveLevels(mp, amount, true);
                 mp.getSkill(skill).updateExpToLevel();
-
+                
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Level")
-                        .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
+                                                                              .replace("%Amount%", args[3]).replace("%Player%", offlinePlayer.getName()).replace("%Skill%", skill.getDisplayName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("ability")) {
-            if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("ability")){
+            if(args.length < 4){
               sendHelpMessage(sender);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
-              if(!UnlockedAbilities.isAbility(args[3])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
+              if(!UnlockedAbilities.isAbility(args[3])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAbility")));
                 return true;
               }
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
-                if(mp.getAbilityLoadout().size() ==  McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")) {
+                if(mp.getAbilityLoadout().size() == McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities")){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.LoadoutFull")));
                   return true;
                 }
-                if(mp.getAbilityLoadout().contains(ability)) {
+                if(mp.getAbilityLoadout().contains(ability)){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.AlreadyHave")));
                   return true;
                 }
                 BaseAbility baseAbility = mp.getBaseAbility(ability);
-                if(!baseAbility.isUnlocked()) {
+                if(!baseAbility.isUnlocked()){
                   baseAbility.setCurrentTier(1);
                 }
-                if(baseAbility.getCurrentTier() == 0) {
+                if(baseAbility.getCurrentTier() == 0){
                   baseAbility.setCurrentTier(1);
                 }
                 baseAbility.setUnlocked(true);
                 baseAbility.setToggled(true);
-                if(baseAbility instanceof RemoteTransfer) {
+                if(baseAbility instanceof RemoteTransfer){
                   ((RemoteTransfer) baseAbility).updateBlocks();
                 }
                 mp.getAbilityLoadout().add(ability);
@@ -1597,14 +1620,14 @@ public class McAdmin implements CommandExecutor {
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())) {
+                if(!ability.isPassiveAbility() && mp.doesPlayerHaveActiveAbilityFromSkill(ability.getSkill())){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.HasActive")));
                   return true;
                 }
                 BaseAbility baseAbility = mp.getBaseAbility(ability);
-                if(!baseAbility.isUnlocked()) {
+                if(!baseAbility.isUnlocked()){
                   baseAbility.setCurrentTier(1);
                 }
                 baseAbility.setUnlocked(true);
@@ -1615,19 +1638,19 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
           else if(args[1].equalsIgnoreCase("book")){
             //mcadmin give book %type% %player%
-            if(args.length < 4) {
+            if(args.length < 4){
               sendHelpMessage(sender);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[3])) {
-              if(!(args[2].equalsIgnoreCase("unlock") || args[2].equalsIgnoreCase("upgrade"))) {
+            if(Methods.hasPlayerLoggedInBefore(args[3])){
+              if(!(args[2].equalsIgnoreCase("unlock") || args[2].equalsIgnoreCase("upgrade"))){
                 sendHelpMessage(sender);
                 return true;
               }
@@ -1636,7 +1659,7 @@ public class McAdmin implements CommandExecutor {
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerOffline")));
                 return true;
               }
-              else {
+              else{
                 Player p = (Player) offlinePlayer;
                 ItemStack book = args[2].equalsIgnoreCase("unlock") ? SkillBookFactory.generateUnlockBook() : SkillBookFactory.generateUpgradeBook();
                 p.getWorld().dropItemNaturally(p.getLocation(), book);
@@ -1645,177 +1668,174 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-
-          else {
+          
+          else{
             sendHelpMessage(sender);
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("replace")) {
-          if(args.length < 4) {
+        else if(args[0].equalsIgnoreCase("replace")){
+          if(args.length < 4){
             sendHelpMessage(sender);
             return true;
           }
-          if(Methods.hasPlayerLoggedInBefore(args[1])) {
-            if(!UnlockedAbilities.isAbility(args[2]) && !UnlockedAbilities.isAbility(args[3])) {
+          if(Methods.hasPlayerLoggedInBefore(args[1])){
+            if(!UnlockedAbilities.isAbility(args[2]) && !UnlockedAbilities.isAbility(args[3])){
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAbility")));
               return true;
             }
-            else {
+            else{
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
               UnlockedAbilities old = UnlockedAbilities.fromString(args[2]);
               UnlockedAbilities newAbility = UnlockedAbilities.fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
-                }                if(!mp.getAbilityLoadout().contains(old)) {
+                }
+                if(!mp.getAbilityLoadout().contains(old)){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                          .replace("%Ability%", old.getName())));
+                                                                                .replace("%Ability%", old.getName())));
                   return true;
                 }
-                else {
+                else{
                   BaseAbility ab = mp.getBaseAbility(newAbility);
-                  if(!ab.isUnlocked()) {
+                  if(!ab.isUnlocked()){
                     ab.setCurrentTier(1);
                   }
                   ab.setToggled(true);
                   ab.setUnlocked(true);
                   mp.getAbilityLoadout().set(mp.getAbilityLoadout().indexOf(old), newAbility);
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Replaced").replace("%Player%", offlinePlayer.getName())
-                          .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
+                                                                                .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
                   offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Receive.Replaced")
-                          .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
+                                                                                                   .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
                   return true;
                 }
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                if(!mp.getAbilityLoadout().contains(old)) {
+                if(!mp.getAbilityLoadout().contains(old)){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                          .replace("%Ability%", old.getName())));
+                                                                                .replace("%Ability%", old.getName())));
                   return true;
                 }
-                else {
+                else{
                   BaseAbility ab = mp.getBaseAbility(newAbility);
-                  if(!ab.isUnlocked()) {
+                  if(!ab.isUnlocked()){
                     ab.setCurrentTier(1);
                   }
                   ab.setToggled(true);
                   ab.setUnlocked(true);
                   mp.getAbilityLoadout().set(mp.getAbilityLoadout().indexOf(old), newAbility);
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.Replaced")
-                          .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
+                                                                                .replace("%Old_Ability%", old.getName()).replace("%New_Ability%", newAbility.getName())));
                   return true;
                 }
               }
             }
           }
-          else {
+          else{
             sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("remove")) {
-          if(Methods.hasPlayerLoggedInBefore(args[1])) {
-            if(!UnlockedAbilities.isAbility(args[2])) {
+        else if(args[0].equalsIgnoreCase("remove")){
+          if(Methods.hasPlayerLoggedInBefore(args[1])){
+            if(!UnlockedAbilities.isAbility(args[2])){
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAbility")));
               return true;
             }
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
             UnlockedAbilities ability = UnlockedAbilities.fromString(args[2]);
-            if(offlinePlayer.isOnline()) {
+            if(offlinePlayer.isOnline()){
               McRPGPlayer mp;
               try{
                 mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-              }
-              catch(McRPGPlayerNotFoundException exception){
+              }catch(McRPGPlayerNotFoundException exception){
                 return true;
               }
-              if(!mp.getAbilityLoadout().contains(ability)) {
+              if(!mp.getAbilityLoadout().contains(ability)){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                        .replace("%Ability%", ability.getName())));
+                                                                              .replace("%Ability%", ability.getName())));
                 return true;
               }
-              else {
+              else{
                 mp.getAbilityLoadout().remove(ability);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Remove.Ability")
-                        .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Removed.Ability")
-                        .replace("%Ability%", ability.getName())));
+                                                                                                 .replace("%Ability%", ability.getName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-              if(!mp.getAbilityLoadout().contains(ability)) {
+              if(!mp.getAbilityLoadout().contains(ability)){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility")
-                        .replace("%Ability%", ability.getName())));
+                                                                              .replace("%Ability%", ability.getName())));
                 return true;
               }
-              else {
+              else{
                 mp.getAbilityLoadout().remove(ability);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Remove.Ability")
-                        .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
           }
-          else {
+          else{
             sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
             return true;
           }
-
+          
         }
-        else if(args[0].equalsIgnoreCase("view")) {
-          if(args[1].equalsIgnoreCase("loadout")) {
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+        else if(args[0].equalsIgnoreCase("view")){
+          if(args[1].equalsIgnoreCase("loadout")){
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
                 mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(sender::sendMessage);
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers Loadout:"));
                 mp.getAbilityLoadout().stream().map(ab -> Methods.color("&e" + ab.getName())).forEach(sender::sendMessage);
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
-
+            
           }
-          else if(isSkill(args[1])) {
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+          else if(isSkill(args[1])){
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
               Skills skill = fromString(args[1]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Skill skillInfo = mp.getSkill(skill);
@@ -1826,7 +1846,7 @@ public class McAdmin implements CommandExecutor {
                 skillInfo.getAbilities().stream().map(ability -> Methods.color("&e" + ability.getGenericAbility().getName() + ": Unlocked-" + ability.isUnlocked() + " Tier-" + ability.getCurrentTier())).forEach(sender::sendMessage);
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 Skill skillInfo = mp.getSkill(skill);
                 sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + " &aPlayers " + skill.getName() + " Info:"));
@@ -1837,165 +1857,162 @@ public class McAdmin implements CommandExecutor {
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else {
+          else{
             sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("cooldown")) {
-          if(args[1].equalsIgnoreCase("set")) {
-            if(args.length < 5) {
+        else if(args[0].equalsIgnoreCase("cooldown")){
+          if(args[1].equalsIgnoreCase("set")){
+            if(args.length < 5){
               sendHelpMessage(sender);
               return true;
             }
-            if(!UnlockedAbilities.isAbility(args[3])) {
+            if(!UnlockedAbilities.isAbility(args[3])){
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()) {
+                if(ability.isPassiveAbility()){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
-                else {
-                  if(!Methods.isInt(args[4])) {
+                else{
+                  if(!Methods.isInt(args[4])){
                     sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAInt")));
                     return true;
                   }
-                  else {
+                  else{
                     int cooldown = Integer.parseInt(args[4]);
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND, cooldown);
-                    if(offlinePlayer.isOnline()) {
+                    if(offlinePlayer.isOnline()){
                       McRPGPlayer mp;
                       try{
                         mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                      }
-                      catch(McRPGPlayerNotFoundException exception){
+                      }catch(McRPGPlayerNotFoundException exception){
                         return true;
                       }
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                    .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.WasSet")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
+                                                                                                       .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
                       mp.saveData();
                       return true;
                     }
-                    else {
+                    else{
                       McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Set")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                    .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       mp.saveData();
                       return true;
                     }
                   }
                 }
               }
-              else {
+              else{
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else if(args[1].equalsIgnoreCase("remove")) {
-            if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("remove")){
+            if(args.length < 4){
               sendHelpMessage(sender);
               return true;
             }
-            if(!UnlockedAbilities.isAbility(args[3])) {
+            if(!UnlockedAbilities.isAbility(args[3])){
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()) {
+                if(ability.isPassiveAbility()){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
-                else {
-                  if(offlinePlayer.isOnline()) {
+                else{
+                  if(offlinePlayer.isOnline()){
                     McRPGPlayer mp;
                     try{
                       mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                    }
-                    catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                       return true;
                     }
-                    if(mp.getCooldown(ability) == -1) {
+                    if(mp.getCooldown(ability) == -1){
                       sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
                       return true;
                     }
                     mp.removeAbilityOnCooldown(ability);
                     sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Remove")
-                            .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                                  .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                     offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Removed")
-                            .replace("%Ability%", ability.getName())));
+                                                                                                     .replace("%Ability%", ability.getName())));
                     mp.saveData();
                     return true;
                   }
-                  else {
+                  else{
                     McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-                    if(mp.getCooldown(ability) == -1) {
+                    if(mp.getCooldown(ability) == -1){
                       sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Give.DoesNotHaveAbility").replace("%Ability%", ability.getName())));
                       return true;
                     }
                     mp.removeAbilityOnCooldown(ability);
                     sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Remove")
-                            .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                                  .replace("%Ability%", ability.getName()).replace("%Player%", offlinePlayer.getName())));
                     mp.saveData();
                     return true;
                   }
                 }
               }
-              else {
+              else{
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else if(args[1].equalsIgnoreCase("add")) {
-            if(args.length < 5) {
+          else if(args[1].equalsIgnoreCase("add")){
+            if(args.length < 5){
               sendHelpMessage(sender);
               return true;
             }
-            if(!UnlockedAbilities.isAbility(args[2])) {
+            if(!UnlockedAbilities.isAbility(args[2])){
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
               return true;
             }
-            else {
-              if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            else{
+              if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()) {
+                if(ability.isPassiveAbility()){
                   sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
-                else {
-                  if(!Methods.isInt(args[4])) {
+                else{
+                  if(!Methods.isInt(args[4])){
                     sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAInt")));
                     return true;
                   }
-                  else {
+                  else{
                     int cooldown = Integer.parseInt(args[4]);
                     Calendar cal = Calendar.getInstance();
-                    if(offlinePlayer.isOnline()) {
+                    if(offlinePlayer.isOnline()){
                       McRPGPlayer mp;
                       try{
                         mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                      }
-                      catch(McRPGPlayerNotFoundException exception){
+                      }catch(McRPGPlayerNotFoundException exception){
                         return true;
                       }
                       long oldCooldown = mp.getCooldown(ability);
@@ -2003,64 +2020,63 @@ public class McAdmin implements CommandExecutor {
                       cal.add(Calendar.SECOND, cooldown);
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Add")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                    .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Added")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
+                                                                                                       .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4])));
                       mp.saveData();
                       return true;
                     }
-                    else {
+                    else{
                       McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                       long oldCooldown = mp.getCooldown(ability);
                       cal.setTimeInMillis(oldCooldown);
                       cal.add(Calendar.SECOND, cooldown);
                       mp.addAbilityOnCooldown(ability, cal.getTimeInMillis());
                       sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Cooldown.Add")
-                              .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
+                                                                                    .replace("%Ability%", ability.getName()).replace("%Cooldown%", args[4]).replace("%Player%", offlinePlayer.getName())));
                       mp.saveData();
                       return true;
                     }
                   }
                 }
               }
-              else {
+              else{
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
                 return true;
               }
             }
           }
-          else {
+          else{
             sendHelpMessage(sender);
             return true;
           }
         }
-        else if(args[0].equalsIgnoreCase("reset")) {
-          if(args[1].equalsIgnoreCase("skill")) {
-            if(args.length < 4) {
+        else if(args[0].equalsIgnoreCase("reset")){
+          if(args[1].equalsIgnoreCase("skill")){
+            if(args.length < 4){
               sendHelpMessage(sender);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(!isSkill(args[3])) {
+              if(!isSkill(args[3])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
                 return true;
               }
               Skills skillEnum = fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
                 Skill skill = mp.getSkill(skillEnum);
-                for(BaseAbility baseAbility : skill.getAbilities()) {
+                for(BaseAbility baseAbility : skill.getAbilities()){
                   baseAbility.setUnlocked(false);
                   baseAbility.setCurrentTier(0);
                   baseAbility.setToggled(true);
-                  if(baseAbility instanceof RemoteTransfer) {
+                  if(baseAbility instanceof RemoteTransfer){
                     ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                     mp.setLinkedToRemoteTransfer(false);
                     RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
@@ -2070,17 +2086,17 @@ public class McAdmin implements CommandExecutor {
                 skill.setCurrentLevel(0);
                 skill.updateExpToLevel();
                 ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
-                for(UnlockedAbilities remove : toRemove) {
+                for(UnlockedAbilities remove : toRemove){
                   mp.getAbilityLoadout().remove(remove);
                 }
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillWasReset")
-                        .replace("%Skill%", skill.getType().getDisplayName())));
+                                                                                                 .replace("%Skill%", skill.getType().getDisplayName())));
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpScoreboardDisplay){
                     ExpScoreboardDisplay expScoreboardDisplay = (ExpScoreboardDisplay) displayManager.getDisplay(p);
                     expScoreboardDisplay.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
                   }
@@ -2088,21 +2104,21 @@ public class McAdmin implements CommandExecutor {
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
                 Skill skill = mp.getSkill(skillEnum);
-                for(BaseAbility baseAbility : skill.getAbilities()) {
+                for(BaseAbility baseAbility : skill.getAbilities()){
                   baseAbility.setUnlocked(false);
                   baseAbility.setCurrentTier(0);
                   baseAbility.setToggled(true);
-                  if(baseAbility instanceof RemoteTransfer) {
+                  if(baseAbility instanceof RemoteTransfer){
                     ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                     mp.setLinkedToRemoteTransfer(false);
                     RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                   }
                 }
                 ArrayList<UnlockedAbilities> toRemove = mp.getAbilityLoadout().stream().filter(ab -> ab.getSkill().equals(skill)).collect(Collectors.toCollection(ArrayList::new));
-                for(UnlockedAbilities remove : toRemove) {
+                for(UnlockedAbilities remove : toRemove){
                   mp.getAbilityLoadout().remove(remove);
                 }
                 skill.setCurrentExp(0);
@@ -2110,133 +2126,132 @@ public class McAdmin implements CommandExecutor {
                 mp.updatePowerLevel();
                 skill.updateExpToLevel();
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.SkillReset")
-                        .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Skill%", skill.getType().getDisplayName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("ability")) {
-            if(args.length < 4) {
+          else if(args[1].equalsIgnoreCase("ability")){
+            if(args.length < 4){
               sendHelpMessage(sender);
               return true;
             }
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(!UnlockedAbilities.isAbility(args[3])) {
+              if(!UnlockedAbilities.isAbility(args[3])){
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotAnAbility")));
                 return true;
               }
               UnlockedAbilities abilityEnum = UnlockedAbilities.fromString(args[3]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
                 }
-
+                
                 BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
                 baseAbility.setUnlocked(false);
                 baseAbility.setCurrentTier(0);
                 baseAbility.setToggled(true);
-
-                if(baseAbility instanceof RemoteTransfer) {
+                
+                if(baseAbility instanceof RemoteTransfer){
                   ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                   mp.setLinkedToRemoteTransfer(false);
                   RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                 }
-
+                
                 UnlockedAbilities abilities = (UnlockedAbilities) baseAbility.getGenericAbility();
                 mp.getAbilityLoadout().remove(abilities);
-
+                
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityReset")
-                        .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityWasReset")
-                        .replace("%Ability%", abilities.getName())));
+                                                                                                 .replace("%Ability%", abilities.getName())));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-
+                
                 BaseAbility baseAbility = mp.getBaseAbility(abilityEnum);
                 baseAbility.setUnlocked(false);
                 baseAbility.setCurrentTier(0);
                 baseAbility.setToggled(true);
-
-                if(baseAbility instanceof RemoteTransfer) {
+                
+                if(baseAbility instanceof RemoteTransfer){
                   ((RemoteTransfer) baseAbility).setLinkedChestLocation(null);
                   mp.setLinkedToRemoteTransfer(false);
                   RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                 }
-
+                
                 UnlockedAbilities abilities = (UnlockedAbilities) baseAbility.getGenericAbility();
                 mp.getAbilityLoadout().remove(abilities);
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.AbilityReset")
-                        .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Ability%", abilities.getName()).replace("%Player%", offlinePlayer.getName())));
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
-          else if(args[1].equalsIgnoreCase("player")) {
-            if(Methods.hasPlayerLoggedInBefore(args[2])) {
+          else if(args[1].equalsIgnoreCase("player")){
+            if(Methods.hasPlayerLoggedInBefore(args[2])){
               OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
-              if(offlinePlayer.isOnline()) {
+              if(offlinePlayer.isOnline()){
                 McRPGPlayer mp;
                 try{
                   mp = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
-                }
-                catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return true;
-                }                Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
+                }
+                Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
                 mp.getAbilityLoadout().clear();
                 mp.setAbilityPoints(0);
                 mp.setRedeemableExp(0);
                 mp.setRedeemableLevels(0);
-                if(mp.getReadyingAbilityBit() != null) {
+                if(mp.getReadyingAbilityBit() != null){
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
                 }
-
+                
                 ((RemoteTransfer) mp.getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER)).setLinkedChestLocation(null);
                 mp.setLinkedToRemoteTransfer(false);
                 RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
-
+                
                 mp.setReadying(false);
                 mp.setLinkedToRemoteTransfer(false);
                 mp.resetCooldowns();
-
+                
                 DisplayManager displayManager = McRPG.getInstance().getDisplayManager();
                 Player p = (Player) offlinePlayer;
-                if(displayManager.doesPlayerHaveDisplay(p)) {
-                  if(displayManager.getDisplay(p) instanceof ExpDisplayType) {
+                if(displayManager.doesPlayerHaveDisplay(p)){
+                  if(displayManager.getDisplay(p) instanceof ExpDisplayType){
                     ExpDisplayType expDisplayType = (ExpDisplayType) displayManager.getDisplay(p);
                     Skill skill = mp.getSkill(expDisplayType.getSkill());
                     expDisplayType.sendUpdate(skill.getCurrentExp(), skill.getExpToLevel(), skill.getCurrentLevel(), 0);
                   }
                 }
                 mp.setDisplayType(DisplayType.SCOREBOARD);
-
+                
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerReset")
-                        .replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Player%", offlinePlayer.getName())));
                 offlinePlayer.getPlayer().sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.PlayerWasReset")));
                 mp.saveData();
                 return true;
               }
-              else {
+              else{
                 McRPGPlayer mp = new McRPGPlayer(offlinePlayer.getUniqueId());
-
+                
                 Arrays.stream(values()).forEach(s -> mp.getSkill(s).resetSkill());
                 mp.updatePowerLevel();
                 Arrays.stream(values()).forEach(s -> mp.getSkill(s).updateExpToLevel());
@@ -2244,7 +2259,7 @@ public class McAdmin implements CommandExecutor {
                 mp.setAbilityPoints(0);
                 mp.setRedeemableExp(0);
                 mp.setRedeemableLevels(0);
-                if(mp.getReadyingAbilityBit() != null) {
+                if(mp.getReadyingAbilityBit() != null){
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
                 }
@@ -2252,20 +2267,20 @@ public class McAdmin implements CommandExecutor {
                 mp.setLinkedToRemoteTransfer(false);
                 RemoteTransferTracker.removeLocation(offlinePlayer.getUniqueId());
                 sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Admin.Reset.Player")
-                        .replace("%Player%", offlinePlayer.getName())));
+                                                                              .replace("%Player%", offlinePlayer.getName())));
                 mp.setReadying(false);
                 mp.setDisplayType(DisplayType.SCOREBOARD);
                 mp.saveData();
                 return true;
               }
             }
-            else {
+            else{
               sender.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.PlayerHasNotLoggedIn")));
               return true;
             }
           }
         }
-        else {
+        else{
           sendHelpMessage(sender);
           return true;
         }
@@ -2273,8 +2288,8 @@ public class McAdmin implements CommandExecutor {
     }
     return false;
   }
-
-  private void sendHelpMessage(CommandSender p) {
+  
+  private void sendHelpMessage(CommandSender p){
     McRPG plugin = McRPG.getInstance();
     FileConfiguration config = plugin.getLangFile();
     p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcadmin")));

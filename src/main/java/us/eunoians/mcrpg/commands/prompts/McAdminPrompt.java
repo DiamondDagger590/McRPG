@@ -235,6 +235,9 @@ public class McAdminPrompt implements TabCompleter {
                       completions.add(ab.getName());
                     }
                   }
+                  if(mp.getEndTimeForReplaceCooldown() > 0){
+                    completions.add("replace");
+                  }
                 } catch(McRPGPlayerNotFoundException e){
                 }
               }

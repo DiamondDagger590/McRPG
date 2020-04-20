@@ -57,6 +57,11 @@ public class McRPGExpGain implements Listener{
       e.setCancelled(true);
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getMcRPGPlayer().getPlayer().getWorld().getName())) {
+      return;
+    }
     if(McRPG.getInstance().getConfig().getBoolean("Configuration.UseLevelPerms") && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")
                                                                                         || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".level"))){
       e.setCancelled(true);

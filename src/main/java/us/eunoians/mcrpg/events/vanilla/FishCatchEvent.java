@@ -43,6 +43,11 @@ public class FishCatchEvent implements Listener {
     if(e.getCaught() == null){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
+      return;
+    }
     McRPGPlayer mp;
     try{
       mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());

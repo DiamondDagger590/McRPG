@@ -40,6 +40,11 @@ public class ShootEvent implements Listener {
     if(PlayerManager.isPlayerFrozen(e.getEntity().getUniqueId())){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+      return;
+    }
     if(e.getEntity() instanceof Player) {
       Player p = (Player) e.getEntity();
       if(e.getProjectile() instanceof Arrow) {

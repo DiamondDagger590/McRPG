@@ -1,3 +1,6 @@
+1.3.0-BETA
+= Fixed issue with placeholders for Ares Blessing
+
 1.2.4-BETA
 = Fixed error when breaking a brewing stand that is brewing
 = Putting a potion into a gui now can start the brew task

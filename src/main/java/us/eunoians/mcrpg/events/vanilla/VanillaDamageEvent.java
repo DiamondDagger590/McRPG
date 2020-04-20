@@ -101,6 +101,11 @@ public class VanillaDamageEvent implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
   public void fallListener(EntityDamageEvent e){
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+      return;
+    }
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(!(e instanceof EntityDamageByEntityEvent)){
       if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
@@ -223,7 +228,9 @@ public class VanillaDamageEvent implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
   public void fitnessEvent(EntityDamageByEntityEvent e){
-    if(e.isCancelled()){
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
       return;
     }
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
@@ -328,6 +335,11 @@ public class VanillaDamageEvent implements Listener {
     if(e.getDamager().getType() == EntityType.ENDER_PEARL && McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableEPearlExp")){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+      return;
+    }
     if(e.getDamager() instanceof Player && e.getEntity() instanceof Player){
       if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
         return;
@@ -357,6 +369,11 @@ public class VanillaDamageEvent implements Listener {
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
     if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
+      return;
+    }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
       return;
     }
     if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){

@@ -43,6 +43,7 @@ public class McPartyPrompt implements TabCompleter{
       if(isInParty){
         completions.add("leave");
         completions.add("tpa");
+        completions.add("tpahere");
         completions.add("tpaccept");
         completions.add("chat");
         PartyRoles partyRole = partyMember.getPartyRole();

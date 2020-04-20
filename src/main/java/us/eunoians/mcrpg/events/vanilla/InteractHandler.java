@@ -59,7 +59,7 @@ public class InteractHandler implements Listener {
 
   private static ItemStack shovel;
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void interactHandler(PlayerInteractEvent e) {
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
       return;
@@ -205,7 +205,7 @@ public class InteractHandler implements Listener {
       else if(abilityType.equals(UnlockedAbilities.SUPER_BREAKER) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
         SuperBreaker superBreaker = (SuperBreaker) ability;
         FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
-        e.setCancelled(true);
+        //e.setCancelled(true);
         int hasteDuration = mining.getInt("SuperBreakerConfig.Tier" + Methods.convertToNumeral(superBreaker.getCurrentTier()) + ".Duration");
         int cooldown = mining.getInt("SuperBreakerConfig.Tier" + Methods.convertToNumeral(superBreaker.getCurrentTier()) + ".Cooldown");
         double boost = mining.getDouble("SuperBreakerConfig.Tier" + Methods.convertToNumeral(superBreaker.getCurrentTier()) + ".ActivationBoost");
@@ -247,7 +247,7 @@ public class InteractHandler implements Listener {
       else if(abilityType.equals(UnlockedAbilities.FRENZY_DIG) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
         FrenzyDig frenzyDig = (FrenzyDig) ability;
         FileConfiguration excavationConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EXCAVATION_CONFIG);
-        e.setCancelled(true);
+        //e.setCancelled(true);
         int hasteDuration = excavationConfig.getInt("FrenzyDigConfig.Tier" + Methods.convertToNumeral(frenzyDig.getCurrentTier()) + ".Duration");
         int cooldown = excavationConfig.getInt("FrenzyDigConfig.Tier" + Methods.convertToNumeral(frenzyDig.getCurrentTier()) + ".Cooldown");
         double boost = excavationConfig.getDouble("FrenzyDigConfig.Tier" + Methods.convertToNumeral(frenzyDig.getCurrentTier()) + ".ActivationBoost");

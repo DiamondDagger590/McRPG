@@ -30,6 +30,11 @@ public class PotionDrinkEvent implements Listener{
   @EventHandler
   public void drinkEvent(PlayerItemConsumeEvent e){
     if(e.getItem().getType() == Material.POTION){
+      //Disabled Worlds
+      if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+           McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
+        return;
+      }
       PotionMeta potionMeta = (PotionMeta) e.getItem().getItemMeta();
       try{
         McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());

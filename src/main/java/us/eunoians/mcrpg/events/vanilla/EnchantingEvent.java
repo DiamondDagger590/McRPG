@@ -18,6 +18,11 @@ public class EnchantingEvent implements Listener{
   
   @EventHandler(priority = EventPriority.MONITOR)
   public void enchantEvent(EnchantItemEvent e){
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEnchanter().getWorld().getName())) {
+      return;
+    }
     try{
       McRPGPlayer mp = PlayerManager.getPlayer(e.getEnchanter().getUniqueId());
       FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);

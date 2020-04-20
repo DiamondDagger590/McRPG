@@ -29,7 +29,7 @@ public class EditLoadoutGUI extends GUI{
   private BaseAbility replaceAbility;
   private GUIInventoryFunction buildGUIFunction;
   @Getter
-  private ArrayList<UnlockedAbilities> abilities;
+  private List<UnlockedAbilities> abilities;
   
   public EditLoadoutGUI(McRPGPlayer player, EditType type){
     super(new GUIBuilder(player));

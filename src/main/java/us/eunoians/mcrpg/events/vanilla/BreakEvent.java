@@ -114,6 +114,11 @@ public class BreakEvent implements Listener{
     if(event instanceof PansShrineTestEvent){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(event.getPlayer().getWorld().getName())) {
+      return;
+    }
     if(!event.isCancelled() && (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE)){
       Player p = event.getPlayer();
       Block block = event.getBlock();
