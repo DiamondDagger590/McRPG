@@ -37,6 +37,7 @@ public class PotionRecipeManager {
     extraRecipes.clear();
     tierToTypes.clear();
     allPossibleIngredients.add(Material.NETHER_WART);
+    allPossibleIngredients.add(Material.FERMENTED_SPIDER_EYE);
     allPossibleIngredients.add(Material.GUNPOWDER);
     allPossibleIngredients.add(Material.DRAGON_BREATH);
     FileConfiguration brewingItemConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.BREWING_ITEMS_CONFIG);
@@ -102,7 +103,7 @@ public class PotionRecipeManager {
   public PotionEffectTagWrapper getPotionEffectTagWrapper(BasePotionType potionType){ return potionRecipeMap.get(potionType); }
 
   public boolean doesMaterialLeadToChild(Material ingredient, BasePotion basePotion){
-    if(basePotion.getBasePotionType() == BasePotionType.WATER && ingredient == Material.NETHER_WART){
+    if(basePotion.getBasePotionType() == BasePotionType.WATER && (ingredient == Material.NETHER_WART || ingredient == Material.FERMENTED_SPIDER_EYE)){
       return true;
     }
     PotionEffectTagWrapper potionEffectTagWrapper = getPotionEffectTagWrapper(basePotion.getBasePotionType());
@@ -120,6 +121,9 @@ public class PotionRecipeManager {
   public BasePotionType getChildPotionType(Material ingredient, BasePotion basePotion){
     if(basePotion.getBasePotionType() == BasePotionType.WATER && ingredient == Material.NETHER_WART){
       return BasePotionType.AWKWARD;
+    }
+    else if(basePotion.getBasePotionType() == BasePotionType.WATER && ingredient == Material.FERMENTED_SPIDER_EYE){
+      return BasePotionType.WEAKNESS;
     }
     PotionEffectTagWrapper potionEffectTagWrapper = getPotionEffectTagWrapper(basePotion.getBasePotionType());
     if(basePotion.getAsItem().getType() == Material.POTION && ingredient == Material.GUNPOWDER && potionEffectTagWrapper.isCanBeSplash()){

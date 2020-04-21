@@ -769,7 +769,7 @@ public class BreakEvent implements Listener{
   @EventHandler(priority = EventPriority.MONITOR)
   public void brewingStandBreak(BlockBreakEvent e){
     Block block = e.getBlock();
-    if(block.getType() == Material.BREWING_STAND){
+    if(Skills.SORCERY.isEnabled() && block.getType() == Material.BREWING_STAND){
       BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
       brewingStandManager.breakBrewingStand(block.getLocation());
     }

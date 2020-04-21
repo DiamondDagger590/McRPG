@@ -9,6 +9,7 @@ Potions:
       Default:
         ChildTags:
           - 'AWKWARD.Default'
+          - 'WEAKNESS.Default.FERMENTED_SPIDER_EYE'
   AWKWARD:
     Tags:
       Default:

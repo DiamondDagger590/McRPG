@@ -10,11 +10,14 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.BuriedTreasureData;
 import us.eunoians.mcrpg.api.util.DiamondFlowersData;
 import us.eunoians.mcrpg.api.util.Methods;
-import us.eunoians.mcrpg.gui.*;
+import us.eunoians.mcrpg.gui.AbilityOverrideGUI;
+import us.eunoians.mcrpg.gui.AcceptAbilityGUI;
+import us.eunoians.mcrpg.gui.GUI;
+import us.eunoians.mcrpg.gui.GUITracker;
+import us.eunoians.mcrpg.gui.HomeGUI;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.AbilityType;
-import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
@@ -84,6 +87,7 @@ public class McRPGStub implements CommandExecutor {
             McRPG.getInstance().getArtifactManager().reload();
             McRPG.getInstance().getExpPermissionManager().reload();
             McRPG.getInstance().setWgSupportManager(new WGSupportManager(plugin));
+            McRPG.getInstance().getLevelCommandManager().reload();
             return true;
           }
           else {

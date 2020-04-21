@@ -76,6 +76,7 @@ public class McHelp implements CommandExecutor {
         return true;
       }
       else {
+        sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Commands.McHelp.Error")));
         return true;
       }
     }

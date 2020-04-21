@@ -202,6 +202,7 @@ Messages:
       PartyLevelsGiven: '&aYou have given &e%Levels% &ato &e%Player%s &aparty.'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
+      Error: '&cPlease type /mchelp <command> <page> for usage. Please note all commands may not have help messages.'
       Default:
         - '&e--------------------------'
         - '&7[&6McRPG Command&7]&3 /mcrpg'

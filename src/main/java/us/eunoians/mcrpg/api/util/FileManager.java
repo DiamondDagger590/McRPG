@@ -345,6 +345,7 @@ public class FileManager {
     FISHING_LOOT("fishingloot.yml", "skills/fishingloot.yml"),
     FITNESS_CONFIG("fitness.yml", "skills/fitness.yml"),
     HERBALISM_CONFIG("herbalism.yml", "skills/herbalism.yml"),
+    LEVEL_COMMAND("level_commands.yml", "level_commands.yml"),
     LOCATIONS("locations.yml", "data/locations.yml"),
     MAIN_GUI("maingui.yml", "guis/maingui.yml"),
     MINING_CONFIG("mining.yml", "skills/mining.yml"),

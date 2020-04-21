@@ -190,6 +190,7 @@ public enum LangEnum implements ConfigurationEnum {
     PARTY_PARTY_LEVELS_GIVEN("Messages.Commands.Parties.PartyLevelsGiven", "&aYou have given &e%Levels% &ato &e%Player%s &aparty."),
     
     RELOADED_FILES("Messages.Commands.ReloadFiles", "&aYou have successfully reloaded all files for this plugin."),
+    MCHELP_ERROR("Messages.Commands.McHelp.Error", "&cPlease type /mchelp <command> <page> for usage. Please note all commands may not have help messages."),
     MCHELP_DEFAULT("Messages.Commands.McHelp.Default", Arrays.asList("&e--------------------------", "&7[&6McRPG Command &7]&3 /mcrpg",
             "&3    -Opens main McRPG gui", "&7[&6McDisplay Command&7]&3 /mchelp mcdisplay", "&3    -Help prompt for mcdisplay.",
             "&7[&6McAdmin Command &7]&3 /mchelp mcadmin", "&3    -Help prompt for mcadmin.", "&e--------------------------")),

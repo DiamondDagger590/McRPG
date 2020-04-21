@@ -48,6 +48,7 @@ import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.types.DefaultAbilities;
+import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.ItemUtils;
 
@@ -85,6 +86,9 @@ public class InteractHandler implements Listener {
         return;
       }
       BrewingStand brewingStand = (BrewingStand) e.getClickedBlock().getState();
+      if(!Skills.SORCERY.isEnabled()){
+        return;
+      }
       BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
       BrewingGUI brewingGUI;
       if(brewingStandManager.isBrewingStandLoaded(brewingStand)){

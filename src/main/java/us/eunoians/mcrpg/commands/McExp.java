@@ -27,6 +27,10 @@ public class McExp implements CommandExecutor{
         return true;
       }
       else{
+        if(!(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg.mcexp"))){
+          p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NoPerms")));
+          return true;
+        }
         if(!Skills.isSkill(args[0])){
           p.sendMessage(Methods.color(p, plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotASkill")));
           return true;
@@ -74,7 +78,7 @@ public class McExp implements CommandExecutor{
     }
   }
   
-  private void sendHelpMessage(CommandSender p) {
+  private void sendHelpMessage(CommandSender p){
     McRPG plugin = McRPG.getInstance();
     FileConfiguration config = plugin.getLangFile();
     p.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.HelpPrompt").replaceAll("<command>", "mcparty")));

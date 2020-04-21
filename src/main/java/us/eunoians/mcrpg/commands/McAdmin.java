@@ -1038,6 +1038,7 @@ public class McAdmin implements CommandExecutor{
                 mp.setAbilityPoints(0);
                 mp.setRedeemableExp(0);
                 mp.setRedeemableLevels(0);
+                mp.updatePowerLevel();
                 if(mp.getReadyingAbilityBit() != null){
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
@@ -2219,6 +2220,7 @@ public class McAdmin implements CommandExecutor{
                 mp.setAbilityPoints(0);
                 mp.setRedeemableExp(0);
                 mp.setRedeemableLevels(0);
+                mp.updatePowerLevel();
                 if(mp.getReadyingAbilityBit() != null){
                   Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                   mp.setReadyingAbilityBit(null);
