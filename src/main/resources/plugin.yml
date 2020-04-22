@@ -30,3 +30,5 @@ commands:
     description: The stub command for all various party commands
   mcexp:
     description: Displays exp values
+  mcspy:
+    description: Toggles spying on party chat on and off

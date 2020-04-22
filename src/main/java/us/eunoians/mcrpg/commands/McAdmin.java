@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.api.displays.DisplayManager;
 import us.eunoians.mcrpg.api.displays.ExpDisplayType;
 import us.eunoians.mcrpg.api.displays.ExpScoreboardDisplay;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
@@ -1273,10 +1274,6 @@ public class McAdmin implements CommandExecutor{
               }
               else{
                 int expToGive = Integer.parseInt(args[3]);
-                if(expToGive <= 0){
-                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyExpInvalid")));
-                  return true;
-                }
                 if(Methods.hasPlayerLoggedInBefore(args[4])){
                   OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[4]);
                   McRPGPlayer mp;
@@ -1314,10 +1311,6 @@ public class McAdmin implements CommandExecutor{
               }
               else{
                 int levelsToGive = Integer.parseInt(args[3]);
-                if(levelsToGive <= 0){
-                  admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsInvalid")));
-                  return true;
-                }
                 if(Methods.hasPlayerLoggedInBefore(args[4])){
                   OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[4]);
                   McRPGPlayer mp;
@@ -1328,7 +1321,20 @@ public class McAdmin implements CommandExecutor{
                   }
                   if(mp.getPartyID() != null){
                     Party party = plugin.getPartyManager().getParty(mp.getPartyID());
-                    party.setPartyLevel(Math.min(party.getPartyLevel() + levelsToGive, McRPG.getInstance().getPartyManager().getMaxLevel()));
+                    if(levelsToGive < 0){
+                      party.reduceAbilityPoints(party.getPartyLevel() + levelsToGive, party.getPartyLevel());
+                    }
+                    else{
+                      for(int i = 1; i <= levelsToGive; i++){
+                        if((party.getPartyLevel() + i) > McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.MaxLevelForUpgradePoints", 20)){
+                          continue;
+                        }
+                        if((party.getPartyLevel() + i) % McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.UpgradePointFactor", 1) == 0){
+                          party.setPartyUpgradePoints(party.getPartyUpgradePoints() + 1);
+                        }
+                      }
+                    }
+                    party.setPartyLevel(Math.min(Math.max(party.getPartyLevel() + levelsToGive, 0), McRPG.getInstance().getPartyManager().getMaxLevel()));
                     admin.sendMessage(Methods.color(admin, plugin.getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.PartyLevelsGiven")
                                                                                         .replace("%Levels%", Integer.toString(levelsToGive)).replace("%Player%", offlinePlayer.getName())));
                     

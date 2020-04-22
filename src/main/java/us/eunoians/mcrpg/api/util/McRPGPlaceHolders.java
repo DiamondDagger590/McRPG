@@ -61,6 +61,18 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
       Skills skill = Skills.fromString(args[0]);
       return Integer.toString(mp.getSkill(skill).getCurrentExp());
     }
+    else if(identifier.contains("_player_rank")){
+      LeaderboardManager leaderboardManager = McRPG.getInstance().getLeaderboardManager();
+      if(Skills.isSkill(args[2])){
+        return Integer.toString(leaderboardManager.getPlayersSkillRank(player.getUniqueId(), Skills.fromString(args[2])));
+      }
+      else if(args[2].equalsIgnoreCase("power")){
+        return Integer.toString(leaderboardManager.getPlayersPowerRank(player.getUniqueId()));
+      }
+      else{
+        return "ERROR";
+      }
+    }
     else if(identifier.contains("_rank")){
       LeaderboardManager manager = McRPG.getInstance().getLeaderboardManager();
       if(!Methods.isInt(args[2])){

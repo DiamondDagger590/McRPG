@@ -13,6 +13,9 @@ InactivePurge:
 PartyExp:
   ExpEquation: '10000+(10000*(party_level))'
   MaxLevel: 20
+  MaxLevelForUpgradePoints: 20
+  #If this was set to 3 for example, an upgrade point would be given every three levels
+  UpgradePointFactor: 1
 MemberCountUpgrade:
   MaxTier: 5
   #The amount of members per tier

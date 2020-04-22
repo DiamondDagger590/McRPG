@@ -38,7 +38,7 @@ public class PlayerManager {
         McRPGPlayer mp = new McRPGPlayer(uuid);
         mp.getUsedTips().add(TipType.LOGIN_TIP);
         if(mp.isOnline()) {
-          if(!mp.isIgnoreTips()) {
+          if(!McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableTips") && !mp.isIgnoreTips()) {
             List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
             Random rand = new Random();
             int val = rand.nextInt(possibleMessages.size());

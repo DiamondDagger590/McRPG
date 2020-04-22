@@ -35,7 +35,6 @@ import us.eunoians.mcrpg.util.SkullCache;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,6 +125,10 @@ public class Party{
     this.partyID = UUID.fromString(partyFile.getName().replace(".yml", ""));
     this.partyFile = partyFile;
     this.partyFileConfiguration = YamlConfiguration.loadConfiguration(partyFile);
+    if(!partyFileConfiguration.contains("PartyMembers")){
+      partyMembers = null;
+      return;
+    }
     for(String uuid : partyFileConfiguration.getConfigurationSection("PartyMembers").getKeys(false)){
       UUID playerUUID = UUID.fromString(uuid);
       PartyRoles partyRole = PartyRoles.getRoleFromId(partyFileConfiguration.getInt("PartyMembers." + uuid + ".Role"));
@@ -293,16 +296,18 @@ public class Party{
   public void disband(boolean deleteData){
     PartyDisbandEvent partyDisbandEvent = new PartyDisbandEvent(this);
     Bukkit.getPluginManager().callEvent(partyDisbandEvent);
-    for(UUID playerUUID : partyMembers.keySet()){
-      McRPGPlayer mp;
-      try{
-        mp = PlayerManager.getPlayer(playerUUID);
-        mp.emptyTeleportRequests();
-      }catch(McRPGPlayerNotFoundException e){
-        mp = new McRPGPlayer(playerUUID);
+    if(partyMembers != null){
+      for(UUID playerUUID : partyMembers.keySet()){
+        McRPGPlayer mp;
+        try{
+          mp = PlayerManager.getPlayer(playerUUID);
+          mp.emptyTeleportRequests();
+        }catch(McRPGPlayerNotFoundException e){
+          mp = new McRPGPlayer(playerUUID);
+        }
+        mp.setPartyID(null);
+        mp.saveData();
       }
-      mp.setPartyID(null);
-      mp.saveData();
     }
     if(deleteData){
       partyFile.delete();
@@ -330,8 +335,23 @@ public class Party{
       if(levelsGained > 0){
         PartyLevelUpEvent partyLevelUpEvent = new PartyLevelUpEvent(this, partyLevel - levelsGained, partyLevel);
         Bukkit.getPluginManager().callEvent(partyLevelUpEvent);
-        partyUpgradePoints += Math.max(0, partyLevelUpEvent.getNewLevel() - partyLevelUpEvent.getPreviousLevel());
+        for(int i = 1; i <= levelsGained; i++){
+          if((partyLevel + i) > McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.MaxLevelForUpgradePoints", 20)){
+            continue;
+          }
+          if((partyLevel + i) % McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.UpgradePointFactor", 1) == 0){
+            partyUpgradePoints++;
+          }
+        }
         partyLevel = partyLevelUpEvent.getNewLevel();
+      }
+    }
+  }
+  
+  public void reduceAbilityPoints(int newLevel, int oldLevel){
+    for(int i = 1; i < oldLevel - newLevel; i++){
+      if(newLevel + i >= 0 && (newLevel + i) % McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.UpgradePointFactor", 1) == 0){
+        partyUpgradePoints--;
       }
     }
   }
@@ -355,6 +375,9 @@ public class Party{
   
   public int purgeInactive(int hoursLimit){
     Set<UUID> toKick = new HashSet<>();
+    if(partyMembers == null){
+      return 0;
+    }
     for(UUID uuid : partyMembers.keySet()){
       if(Methods.findHoursDiffFromCurrent(Bukkit.getOfflinePlayer(uuid).getLastPlayed()) >= hoursLimit){
         toKick.add(uuid);
@@ -424,7 +447,7 @@ public class Party{
   }
   
   public Set<UUID> getAllMemberUUIDs(){
-    return partyMembers.keySet();
+    return partyMembers == null ? null : partyMembers.keySet();
   }
   
   public Collection<PartyMember> getAllMembers(){
@@ -461,7 +484,7 @@ public class Party{
     }
     //Save the private bank
     for(int i = 0; i < PartyUpgrades.getPrivateBankSizeAtTier(getUpgradeTier(PartyUpgrades.PRIVATE_BANK_SIZE)); i++){
-      if(i > privateBank.getSize()){
+      if(i >= privateBank.getSize()){
         Bukkit.getLogger().log(Level.WARNING, "Private bank size is mismatched");
         return;
       }

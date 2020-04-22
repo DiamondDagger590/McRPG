@@ -29,6 +29,7 @@ public class PartyMemberGUI extends GUI{
   
   /**
    * This should only be called when the player is actually in a party.
+   *
    * @param mcRPGPlayer The player that this party is being opened for
    * @throws us.eunoians.mcrpg.api.exceptions.PartyNotFoundException if the player does not have a party
    */
@@ -76,9 +77,10 @@ public class PartyMemberGUI extends GUI{
         }
         List<String> lore = new ArrayList<>();
         for(String s : memberFile.getStringList("PartyMemberItem.Lore")){
-          lore.add(s.replace("%Last_Login%", offlinePlayer.isOnline() ? memberFile.getString("Strings.CurrentlyOnline", "&a&lOnline")
+          lore.add(s.replace("%Last_Login%", offlinePlayer.isOnline() ? !offlinePlayer.getPlayer().hasMetadata("vanished")
+                                                                          ? memberFile.getString("Strings.CurrentlyOnline", "&a&lOnline") : Methods.getLastLoginDay(offlinePlayer)
                                                : Methods.getLastLoginDay(offlinePlayer))
-          .replace("%Party_Role%", party.getPartyMember(uuid).getPartyRole().getName()));
+                     .replace("%Party_Role%", party.getPartyMember(uuid).getPartyRole().getName()));
         }
         meta.setLore(Methods.colorLore(lore));
         meta.setDisplayName(Methods.color(memberFile.getString("PartyMemberItem.DisplayName", "&5" + offlinePlayer.getName()).replace("%Player%", offlinePlayer.getName())));

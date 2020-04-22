@@ -198,8 +198,8 @@ Messages:
       ForceSetPartyName: '&aYou have renamed &e%Player%s &aparty to &5%Name%.'
       PartyExpInvalid: '&cExp must be greater than 0.'
       PartyLevelsInvalid: '&cLevels must be greater than 0.'
-      PartyExpGiven: '&aYou have given &e%Exp% &ato &e%Player%s &aparty.'
-      PartyLevelsGiven: '&aYou have given &e%Levels% &ato &e%Player%s &aparty.'
+      PartyExpGiven: '&aYou have given &e%Exp% exp &aexp to &e%Player%s &aparty.'
+      PartyLevelsGiven: '&aYou have given &e%Levels% &alevels to &e%Player%s &aparty.'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       Error: '&cPlease type /mchelp <command> <page> for usage. Please note all commands may not have help messages.'

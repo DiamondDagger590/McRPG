@@ -102,7 +102,7 @@ public class ChatEvent implements Listener {
         if(party != null){
           Bukkit.getConsoleSender().sendMessage(message);
           for(Player player : Bukkit.getOnlinePlayers()){
-            if(party.isPlayerInParty(player.getUniqueId()) || player.hasPermission("mcrpg.*") || player.hasPermission("mcparty.*") || player.hasPermission("mcadmin.*") || player.hasPermission("mcparty.spy")){
+            if(party.isPlayerInParty(player.getUniqueId()) || mp.isSpyPartyChat()){
               player.sendMessage(message);
             }
           }

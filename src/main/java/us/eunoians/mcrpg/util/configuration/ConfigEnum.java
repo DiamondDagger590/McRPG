@@ -16,6 +16,7 @@ public enum ConfigEnum implements ConfigurationEnum {
           "###################################"),
   MCMMO_CONVERSION_EQUATION("Configuration.McMMOConversionEquation", "((skill_exp)*0.5)", "#Converts a players level to exp and then convert that into boosted experience using the equation below"),
   BOOSTED_EXP_USAGE_RATE("Configuration.BoostedExpUsageRate", "((gained_exp)*2.25)", "#When a player gains exp, this equation is factored in and if there is remaining boosted exp,", "#then it will add this equation value to the gained amount"),
+  DISABLE_TIPS("Configuration.DisableTips", false, "#If all tips should be disabled"),
   MAX_DAMAGE_CAP("Configuration.MaxDamageCap", 1000000, "#The maximum amount of damage allowed for giving experience"),
   SHIELD_BLOCKING_MODIFIER("Configuration.ShieldBlockingModifier", 0.5, "#How much exp gain should be modified if the target is blocking with a shield."),
   DISABLE_ENDER_PEARL_EXP("Configuration.DisableEPearlExp", true, "#If exp should be disabled for damage from ender pearls"),

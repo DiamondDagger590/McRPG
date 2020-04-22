@@ -57,6 +57,7 @@ import us.eunoians.mcrpg.gui.SettingsGUI;
 import us.eunoians.mcrpg.gui.SkillGUI;
 import us.eunoians.mcrpg.gui.SubSkillGUI;
 import us.eunoians.mcrpg.party.Party;
+import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.party.PartyMember;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
@@ -1045,7 +1046,7 @@ public class InvClickEvent implements Listener{
                 }.runTaskLater(McRPG.getInstance(), 1);
                 p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
                 for(Player player : party.getOnlinePlayers()){
-                  player.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&a" + p.getName() + " has upgraded " + partyUpgrades.getName() + " Upgrade to Level " + (currentTier + 1)));
+                  player.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&a" + p.getName() + " has upgraded " + partyUpgrades.getName() + " to Level " + (currentTier + 1)));
                 }
               }
               else{
@@ -1311,6 +1312,44 @@ public class InvClickEvent implements Listener{
             }catch(PartyNotFoundException ex){
               ex.printStackTrace();
             }
+          }
+          else if(events[1].equalsIgnoreCase("PrivateBankGUI")){
+            PartyManager partyManager = McRPG.getInstance().getPartyManager();
+            if(mp.getPartyID() == null || partyManager.getParty(mp.getPartyID()) == null){
+              p.closeInventory();
+              return;
+            }
+            Party party = partyManager.getParty(mp.getPartyID());
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
+            if(party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getId() < partyMember.getPartyRole().getId()){
+              p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1);
+              return;
+            }
+            try{
+              gui = new PartyPrivateBankGUI(mp);
+              currentGUI.setClearData(false);
+              p.openInventory(gui.getGui().getInv());
+              GUITracker.replacePlayersGUI(mp, gui);
+            }catch(PartyNotFoundException ex){
+              ex.printStackTrace();
+            }
+          }
+          else if(events[1].equalsIgnoreCase("RolesGUI")){
+            PartyManager partyManager = McRPG.getInstance().getPartyManager();
+            if(mp.getPartyID() == null || partyManager.getParty(mp.getPartyID()) == null){
+              p.closeInventory();
+              return;
+            }
+            Party party = partyManager.getParty(mp.getPartyID());
+            PartyMember partyMember = party.getPartyMember(p.getUniqueId());
+            if(partyMember.getPartyRole().getId() != 0){
+              p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1);
+              return;
+            }
+            gui = new PartyRoleGUI(mp, party);
+            currentGUI.setClearData(false);
+            p.openInventory(gui.getGui().getInv());
+            GUITracker.replacePlayersGUI(mp, gui);
           }
         }
         else if(event.equalsIgnoreCase("OpenFile")){

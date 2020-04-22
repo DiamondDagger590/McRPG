@@ -155,7 +155,7 @@ public class InteractHandler implements Listener {
           for(int x = -1 * radius; x < radius; x++) {
             for(int z = -1 * radius; z < radius; z++) {
               for(int y = -1 * radius; y < radius; y++) {
-                blocks.add(p.getLocation().add(x, y, z).getBlock());
+                blocks.add(e.getClickedBlock().getLocation().add(x, y, z).getBlock());
               }
             }
           }

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.party;
 
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.util.Parser;
@@ -25,6 +26,14 @@ public class PartyManager{
     if(partyFolder.listFiles() != null && partyFolder.listFiles().length > 0){
       for(File file : partyFolder.listFiles()){
         Party party = new Party(file);
+        if(party.getAllMemberUUIDs() == null){
+          new BukkitRunnable(){
+            @Override
+            public void run(){
+              removeParty(party.getPartyID());
+            }
+          }.runTaskLater(McRPG.getInstance(), 1);
+        }
         partyMap.put(party.getPartyID(), party);
       }
     }

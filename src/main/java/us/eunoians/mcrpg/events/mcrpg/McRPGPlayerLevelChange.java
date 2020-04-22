@@ -68,7 +68,7 @@ public class McRPGPlayerLevelChange implements Listener {
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcRPGPlayer().getAbilityPoints()))));
       }
       TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
-      if (!mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
+      if (!McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableTips") && !mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
         List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
         if (possibleMessages.size() > 0) {
           int val = rand.nextInt(possibleMessages.size());

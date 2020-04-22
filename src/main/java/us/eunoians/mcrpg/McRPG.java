@@ -49,10 +49,12 @@ import us.eunoians.mcrpg.commands.McParty;
 import us.eunoians.mcrpg.commands.McRPGStub;
 import us.eunoians.mcrpg.commands.McRank;
 import us.eunoians.mcrpg.commands.McRedeem;
+import us.eunoians.mcrpg.commands.McSpy;
 import us.eunoians.mcrpg.commands.McUnlink;
 import us.eunoians.mcrpg.commands.prompts.McAdminPrompt;
 import us.eunoians.mcrpg.commands.prompts.McDisplayPrompt;
 import us.eunoians.mcrpg.commands.prompts.McExpPrompt;
+import us.eunoians.mcrpg.commands.prompts.McHelpPrompt;
 import us.eunoians.mcrpg.commands.prompts.McPartyPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRankPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRedeemPrompt;
@@ -250,12 +252,14 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcrank").setExecutor(new McRank());
     getCommand("mcparty").setExecutor(new McParty());
     getCommand("mcexp").setExecutor(new McExp());
+    getCommand("mcspy").setExecutor(new McSpy());
     getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());
     getCommand("mcadmin").setTabCompleter(new McAdminPrompt());
     getCommand("mcparty").setTabCompleter(new McPartyPrompt());
     getCommand("mcexp").setTabCompleter(new McExpPrompt());
+    getCommand("mchelp").setTabCompleter(new McHelpPrompt());
     //Events
     getServer().getPluginManager().registerEvents(new PlayerLoginEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveEvent(), this);

@@ -186,8 +186,8 @@ public enum LangEnum implements ConfigurationEnum {
     PARTY_FORCE_SET_PARTY_NAME("Messages.Commands.Parties.ForceSetPartyName", "&aYou have renamed &e%Player%s &aparty to &5%Name%."),
     PARTY_PARTY_EXP_INVALID("Messages.Commands.Parties.PartyExpInvalid", "&cExp must be greater than 0."),
     PARTY_PARTY_LEVELS_INVALID("Messages.Commands.Parties.PartyLevelsInvalid", "&cLevels must be greater than 0."),
-    PARTY_PARTY_EXP_GIVEN("Messages.Commands.Parties.PartyExpGiven", "&aYou have given &e%Exp% &ato &e%Player%s &aparty."),
-    PARTY_PARTY_LEVELS_GIVEN("Messages.Commands.Parties.PartyLevelsGiven", "&aYou have given &e%Levels% &ato &e%Player%s &aparty."),
+    PARTY_PARTY_EXP_GIVEN("Messages.Commands.Parties.PartyExpGiven", "&aYou have given &e%Exp% &aexp to &e%Player%s &aparty."),
+    PARTY_PARTY_LEVELS_GIVEN("Messages.Commands.Parties.PartyLevelsGiven", "&aYou have given &e%Levels% &alevels to &e%Player%s &aparty."),
     
     RELOADED_FILES("Messages.Commands.ReloadFiles", "&aYou have successfully reloaded all files for this plugin."),
     MCHELP_ERROR("Messages.Commands.McHelp.Error", "&cPlease type /mchelp <command> <page> for usage. Please note all commands may not have help messages."),
