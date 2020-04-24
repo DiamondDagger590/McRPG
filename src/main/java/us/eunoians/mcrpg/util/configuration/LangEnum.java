@@ -40,7 +40,7 @@ public enum LangEnum implements ConfigurationEnum {
     POTION_NAMES_MINING_FATIGUE("Potions.PotionNames.MiningFatigue", "Mining Fatigue"),
     POTION_NAMES_SPEED("Potions.PotionNames.Speed", "Speed"),
     POTION_NAMES_SLOWNESS("Potions.PotionNames.Slowness", "Slowness"),
-    POTION_NAMES_JUMP("Potions.PotionNames.Jump", "Jump"),
+    POTION_NAMES_JUMP("Potions.PotionNames.Jump", "Leaping"),
     POTION_NAMES_NAUSEA("Potions.PotionNames.Nausea", "Nausea"),
     POTION_NAMES_REGENERATION("Potions.PotionNames.Regeneration", "Regeneration"),
     POTION_NAMES_WATER_BREATHING("Potions.PotionNames.WaterBreathing", "Water Breathing"),
@@ -188,7 +188,8 @@ public enum LangEnum implements ConfigurationEnum {
     PARTY_PARTY_LEVELS_INVALID("Messages.Commands.Parties.PartyLevelsInvalid", "&cLevels must be greater than 0."),
     PARTY_PARTY_EXP_GIVEN("Messages.Commands.Parties.PartyExpGiven", "&aYou have given &e%Exp% &aexp to &e%Player%s &aparty."),
     PARTY_PARTY_LEVELS_GIVEN("Messages.Commands.Parties.PartyLevelsGiven", "&aYou have given &e%Levels% &alevels to &e%Player%s &aparty."),
-    
+    PARTY_NO_UPGRADE_PERMISSIONS("Messages.Commands.Parties.NoUpgradePermission", "&cYou do not have permission to upgrade your party."),
+    PARTY_PARTY_UPGRADED("Messages.Commands.Parties.PartyUpgraded", "&a%Player% has upgraded %Upgrade% to level %Level%!"),
     RELOADED_FILES("Messages.Commands.ReloadFiles", "&aYou have successfully reloaded all files for this plugin."),
     MCHELP_ERROR("Messages.Commands.McHelp.Error", "&cPlease type /mchelp <command> <page> for usage. Please note all commands may not have help messages."),
     MCHELP_DEFAULT("Messages.Commands.McHelp.Default", Arrays.asList("&e--------------------------", "&7[&6McRPG Command &7]&3 /mcrpg",

@@ -1046,11 +1046,13 @@ public class InvClickEvent implements Listener{
                 }.runTaskLater(McRPG.getInstance(), 1);
                 p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
                 for(Player player : party.getOnlinePlayers()){
-                  player.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&a" + p.getName() + " has upgraded " + partyUpgrades.getName() + " to Level " + (currentTier + 1)));
+                  player.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Commands.Parties.PartyUpgraded")
+                                                                                             .replace("%Player%", p.getName()).replace("%Upgrade%", partyUpgrades.getName())
+                                                                                             .replace("%Level%", Integer.toString(currentTier + 1))));
                 }
               }
               else{
-                p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + "&cOnly " + party.getRoleForPermission(PartyPermissions.UPGRADE_PARTY).getName() + " and up can upgrade the party"));
+                p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Commands.Parties.PartyUpgraded")));
               }
             }
           }

@@ -18,7 +18,7 @@ Potions:
         ChildTags:
           - 'SPEED.Default'
           - 'INCREASE_DAMAGE.Default'
-          - 'JUMP.Default'
+          - 'LEAP.Default'
           - 'HEAL.Default'
           - 'REGENERATION.Default'
           - 'FIRE_RESISTANCE.Default'
@@ -217,7 +217,7 @@ Potions:
       Default:
         #What ingredients can be used to get to this stage
         Ingredients:
-          - 'RABBITS_FOOT'
+          - 'RABBIT_FOOT'
         #If duration is not specified, it defaults to 180
         Duration: 180
         #If potion level is not specified, it defaults to 1

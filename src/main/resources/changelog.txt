@@ -33,6 +33,7 @@
 = Fix copy paste issue with replace skills GUI for sorcery (Change SubSkillGUI to SelectReplaceGUI in replaceskillsgui.yml)
 = Potion Stands statistic is now incremented when using custom GUI
 = Fix breaking brewing stand dropping glass
+= Fixed leaping not being brewable
 
 1.2.4-BETA
 = Fixed error when breaking a brewing stand that is brewing

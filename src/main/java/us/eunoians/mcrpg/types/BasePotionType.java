@@ -14,7 +14,7 @@ public enum BasePotionType{
 	SLOW_DIGGING("Mining Fatigue", false, "74:66:23", PotionType.UNCRAFTABLE, PotionEffectType.SLOW_DIGGING),
 	SPEED("Speed", true, "124:175:198", PotionType.SPEED, PotionEffectType.SPEED),
 	SLOW("Slowness", true, "90:108:129", PotionType.SLOWNESS, PotionEffectType.SLOW),
-	JUMP("Jump", true, "34:255:76", PotionType.JUMP, PotionEffectType.JUMP),
+	LEAPING("Leaping", true, "34:255:76", PotionType.JUMP, PotionEffectType.JUMP),
 	CONFUSION("Nausea", false, "85:29:74", PotionType.UNCRAFTABLE, PotionEffectType.CONFUSION),
 	REGENERATION("Regeneration", true, "205:92:171", PotionType.REGEN, PotionEffectType.REGENERATION),
 	WATER_BREATHING("Water Breathing", true, "46:82:153", PotionType.WATER_BREATHING, PotionEffectType.WATER_BREATHING),

@@ -43,7 +43,7 @@ Potions:
     MiningFatigue: 'Mining Fatigue'
     Speed: 'Speed'
     Slowness: 'Slowness'
-    Jump: 'Jump'
+    Jump: 'Leaping'
     Nausea: 'Nausea'
     Regeneration: 'Regeneration'
     WaterBreathing: 'Water Breathing'
@@ -200,6 +200,8 @@ Messages:
       PartyLevelsInvalid: '&cLevels must be greater than 0.'
       PartyExpGiven: '&aYou have given &e%Exp% exp &aexp to &e%Player%s &aparty.'
       PartyLevelsGiven: '&aYou have given &e%Levels% &alevels to &e%Player%s &aparty.'
+      NoUpgradePermission: '&cYou do not have permission to upgrade your party.'
+      PartyUpgraded: '&a%Player% has upgraded %Upgrade% to level %Level%!'
     ReloadFiles: '&aYou have successfully reloaded all files for this plugin'
     McHelp:
       Error: '&cPlease type /mchelp <command> <page> for usage. Please note all commands may not have help messages.'
