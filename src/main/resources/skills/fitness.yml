@@ -259,7 +259,7 @@ RunnersDietConfig:
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&bWhile running, you hunger will not'
+      - '&bWhile running, your hunger will not'
       - '&bdrop below &e%MinHunger%'
     MenuLore:
       - '&bWhilst running, your hunger will not'

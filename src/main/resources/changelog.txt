@@ -1,5 +1,38 @@
 1.3.0-BETA
++ Added party system
++ Added /mcadmin party commands
++ Added /mcspy to toggle spying on party chats
++ Added /mcexp with permission mcrpg.mcexp, this will display in chat all sources and values of exp for a skill
++ Added commands on levelup. See levelup_commands.yml
++ Added placeholders %mcrpg_player_rank_power% and %mcrpg_player_rank_SKILL% (replace skill with a skill) that
+    shows the player's current rank
++ Added config option to disable tips
++ Added /mcadmin cooldown remove %Player% replace - Removes the replace ability cooldown
++ Added party_level placeholder for skill equations
++ Added prompts for help commands
 = Fixed issue with placeholders for Ares Blessing
+= Fixed issue of Wither being brewable by anyone
+= Rebalanced Excavation exp gains
+= Drastically buffed artifact drop rates
+= Blast Mining now centers on the tnt placed
+= Fixed Divine Escape cooldown issue
+= Fixed incompatibility with RPGBank and artifacts
+= Fixed weakness potion not being able to be brewed from water
+= Fixed fitness exploit with McGadgets
+= Fixed NPE with Larger Spade
+= Updated NBT-API
+= Resetting a player didnt update their power level until their next levelup
+= Super breaker and Frenzy Dig were unable to break the block used to activate them
+= Fixed DisabledWorlds not working as intended
+= Disabling Sorcery disables custom GUI
+= Fixed Health boost potion name not appearing
+= Lower cooldown of Blast Mining from 240 to 180
+= Lower exp of Guardian mob from 30 to 10 for Swords
+= Lowered all sounds by default
+= Fix NPE with conflicting Archery abilities
+= Fix copy paste issue with replace skills GUI for sorcery (Change SubSkillGUI to SelectReplaceGUI in replaceskillsgui.yml)
+= Potion Stands statistic is now incremented when using custom GUI
+= Fix breaking brewing stand dropping glass
 
 1.2.4-BETA
 = Fixed error when breaking a brewing stand that is brewing

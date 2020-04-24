@@ -388,6 +388,9 @@ public class Methods{
   }
   
   public static boolean isArtifact(ItemStack itemStack){
+    if(itemStack == null || itemStack.getType() == Material.AIR){
+      return false;
+    }
     NBTItem item = new NBTItem(itemStack);
     return item.getBoolean("McRPGArtifact");
   }

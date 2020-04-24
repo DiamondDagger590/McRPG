@@ -30,7 +30,6 @@ import us.eunoians.mcrpg.types.PartyPermissions;
 import us.eunoians.mcrpg.types.PartyRoles;
 import us.eunoians.mcrpg.types.PartyUpgrades;
 import us.eunoians.mcrpg.util.Parser;
-import us.eunoians.mcrpg.util.SkullCache;
 
 import java.io.File;
 import java.io.IOException;
@@ -166,15 +165,9 @@ public class Party{
       OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
       ItemStack item = new ItemStack(Material.PLAYER_HEAD);
       ItemMeta meta = item.getItemMeta();
-      if(SkullCache.headMap.containsKey(uuid)){
-        continue;
-      }
-      else{
-        SkullMeta sm = (SkullMeta) meta;
-        sm.setOwningPlayer(offlinePlayer);
-        item.setItemMeta(sm);
-        SkullCache.headMap.put(uuid, item);
-      }
+      SkullMeta sm = (SkullMeta) meta;
+      sm.setOwningPlayer(offlinePlayer);
+      item.setItemMeta(sm);
     }
   }
   
@@ -476,7 +469,10 @@ public class Party{
     partyFileConfiguration.set("PartyExp", partyExp);
     partyFileConfiguration.set("PartyLevel", partyLevel);
     //Save the public party bank
-    for(int i = 0; i < PartyUpgrades.getPrivateBankSizeAtTier(partyUpgrades.get(PartyUpgrades.PRIVATE_BANK_SIZE)); i++){
+    for(int i = 0; i < McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyBank.Size", 27); i++){
+      if(i >= partyBank.getSize()){
+        break;
+      }
       ItemStack item = partyBank.getItem(i);
       if(item != null && item.getType() != Material.AIR){
         partyFileConfiguration.set("PartyBank.Item" + i, item);

@@ -108,7 +108,7 @@ public class VanillaDamageEvent implements Listener {
     }
     FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(!(e instanceof EntityDamageByEntityEvent)){
-      if(e.isCancelled() || !Skills.FITNESS.isEnabled()){
+      if(e.isCancelled() || !Skills.FITNESS.isEnabled() || e.getEntity().isInsideVehicle()){
         return;
       }
       else{

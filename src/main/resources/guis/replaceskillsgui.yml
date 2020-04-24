@@ -24,7 +24,7 @@ Gui:
       39:
         - 'OpenNative:SelectReplaceGUI:Fishing'
       41:
-        - 'OpenNative:SubSkillGUI:Sorcery'
+        - 'OpenNative:SelectReplaceGUI:Sorcery'
       53:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:

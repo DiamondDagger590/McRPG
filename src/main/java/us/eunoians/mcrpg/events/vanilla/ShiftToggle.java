@@ -82,7 +82,7 @@ public class ShiftToggle implements Listener {
           Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
           FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
           player.getLocation().getWorld().playSound(player.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.RageSpike.Sound")),
-            soundFile.getInt("Sounds.Swords.RageSpike.Volume"), soundFile.getInt("Sounds.Swords.RageSpike.Pitch"));
+            (float) soundFile.getDouble("Sounds.Swords.RageSpike.Volume"), (float) soundFile.getDouble("Sounds.Swords.RageSpike.Pitch"));
           //voom code
           e.getPlayer().setVelocity(unitVector.multiply(5));
           e.getPlayer().setVelocity(unitVector.multiply(5));

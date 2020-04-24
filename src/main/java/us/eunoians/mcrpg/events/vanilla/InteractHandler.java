@@ -89,6 +89,7 @@ public class InteractHandler implements Listener {
       if(!Skills.SORCERY.isEnabled()){
         return;
       }
+      mp.getPlayer().incrementStatistic(Statistic.BREWINGSTAND_INTERACTION);
       BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
       BrewingGUI brewingGUI;
       if(brewingStandManager.isBrewingStandLoaded(brewingStand)){

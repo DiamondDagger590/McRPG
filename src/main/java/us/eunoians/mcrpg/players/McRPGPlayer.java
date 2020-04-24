@@ -186,7 +186,7 @@ public class McRPGPlayer {
         this.boostedExp = resultSet.getInt("boosted_exp");
         this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
-        this.divineEscapeExpEnd = resultSet.getInt("divine_escape_exp_end_time");
+        this.divineEscapeExpEnd = resultSet.getLong("divine_escape_exp_end_time");
         this.divineEscapeDamageEnd = resultSet.getInt("divine_escape_damage_end_time");
         String partyIDString = resultSet.getString("party_uuid");
         if(partyIDString.equalsIgnoreCase("nu")){

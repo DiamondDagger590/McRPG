@@ -353,19 +353,19 @@ BlastMiningConfig:
     #Radius of the ability (this is done to every side of the player)
     Radius: 2
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 180
   TierII:
     Radius: 3
-    Cooldown: 240
+    Cooldown: 180
   TierIII:
     Radius: 4
-    Cooldown: 240
+    Cooldown: 180
   TierIV:
     Radius: 5
-    Cooldown: 240
+    Cooldown: 180
   TierV:
     Radius: 6
-    Cooldown: 240
+    Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Blast Mining'

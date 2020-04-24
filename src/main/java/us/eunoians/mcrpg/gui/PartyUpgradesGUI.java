@@ -16,7 +16,6 @@ import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.PartyUpgrades;
-import us.eunoians.mcrpg.util.SkullCache;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -53,28 +52,21 @@ public class PartyUpgradesGUI extends GUI{
         ItemStack memberItem = new ItemStack(Material.getMaterial(upgradesFile.getString("MemberCount.Material")));
         ItemMeta itemMeta = memberItem.getItemMeta();
         if(memberItem.getType() == Material.PLAYER_HEAD){
-          if(SkullCache.headMap.containsKey(mcRPGPlayer.getUuid())){
-            memberItem = SkullCache.headMap.get(mcRPGPlayer.getUuid());
-            itemMeta = memberItem.getItemMeta();
-          }
-          else{
-            SkullMeta skullMeta = (SkullMeta) itemMeta;
-            if(upgradesFile.contains("MemberCount.Owner")){
-              if(upgradesFile.getString("MemberCount.Owner").equalsIgnoreCase("%Player%")){
-                skullMeta.setOwningPlayer(mcRPGPlayer.getOfflineMcRPGPlayer());
-              }
-              else{
-                skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(upgradesFile.getString("MemberCount.Owner")));
-              }
-            }
-            else{
+          SkullMeta skullMeta = (SkullMeta) itemMeta;
+          if(upgradesFile.contains("MemberCount.Owner")){
+            if(upgradesFile.getString("MemberCount.Owner").equalsIgnoreCase("%Player%")){
               skullMeta.setOwningPlayer(mcRPGPlayer.getOfflineMcRPGPlayer());
             }
-            memberItem.setItemMeta(skullMeta);
-            SkullCache.headMap.put(mcRPGPlayer.getUuid(), memberItem);
-            memberItem = memberItem.clone();
-            itemMeta = memberItem.getItemMeta();
+            else{
+              skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(upgradesFile.getString("MemberCount.Owner")));
+            }
           }
+          else{
+            skullMeta.setOwningPlayer(mcRPGPlayer.getOfflineMcRPGPlayer());
+          }
+          memberItem.setItemMeta(skullMeta);
+          memberItem = memberItem.clone();
+          itemMeta = memberItem.getItemMeta();
         }
         itemMeta.setDisplayName(Methods.color(upgradesFile.getString("MemberCount.DisplayName")));
         List<String> lore = new ArrayList<>();
@@ -105,7 +97,7 @@ public class PartyUpgradesGUI extends GUI{
         double shareAmount = PartyUpgrades.getExpShareAmountAtTier(currentLevel);
         for(String s : upgradesFile.getStringList("ExpShareAmount.Lore")){
           lore.add(Methods.color(s.replace("%Current_Level%", Integer.toString(currentLevel)).replace("%Max_Level%", Integer.toString(maxLevel))
-          .replace("%Exp_Share_Amount%", numberFormat.format(shareAmount))));
+                                   .replace("%Exp_Share_Amount%", numberFormat.format(shareAmount))));
         }
         itemMeta.setLore(lore);
         expShareItem.setItemMeta(itemMeta);
@@ -123,7 +115,7 @@ public class PartyUpgradesGUI extends GUI{
         double shareRange = PartyUpgrades.getExpShareRangeAtTier(currentLevel);
         for(String s : upgradesFile.getStringList("ExpShareRange.Lore")){
           lore.add(Methods.color(s.replace("%Current_Level%", Integer.toString(currentLevel)).replace("%Max_Level%", Integer.toString(maxLevel))
-                     .replace("%Exp_Share_Range%", numberFormat.format(shareRange))));
+                                   .replace("%Exp_Share_Range%", numberFormat.format(shareRange))));
         }
         itemMeta.setLore(lore);
         expShareItem.setItemMeta(itemMeta);
@@ -141,7 +133,7 @@ public class PartyUpgradesGUI extends GUI{
         int slots = PartyUpgrades.getPrivateBankSizeAtTier(currentLevel);
         for(String s : upgradesFile.getStringList("PrivateBankSize.Lore")){
           lore.add(Methods.color(s.replace("%Current_Level%", Integer.toString(currentLevel)).replace("%Max_Level%", Integer.toString(maxLevel))
-                     .replace("%Private_Bank_Size%", Integer.toString(slots))));
+                                   .replace("%Private_Bank_Size%", Integer.toString(slots))));
         }
         itemMeta.setLore(lore);
         bankItem.setItemMeta(itemMeta);

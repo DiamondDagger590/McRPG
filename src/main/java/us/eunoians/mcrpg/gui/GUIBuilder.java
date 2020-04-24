@@ -16,7 +16,6 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.PartyPermissions;
-import us.eunoians.mcrpg.util.SkullCache;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,14 +69,14 @@ public class GUIBuilder{
             }
             lore.add(s.replace("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
                        .replace("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))
-                                                      .replace("%Online_Members%", Integer.toString(onlinePartyMembers))
-                                                      .replace("%Total_Members%", Integer.toString(totalMembers))
-                                                      .replace("%Party_Points%", Integer.toString(partyUpgradePoints))
-                                                      .replace("%Bank_Role%", bankRole)
-                                                      .replace("%Kick_Role%", kickRole)
-                                                      .replace("%Pvp_Role%", pvpRole)
-                                                      .replace("%Invite_Role%", inviteRole)
-                                                      .replace("%Upgrade_Role%", upgradeRole));
+                       .replace("%Online_Members%", Integer.toString(onlinePartyMembers))
+                       .replace("%Total_Members%", Integer.toString(totalMembers))
+                       .replace("%Party_Points%", Integer.toString(partyUpgradePoints))
+                       .replace("%Bank_Role%", bankRole)
+                       .replace("%Kick_Role%", kickRole)
+                       .replace("%Pvp_Role%", pvpRole)
+                       .replace("%Invite_Role%", inviteRole)
+                       .replace("%Upgrade_Role%", upgradeRole));
             
           });
           meta.setLore(lore);
@@ -108,16 +107,9 @@ public class GUIBuilder{
       item = new ItemStack(type, 1);
       ItemMeta meta = item.getItemMeta();
       if(type.equals(Material.PLAYER_HEAD)){
-        if(SkullCache.headMap.containsKey(player.getUuid())){
-          item = SkullCache.headMap.get(player.getUuid());
-          meta = item.getItemMeta();
-        }
-        else{
-          SkullMeta sm = (SkullMeta) meta;
-          sm.setOwningPlayer(player.getOfflineMcRPGPlayer());
-          item.setItemMeta(sm);
-          SkullCache.headMap.put(player.getUuid(), item.clone());
-        }
+        SkullMeta sm = (SkullMeta) meta;
+        sm.setOwningPlayer(player.getOfflineMcRPGPlayer());
+        item.setItemMeta(sm);
       }
       meta.setDisplayName(Methods.color(player.getPlayer(), config.getString(path + "Items." + itemName + ".Name")));
       if(config.contains(path + "Items." + itemName + ".Lore")){

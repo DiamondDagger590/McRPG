@@ -11,14 +11,14 @@ ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
 #How much exp should be awarded per block.
 ExpAwardedPerBlock:
-  DIRT: 20
-  GRASS_BLOCK: 30
+  DIRT: 10
+  GRASS_BLOCK: 20
   MYCELIUM: 45
-  PODZOL: 45
-  GRAVEL: 20
+  PODZOL: 40
+  GRAVEL: 10
   COARSE_DIRT: 25
-  SAND: 30
-  RED_SAND: 35
+  SAND: 10
+  RED_SAND: 15
   SOUL_SAND: 45
   CLAY: 30
 ExtractionBlocks:

@@ -15,7 +15,6 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.util.SkullCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,28 +51,21 @@ public class PartyMemberGUI extends GUI{
         ItemStack item = new ItemStack(Material.getMaterial(memberFile.getString("PartyMemberItem.Material", "PLAYER_HEAD")));
         ItemMeta meta = item.getItemMeta();
         if(item.getType().equals(Material.PLAYER_HEAD)){
-          if(SkullCache.headMap.containsKey(uuid)){
-            item = SkullCache.headMap.get(uuid).clone();
-            meta = item.getItemMeta();
-          }
-          else{
-            SkullMeta sm = (SkullMeta) meta;
-            if(memberFile.contains("PartyMemberItem.Owner")){
-              if(memberFile.getString("PartyMemberItem.Owner").equalsIgnoreCase("%Player%")){
-                sm.setOwningPlayer(offlinePlayer);
-              }
-              else{
-                sm.setOwningPlayer(Bukkit.getOfflinePlayer(memberFile.getString("PartyMemberItem.Owner")));
-              }
-            }
-            else{
+          SkullMeta sm = (SkullMeta) meta;
+          if(memberFile.contains("PartyMemberItem.Owner")){
+            if(memberFile.getString("PartyMemberItem.Owner").equalsIgnoreCase("%Player%")){
               sm.setOwningPlayer(offlinePlayer);
             }
-            item.setItemMeta(sm);
-            SkullCache.headMap.put(uuid, item);
-            item = item.clone();
-            meta = item.getItemMeta();
+            else{
+              sm.setOwningPlayer(Bukkit.getOfflinePlayer(memberFile.getString("PartyMemberItem.Owner")));
+            }
           }
+          else{
+            sm.setOwningPlayer(offlinePlayer);
+          }
+          item.setItemMeta(sm);
+          item = item.clone();
+          meta = item.getItemMeta();
         }
         List<String> lore = new ArrayList<>();
         for(String s : memberFile.getStringList("PartyMemberItem.Lore")){
