@@ -636,8 +636,12 @@ public class McParty implements CommandExecutor{
                 message.append(args[i]);
               }
               for(Player player : Bukkit.getOnlinePlayers()){
-                if(party.isPlayerInParty(player.getUniqueId()) || player.hasPermission("mcrpg.*") || player.hasPermission("mcparty.*") || player.hasPermission("mcadmin.*") || player.hasPermission("mcparty.spy")){
-                  player.sendMessage(message.toString());
+                try{
+                  if(party.isPlayerInParty(player.getUniqueId()) || PlayerManager.getPlayer(player.getUniqueId()).isSpyPartyChat()){
+                    player.sendMessage(message.toString());
+                  }
+                }catch(McRPGPlayerNotFoundException e){
+                  continue;
                 }
               }
             }
