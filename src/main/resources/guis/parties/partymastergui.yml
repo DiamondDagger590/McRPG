@@ -1,0 +1,55 @@
+Gui:
+  MainGUI:
+    Size: 27
+    Title: '&5Party Menu Lv: %Party_Level%'
+    Events:
+      9:
+        - 'OpenNative:PartyMemberGUI'
+      11:
+        - 'OpenNative:PartyBankGUI'
+      13:
+        - 'OpenNative:PrivateBankGUI'
+      15:
+        - 'OpenNative:RolesGUI'
+      17:
+        - 'OpenNative:PartyUpgradesGUI'
+    Items:
+      MemberItem:
+        Name: '&5Party Members'
+        Material: PLAYER_HEAD
+        Owner: '%Player%'
+        Lore:
+          - '&eClick this to view info'
+          - '&eon party members'
+          - '&7%Online_Members%&e/&a%Total_Members% &emembers online'
+        Slot: 9
+      BankItem:
+        Name: '&5Party Bank'
+        Material: CHEST
+        Lore:
+          - '&eClick this to access the bank.'
+        Slot: 11
+      PrivateBankItem:
+        Name: '&5Private Bank'
+        Material: ENDER_CHEST
+        Lore:
+          - '&eClick this to access the private bank.'
+          - '&eOnly certain members can access this!'
+        Slot: 13
+      PartyRoles:
+        Name: '&5Party Permissions'
+        Material: RED_WOOL
+        Lore:
+          - '&eClick this to edit permissions for roles!'
+          - '&eOnly the party owner can edit these!'
+        Slot: 15
+      UpgradesItem:
+        Name: '&5Party Upgrades'
+        Material: NETHER_STAR
+        Lore:
+          - '&eClick this to view upgrades.'
+          - '&eCurrent points: &7%Party_Points%'
+        Slot: 17
+    FillerItem:
+      Material: GRAY_STAINED_GLASS_PANE
+      Name: ' '

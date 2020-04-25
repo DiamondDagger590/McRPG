@@ -6,6 +6,7 @@ RequirePermission: false
 #
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
+# %party_level% - The level of the player's party. If not in a party, defaults to 0
 #
 ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
@@ -27,6 +28,7 @@ ExpAwardedPerBlock:
   TERRACOTTA: 25
   NETHER_QUARTZ_ORE: 175
   SANDSTONE: 40
+  RED_SANDSTONE: 40
   GLOWSTONE: 50
   NETHERRACK: 10
   NETHERBRICK: 20
@@ -352,19 +354,19 @@ BlastMiningConfig:
     #Radius of the ability (this is done to every side of the player)
     Radius: 2
     #Cooldown in seconds
-    Cooldown: 240
+    Cooldown: 180
   TierII:
     Radius: 3
-    Cooldown: 240
+    Cooldown: 180
   TierIII:
     Radius: 4
-    Cooldown: 240
+    Cooldown: 180
   TierIV:
     Radius: 5
-    Cooldown: 240
+    Cooldown: 180
   TierV:
     Radius: 6
-    Cooldown: 240
+    Cooldown: 180
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Blast Mining'

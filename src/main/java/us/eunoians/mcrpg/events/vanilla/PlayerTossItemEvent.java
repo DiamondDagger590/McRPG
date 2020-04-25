@@ -35,6 +35,11 @@ public class PlayerTossItemEvent implements Listener {
       return;
     }
     Player p = e.getPlayer();
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
+      return;
+    }
     McRPGPlayer mp;
     try{
       mp = PlayerManager.getPlayer(p.getUniqueId());

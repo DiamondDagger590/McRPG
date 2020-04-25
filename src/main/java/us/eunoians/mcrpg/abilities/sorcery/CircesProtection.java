@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class CircesProtection extends BaseAbility {
 
-  public CircesProtection(){ super(UnlockedAbilities.CIRCES_PROTECTION, true, false);}
+  public CircesProtection(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.CIRCES_PROTECTION, isToggled, currentTier);
+  }
 }

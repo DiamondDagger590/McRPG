@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class Berserk extends BaseAbility {
 
-  public Berserk(){
-    super(UnlockedAbilities.BERSERK, true, false);
+  public Berserk(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.BERSERK, isToggled, currentTier);
   }
 }

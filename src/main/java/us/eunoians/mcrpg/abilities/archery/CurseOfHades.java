@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class CurseOfHades extends BaseAbility {
 
-  public CurseOfHades(){
-    super(UnlockedAbilities.CURSE_OF_HADES, true, false);
+  public CurseOfHades(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.CURSE_OF_HADES, isToggled, currentTier);
   }
 }

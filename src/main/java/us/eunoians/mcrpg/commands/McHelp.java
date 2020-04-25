@@ -43,6 +43,12 @@ public class McHelp implements CommandExecutor {
         }
         return true;
       }
+      else if(help.equalsIgnoreCase("mcexp")){
+        for(String prompt : config.getStringList("Messages.Commands.McHelp.McExp")){
+          sender.sendMessage(Methods.color(prompt));
+        }
+        return true;
+      }
       else if(help.equalsIgnoreCase("mcadmin")) {
         String page = "1";
         if(args.length > 1) {
@@ -56,7 +62,21 @@ public class McHelp implements CommandExecutor {
         }
         return true;
       }
+      else if(help.equalsIgnoreCase("mcparty")) {
+        String page = "1";
+        if(args.length > 1) {
+          page = args[1];
+        }
+        if(!(page.equalsIgnoreCase("4") || page.equalsIgnoreCase("2") || page.equalsIgnoreCase("3") || page.equalsIgnoreCase("1"))) {
+          return true;
+        }
+        for(String prompt : config.getStringList("Messages.Commands.McHelp.McParty" + page)) {
+          sender.sendMessage(Methods.color(prompt));
+        }
+        return true;
+      }
       else {
+        sender.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Commands.McHelp.Error")));
         return true;
       }
     }

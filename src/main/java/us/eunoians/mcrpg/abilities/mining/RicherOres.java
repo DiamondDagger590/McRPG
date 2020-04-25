@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class RicherOres extends BaseAbility {
 
-  public RicherOres(){
-    super(UnlockedAbilities.RICHER_ORES, true, false);
+  public RicherOres(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.RICHER_ORES, isToggled, currentTier);
   }
 }

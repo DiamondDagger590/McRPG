@@ -11,5 +11,7 @@ public class Extraction extends BaseAbility {
   @Setter
   private double bonusChance = 0;
 
-  public Extraction(){ super(DefaultAbilities.EXTRACTION, true, false); }
+  public Extraction(boolean isToggled) {
+    super(DefaultAbilities.EXTRACTION, isToggled, 0, true);
+  }
 }

@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class RageSpike extends BaseAbility {
 
-  public RageSpike(){
-    super(UnlockedAbilities.RAGE_SPIKE, true, false);
+  public RageSpike(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.RAGE_SPIKE, isToggled, currentTier);
   }
 }

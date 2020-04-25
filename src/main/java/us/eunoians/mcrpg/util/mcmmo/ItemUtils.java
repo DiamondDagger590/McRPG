@@ -642,7 +642,7 @@ public final class ItemUtils {
       case ROTTEN_FLESH:
       case GOLD_NUGGET:
       case EGG:
-      case ROSE_RED:
+      case RED_DYE:
       case COAL:
         return true;
 

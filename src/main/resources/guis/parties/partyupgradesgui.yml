@@ -1,0 +1,42 @@
+Title: '&5Party Upgrades: %Upgrade_Points% points'
+Size: 27
+MemberCount:
+  Slot: 10
+  Material: PLAYER_HEAD
+  Owner: '%Player%'
+  DisplayName: '&5Member Amount'
+  Lore:
+    - '&fLevel: &7%Current_Level%/%Max_Level%'
+    - '&fCurrent Member Limit: &7%Member_Limit% players'
+ExpShareAmount:
+  Slot: 12
+  Material: REDSTONE
+  DisplayName: '&5Exp Share Percentage'
+  Lore:
+    - '&fLevel: &7%Current_Level%/%Max_Level%'
+    - '&fCurrent Percent: &7%Exp_Share_Amount%%'
+ExpShareRange:
+  Slot: 14
+  Material: HOPPER
+  DisplayName: '&5Exp Share Range'
+  Lore:
+    - '&fLevel: &7%Current_Level%/%Max_Level%'
+    - '&fCurrent Range: &7%Exp_Share_Range% blocks'
+PrivateBankSize:
+  Slot: 16
+  Material: CHEST
+  DisplayName: '&5Private Bank'
+  Lore:
+    - '&fLevel: &7%Current_Level%/%Max_Level%'
+    - '&fCurrent Size: %Private_Bank_Size% slots'
+BackButton:
+  Slot: 18
+  Material: BARRIER
+  DisplayName: '&bBack>>'
+  Lore:
+    - '&eClick this to go back'
+FillerItem:
+  Material: GRAY_STAINED_GLASS_PANE
+  Amount: 1
+  DisplayName: ' '
+  Lore: {}

@@ -7,7 +7,7 @@ Cooldowns:
 BrewingArtifacts:
   Enabled: true
   #Chance of an artifact spawning after brewing (it counts as a brew task, not once per potion brewed)
-  ChanceOfSpawning: 0.2
+  ChanceOfSpawning: 2.0
   #Chances for effects do not have to add to 100%
   Effects:
     #Use the artifact to gain redeemable experience

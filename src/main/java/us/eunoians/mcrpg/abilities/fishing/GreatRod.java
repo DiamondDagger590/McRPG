@@ -5,6 +5,7 @@ import us.eunoians.mcrpg.types.DefaultAbilities;
 
 public class GreatRod extends BaseAbility {
 
-    public GreatRod(){ super(DefaultAbilities.GREAT_ROD, true, false); }
-
+  public GreatRod(boolean isToggled) {
+    super(DefaultAbilities.GREAT_ROD, isToggled, 0, true);
+  }
 }

@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class Dodge extends BaseAbility {
 
-  public Dodge(){
-    super(UnlockedAbilities.DODGE, true, false);
+  public Dodge(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.DODGE, isToggled, currentTier);
   }
 }

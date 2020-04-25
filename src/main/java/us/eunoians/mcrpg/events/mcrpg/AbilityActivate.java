@@ -6,10 +6,7 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
-import fr.neatmonster.nocheatplus.NCPAPIProvider;
-import fr.neatmonster.nocheatplus.components.NoCheatPlusAPI;
 import fr.neatmonster.nocheatplus.hooks.NCPExemptionManager;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,7 +34,13 @@ public class AbilityActivate implements Listener{
   
   @EventHandler(priority = EventPriority.NORMAL)
   public void abilityActivateEvent(AbilityActivateEvent e){
-    Skills skill = Skills.fromString(e.getAbility().getGenericAbility().getSkill());
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getMcRPGPlayer().getPlayer().getWorld().getName())) {
+      e.setCancelled(true);
+      return;
+    }
+    Skills skill = e.getAbility().getGenericAbility().getSkill();
     String abilityName = e.getAbility().getGenericAbility().getName().replace(" ", "").replace("_", "").toLowerCase();
     Player p = e.getMcRPGPlayer().getPlayer();
     if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".use.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".unlock." + abilityName))){

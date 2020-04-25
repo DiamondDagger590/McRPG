@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class SerratedStrikes extends BaseAbility {
 
-  public SerratedStrikes() {super(UnlockedAbilities.SERRATED_STRIKES, true, false);}
+  public SerratedStrikes(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.SERRATED_STRIKES, isToggled, currentTier);
+  }
 }

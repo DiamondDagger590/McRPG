@@ -6,6 +6,7 @@ RequirePermission: false
 #
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
+# %party_level% - The level of the player's party. If not in a party, defaults to 0
 #
 ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
@@ -173,6 +174,7 @@ CircesRecipesConfig:
       - 'FAST_DIGGING'
       - 'SLOW_DIGGING'
       - 'DAMAGE_RESISTANCE'
+      - 'WITHER'
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&3Circes Recipes'

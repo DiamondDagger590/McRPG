@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class NaturesWrath extends BaseAbility {
 
-  public NaturesWrath(){
-    super(UnlockedAbilities.NATURES_WRATH, true, false);
+  public NaturesWrath(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.NATURES_WRATH, isToggled, currentTier);
   }
 }

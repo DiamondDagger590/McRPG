@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.axes.BloodFrenzy;
 import us.eunoians.mcrpg.abilities.fitness.DivineEscape;
@@ -45,6 +46,11 @@ public class DeathEvent implements Listener {
     if(PlayerManager.isPlayerFrozen(e.getEntity().getUniqueId())){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+      return;
+    }
     if(e.getEntity() instanceof Player){
       Player p = (Player) e.getEntity();
       if(p.getHealth() - e.getDamage() <= 0 && p.getBedSpawnLocation() != null){
@@ -72,7 +78,14 @@ public class DeathEvent implements Listener {
           if(!divineEscapeEvent.isCancelled()){
             e.setCancelled(true);
             p.setHealth(p.getMaxHealth());
-            p.teleport(p.getBedSpawnLocation());
+            new BukkitRunnable(){
+              @Override
+              public void run(){
+                if(p.isOnline() && p.getBedLocation() != null){
+                  p.teleport(p.getBedSpawnLocation());
+                }
+              }
+            }.runTaskLater(McRPG.getInstance(), 1);
             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DivineEscape.Activated"))
                     .replace("%Exp_Debuff%", Double.toString(mcrpgExpPen)).replace("%Damage_Debuff%", Double.toString(damagePenalty)));
             mp.setDivineEscapeDamageDebuff(divineEscapeEvent.getDamageIncreaseDebuff());

@@ -30,6 +30,11 @@ public class PotionEffectEvent implements Listener{
   
   @EventHandler
   public void potionEffectEvent(EntityPotionEffectEvent e){
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+      return;
+    }
     if(e.getEntity() instanceof Player && e.getNewEffect() != null && debuffs.contains(e.getNewEffect().getType())){
       try{
         McRPGPlayer mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());

@@ -34,7 +34,7 @@ public class AcceptAbilityGUI extends GUI {
     }
     if(acceptType == AcceptType.ACCEPT_ABILITY) {
       buildGUIFunction = (GUIBuilder builder) -> {
-        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill().getName()));
 		FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ACCEPT_ABILITY_GUI);
         Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
                 Methods.color(p.getPlayer(), guiConfig.getString("Title.AcceptAbility").replace("%Ability%", ability.getGenericAbility().getName())));
@@ -91,7 +91,7 @@ public class AcceptAbilityGUI extends GUI {
     else {
       buildGUIFunction = (GUIBuilder builder) -> {
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.ACCEPT_ABILITY_GUI);
-        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill()));
+        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill().getName()));
         Inventory inv = Bukkit.createInventory(null, guiConfig.getInt("Size"),
           Methods.color(p.getPlayer(), guiConfig.getString("Title.UpgradeAbility").replace("%Ability%", ability.getGenericAbility().getName())
                                          .replace("%Tier%", Methods.convertToNumeral(ability.getCurrentTier() + 1))));

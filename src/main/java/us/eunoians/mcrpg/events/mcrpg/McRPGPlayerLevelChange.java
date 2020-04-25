@@ -35,7 +35,14 @@ public class McRPGPlayerLevelChange implements Listener {
     McRPG mcRPG = McRPG.getInstance();
     if(e.getNextLevel() > e.getSkillLeveled().getType().getMaxLevel()){
       e.setNextLevel( e.getSkillLeveled().getType().getMaxLevel());
+      if(e.getNextLevel() == e.getPreviousLevel()){
+        e.setCancelled(true);
+        return;
+      }
     }
+    
+    McRPG.getInstance().getLevelCommandManager().handleLevelUp(e.getMcRPGPlayer(), e.getSkillLeveled().getType(), e.getPreviousLevel(), e.getNextLevel());
+    
     e.getMcRPGPlayer().updatePowerLevel();
     //Send the player a message that they leveled up
     String message = Methods.color(e.getMcRPGPlayer().getPlayer(), mcRPG.getPluginPrefix() +
@@ -46,6 +53,8 @@ public class McRPGPlayerLevelChange implements Listener {
     skillLeveled.updateExpToLevel();
     McRPGPlayer mp = e.getMcRPGPlayer();
     Random rand = new Random();
+    
+    boolean quickSave = false;
     //iterate across all levels gained
     for(int i = e.getPreviousLevel() + 1; i <= e.getNextLevel(); i++) {
       //if the level is at a interval to gain the player an ability point, award it to them
@@ -57,10 +66,9 @@ public class McRPGPlayerLevelChange implements Listener {
           soundFile.getInt("Sounds.Misc.AbilityPointGain.Volume"), soundFile.getInt("Sounds.Misc.AbilityPointGain.Pitch"));
         mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcRPGPlayer().getAbilityPoints()))));
-        mp.saveData();
       }
       TipType tipType = TipType.getSkillTipType(e.getSkillLeveled().getType());
-      if (!mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
+      if (!McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableTips") && !mp.isIgnoreTips() && !mp.getUsedTips().contains(tipType)) {
         List<String> possibleMessages = mcRPG.getLangFile().getStringList("Messages.Tips.LevelUp" + e.getSkillLeveled().getName());
         if (possibleMessages.size() > 0) {
           int val = rand.nextInt(possibleMessages.size());
@@ -68,51 +76,15 @@ public class McRPGPlayerLevelChange implements Listener {
           mp.getUsedTips().add(tipType);
         }
       }
+      quickSave = true;
     }
-    //TODO for future reference
- /**   //Do things for swords ability
-    if(skillLeveled.getType().equals(Skills.SWORDS)) {
-      //Get all enabled abilites
-      List<String> enabledAbilities = Skills.SWORDS.getEnabledAbilities();
-      //Iterate across these bois
-      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }
-    //Do things for mining ability
-    if(skillLeveled.getType().equals(Skills.MINING)) {
-      //Get all enabled abilites
-      List<String> enabledAbilities = Skills.MINING.getEnabledAbilities();
-      //Iterate across these bois
-      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }
-    //Do things for mining ability
-    if(skillLeveled.getType().equals(Skills.UNARMED)) {
-      //Get all enabled abilites
-      List<String> enabledAbilities = Skills.UNARMED.getEnabledAbilities();
-      //Iterate across these bois
-      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }
-    //Do things for herbalism ability
-    if(skillLeveled.getType().equals(Skills.HERBALISM)) {
-      //Get all enabled abilites
-      List<String> enabledAbilities = Skills.HERBALISM.getEnabledAbilities();
-      //Iterate across these bois
-      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }
-    //Do things for archery ability
-    if(skillLeveled.getType().equals(Skills.ARCHERY)) {
-      //Get all enabled abilites
-      List<String> enabledAbilities = Skills.ARCHERY.getEnabledAbilities();
-      //Iterate across these bois
-      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }
-    if(skillLeveled.getType().equals(Skills.WOODCUTTING)){
-      List<String> enabledAbilities = Skills.WOODCUTTING.getEnabledAbilities();
-      //Iterate across these bois
-      addToPending(e, mcRPG, skillLeveled, mp, enabledAbilities);
-    }**/
 
     addToPending(e, mcRPG, skillLeveled, mp, skillLeveled.getType().getEnabledAbilities());
-
+    
+    if(quickSave){
+      mp.saveData();
+    }
+    
     //Update their general info and scoreboards
     if(e.getMcRPGPlayer().isOnline()) {
       Player p = e.getMcRPGPlayer().getPlayer();

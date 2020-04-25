@@ -11,7 +11,7 @@ public class DoubleDrop extends BaseAbility {
   @Setter
   private double bonusChance = 0.0;
 
-  public DoubleDrop(){
-    super(DefaultAbilities.DOUBLE_DROP, true, true);
+  public DoubleDrop(boolean isToggled) {
+    super(DefaultAbilities.DOUBLE_DROP, isToggled, 0, true);
   }
 }

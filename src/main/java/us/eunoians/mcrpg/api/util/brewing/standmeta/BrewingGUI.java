@@ -3,7 +3,12 @@ package us.eunoians.mcrpg.api.util.brewing.standmeta;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.HumanEntity;
@@ -29,12 +34,21 @@ import us.eunoians.mcrpg.api.util.artifacts.ArtifactFactory;
 import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
-import us.eunoians.mcrpg.api.util.brewing.*;
+import us.eunoians.mcrpg.api.util.brewing.BasePotion;
+import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
+import us.eunoians.mcrpg.api.util.brewing.PotionEffectTagWrapper;
+import us.eunoians.mcrpg.api.util.brewing.PotionFactory;
+import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
+import us.eunoians.mcrpg.api.util.brewing.TagMeta;
 import us.eunoians.mcrpg.gui.GUI;
 import us.eunoians.mcrpg.gui.GUIBuilder;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
-import us.eunoians.mcrpg.types.*;
+import us.eunoians.mcrpg.types.BasePotionType;
+import us.eunoians.mcrpg.types.DefaultAbilities;
+import us.eunoians.mcrpg.types.GainReason;
+import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.Parser;
 
 import java.text.DecimalFormat;
@@ -163,7 +177,8 @@ public class BrewingGUI extends GUI{
     potionMeta.setDisplayName(Methods.color(guiFile.getString("PotionPlaceholder.DisplayName")));
     potionMeta.setLore(Methods.colorLore(guiFile.getStringList("PotionPlaceholder.Lore")));
     potionGlass.setItemMeta(potionMeta);
-    if(brewerInventory.getItem(VANILLA_POTION_SLOT_1) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_1).getType() == Material.AIR){
+    if(brewerInventory.getItem(VANILLA_POTION_SLOT_1) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_1).getType() == Material.AIR
+    || !(brewerInventory.getItem(VANILLA_POTION_SLOT_1).getType().name().contains("Potion"))){
       inv.setItem(MCRPG_POTION_SLOT_1, potionGlass);
     }
     else{
@@ -172,7 +187,8 @@ public class BrewingGUI extends GUI{
       brewerInventory.setItem(VANILLA_POTION_SLOT_1, basePotion.getAsItem());
       potionItems[0] = basePotion;
     }
-    if(brewerInventory.getItem(VANILLA_POTION_SLOT_2) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_2).getType() == Material.AIR){
+    if(brewerInventory.getItem(VANILLA_POTION_SLOT_2) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_2).getType() == Material.AIR
+         || !(brewerInventory.getItem(VANILLA_POTION_SLOT_2).getType().name().contains("Potion"))){
       inv.setItem(MCRPG_POTION_SLOT_2, potionGlass);
     }
     else{
@@ -181,7 +197,8 @@ public class BrewingGUI extends GUI{
       brewerInventory.setItem(VANILLA_POTION_SLOT_2, basePotion.getAsItem());
       potionItems[1] = basePotion;
     }
-    if(brewerInventory.getItem(VANILLA_POTION_SLOT_3) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_3).getType() == Material.AIR){
+    if(brewerInventory.getItem(VANILLA_POTION_SLOT_3) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_3).getType() == Material.AIR
+         || !(brewerInventory.getItem(VANILLA_POTION_SLOT_3).getType().name().contains("Potion"))){
       inv.setItem(MCRPG_POTION_SLOT_3, potionGlass);
     }
     else{

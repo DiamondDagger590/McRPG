@@ -41,7 +41,11 @@ public class PlayerNomNomEvent implements Listener {
     if(!(entity instanceof Player)) {
       return;
     }
-
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(event.getEntity().getWorld().getName())) {
+      return;
+    }
     Player player = (Player) entity;
     int currentFoodLevel = player.getFoodLevel();
     int newFoodLevel = event.getFoodLevel();

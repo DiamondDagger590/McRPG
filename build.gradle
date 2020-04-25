@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 2, patch: 4, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 3, patch: 0, fix: 0, state: 'BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -41,12 +41,12 @@ dependencies {
     compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
     compileOnly 'com.github.DiamondDagger590:FlatDB:1.0.7'
     compileOnly 'com.github.DiamondDagger590:EnumToYaml:1.0'
-    compile 'de.tr7zw:item-nbt-api:2.2.0'
+    compile 'de.tr7zw:item-nbt-api:2.4.0-SNAPSHOT'
     compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
-    compileOnly 'org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT'
     compile 'org.bstats:bstats-bukkit:1.7'
     compileOnly files('libs/Sickle.jar')
     compileOnly files('libs/SpartanAPI.jar')
@@ -84,10 +84,10 @@ tasks.withType(JavaCompile) {
 
 class Version {
 
-    String major, minor, patch, state, full
+    String major, minor, patch, fix, state, full
 
     String getFullVersion() {
-        full = "$major.$minor.$patch-$state"
+        full = "$major.$minor.$patch.$fix-$state"
         return full
     }
 

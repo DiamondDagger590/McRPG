@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.DefaultAbilities;
 
 public class Daze extends BaseAbility {
 
-  public Daze(){
-    super(DefaultAbilities.DAZE, true, true);
+  public Daze(boolean isToggled) {
+    super(DefaultAbilities.DAZE, isToggled, 0, true);
   }
 }

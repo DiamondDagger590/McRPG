@@ -5,5 +5,7 @@ import us.eunoians.mcrpg.types.DefaultAbilities;
 
 public class ExtraLumber extends BaseAbility {
 
-  public ExtraLumber() {super(DefaultAbilities.EXTRA_LUMBER, true, true);}
+  public ExtraLumber(boolean isToggled) {
+    super(DefaultAbilities.EXTRA_LUMBER, isToggled, 0, true);
+  }
 }

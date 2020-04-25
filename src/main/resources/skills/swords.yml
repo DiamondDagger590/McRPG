@@ -6,6 +6,7 @@ RequirePermission: false
 #
 # %power_level% - The power level of the player
 # %skill_level% - The skill level of the player
+# %party_level% - The level of the player's party. If not in a party, defaults to 0
 #
 ExpEquation: '2000+(20*(skill_level))'
 MaxLevel: 1000
@@ -42,7 +43,7 @@ ExpAwardedPerMob:
   HORSE: 17
   LLAMA: 17
   CREEPER: 30
-  GUARDIAN: 30
+  GUARDIAN: 10
   ELDER_GUARDIAN: 60
   ENDER_DRAGON: 75
   ENDERMAN: 30

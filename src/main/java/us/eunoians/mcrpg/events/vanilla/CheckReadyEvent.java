@@ -47,6 +47,11 @@ public class CheckReadyEvent implements Listener{
     if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
+      return;
+    }
     Player p = e.getPlayer();
     McRPGPlayer mp;
     try{

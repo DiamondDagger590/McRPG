@@ -45,6 +45,11 @@ public class DropItemEvent implements Listener{
         }
       }
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())){
+      return;
+    }
     Location loc = e.getBlock().getLocation();
     if(blockDropsToMultiplier.containsKey(loc)){
       for(Item i : e.getItems()){

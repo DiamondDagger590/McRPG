@@ -5,6 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class SeaGodsBlessing extends BaseAbility {
 
-    public SeaGodsBlessing(){ super(UnlockedAbilities.SEA_GODS_BLESSING, true, false); }
-
+  public SeaGodsBlessing(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.SEA_GODS_BLESSING, isToggled, currentTier);
+  }
 }

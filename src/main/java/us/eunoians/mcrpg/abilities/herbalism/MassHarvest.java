@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class MassHarvest extends BaseAbility {
 
-  public MassHarvest(){
-    super(UnlockedAbilities.MASS_HARVEST, true, false);
+  public MassHarvest(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.MASS_HARVEST, isToggled, currentTier);
   }
 }

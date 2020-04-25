@@ -7,127 +7,127 @@ Sounds:
       Pitch: 1
     AbilityPointGain:
       Sound: ENTITY_VILLAGER_YES
-      Volume: 2
+      Volume: 1
       Pitch: 1
     LevelUp:
       Sound: ENTITY_PLAYER_LEVELUP
-      Volume: 2
+      Volume: 1
       Pitch: 1
     AbilityUnlocked:
       Sound: ENTITY_ENDER_DRAGON_GROWL
-      Volume: 3
+      Volume: 1
       Pitch: 1
     #When the players ability replace cooldown has yet to expire
     ReplaceCooldownPending:
       Sound: ENTITY_VILLAGER_NO
-      Volume: 5
+      Volume: 1
       Pitch: 1
     UpgradeAbility:
       Sound: ENTITY_VILLAGER_YES
-      Volume: 5
+      Volume: 1
       Pitch: 1
     CantUpgradeAbility:
       Sound: ENTITY_VILLAGER_NO
-      Volume: 5
+      Volume: 1
       Pitch: 1
     DenyReplace:
       Sound: ENTITY_VILLAGER_NO
-      Volume: 5
+      Volume: 1
       Pitch: 1
   Mining:
     BlastMining:
       Sound: ENTITY_GENERIC_EXPLODE
-      Volume: 5
+      Volume: 3
       Pitch: 1
     SuperBreaker:
       Sound: ENTITY_VEX_CHARGE
-      Volume: 10
+      Volume: 1
       Pitch: 1
   Unarmed:
     StickyFingers:
       Sound: ENTITY_SLIME_ATTACK
-      Volume: 5
+      Volume: 1
       Pitch: 1
     #When an enemy is smited by smiting fist
     SmitingFist:
       Sound: ENTITY_LIGHTNING_BOLT_THUNDER
-      Volume: 5
+      Volume: 1
       Pitch: 1
     SmitingFistActivated:
       Sound: ENTITY_ILLUSIONER_CAST_SPELL
-      Volume: 5
+      Volume: 1
       Pitch: 1
     SmitingFistEnded:
       Sound: ENTITY_ILLUSIONER_DEATH
-      Volume: 5
+      Volume: 1
       Pitch: 1
     Berserk:
       Sound: ENTITY_IRON_GOLEM_ATTACK
-      Volume: 5
+      Volume: 1
       Pitch: 1
     BerserkEnded:
       Sound: ENTITY_IRON_GOLEM_DEATH
-      Volume: 5
+      Volume: 1
       Pitch: 1
     DenseImpactActivated:
       Sound: ENTITY_ZOMBIE_ATTACK_IRON_DOOR
-      Volume: 5
+      Volume: 1
       Pitch: 1
     DenseImpactEnded:
       Sound: ENTITY_IRON_GOLEM_DEATH
-      Volume: 5
+      Volume: 1
       Pitch: 1
   Swords:
     RageSpike:
       Sound: ENTITY_DRAGON_FIREBALL_EXPLODE
-      Volume: 5
+      Volume: 1
       Pitch: 1
     TaintedBladeEnd:
       Sound: ENTITY_WITHER_SKELETON_HURT
-      Volume: 5
+      Volume: 1
       Pitch: 1
     SerratedStrikesEnded:
       Sound: ENTITY_SHULKER_HURT
-      Volume: 5
+      Volume: 1
       Pitch: 1
   Woodcutting:
     DemetersShrine:
       Sound: ENTITY_FIREWORK_ROCKET_LAUNCH
-      Volume: 5
+      Volume: 1
       Pitch: 5
   Herbalism:
     NaturesWrath:
       Sound: ENTITY_PLAYER_BURP
-      Volume: 5
+      Volume: 1
       Pitch: 1
   Excavation:
     PansShrine:
       Sound: ENTITY_FIREWORK_ROCKET_LAUNCH
-      Volume: 5
+      Volume: 1
       Pitch: 5
     FrenzyDig:
       Sound: ENTITY_VEX_CHARGE
-      Volume: 10
+      Volume: 1
       Pitch: 1
   Brewing:
     FinishBrewSound:
       Sound: BLOCK_BREWING_STAND_BREW
-      Volume: 5
+      Volume: 1
       Pitch: 1
     CircesShrine:
       Sound: ENTITY_FIREWORK_ROCKET_LAUNCH
-      Volume: 5
+      Volume: 1
       Pitch: 5
   Archery:
     BlessingOfArtemis:
       Sound: ENTITY_WOLF_GROWL
-      Volume: 2
+      Volume: 1
       Pitch: 2
     BlessingOfApollo:
       Sound: ENTITY_BLAZE_SHOOT
-      Volume: 2
+      Volume: 1
       Pitch: 2
     CurseOfHades:
       Sound: ENTITY_WITHER_SHOOT
-      Volume: 2
+      Volume: 1
       Pitch: 2

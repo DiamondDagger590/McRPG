@@ -1,0 +1,8 @@
+#Commands to be executed upon levelup
+Commands:
+  #Demo commands are intentionally unachievable
+  #Examples:
+  #   - 'SkillName:Level:Command'
+  #   - 'Power:Level:Command'
+  - 'Swords:1001:broadcast &5%Player% has reached level 1001!'
+  - 'Power:500000:broadcast &5%Player% is hacking!'

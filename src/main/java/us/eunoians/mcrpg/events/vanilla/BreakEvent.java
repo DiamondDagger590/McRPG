@@ -114,6 +114,11 @@ public class BreakEvent implements Listener{
     if(event instanceof PansShrineTestEvent){
       return;
     }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(event.getPlayer().getWorld().getName())) {
+      return;
+    }
     if(!event.isCancelled() && (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE)){
       Player p = event.getPlayer();
       Block block = event.getBlock();
@@ -235,6 +240,9 @@ public class BreakEvent implements Listener{
               Bukkit.getPluginManager().callEvent(largerSpadeEvent);
               if(!largerSpadeEvent.isCancelled()){
                 for(Block b : blocks){
+                  if(b == null || b.getType() == Material.AIR){
+                    continue;
+                  }
                   LargerSpadeTestEvent largerSpadeTestEvent = new LargerSpadeTestEvent(p, b);
                   Bukkit.getPluginManager().callEvent(largerSpadeTestEvent);
                   if(!largerSpadeTestEvent.isCancelled()){
@@ -304,19 +312,21 @@ public class BreakEvent implements Listener{
                     if(itemsPossible.size() >= 1){
                       BuriedTreasureData.BuriedTreasureItem buriedTreasureItem = itemsPossible.get(rand.nextInt(itemsPossible.size()));
                       BuriedTreasureEvent buriedTreasureEvent = new BuriedTreasureEvent(mp, buriedTreasure, buriedTreasureItem);
-                      Bukkit.getPluginManager().callEvent(buriedTreasureEvent);
-                      if(!buriedTreasureEvent.isCancelled()){
-                        mp.getSkill(Skills.EXCAVATION).giveExp(mp, buriedTreasureEvent.getExp(), GainReason.BONUS);
-                        int range = buriedTreasureEvent.getMaxAmount() - buriedTreasureEvent.getMinAmount();
-                        int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
-                        ItemStack itemToDrop = new ItemStack(buriedTreasureEvent.getMaterial(), buriedTreasureEvent.getMinAmount() + bonusAmount);
-                        if(!buriedTreasureItem.getEnchants().isEmpty()){
-                          for(Enchantment enchantment : buriedTreasureItem.getEnchants().keySet()){
-                            itemToDrop.addEnchantment(enchantment, buriedTreasureItem.getEnchants().get(enchantment));
+                      if(buriedTreasureEvent.getMaterial() != null){
+                        Bukkit.getPluginManager().callEvent(buriedTreasureEvent);
+                        if(!buriedTreasureEvent.isCancelled()){
+                          mp.getSkill(Skills.EXCAVATION).giveExp(mp, buriedTreasureEvent.getExp(), GainReason.BONUS);
+                          int range = buriedTreasureEvent.getMaxAmount() - buriedTreasureEvent.getMinAmount();
+                          int bonusAmount = rand.nextInt((range == 0) ? 1 : range);
+                          ItemStack itemToDrop = new ItemStack(buriedTreasureEvent.getMaterial(), buriedTreasureEvent.getMinAmount() + bonusAmount);
+                          if(!buriedTreasureItem.getEnchants().isEmpty()){
+                            for(Enchantment enchantment : buriedTreasureItem.getEnchants().keySet()){
+                              itemToDrop.addEnchantment(enchantment, buriedTreasureItem.getEnchants().get(enchantment));
+                            }
                           }
+                          p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
+                          p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
                         }
-                        p.getLocation().getWorld().dropItemNaturally(block.getLocation(), itemToDrop);
-                        p.getLocation().getWorld().spawnParticle(Particle.HEART, p.getLocation(), 10);
                       }
                     }
                   }
@@ -759,7 +769,7 @@ public class BreakEvent implements Listener{
   @EventHandler(priority = EventPriority.MONITOR)
   public void brewingStandBreak(BlockBreakEvent e){
     Block block = e.getBlock();
-    if(block.getType() == Material.BREWING_STAND){
+    if(Skills.SORCERY.isEnabled() && block.getType() == Material.BREWING_STAND){
       BrewingStandManager brewingStandManager = McRPG.getInstance().getBrewingStandManager();
       brewingStandManager.breakBrewingStand(block.getLocation());
     }

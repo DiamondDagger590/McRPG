@@ -1,18 +1,20 @@
 package us.eunoians.mcrpg.types;
 
-public enum GainReason {
+public enum GainReason{
+  
+  ABILITY,
+  ARTIFACT,
+  BONUS,
   BREAK,
+  BREW,
   COMMAND,
   DAMAGE,
+  ENCHANTING,
+  FISHING,
   KILL,
   MOVE,
   OTHER,
-  REDEEM,
-  BONUS,
+  PARTY,
   PLUGIN,
-  ABILITY,
-  FISHING,
-  BREW,
-  ARTIFACT,
-  ENCHANTING
+  REDEEM
 }

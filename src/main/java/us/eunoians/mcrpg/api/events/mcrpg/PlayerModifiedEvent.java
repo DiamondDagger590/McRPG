@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.api.events.mcrpg;
 import lombok.Getter;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 
-public class PlayerModifiedEvent extends McRPGEvent {
+public abstract class PlayerModifiedEvent extends McRPGEvent {
 
   @Getter
   private McRPGPlayer mcRPGPlayer;

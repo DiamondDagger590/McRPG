@@ -24,9 +24,14 @@ import java.util.Set;
 @SuppressWarnings("Duplicates")
 public class PickupEvent implements Listener {
 
-  @EventHandler(priority = EventPriority.LOW)
+  @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
   public void pickupEvent(PlayerPickupItemEvent e) {
-    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || e.getItem().getItemStack().getAmount() < 1 || e.isCancelled()){
+    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId()) || e.getItem().getItemStack().getAmount() < 1){
+      return;
+    }
+    //Disabled Worlds
+    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
       return;
     }
     McRPGPlayer mp;

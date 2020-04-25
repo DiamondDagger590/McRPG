@@ -11,7 +11,7 @@ public class StickyFingers extends BaseAbility {
   @Setter
   private double bonusChance = 0.0;
 
-  public StickyFingers(){
-    super(DefaultAbilities.STICKY_FINGERS, true, true );
+  public StickyFingers(boolean isToggled) {
+    super(DefaultAbilities.STICKY_FINGERS, isToggled, 0, true);
   }
 }

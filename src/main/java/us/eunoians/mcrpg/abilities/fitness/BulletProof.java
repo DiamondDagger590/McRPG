@@ -5,7 +5,7 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 public class BulletProof extends BaseAbility {
 
-  public BulletProof(){
-    super(UnlockedAbilities.BULLET_PROOF, true, false);
+  public BulletProof(boolean isToggled, int currentTier) {
+    super(UnlockedAbilities.BULLET_PROOF, isToggled, currentTier);
   }
 }

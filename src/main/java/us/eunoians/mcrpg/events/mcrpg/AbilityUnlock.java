@@ -15,7 +15,7 @@ public class AbilityUnlock implements Listener {
 
   @EventHandler (priority = EventPriority.NORMAL)
   public void abilityUnlock(AbilityUnlockEvent event){
-    Skills skill = Skills.fromString(event.getAbilityToUnlock().getGenericAbility().getSkill());
+    Skills skill = event.getAbilityToUnlock().getGenericAbility().getSkill();
     String abilityName = event.getAbilityToUnlock().getGenericAbility().getName().replace(" ", "").replace("_","").toLowerCase();
     Player p = event.getMcRPGPlayer().getPlayer();
     if(McRPG.getInstance().getFileManager().getFile(FileManager.Files.getSkillFile(skill)).getBoolean("UsePermsForAbility." + abilityName) && !(p.hasPermission("mcrpg.*") || p.hasPermission("mcrpg." + skill.getName().toLowerCase() + ".*")

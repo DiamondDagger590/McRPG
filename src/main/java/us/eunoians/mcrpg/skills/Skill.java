@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.api.displays.GenericDisplay;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerExpGainEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.McRPGPlayerLevelChangeEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.*;
 import us.eunoians.mcrpg.util.Parser;
@@ -90,7 +91,7 @@ public abstract class Skill {
    * @return The default ability for this skill
    */
   public BaseAbility getDefaultAbility(){
-    return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getName()));
+    return getAbility(DefaultAbilities.getSkillsDefaultAbility(this.getType()));
   }
 
   /**
@@ -112,6 +113,9 @@ public abstract class Skill {
     Parser parser = type.getExpEquation();
     parser.setVariable("skill_level", currentLevel);
     parser.setVariable("power_level", player.getPowerLevel());
+    Party party = player.getPartyID() == null ? null : McRPG.getInstance().getPartyManager().getParty(player.getPartyID());
+    int partyLevel = party == null ? 0 : party.getPartyLevel();
+    parser.setVariable("party_level", partyLevel);
     expToLevel = (int) parser.getValue();
   }
 
