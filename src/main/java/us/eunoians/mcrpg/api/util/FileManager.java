@@ -354,7 +354,6 @@ public class FileManager {
     PARTY_MEMBER_GUI("partymembergui.yml", "guis/parties/partymembergui.yml"),
     PARTY_ROLE_GUI("partyrolegui.yml", "guis/parties/partyrolegui.yml"),
     PARTY_UPGRADES_GUI("partyupgradesgui.yml", "guis/parties/partyupgradesgui.yml"),
-    POTION_ITEM_CONFIG("demo.yml", "skills/demo.yml"),
     REDEEM_GUI("redeemgui.yml", "guis/redeemgui.yml"),
     REMOTE_TRANSFER_GUI("remotetransfergui.yml", "guis/remotetransfergui.yml"),
     REPLACE_SKILLS_GUI("replaceskillsgui.yml", "guis/replaceskillsgui.yml"),
