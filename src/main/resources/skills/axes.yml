@@ -387,7 +387,7 @@ AresBlessingConfig:
       - '&e%StrengthDuration% &cseconds of Strength &e%StrengthLevel%'
       - '&e%ResistanceDuration% &cseconds of Resistance &e%ResistanceLevel%'
       - '&cOnce they wear off, go into a weakened state'
-      - '&e%WeaknessDuration% &cseconds of Weakness &e%WeaknessLevel'
+      - '&e%WeaknessDuration% &cseconds of Weakness &e%WeaknessLevel%'
       - '&e%MiningFatigueDuration% &cseconds of Mining Fatigue &e%MiningFatigueLevel%'
       - '&cCooldown: &e%Cooldown%'
       - '&eActivate by readying and attacking an enemy'
