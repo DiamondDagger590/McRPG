@@ -11,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import sun.misc.Queue;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
@@ -49,6 +48,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -126,7 +126,7 @@ public class McRPGPlayer {
   @Getter @Setter private int boostedExp;
   
   //party invites
-  @Getter private Queue<PartyInvite> partyInvites = new Queue<>();
+  @Getter private LinkedBlockingQueue<PartyInvite> partyInvites = new LinkedBlockingQueue<>();
   @Getter @Setter private UUID partyID;
   
   @Getter @Setter private boolean usePartyChat = false;
@@ -187,7 +187,7 @@ public class McRPGPlayer {
         this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
         this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
         this.divineEscapeExpEnd = resultSet.getLong("divine_escape_exp_end_time");
-        this.divineEscapeDamageEnd = resultSet.getInt("divine_escape_damage_end_time");
+        this.divineEscapeDamageEnd = resultSet.getLong("divine_escape_damage_end_time");
         String partyIDString = resultSet.getString("party_uuid");
         if(partyIDString.equalsIgnoreCase("nu")){
            partyID = null;
@@ -358,7 +358,12 @@ public class McRPGPlayer {
   public OfflinePlayer getOfflineMcRPGPlayer() {
     return Bukkit.getOfflinePlayer(uuid);
   }
-
+  
+  @Deprecated
+  public OfflinePlayer getOfflineMcMMOPlayer() {
+    return Bukkit.getOfflinePlayer(uuid);
+  }
+  
   public boolean isReadying(){
     if(this.readyingAbilityBit == null || this.readyingAbilityBit.getAbilityReady() == null){
       this.isReadying = false;

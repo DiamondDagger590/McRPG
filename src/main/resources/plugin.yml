@@ -32,3 +32,5 @@ commands:
     description: Displays exp values
   mcspy:
     description: Toggles spying on party chat on and off
+  mcgui:
+    description: Allows for opening of custom GUIs

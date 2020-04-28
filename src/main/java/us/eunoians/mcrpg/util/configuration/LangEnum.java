@@ -124,6 +124,7 @@ public enum LangEnum implements ConfigurationEnum {
     PARTY_PLAYER_JOINED_PARTY("Messages.Commands.Parties.PlayerHasJoinedParty", "&a%Player% has joined your party!"),
     PARTY_INVITE_DECLINED("Messages.Commands.Parties.InviteDeclined", "&aYou have declined the party invite from %Party%."),
     PARTY_NOT_IN_PARTY("Messages.Commands.Parties.NotInParty", "&cYou are not in a party so you could not send an invite."),
+    PARTY_IN_PARTY("Messages.Commands.Parties.InParty", "&cThat player is already in a party."),
     PARTY_NULL_PARTY("Messages.Commands.Parties.NullParty", "&cFor some reason your party does not exist so you were removed."),
     PARTY_INVITED_PLAYER("Messages.Commands.Parties.InvitedPlayer", "&aYou have invited the player successfully!"),
     PARTY_BEEN_INVITED("Messages.Commands.Parties.BeenInvited", "&aYou have been invited by &e%Player% &ato their party! To join do &e/mcparty invites accept."),

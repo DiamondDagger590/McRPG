@@ -137,6 +137,7 @@ Messages:
       PlayerHasJoinedParty: '&a%Player% has joined your party!'
       InviteDeclined: '&aYou have declined the party invite from %Party%.'
       NotInParty: '&cYou are not in a party so you could not send an invite.'
+      InParty: '&cThat player is already in a party.'
       InvitedPlayer: '&aYou have invited the player successfully!'
       BeenInvited: '&aYou have been invited by &e%Player% &ato their party! To join do &e/mcparty invites accept.'
       IssueInviting: '&cThere was an issue inviting that player. Please wait a few seconds and try again.'

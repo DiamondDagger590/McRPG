@@ -80,11 +80,11 @@ public class McParty implements CommandExecutor{
               return true;
             }
             else{
-              PartyInvite partyInvite = mp.getPartyInvites().elements().nextElement();
+              PartyInvite partyInvite = mp.getPartyInvites().peek();
               Party party = McRPG.getInstance().getPartyManager().getParty(partyInvite.getPartyID());
               if(party == null){
                 try{
-                  mp.getPartyInvites().dequeue();
+                  mp.getPartyInvites().take();
                   p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullPartyInviteRemoved")));
                 }catch(InterruptedException e){
                   e.printStackTrace();
@@ -106,11 +106,11 @@ public class McParty implements CommandExecutor{
                 return true;
               }
               else{
-                PartyInvite partyInvite = mp.getPartyInvites().elements().nextElement();
+                PartyInvite partyInvite = mp.getPartyInvites().iterator().next();
                 Party party = McRPG.getInstance().getPartyManager().getParty(partyInvite.getPartyID());
                 if(party == null){
                   try{
-                    mp.getPartyInvites().dequeue();
+                    mp.getPartyInvites().take();
                     p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullPartyInviteRemoved")));
                   }catch(InterruptedException e){
                     e.printStackTrace();
@@ -120,7 +120,7 @@ public class McParty implements CommandExecutor{
                 else{
                   if(party.getAllMemberUUIDs().size() >= PartyUpgrades.getMemberCountAtTier(party.getUpgradeTier(PartyUpgrades.MEMBER_COUNT))){
                     try{
-                      mp.getPartyInvites().dequeue();
+                      mp.getPartyInvites().take();
                       p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.FullPartyInvite")));
                     }catch(InterruptedException e){
                       e.printStackTrace();
@@ -131,7 +131,7 @@ public class McParty implements CommandExecutor{
                     party.addPlayer(p.getUniqueId());
                     party.saveParty();
                     try{
-                      mp.getPartyInvites().dequeue();
+                      mp.getPartyInvites().take();
                     }catch(InterruptedException e){
                       e.printStackTrace();
                     }
@@ -157,7 +157,7 @@ public class McParty implements CommandExecutor{
                 return true;
               }
               try{
-                Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyInvites().dequeue().getPartyID());
+                Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyInvites().take().getPartyID());
                 if(party == null){
                   p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.NullPartyInviteRemoved")));
                 }
@@ -200,7 +200,12 @@ public class McParty implements CommandExecutor{
                     OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
                     if(offlinePlayer.isOnline()){
                       try{
-                        PlayerManager.getPlayer(offlinePlayer.getUniqueId()).getPartyInvites().enqueue(new PartyInvite(party.getPartyID(), offlinePlayer.getUniqueId()));
+                        McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                        if(target.getPartyID() != null){
+                          p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.InParty")));
+                          return true;
+                        }
+                        target.getPartyInvites().offer(new PartyInvite(party.getPartyID(), offlinePlayer.getUniqueId()));
                         p.sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.InvitedPlayer")));
                         ((Player) offlinePlayer).sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.BeenInvited").replace("%Player%", p.getName())));
                       }catch(McRPGPlayerNotFoundException e){

@@ -515,7 +515,6 @@ public class VanillaDamageEvent implements Listener {
                 Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                 mp.setReadyingAbilityBit(null);
                 mp.setReadying(false);
-                //get the bleed ability and set the bonus chance
                 Disarm disarm = (Disarm) mp.getSkill(Skills.UNARMED).getAbility(UnlockedAbilities.DISARM);
                 disarm.setBonusChance(event.getBonusChance());
                 e.setDamage(e.getDamage() + event.getBonusDamage());
@@ -540,7 +539,7 @@ public class VanillaDamageEvent implements Listener {
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.BerserkEnded.Sound")),
                       soundFile.getInt("Sounds.Unarmed.BerserkEnded.Volume"), soundFile.getInt("Sounds.Unarmed.BerserkEnded.Pitch"));
-                    mp.getActiveAbilities().add(UnlockedAbilities.BERSERK);
+                    mp.getActiveAbilities().remove(UnlockedAbilities.BERSERK);
                     mp.addAbilityOnCooldown(UnlockedAbilities.BERSERK, cal.getTimeInMillis());
                   }
                 }.runTaskLater(McRPG.getInstance(), config.getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Duration") * 20);
