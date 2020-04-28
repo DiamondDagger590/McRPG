@@ -39,6 +39,7 @@ import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
 import us.eunoians.mcrpg.api.util.exp.ExpPermissionManager;
 import us.eunoians.mcrpg.api.util.fishing.FishingItemManager;
 import us.eunoians.mcrpg.api.util.levelcmds.LevelCommandManager;
+import us.eunoians.mcrpg.commands.GUIOpenCommand;
 import us.eunoians.mcrpg.commands.McAdmin;
 import us.eunoians.mcrpg.commands.McConvert;
 import us.eunoians.mcrpg.commands.McDisplay;
@@ -253,6 +254,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getCommand("mcparty").setExecutor(new McParty());
     getCommand("mcexp").setExecutor(new McExp());
     getCommand("mcspy").setExecutor(new McSpy());
+    getCommand("mcgui").setExecutor(new GUIOpenCommand());
     getCommand("mcdisplay").setTabCompleter(new McDisplayPrompt());
     getCommand("mcredeem").setTabCompleter(new McRedeemPrompt());
     getCommand("mcrank").setTabCompleter(new McRankPrompt());

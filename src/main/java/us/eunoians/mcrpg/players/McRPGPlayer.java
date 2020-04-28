@@ -358,7 +358,12 @@ public class McRPGPlayer {
   public OfflinePlayer getOfflineMcRPGPlayer() {
     return Bukkit.getOfflinePlayer(uuid);
   }
-
+  
+  @Deprecated
+  public OfflinePlayer getOfflineMcMMOPlayer() {
+    return Bukkit.getOfflinePlayer(uuid);
+  }
+  
   public boolean isReadying(){
     if(this.readyingAbilityBit == null || this.readyingAbilityBit.getAbilityReady() == null){
       this.isReadying = false;

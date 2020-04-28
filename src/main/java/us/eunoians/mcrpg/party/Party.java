@@ -277,7 +277,7 @@ public class Party{
       McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(uuid);
       if(mcRPGPlayer.getPartyID() == null){
         PartyInvite partyInvite = new PartyInvite(partyID, uuid);
-        mcRPGPlayer.getPartyInvites().enqueue(partyInvite);
+        mcRPGPlayer.getPartyInvites().offer(partyInvite);
         return true;
       }
       return false;

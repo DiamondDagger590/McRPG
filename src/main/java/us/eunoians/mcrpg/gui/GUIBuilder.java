@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.types.PartyPermissions;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class GUIBuilder{
   
@@ -91,6 +92,10 @@ public class GUIBuilder{
   @Getter
   @Setter
   private GUIInventoryFunction buildGUIFunction = (GUIBuilder builder) -> {
+    if(!config.contains(path + "Size")){
+      Bukkit.getLogger().log(Level.WARNING, "You incorrectly configured the gui for " + config.getName() + " using gui path " + rawPath);
+      return null;
+    }
     String partyLevel = "0";
     if(player.getPartyID() != null){
       Party party = McRPG.getInstance().getPartyManager().getParty(player.getPartyID());
