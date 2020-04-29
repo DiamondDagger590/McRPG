@@ -81,7 +81,7 @@ public class DeathEvent implements Listener {
             new BukkitRunnable(){
               @Override
               public void run(){
-                if(p.isOnline() && p.getBedLocation() != null){
+                if(p.isOnline() && p.getBedSpawnLocation() != null){
                   p.teleport(p.getBedSpawnLocation());
                 }
               }

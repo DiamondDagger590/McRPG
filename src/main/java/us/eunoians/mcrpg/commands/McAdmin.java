@@ -737,7 +737,7 @@ public class McAdmin implements CommandExecutor{
               if(Methods.hasPlayerLoggedInBefore(args[2])){
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[2]);
                 UnlockedAbilities ability = UnlockedAbilities.fromString(args[3]);
-                if(ability.isPassiveAbility()){
+                if(ability.isPassiveAbility() && ability != UnlockedAbilities.DIVINE_ESCAPE){
                   admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Commands.Utility.NotActiveAbility")));
                   return true;
                 }
