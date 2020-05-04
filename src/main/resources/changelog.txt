@@ -1,3 +1,12 @@
+1.3.2.0-BETA
++ Add party name placeholder %mcrpg_party_name%
+= Fixed issue with brewing stands not loading correctly
+= Fixed versioning for plugin
+= Fixed NPE for exp updates using action bar
+= Fixed Blast Mining being able to break bedrock (Will require manual addition)
+= Fixed blacklist/whitelist issue for Blast Mining
+= Fixed party chat via command not having spaces
+
 1.3.0.1-BETA
 + Added /mcgui command to open up a file gui
 = Fixed cooldown again for Divine Escape

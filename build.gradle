@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 3, patch: 2, fix: 4, state: 'BETA-SNAPSHOT')
+def versionObj = new Version(major: 1, minor: 3, patch: 2, fix: 0, state: 'BETA-SNAPSHOT')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
