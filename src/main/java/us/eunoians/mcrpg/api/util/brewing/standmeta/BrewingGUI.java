@@ -178,7 +178,7 @@ public class BrewingGUI extends GUI{
     potionMeta.setLore(Methods.colorLore(guiFile.getStringList("PotionPlaceholder.Lore")));
     potionGlass.setItemMeta(potionMeta);
     if(brewerInventory.getItem(VANILLA_POTION_SLOT_1) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_1).getType() == Material.AIR
-    || !(brewerInventory.getItem(VANILLA_POTION_SLOT_1).getType().name().contains("Potion"))){
+    || !(brewerInventory.getItem(VANILLA_POTION_SLOT_1).getType().name().contains("POTION"))){
       inv.setItem(MCRPG_POTION_SLOT_1, potionGlass);
     }
     else{
@@ -188,7 +188,7 @@ public class BrewingGUI extends GUI{
       potionItems[0] = basePotion;
     }
     if(brewerInventory.getItem(VANILLA_POTION_SLOT_2) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_2).getType() == Material.AIR
-         || !(brewerInventory.getItem(VANILLA_POTION_SLOT_2).getType().name().contains("Potion"))){
+         || !(brewerInventory.getItem(VANILLA_POTION_SLOT_2).getType().name().contains("POTION"))){
       inv.setItem(MCRPG_POTION_SLOT_2, potionGlass);
     }
     else{
@@ -198,7 +198,7 @@ public class BrewingGUI extends GUI{
       potionItems[1] = basePotion;
     }
     if(brewerInventory.getItem(VANILLA_POTION_SLOT_3) == null || brewerInventory.getItem(VANILLA_POTION_SLOT_3).getType() == Material.AIR
-         || !(brewerInventory.getItem(VANILLA_POTION_SLOT_3).getType().name().contains("Potion"))){
+         || !(brewerInventory.getItem(VANILLA_POTION_SLOT_3).getType().name().contains("POTION"))){
       inv.setItem(MCRPG_POTION_SLOT_3, potionGlass);
     }
     else{
