@@ -1,9 +1,10 @@
 1.3.2.0-BETA
 + Add party name placeholder %mcrpg_party_name%
+= Fixed issue with item filter plugin
 = Fixed issue with brewing stands not loading correctly
 = Fixed versioning for plugin
 = Fixed NPE for exp updates using action bar
-= Fixed Blast Mining being able to break bedrock (Will require manual addition)
+= Fixed Blast Mining being able to break bedrock (Will require manual addition to black list in mining.yml)
 = Fixed blacklist/whitelist issue for Blast Mining
 = Fixed party chat via command not having spaces
 
