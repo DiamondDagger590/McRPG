@@ -12,10 +12,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.PartyPermissions;
+import us.eunoians.mcrpg.types.Skills;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +45,7 @@ public class GUIBuilder{
   @Getter
   @Setter
   private GUIPlaceHolderFunction replacePlaceHoldersFunction = (GUIBuilder guiBuilder) -> {
-    if(guiBuilder.getRawPath().equalsIgnoreCase("MainGUI")){
+    if(guiBuilder.getRawPath() != null && guiBuilder.getRawPath().equalsIgnoreCase("MainGUI")){
       for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
         ItemStack item = guiBuilder.getInv().getItem(i);
         if(item == null){
@@ -56,7 +58,10 @@ public class GUIBuilder{
             int onlinePartyMembers = 0;
             int totalMembers = 0;
             int partyUpgradePoints = 0;
-            String bankRole = "N/A", kickRole = "N/A", pvpRole = "N/A", inviteRole = "N/A", upgradeRole = "N/A";
+            int maxLoadoutSlots = McRPG.getInstance().getFileManager()
+                                    .getFile(FileManager.Files.CONFIG)
+                                    .getInt("PlayerConfiguration.AmountOfTotalAbilities", 0);
+            String bankRole = "N/A", kickRole = "N/A", pvpRole = "N/A", inviteRole = "N/A", upgradeRole = "N/A", partyName = "N/A";
             if(guiBuilder.getPlayer().getPartyID() != null){
               Party party = McRPG.getInstance().getPartyManager().getParty(guiBuilder.getPlayer().getPartyID());
               onlinePartyMembers = party.getOnlinePlayers().size();
@@ -67,18 +72,30 @@ public class GUIBuilder{
               pvpRole = party.getRoleForPermission(PartyPermissions.PVP).getName();
               inviteRole = party.getRoleForPermission(PartyPermissions.INVITE_PLAYERS).getName();
               upgradeRole = party.getRoleForPermission(PartyPermissions.UPGRADE_PARTY).getName();
+              partyName = party.getName();
             }
-            lore.add(s.replace("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
-                       .replace("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))
-                       .replace("%Online_Members%", Integer.toString(onlinePartyMembers))
-                       .replace("%Total_Members%", Integer.toString(totalMembers))
-                       .replace("%Party_Points%", Integer.toString(partyUpgradePoints))
-                       .replace("%Bank_Role%", bankRole)
-                       .replace("%Kick_Role%", kickRole)
-                       .replace("%Pvp_Role%", pvpRole)
-                       .replace("%Invite_Role%", inviteRole)
-                       .replace("%Upgrade_Role%", upgradeRole));
-            
+            s = (s.replace("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
+                   .replace("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))
+                   .replace("%Online_Members%", Integer.toString(onlinePartyMembers))
+                   .replace("%Total_Members%", Integer.toString(totalMembers))
+                   .replace("%Party_Points%", Integer.toString(partyUpgradePoints))
+                   .replace("%Bank_Role%", bankRole)
+                   .replace("%Kick_Role%", kickRole)
+                   .replace("%Pvp_Role%", pvpRole)
+                   .replace("%Invite_Role%", inviteRole)
+                   .replace("%Upgrade_Role%", upgradeRole)
+                   .replace("%Party_Name%", partyName)
+                   .replace("%Loadout_Size%", Integer.toString(guiBuilder.getPlayer().getAbilityLoadout().size()))
+                   .replace("%Max_Loadout_Size%", Integer.toString(maxLoadoutSlots))
+                   .replace("%Free_Loadout_Slots%", Integer.toString(maxLoadoutSlots - guiBuilder.getPlayer().getAbilityLoadout().size()))
+                   .replace("%Redeemable_Exp_Amount%", Integer.toString(guiBuilder.getPlayer().getRedeemableExp()))
+                   .replace("%Redeemable_Levels_Amount%", Integer.toString(guiBuilder.getPlayer().getRedeemableLevels())));
+            for(Skills skills : Skills.values()){
+              s = s.replace("%" + skills.getName() + "_Level%", Integer.toString(guiBuilder.getPlayer().getSkill(skills).getCurrentLevel()));
+              s = s.replace("%" + skills.getName() + "_Exp%", Integer.toString(guiBuilder.getPlayer().getSkill(skills).getCurrentExp()));
+              s = s.replace("%" + skills.getName() + "_Exp_Needed%", Integer.toString(guiBuilder.getPlayer().getSkill(skills).getExpToLevel()));
+            }
+            lore.add(s);
           });
           meta.setLore(lore);
           item.setItemMeta(meta);
@@ -158,6 +175,67 @@ public class GUIBuilder{
     return binder;
   };
   
+  @Getter
+  private final GUIPlaceHolderFunction defaultPlaceHolderFunction = (GUIBuilder guiBuilder) -> {
+    for(int i = 0; i < guiBuilder.getInv().getSize(); i++){
+      ItemStack item = guiBuilder.getInv().getItem(i);
+      if(item == null){
+        continue;
+      }
+      if(item.hasItemMeta() && item.getItemMeta().hasLore()){
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = new ArrayList<>();
+        meta.getLore().forEach(s -> {
+          int onlinePartyMembers = 0;
+          int totalMembers = 0;
+          int partyUpgradePoints = 0;
+          int maxLoadoutSlots = McRPG.getInstance().getFileManager()
+                                  .getFile(FileManager.Files.CONFIG)
+                                  .getInt("PlayerConfiguration.AmountOfTotalAbilities", 0);
+          String bankRole = "N/A", kickRole = "N/A", pvpRole = "N/A", inviteRole = "N/A", upgradeRole = "N/A", partyName = "N/A";
+          if(guiBuilder.getPlayer().getPartyID() != null){
+            Party party = McRPG.getInstance().getPartyManager().getParty(guiBuilder.getPlayer().getPartyID());
+            onlinePartyMembers = party.getOnlinePlayers().size();
+            totalMembers = party.getAllMembers().size();
+            partyUpgradePoints = party.getPartyUpgradePoints();
+            bankRole = party.getRoleForPermission(PartyPermissions.PRIVATE_BANK).getName();
+            kickRole = party.getRoleForPermission(PartyPermissions.KICK_PLAYERS).getName();
+            pvpRole = party.getRoleForPermission(PartyPermissions.PVP).getName();
+            inviteRole = party.getRoleForPermission(PartyPermissions.INVITE_PLAYERS).getName();
+            upgradeRole = party.getRoleForPermission(PartyPermissions.UPGRADE_PARTY).getName();
+            partyName = party.getName();
+          }
+          s = (s.replace("%Power_Level%", Integer.toString(guiBuilder.getPlayer().getPowerLevel()))
+                 .replace("%Ability_Points%", Integer.toString(guiBuilder.getPlayer().getAbilityPoints()))
+                 .replace("%Online_Members%", Integer.toString(onlinePartyMembers))
+                 .replace("%Total_Members%", Integer.toString(totalMembers))
+                 .replace("%Party_Points%", Integer.toString(partyUpgradePoints))
+                 .replace("%Bank_Role%", bankRole)
+                 .replace("%Kick_Role%", kickRole)
+                 .replace("%Pvp_Role%", pvpRole)
+                 .replace("%Invite_Role%", inviteRole)
+                 .replace("%Upgrade_Role%", upgradeRole)
+                 .replace("%Party_Name%", partyName)
+                 .replace("%Loadout_Size%", Integer.toString(guiBuilder.getPlayer().getAbilityLoadout().size()))
+                 .replace("%Max_Loadout_Size%", Integer.toString(maxLoadoutSlots))
+                 .replace("%Free_Loadout_Slots%", Integer.toString(maxLoadoutSlots - guiBuilder.getPlayer().getAbilityLoadout().size()))
+                 .replace("%Redeemable_Exp_Amount%", Integer.toString(guiBuilder.getPlayer().getRedeemableExp()))
+                 .replace("%Redeemable_Levels_Amount%", Integer.toString(guiBuilder.getPlayer().getRedeemableLevels())));
+          for(Skills skills : Skills.values()){
+            s = s.replace("%" + skills.getName() + "_Level%", Integer.toString(guiBuilder.getPlayer().getSkill(skills).getCurrentLevel()));
+            s = s.replace("%" + skills.getName() + "_Exp%", Integer.toString(guiBuilder.getPlayer().getSkill(skills).getCurrentExp()));
+            s = s.replace("%" + skills.getName() + "_Exp_Needed%", Integer.toString(guiBuilder.getPlayer().getSkill(skills).getExpToLevel()));
+          }
+          lore.add(s);
+        });
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        guiBuilder.getInv().setItem(i, item);
+      }
+      continue;
+    }
+  };
+  
   /**
    * Used when loading a gui from a file. Typical usage would be when loading a custom gui that isnt defined in FileManager
    *
@@ -172,6 +250,7 @@ public class GUIBuilder{
     this.rawPath = guiPath;
     this.path = "Gui." + guiPath + ".";
     this.inv = buildGUIFunction.generateInventory(this);
+    replacePlaceHolders();
     this.boundEvents = bindEventsFunction.bindEvents(this);
   }
   
@@ -188,6 +267,7 @@ public class GUIBuilder{
     this.config = config;
     this.path = "Gui." + guiPath + ".";
     this.inv = buildGUIFunction.generateInventory(this);
+    replacePlaceHolders();
     this.boundEvents = bindEventsFunction.bindEvents(this);
   }
   
@@ -213,6 +293,7 @@ public class GUIBuilder{
   
   public void rebuildGUI(){
     this.inv = buildGUIFunction.generateInventory(this);
+    replacePlaceHolders();
   }
   
   public void rebindEvents(){
@@ -220,6 +301,7 @@ public class GUIBuilder{
   }
   
   public void replacePlaceHolders(){
+    defaultPlaceHolderFunction.replacePlaceHolders(this);
     replacePlaceHoldersFunction.replacePlaceHolders(this);
   }
   

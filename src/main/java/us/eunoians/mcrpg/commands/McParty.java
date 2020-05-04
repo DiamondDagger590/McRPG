@@ -638,7 +638,7 @@ public class McParty implements CommandExecutor{
               StringBuilder message = new StringBuilder(Methods.color(p, McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getString("PartyChatPrefix").replace("%Player_Name%", p.getName())));
               Bukkit.getConsoleSender().sendMessage(message.toString());
               for(int i = 1; i < args.length; i++){
-                message.append(args[i]);
+                message.append(args[i] + " ");
               }
               for(Player player : Bukkit.getOnlinePlayers()){
                 try{
