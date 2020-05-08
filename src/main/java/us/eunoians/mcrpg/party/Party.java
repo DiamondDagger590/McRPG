@@ -329,10 +329,10 @@ public class Party{
         PartyLevelUpEvent partyLevelUpEvent = new PartyLevelUpEvent(this, partyLevel - levelsGained, partyLevel);
         Bukkit.getPluginManager().callEvent(partyLevelUpEvent);
         for(int i = 1; i <= levelsGained; i++){
-          if((partyLevel + i) > McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.MaxLevelForUpgradePoints", 20)){
+          if(((partyLevel - levelsGained) + i) > McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.MaxLevelForUpgradePoints", 20)){
             continue;
           }
-          if((partyLevel + i) % McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.UpgradePointFactor", 1) == 0){
+          if(((partyLevel - levelsGained) + i) % McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("PartyExp.UpgradePointFactor", 1) == 0){
             partyUpgradePoints++;
           }
         }
@@ -372,7 +372,7 @@ public class Party{
       return 0;
     }
     for(UUID uuid : partyMembers.keySet()){
-      if(Methods.findHoursDiffFromCurrent(Bukkit.getOfflinePlayer(uuid).getLastPlayed()) >= hoursLimit){
+      if(!Bukkit.getOfflinePlayer(uuid).isOnline() && Methods.findHoursDiffFromCurrent(Bukkit.getOfflinePlayer(uuid).getLastPlayed()) >= hoursLimit){
         toKick.add(uuid);
       }
     }

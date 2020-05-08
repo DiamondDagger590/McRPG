@@ -341,6 +341,7 @@ BlastMiningConfig:
     - 'CHEST'
     - 'ENDER_CHEST'
     - 'TRAPPED_CHEST'
+    - 'BEDROCK'
   WhiteList:
     - 'STONE'
   #At what level should each tier become available. Tier I is the unlock level

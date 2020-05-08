@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardManager;
 import us.eunoians.mcrpg.api.leaderboards.PlayerLeaderboardData;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.Skills;
@@ -48,6 +49,16 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
     String [] args = identifier.split("_");
     if(identifier.equalsIgnoreCase("power_level")){
       return Integer.toString(mp.getPowerLevel());
+    }
+    else if(identifier.contains("party_name")){
+      if(mp.getPartyID() == null){
+        return "N/A";
+      }
+      Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
+      if(party == null){
+        return "N/A";
+      }
+      return party.getName();
     }
     else if(identifier.contains("_level")){
       Skills skill = Skills.fromString(args[0]);

@@ -147,10 +147,10 @@ public class InteractHandler implements Listener {
           String key = "BlastMiningConfig.Tier" + Methods.convertToNumeral(blastMining.getCurrentTier());
           int radius = mining.getInt(key + ".Radius");
           int cooldown = mining.getInt(key + ".Cooldown");
-          boolean useBlacklist = mining.getBoolean(key + ".UseBlackList");
-          boolean useWhiteList = mining.getBoolean(key + ".UseWhiteList");
-          List<String> blackList = mining.getStringList(key + ".BlackList");
-          List<String> whiteList = mining.getStringList(key + ".WhiteList");
+          boolean useBlacklist = mining.getBoolean("BlastMiningConfig.UseBlackList");
+          boolean useWhiteList = mining.getBoolean("BlastMiningConfig.UseWhiteList");
+          List<String> blackList = mining.getStringList("BlastMiningConfig.BlackList");
+          List<String> whiteList = mining.getStringList("BlastMiningConfig.WhiteList");
           //Populate our blocks array
           ArrayList<Block> blocks = new ArrayList<>();
           for(int x = -1 * radius; x < radius; x++) {
