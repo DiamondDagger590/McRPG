@@ -7,6 +7,8 @@
 = Fixed Blast Mining being able to break bedrock (Will require manual addition to black list in mining.yml)
 = Fixed blacklist/whitelist issue for Blast Mining
 = Fixed party chat via command not having spaces
+= Fixed rare case of parties kicking online players for inactivity
+= Fixed issue of not giving party upgrade point at last level
 
 1.3.0.1-BETA
 + Added /mcgui command to open up a file gui
