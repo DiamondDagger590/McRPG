@@ -15,6 +15,7 @@ public enum LevelCommandType{
   SORCERY("Sorcery"),
   SWORDS("Swords"),
   UNARMED("Unarmed"),
+  FITNESS("Fitness"),
   WOODCUTTING("Woodcutting"),
   POWER("Power");
   
