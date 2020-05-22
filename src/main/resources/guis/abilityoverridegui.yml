@@ -1,5 +1,5 @@
 Size: 27
-Title: '&eReplace &5 %OldAbility% &ewith &5%NewAbility%'
+Title: '&4Replace &9%OldAbility% &4with &9%NewAbility%'
 ConfirmItem:
   Material: LIME_CONCRETE
   Amount: 1
@@ -11,16 +11,16 @@ DenyItem:
   Amount: 1
   DisplayName: '&cDeny this ability'
   Lore:
-    - '&cYou can replace an old ability with this one later'
+    - '&3You can replace an old ability with this one later'
   Slot: 16
 AbilityToBeReplacedItem:
   Slot: 4
   Lore:
-    - '&eAbility to be replaced'
+    - '&3Ability to be replaced'
 AbilityReplacingItem:
   Slot: 22
   Lore:
-    - '&eAbility to be replace with'
+    - '&3Ability to be replace with'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

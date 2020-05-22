@@ -1,7 +1,7 @@
 Gui:
   ReplaceSkillsGUI:
-    Size: 54
-    Title: '&bMcRPGSkills Menu'
+    Size: 45
+    Title: '&4McRPG Skills Menu'
     Events:
       1:
         - 'OpenNative:SelectReplaceGUI:Swords'
@@ -25,103 +25,114 @@ Gui:
         - 'OpenNative:SelectReplaceGUI:Fishing'
       41:
         - 'OpenNative:SelectReplaceGUI:Sorcery'
-      53:
+      36:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
       SwordsSkill:
-        Name: '&5Swords Skill'
+        Name: '&c&nSwords Skill'
         Material: DIAMOND_SWORD
         Lore:
-          - '&eClick this to view swords abilities'
-          - '&eCurrent Swords level: &a%Swords_Level%'
-          - '&eBleed chance: &c%Bleed_Chance%%'
+          - '&6Click &3this to view your swords information'
+          - ' '
+          - '&3Current Swords level: &6%Swords_Level%'
+          - '&3Bleed chance: &6%Bleed_Chance%%'
         Slot: 1
       MiningSkill:
-        Name: '&5Mining Skill'
+        Name: '&c&nMining Skill'
         Material: DIAMOND_PICKAXE
         Lore:
-          - '&eClick this to view your mining abilities'
-          - '&eCurrent Mining level: &a%Mining_Level%'
-          - '&eDouble Drop chance: &c%Double_Drop_Chance%%'
+          - '&6Click &3this to view your mining information'
+          - ' '
+          - '&3Current Mining level: &6%Mining_Level%'
+          - '&3Double Drop chance: &6%Double_Drop_Chance%%'
         Slot: 3
       UnarmedSkill:
-        Name: '&5Unarmed Skill'
+        Name: '&c&nUnarmed Skill'
         Material: PLAYER_HEAD
         Lore:
-          - '&eClick this to view your unarmed abilities'
-          - '&eCurrent Unarmed level: &a%Unarmed_Level%'
-          - '&eSticky Fingers chance: &c%Sticky_Fingers_Chance%%'
+          - '&6Click &3this to view your unarmed information'
+          - ' '
+          - '&3Current Unarmed level: &6%Unarmed_Level%'
+          - '&3Sticky Fingers chance: &6%Sticky_Fingers_Chance%%'
         Slot: 5
       HerbalismSkill:
-        Name: '&5Herbalism Skill'
+        Name: '&c&nHerbalism Skill'
         Material: DIAMOND_HOE
         Lore:
-          - '&eClick this to view your herbalism abilities'
-          - '&eCurrent Herbalism level: &a%Herbalism_Level%'
-          - '&eDouble Drop chance: &c%Too_Many_Plants_Chance%%'
+          - '&6Click &3this to view your herbalism information'
+          - ' '
+          - '&3Current Herbalism level: &6%Herbalism_Level%'
+          - '&3Double Drop chance: &6%Too_Many_Plants_Chance%%'
         Slot: 7
       ArcherySkill:
-        Name: '&5Archery Skill'
+        Name: '&c&nArchery Skill'
         Material: BOW
         Lore:
-          - '&eClick this to view your archery abilities'
-          - '&eCurrent Archery level: &a%Archery_Level%'
-          - '&eDaze chance: &c%Daze_Chance%%'
+          - '&6Click &3this to view your archery information'
+          - ' '
+          - '&3Current Archery level: &6%Archery_Level%'
+          - '&3Daze chance: &6%Daze_Chance%%'
         Slot: 19
       WoodcuttingSkill:
-        Name: '&5Woodcutting Skill'
+        Name: '&c&nWoodcutting Skill'
         Material: DIAMOND_AXE
         Lore:
-          - '&eClick this to view your woodcutting abilities'
-          - '&eCurrent Woodcutting level: &a%Woodcutting_Level%'
-          - '&eExtra Lumber chance: &c%Extra_Lumber_Chance%%'
+          - '&6Click &3this to view your woodcutting information'
+          - ' '
+          - '&3Current Woodcutting level: &6%Woodcutting_Level%'
+          - '&3Extra Lumber chance: &6%Extra_Lumber_Chance%%'
         Slot: 21
       FitnessSkill:
-        Name: '&5Fitness Skill'
+        Name: '&c&nFitness Skill'
         Material: DIAMOND_BOOTS
         Lore:
-          - '&eClick this to view your fitness abilities'
-          - '&eCurrent Fitness level: &a%Fitness_Level%'
-          - '&eRoll chance: &c%Roll_Chance%%'
+          - '&6Click &3this to view your fitness information'
+          - ' '
+          - '&3Current Fitness level: &6%Fitness_Level%'
+          - '&3Roll chance: &6%Roll_Chance%%'
         Slot: 23
       ExcavationSkill:
-        Name: '&5Excavation Skill'
+        Name: '&c&nExcavation Skill'
         Material: DIAMOND_SHOVEL
         Lore:
-          - '&eClick this to view your excavation abilities'
-          - '&eCurrent Excavation level: &a%Excavation_Level%'
-          - '&eExtraction chance: &c%Extraction_Chance%%'
+          - '&6Click &3this to view your excavation abilities'
+          - ' '
+          - '&3Current Excavation level: &6%Excavation_Level%'
+          - '&3Extraction chance: &6%Extraction_Chance%%'
         Slot: 25
       AxesSkill:
-        Name: '&5Axes Skill'
+        Name: '&c&nAxes Skill'
         Material: GOLDEN_AXE
         Lore:
-          - '&eClick this to view your axes abilities'
-          - '&eCurrent Axes level: &a%Axes_Level%'
-          - '&eShred chance: &c%Shred_Chance%%'
+          - '&6Click &3this to view your axes abilities'
+          - ' '
+          - '&3Current Axes level: &6%Axes_Level%'
+          - '&3Shred chance: &6%Shred_Chance%%'
         Slot: 37
       FishingSkill:
-        Name: '&5Fishing Skill'
+        Name: '&c&nFishing Skill'
         Material: FISHING_ROD
         Lore:
-          - '&eClick this to view your fishing abilities'
-          - '&eCurrent Fishing level: &a%Fishing_Level%'
-          - '&eGreat Rod chance: &c%Great_Rod_Chance%%'
+          - '&6Click &3this to view your fishing abilities'
+          - ' '
+          - '&3Current Fishing level: &6%Fishing_Level%'
+          - '&3Great Rod chance: &6%Great_Rod_Chance%%'
         Slot: 39
       SorcerySkill:
-        Name: '&5Sorcery Skill'
+        Name: '&c&nSorcery Skill'
         Material: BREWING_STAND
         Lore:
-          - '&eClick this to view your sorcery abilities'
-          - '&eCurrent Sorcery level: &a%Sorcery_Level%'
-          - '&eHasty Brew chance: &c%Hasty_Brew_Chance%%'
+          - '&6Click &3this to view your sorcery abilities'
+          - ' '
+          - '&3Current Sorcery level: &6%Sorcery_Level%'
+          - '&3Hasty Brew chance: &6%Hasty_Brew_Chance%%'
         Slot: 41
       Back:
-        Name: '&bHome>>'
+        Name: '&c<<Back'
         Material: BARRIER
         Lore:
-          - '&eClick this to go home'
-        Slot: 53
+          - '&6Click &3this to go back'
+        Slot: 36
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE
       Name: ' '

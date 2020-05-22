@@ -1,11 +1,11 @@
-Title: '&eRemote Transfer Settings'
+Title: '&4Remote Transfer Settings'
 ToggleLore:
-  - '&eToggle if this block should'
-  - '&ebe teleported by Remote Transfer'
+  - '&3Toggle if this block should'
+  - '&3be teleported by Remote Transfer'
 ToggleAbilityLore:
-  - '&eToggle this ability'
-ToggledOff: '&eToggled: &c&lOFF'
-ToggledOn: '&eToggled: &2&lON'
+  - '&3Toggle this ability'
+ToggledOff: '&c&nToggled:&r &4OFF'
+ToggledOn: '&c&nToggled:&r &2ON'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

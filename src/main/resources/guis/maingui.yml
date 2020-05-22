@@ -1,53 +1,65 @@
 Gui:
   MainGUI:
-    Size: 27
-    Title: '&bMain McRPG Menu'
+    Size: 45
+    Title: '&4Main McRPG Menu'
     Events:
       #Slot
-      10:
+      13:
         #Events bound to slot
         - 'OpenNative:SettingsGUI'
-      12:
+      29:
         - 'OpenFile:skillsgui.yml:SkillGUI'
-      14:
+      31:
         - 'OpenNative:UpgradeAbilityGUI'
-      16:
+      33:
         - 'OpenNative:EditLoadoutSelectGUI'
     Items:
       #This it an identifier and can be anything
       PlayerSkull:
         #Display name
-        Name: '&2Your Profile'
+        Name: '&c&nYour Profile'
         #Material
         Material: PLAYER_HEAD
         #Only used for player heads
         Owner: '%Player%'
         #Lore of the item
         Lore:
-          - '&eCurrent Power Level: &a%Power_Level%'
-          - '&eClick this to change your personal settings'
+          - '&6Click &3this to change your personal settings'
+          - ' '
+          - '&3Power Level: &6%Power_Level%'
+          - '&3Swords: &6%Swords_Level%'
+          - '&3Mining: &6%Mining_Level%'
+          - '&3Unarmed: &6%Unarmed_Level%'
+          - '&3Herbalism: &6%Herbalism_Level%'
+          - '&3Archery: &6%Archery_Level%'
+          - '&3Woodcutting: &6%Woodcutting_Level%'
+          - '&3Fitness: &6%Fitness_Level%'
+          - '&3Excavation: &6%Excavation_Level%'
+          - '&3Axes: &6%Axes_Level%'
+          - '&3Fishing: &6%Fishing_Level%'
+          - '&3Sorcery: &6%Sorcery_Level%'
         #Slot its found at
-        Slot: 10
+        Slot: 13
       Skill_Menu:
-        Name: '&cSkill Menu'
+        Name: '&c&nSkill Menu'
         Material: DIAMOND_SWORD
         Lore:
-          - '&eClick this to view information '
-          - '&eabout all of your skills'
-        Slot: 12
+          - '&6Click &3this to view information '
+          - '&3about all of your skills'
+        Slot: 29
       Upgrade_Abilities:
-        Name: '&5Upgrade Abilities'
+        Name: '&c&nUpgrade Abilities'
         Material: NETHER_STAR
         Lore:
-          - '&eClick this to upgrade your abilities'
-          - '&eYou have &a%Ability_Points% &eto spend'
-        Slot: 14
+          - '&6Click &3this to upgrade your abilities'
+          - '&3You have &6%Ability_Points% &3points to spend'
+        Slot: 31
       Ability_Loadout:
-        Name: '&bEdit Ability Loadout'
+        Name: '&c&nEdit Ability Loadout'
         Material: COMPASS
         Lore:
-          - '&eClick this to edit your ability loadout'
-        Slot: 16
+          - '&6Click &3this to edit your ability loadout'
+        Slot: 33
     #Fills in every empty slot with this
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE

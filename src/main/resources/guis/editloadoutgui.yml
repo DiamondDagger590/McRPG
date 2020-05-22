@@ -1,18 +1,21 @@
 Size: 9
 Title:
-  Upgrade: '&eUpgrade Abilities: &a%AbilityPoints% &epoint(s)'
-  Toggle: '&eToggle abilities'
+  Upgrade: '&4Upgrade Abilities: &9%AbilityPoints% &4point(s)'
+  Toggle: '&4Toggle abilities'
 AbilityItem:
   MaxedLore:
-    - '&5You have maxed this ability out!'
+    - ' '
+    - '&3You have maxed this ability out!'
   LevelPromptLore:
-    - '&6You must be at least level &a%Level% in %Skill%'
-    - '&6to upgrade this ability to Tier %Tier%'
-#Should never be more than a one liner tbh
+    - ' '
+    - '&3Skill: &6%Skill% '
+    - '&3Next upgrade: &6level %Level%'
+    - '&3Next Tier: &6%Tier%'
+  #Should never be more than a one liner tbh
   ToggledOnLore:
-    - '&eToggled: &2&lON'
+    - '&3Toggled: &2&lON'
   ToggledOffLore:
-    - '&eToggled: &c&lOFF'
+    - '&3Toggled: &c&lOFF'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1
