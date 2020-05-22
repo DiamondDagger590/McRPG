@@ -10,14 +10,14 @@ public enum LevelCommandType{
   AXES("Axes"),
   EXCAVATION("Excavation"),
   FISHING("Fishing"),
+  FITNESS("Fitness"),
   HERBALISM("Herbalism"),
   MINING("Mining"),
+  POWER("Power"),
   SORCERY("Sorcery"),
   SWORDS("Swords"),
   UNARMED("Unarmed"),
-  FITNESS("Fitness"),
-  WOODCUTTING("Woodcutting"),
-  POWER("Power");
+  WOODCUTTING("Woodcutting");
   
   @Getter
   private final String name;

@@ -498,9 +498,13 @@ public class InvClickEvent implements Listener{
       
       if(currentGUI instanceof SettingsGUI){
         FileConfiguration guiConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SETTINGS_GUI);
+        
+        //Handle the McDisplay setting
         if(e.getSlot() == guiConfig.getInt("ChangeDisplaySettings.Slot")){
           ItemStack displayItem = new ItemStack(Material.BLAZE_ROD);
           ItemMeta displayMeta = displayItem.getItemMeta();
+          
+          //Deal with each type specifically
           if(mp.getDisplayType() == DisplayType.ACTION_BAR){
             displayItem.setType(Material.OAK_SIGN);
             displayMeta.setDisplayName(Methods.color(guiConfig.getString("ChangeDisplaySettings.ScoreBoard")));
@@ -515,14 +519,20 @@ public class InvClickEvent implements Listener{
             displayMeta.setDisplayName(Methods.color(guiConfig.getString("ChangeDisplaySettings.ActionBar")));
             mp.setDisplayType(DisplayType.ACTION_BAR);
           }
+          
+          //Update the lore and inventory
           displayMeta.setLore(Methods.colorLore(guiConfig.getStringList("ChangeDisplaySettings.Lore")));
           displayItem.setItemMeta(displayMeta);
           currentGUI.getGui().getInv().setItem(e.getSlot(), displayItem);
           p.updateInventory();
         }
+        
+        //Handle the keep hand empty setting (ur welcome unarmed users)
         else if(e.getSlot() == guiConfig.getInt("KeepHandEmpty.Slot")){
           ItemStack itemPickup = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
           ItemMeta itemPickupMeta = itemPickup.getItemMeta();
+          
+          //Handle changing of the setting lore
           if(!mp.isKeepHandEmpty()){
             itemPickupMeta.setDisplayName(Methods.color(guiConfig.getString("KeepHandEmpty.Enabled")));
           }
@@ -530,15 +540,21 @@ public class InvClickEvent implements Listener{
             itemPickup.setType(Material.RED_STAINED_GLASS_PANE);
             itemPickupMeta.setDisplayName(Methods.color(guiConfig.getString("KeepHandEmpty.Disabled")));
           }
+          
+          //Invert setting and update the gui
           mp.setKeepHandEmpty(!mp.isKeepHandEmpty());
           itemPickupMeta.setLore(Methods.colorLore(guiConfig.getStringList("KeepHandEmpty.Lore")));
           itemPickup.setItemMeta(itemPickupMeta);
           currentGUI.getGui().getInv().setItem(e.getSlot(), itemPickup);
           p.updateInventory();
         }
+        
+        //Handle ignore tips setting (but why? :( )
         else if(e.getSlot() == guiConfig.getInt("IgnoreTips.Slot")){
           ItemStack tipItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
           ItemMeta tipItemMeta = tipItem.getItemMeta();
+  
+          //Handle changing of the setting lore
           if(!mp.isIgnoreTips()){
             tipItemMeta.setDisplayName(Methods.color(guiConfig.getString("IgnoreTips.Enabled")));
           }
@@ -546,16 +562,22 @@ public class InvClickEvent implements Listener{
             tipItem.setType(Material.RED_STAINED_GLASS_PANE);
             tipItemMeta.setDisplayName(Methods.color(guiConfig.getString("IgnoreTips.Disabled")));
           }
+  
+          //Invert setting and update the gui
           mp.setIgnoreTips(!mp.isIgnoreTips());
           tipItemMeta.setLore(Methods.colorLore(guiConfig.getStringList("IgnoreTips.Lore")));
           tipItem.setItemMeta(tipItemMeta);
           currentGUI.getGui().getInv().setItem(e.getSlot(), tipItem);
           p.updateInventory();
         }
+        
+        //Handle changing the health display
         else if(e.getSlot() == guiConfig.getInt("MobHealthDisplay.Slot")){
           MobHealthbarUtils.MobHealthbarType healthbarType = mp.getHealthbarType();
           ItemStack healthItem = new ItemStack(Material.BUBBLE_CORAL_BLOCK);
           ItemMeta healthMeta = healthItem.getItemMeta();
+          
+          //Change the typing of this setting and change the display name
           if(healthbarType == MobHealthbarUtils.MobHealthbarType.DISABLED){
             healthMeta.setDisplayName(Methods.color(guiConfig.getString("MobHealthDisplay.Bar")));
             mp.setHealthbarType(MobHealthbarUtils.MobHealthbarType.BAR);
@@ -570,14 +592,20 @@ public class InvClickEvent implements Listener{
             healthMeta.setDisplayName(Methods.color(guiConfig.getString("MobHealthDisplay.Hearts")));
             mp.setHealthbarType(MobHealthbarUtils.MobHealthbarType.HEARTS);
           }
+          
+          //Update the lore and inventory
           healthMeta.setLore(Methods.colorLore(guiConfig.getStringList("MobHealthDisplay.Lore")));
           healthItem.setItemMeta(healthMeta);
           currentGUI.getGui().getInv().setItem(e.getSlot(), healthItem);
           p.updateInventory();
         }
+        
+        //Handle auto denying new abilities (mostly for admins)
         else if(e.getSlot() == guiConfig.getInt("AutoDenyNewAbilities.Slot")){
           ItemStack autoDenyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
           ItemMeta autoDenyItemMeta = autoDenyItem.getItemMeta();
+          
+          //Handle updating the display name and material if needed
           if(!mp.isAutoDeny()){
             autoDenyItemMeta.setDisplayName(Methods.color(guiConfig.getString("AutoDenyNewAbilities.Enabled")));
           }
@@ -585,6 +613,8 @@ public class InvClickEvent implements Listener{
             autoDenyItem.setType(Material.RED_STAINED_GLASS_PANE);
             autoDenyItemMeta.setDisplayName(Methods.color(guiConfig.getString("AutoDenyNewAbilities.Disabled")));
           }
+          
+          //Invert setting and update gui
           mp.setAutoDeny(!mp.isAutoDeny());
           autoDenyItemMeta.setLore(Methods.colorLore(guiConfig.getStringList("AutoDenyNewAbilities.Lore")));
           autoDenyItem.setItemMeta(autoDenyItemMeta);
@@ -595,6 +625,8 @@ public class InvClickEvent implements Listener{
         else if(e.getSlot() == guiConfig.getInt("EmptyOffHand.Slot", 12)){
           ItemStack emptyItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
           ItemMeta emptyMeta = emptyItem.getItemMeta();
+          
+          //Update display name and material if needed
           if(!mp.isRequireEmptyOffHand()){
             emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Enabled", "&aOff Hand Must Be Empty")));
           }
@@ -602,6 +634,8 @@ public class InvClickEvent implements Listener{
             emptyItem.setType(Material.RED_STAINED_GLASS_PANE);
             emptyMeta.setDisplayName(Methods.color(guiConfig.getString("EmptyOffHand.Disabled", "&cOff Hand Can Have An Item In It")));
           }
+          
+          //Invert setting and update inventory
           mp.setRequireEmptyOffHand(!mp.isRequireEmptyOffHand());
           List<String> lore = guiConfig.contains("EmptyOffHand.Lore") ? guiConfig.getStringList("EmptyOffHand.Lore") : Arrays.asList("&eIf enabled, then in order to ready", "&eabilities, your offhand must be empty.");
           emptyMeta.setLore(Methods.colorLore(lore));
@@ -609,10 +643,16 @@ public class InvClickEvent implements Listener{
           currentGUI.getGui().getInv().setItem(e.getSlot(), emptyItem);
           p.updateInventory();
         }
+        
+        //Handle a locked hotbar slot that should remain empty
         else if(e.getSlot() == guiConfig.getInt("UnarmedIgnoreSlot.Slot", 14)){
           ItemStack ignoreItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
           ItemMeta ignoreMeta = ignoreItem.getItemMeta();
+          
+          //Some fun math to handle incrementing slot/disabling
           mp.setUnarmedIgnoreSlot(mp.getUnarmedIgnoreSlot() == 8 ? -1 : mp.getUnarmedIgnoreSlot() + 1);
+          
+          //Update display anme and material as needed
           if(mp.getUnarmedIgnoreSlot() != -1){
             ignoreMeta.setDisplayName(Methods.color(guiConfig.getString("UnarmedIgnoreSlot.Enabled", "&aSlot #%Slot% Is Being Kept Empty").replace("%Slot%", Integer.toString(mp.getUnarmedIgnoreSlot() + 1))));
           }
@@ -620,10 +660,35 @@ public class InvClickEvent implements Listener{
             ignoreItem.setType(Material.RED_STAINED_GLASS_PANE);
             ignoreMeta.setDisplayName(Methods.color(guiConfig.getString("UnarmedIgnoreSlot.Disabled", "&cCurrently No Slot Is Being Kept Empty")));
           }
+          
+          //Update the lore and inventory
           List<String> lore = guiConfig.contains("UnarmedIgnoreSlot.Lore") ? guiConfig.getStringList("UnarmedIgnoreSlot.Lore") : Arrays.asList("&eIf enabled, this setting will keep picked up", "&eitems from going into the selected slo");
           ignoreMeta.setLore(Methods.colorLore(lore));
           ignoreItem.setItemMeta(ignoreMeta);
           currentGUI.getGui().getInv().setItem(e.getSlot(), ignoreItem);
+          p.updateInventory();
+        }
+        
+        else if(e.getSlot() == guiConfig.getInt("AutoAcceptPartyTP.Slot", 16)){
+          ItemStack acceptTpItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+          ItemMeta acceptTpMeta = acceptTpItem.getItemMeta();
+  
+          //Update display name and material if needed
+          if(!mp.isAutoAcceptPartyInvites()){
+            acceptTpMeta.setDisplayName(Methods.color(guiConfig.getString("AutoAcceptPartyTP.Enabled", "&aAuto Accept Party Teleports")));
+          }
+          else{
+            acceptTpItem.setType(Material.RED_STAINED_GLASS_PANE);
+            acceptTpMeta.setDisplayName(Methods.color(guiConfig.getString("AutoAcceptPartyTP.Disabled", "&cDont Auto Accept Party Teleports")));
+          }
+  
+          //Invert setting and update inventory
+          mp.setAutoAcceptPartyInvites(!mp.isAutoAcceptPartyInvites());
+          List<String> lore = guiConfig.contains("AutoAcceptPartyTP.Lore") ? guiConfig.getStringList("AutoAcceptPartyTP.Lore") :
+                                Arrays.asList("&eIf enabled, then any party teleport", "&erequests will be auto accepted");
+          acceptTpMeta.setLore(Methods.colorLore(lore));
+          acceptTpItem.setItemMeta(acceptTpMeta);
+          currentGUI.getGui().getInv().setItem(e.getSlot(), acceptTpItem);
           p.updateInventory();
         }
         else if(e.getSlot() == guiConfig.getInt("BackButton.Slot")){

@@ -43,15 +43,15 @@ EmptyOffHand:
     - '&eIf enabled, then in order to ready'
     - '&eabilities, your offhand must be empty.'
 UnarmedIgnoreSlot:
-  Disabled: '&aCurrently No Slot Is Being Kept Empty'
-  Enabled: '&cSlot #%Slot% Is Being Kept Empty'
+  Disabled: '&cCurrently No Slot Is Being Kept Empty'
+  Enabled: '&aSlot #%Slot% Is Being Kept Empty'
   Slot: 14
   Lore:
     - '&eIf enabled, this setting will keep picked up'
     - '&eitems from going into the selected slot'
 AutoAcceptPartyTP:
-  Disabled: '&aAuto Accept Party Teleports'
-  Enabled: '&cDont Auto Accept Party Teleports'
+  Enabled: '&aAuto Accept Party Teleports'
+  Disabled: '&cDont Auto Accept Party Teleports'
   Slot: 16
   Lore:
     - '&eIf enabled, then any party teleport'
@@ -59,7 +59,7 @@ AutoAcceptPartyTP:
 AddLater:
   DisplayName: '&cThis feature will be added later'
   Lore: {}
-  Slot: 16
+  Slot: 19
 BackButton:
   Material: BARRIER
   DisplayName: '&bBack>>'

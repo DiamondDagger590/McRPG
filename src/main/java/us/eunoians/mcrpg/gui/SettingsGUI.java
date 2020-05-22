@@ -149,9 +149,9 @@ public class SettingsGUI extends GUI {
         autoAcceptPartyTeleports.setType(Material.RED_STAINED_GLASS_PANE);
         autoAcceptTpMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AutoAcceptPartyTP.Disabled", "&cDon't auto accept party teleports")));
       }
-      List<String> tpLore = settingsFile.contains("AutoAcceptPartyTP.Lore") ? settingsFile.getStringList("AutoAcceptPartyTP.Lore") : Arrays.asList("&eIf enabled, then any party teleport", "&erequests will be auto accepted");
-      autoAcceptTpMeta.setLore(Methods.colorLore(tpLore));
-      autoAcceptPartyTeleports.setItemMeta(requireEmptyOffhandMeta);
+      lore = settingsFile.contains("AutoAcceptPartyTP.Lore") ? settingsFile.getStringList("AutoAcceptPartyTP.Lore") : Arrays.asList("&eIf enabled, then any party teleport", "&erequests will be auto accepted");
+      autoAcceptTpMeta.setLore(Methods.colorLore(lore));
+      autoAcceptPartyTeleports.setItemMeta(autoAcceptTpMeta);
       items.add(new GUIItem(autoAcceptPartyTeleports, settingsFile.getInt("AutoAcceptPartyTP.Slot", 16)));
       
       ItemStack back = new ItemStack(Material.valueOf(settingsFile.getString("BackButton.Material")));

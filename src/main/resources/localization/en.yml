@@ -187,6 +187,8 @@ Messages:
       TpAcceptedAndStandStill: '&eAccepted teleport request... Please stand still for 5 seconds...'
       TpWasAccepted: '&a%Player% accepted your request.'
       TpWasAcceptedAndStandStill: '&e%Player% accepted your request. Please stand still for 5 seconds...'
+      TpWasAutoAccepted: '&aYour settings auto accepted a tp request.'
+      TpRequestAutoAccepted: '&aYour request was automatically accepted.'
       TeleportationCanceled: '&cThe teleportation request has been cancelled.'
       PartyWasForceDisbanded: '&cYour party was disbanded.'
       ForceDisbandedParty: '&aYou have forcibly disbanded the party.'
