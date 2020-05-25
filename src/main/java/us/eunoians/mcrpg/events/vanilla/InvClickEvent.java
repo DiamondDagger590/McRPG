@@ -138,6 +138,8 @@ public class InvClickEvent implements Listener{
         }
         if(e.getClickedInventory() instanceof PlayerInventory){
           e.setCancelled(false);
+          
+          //Handle ingredients
           if(e.getCurrentItem() != null && PotionUtils.isIngredient(e.getCurrentItem()) && e.getClick() == ClickType.SHIFT_LEFT &&
                (brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE || brewingGUI.getIngredient().isSimilar(e.getCurrentItem()))){
             int currentAmount = brewingGUI.getIngredient().getType() == Material.LIGHT_BLUE_STAINED_GLASS_PANE ? 0 : brewingGUI.getIngredient().getAmount();
@@ -160,8 +162,16 @@ public class InvClickEvent implements Listener{
             if(slot == -1){
               return;
             }
-            brewingGUI.setPotion(e.getCurrentItem(), slot);
-            e.getCurrentItem().setAmount(0);
+            if(e.getCurrentItem().getAmount() > 1){
+              ItemStack newPotion = e.getCurrentItem().clone();
+              newPotion.setAmount(1);
+              brewingGUI.setPotion(newPotion, slot);
+              e.getCurrentItem().setAmount(e.getCurrentItem().getAmount() - 1);
+            }
+            else{
+              brewingGUI.setPotion(e.getCurrentItem(), slot);
+              e.getCurrentItem().setAmount(0);
+            }
             e.setCancelled(true);
           }
           if(brewingGUI.checkForBrewingTask()){

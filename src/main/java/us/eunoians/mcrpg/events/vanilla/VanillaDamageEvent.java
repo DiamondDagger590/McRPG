@@ -378,6 +378,7 @@ public class VanillaDamageEvent implements Listener {
     }
     if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){
       if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
+        e.setCancelled(true);
         return;
       }
     }

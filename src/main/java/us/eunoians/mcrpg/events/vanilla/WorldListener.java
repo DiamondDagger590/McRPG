@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Chunk;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -9,7 +8,13 @@ import org.bukkit.block.BlockState;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockFormEvent;
+import org.bukkit.event.block.BlockGrowEvent;
+import org.bukkit.event.block.BlockMultiPlaceEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.event.world.WorldInitEvent;
@@ -147,9 +152,7 @@ public class WorldListener implements Listener {
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockFormEvent(BlockFormEvent event) {
-    if(event.getNewState().getType() != Material.OBSIDIAN) {
-      McRPG.getPlaceStore().setTrue(event.getNewState());
-    }
+    McRPG.getPlaceStore().setFalse(event.getBlock());
   }
 
   /**
