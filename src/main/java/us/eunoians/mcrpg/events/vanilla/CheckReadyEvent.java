@@ -62,7 +62,7 @@ public class CheckReadyEvent implements Listener{
     ItemStack heldItem = e.getItem();
     Calendar cal = Calendar.getInstance();
     //skill book checks
-    if(heldItem != null && e.getAction() != null &&
+    if(heldItem != null && e.getAction() != null && e.getHand() == EquipmentSlot.HAND &&
          (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && heldItem.getType() != null && heldItem.getType() == Material.ENCHANTED_BOOK && Methods.isSkillBook(heldItem)){
       NBTItem nbtItem = new NBTItem(heldItem);
       if(nbtItem.hasKey("UpgradeSkill")){
@@ -137,7 +137,7 @@ public class CheckReadyEvent implements Listener{
         }
       }
     }
-    if(heldItem != null && e.getAction() != null && (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Methods.isArtifact(heldItem)){
+    if(heldItem != null && e.getAction() != null && e.getHand() == EquipmentSlot.HAND && (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Methods.isArtifact(heldItem)){
       NBTItem artifact = new NBTItem(heldItem);
       if(artifact.hasKey("RedeemableExpAmount")){
         mp.giveRedeemableExp(artifact.getInteger("RedeemableExpAmount"));

@@ -1,5 +1,7 @@
 1.3.3.0-BETA
 + Add player auto teleport setting
+= Fix dupe glitch for Magnet Artifacts
+= Fix saturation potions not working
 = Revamped GUIs
 = Fix level commands not working with json based strings
 = Fixed fitness not being a valid skill for level commands
