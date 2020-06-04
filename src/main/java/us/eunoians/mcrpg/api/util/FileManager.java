@@ -365,6 +365,7 @@ public class FileManager {
     SOUNDS_FILE("sounds.yml", "sounds.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
+    TAMING_CONFIG("taming.yml", "skill/taming.yml"),
     UNARMED_CONFIG("unarmed.yml", "skills/unarmed.yml"),
     UNLOCK_BOOKS("unlock_books.yml", "skill_books/unlock_books.yml"),
     UPGRADE_BOOKS("upgrade_books.yml", "skill_books/upgrade_books.yml"),

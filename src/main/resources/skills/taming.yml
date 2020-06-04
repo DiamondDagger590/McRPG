@@ -1,0 +1,428 @@
+#Is taming enabled
+TamingEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
+#Exp equation for taming. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+# %party_level% - The level of the player's party. If not in a party, defaults to 0
+#
+ExpEquation: '2000+(20*(skill_level))'
+MaxLevel: 1000
+#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
+#Ex) Spider gives 150 exp. Deal 3 damage, get 150 exp
+ExpAwardedPerMob:
+  OTHER: 5
+  BAT: 5
+  BLAZE: 30
+  CAVE_SPIDER: 20
+  SPIDER: 20
+  CHICKEN: 10
+  COW: 10
+  MUSROOM_COW: 15
+  PIG: 10
+  SHEEP: 10
+  RABBIT: 10
+  COD: 10
+  TROPICAL_FISH: 10
+  SALMON: 10
+  PUFFERFISH: 10
+  DOLPHIN: 30
+  SQUID: 10
+  TURTLE: 15
+  DONKEY: 17
+  MULE: 17
+  HORSE: 17
+  LLAMA: 17
+  CREEPER: 30
+  GUARDIAN: 30
+  ELDER_GUARDIAN: 60
+  ENDER_DRAGON: 75
+  ENDERMAN: 30
+  SHULKER: 55
+  EVOKER: 45
+  VEX: 5
+  ILLUSIONER: 25
+  IRON_GOLEM: 15
+  SLIME: 20
+  MAGMA_CUBE: 25
+  OCELOT: 10
+  PARROT: 10
+  WOLF: 10
+  PHANTOM: 25
+  PLAYER: 15
+  POLAR_BEAR: 10
+  SILVERFISH: 7
+  ENDERMITE: 7
+  SKELETON: 25
+  STRAY: 30
+  WITHER_SKELETON: 35
+  SKELETON_HORSE: 20
+  SNOWMAN: 10
+  VILLAGER: 10
+  WITCH: 30
+  ZOMBIE: 25
+  ZOMBIE_VILLAGER: 30
+  DROWNED: 30
+  PIG_ZOMBIE: 35
+  HUSK: 30
+  ZOMBIE_HORSE: 20
+ExpPerMobTamed:
+  WOLF: 1000
+  CAT: 2500
+  HORSE: 3000
+  PARROT: 2000
+  DONKEY: 2500
+#What abilities are enabled
+EnabledAbilities:
+  Gore: true
+  DivineFur: true
+  SharpenedFangs: true
+  LinkedFangs: true
+  Comradery: true
+  PETAsWrath: true
+  FuryOfCerebus: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.taming.unlock{ability} and mcrpg.taming.use.{ability}
+UsePermsForAbilites:
+  Gore: false
+  DivineFur: false
+  SharpenedFangs: false
+  LinkedFangs: false
+  Comradery: false
+  PETAsWrath: false
+  FuryOfCerebus: false
+#At what taming level should these abilities be unlocked at
+UnlockLevelForAbility:
+  DivineFur: 50
+  SharpenedFangs: 100
+  LinkedFangs: 150
+  Comradery: 200
+  PETAsWrath: 250
+  FuryOfCerebus: 300
+#
+# Daze is the default ability that every player has. This ability will increase every time the players Archery level is increased
+#
+DazeConfig:
+  #Equation for daze chance. Default gives 15% at level 1000.
+  DazeChanceEquation: (archery_level)*.015
+  #How long should the nausea effect last in seconds
+  NauseaDuration: 6
+  #How long should the blindness effect last in seconds
+  BlindnessDuration: 3
+  #If the affected player should look up
+  MakePlayerLookUp: true
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Daze'
+    Material: PUFFERFISH
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%Daze_Chance%% &cchance of inflicting daze'
+      - '&cForcing them to look up and blinding them'
+    MenuLore:
+      - '&cThis ability has a chance of'
+      - '&cdisorienting the player'
+#
+# Config for the ability Puncture
+# This passive ability applies bleed and takes into account Bleed modifiers from swords
+#
+PunctureConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
+  TierI:
+    #The chance of Puncture occurring per tier
+    ActivationChance: 4.0
+  TierII:
+    ActivationChance: 5.0
+  TierIII:
+    ActivationChance: 6.0
+  TierIV:
+    ActivationChance: 7.5
+  TierV:
+    ActivationChance: 10.0
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Puncture'
+    Material: REDSTONE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%ActivationChance%% &cchance of Puncture activating'
+    MenuLore:
+      - '&cThis ability can inflict bleed via shooting a player'
+      - '&cUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Tipped Arrows
+# This ability has a chance to convert normal arrows shot into tipped arrows
+#
+TippedArrowsConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
+  #Config for each Tier
+  TierI:
+    #The chance of TippedArrows occurring per tier
+    ActivationChance: 5.0
+    #What potion effects can be applied
+    # Effect:Level:Duration
+    PossibleEffects:
+      - 'POISON:1:5'
+  TierII:
+    ActivationChance: 6.0
+    PossibleEffects:
+      - 'POISON:1:7'
+  TierIII:
+    ActivationChance: 7.5
+    PossibleEffects:
+      - 'POISON:1:7'
+      - 'SLOW:1:5'
+  TierIV:
+    ActivationChance: 9.0
+    PossibleEffects:
+      - 'POISON:2:6'
+      - 'SLOW:1:7'
+  TierV:
+    ActivationChance: 11.5
+    PossibleEffects:
+      - 'POISON:2:6'
+      - 'SLOW:2:7'
+      - 'BLINDNESS:1:5'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Tipped Arrows'
+    Material: ARROW
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%ActivationChance%% &cchance'
+      - '&cof applying a debuff to enemy'
+    MenuLore:
+      - '&cThis ability allows normal arrows deal debuffs'
+      - '&cUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Combo
+# This passive ability will deal more damage if you hit the target consecutively
+#
+ComboConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 400
+    TierIII: 550
+    TierIV: 700
+    TierV: 850
+  #Config for each tier
+  TierI:
+    #How long in between shots will this ability wait
+    MaxLengthBetweenShots: 2
+    #How much should the damage be boosted by
+    DamageMultiplier: 1.1
+    #How many seconds should this ability wait before being used again
+    CooldownBetweenActivation: 2
+  TierII:
+    MaxLengthBetweenShots: 3
+    DamageMultiplier: 1.15
+    CooldownBetweenActivation: 2
+  TierIII:
+    MaxLengthBetweenShots: 3
+    DamageMultiplier: 1.2
+    CooldownBetweenActivation: 2
+  TierIV:
+    MaxLengthBetweenShots: 3
+    DamageMultiplier: 1.25
+    CooldownBetweenActivation: 2
+  TierV:
+    MaxLengthBetweenShots: 3
+    DamageMultiplier: 1.3
+    CooldownBetweenActivation: 2
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Combo'
+    Material: SPECTRAL_ARROW
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cHit a target a second time before &e%MaxLengthBetweenShots%'
+      - '&cseconds to do &e%DamageMultiplier% &cdamage'
+    MenuLore:
+      - '&cThis ability will do more damage'
+      - '&cfor two consecutive shots'
+      - '&cUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Blessing of Artemis
+# This active ability gives invis and increases damage on next shot
+#
+BlessingOfArtemisConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 650
+  #Config for each tier
+  TierI:
+    #How long should invis last for in seconds
+    InvisDuration: 6
+    #How much should the damage be multiplied by
+    DamageMultiplier: 1.15
+    #Cooldown for the ability
+    Cooldown: 120
+  TierII:
+    InvisDuration: 8
+    DamageMultiplier: 1.2
+    Cooldown: 120
+  TierIII:
+    InvisDuration: 10
+    DamageMultiplier: 1.3
+    Cooldown: 120
+  TierIV:
+    InvisDuration: 12
+    DamageMultiplier: 1.4
+    Cooldown: 120
+  TierV:
+    InvisDuration: 15
+    DamageMultiplier: 1.5
+    Cooldown: 120
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Blessing Of Artemis'
+    Material: GLOWSTONE_DUST
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cThis ability give you'
+      - '&e%InvisDuration% &cseconds of inivs'
+      - '&cAnd gives &e%DamageMultiplier% &ctimes damage for next shot'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and shooting an arrow'
+    MenuLore:
+      - '&cGain invis and do more damage'
+      - '&con your next shot'
+      - '&cUnlock Level: &e%UnlockLevel%'
+BlessingOfApolloConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
+  #Config for each tier
+  TierI:
+    #How long should the player get fire resistance for
+    FireResDuration: 10
+    #How long should the target burn for
+    IgniteDuration: 5
+    Cooldown: 120
+  TierII:
+    FireResDuration: 12
+    IgniteDuration: 7
+    Cooldown: 120
+  TierIII:
+    FireResDuration: 15
+    IgniteDuration: 9
+    Cooldown: 120
+  TierIV:
+    FireResDuration: 20
+    IgniteDuration: 11
+    Cooldown: 120
+  TierV:
+    FireResDuration: 25
+    IgniteDuration: 13
+    Cooldown: 120
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Blessing Of Apollo'
+    Material: BLAZE_POWDER
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cGain &e%FireResDuration% &cseconds of fire res'
+      - '&cand ignite target for &e%IgniteDuration% &cseconds'
+      - '&cas well as burn away all buffs from the target'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and shooting an arrow'
+    MenuLore:
+      - '&cGain fire res, ignite target'
+      - '&cand burn away targets buffs'
+      - '&cUnlock Level: &e%UnlockLevel%'
+CurseOfHadesConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
+  #Config for each tier
+  TierI:
+    WitherDuration: 5
+    SlownessDuration: 10
+    BlindnessDuration: 10
+    WitherLevel: 1
+    SlownessLevel: 1
+    #Cooldown in seconds
+    Cooldown: 160
+  TierII:
+    WitherDuration: 6
+    SlownessDuration: 12
+    BlindnessDuration: 12
+    WitherLevel: 1
+    SlownessLevel: 1
+    Cooldown: 160
+  TierIII:
+    WitherDuration: 7
+    SlownessDuration: 14
+    BlindnessDuration: 14
+    WitherLevel: 1
+    SlownessLevel: 2
+    Cooldown: 160
+  TierIV:
+    WitherDuration: 8
+    SlownessDuration: 16
+    BlindnessDuration: 16
+    WitherLevel: 1
+    SlownessLevel: 2
+    Cooldown: 160
+  TierV:
+    WitherDuration: 10
+    SlownessDuration: 20
+    BlindnessDuration: 20
+    WitherLevel: 2
+    SlownessLevel: 3
+    Cooldown: 160
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Curse of Hades'
+    Material: WITHER_SKELETON_SKULL
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cNext shot gives wither for &e%WitherDuration% &cseconds'
+      - '&e%SlownessDuration% &cseconds of slowness'
+      - '&e%BlindnessDuration% &cseconds of blindness'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and shooting a bow'
+    MenuLore:
+      - '&cGive wither, slowness and blindness'
+      - '&cto any player hit by next shot'
+      - '&cUnlock Level: &e%UnlockLevel%'

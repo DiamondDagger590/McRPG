@@ -13,6 +13,12 @@ import us.eunoians.mcrpg.abilities.herbalism.*;
 import us.eunoians.mcrpg.abilities.mining.*;
 import us.eunoians.mcrpg.abilities.sorcery.*;
 import us.eunoians.mcrpg.abilities.swords.*;
+import us.eunoians.mcrpg.abilities.taming.Comradery;
+import us.eunoians.mcrpg.abilities.taming.DivineFur;
+import us.eunoians.mcrpg.abilities.taming.FuryOfCerebus;
+import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
+import us.eunoians.mcrpg.abilities.taming.PETAsWrath;
+import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.abilities.woodcutting.*;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -92,7 +98,13 @@ public enum UnlockedAbilities implements GenericAbility {
   TIGHTER_GRIP("TighterGrip", TighterGrip.class, AbilityType.PASSIVE, Files.UNARMED_CONFIG, false),
   TIPPED_ARROWS("TippedArrows", TippedArrows.class, AbilityType.PASSIVE, Files.ARCHERY_CONFIG, false),
   VAMPIRE("Vampire", Vampire.class, AbilityType.PASSIVE, Files.SWORDS_CONFIG, false),
-  WHIRLWIND_STRIKE("WhirlwindStrike", WhirlwindStrike.class, AbilityType.ACTIVE, Files.AXES_CONFIG, true);
+  WHIRLWIND_STRIKE("WhirlwindStrike", WhirlwindStrike.class, AbilityType.ACTIVE, Files.AXES_CONFIG, true),
+  DIVINE_FUR("DivineFur", DivineFur.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
+  LINKED_FANGS("LinkedFangs", LinkedFangs.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
+  SHARPENED_FANGS("SharpenedFangs", SharpenedFangs.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
+  FURY_OF_CEREBUS("FuryOfCerebus", FuryOfCerebus.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
+  COMRADERY("Comradery", Comradery.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
+  PETAS_WRATH("PETAsWrath", PETAsWrath.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false);
 
   @Getter
   private String name;
