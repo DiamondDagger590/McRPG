@@ -102,34 +102,28 @@ UnlockLevelForAbility:
   PETAsWrath: 250
   FuryOfCerebus: 300
 #
-# Daze is the default ability that every player has. This ability will increase every time the players Archery level is increased
+# Gore is the default ability that every player has. This ability will increase every time the players Taming level is increased
 #
-DazeConfig:
-  #Equation for daze chance. Default gives 15% at level 1000.
-  DazeChanceEquation: (archery_level)*.015
-  #How long should the nausea effect last in seconds
-  NauseaDuration: 6
-  #How long should the blindness effect last in seconds
-  BlindnessDuration: 3
-  #If the affected player should look up
-  MakePlayerLookUp: true
+GoreConfig:
+  #Equation for gore chance. Default gives 10% at level 1000.
+  GoreChanceEquation: (taming_level)*.01
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Daze'
-    Material: PUFFERFISH
+    DisplayName: '&cGore'
+    Material: FIRE_CHARGE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cYou have a &e%Daze_Chance%% &cchance of inflicting daze'
-      - '&cForcing them to look up and blinding them'
+      - '&3You have a &6%Gore_Chance%% &3chance of wolves'
+      - '&3inflicting enemies with Bleed'
     MenuLore:
-      - '&cThis ability has a chance of'
-      - '&cdisorienting the player'
+      - '&3This ability will cause enemies to Bleed'
+      - '&3and apply all Swords modifiers'
 #
-# Config for the ability Puncture
-# This passive ability applies bleed and takes into account Bleed modifiers from swords
+# Config for the ability Divine Fur
+# This passive ability adds various protections to wolves that a player owns
 #
-PunctureConfig:
+DivineFurConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -139,32 +133,60 @@ PunctureConfig:
     TierIV: 375
     TierV: 500
   TierI:
-    #The chance of Puncture occurring per tier
-    ActivationChance: 4.0
+    #Defines what type of protection wolves will have at this tier
+    #
+    #Format is: Damage_Cause:Percent_To_Protect
+    #
+    #Valid options:
+    #   - Fall_Damage -> For any fall damage
+    #   - Fire_Damage -> For any fire damage
+    #   - Magic_Damage -> For any damage from potions
+    #   - All_Damage -> Handles any damage that didn't have a protection type provided (includes things from swords, bows, etc)
+    Protections:
+      #Default is 100% of damage blocked from fall damage
+      - 'Fall_Damage:100'
   TierII:
-    ActivationChance: 5.0
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
   TierIII:
-    ActivationChance: 6.0
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+      - 'Magic_Resistance:100'
   TierIV:
-    ActivationChance: 7.5
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+      - 'Magic_Damage:100'
+      - 'All_Damage:25'
   TierV:
-    ActivationChance: 10.0
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+      - 'Magic_Damage:100'
+      - 'All_Damage:50'
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Puncture'
-    Material: REDSTONE
+    DisplayName: '&cDivine Fur'
+    Material: WHITE_DYE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cYou have a &e%ActivationChance%% &cchance of Puncture activating'
+      - '&3Decreases damage dealt to your wolves'
+      - ''
+      - '&3Fall Damage: &6%Fall_Damage%%'
+      - '&3Fire Damage: &6%Fire_Damage%%'
+      - '&3Magic Damage: &6%Magic_Damage%%'
+      - '&3All Damage: &6%All_Damage%%'
     MenuLore:
-      - '&cThis ability can inflict bleed via shooting a player'
-      - '&cUnlock Level: &e%UnlockLevel%'
+      - '&3Gives various protections to wolves'
+      - '&3Unlock Level: &6%UnlockLevel%'
 #
-# Config for the ability Tipped Arrows
-# This ability has a chance to convert normal arrows shot into tipped arrows
+# Config for the ability Sharpened Fangs
+# This ability increases the amount of damage wolves do
 #
-TippedArrowsConfig:
+SharpenedFangsConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -175,49 +197,39 @@ TippedArrowsConfig:
     TierV: 700
   #Config for each Tier
   TierI:
-    #The chance of TippedArrows occurring per tier
+    #The chance of Sharpened Fangs occurring per tier
     ActivationChance: 5.0
-    #What potion effects can be applied
-    # Effect:Level:Duration
-    PossibleEffects:
-      - 'POISON:1:5'
+    #The amount of extra damage that each attack does
+    ExtraDamage: 1
   TierII:
-    ActivationChance: 6.0
-    PossibleEffects:
-      - 'POISON:1:7'
+    ActivationChance: 10.0
+    ExtraDamage: 1
   TierIII:
-    ActivationChance: 7.5
-    PossibleEffects:
-      - 'POISON:1:7'
-      - 'SLOW:1:5'
+    ActivationChance: 15.0
+    ExtraDamage: 1
   TierIV:
-    ActivationChance: 9.0
-    PossibleEffects:
-      - 'POISON:2:6'
-      - 'SLOW:1:7'
+    ActivationChance: 20.0
+    ExtraDamage: 1
   TierV:
-    ActivationChance: 11.5
-    PossibleEffects:
-      - 'POISON:2:6'
-      - 'SLOW:2:7'
-      - 'BLINDNESS:1:5'
+    ActivationChance: 20.0
+    ExtraDamage: 2
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Tipped Arrows'
-    Material: ARROW
+    DisplayName: '&cSharpened Fangs'
+    Material: DIAMOND_SWORD
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cYou have a &e%ActivationChance%% &cchance'
-      - '&cof applying a debuff to enemy'
+      - '&3Has a &6%ActivationChance%% &3chance of'
+      - '&3increases damage from wolves by &6%ExtraDamage%'
     MenuLore:
-      - '&cThis ability allows normal arrows deal debuffs'
-      - '&cUnlock Level: &e%UnlockLevel%'
+      - '&3Has a chance to increases wolf damage'
+      - '&3Unlock Level: &6%UnlockLevel%'
 #
-# Config for the ability Combo
-# This passive ability will deal more damage if you hit the target consecutively
+# Config for the ability Linked Fangs
+# This passive ability will heal the wolf and feed its owner when the wolf attacks
 #
-ComboConfig:
+LinkedFangsConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -228,46 +240,54 @@ ComboConfig:
     TierV: 850
   #Config for each tier
   TierI:
-    #How long in between shots will this ability wait
-    MaxLengthBetweenShots: 2
-    #How much should the damage be boosted by
-    DamageMultiplier: 1.1
-    #How many seconds should this ability wait before being used again
-    CooldownBetweenActivation: 2
+    #Chance of this activating when a wolf attacks
+    ActivationChance: 5.0
+    #The amount of health to restore to the wolf
+    HealthToRestore: 1
+    #How much hunger to restore to the player
+    HungerToRestore: 1
+    #How much saturation to restore to the player
+    SaturationToRestore: 1.0
   TierII:
-    MaxLengthBetweenShots: 3
-    DamageMultiplier: 1.15
-    CooldownBetweenActivation: 2
+    ActivationChance: 10.0
+    HealthToRestore: 1
+    HungerToRestore: 1.0
+    SaturationToRestore: 1.0
   TierIII:
-    MaxLengthBetweenShots: 3
-    DamageMultiplier: 1.2
-    CooldownBetweenActivation: 2
+    ActivationChance: 15.0
+    HealthToRestore: 1
+    HungerToRestore: 1
+    SaturationToRestore: 1.0
   TierIV:
-    MaxLengthBetweenShots: 3
-    DamageMultiplier: 1.25
-    CooldownBetweenActivation: 2
+    ActivationChance: 20.0
+    HealthToRestore: 2
+    HungerToRestore: 1
+    SaturationToRestore: 2.0
   TierV:
-    MaxLengthBetweenShots: 3
-    DamageMultiplier: 1.3
-    CooldownBetweenActivation: 2
+    ActivationChance: 20.0
+    HealthToRestore: 3
+    HungerToRestore: 1
+    SaturationToRestore: 2.5
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Combo'
-    Material: SPECTRAL_ARROW
+    DisplayName: '&cLinked Fangs'
+    Material: COOKED_BEEF
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cHit a target a second time before &e%MaxLengthBetweenShots%'
-      - '&cseconds to do &e%DamageMultiplier% &cdamage'
+      - '&3Has a &6%ActivationChance%% &3 to restore'
+      - '&6%HealthToRestore% &3to the wolf that attacked'
+      - '&3and give &6%HungerToRestore% &3hunger and'
+      - '&6%SaturationToRestore% &3staturation to the owner'
     MenuLore:
-      - '&cThis ability will do more damage'
-      - '&cfor two consecutive shots'
-      - '&cUnlock Level: &e%UnlockLevel%'
+      - '&3Has a chance to heal the wolf when'
+      - '&3it attacks and restore hunger of owner'
+      - '&3Unlock Level: &6%UnlockLevel%'
 #
-# Config for the ability Blessing of Artemis
-# This active ability gives invis and increases damage on next shot
+# Config for the ability Comradery
+# This ability will let wolves take the hit for a player
 #
-BlessingOfArtemisConfig:
+ComraderyConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -278,45 +298,40 @@ BlessingOfArtemisConfig:
     TierV: 650
   #Config for each tier
   TierI:
-    #How long should invis last for in seconds
-    InvisDuration: 6
-    #How much should the damage be multiplied by
-    DamageMultiplier: 1.15
-    #Cooldown for the ability
-    Cooldown: 120
+    #Chance of the ability activating
+    ActivationChance: 1.0
+    #The radius to search for wolves
+    WolfRange: 3
   TierII:
-    InvisDuration: 8
-    DamageMultiplier: 1.2
-    Cooldown: 120
+    ActivationChance: 2.5
+    WolfRange: 3
   TierIII:
-    InvisDuration: 10
-    DamageMultiplier: 1.3
-    Cooldown: 120
+    ActivationChance: 5.0
+    WolfRange: 3
   TierIV:
-    InvisDuration: 12
-    DamageMultiplier: 1.4
-    Cooldown: 120
+    ActivationChance: 8.5
+    WolfRange: 3
   TierV:
-    InvisDuration: 15
-    DamageMultiplier: 1.5
-    Cooldown: 120
+    ActivationChance: 12.5
+    WolfRange: 3
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Blessing Of Artemis'
-    Material: GLOWSTONE_DUST
+    DisplayName: '&cComradery'
+    Material: STONE_BRICK_WALL
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cThis ability give you'
-      - '&e%InvisDuration% &cseconds of inivs'
-      - '&cAnd gives &e%DamageMultiplier% &ctimes damage for next shot'
-      - '&cCooldown: &e%Cooldown%'
-      - '&eActivate by readying and shooting an arrow'
+      - '&3Has a &6%ActivationChance%% &3of having one'
+      - '&3of your wolves in a &6%WolfRange% &3radius take'
+      - '&3the damage for you'
     MenuLore:
-      - '&cGain invis and do more damage'
-      - '&con your next shot'
-      - '&cUnlock Level: &e%UnlockLevel%'
-BlessingOfApolloConfig:
+      - '&3Wolves have a chance to take damage for you'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability PETAsWrath
+# When a pet you have tamed dies, gives the killer a random debuff
+#
+PETAsWrathConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -327,44 +342,45 @@ BlessingOfApolloConfig:
     TierV: 800
   #Config for each tier
   TierI:
-    #How long should the player get fire resistance for
-    FireResDuration: 10
-    #How long should the target burn for
-    IgniteDuration: 5
-    Cooldown: 120
+    #A random potion effect will be selected from this list
+    #Format is PotionEffectType:Level:DurationInSeconds
+    PotionEffects:
+      - 'SLOW:1:10'
   TierII:
-    FireResDuration: 12
-    IgniteDuration: 7
-    Cooldown: 120
+    PotionEffects:
+      - 'SLOW:1:10'
+      - 'SLOW_DIGGING:1:10'
   TierIII:
-    FireResDuration: 15
-    IgniteDuration: 9
-    Cooldown: 120
+    PotionEffects:
+      - 'SLOW:1:10'
+      - 'SLOW_DIGGING:1:10'
+      - 'POISON:1:10'
   TierIV:
-    FireResDuration: 20
-    IgniteDuration: 11
-    Cooldown: 120
+    PotionEffects:
+      - 'CONFUSION:1:10'
+      - 'WITHER:1:10'
   TierV:
-    FireResDuration: 25
-    IgniteDuration: 13
-    Cooldown: 120
+    - 'CONFUSION:1:10'
+    - 'WITHER:1:10'
+    - 'BLINDNESS:1:10'
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Blessing Of Apollo'
-    Material: BLAZE_POWDER
+    DisplayName: '&cPETAs Wrath'
+    Material: RABBIT_HIDE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cGain &e%FireResDuration% &cseconds of fire res'
-      - '&cand ignite target for &e%IgniteDuration% &cseconds'
-      - '&cas well as burn away all buffs from the target'
-      - '&cCooldown: &e%Cooldown%'
-      - '&eActivate by readying and shooting an arrow'
+      - '&3Gives a random debuff to whatever enemy'
+      - '&3kills your pets'
     MenuLore:
-      - '&cGain fire res, ignite target'
-      - '&cand burn away targets buffs'
-      - '&cUnlock Level: &e%UnlockLevel%'
-CurseOfHadesConfig:
+      - '&3Gives a random debuff when a mob'
+      - '&3kills a pet'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability Fury Of Cerebus
+# Using a blaze rod to attack a mob, summon three Hell Hounds that explode when they die
+#
+FuryOfCerebusConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
@@ -375,54 +391,53 @@ CurseOfHadesConfig:
     TierV: 1000
   #Config for each tier
   TierI:
-    WitherDuration: 5
-    SlownessDuration: 10
-    BlindnessDuration: 10
-    WitherLevel: 1
-    SlownessLevel: 1
-    #Cooldown in seconds
+    #How much health should each hell hound have
+    HellHoundHealth: 5
+    #If a hell hound should ignite the enemy it hits
+    IgniteTarget: false
+    #If the explosions from the deaths should break blocks
+    ExplosionDestroyBlocks: false
+    #Time in seconds before a hell hound should self destruct
+    SelfDestructTimer: 5
+    #Time in seconds before the ability can be used again
     Cooldown: 160
   TierII:
-    WitherDuration: 6
-    SlownessDuration: 12
-    BlindnessDuration: 12
-    WitherLevel: 1
-    SlownessLevel: 1
+    HellHoundHealth: 6
+    IgniteTarget: false
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 6
     Cooldown: 160
   TierIII:
-    WitherDuration: 7
-    SlownessDuration: 14
-    BlindnessDuration: 14
-    WitherLevel: 1
-    SlownessLevel: 2
+    HellHoundHealth: 7
+    IgniteTarget: true
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 6
     Cooldown: 160
   TierIV:
-    WitherDuration: 8
-    SlownessDuration: 16
-    BlindnessDuration: 16
-    WitherLevel: 1
-    SlownessLevel: 2
+    HellHoundHealth: 10
+    IgniteTarget: true
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 10
     Cooldown: 160
   TierV:
-    WitherDuration: 10
-    SlownessDuration: 20
-    BlindnessDuration: 20
-    WitherLevel: 2
-    SlownessLevel: 3
+    HellHoundHealth: 15
+    IgniteTarget: true
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 15
     Cooldown: 160
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&4Curse of Hades'
-    Material: WITHER_SKELETON_SKULL
+    DisplayName: '&cFury Of Cerebus'
+    Material: BLAZE_ROD
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
-      - '&cNext shot gives wither for &e%WitherDuration% &cseconds'
-      - '&e%SlownessDuration% &cseconds of slowness'
-      - '&e%BlindnessDuration% &cseconds of blindness'
-      - '&cCooldown: &e%Cooldown%'
-      - '&eActivate by readying and shooting a bow'
+      - '&3Ready with a blaze rod and then hit a'
+      - '&3mob to summon three hell hounds.'
+      - '&3Health: &6%HellHoundHealth%'
+      - '&3Ignite Enemy: &6IgniteTarget%'
+      - '&3Duration: &6%SelfDestructTimer%s'
+      - '&3Cooldown: &6%Cooldown%'
     MenuLore:
-      - '&cGive wither, slowness and blindness'
-      - '&cto any player hit by next shot'
-      - '&cUnlock Level: &e%UnlockLevel%'
+      - '&3Summon three hell hounds that explode on death'
+      - '&3Unlock Level: &6%UnlockLevel%'

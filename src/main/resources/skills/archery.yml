@@ -81,7 +81,7 @@ EnabledAbilities:
   BlessingOfApollo: true
   CurseOfHades: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcrpg.archery.unlock{ability} and mcrpg.archery.use.{ability}
+#Perms will be mcrpg.archery.unlock.{ability} and mcrpg.archery.use.{ability}
 UsePermsForAbilites:
   Daze: false
   Puncture: false
