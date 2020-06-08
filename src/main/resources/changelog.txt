@@ -1,5 +1,14 @@
 1.3.3.0-BETA
 + Add player auto teleport setting
++ Added Papi placeholders for default abilities. Example is %GreatRod_Chance%
++ Added command to open a few hardcoded guis. /mcgui opennative %gui% %skill%
+    - Most GUI's don't require a skill param
+    List:
+        - EditLoadoutGUI -> No skill param
+        - EditLoadoutSelectGUI -> No skill param
+        - SettingsGUI -> No skill param
+        - UpgradeAbilityGUI -> No skill param
+        - SubSkillGUI -> Skill param
 = Fix dupe glitch for Magnet Artifacts
 = Fix saturation potions not working
 = Revamped GUIs
