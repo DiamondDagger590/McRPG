@@ -77,7 +77,7 @@ import us.eunoians.mcrpg.events.vanilla.CheckReadyEvent;
 import us.eunoians.mcrpg.events.vanilla.DeathEvent;
 import us.eunoians.mcrpg.events.vanilla.DropItemEvent;
 import us.eunoians.mcrpg.events.vanilla.EnchantingEvent;
-import us.eunoians.mcrpg.events.vanilla.EntityDeathEvent;
+import us.eunoians.mcrpg.events.vanilla.EntityDeathListener;
 import us.eunoians.mcrpg.events.vanilla.FishCatchEvent;
 import us.eunoians.mcrpg.events.vanilla.InteractHandler;
 import us.eunoians.mcrpg.events.vanilla.InvClickEvent;
@@ -292,7 +292,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new PlayerTossItemEvent(), this);
     getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
     getServer().getPluginManager().registerEvents(new DeathEvent(), this);
-    getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
+    getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
     getServer().getPluginManager().registerEvents(new SignEvent(), this);
     getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
     getServer().getPluginManager().registerEvents(new PotionDrinkEvent(), this);

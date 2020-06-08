@@ -352,6 +352,9 @@ public class Methods{
    * @return An SQL friendly version of the string
    */
   public static String convertNameToSQL(String name){
+    if(name.equalsIgnoreCase("PETASWrath")){
+      return "petas_wrath";
+    }
     StringBuilder returnVal = new StringBuilder();
     boolean first = true;
     for(String s : name.split("")){

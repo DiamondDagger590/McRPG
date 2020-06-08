@@ -55,6 +55,7 @@ public class McRPGDb {
     dbBuilder.appendTable(AxesTable.class);
     dbBuilder.appendTable(FishingTable.class);
     dbBuilder.appendTable(SorceryTable.class);
+    dbBuilder.appendTable(TamingTable.class);
 
     dbBuilder.appendTable(generated);
     try {
