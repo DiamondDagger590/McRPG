@@ -13,7 +13,15 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.NPC;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Tameable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -25,20 +33,47 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.abilities.axes.*;
-import us.eunoians.mcrpg.abilities.fitness.*;
+import us.eunoians.mcrpg.abilities.axes.AresBlessing;
+import us.eunoians.mcrpg.abilities.axes.CripplingBlow;
+import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
+import us.eunoians.mcrpg.abilities.axes.SharperAxe;
+import us.eunoians.mcrpg.abilities.axes.Shred;
+import us.eunoians.mcrpg.abilities.axes.WhirlwindStrike;
+import us.eunoians.mcrpg.abilities.fitness.BulletProof;
+import us.eunoians.mcrpg.abilities.fitness.Dodge;
+import us.eunoians.mcrpg.abilities.fitness.IronMuscles;
+import us.eunoians.mcrpg.abilities.fitness.Roll;
+import us.eunoians.mcrpg.abilities.fitness.ThickSkin;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
+import us.eunoians.mcrpg.abilities.taming.Gore;
 import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
-import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.api.events.mcrpg.axes.*;
-import us.eunoians.mcrpg.api.events.mcrpg.fitness.*;
+import us.eunoians.mcrpg.abilities.unarmed.Berserk;
+import us.eunoians.mcrpg.abilities.unarmed.DenseImpact;
+import us.eunoians.mcrpg.abilities.unarmed.Disarm;
+import us.eunoians.mcrpg.abilities.unarmed.IronArm;
+import us.eunoians.mcrpg.abilities.unarmed.SmitingFist;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.AresBlessingEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.HeavyStrikeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.SharperAxeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.ShredEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.WhirlwindStrikeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.BulletProofEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.DodgeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.IronMusclesEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.RollEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.ThickSkinEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
-import us.eunoians.mcrpg.api.events.mcrpg.unarmed.*;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.BerserkEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.DenseImpactEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.DisarmEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.IronArmEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -57,7 +92,11 @@ import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
 import us.eunoians.mcrpg.util.worldguard.WGRegion;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 public class VanillaDamageEvent implements Listener {
 
@@ -380,7 +419,7 @@ public class VanillaDamageEvent implements Listener {
     }
     
     //We need to handle taming before we deal with player stuff
-    if(Skills.TAMING.isEnabled() && e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getDamage() > 0){
+    if(Skills.TAMING.isEnabled() && e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getEntity() instanceof LivingEntity && e.getDamage() > 0){
       Tameable tameable = (Tameable) e.getDamager();
       if(tameable.getOwner() != null){
         
@@ -420,6 +459,20 @@ public class VanillaDamageEvent implements Listener {
           expToAward = tamingConfig.getInt("ExpAwardedPerMob.OTHER", 0);
         }
         mp.giveExp(Skills.TAMING, (int) (expToAward * e.getDamage()), GainReason.DAMAGE);
+  
+        if(DefaultAbilities.GORE.isEnabled() && mp.getBaseAbility(DefaultAbilities.GORE).isToggled()){
+          Gore gore = (Gore) mp.getBaseAbility(DefaultAbilities.GORE);
+          Parser parser = DefaultAbilities.GORE.getActivationEquation();
+          parser.setVariable("taming_level", mp.getSkill(Skills.TAMING).getCurrentLevel());
+          parser.setVariable("power_level", mp.getPowerLevel());
+          int chance = (int) (parser.getValue() * 1000);
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(chance >= val){
+            BleedEvent bleedEvent = new BleedEvent(mp, (LivingEntity) e.getEntity(), (Bleed) mp.getBaseAbility(DefaultAbilities.BLEED));
+            Bukkit.getPluginManager().callEvent(bleedEvent);
+          }
+        }
       }
       
       //We don't care about other abilities because a wolf can't do anything past here
