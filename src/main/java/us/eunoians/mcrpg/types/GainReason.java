@@ -16,5 +16,6 @@ public enum GainReason{
   OTHER,
   PARTY,
   PLUGIN,
-  REDEEM
+  REDEEM,
+  TAME
 }
