@@ -368,7 +368,7 @@ public class VanillaDamageEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
-    if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
+    if(e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
       return;
     }
     //Disabled Worlds
@@ -376,6 +376,32 @@ public class VanillaDamageEvent implements Listener {
          McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
       return;
     }
+    
+    //We need to handle taming before we deal with player stuff
+    if(e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getDamage() > 0){
+      Tameable tameable = (Tameable) e.getDamager();
+      if(tameable.getOwner() != null){
+        McRPGPlayer mp;
+        try{
+          mp = PlayerManager.getPlayer(tameable.getOwner().getUniqueId());
+        } catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
+        FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+        int expToAward = 0;
+        if(tamingConfig.contains("ExpAwardedPerMob." + e.getEntityType().name())){
+          expToAward = tamingConfig.getInt("ExpAwardedPerMob." + e.getEntityType().name());
+        }
+        else{
+          expToAward = tamingConfig.getInt("ExpAwardedPerMob.OTHER", 0);
+        }
+        mp.giveExp(Skills.TAMING, expToAward, GainReason.DAMAGE);
+      }
+      
+      //We don't care about other abilities because a wolf can't do anything past here
+      return;
+    }
+    
     if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){
       if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
         e.setCancelled(true);
@@ -385,9 +411,13 @@ public class VanillaDamageEvent implements Listener {
     FileConfiguration config;
     if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && !isNPCEntity(e.getEntity())){
       Player damager = (Player) e.getDamager();
+      
+      //Fixes exploit with /sit
       if(damager.isInsideVehicle()){
         return;
       }
+      
+      //Don't award exp for self harm
       if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()){
         return;
       }
@@ -397,6 +427,7 @@ public class VanillaDamageEvent implements Listener {
       } catch(McRPGPlayerNotFoundException exception){
         return;
       }
+      
       //Deal with world guard
       if(McRPG.getInstance().isWorldGuardEnabled()){
         WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
@@ -440,6 +471,7 @@ public class VanillaDamageEvent implements Listener {
           }
         }
       }
+      
       //Deal with unarmed
       if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
         if(!Skills.UNARMED.isEnabled()){

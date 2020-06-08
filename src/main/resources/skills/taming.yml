@@ -69,6 +69,7 @@ ExpAwardedPerMob:
   HUSK: 30
   ZOMBIE_HORSE: 20
 ExpPerMobTamed:
+  OTHER: 500
   WOLF: 1000
   CAT: 2500
   HORSE: 3000
