@@ -25,6 +25,8 @@ Gui:
         - 'OpenNative:SubSkillGUI:Fishing'
       41:
         - 'OpenNative:SubSkillGUI:Sorcery'
+      43:
+        - 'OpenNative:SubSkillGUI:Taming'
       36:
         - 'OpenFile:maingui.yml:MainGUI'
     Items:
@@ -127,6 +129,15 @@ Gui:
           - '&3Current Sorcery level: &6%Sorcery_Level%'
           - '&3Hasty Brew chance: &6%Hasty_Brew_Chance%%'
         Slot: 41
+      TamingSkill:
+        Name: '&c&nTaming Skill'
+        Material: BONE
+        Lore:
+          - '&6Click &3this to view your taming abilities'
+          - ' '
+          - '&3Current Taming level: &6%Taming_Level%'
+          - '&3Gore chance: &6%Gore_Chance%%'
+        Slot: 43
       Back:
         Name: '&c<<Back'
         Material: BARRIER

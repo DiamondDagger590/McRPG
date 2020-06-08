@@ -18,6 +18,7 @@ public enum LangEnum implements ConfigurationEnum {
     SKILL_NAMES_AXES("SkillNames.Axes", "Axes"),
     SKILL_NAMES_FISHING("SkillNames.Fishing", "Fishing"),
     SKILL_NAMES_SORCERY("SkillNames.Sorcery", "Sorcery"),
+    SKILL_NAMES_TAMING("SkillNames.Taming", "Taming"),
     SKILL_ITEM_NAMES_SWORDS("SkillItemNames.Swords", "Sword"),
     SKILL_ITEM_NAMES_MINING("SkillItemNames.Mining", "Pickaxe"),
     SKILL_ITEM_NAMES_UNARMED("SkillItemNames.Unarmed", "Fist"),

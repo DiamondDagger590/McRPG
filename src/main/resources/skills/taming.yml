@@ -360,9 +360,10 @@ PETAsWrathConfig:
       - 'CONFUSION:1:10'
       - 'WITHER:1:10'
   TierV:
-    - 'CONFUSION:1:10'
-    - 'WITHER:1:10'
-    - 'BLINDNESS:1:10'
+    PotionEffects:
+      - 'CONFUSION:1:10'
+      - 'WITHER:1:10'
+      - 'BLINDNESS:1:10'
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&cPETAs Wrath'

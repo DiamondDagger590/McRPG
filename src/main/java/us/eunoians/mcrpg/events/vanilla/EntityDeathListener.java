@@ -75,7 +75,7 @@ public class EntityDeathListener implements Listener{
         try{
           McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(owner.getUniqueId());
           FileConfiguration tamingFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
-          if(tamingFile.getBoolean("TamingEnabled") && UnlockedAbilities.PETAS_WRATH.isCooldown() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.PETAS_WRATH)
+          if(tamingFile.getBoolean("TamingEnabled") && UnlockedAbilities.PETAS_WRATH.isEnabled() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.PETAS_WRATH)
           && mcRPGPlayer.getBaseAbility(UnlockedAbilities.PETAS_WRATH).isToggled()){
             PETAsWrath petasWrath = (PETAsWrath) mcRPGPlayer.getBaseAbility(UnlockedAbilities.PETAS_WRATH);
             List<String> potionEffects = tamingFile.getStringList("PETAsWrathConfig.Tier" + Methods.convertToNumeral(petasWrath.getCurrentTier()) + ".PotionEffects");
