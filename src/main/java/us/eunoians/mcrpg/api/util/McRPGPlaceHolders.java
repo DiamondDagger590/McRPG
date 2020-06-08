@@ -10,7 +10,11 @@ import us.eunoians.mcrpg.api.leaderboards.PlayerLeaderboardData;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
+import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.util.Parser;
+
+import java.text.NumberFormat;
 
 public class McRPGPlaceHolders extends PlaceholderExpansion {
   @Override
@@ -72,6 +76,17 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
       Skills skill = Skills.fromString(args[0]);
       return Integer.toString(mp.getSkill(skill).getCurrentExp());
     }
+    else if(DefaultAbilities.getFromID(args[0]) != null && args[1].equalsIgnoreCase("Chance")){
+      DefaultAbilities defaultAbility = DefaultAbilities.getFromID(args[0]);
+      Parser equation = defaultAbility.getActivationEquation();
+      equation.setVariable(defaultAbility.getSkill().getName().toLowerCase() + "_level", mp.getSkill(defaultAbility.getSkill()).getCurrentLevel());
+      equation.setVariable("power_level", mp.getPowerLevel());
+      NumberFormat nf = NumberFormat.getInstance();
+      nf.setMinimumIntegerDigits(1);
+      nf.setMaximumFractionDigits(3);
+      nf.setMinimumFractionDigits(2);
+      return nf.format(equation.getValue());
+    }
     else if(identifier.contains("player_rank")){
       LeaderboardManager leaderboardManager = McRPG.getInstance().getLeaderboardManager();
       if(Skills.isSkill(args[2])){
@@ -92,7 +107,7 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
       int rank = Integer.parseInt(args[2]);
       if(args[0].equalsIgnoreCase("power")){
         PlayerLeaderboardData data = manager.getPowerPlayer(rank);
-        return data == null ? "N/A" : identifier.contains("name") ? Bukkit.getOfflinePlayer(  data.getUUID()).getName() : Integer.toString(data.getLevel());
+        return data == null ? "N/A" : identifier.contains("name") ? Bukkit.getOfflinePlayer(data.getUUID()).getName() : Integer.toString(data.getLevel());
       }
       else if(Skills.isSkill(args[0])){
         Skills skill = Skills.fromString(args[0]);
