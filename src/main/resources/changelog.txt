@@ -1,3 +1,17 @@
+1.3.3.0-BETA
++ Add player auto teleport setting
+= Fix dupe glitch for Magnet Artifacts
+= Fix saturation potions not working
+= Revamped GUIs
+= Fix level commands not working with json based strings
+= Fixed fitness not being a valid skill for level commands
+= Fixed colors for Unarmed Ignore Slot setting
+= Fixed Party pvp permission not working
+= Fixed cobble generators not giving mining exp
+= Fixed stack potions being brewable
+= Fixed beetroots not giving exp. Needs manual change
+= Attempted fix for Asian's drug plugin thingy
+
 1.3.2.0-BETA
 + Add party name placeholder %mcrpg_party_name%
 = Fixed issue with item filter plugin

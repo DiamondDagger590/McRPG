@@ -1,22 +1,21 @@
-#Will need to be increased in relation to how many slots are possible for the ability loadout
 Size: 9
-Title: '&5%Skill%'
+Title: '&4%Skill%'
 BackButtonDestination: 'maingui.yml:MainGUI'
 RemoteTransfer:
-#Replaces the location var in the statement
+  #Replaces the location var in the statement
   NoLocation: 'None'
 Ability:
   IsUnlocked: '&aUnlocked!'
-  IsNotUnlocked: '&bNot Unlocked!'
+  IsNotUnlocked: '&cNot Unlocked!'
   IsInLoadout: '&aCurrently in loadout'
   IsNotInLoadout: '&cNot in loadout'
   NotUnlockedMaterial: RED_STAINED_GLASS_PANE
 BackButton:
   Material: BARRIER
-  DisplayName: '&bBack>>'
+  DisplayName: '&c<<Back'
   Slot: 8
   Lore:
-    - '&eClick this to go back'
+    - '&6Click &3this to go back'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

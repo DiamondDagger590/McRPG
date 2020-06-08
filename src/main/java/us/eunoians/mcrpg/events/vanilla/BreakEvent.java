@@ -119,12 +119,15 @@ public class BreakEvent implements Listener{
          McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(event.getPlayer().getWorld().getName())) {
       return;
     }
+    
     if(!event.isCancelled() && (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE)){
       Player p = event.getPlayer();
       Block block = event.getBlock();
       Material blockType = block.getType();
-
-      if(!McRPG.getPlaceStore().isTrue(block)){
+      
+      boolean isNatural = !McRPG.getPlaceStore().isTrue(block) || block.hasMetadata("ultimatedrugs-plant");
+  
+      if(isNatural){
         BookManager bookManager = McRPG.getInstance().getBookManager();
         Random rand = new Random();
         int bookChance = McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableBooksInEnd", false) && p.getLocation().getBlock().getBiome().name().contains("END") ? 100001 : rand.nextInt(100000);
@@ -191,7 +194,7 @@ public class BreakEvent implements Listener{
       FileConfiguration sorceryConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
       if(excavationConfig.getBoolean("ExcavationEnabled")){
         int dropMultiplier = 1;
-        if(!McRPG.getPlaceStore().isTrue(block)){
+        if(isNatural){
           if(excavationConfig.contains("ExpAwardedPerBlock." + block.getType().toString())){
             int expWorth = excavationConfig.getInt("ExpAwardedPerBlock." + block.getType().toString());
             mp.giveExp(Skills.EXCAVATION, expWorth, GainReason.BREAK);
@@ -283,7 +286,7 @@ public class BreakEvent implements Listener{
           }
           if(UnlockedAbilities.BURIED_TREASURE.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.BURIED_TREASURE) && mp.getBaseAbility(UnlockedAbilities.BURIED_TREASURE).isToggled()){
             BuriedTreasure buriedTreasure = (BuriedTreasure) mp.getBaseAbility(UnlockedAbilities.BURIED_TREASURE);
-            if(block != null && !McRPG.getPlaceStore().isTrue(block)){
+            if(block != null && isNatural){
               if(BuriedTreasureData.getBuriedTreasureData().containsKey(block.getType())){
                 ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
                 Random rand = new Random();
@@ -441,7 +444,7 @@ public class BreakEvent implements Listener{
             }
           }
         }
-        if(!McRPG.getPlaceStore().isTrue(block)){
+        if(isNatural){
           if(woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())){
             int expWorth = woodCutting.getInt("ExpAwardedPerBlock." + block.getType().toString());
             mp.giveExp(Skills.WOODCUTTING, expWorth, GainReason.BREAK);
@@ -465,7 +468,7 @@ public class BreakEvent implements Listener{
             }
           }
           if(UnlockedAbilities.DRYADS_GIFT.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DRYADS_GIFT)
-                  && mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT).isToggled() && !McRPG.getPlaceStore().isTrue(block) && woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())){
+                  && mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT).isToggled() && isNatural && woodCutting.contains("ExpAwardedPerBlock." + block.getType().toString())){
             DryadsGift dryadsGift = (DryadsGift) mp.getBaseAbility(UnlockedAbilities.DRYADS_GIFT);
             int chance = (int) (woodCutting.getDouble("DryadsGiftConfig.Tier" + Methods.convertToNumeral(dryadsGift.getCurrentTier()) + ".ActivationChance") * 1000);
             Random rand = new Random();
@@ -522,7 +525,7 @@ public class BreakEvent implements Listener{
       //Deal with herbalism
       if(herbalism.getBoolean("HerbalismEnabled")){
         int dropMultiplier = 1;
-        if(!McRPG.getPlaceStore().isTrue(block)){
+        if(isNatural){
           if(herbalism.contains("ExpAwardedPerBlock." + block.getType().toString())){
             int expWorth = herbalism.getInt("ExpAwardedPerBlock." + block.getType().toString());
             boolean oneBlockPlant = !(block.getType() == Material.CACTUS || block.getType() == Material.CHORUS_PLANT || block.getType() == Material.SUGAR_CANE);
@@ -550,13 +553,13 @@ public class BreakEvent implements Listener{
               }
             }
           }
-          if(McRPG.getPlaceStore().isTrue(block)){
+          if(!isNatural){
             dropMultiplier = 1;
           }
           Material type = block.getType();
           if(UnlockedAbilities.REPLANTING.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.REPLANTING) && mp.getBaseAbility(UnlockedAbilities.REPLANTING).isToggled()){
             Replanting replanting = (Replanting) mp.getBaseAbility(UnlockedAbilities.REPLANTING);
-            if(!McRPG.getPlaceStore().isTrue(block) && ItemUtils.isCrop(block.getType())){
+            if(isNatural && ItemUtils.isCrop(block.getType())){
               {
                 int chance = (int) (herbalism.getDouble("ReplantingConfig.Tier" + Methods.convertToNumeral(replanting.getCurrentTier()) + ".ActivationChance") * 1000);
                 Random rand = new Random();
@@ -586,7 +589,7 @@ public class BreakEvent implements Listener{
           }
           if(UnlockedAbilities.DIAMOND_FLOWERS.isEnabled() && mp.getAbilityLoadout().contains(UnlockedAbilities.DIAMOND_FLOWERS) && mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS).isToggled()){
             DiamondFlowers diamondFlowers = (DiamondFlowers) mp.getBaseAbility(UnlockedAbilities.DIAMOND_FLOWERS);
-            if(!McRPG.getPlaceStore().isTrue(block)){
+            if(isNatural){
               if(DiamondFlowersData.getDiamondFlowersData().containsKey(type)){
                 ArrayList<String> categoriesToChooseFrom = new ArrayList<>();
                 Random rand = new Random();
@@ -637,7 +640,7 @@ public class BreakEvent implements Listener{
       if(mining.getBoolean("MiningEnabled")){
         int dropMultiplier = 1;
 
-        if(!McRPG.getPlaceStore().isTrue(block)){
+        if(isNatural){
           if(p.getItemInHand().getType().toString().contains("PICK") && mining.contains("ExpAwardedPerBlock." + block.getType().toString())){
             int expWorth = mining.getInt("ExpAwardedPerBlock." + block.getType().toString());
             mp.giveExp(Skills.MINING, expWorth, GainReason.BREAK);
@@ -688,7 +691,7 @@ public class BreakEvent implements Listener{
           }
         }
 
-        if(McRPG.getPlaceStore().isTrue(block)){
+        if(!isNatural){
           dropMultiplier = 1;
         }
         //Check if the block is tracked by remote transfer

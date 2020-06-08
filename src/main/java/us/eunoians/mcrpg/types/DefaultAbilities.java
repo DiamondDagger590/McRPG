@@ -39,7 +39,6 @@ public enum DefaultAbilities implements GenericAbility{
   
   @Getter
   private String name;
-  //TODO fix this lmao
   @Getter
   private Class<? extends BaseAbility> clazz;
   @Getter
@@ -80,6 +79,17 @@ public enum DefaultAbilities implements GenericAbility{
     return Arrays.stream(DefaultAbilities.values()).filter(n -> n.getSkill().equals(skill)).findFirst().orElse(null);
   }
   
+  /**
+   * Gets the default ability from a string id
+   * @param id The string id of the default ability
+   * @return The enum representation of the string id or null if it doesnt exist
+   */
+  public static DefaultAbilities getFromID(String id){
+    return Arrays.stream(values()).filter(defaultAbilities -> defaultAbilities.getName().equalsIgnoreCase(id) ||
+                                                                defaultAbilities.getName().replace(" ","").equalsIgnoreCase(id))
+             .findFirst().orElse(null);
+  }
+
   public Parser getActivationEquation(){
     return new Parser(McRPG.getInstance().getFileManager().getFile(file).getString(name.replaceAll(" ", "") + "Config." + name.replaceAll(" ", "") + "ChanceEquation"));
   }

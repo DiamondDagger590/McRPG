@@ -139,7 +139,21 @@ public class SettingsGUI extends GUI {
       unarmedIgnoreSlotMeta.setLore(Methods.colorLore(lore));
       unarmedIgnoreSlot.setItemMeta(unarmedIgnoreSlotMeta);
       items.add(new GUIItem(unarmedIgnoreSlot, settingsFile.getInt("UnarmedIgnoreSlot.Slot", 14)));
-
+      
+      ItemStack autoAcceptPartyTeleports = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+      ItemMeta autoAcceptTpMeta = autoAcceptPartyTeleports.getItemMeta();
+      if(player.isAutoAcceptPartyInvites()) {
+        autoAcceptTpMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AutoAcceptPartyTP.Enabled", "&aAuto accept party teleports")));
+      }
+      else {
+        autoAcceptPartyTeleports.setType(Material.RED_STAINED_GLASS_PANE);
+        autoAcceptTpMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("AutoAcceptPartyTP.Disabled", "&cDon't auto accept party teleports")));
+      }
+      lore = settingsFile.contains("AutoAcceptPartyTP.Lore") ? settingsFile.getStringList("AutoAcceptPartyTP.Lore") : Arrays.asList("&eIf enabled, then any party teleport", "&erequests will be auto accepted");
+      autoAcceptTpMeta.setLore(Methods.colorLore(lore));
+      autoAcceptPartyTeleports.setItemMeta(autoAcceptTpMeta);
+      items.add(new GUIItem(autoAcceptPartyTeleports, settingsFile.getInt("AutoAcceptPartyTP.Slot", 16)));
+      
       ItemStack back = new ItemStack(Material.valueOf(settingsFile.getString("BackButton.Material")));
       ItemMeta backMeta = back.getItemMeta();
       backMeta.setDisplayName(Methods.color(player.getPlayer(), settingsFile.getString("BackButton.DisplayName")));

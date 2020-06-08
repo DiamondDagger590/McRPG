@@ -1,7 +1,7 @@
 Gui:
   MainGUI:
     Size: 27
-    Title: '&5Party Menu Lv: %Party_Level%'
+    Title: '&4Party Menu Lv: &9%Party_Level%'
     Events:
       9:
         - 'OpenNative:PartyMemberGUI'
@@ -15,40 +15,40 @@ Gui:
         - 'OpenNative:PartyUpgradesGUI'
     Items:
       MemberItem:
-        Name: '&5Party Members'
+        Name: '&cParty Members'
         Material: PLAYER_HEAD
         Owner: '%Player%'
         Lore:
-          - '&eClick this to view info'
-          - '&eon party members'
-          - '&7%Online_Members%&e/&a%Total_Members% &emembers online'
+          - '&6Click &3this to view info'
+          - '&3on party members'
+          - '&6%Online_Members%&3/&6%Total_Members% &3members online'
         Slot: 9
       BankItem:
-        Name: '&5Party Bank'
+        Name: '&cParty Bank'
         Material: CHEST
         Lore:
-          - '&eClick this to access the bank.'
+          - '&6Click &3this to access the bank.'
         Slot: 11
       PrivateBankItem:
-        Name: '&5Private Bank'
+        Name: '&cPrivate Bank'
         Material: ENDER_CHEST
         Lore:
-          - '&eClick this to access the private bank.'
-          - '&eOnly certain members can access this!'
+          - '&6Click &3this to access the private bank.'
+          - '&3Only certain members can access this!'
         Slot: 13
       PartyRoles:
-        Name: '&5Party Permissions'
+        Name: '&cParty Permissions'
         Material: RED_WOOL
         Lore:
-          - '&eClick this to edit permissions for roles!'
-          - '&eOnly the party owner can edit these!'
+          - '&6Click &3this to edit permissions for roles!'
+          - '&3Only the party owner can edit these!'
         Slot: 15
       UpgradesItem:
-        Name: '&5Party Upgrades'
+        Name: '&cParty Upgrades'
         Material: NETHER_STAR
         Lore:
-          - '&eClick this to view upgrades.'
-          - '&eCurrent points: &7%Party_Points%'
+          - '&6Click &3this to view upgrades.'
+          - '&3Current points: &6%Party_Points%'
         Slot: 17
     FillerItem:
       Material: GRAY_STAINED_GLASS_PANE

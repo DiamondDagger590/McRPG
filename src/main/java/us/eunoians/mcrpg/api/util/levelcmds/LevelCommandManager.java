@@ -30,14 +30,17 @@ public class LevelCommandManager{
     }
     for(String string : configuration.getStringList("Commands")){
       String[] data = string.split(":");
-      if(data.length != 3 || !LevelCommandType.isCommandType(data[0]) || !Methods.isInt(data[1])){
+      if(data.length < 3 || !LevelCommandType.isCommandType(data[0]) || !Methods.isInt(data[1])){
         Bukkit.getLogger().log(Level.WARNING, "There is an invalid level command that is being skipped: " + string);
         continue;
       }
       LevelCommandType levelCommandType = LevelCommandType.fromString(data[0]);
       int level = Integer.parseInt(data[1]);
-      String command = data[2];
-      LevelCommand levelCommand = new LevelCommand(command, level, levelCommandType);
+      StringBuilder commandBuilder = new StringBuilder(data[2]);
+      for(int i = 3; i < data.length; i++){
+        commandBuilder.append(":" + data[i]);
+      }
+      LevelCommand levelCommand = new LevelCommand(commandBuilder.toString(), level, levelCommandType);
       if(levelCommandMap.containsKey(levelCommandType)){
         levelCommandMap.get(levelCommandType).add(levelCommand);
       }
