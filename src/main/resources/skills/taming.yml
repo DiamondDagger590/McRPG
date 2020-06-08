@@ -437,7 +437,7 @@ FuryOfCerebusConfig:
       - '&3Ready with a blaze rod and then hit a'
       - '&3mob to summon three hell hounds.'
       - '&3Health: &6%HellHoundHealth%'
-      - '&3Ignite Enemy: &6IgniteTarget%'
+      - '&3Ignite Enemy: &6%IgniteTarget%'
       - '&3Duration: &6%SelfDestructTimer%s'
       - '&3Cooldown: &6%Cooldown%'
     MenuLore:

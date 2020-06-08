@@ -88,7 +88,7 @@ public class EntityDeathListener implements Listener{
             int level = Math.min(0, Integer.parseInt(data[1]) - 1);
             int duration = Integer.parseInt(data[2]) * 20;
             PotionEffect potionEffect = new PotionEffect(potionEffectType, duration, level);
-            PETAsWrathEvent petasWrathEvent = new PETAsWrathEvent(mcRPGPlayer, potionEffect);
+            PETAsWrathEvent petasWrathEvent = new PETAsWrathEvent(mcRPGPlayer, petasWrath, potionEffect);
             Bukkit.getPluginManager().callEvent(petasWrathEvent);
             if(!petasWrathEvent.isCancelled()){
               entity.getKiller().addPotionEffect(potionEffect);

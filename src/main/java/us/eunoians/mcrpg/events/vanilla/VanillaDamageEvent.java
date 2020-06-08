@@ -30,12 +30,14 @@ import us.eunoians.mcrpg.abilities.fitness.*;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
+import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
 import us.eunoians.mcrpg.abilities.unarmed.*;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.*;
 import us.eunoians.mcrpg.api.events.mcrpg.fitness.*;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.*;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
@@ -378,24 +380,46 @@ public class VanillaDamageEvent implements Listener {
     }
     
     //We need to handle taming before we deal with player stuff
-    if(e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getDamage() > 0){
+    if(Skills.TAMING.isEnabled() && e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getDamage() > 0){
       Tameable tameable = (Tameable) e.getDamager();
       if(tameable.getOwner() != null){
+        
         McRPGPlayer mp;
         try{
           mp = PlayerManager.getPlayer(tameable.getOwner().getUniqueId());
         } catch(McRPGPlayerNotFoundException exception){
           return;
         }
+        
         FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
-        int expToAward = 0;
+        
+        //We want to handle increased damage before awarding exp to give exp in compensation of the extra damage
+        if(UnlockedAbilities.SHARPENED_FANGS.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SHARPENED_FANGS)
+             && mp.getBaseAbility(UnlockedAbilities.SHARPENED_FANGS).isToggled()){
+          
+          SharpenedFangs sharpenedFangs = (SharpenedFangs) mp.getBaseAbility(UnlockedAbilities.SHARPENED_FANGS);
+          String tier = Methods.convertToNumeral(sharpenedFangs.getCurrentTier());
+          double activationChance = tamingConfig.getDouble("SharpenedFangsConfig.Tier" + tier + ".ActivationChance") * 1000;
+          int extraDamage = tamingConfig.getInt("SharpenedFangsConfig.Tier" + tier + ".ExtraDamage");
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(activationChance >= val){
+            SharpenedFangsEvent sharpenedFangsEvent = new SharpenedFangsEvent(mp, sharpenedFangs, extraDamage);
+            Bukkit.getPluginManager().callEvent(sharpenedFangsEvent);
+            if(!sharpenedFangsEvent.isCancelled()){
+              e.setDamage(e.getDamage() + sharpenedFangsEvent.getExtraDamage());
+            }
+          }
+        }
+        
+        int expToAward;
         if(tamingConfig.contains("ExpAwardedPerMob." + e.getEntityType().name())){
           expToAward = tamingConfig.getInt("ExpAwardedPerMob." + e.getEntityType().name());
         }
         else{
           expToAward = tamingConfig.getInt("ExpAwardedPerMob.OTHER", 0);
         }
-        mp.giveExp(Skills.TAMING, expToAward, GainReason.DAMAGE);
+        mp.giveExp(Skills.TAMING, (int) (expToAward * e.getDamage()), GainReason.DAMAGE);
       }
       
       //We don't care about other abilities because a wolf can't do anything past here
@@ -493,9 +517,12 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
+        
+        //Handle shield modifications
         if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
           expAwarded = (int) (expAwarded * McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getDouble("Configuration.ShieldBlockingModifier"));
         }
+        
         if(expAwarded > 0){
           mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
         }
