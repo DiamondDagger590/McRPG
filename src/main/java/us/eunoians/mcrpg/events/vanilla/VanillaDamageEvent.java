@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
@@ -48,6 +49,7 @@ import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.taming.Gore;
+import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
 import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
 import us.eunoians.mcrpg.abilities.unarmed.Berserk;
 import us.eunoians.mcrpg.abilities.unarmed.DenseImpact;
@@ -68,6 +70,8 @@ import us.eunoians.mcrpg.api.events.mcrpg.fitness.ThickSkinEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.GoreEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.LinkedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.BerserkEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.DenseImpactEvent;
@@ -419,7 +423,8 @@ public class VanillaDamageEvent implements Listener {
     }
     
     //We need to handle taming before we deal with player stuff
-    if(Skills.TAMING.isEnabled() && e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getEntity() instanceof LivingEntity && e.getDamage() > 0){
+    if(Skills.TAMING.isEnabled() && e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getDamager() instanceof LivingEntity &&
+         e.getEntity() instanceof LivingEntity && e.getDamage() > 0){
       Tameable tameable = (Tameable) e.getDamager();
       if(tameable.getOwner() != null){
         
@@ -469,8 +474,37 @@ public class VanillaDamageEvent implements Listener {
           Random rand = new Random();
           int val = rand.nextInt(100000);
           if(chance >= val){
-            BleedEvent bleedEvent = new BleedEvent(mp, (LivingEntity) e.getEntity(), (Bleed) mp.getBaseAbility(DefaultAbilities.BLEED));
-            Bukkit.getPluginManager().callEvent(bleedEvent);
+            GoreEvent goreEvent = new GoreEvent(mp, gore);
+            Bukkit.getPluginManager().callEvent(goreEvent);
+            if(!goreEvent.isCancelled()){
+              BleedEvent bleedEvent = new BleedEvent(mp, (LivingEntity) e.getEntity(), (Bleed) mp.getBaseAbility(DefaultAbilities.BLEED));
+              Bukkit.getPluginManager().callEvent(bleedEvent);
+            }
+          }
+        }
+        
+        if(UnlockedAbilities.LINKED_FANGS.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.LINKED_FANGS) && mp.getBaseAbility(UnlockedAbilities.LINKED_FANGS).isToggled()){
+          LinkedFangs linkedFangs = (LinkedFangs) mp.getBaseAbility(UnlockedAbilities.LINKED_FANGS);
+          
+          String tier = Methods.convertToNumeral(linkedFangs.getCurrentTier());
+          double activationChance = tamingConfig.getDouble("LinkedFangsConfig.Tier" + tier + ".ActivationChance") * 1000;
+          int healthToRestore = tamingConfig.getInt("LinkedFangsConfig.Tier" + tier + ".HealthToRestore");
+          int hungerToRestore = tamingConfig.getInt("LinkedFangsConfig.Tier" + tier + ".HungerToRestore");
+          int saturationToRestore = tamingConfig.getInt("LinkedFangsConfig.Tier" + tier + ".SaturationToRestore");
+  
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(activationChance >= val){
+            LinkedFangsEvent linkedFangsEvent = new LinkedFangsEvent(mp, linkedFangs, healthToRestore, hungerToRestore, saturationToRestore);
+            Bukkit.getPluginManager().callEvent(linkedFangsEvent);
+            if(!linkedFangsEvent.isCancelled()){
+              LivingEntity len = (LivingEntity) e.getDamager();
+              len.setHealth(Math.min(len.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(), len.getHealth() + linkedFangsEvent.getHealthToRestore()));
+              mp.getPlayer().setFoodLevel(Math.min(20, mp.getPlayer().getFoodLevel() + linkedFangsEvent.getHungerToRestore()));
+              if(mp.getPlayer().getSaturation() < 10){
+                mp.getPlayer().setSaturation(Math.min(10, mp.getPlayer().getSaturation() + linkedFangsEvent.getSaturationToRestore()));
+              }
+            }
           }
         }
       }
