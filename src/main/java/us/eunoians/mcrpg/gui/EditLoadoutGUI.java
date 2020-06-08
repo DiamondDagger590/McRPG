@@ -15,11 +15,11 @@ import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class EditLoadoutGUI extends GUI{
   
@@ -53,6 +53,10 @@ public class EditLoadoutGUI extends GUI{
       for(int i = 0; i < player.getAbilityLoadout().size(); i++){
         UnlockedAbilities unlockedAbilities = player.getAbilityLoadout().get(i);
         BaseAbility ability = player.getBaseAbility(unlockedAbilities);
+        if(ability == null){
+          Bukkit.getLogger().log(Level.WARNING, "There was a null ability somehow in " + player.getPlayer().getName() + "'s loadout.");
+          continue;
+        }
         
         FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.fromString(ability.getGenericAbility().getSkill().getName()));
         String path = ability.getGenericAbility().getName() + "Config.Item.";

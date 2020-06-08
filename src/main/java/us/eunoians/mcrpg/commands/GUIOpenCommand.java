@@ -12,11 +12,14 @@ import us.eunoians.mcrpg.gui.GUI;
 import us.eunoians.mcrpg.gui.GUITracker;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
+import us.eunoians.mcrpg.types.HardCodedGuis;
+import us.eunoians.mcrpg.types.Skills;
 
 import java.io.File;
 
 public class GUIOpenCommand implements CommandExecutor{
   
+  // /mcgui opennative
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
     if(sender instanceof Player){
@@ -32,6 +35,49 @@ public class GUIOpenCommand implements CommandExecutor{
         return true;
       }
       else{
+        if(args[0].equalsIgnoreCase("OpenNative")){
+          HardCodedGuis hardCodedGui = HardCodedGuis.fromID(args[1]);
+          if(hardCodedGui == null){
+            player.closeInventory();
+            return true;
+          }
+          else if(hardCodedGui.isAcceptSkill()){
+            if(args.length == 2 || !Skills.isSkill(args[2])){
+              player.closeInventory();
+              return true;
+            }
+            else{
+              GUI newGUI = hardCodedGui.buildGUI(mcRPGPlayer, Skills.fromString(args[2]));
+              if(GUITracker.isPlayerTracked(mcRPGPlayer)){
+                GUI oldGUI = GUITracker.getPlayersGUI(mcRPGPlayer);
+                oldGUI.setClearData(false);
+                player.openInventory(newGUI.getGui().getInv());
+                GUITracker.replacePlayersGUI(mcRPGPlayer, newGUI);
+                return true;
+              }
+              else{
+                player.openInventory(newGUI.getGui().getInv());
+                GUITracker.trackPlayer(mcRPGPlayer, newGUI);
+                return true;
+              }
+            }
+          }
+          else{
+            GUI newGUI = hardCodedGui.buildGUI(mcRPGPlayer, null);
+            if(GUITracker.isPlayerTracked(mcRPGPlayer)){
+              GUI oldGUI = GUITracker.getPlayersGUI(mcRPGPlayer);
+              oldGUI.setClearData(false);
+              player.openInventory(newGUI.getGui().getInv());
+              GUITracker.replacePlayersGUI(mcRPGPlayer, newGUI);
+              return true;
+            }
+            else{
+              player.openInventory(newGUI.getGui().getInv());
+              GUITracker.trackPlayer(mcRPGPlayer, newGUI);
+              return true;
+            }
+          }
+        }
         File file = new File(McRPG.getInstance().getDataFolder(), args[0]);
         File file2 = new File(McRPG.getInstance().getDataFolder(), File.separator + "guis" + File.separator + args[0]);
         if(file.exists()){

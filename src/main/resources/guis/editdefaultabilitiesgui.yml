@@ -1,9 +1,8 @@
-#This will need to be frequently updated as more skills are added
 Size: 18
-Title: '&eToggle Default Abilities'
+Title: '&4Toggle Default Abilities'
 AbilityItems:
-  ToggledOn: '&eToggled: &2&lON'
-  ToggledOff: '&eToggled: &c&lOFF'
+  ToggledOn: '&3Toggled: &a&lON'
+  ToggledOff: '&3Toggled: &c&lOFF'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1
@@ -11,7 +10,7 @@ FillerItem:
   Lore: {}
 BackButton:
   Material: BARRIER
-  DisplayName: '&bBack>>'
+  DisplayName: '&c<<Back'
   Slot: 17
   Lore:
-    - '&eClick this to go back'
+    - '&6Click &3this to go back'

@@ -465,8 +465,7 @@ public class Methods{
           PartyMember partyMember1 = party.getPartyMember(player1.getUniqueId());
           PartyMember partyMember2 = party.getPartyMember(player2.getUniqueId());
           if(partyMember1 != null && partyMember2 != null){
-            int role = Math.max(partyMember1.getPartyRole().getId(), partyMember2.getPartyRole().getId());
-            if(role <= party.getRoleForPermission(PartyPermissions.PVP).getId()){
+            if(partyMember2.getPartyRole().getId() <= party.getRoleForPermission(PartyPermissions.PVP).getId()){
               return true;
             }
             else{

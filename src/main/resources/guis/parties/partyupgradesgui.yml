@@ -1,40 +1,40 @@
-Title: '&5Party Upgrades: %Upgrade_Points% points'
+Title: '&4Party Upgrades: &9%Upgrade_Points% &4points'
 Size: 27
 MemberCount:
   Slot: 10
   Material: PLAYER_HEAD
   Owner: '%Player%'
-  DisplayName: '&5Member Amount'
+  DisplayName: '&cMember Amount'
   Lore:
-    - '&fLevel: &7%Current_Level%/%Max_Level%'
-    - '&fCurrent Member Limit: &7%Member_Limit% players'
+    - '&3Level: &6%Current_Level%/%Max_Level%'
+    - '&3Current Member Limit: &6%Member_Limit% &3players'
 ExpShareAmount:
   Slot: 12
   Material: REDSTONE
-  DisplayName: '&5Exp Share Percentage'
+  DisplayName: '&cExp Share Percentage'
   Lore:
-    - '&fLevel: &7%Current_Level%/%Max_Level%'
-    - '&fCurrent Percent: &7%Exp_Share_Amount%%'
+    - '&3Level: &6%Current_Level%/%Max_Level%'
+    - '&3Current Percent: &6%Exp_Share_Amount%%'
 ExpShareRange:
   Slot: 14
   Material: HOPPER
-  DisplayName: '&5Exp Share Range'
+  DisplayName: '&cExp Share Range'
   Lore:
-    - '&fLevel: &7%Current_Level%/%Max_Level%'
-    - '&fCurrent Range: &7%Exp_Share_Range% blocks'
+    - '&3Level: &6%Current_Level%/%Max_Level%'
+    - '&3Current Range: &6%Exp_Share_Range% blocks'
 PrivateBankSize:
   Slot: 16
   Material: CHEST
-  DisplayName: '&5Private Bank'
+  DisplayName: '&cPrivate Bank'
   Lore:
-    - '&fLevel: &7%Current_Level%/%Max_Level%'
-    - '&fCurrent Size: %Private_Bank_Size% slots'
+    - '&3Level: &6%Current_Level%/%Max_Level%'
+    - '&3Current Size: &6%Private_Bank_Size% slots'
 BackButton:
   Slot: 18
   Material: BARRIER
-  DisplayName: '&bBack>>'
+  DisplayName: '&c<<Back'
   Lore:
-    - '&eClick this to go back'
+    - '&6Click &3this to go back'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.sorcery.PotionAffinity;
@@ -36,6 +37,15 @@ public class PotionDrinkEvent implements Listener{
         return;
       }
       PotionMeta potionMeta = (PotionMeta) e.getItem().getItemMeta();
+      
+      //For some reason saturation potions don't work so we manually apply the effect. Idk bro
+      if(potionMeta.hasCustomEffect(PotionEffectType.SATURATION)){
+        for(PotionEffect potionEffect : potionMeta.getCustomEffects()){
+          if(potionEffect.getType() == PotionEffectType.SATURATION){
+            potionEffect.apply(e.getPlayer());
+          }
+        }
+      }
       try{
         McRPGPlayer mp = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
         FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);

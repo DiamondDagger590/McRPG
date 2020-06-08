@@ -102,6 +102,7 @@ public class McRPGPlayer {
   @Getter @Setter private boolean requireEmptyOffHand = false;
   @Getter @Setter private boolean ignoreTips;
   @Getter @Setter private int unarmedIgnoreSlot;
+  @Getter @Setter private boolean autoAcceptPartyInvites;
 
   @Getter private Set<TipType> usedTips = new HashSet<>();
 
@@ -240,6 +241,7 @@ public class McRPGPlayer {
           this.ignoreTips = rs.getBoolean("ignore_tips");
           this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
           this.unarmedIgnoreSlot = rs.getInt("unarmed_ignore_slot");
+          this.autoAcceptPartyInvites = rs.getBoolean("auto_accept_party_teleports");
         }
       } catch(SQLException e) {
         e.printStackTrace();
@@ -599,7 +601,8 @@ public class McRPGPlayer {
             ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + ", party_uuid = '" + (partyID == null ? "nu" : partyID.toString()) + "' WHERE uuid = '" + uuid.toString() + "'");
     String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
             + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
-            "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + " WHERE uuid = '" + uuid.toString() + "'";
+            "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + ", auto_accept_party_teleports = "
+                     + Methods.convertBool(autoAcceptPartyInvites) + " WHERE uuid = '" + uuid.toString() + "'";
     database.executeUpdate(query);
     for(UnlockedAbilities ability : pendingUnlockAbilities) {
       query = "UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +

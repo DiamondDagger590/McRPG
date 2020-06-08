@@ -53,7 +53,7 @@ public class ReplaceSkillsGUI extends GUI {
       }
       if(item.hasItemMeta() && item.getItemMeta().hasLore()){
         ItemMeta meta = item.getItemMeta();
-        boolean isFish = meta.hasLore() && meta.getLore().stream().filter(s -> s.contains("%Fishing")).count() >= 1;
+        boolean isFish = meta.hasLore() && meta.getLore().stream().filter(s -> s.contains("%Fishing%")).count() >= 1;
         List<String> lore = new ArrayList<>();
         for(String s : meta.getLore()){
           for(Skills skill : Skills.values()){

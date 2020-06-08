@@ -1,102 +1,102 @@
-Title: '&5Admin GUI'
+Title: '&4Admin GUI'
 Size: 27
 InvitePlayers:
   Slot: 0
   Owner:
     Material: RED_WOOL
-    DisplayName: '&4Invite Players'
+    DisplayName: '&cInvite Players'
     Lore:
-      - '&cOnly owners can invite other players'
+      - '&3Only owners can invite other players'
   Mod:
     Material: BLUE_WOOL
-    DisplayName: '&1Invite Players'
+    DisplayName: '&cInvite Players'
     Lore:
-      - '&bMods and up can invite'
-      - '&bplayers to the party'
+      - '&3Mods and up can invite'
+      - '&3players to the party'
   Member:
     Material: GREEN_WOOL
-    DisplayName: '&2Invite Players'
+    DisplayName: '&cInvite Players'
     Lore:
-      - '&aAny member of the party'
-      - '&acan invite players'
+      - '&3Any member of the party'
+      - '&3can invite players'
 KickPlayers:
   Slot: 1
   Owner:
     Material: RED_WOOL
-    DisplayName: '&4Kick Players'
+    DisplayName: '&cKick Players'
     Lore:
-      - '&cOnly owners can kick other players'
+      - '&3Only owners can kick other players'
   Mod:
     Material: BLUE_WOOL
-    DisplayName: '&1Kick Players'
+    DisplayName: '&cKick Players'
     Lore:
-      - '&bMods and up can kick'
-      - '&bplayers from the party'
+      - '&3Mods and up can kick'
+      - '&3players from the party'
   Member:
     Material: GREEN_WOOL
-    DisplayName: '&2Kick Players'
+    DisplayName: '&cKick Players'
     Lore:
-      - '&aAny member of the party'
-      - '&acan kick players'
+      - '&3Any member of the party'
+      - '&3can kick players'
 PrivateBank:
   Slot: 9
   Owner:
     Material: RED_WOOL
-    DisplayName: '&4Private Bank'
+    DisplayName: '&cPrivate Bank'
     Lore:
-      - '&cOnly owners can use the private bank'
-      - '&c/mcparty storage'
+      - '&3Only owners can use the private bank'
+      - '&6/mcparty storage'
   Mod:
     Material: BLUE_WOOL
-    DisplayName: '&1Private Bank'
+    DisplayName: '&cPrivate Bank'
     Lore:
-      - '&bMods and up can use'
-      - '&bthe private bank'
-      - '&b/mcparty storage'
+      - '&3Mods and up can use'
+      - '&3the private bank'
+      - '&6/mcparty storage'
   Member:
     Material: GREEN_WOOL
-    DisplayName: '&2Party Bank'
+    DisplayName: '&cParty Bank'
     Lore:
-      - '&aAny member of the party'
-      - '&acan use the private bank'
-      - '&a/mcparty storage'
+      - '&3Any member of the party'
+      - '&3can use the private bank'
+      - '&6/mcparty storage'
 UpgradeParty:
   Slot: 18
   Owner:
     Material: RED_WOOL
-    DisplayName: '&4Upgrade Party'
+    DisplayName: '&cUpgrade Party'
     Lore:
-      - '&cOnly owners can upgrade the party'
+      - '&3Only owners can upgrade the party'
   Mod:
     Material: BLUE_WOOL
-    DisplayName: '&1Upgrade Party'
+    DisplayName: '&cUpgrade Party'
     Lore:
-      - '&bMods and up can upgrade'
-      - '&bthe party.'
+      - '&3Mods and up can upgrade'
+      - '&3the party.'
   Member:
     Material: GREEN_WOOL
-    DisplayName: '&2Upgrade Party'
+    DisplayName: '&cUpgrade Party'
     Lore:
-      - '&aAny member of the party'
-      - '&acan upgrade the party'
+      - '&3Any member of the party'
+      - '&3can upgrade the party'
 Pvp:
   Slot: 19
   Owner:
     Material: RED_WOOL
-    DisplayName: '&4PVP'
+    DisplayName: '&cPVP'
     Lore:
-      - '&cOnly the owner can pvp'
+      - '&3Only the owner can pvp'
   Mod:
     Material: BLUE_WOOL
-    DisplayName: '&1PVP'
+    DisplayName: '&cPVP'
     Lore:
-      - '&bMods and up can pvp'
+      - '&3Mods and up can pvp'
   Member:
     Material: GREEN_WOOL
-    DisplayName: '&2PVP'
+    DisplayName: '&cPVP'
     Lore:
-      - '&aAny member of the party'
-      - '&acan pvp'
+      - '&3Any member of the party'
+      - '&3can pvp'
 FillerItem:
   Material: GRAY_STAINED_GLASS_PANE
   Amount: 1

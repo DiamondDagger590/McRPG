@@ -681,6 +681,12 @@ public class McParty implements CommandExecutor{
                 else{
                   try{
                     McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    if(target.isAutoAcceptPartyInvites()){
+                      offlinePlayer.getPlayer().teleport(p.getLocation());
+                      offlinePlayer.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpWasAutoAccepted")));
+                      p.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpRequestAutoAccepted")));
+                      return true;
+                    }
                     TeleportRequest teleportRequest = new TeleportRequest(offlinePlayer.getUniqueId(), p.getUniqueId(), false);
                     target.addTeleportRequest(teleportRequest);
                     target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ReceivedTpahereRequest").replace("%Player%", p.getName())));
@@ -723,6 +729,12 @@ public class McParty implements CommandExecutor{
                 else{
                   try{
                     McRPGPlayer target = PlayerManager.getPlayer(offlinePlayer.getUniqueId());
+                    if(target.isAutoAcceptPartyInvites()){
+                      p.teleport(offlinePlayer.getPlayer().getLocation());
+                      offlinePlayer.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpWasAutoAccepted")));
+                      p.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TpRequestAutoAccepted")));
+                      return true;
+                    }
                     TeleportRequest teleportRequest = new TeleportRequest(offlinePlayer.getUniqueId(), p.getUniqueId(), true);
                     target.addTeleportRequest(teleportRequest);
                     target.getPlayer().sendMessage(Methods.color(p, pluginPrefix + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.ReceivedTpaRequest").replace("%Player%", p.getName())));
