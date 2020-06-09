@@ -50,6 +50,7 @@ import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.taming.Comradery;
+import us.eunoians.mcrpg.abilities.taming.DivineFur;
 import us.eunoians.mcrpg.abilities.taming.Gore;
 import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
 import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
@@ -73,6 +74,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.ComraderyEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.DivineFurEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.GoreEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.LinkedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
@@ -102,10 +104,16 @@ import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 public class VanillaDamageEvent implements Listener {
+  
+  private static final String FALL_DAMAGE_DIVINE_FUR_KEY = "Fall_Damage";
+  private static final String FIRE_DAMAGE_DIVINE_FUR_KEY = "Fire_Damage";
+  private static final String MAGIC_DAMAGE_DIVINE_FUR_KEY = "Magic_Damage";
+  private static final String ALL_DAMAGE_DIVINE_FUR_KEY = "All_Damage";
 
   public static void handleHealthbars(Entity attacker, LivingEntity target, double damage){
     if(!(attacker instanceof Player) || target instanceof ArmorStand){
@@ -148,13 +156,135 @@ public class VanillaDamageEvent implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-  public void fallListener(EntityDamageEvent e){
+  public void genericDamageListener(EntityDamageEvent e){
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
          McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
       return;
     }
-    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    
+    if(e.getEntity() instanceof Wolf){
+      Wolf wolf = (Wolf) e.getEntity();
+      if(wolf.getOwner() != null){
+        McRPGPlayer mcRPGPlayer;
+        try{
+          mcRPGPlayer = PlayerManager.getPlayer(wolf.getOwner().getUniqueId());
+        } catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
+        
+        if(UnlockedAbilities.DIVINE_FUR.isEnabled() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DIVINE_FUR)
+             && mcRPGPlayer.getBaseAbility(UnlockedAbilities.DIVINE_FUR).isToggled()){
+  
+          FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+          DivineFur divineFur = (DivineFur) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DIVINE_FUR);
+          String tier = Methods.convertToNumeral(divineFur.getCurrentTier());
+          
+          List<String> damagePreventions = tamingConfig.getStringList("DivineFurConfig.Tier" + tier + ".Protections");
+          Map<String, Double> preventionAmounts = new HashMap<>();
+          
+          for(String prevention : damagePreventions){
+            String[] data = prevention.split(":");
+            preventionAmounts.put(data[0], Double.parseDouble(data[1]));
+          }
+          
+          if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
+            if(preventionAmounts.containsKey(FALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(FALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+            else if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+          else if(e.getCause() == EntityDamageEvent.DamageCause.FIRE || e.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK){
+            if(preventionAmounts.containsKey(FIRE_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(FIRE_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+            else if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+          else if(e.getCause() == EntityDamageEvent.DamageCause.MAGIC || e.getCause() == EntityDamageEvent.DamageCause.DRAGON_BREATH){
+            if(preventionAmounts.containsKey(MAGIC_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(MAGIC_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+            else if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+          else{
+            if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(!(e instanceof EntityDamageByEntityEvent)){
       if(e.isCancelled() || !Skills.FITNESS.isEnabled() || e.getEntity().isInsideVehicle()){
         return;
@@ -228,10 +358,10 @@ public class VanillaDamageEvent implements Listener {
                 int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
                 int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
                 int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
-                int numOfDiffAxis = diffInY <= config.getInt("AntiAFK.YRange") ? 1 : 0;
-                numOfDiffAxis += diffInX <= config.getInt("AntiAfk.XRange") ? 1 : 0;
-                numOfDiffAxis += diffInZ <= config.getInt("AntiAfk.ZRange") ? 1 : 0;
-                afk = numOfDiffAxis >= config.getInt("AntiAFK.AmountOfDifferences", 1);
+                int numOfDiffAxis = diffInY <= fitnessConfig.getInt("AntiAFK.YRange") ? 1 : 0;
+                numOfDiffAxis += diffInX <= fitnessConfig.getInt("AntiAfk.XRange") ? 1 : 0;
+                numOfDiffAxis += diffInZ <= fitnessConfig.getInt("AntiAfk.ZRange") ? 1 : 0;
+                afk = numOfDiffAxis >= fitnessConfig.getInt("AntiAFK.AmountOfDifferences", 1);
               }
               if(mcRPGPlayer.getLastFallLocation().size() >= 4){
                 while(mcRPGPlayer.getLastFallLocation().size() >= 4){
@@ -241,8 +371,8 @@ public class VanillaDamageEvent implements Listener {
               }
             }
             if(!afk && player.getHealth() - e.getDamage() > 0){
-              expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
-              Parser equation = new Parser(config.getString("FallEquation"));
+              expAwarded = fitnessConfig.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
+              Parser equation = new Parser(fitnessConfig.getString("FallEquation"));
               equation.setVariable("damage", e.getDamage());
               equation.setVariable("exp_awarded", expAwarded);
               equation.setVariable("feather_falling_level", featherFallingLevel);
@@ -254,7 +384,7 @@ public class VanillaDamageEvent implements Listener {
             }
             Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
             if(roll.getGenericAbility().isEnabled() && roll.isToggled()){
-              Parser rollEquation = new Parser(config.getString("RollConfig.RollChanceEquation"));
+              Parser rollEquation = new Parser(fitnessConfig.getString("RollConfig.RollChanceEquation"));
               rollEquation.setVariable("fitness_level", mcRPGPlayer.getSkill(Skills.FITNESS).getCurrentLevel());
               int chance = (int) (rollEquation.getValue() * 1000);
               Random rand = new Random();

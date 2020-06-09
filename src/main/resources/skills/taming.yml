@@ -154,7 +154,7 @@ DivineFurConfig:
     Protections:
       - 'Fall_Damage:100'
       - 'Fire_Damage:100'
-      - 'Magic_Resistance:100'
+      - 'Magic_Damage:100'
   TierIV:
     Protections:
       - 'Fall_Damage:100'
