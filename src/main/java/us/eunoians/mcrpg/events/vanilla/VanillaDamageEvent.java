@@ -23,6 +23,7 @@ import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -48,6 +49,7 @@ import us.eunoians.mcrpg.abilities.fitness.ThickSkin;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
+import us.eunoians.mcrpg.abilities.taming.Comradery;
 import us.eunoians.mcrpg.abilities.taming.Gore;
 import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
 import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
@@ -70,6 +72,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.fitness.ThickSkinEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.ComraderyEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.GoreEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.LinkedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
@@ -272,13 +275,13 @@ public class VanillaDamageEvent implements Listener {
   }
 
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-  public void fitnessEvent(EntityDamageByEntityEvent e){
+  public void handlePlayerDamageAbilities(EntityDamageByEntityEvent e){
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
          McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
       return;
     }
-    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    
     if(e.getEntity() instanceof Player){
       McRPGPlayer mcRPGPlayer;
       try{
@@ -291,83 +294,116 @@ public class VanillaDamageEvent implements Listener {
           return;
         }
       }
+      
       //Deal with Divine Escape debuff
       if(mcRPGPlayer.getDivineEscapeDamageDebuff() > 0){
         double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff() / 100 + 1;
         e.setDamage(e.getDamage() * debuff);
       }
-      if(!Skills.FITNESS.isEnabled()){
-        return;
-      }
-      if(e.getDamager() instanceof LivingEntity){
-        LivingEntity attacker = (LivingEntity) e.getDamager();
-        Material weaponType = attacker.getEquipment().getItemInMainHand().getType();
-        if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")){
-          if(UnlockedAbilities.THICK_SKIN.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.THICK_SKIN)
-                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()){
-            ThickSkin thickSkin = (ThickSkin) mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN);
-            double damageDecrease = config.getDouble("ThickSkinConfig.Tier" + Methods.convertToNumeral(thickSkin.getCurrentTier())
-                    + ".DamageDecrease");
-            ThickSkinEvent thickSkinEvent = new ThickSkinEvent(mcRPGPlayer, thickSkin, damageDecrease, (LivingEntity) e.getDamager());
-            Bukkit.getPluginManager().callEvent(thickSkinEvent);
-            if(!thickSkinEvent.isCancelled()){
-              e.setDamage(e.getDamage() * ((100 - damageDecrease) / 100));
-            }
-          }
-          if(attacker instanceof Player && UnlockedAbilities.IRON_MUSCLES.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.IRON_MUSCLES)
-                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()){
-            IronMuscles ironMuscles = (IronMuscles) mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES);
-            double activationChance = config.getDouble("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier())
-                    + ".ActivationChance");
-            int chance = (int) (activationChance * 1000);
-            Random rand = new Random();
-            int val = rand.nextInt(100000);
-            if(chance >= val){
-              int weaponDamage = config.getInt("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier()) +
-                      ".WeaponDamage");
-              IronMusclesEvent ironMusclesEvent = new IronMusclesEvent(mcRPGPlayer, ironMuscles, weaponDamage, (Player) attacker);
-              Bukkit.getPluginManager().callEvent(ironMusclesEvent);
-              if(!ironMusclesEvent.isCancelled()){
-                attacker.getEquipment().getItemInMainHand().setDurability((short) (attacker.getEquipment().getItemInMainHand().getDurability() + ironMusclesEvent.getDurabilityLoss()));
+      
+      //Handle comradery
+      if(UnlockedAbilities.COMRADERY.isEnabled() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.COMRADERY) && mcRPGPlayer.getBaseAbility(UnlockedAbilities.COMRADERY).isToggled()){
+        
+        FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+        Comradery comradery = (Comradery) mcRPGPlayer.getBaseAbility(UnlockedAbilities.COMRADERY);
+        
+        String tier = Methods.convertToNumeral(comradery.getCurrentTier());
+        double activationChance = tamingConfig.getDouble("ComraderyConfig.Tier" + tier + ".ActivationChance") * 1000;
+        int wolfRange = tamingConfig.getInt("ComraderyConfig.Tier" + tier + ".WolfRange");
+        
+        Random random = new Random();
+        int val = random.nextInt(100000);
+
+        if(activationChance >= val){
+          for(Entity entity : mcRPGPlayer.getPlayer().getNearbyEntities(wolfRange, 1, wolfRange)){
+            if(entity instanceof Wolf){
+              Wolf wolf = (Wolf) entity;
+              if(wolf.getOwner() != null && wolf.getOwner().getUniqueId() == mcRPGPlayer.getUuid()){
+                ComraderyEvent comraderyEvent = new ComraderyEvent(mcRPGPlayer, comradery, wolf);
+                if(!comraderyEvent.isCancelled()){
+                  e.setCancelled(true);
+                  wolf.damage(e.getDamage());
+                  return;
+                }
               }
             }
           }
         }
-        if(UnlockedAbilities.DODGE.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.DODGE) &&
-                mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()){
-          Dodge dodge = (Dodge) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE);
-          double activationChance = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier())
-                  + ".ActivationChance");
-          int chance = (int) (activationChance * 1000);
-          Random rand = new Random();
-          int val = rand.nextInt(100000);
-          if(chance >= val){
-            double damageReduction = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier()) +
-                    ".DamageReduction");
-            DodgeEvent dodgeEvent = new DodgeEvent(mcRPGPlayer, dodge, attacker, damageReduction);
-            Bukkit.getPluginManager().callEvent(dodgeEvent);
-            if(!dodgeEvent.isCancelled()){
-              e.setDamage(e.getDamage() * ((100 - damageReduction) / 100));
-              mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Dodge.Activated")));
+      }
+      
+      //Handle fitness abilities
+      if(Skills.FITNESS.isEnabled()){
+        FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+        if(e.getDamager() instanceof LivingEntity){
+          LivingEntity attacker = (LivingEntity) e.getDamager();
+          Material weaponType = attacker.getEquipment().getItemInMainHand().getType();
+          if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")){
+            if(UnlockedAbilities.THICK_SKIN.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.THICK_SKIN)
+                 && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()){
+              ThickSkin thickSkin = (ThickSkin) mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN);
+              double damageDecrease = fitnessConfig.getDouble("ThickSkinConfig.Tier" + Methods.convertToNumeral(thickSkin.getCurrentTier())
+                                                                + ".DamageDecrease");
+              ThickSkinEvent thickSkinEvent = new ThickSkinEvent(mcRPGPlayer, thickSkin, damageDecrease, (LivingEntity) e.getDamager());
+              Bukkit.getPluginManager().callEvent(thickSkinEvent);
+              if(!thickSkinEvent.isCancelled()){
+                e.setDamage(e.getDamage() * ((100 - damageDecrease) / 100));
+              }
+            }
+            if(attacker instanceof Player && UnlockedAbilities.IRON_MUSCLES.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.IRON_MUSCLES)
+                 && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()){
+              IronMuscles ironMuscles = (IronMuscles) mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES);
+              double activationChance = fitnessConfig.getDouble("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier())
+                                                                  + ".ActivationChance");
+              int chance = (int) (activationChance * 1000);
+              Random rand = new Random();
+              int val = rand.nextInt(100000);
+              if(chance >= val){
+                int weaponDamage = fitnessConfig.getInt("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier()) +
+                                                          ".WeaponDamage");
+                IronMusclesEvent ironMusclesEvent = new IronMusclesEvent(mcRPGPlayer, ironMuscles, weaponDamage, (Player) attacker);
+                Bukkit.getPluginManager().callEvent(ironMusclesEvent);
+                if(!ironMusclesEvent.isCancelled()){
+                  attacker.getEquipment().getItemInMainHand().setDurability((short) (attacker.getEquipment().getItemInMainHand().getDurability() + ironMusclesEvent.getDurabilityLoss()));
+                }
+              }
+            }
+          }
+          if(UnlockedAbilities.DODGE.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.DODGE) &&
+               mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()){
+            Dodge dodge = (Dodge) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE);
+            double activationChance = fitnessConfig.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier())
+                                                                + ".ActivationChance");
+            int chance = (int) (activationChance * 1000);
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val){
+              double damageReduction = fitnessConfig.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier()) +
+                                                                 ".DamageReduction");
+              DodgeEvent dodgeEvent = new DodgeEvent(mcRPGPlayer, dodge, attacker, damageReduction);
+              Bukkit.getPluginManager().callEvent(dodgeEvent);
+              if(!dodgeEvent.isCancelled()){
+                e.setDamage(e.getDamage() * ((100 - damageReduction) / 100));
+                mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Dodge.Activated")));
+              }
             }
           }
         }
-      }
-      else if(e.getDamager() instanceof Projectile){
-        if(UnlockedAbilities.BULLET_PROOF.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.BULLET_PROOF)
-                && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()){
-          BulletProof bulletProof = (BulletProof) mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF);
-          double activationChance = config.getDouble("BulletProofConfig.Tier" + Methods.convertToNumeral(bulletProof.getCurrentTier())
-                  + ".ActivationChance");
-          int chance = (int) (activationChance * 1000);
-          Random rand = new Random();
-          int val = rand.nextInt(100000);
-          if(chance >= val){
-            BulletProofEvent bulletProofEvent = new BulletProofEvent(mcRPGPlayer, bulletProof, (Projectile) e.getDamager());
-            Bukkit.getPluginManager().callEvent(bulletProofEvent);
-            if(!bulletProofEvent.isCancelled()){
-              e.setCancelled(true);
-              mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BulletProof.Activated")));
+        else if(e.getDamager() instanceof Projectile){
+          if(UnlockedAbilities.BULLET_PROOF.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.BULLET_PROOF)
+               && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()){
+            BulletProof bulletProof = (BulletProof) mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF);
+            double activationChance = fitnessConfig.getDouble("BulletProofConfig.Tier" + Methods.convertToNumeral(bulletProof.getCurrentTier())
+                                                                + ".ActivationChance");
+            int chance = (int) (activationChance * 1000);
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val){
+              BulletProofEvent bulletProofEvent = new BulletProofEvent(mcRPGPlayer, bulletProof, (Projectile) e.getDamager());
+              Bukkit.getPluginManager().callEvent(bulletProofEvent);
+              if(!bulletProofEvent.isCancelled()){
+                e.setCancelled(true);
+                mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BulletProof.Activated")));
+              }
             }
           }
         }
