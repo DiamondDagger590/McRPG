@@ -297,7 +297,7 @@ LinkedFangsConfig:
   TierII:
     ActivationChance: 10.0
     HealthToRestore: 1
-    HungerToRestore: 1.0
+    HungerToRestore: 1
     SaturationToRestore: 1.0
   TierIII:
     ActivationChance: 15.0
@@ -447,31 +447,31 @@ FuryOfCerebusConfig:
     #Time in seconds before a hell hound should self destruct
     SelfDestructTimer: 5
     #Time in seconds before the ability can be used again
-    Cooldown: 160
+    Cooldown: 80
   TierII:
     HellHoundHealth: 6
     IgniteTarget: false
     ExplosionDestroyBlocks: false
     SelfDestructTimer: 6
-    Cooldown: 160
+    Cooldown: 80
   TierIII:
     HellHoundHealth: 7
     IgniteTarget: true
     ExplosionDestroyBlocks: false
     SelfDestructTimer: 6
-    Cooldown: 160
+    Cooldown: 80
   TierIV:
     HellHoundHealth: 10
     IgniteTarget: true
     ExplosionDestroyBlocks: false
     SelfDestructTimer: 10
-    Cooldown: 160
+    Cooldown: 80
   TierV:
     HellHoundHealth: 15
     IgniteTarget: true
     ExplosionDestroyBlocks: false
     SelfDestructTimer: 15
-    Cooldown: 160
+    Cooldown: 80
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&cFury Of Cerebus'
