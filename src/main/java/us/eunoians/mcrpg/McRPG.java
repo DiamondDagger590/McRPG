@@ -97,6 +97,7 @@ import us.eunoians.mcrpg.events.vanilla.ShootEvent;
 import us.eunoians.mcrpg.events.vanilla.SignEvent;
 import us.eunoians.mcrpg.events.vanilla.SpawnEvent;
 import us.eunoians.mcrpg.events.vanilla.VanillaDamageEvent;
+import us.eunoians.mcrpg.events.vanilla.WolfValidator;
 import us.eunoians.mcrpg.events.vanilla.WorldListener;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
@@ -302,6 +303,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new MoveItemEvent(), this);
     getServer().getPluginManager().registerEvents(new PartyLevelUp(), this);
     getServer().getPluginManager().registerEvents(new EntityTameListener(), this);
+    getServer().getPluginManager().registerEvents(new WolfValidator(), this);
     
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);

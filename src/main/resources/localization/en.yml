@@ -24,6 +24,7 @@ SkillItemNames:
   Archery: "Bow"
   Woodcutting: "Axe"
   Axes: "Battle Axe"
+  Taming: 'Summoning Stick'
 Signs:
   PowerLeaderboard:
     Line1: '&7[&6Power&7]'

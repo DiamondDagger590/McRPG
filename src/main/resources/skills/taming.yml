@@ -175,11 +175,7 @@ DivineFurConfig:
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&3Decreases damage dealt to your wolves'
-      - ''
-      - '&3Fall Damage: &6%Fall_Damage%%'
-      - '&3Fire Damage: &6%Fire_Damage%%'
-      - '&3Magic Damage: &6%Magic_Damage%%'
-      - '&3All Damage: &6%All_Damage%%'
+      - '&3The higher the tier, the more protections offered'
     MenuLore:
       - '&3Gives various protections to wolves'
       - '&3Unlock Level: &6%UnlockLevel%'

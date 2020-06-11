@@ -8,8 +8,11 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -30,9 +33,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.axes.AresBlessing;
@@ -51,6 +56,7 @@ import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.taming.Comradery;
 import us.eunoians.mcrpg.abilities.taming.DivineFur;
+import us.eunoians.mcrpg.abilities.taming.FuryOfCerebus;
 import us.eunoians.mcrpg.abilities.taming.Gore;
 import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
 import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
@@ -75,6 +81,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.ComraderyEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.DivineFurEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.FuryOfCerebusEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.GoreEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.LinkedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
@@ -91,6 +98,7 @@ import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.skills.Axes;
 import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.skills.Taming;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.Skills;
@@ -114,6 +122,13 @@ public class VanillaDamageEvent implements Listener {
   private static final String FIRE_DAMAGE_DIVINE_FUR_KEY = "Fire_Damage";
   private static final String MAGIC_DAMAGE_DIVINE_FUR_KEY = "Magic_Damage";
   private static final String ALL_DAMAGE_DIVINE_FUR_KEY = "All_Damage";
+  
+  public static final NamespacedKey HELL_HOUND_KEY = new NamespacedKey(McRPG.getInstance(), "is-hell-hound");
+  public static final NamespacedKey HELL_HOUND_IGNITE_KEY = new NamespacedKey(McRPG.getInstance(), "hell-hound-ignite");
+  public static final NamespacedKey HELL_HOUND_DESTROY_KEY = new NamespacedKey(McRPG.getInstance(), "hell-hound-destroy");
+  public static final NamespacedKey HELL_HOUND_SELF_DESTRUCT_KEY = new NamespacedKey(McRPG.getInstance(), "self-destruct-time");
+  
+  private static Map<UUID, BukkitTask> hellHoundSelfDestructMap = new HashMap<>();
 
   public static void handleHealthbars(Entity attacker, LivingEntity target, double damage){
     if(!(attacker instanceof Player) || target instanceof ArmorStand){
@@ -125,8 +140,7 @@ public class VanillaDamageEvent implements Listener {
     if(isNPCEntity(player) || isNPCEntity(target)){
       return;
     }
-
-
+    
     MobHealthbarUtils.handleMobHealthbars(player, target, damage);
   }
 
@@ -165,7 +179,23 @@ public class VanillaDamageEvent implements Listener {
     
     if(e.getEntity() instanceof Wolf){
       Wolf wolf = (Wolf) e.getEntity();
-      if(wolf.getOwner() != null){
+      
+      if(wolf.getOwner() != null && wolf.isValid()){
+        
+        if(wolf.getPersistentDataContainer().has(HELL_HOUND_KEY, PersistentDataType.STRING)){
+          if(wolf.getHealth() > 0 && wolf.getHealth() - e.getDamage() <= 0){
+            e.setCancelled(true);
+            new BukkitRunnable(){
+              @Override
+              public void run(){
+                wolf.getWorld().createExplosion(wolf.getLocation(), 2, false, wolf.getPersistentDataContainer().get(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING).equalsIgnoreCase("true"));
+              }
+            }.runTaskLater(McRPG.getInstance(), 1);
+            wolf.setHealth(0);
+            hellHoundSelfDestructMap.remove(wolf.getUniqueId()).cancel();
+          }
+        }
+        
         McRPGPlayer mcRPGPlayer;
         try{
           mcRPGPlayer = PlayerManager.getPlayer(wolf.getOwner().getUniqueId());
@@ -673,6 +703,26 @@ public class VanillaDamageEvent implements Listener {
             }
           }
         }
+        
+        if(tameable instanceof Wolf){
+          Wolf wolf = (Wolf) tameable;
+          if(wolf.getPersistentDataContainer().has(HELL_HOUND_KEY, PersistentDataType.STRING)){
+            Calendar calendar = Calendar.getInstance();
+            if(calendar.getTimeInMillis() >= wolf.getPersistentDataContainer().get(HELL_HOUND_SELF_DESTRUCT_KEY, PersistentDataType.LONG)){
+              hellHoundSelfDestructMap.remove(wolf.getUniqueId()).cancel();
+              wolf.setHealth(0);
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  wolf.getWorld().createExplosion(wolf.getLocation(), 2, false, wolf.getPersistentDataContainer().get(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING).equalsIgnoreCase("true"));
+                }
+              }.runTaskLater(McRPG.getInstance(), 1);
+            }
+            else if(wolf.getPersistentDataContainer().get(HELL_HOUND_IGNITE_KEY, PersistentDataType.STRING).equalsIgnoreCase("true")){
+              e.getEntity().setFireTicks(100);
+            }
+          }
+        }
       }
       
       //We don't care about other abilities because a wolf can't do anything past here
@@ -750,7 +800,7 @@ public class VanillaDamageEvent implements Listener {
       }
       
       //Deal with unarmed
-      if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
+      if(damager.getInventory().getItemInMainHand() == null || damager.getInventory().getItemInMainHand().getType() == Material.AIR){
         if(!Skills.UNARMED.isEnabled()){
           return;
         }
@@ -1019,7 +1069,7 @@ public class VanillaDamageEvent implements Listener {
         }
       }
       else{
-        Material weapon = damager.getItemInHand().getType();
+        Material weapon = damager.getInventory().getItemInMainHand().getType();
         if(weapon.name().contains("SWORD")){
           Skill playersSkill = mp.getSkill(Skills.SWORDS);
           if(!Skills.SWORDS.isEnabled()){
@@ -1150,6 +1200,7 @@ public class VanillaDamageEvent implements Listener {
             mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
           }
         }
+        
         else if(weapon.name().contains("AXE")){
           Axes axes = (Axes) mp.getSkill(Skills.AXES);
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.AXES_CONFIG);
@@ -1328,6 +1379,77 @@ public class VanillaDamageEvent implements Listener {
           }
           if(expAwarded > 0){
             mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
+          }
+        }
+        
+        else if(weapon == Material.BLAZE_ROD){
+          Taming taming = (Taming) mp.getSkill(Skills.TAMING);
+          config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+          
+          if(mp.isReadying()){
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.FURY_OF_CEREBUS){
+              
+              FuryOfCerebus furyOfCerebus = (FuryOfCerebus) mp.getBaseAbility(UnlockedAbilities.FURY_OF_CEREBUS);
+              String tier = Methods.convertToNumeral(furyOfCerebus.getCurrentTier());
+              
+              int hellHoundHealth = config.getInt("FuryOfCerebusConfig.Tier" + tier + ".HellHoundHealth");
+              boolean igniteTarget = config.getBoolean("FuryOfCerebusConfig.Tier" + tier + ".IgniteTarget");
+              boolean explosionsDestroyBlocks = config.getBoolean("FuryOfCerebusConfig.Tier" + tier + ".ExplosionDestroyBlocks");
+              int selfDestructTimer = config.getInt("FuryOfCerebusConfig.Tier" + tier + ".SelfDestructTimer");
+              int cooldown = config.getInt("FuryOfCerebusConfig.Tier" + tier + ".Cooldown");
+  
+              FuryOfCerebusEvent furyOfCerebusEvent = new FuryOfCerebusEvent(mp, furyOfCerebus, hellHoundHealth, igniteTarget, explosionsDestroyBlocks, selfDestructTimer, cooldown);
+              Bukkit.getPluginManager().callEvent(furyOfCerebusEvent);
+              if(!furyOfCerebusEvent.isCancelled()){
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+                mp.setReadying(false);
+                
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.SECOND, furyOfCerebusEvent.getSelfDestructTimer());
+                for(int i = 0; i < 3; i++){
+                  Wolf hellHound = (Wolf) mp.getPlayer().getWorld().spawnEntity(mp.getPlayer().getLocation(), EntityType.WOLF);
+                  hellHound.setCollarColor(DyeColor.ORANGE);
+                  hellHound.setAdult();
+                  hellHound.setOwner(mp.getPlayer());
+                  hellHound.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(furyOfCerebusEvent.getHellHoundHealth());
+                  hellHound.setHealth(furyOfCerebusEvent.getHellHoundHealth());
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_KEY, PersistentDataType.STRING, "true");
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_IGNITE_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerebusEvent.isIgniteTarget()));
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerebusEvent.isExplosionDestroyBlocks()));
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_SELF_DESTRUCT_KEY, PersistentDataType.LONG, calendar.getTimeInMillis());
+                  hellHound.setTarget((LivingEntity) e.getEntity());
+                  hellHound.setCustomName(ChatColor.RED + "Hell Hound");
+                  hellHound.setCustomNameVisible(true);
+  
+                  FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                  mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Taming.HellHoundSummon.Sound")),
+                    soundFile.getInt("Sounds.Taming.HellHoundSummon.Volume"), soundFile.getInt("Sounds.Taming.HellHoundSummon.Pitch"));
+  
+                  Calendar cal = Calendar.getInstance();
+                  cal.add(Calendar.SECOND, furyOfCerebusEvent.getCooldown());
+                  mp.addAbilityOnCooldown(UnlockedAbilities.FURY_OF_CEREBUS, cal.getTimeInMillis());
+                  
+                  BukkitTask selfDestructTask = new BukkitRunnable(){
+                    @Override
+                    public void run(){
+                      if(hellHound.isValid()){
+                        hellHound.setHealth(0);
+                        new BukkitRunnable(){
+                          @Override
+                          public void run(){
+                            hellHound.getWorld().createExplosion(hellHound.getLocation(), 2, false, hellHound.getPersistentDataContainer().get(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING).equalsIgnoreCase("true"));
+                          }
+                        }.runTaskLater(McRPG.getInstance(), 1);
+                        hellHoundSelfDestructMap.remove(hellHound.getUniqueId());
+                      }
+                      cancel();
+                    }
+                  }.runTaskLater(McRPG.getInstance(), furyOfCerebusEvent.getSelfDestructTimer() * 20);
+                  hellHoundSelfDestructMap.put(hellHound.getUniqueId(), selfDestructTask);
+                }
+              }
+            }
           }
         }
       }

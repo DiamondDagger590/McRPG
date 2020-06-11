@@ -55,6 +55,9 @@ public class PlayerReadyBit {
         else if(abilityReady.getSkill().equals(AXES)){
           replaceName = "Battle Axe";
         }
+        else if(abilityReady.getSkill().equals(TAMING)){
+          replaceName = "Summoning Stick";
+        }
         player.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Players.PlayerUnready").replace("%Skill_Item%", replaceName)));
       }

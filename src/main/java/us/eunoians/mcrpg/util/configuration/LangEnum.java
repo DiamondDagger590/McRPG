@@ -27,6 +27,7 @@ public enum LangEnum implements ConfigurationEnum {
     SKILL_ITEM_NAMES_ARCHERY("SkillItemNames.Archery", "Bow"),
     SKILL_ITEM_NAMES_WOODCUTTING("SkillItemNames.Woodcutting", "Axe"),
     SKILL_ITEM_NAMES_AXES("SkillItemNames.Axes", "Battle Axe"),
+    SKILL_ITEM_NAMES_TAMING("SkillItemNames.Taming", "Summoning Stick"),
     POWER_LINE_1("Signs.PowerLeaderboard.Line1", "&7[&6Power&7]"),
     POWER_LINE_2("Signs.PowerLeaderboard.Line2", "&b#%Rank%"),
     POWER_LINE_3("Signs.PowerLeaderboard.Line3", "&7%Player%"),

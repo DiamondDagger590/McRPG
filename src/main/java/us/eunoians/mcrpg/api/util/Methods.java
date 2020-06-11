@@ -254,6 +254,8 @@ public class Methods{
       case STONE_SHOVEL:
       case WOODEN_SHOVEL:
         return Skills.EXCAVATION;
+      case BLAZE_ROD:
+        return Skills.TAMING;
       case AIR:
         return Skills.UNARMED;
     }
