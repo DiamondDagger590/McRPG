@@ -48,6 +48,7 @@ public class CallOfWildListener implements Listener{
     summonableMobTypes.add(EntityType.PARROT);
     summonableMobTypes.add(EntityType.LLAMA);
     summonableMobTypes.add(EntityType.TROPICAL_FISH);
+    summonableMobTypes.add(EntityType.PANDA);
   }
   
   private Map<Material, CallOfWildWrapper> wrappers = new HashMap<>();

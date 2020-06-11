@@ -68,6 +68,7 @@ ExpAwardedPerMob:
   PIG_ZOMBIE: 70
   HUSK: 60
   ZOMBIE_HORSE: 40
+#How much exp should be awarded when a mob is tamed
 ExpPerMobTamed:
   OTHER: 500
   WOLF: 1000
@@ -75,14 +76,25 @@ ExpPerMobTamed:
   HORSE: 3000
   PARROT: 2000
   DONKEY: 2500
+#Handles the Call Of The Wild feature
 CallOfWild:
+  #The type of entity to summon.
+  #Allowed Entities:
+  # - CAT, DONKEY, HORSE, SKELETON_HORSE, ZOMBIE_HORSE, MULE, WOLF, PARROT, LLAMA, TROPICAL_FISH, PANDA
   WOLF:
+    #What materials can be used to summon the mob.
+    #Format is MATERIAL: Amount
     SummonableMaterials:
       BONE: 10
+    #The health of the summoned mob. Defaults to 20 if missing
     Health: 20
+    #If the mob can breed. Defaults to false if missing
     CanBreed: false
+    #Radius to check for similar mobs. If missing, feature is disabled
     RadiusCheck:
+      #Checks 5 blocks in the x, y, z direction around the player for mobs of the same type
       Radius: 5
+      #How many mobs is the limit before COTW stops working. Here, if there are 3 or more wolves nearby, COTW won't work
       AmountAllowed: 3
   CAT:
     SummonableMaterials:
@@ -122,7 +134,7 @@ EnabledAbilities:
   PETAsWrath: true
   FuryOfCerebus: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcrpg.taming.unlock{ability} and mcrpg.taming.use.{ability}
+#Perms will be mcrpg.taming.unlock.{ability} and mcrpg.taming.use.{ability}
 UsePermsForAbilites:
   Gore: false
   DivineFur: false
@@ -225,10 +237,10 @@ SharpenedFangsConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 275
-    TierIII: 425
-    TierIV: 575
-    TierV: 700
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 600
   #Config for each Tier
   TierI:
     #The chance of Sharpened Fangs occurring per tier
@@ -268,10 +280,10 @@ LinkedFangsConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 400
-    TierIII: 550
-    TierIV: 700
-    TierV: 850
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
   #Config for each tier
   TierI:
     #Chance of this activating when a wolf attacks
@@ -326,10 +338,10 @@ ComraderyConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 225
-    TierIII: 350
-    TierIV: 500
-    TierV: 650
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
   #Config for each tier
   TierI:
     #Chance of the ability activating
@@ -370,10 +382,10 @@ PETAsWrathConfig:
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level
   TierUpgrade:
-    TierII: 350
-    TierIII: 500
-    TierIV: 650
-    TierV: 800
+    TierII: 400
+    TierIII: 650
+    TierIV: 700
+    TierV: 850
   #Config for each tier
   TierI:
     #A random potion effect will be selected from this list
