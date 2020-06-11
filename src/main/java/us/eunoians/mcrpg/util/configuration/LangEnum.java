@@ -80,6 +80,7 @@ public enum LangEnum implements ConfigurationEnum {
     MISC_HEADER("Messages.Misc", "", "#Messages that dont fit anywhere"),
     MISC_SUMMONED_GUARDIAN("Messages.Misc.PoseidonsGuardianSummoned", "&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward."),
     MISC_GUARDIAN_NAME("Messages.Misc.PoseidonsGuardianName", "&bPoseidons Guardian"),
+    MISC_CALL_OF_WILD_TOO_MANY_ENTITIES("Messages.Misc.CallOfWild.TooManyEntities", "&cThere are too many of that entity nearby to summon another."),
     SKILL_BOOKS_UPGRADED("Messages.SkillBooks.Upgraded", "&aYou upgraded %Ability% from Tier &e%OldTier% &ato &e%NewTier%&a!"),
     SKILL_BOOKS_UNLOCKED("Messages.SkillBooks.Unlocked", "&aYou unlocked &e%Ability% &aTier &e%Tier%&a!"),
     SKILL_BOOKS_INVALID_TIER("Messages.SkillBooks.InvalidTier", "&cYour ability is not currently a valid tier to use this book."),

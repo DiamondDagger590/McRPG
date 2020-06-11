@@ -75,6 +75,43 @@ ExpPerMobTamed:
   HORSE: 3000
   PARROT: 2000
   DONKEY: 2500
+CallOfWild:
+  WOLF:
+    SummonableMaterials:
+      BONE: 10
+    Health: 20
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  CAT:
+    SummonableMaterials:
+      COD: 10
+    Health: 10
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  HORSE:
+    SummonableMaterials:
+      APPLE: 10
+    Health: 22.5
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  PARROT:
+    SummonableMaterials:
+      FEATHER: 10
+    Health: 6
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  TROPICAL_FISH:
+    SummonableMaterials:
+      PRISMARINE_SHARD: 10
+    Health: 3
 #What abilities are enabled
 EnabledAbilities:
   Gore: true

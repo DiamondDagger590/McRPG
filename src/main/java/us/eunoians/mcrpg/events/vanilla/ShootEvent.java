@@ -87,7 +87,7 @@ public class ShootEvent implements Listener {
               mp.setReadyingAbilityBit(null);
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Sound")),
-                soundFile.getInt("Sounds.Archery.BlessingOfArtemis.Volume"), soundFile.getInt("Sounds.Archery.BlessingOfArtemis.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Volume")), Float.parseFloat(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Pitch")));
               p.getLocation().getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getEyeLocation(), 1);
               trackArrowParticles(arrow, Particle.SMOKE_NORMAL);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Activated")));
@@ -114,7 +114,7 @@ public class ShootEvent implements Listener {
               mp.setReadyingAbilityBit(null);
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.BlessingOfApollo.Sound")),
-                soundFile.getInt("Sounds.Archery.BlessingOfApollo.Volume"), soundFile.getInt("Sounds.Archery.BlessingOfApollo.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Archery.BlessingOfApollo.Volume")), Float.parseFloat(soundFile.getString("Sounds.Archery.BlessingOfApollo.Pitch")));
               trackArrowParticles(arrow, Particle.FLAME);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Activated")));
             }
@@ -148,7 +148,7 @@ public class ShootEvent implements Listener {
               mp.setReadyingAbilityBit(null);
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.CurseOfHades.Sound")),
-                soundFile.getInt("Sounds.Archery.CurseOfHades.Volume"), soundFile.getInt("Sounds.Archery.CurseOfHades.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Archery.CurseOfHades.Volume")), Float.parseFloat(soundFile.getString("Sounds.Archery.CurseOfHades.Pitch")));
               trackArrowParticles(arrow, Particle.SQUID_INK);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CurseOfHades.Activated")));
             }

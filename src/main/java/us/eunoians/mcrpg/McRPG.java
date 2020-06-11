@@ -72,6 +72,7 @@ import us.eunoians.mcrpg.events.mcrpg.McRPGPlayerLevelChange;
 import us.eunoians.mcrpg.events.mcrpg.PartyLevelUp;
 import us.eunoians.mcrpg.events.vanilla.ArrowHitEvent;
 import us.eunoians.mcrpg.events.vanilla.BreakEvent;
+import us.eunoians.mcrpg.events.vanilla.CallOfWildListener;
 import us.eunoians.mcrpg.events.vanilla.ChatEvent;
 import us.eunoians.mcrpg.events.vanilla.CheckReadyEvent;
 import us.eunoians.mcrpg.events.vanilla.DeathEvent;
@@ -304,6 +305,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new PartyLevelUp(), this);
     getServer().getPluginManager().registerEvents(new EntityTameListener(), this);
     getServer().getPluginManager().registerEvents(new WolfValidator(), this);
+    getServer().getPluginManager().registerEvents(new CallOfWildListener(), this);
     
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);

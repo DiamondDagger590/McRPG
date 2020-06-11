@@ -66,7 +66,7 @@ public class PickupEvent implements Listener {
           e.setCancelled(true);
           FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
           e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.Pickup.Sound")),
-            soundFile.getInt("Sounds.Misc.Pickup.Volume"), soundFile.getInt("Sounds.Misc.Pickup.Pitch"));
+            Float.parseFloat(soundFile.getString("Sounds.Misc.Pickup.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.Pickup.Pitch")));
           ItemStack itemToPickup = e.getItem().getItemStack();
           Inventory inv = e.getPlayer().getInventory();
           // e.getPlayer().getInventory().setItem(firstEmpty, e.getItem().getItemStack());

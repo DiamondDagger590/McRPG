@@ -181,7 +181,7 @@ public class InteractHandler implements Listener {
             p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, p.getLocation(), 30);
             FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.BlastMining.Sound")),
-              soundFile.getInt("Sounds.Mining.BlastMining.Volume"), soundFile.getInt("Sounds.Mining.BlastMining.Pitch"));
+              Float.parseFloat(soundFile.getString("Sounds.Mining.BlastMining.Volume")), Float.parseFloat(soundFile.getString("Sounds.Mining.BlastMining.Pitch")));
             ItemStack pick = new ItemStack(Material.DIAMOND_PICKAXE, 1);
             for(Block b : blastMiningEvent.getBlocks()) {
               Material material = b.getType();
@@ -248,7 +248,7 @@ public class InteractHandler implements Listener {
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Deactivated")));
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.SuperBreaker.Sound")),
-                soundFile.getInt("Sounds.Mining.SuperBreaker.Volume"), soundFile.getInt("Sounds.Mining.SuperBreaker.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Mining.SuperBreaker.Volume")), Float.parseFloat(soundFile.getString("Sounds.Mining.SuperBreaker.Pitch")));
             }
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND,
@@ -292,7 +292,7 @@ public class InteractHandler implements Listener {
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.FrenzyDig.Deactivated")));
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Excavation.FrenzyDig.Sound")),
-                soundFile.getInt("Sounds.Excavation.FrenzyDig.Volume"), soundFile.getInt("Sounds.Excavation.FrenzyDig.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Excavation.FrenzyDig.Volume")), Float.parseFloat(soundFile.getString("Sounds.Excavation.FrenzyDig.Pitch")));
             }
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND,

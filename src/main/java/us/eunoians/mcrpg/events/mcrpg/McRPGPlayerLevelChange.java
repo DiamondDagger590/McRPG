@@ -63,7 +63,7 @@ public class McRPGPlayerLevelChange implements Listener {
         //Need to fiddle with this sound
         FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
         mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.AbilityPointGain.Sound")),
-          soundFile.getInt("Sounds.Misc.AbilityPointGain.Volume"), soundFile.getInt("Sounds.Misc.AbilityPointGain.Pitch"));
+          Float.parseFloat(soundFile.getString("Sounds.Misc.AbilityPointGain.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.AbilityPointGain.Pitch")));
         mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), mcRPG.getPluginPrefix() + mcRPG.getLangFile().getString("Messages.Players.AbilityPointGained")
                 .replaceAll("%Ability_Points%", Integer.toString(e.getMcRPGPlayer().getAbilityPoints()))));
       }
@@ -92,7 +92,7 @@ public class McRPGPlayerLevelChange implements Listener {
       World w = p.getWorld();
       FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
       w.playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.LevelUp.Sound")),
-        soundFile.getInt("Sounds.Misc.LevelUp.Volume"), soundFile.getInt("Sounds.Misc.LevelUp.Pitch"));
+        Float.parseFloat(soundFile.getString("Sounds.Misc.LevelUp.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.LevelUp.Pitch")));
       if(!McRPG.getInstance().getDisplayManager().doesPlayerHaveDisplay(e.getMcRPGPlayer().getPlayer())) {
         return;
       }
@@ -138,7 +138,7 @@ public class McRPGPlayerLevelChange implements Listener {
                         mcRPG.getLangFile().getString("Messages.Players.AbilityUnlocked").replaceAll("%Ability%", ab.getName())));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.AbilityUnlocked.Sound")),
-                  soundFile.getInt("Sounds.Misc.AbilityUnlocked.Volume"), soundFile.getInt("Sounds.Misc.AbilityUnlocked.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Misc.AbilityUnlocked.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.AbilityUnlocked.Pitch")));
                 mp.addPendingAbilityUnlock(ab);
               }
             }

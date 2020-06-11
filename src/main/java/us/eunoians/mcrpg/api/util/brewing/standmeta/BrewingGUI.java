@@ -608,7 +608,7 @@ public class BrewingGUI extends GUI{
     if(!brewEvent.isCancelled()){
       FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
       holder.getLocation().getWorld().playSound(holder.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Brewing.FinishBrewSound.Sound")),
-        soundFile.getInt("Sounds.Brewing.FinishBrewSound.Volume"), soundFile.getInt("Sounds.Brewing.FinishBrewSound.Pitch"));
+        Float.parseFloat(soundFile.getString("Sounds.Brewing.FinishBrewSound.Volume")), Float.parseFloat(soundFile.getString("Sounds.Brewing.FinishBrewSound.Pitch")));
       int expToAward = 0;
       FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
       String expKey = "ExpAwardedPerBrewAmount.";

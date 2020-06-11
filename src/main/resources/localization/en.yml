@@ -84,6 +84,8 @@ Messages:
   Misc:
     PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
     PoseidonsGuardianName: '&bPoseidons Guardian'
+    CallOfWild:
+      TooManyEntities: '&cThere are too many of that entity nearby to summon another.'
   Artifacts:
     ArtifactCreated: '&5A &e%ArtifactType% &5artifact has been created!'
     RedeemableExpArtifactUsed: '&aYou have used the artifact to gain &e%RedeemableExpAmount% &aredeemable exp.'

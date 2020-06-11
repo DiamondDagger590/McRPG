@@ -32,6 +32,8 @@ public class WolfValidator implements Listener{
         }
       }
     }
+    
+    //Check the mother
     if(entityBreedEvent.getMother() instanceof Wolf){
       Wolf wolf = (Wolf) entityBreedEvent.getMother();
   
@@ -44,6 +46,21 @@ public class WolfValidator implements Listener{
         if(calendar.getTimeInMillis() >= wolf.getPersistentDataContainer().get(VanillaDamageEvent.HELL_HOUND_SELF_DESTRUCT_KEY, PersistentDataType.LONG)){
           wolf.remove();
         }
+      }
+    }
+    
+    //No need to check for CallOfWild tags if hell hound tags already cancelled
+    if(entityBreedEvent.isCancelled()){
+      return;
+    }
+    else{
+      if(entityBreedEvent.getFather().getPersistentDataContainer().has(CallOfWildListener.ANTI_BREEDABLE_KEY, PersistentDataType.STRING)){
+        entityBreedEvent.setCancelled(true);
+        return;
+      }
+      else if(entityBreedEvent.getMother().getPersistentDataContainer().has(CallOfWildListener.ANTI_BREEDABLE_KEY, PersistentDataType.STRING)){
+        entityBreedEvent.setCancelled(true);
+        return;
       }
     }
   }

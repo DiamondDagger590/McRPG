@@ -846,7 +846,7 @@ public class VanillaDamageEvent implements Listener {
               }
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFist.Sound")),
-                soundFile.getInt("Sounds.Unarmed.SmitingFist.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFist.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFist.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFist.Pitch")));
             }
           }
         }
@@ -886,7 +886,7 @@ public class VanillaDamageEvent implements Listener {
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Activated")));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.Berserk.Sound")),
-                  soundFile.getInt("Sounds.Unarmed.Berserk.Volume"), soundFile.getInt("Sounds.Unarmed.Berserk.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Unarmed.Berserk.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.Berserk.Pitch")));
                 new BukkitRunnable() {
                   @Override
                   public void run(){
@@ -901,7 +901,7 @@ public class VanillaDamageEvent implements Listener {
                             McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Cooldown"));
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.BerserkEnded.Sound")),
-                      soundFile.getInt("Sounds.Unarmed.BerserkEnded.Volume"), soundFile.getInt("Sounds.Unarmed.BerserkEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Unarmed.BerserkEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.BerserkEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.BERSERK);
                     mp.addAbilityOnCooldown(UnlockedAbilities.BERSERK, cal.getTimeInMillis());
                   }
@@ -931,7 +931,7 @@ public class VanillaDamageEvent implements Listener {
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Activated")));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Sound")),
-                  soundFile.getInt("Sounds.Unarmed.SmitingFistActivated.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFistActivated.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Pitch")));
                 mp.setSmitingFistData(smitingFistEvent);
                 mp.setCanSmite(true);
                 if(smitingFistEvent.isRemoveDebuffs()){
@@ -957,7 +957,7 @@ public class VanillaDamageEvent implements Listener {
                             smitingFistEvent.getCooldown());
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Sound")),
-                      soundFile.getInt("Sounds.Unarmed.SmitingFistEnded.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFistEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.SMITING_FIST);
                     mp.addAbilityOnCooldown(UnlockedAbilities.SMITING_FIST, cal.getTimeInMillis());
                   }
@@ -982,7 +982,7 @@ public class VanillaDamageEvent implements Listener {
                         McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Activated")));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Sound")),
-                  soundFile.getInt("Sounds.Unarmed.DenseImpactActivated.Volume"), soundFile.getInt("Sounds.Unarmed.DenseImpactActivated.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Pitch")));
                 mp.setCanDenseImpact(true);
                 mp.setArmourDmg(denseImpactEvent.getArmourDmg());
                 new BukkitRunnable() {
@@ -999,7 +999,7 @@ public class VanillaDamageEvent implements Listener {
                     cal.add(Calendar.SECOND,
                             cooldown);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Sound")),
-                      soundFile.getInt("Sounds.Unarmed.DenseImpactEnded.Volume"), soundFile.getInt("Sounds.Unarmed.DenseImpactEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.DENSE_IMPACT);
                     mp.addAbilityOnCooldown(UnlockedAbilities.DENSE_IMPACT, cal.getTimeInMillis());
                   }
@@ -1107,7 +1107,7 @@ public class VanillaDamageEvent implements Listener {
                             event.getCooldown());
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Sound")),
-                      soundFile.getInt("Sounds.Swords.SerratedStrikesEnded.Volume"), soundFile.getInt("Sounds.Swords.SerratedStrikesEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.SERRATED_STRIKES);
                     mp.addAbilityOnCooldown(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
                   }
@@ -1134,7 +1134,7 @@ public class VanillaDamageEvent implements Listener {
                         event.getCooldown());
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Sound")),
-                  soundFile.getInt("Sounds.Swords.TaintedBladeEnd.Volume"), soundFile.getInt("Sounds.Swords.TaintedBladeEnd.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Volume")), Float.parseFloat(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Pitch")));
                 mp.getActiveAbilities().remove(UnlockedAbilities.TAINTED_BLADE);
                 mp.addAbilityOnCooldown(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
               }
@@ -1424,7 +1424,7 @@ public class VanillaDamageEvent implements Listener {
   
                   FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                   mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Taming.HellHoundSummon.Sound")),
-                    soundFile.getInt("Sounds.Taming.HellHoundSummon.Volume"), soundFile.getInt("Sounds.Taming.HellHoundSummon.Pitch"));
+                    Float.parseFloat(soundFile.getString("Sounds.Taming.HellHoundSummon.Volume")), Float.parseFloat(soundFile.getString("Sounds.Taming.HellHoundSummon.Pitch")));
   
                   Calendar cal = Calendar.getInstance();
                   cal.add(Calendar.SECOND, furyOfCerebusEvent.getCooldown());

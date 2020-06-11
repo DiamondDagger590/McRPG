@@ -82,6 +82,10 @@ Sounds:
       Sound: ENTITY_BLAZE_AMBIENT
       Volume: 1
       Pitch: 2
+    CallOfWild:
+      Sound: ENTITY_WOLF_HOWL
+      Volume: 0.4
+      Pitch: 1
   Swords:
     RageSpike:
       Sound: ENTITY_DRAGON_FIREBALL_EXPLODE

@@ -323,8 +323,8 @@ public class CheckReadyEvent implements Listener{
           Material itemType = isOffHand ? offHand.getType() : p.getItemInHand().getType();
           FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
           Sound eatSound = Sound.valueOf(soundFile.getString("Sounds.Herbalism.NaturesWrath.Sound"));
-          int volume = soundFile.getInt("Sounds.Herbalism.NaturesWrath.Volume");
-          int pitch = soundFile.getInt("Sounds.Herbalism.NaturesWrath.Pitch");
+          float volume = Float.parseFloat(soundFile.getString("Sounds.Herbalism.NaturesWrath.Volume"));
+          float pitch = Float.parseFloat(soundFile.getString("Sounds.Herbalism.NaturesWrath.Pitch"));
           if(itemType == Material.POPPY && herbalism.getBoolean(key + itemType.toString())){
             int hungerLost = herbalism.getInt(key + "HungerLost");
             int hungerLimit = herbalism.getInt(key + "HungerLimit");

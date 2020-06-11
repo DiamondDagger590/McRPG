@@ -480,7 +480,7 @@ public class InvClickEvent implements Listener{
         else if(slot == guiConfig.getInt("ReplaceAbilitiesItem.Slot")){
           if(mp.getEndTimeForReplaceCooldown() != 0){
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.ReplaceCooldownPending.Sound")),
-              soundFile.getInt("Sounds.Misc.ReplaceCooldownPending.Volume"), soundFile.getInt("Sounds.Misc.ReplaceCooldownPending.Pitch"));
+              Float.parseFloat(soundFile.getString("Sounds.Misc.ReplaceCooldownPending.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.ReplaceCooldownPending.Pitch")));
             return;
           }
           ReplaceSkillsGUI replaceSkillsGUI = new ReplaceSkillsGUI(mp);
@@ -771,7 +771,7 @@ public class InvClickEvent implements Listener{
             acceptAbilityGUI.getAbility().setCurrentTier(acceptAbilityGUI.getAbility().getCurrentTier() + 1);
             
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.UpgradeAbility.Sound")),
-              soundFile.getInt("Sounds.Misc.UpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.UpgradeAbility.Pitch"));
+              Float.parseFloat(soundFile.getString("Sounds.Misc.UpgradeAbility.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.UpgradeAbility.Pitch")));
             mp.saveData();
             p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.UpgradedAbility").replace("%Ability%", acceptAbilityGUI.getAbility().getGenericAbility().getName())
                                                                                      .replace("%Tier%", "Tier " + Methods.convertToNumeral(acceptAbilityGUI.getAbility().getCurrentTier()))));
@@ -1013,7 +1013,7 @@ public class InvClickEvent implements Listener{
           if(abilityToChange.getCurrentTier() < unlockedAbility.getMaxTier()){
             if(unlockedAbility.tierUnlockLevel(abilityToChange.getCurrentTier() + 1) > mp.getSkill(unlockedAbility.getSkill()).getCurrentLevel()){
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
-                soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Pitch")));
               return;
             }
             AcceptAbilityGUI gui = new AcceptAbilityGUI(mp, abilityToChange, AcceptAbilityGUI.AcceptType.ACCEPT_UPGRADE);
@@ -1024,7 +1024,7 @@ public class InvClickEvent implements Listener{
           }
           else{
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
-              soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));
+              Float.parseFloat(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Pitch")));
             return;
           }
         }
@@ -1034,7 +1034,7 @@ public class InvClickEvent implements Listener{
               UnlockedAbilities unlockedAbilities = mp.getAbilityLoadout().get(i);
               if(e.getSlot() != i && unlockedAbilities.getAbilityType() == AbilityType.ACTIVE && unlockedAbilities.getSkill().equals(editLoadoutGUI.getReplaceAbility().getGenericAbility().getSkill())){
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.DenyReplace.Sound")),
-                  soundFile.getInt("Sounds.Misc.DenyReplace.Volume"), soundFile.getInt("Sounds.Misc.DenyReplace.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Misc.DenyReplace.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.DenyReplace.Pitch")));
                 p.closeInventory();
                 p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + config.getString("Messages.Guis.HasActive")));
                 return;
@@ -1335,7 +1335,7 @@ public class InvClickEvent implements Listener{
           else if(events[1].equalsIgnoreCase("UpgradeAbilityGUI")){
             if(mp.getAbilityPoints() == 0){
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Sound")),
-                soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Volume"), soundFile.getInt("Sounds.Misc.CantUpgradeAbility.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Volume")), Float.parseFloat(soundFile.getString("Sounds.Misc.CantUpgradeAbility.Pitch")));
               return;
             }
             gui = new EditLoadoutGUI(mp, EditLoadoutGUI.EditType.ABILITY_UPGRADE);
