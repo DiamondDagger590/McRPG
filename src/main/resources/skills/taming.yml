@@ -132,7 +132,7 @@ EnabledAbilities:
   LinkedFangs: true
   Comradery: true
   PETAsWrath: true
-  FuryOfCerebus: true
+  FuryOfCerberus: true
 #If perms should be used for players to unlock abilities.
 #Perms will be mcrpg.taming.unlock.{ability} and mcrpg.taming.use.{ability}
 UsePermsForAbilites:
@@ -142,7 +142,7 @@ UsePermsForAbilites:
   LinkedFangs: false
   Comradery: false
   PETAsWrath: false
-  FuryOfCerebus: false
+  FuryOfCerberus: false
 #At what taming level should these abilities be unlocked at
 UnlockLevelForAbility:
   DivineFur: 50
@@ -150,7 +150,7 @@ UnlockLevelForAbility:
   LinkedFangs: 150
   Comradery: 200
   PETAsWrath: 250
-  FuryOfCerebus: 300
+  FuryOfCerberus: 300
 #
 # Gore is the default ability that every player has. This ability will increase every time the players Taming level is increased
 #
@@ -424,10 +424,10 @@ PETAsWrathConfig:
       - '&3kills a pet'
       - '&3Unlock Level: &6%UnlockLevel%'
 #
-# Config for the ability Fury Of Cerebus
+# Config for the ability Fury Of Cerberus
 # Using a blaze rod to attack a mob, summon three Hell Hounds that explode when they die
 #
-FuryOfCerebusConfig:
+FuryOfCerberusConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level

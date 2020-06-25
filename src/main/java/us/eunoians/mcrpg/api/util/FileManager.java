@@ -329,6 +329,7 @@ public class FileManager {
     ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
     ARCHERY_CONFIG("archery.yml", "skills/archery.yml"),
     ARTIFACT_FILE("artifacts.yml", "artifacts/artifacts.yml"),
+    BLOOD_FILE("blood.yml", "blood/blood.yml"),
     AXES_CONFIG("axes.yml", "skills/axes.yml"),
     BREWING_GUI("brewinggui.yml", "guis/brewinggui.yml"),
     BREWING_ITEMS_CONFIG("potionitems.yml", "skills/potionitems.yml"),

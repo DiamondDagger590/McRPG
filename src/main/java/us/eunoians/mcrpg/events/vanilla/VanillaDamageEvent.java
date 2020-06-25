@@ -56,7 +56,7 @@ import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
 import us.eunoians.mcrpg.abilities.taming.Comradery;
 import us.eunoians.mcrpg.abilities.taming.DivineFur;
-import us.eunoians.mcrpg.abilities.taming.FuryOfCerebus;
+import us.eunoians.mcrpg.abilities.taming.FuryOfCerberus;
 import us.eunoians.mcrpg.abilities.taming.Gore;
 import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
 import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
@@ -81,7 +81,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.ComraderyEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.DivineFurEvent;
-import us.eunoians.mcrpg.api.events.mcrpg.taming.FuryOfCerebusEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.FuryOfCerberusEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.GoreEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.LinkedFangsEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
@@ -1389,34 +1389,34 @@ public class VanillaDamageEvent implements Listener {
           if(mp.isReadying()){
             if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.FURY_OF_CEREBUS){
               
-              FuryOfCerebus furyOfCerebus = (FuryOfCerebus) mp.getBaseAbility(UnlockedAbilities.FURY_OF_CEREBUS);
-              String tier = Methods.convertToNumeral(furyOfCerebus.getCurrentTier());
+              FuryOfCerberus furyOfCerberus = (FuryOfCerberus) mp.getBaseAbility(UnlockedAbilities.FURY_OF_CEREBUS);
+              String tier = Methods.convertToNumeral(furyOfCerberus.getCurrentTier());
               
-              int hellHoundHealth = config.getInt("FuryOfCerebusConfig.Tier" + tier + ".HellHoundHealth");
-              boolean igniteTarget = config.getBoolean("FuryOfCerebusConfig.Tier" + tier + ".IgniteTarget");
-              boolean explosionsDestroyBlocks = config.getBoolean("FuryOfCerebusConfig.Tier" + tier + ".ExplosionDestroyBlocks");
-              int selfDestructTimer = config.getInt("FuryOfCerebusConfig.Tier" + tier + ".SelfDestructTimer");
-              int cooldown = config.getInt("FuryOfCerebusConfig.Tier" + tier + ".Cooldown");
+              int hellHoundHealth = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".HellHoundHealth");
+              boolean igniteTarget = config.getBoolean("FuryOfCerberusConfig.Tier" + tier + ".IgniteTarget");
+              boolean explosionsDestroyBlocks = config.getBoolean("FuryOfCerberusConfig.Tier" + tier + ".ExplosionDestroyBlocks");
+              int selfDestructTimer = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".SelfDestructTimer");
+              int cooldown = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".Cooldown");
   
-              FuryOfCerebusEvent furyOfCerebusEvent = new FuryOfCerebusEvent(mp, furyOfCerebus, hellHoundHealth, igniteTarget, explosionsDestroyBlocks, selfDestructTimer, cooldown);
-              Bukkit.getPluginManager().callEvent(furyOfCerebusEvent);
-              if(!furyOfCerebusEvent.isCancelled()){
+              FuryOfCerberusEvent furyOfCerberusEvent = new FuryOfCerberusEvent(mp, furyOfCerberus, hellHoundHealth, igniteTarget, explosionsDestroyBlocks, selfDestructTimer, cooldown);
+              Bukkit.getPluginManager().callEvent(furyOfCerberusEvent);
+              if(!furyOfCerberusEvent.isCancelled()){
                 Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
                 mp.setReadyingAbilityBit(null);
                 mp.setReadying(false);
                 
                 Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.SECOND, furyOfCerebusEvent.getSelfDestructTimer());
+                calendar.add(Calendar.SECOND, furyOfCerberusEvent.getSelfDestructTimer());
                 for(int i = 0; i < 3; i++){
                   Wolf hellHound = (Wolf) mp.getPlayer().getWorld().spawnEntity(mp.getPlayer().getLocation(), EntityType.WOLF);
                   hellHound.setCollarColor(DyeColor.ORANGE);
                   hellHound.setAdult();
                   hellHound.setOwner(mp.getPlayer());
-                  hellHound.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(furyOfCerebusEvent.getHellHoundHealth());
-                  hellHound.setHealth(furyOfCerebusEvent.getHellHoundHealth());
+                  hellHound.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(furyOfCerberusEvent.getHellHoundHealth());
+                  hellHound.setHealth(furyOfCerberusEvent.getHellHoundHealth());
                   hellHound.getPersistentDataContainer().set(HELL_HOUND_KEY, PersistentDataType.STRING, "true");
-                  hellHound.getPersistentDataContainer().set(HELL_HOUND_IGNITE_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerebusEvent.isIgniteTarget()));
-                  hellHound.getPersistentDataContainer().set(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerebusEvent.isExplosionDestroyBlocks()));
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_IGNITE_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerberusEvent.isIgniteTarget()));
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerberusEvent.isExplosionDestroyBlocks()));
                   hellHound.getPersistentDataContainer().set(HELL_HOUND_SELF_DESTRUCT_KEY, PersistentDataType.LONG, calendar.getTimeInMillis());
                   hellHound.setTarget((LivingEntity) e.getEntity());
                   hellHound.setCustomName(ChatColor.RED + "Hell Hound");
@@ -1427,7 +1427,7 @@ public class VanillaDamageEvent implements Listener {
                     Float.parseFloat(soundFile.getString("Sounds.Taming.HellHoundSummon.Volume")), Float.parseFloat(soundFile.getString("Sounds.Taming.HellHoundSummon.Pitch")));
   
                   Calendar cal = Calendar.getInstance();
-                  cal.add(Calendar.SECOND, furyOfCerebusEvent.getCooldown());
+                  cal.add(Calendar.SECOND, furyOfCerberusEvent.getCooldown());
                   mp.addAbilityOnCooldown(UnlockedAbilities.FURY_OF_CEREBUS, cal.getTimeInMillis());
                   
                   BukkitTask selfDestructTask = new BukkitRunnable(){
@@ -1445,7 +1445,7 @@ public class VanillaDamageEvent implements Listener {
                       }
                       cancel();
                     }
-                  }.runTaskLater(McRPG.getInstance(), furyOfCerebusEvent.getSelfDestructTimer() * 20);
+                  }.runTaskLater(McRPG.getInstance(), furyOfCerberusEvent.getSelfDestructTimer() * 20);
                   hellHoundSelfDestructMap.put(hellHound.getUniqueId(), selfDestructTask);
                 }
               }

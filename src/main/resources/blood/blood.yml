@@ -1,0 +1,39 @@
+#Control various aspects of Crystallized Blood
+CrystallizedBlood:
+  #If blood should be enabled
+  Enabled: true
+  #Control chances of Blood spawning when a mob dies from a tamed wolf
+  SpawnChances:
+    #The chance from a non-bleeding mob
+    Normal: 0.5
+    #The chance from a bleeding mob
+    Bleeding: 0.75
+    #If true, mobs from spawners/eggs won't drop blood
+    IgnoreNonNaturalMobs: true
+  #Control different types of Blood
+  Types:
+    #Blood of this type can be applied to any tool
+    Tools:
+      #How much experience multiplier the blood should offer
+      #Format is LOW_END-HIGH_END
+      ExpMultiplierRange: '10-25'
+      #The chance that on each exp multiplier, that the item shatters
+      ItemShatterChanceRange: 0.5
+    #Blood of this type can be applied to any weapon or bow
+    Weapons:
+      #How much experience multiplier the blood should offer
+      #Format is LOW_END-HIGH_END
+      ExpMultiplierRange: '10-25'
+      #The chance that on each exp multiplier, that the item shatters
+      ItemShatterChanceRange: 0.5
+    #Blood of this type can be applied to any armor
+    Armor:
+      #How much experience multiplier the blood should offer
+      #Format is LOW_END-HIGH_END
+      ExpMultiplierRange: '1-5'
+      #The chance that on each exp multiplier, that the item shatters
+      ItemShatterChanceRange: 0.5
+    #Blood of this type is used to attack a player. Attacking a player with this will result in
+    BloodCurse:
+      #How long blood curse should last
+      Duration: 5
