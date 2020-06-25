@@ -6,7 +6,7 @@ plugins {
 }
 
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 3, patch: 3, fix: 0, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 3, patch: 3, fix: 1, state: 'BETA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
@@ -41,7 +41,7 @@ dependencies {
     compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
     compileOnly 'com.github.DiamondDagger590:FlatDB:1.0.7'
     compileOnly 'com.github.DiamondDagger590:EnumToYaml:1.0'
-    compile 'de.tr7zw:item-nbt-api:2.4.0-SNAPSHOT'
+    compile 'de.tr7zw:item-nbt-api:2.4.1'
     compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
