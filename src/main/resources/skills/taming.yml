@@ -474,7 +474,7 @@ FuryOfCerberusConfig:
     Cooldown: 80
   #How this ability should be seen in the GUIS
   Item:
-    DisplayName: '&cFury Of Cerebus'
+    DisplayName: '&cFury Of Cerberus'
     Material: BLAZE_ROD
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis

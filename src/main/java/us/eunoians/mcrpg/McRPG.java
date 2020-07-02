@@ -33,6 +33,7 @@ import us.eunoians.mcrpg.api.util.McRPGPlaceHolders;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
@@ -204,6 +205,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getLogger().info("Loading Potions");
     potionRecipeManager = new PotionRecipeManager();
     new PlayerManager(this);
+    new BloodManager(this);
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }

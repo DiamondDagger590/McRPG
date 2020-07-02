@@ -11,17 +11,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
-import us.eunoians.mcrpg.util.mcmmo.BlockUtils;
 
 import java.util.List;
 
@@ -86,15 +82,7 @@ public class BlockListener implements Listener {
     if(blockState.getType() != Material.CHORUS_FLOWER){
       McRPG.getPlaceStore().setTrue(blockState);
     }
-
-    //McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-
-        /*if (blockState.getType() == Repair.anvilMaterial && SkillType.REPAIR.getPermissions(player)) {
-            mcRPGPlayer.getRepairManager().placedAnvilCheck();
-        }
-        else if (blockState.getType() == Salvage.anvilMaterial && SkillType.SALVAGE.getPermissions(player)) {
-            mcRPGPlayer.getSalvageManager().placedAnvilCheck();
-        }*/
+    
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -115,12 +103,6 @@ public class BlockListener implements Listener {
         }*/
     BlockState blockState = event.getBlock().getState();
     Location location = blockState.getLocation();
-/*
-        /* ALCHEMY - Cancel any brew in progress for that BrewingStand
-        if (blockState instanceof BrewingStand && Alchemy.brewingStandMap.containsKey(location)) {
-            Alchemy.brewingStandMap.get(location).cancelBrew();
-        }
-*/
     Block block = event.getBlock();
     Player p = event.getPlayer();
     //McRPGPlayer mp = PlayerManager.getPlayer(p.getUniqueId());
@@ -130,60 +112,4 @@ public class BlockListener implements Listener {
     /* Remove metadata from placed watched blocks */
     McRPG.getPlaceStore().setFalse(blockState);
   }
-
-  /**
-   * Monitor BlockDamage events.
-   *
-   * @param event The event to watch
-   */
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onBlockDamage(BlockDamageEvent event){
-    Player player = event.getPlayer();
-
-    if(!PlayerManager.isPlayerStored(player.getUniqueId())){
-      return;
-    }
-
-    //McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-    BlockState blockState = event.getBlock().getState();
-
-    /*
-     * ABILITY PREPARATION CHECKS
-     *
-     * We check permissions here before processing activation.
-     */
-    if(BlockUtils.canActivateAbilities(blockState)){
-      ItemStack heldItem = player.getInventory().getItemInMainHand();
-    }
-//TODO
-        /*
-         * TREE FELLER SOUNDS
-         *
-         * We don't need to check permissions here because they've already been checked for the ability to even activate.
-         *
-        if (mcRPGPlayer.getAbilityMode(AbilityType.TREE_FELLER) && BlockUtils.isLog(blockState) && Config.getInstance().getTreeFellerSoundsEnabled()) {
-            player.playSound(blockState.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, Misc.FIZZ_VOLUME, Misc.getFizzPitch());
-        }*/
-  }
-
-  /**
-   * Handle BlockDamage events where the event is modified.
-   *
-   * @param event The event to modify
-   *
-   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-   public void onBlockDamageHigher(BlockDamageEvent event) {
-
-   Player player = event.getPlayer();
-
-   if (!PlayerManager.isPlayerStored(player.getUniqueId())) {
-   return;
-   }
-
-   McRPGPlayer mcMMOPlayer = PlayerManager.getPlayer(player.getUniqueId());
-   ItemStack heldItem = player.getInventory().getItemInMainHand();
-   Block block = event.getBlock();
-   BlockState blockState = block.getState();
-
-   }*/
 }

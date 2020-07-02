@@ -108,6 +108,12 @@ Messages:
     Listening: '&ePlease type in chat the amount you would like to redeem.'
     RedeemedExp: '&aYou redeemed &e%Amount% &aexp into &e%Skill%.'
     RedeemedLevels: '&aYou redeemed &e%Amount% &alevels into &e%Skill%.'
+  Blood:
+    ItemShatter: '&cThe Crystallized Blood was too strong and shattered the item.'
+    AppliedCurse: '&aYou have put &e%Target% under a &cBlood Curse &afor &6%Duration% &aseconds.'
+    BeenCursed: '&cYou have been cursed for &6%Duration% &cseconds. You cant use any abilities during this time.'
+    NoLongerCursed: '&aYou are no longer cursed.'
+    BloodLore: '&cBlood Buff: &7+&6%ExpBoost%&7% &cExp'
   #Messages used by commands
   Commands:
     #Messages used by misc command

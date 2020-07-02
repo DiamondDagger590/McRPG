@@ -6,15 +6,19 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Biome;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
@@ -24,6 +28,7 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.WorldModifierManager;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.party.Party;
@@ -178,6 +183,50 @@ public class McRPGExpGain implements Listener{
       }
     }
     
+    //Blood
+    ItemStack heldItem = p.getInventory().getItemInMainHand();
+    if(heldItem.getType() != Material.AIR){
+      NBTItem nbtItem = new NBTItem(heldItem);
+      if((e.getGainType() == GainReason.BREAK && BloodManager.BloodType.TOOL.isMaterialApplicable(heldItem.getType()))
+           || (e.getGainType() == GainReason.KILL && BloodManager.BloodType.WEAPON.isMaterialApplicable(heldItem.getType()))){
+        if(nbtItem.hasKey("McRPGBloodItem")){
+          int multiplier = nbtItem.getInteger("ExpBoost");
+          expMultiplier += (double) (multiplier/100);
+    
+          double chance = nbtItem.getDouble("ShatterChance");
+          int val = (int) (chance * 1000);
+          if(val >= rand.nextInt(100000)){
+            p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+            p.updateInventory();
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1f);
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.ItemShatter")));
+          }
+        }
+      }
+    }
+    ItemStack[] armorContents = p.getInventory().getArmorContents();
+    for(int i = 0; i < armorContents.length; i++){
+      ItemStack itemStack = p.getInventory().getArmorContents()[i];
+      if(itemStack != null && itemStack.getType() != Material.AIR){
+        NBTItem nbtItem = new NBTItem(itemStack);
+        if(nbtItem.hasKey("McRPGBloodItem")){
+          int multiplier = nbtItem.getInteger("ExpBoost");
+          
+          expMultiplier += (double) (multiplier/100);
+          
+          double chance = nbtItem.getDouble("ShatterChance");
+          int val = (int) (chance * 1000);
+          if(val >= rand.nextInt(100000)){
+            armorContents[i] = new ItemStack(Material.AIR);
+            p.updateInventory();
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1f);
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.ItemShatter")));
+          }
+        }
+      }
+    }
+    p.getInventory().setArmorContents(armorContents);
+    
     //Divine Escape exp debuff
     if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0 && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND){
       expMultiplier -= (e.getMcRPGPlayer().getDivineEscapeExpDebuff() / 100);
@@ -189,7 +238,7 @@ public class McRPGExpGain implements Listener{
       }
     }
     FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
-    if(sorceryFile.getBoolean("SorceryEnabled") && p.getLocation().getBlock().getBiome() == Biome.NETHER
+    if(sorceryFile.getBoolean("SorceryEnabled") && p.getLocation().getWorld().getEnvironment() == World.Environment.NETHER
          && UnlockedAbilities.HADES_DOMAIN.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HADES_DOMAIN) && mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN).isToggled() &&
          e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       HadesDomain hadesDomain = (HadesDomain) mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN);

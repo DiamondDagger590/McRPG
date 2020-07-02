@@ -18,6 +18,7 @@ public enum ConfigEnum implements ConfigurationEnum {
   BOOSTED_EXP_USAGE_RATE("Configuration.BoostedExpUsageRate", "((gained_exp)*2.25)", "#When a player gains exp, this equation is factored in and if there is remaining boosted exp,", "#then it will add this equation value to the gained amount"),
   DISABLE_TIPS("Configuration.DisableTips", false, "#If all tips should be disabled"),
   MAX_DAMAGE_CAP("Configuration.MaxDamageCap", 1000000, "#The maximum amount of damage allowed for giving experience"),
+  EXP_MULTIPLIER_CAP("Configuration.ExpMultiplierCap", 3.0, "#The max amount of exp multiplier that a player should be able to get from various exp modifiers"),
   SHIELD_BLOCKING_MODIFIER("Configuration.ShieldBlockingModifier", 0.5, "#How much exp gain should be modified if the target is blocking with a shield."),
   DISABLE_ENDER_PEARL_EXP("Configuration.DisableEPearlExp", true, "#If exp should be disabled for damage from ender pearls"),
   DISABLE_BOOKS_IN_END("Configuration.DisableBooksInEnd", true, "#If skill books should be undroppable in the end"),

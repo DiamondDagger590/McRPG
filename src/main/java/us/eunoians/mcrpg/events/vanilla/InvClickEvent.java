@@ -30,6 +30,7 @@ import us.eunoians.mcrpg.api.exceptions.PartyNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
 import us.eunoians.mcrpg.api.util.brewing.PotionUtils;
 import us.eunoians.mcrpg.api.util.brewing.standmeta.BrewingGUI;
 import us.eunoians.mcrpg.gui.AbilityOverrideGUI;
@@ -72,6 +73,7 @@ import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -98,6 +100,36 @@ public class InvClickEvent implements Listener{
     }
     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
     Player p = (Player) e.getWhoClicked();
+    
+    if(e.getCursor() != null && e.getCursor().getType() == Material.REDSTONE && e.getCurrentItem() != null){
+      ItemStack cursor = e.getCursor();
+      NBTItem nbtItem = new NBTItem(cursor);
+      if(nbtItem.hasKey("McRPGBlood")){
+        BloodManager.BloodType bloodType = BloodManager.BloodType.getFromID(nbtItem.getString("BloodType"));
+        if(bloodType.isMaterialApplicable(e.getCurrentItem().getType())){
+          ItemStack current = e.getCurrentItem();
+          NBTItem currentNBT = new NBTItem(current);
+          if(currentNBT.hasKey("McRPGBloodItem")){
+            return;
+          }
+          currentNBT.setBoolean("McRPGBloodItem", true);
+          currentNBT.setDouble("ShatterChance", BloodManager.getInstance().getBloodWrapper(bloodType).getItemShatterChance());
+          currentNBT.setInteger("ExpBoost", nbtItem.getInteger("ExpBoost"));
+          current = currentNBT.getItem();
+          List<String> lore = current.hasItemMeta() && current.getItemMeta().hasLore() ? current.getItemMeta().getLore() : new ArrayList<>();
+          lore.add(Methods.color(p, McRPG.getInstance().getLangFile().getString("Messages.Blood.BloodLore").replace("%ExpBoost%", Integer.toString(currentNBT.getInteger("ExpBoost")))));
+          ItemMeta itemMeta = current.getItemMeta();
+          itemMeta.setLore(lore);
+          current.setItemMeta(itemMeta);
+          e.getClickedInventory().setItem(e.getSlot(), current);
+          e.getCursor().setAmount(e.getCursor().getAmount() - 1);
+          p.updateInventory();
+          e.setCancelled(true);
+          return;
+        }
+      }
+    }
+    
     //If this is a gui
     if(GUITracker.isPlayerTracked(p)){
       //Cancel event

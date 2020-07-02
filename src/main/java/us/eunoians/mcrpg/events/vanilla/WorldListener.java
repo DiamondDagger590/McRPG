@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.events.vanilla;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -164,6 +166,17 @@ public class WorldListener implements Listener {
   public void onBlockPlace(BlockPlaceEvent event) {
     BlockState blockState = event.getBlock().getState();
     McRPG.getPlaceStore().setTrue(blockState);
+  }
+  
+  @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+  public void onBloodPlace(BlockPlaceEvent event){
+    if(event.getItemInHand().getType() == Material.REDSTONE){
+      NBTItem nbtItem = new NBTItem(event.getItemInHand());
+      if(nbtItem.hasKey("McRPGBlood")){
+        event.setCancelled(true);
+        return;
+      }
+    }
   }
 
   /**

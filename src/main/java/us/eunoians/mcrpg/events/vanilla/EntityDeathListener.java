@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
-import org.bukkit.block.Biome;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.LivingEntity;
@@ -101,7 +101,7 @@ public class EntityDeathListener implements Listener{
     }
     
     //Handle hades domain
-    if(entity.getKiller() != null && entity.getLocation().getBlock().getBiome() == Biome.NETHER){
+    if(entity.getKiller() != null && entity.getLocation().getBlock().getWorld().getEnvironment() == World.Environment.NETHER){
       Player killer = entity.getKiller();
       try{
         McRPGPlayer mp = PlayerManager.getPlayer(killer.getUniqueId());
