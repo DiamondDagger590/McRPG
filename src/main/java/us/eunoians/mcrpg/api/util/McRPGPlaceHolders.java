@@ -54,6 +54,9 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
     if(identifier.equalsIgnoreCase("power_level")){
       return Integer.toString(mp.getPowerLevel());
     }
+    else if(identifier.equalsIgnoreCase("ability_points")){
+      return Integer.toString(mp.getAbilityPoints());
+    }
     else if(identifier.contains("party_name")){
       if(mp.getPartyID() == null){
         return "N/A";
