@@ -38,6 +38,7 @@ Gui:
           - '&3Axes: &6%Axes_Level%'
           - '&3Fishing: &6%Fishing_Level%'
           - '&3Sorcery: &6%Sorcery_Level%'
+          - '&3Taming: &6%Taming_Level%'
         #Slot its found at
         Slot: 13
       Skill_Menu:

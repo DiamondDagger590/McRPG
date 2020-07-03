@@ -17,6 +17,7 @@ MaterialBonus:
   GOLDEN_SWORD: 1.5
   IRON_SWORD: 1.25
   DIAMOND_SWORD: 1.3
+  NETHERITE_SWORD: 1.4
 #How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
 #Ex) Spider gives 50 exp. Deal 3 damage, get 150 exp with a wood sword
 ExpAwardedPerMob:
@@ -75,6 +76,11 @@ ExpAwardedPerMob:
   PIG_ZOMBIE: 35
   HUSK: 30
   ZOMBIE_HORSE: 20
+  HOGLIN: 30
+  PIGLIN: 30
+  STRIDER: 15
+  ZOGLIN: 30
+  ZOMBIFIED_PIGLIN: 30
 #What abilities are enabled
 EnabledAbilities:
   Bleed: true

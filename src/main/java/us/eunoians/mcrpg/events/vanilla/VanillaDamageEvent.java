@@ -1409,9 +1409,9 @@ public class VanillaDamageEvent implements Listener{
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
           
           if(mp.isReadying()){
-            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.FURY_OF_CEREBUS){
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.FURY_OF_CERBERUS){
               
-              FuryOfCerberus furyOfCerberus = (FuryOfCerberus) mp.getBaseAbility(UnlockedAbilities.FURY_OF_CEREBUS);
+              FuryOfCerberus furyOfCerberus = (FuryOfCerberus) mp.getBaseAbility(UnlockedAbilities.FURY_OF_CERBERUS);
               String tier = Methods.convertToNumeral(furyOfCerberus.getCurrentTier());
               
               int hellHoundHealth = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".HellHoundHealth");
@@ -1450,7 +1450,7 @@ public class VanillaDamageEvent implements Listener{
                   
                   Calendar cal = Calendar.getInstance();
                   cal.add(Calendar.SECOND, furyOfCerberusEvent.getCooldown());
-                  mp.addAbilityOnCooldown(UnlockedAbilities.FURY_OF_CEREBUS, cal.getTimeInMillis());
+                  mp.addAbilityOnCooldown(UnlockedAbilities.FURY_OF_CERBERUS, cal.getTimeInMillis());
                   
                   BukkitTask selfDestructTask = new BukkitRunnable(){
                     @Override
@@ -1481,11 +1481,11 @@ public class VanillaDamageEvent implements Listener{
             BloodManager.BloodType bloodType = BloodManager.BloodType.getFromID(nbtItem.getString("BloodType"));
             if(bloodType == BloodManager.BloodType.CURSE){
               int duration = nbtItem.getInteger("Duration");
-              BloodManager.getInstance().setPlayerUnderCurse(mp.getUuid(), duration);
+              BloodManager.getInstance().setPlayerUnderCurse(e.getEntity().getUniqueId(), duration);
               damager.getInventory().getItemInMainHand().setAmount(damager.getInventory().getItemInMainHand().getAmount() - 1);
               damager.updateInventory();
-              damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.AppliedCurse")));
-              e.getEntity().sendMessage(Methods.color((Player) e.getEntity(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.BeenCursed")));
+              damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.AppliedCurse").replace("%Target%", e.getEntity().getName()).replace("%Duration%", Integer.toString(duration))));
+              e.getEntity().sendMessage(Methods.color((Player) e.getEntity(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.BeenCursed").replace("%Duration%", Integer.toString(duration))));
             }
           }
         }

@@ -68,6 +68,11 @@ ExpAwardedPerMob:
   PIG_ZOMBIE: 70
   HUSK: 60
   ZOMBIE_HORSE: 40
+  HOGLIN: 30
+  PIGLIN: 30
+  STRIDER: 15
+  ZOGLIN: 30
+  ZOMBIFIED_PIGLIN: 30
 #How much exp should be awarded when a mob is tamed
 ExpPerMobTamed:
   OTHER: 500
@@ -269,7 +274,7 @@ SharpenedFangsConfig:
       - '&3Has a &6%ActivationChance%% &3chance of'
       - '&3increases damage from wolves by &6%ExtraDamage%'
     MenuLore:
-      - '&3Has a chance to increases wolf damage'
+      - '&3Has a chance to increase wolf damage'
       - '&3Unlock Level: &6%UnlockLevel%'
 #
 # Config for the ability Linked Fangs

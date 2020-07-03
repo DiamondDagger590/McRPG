@@ -60,7 +60,7 @@ public enum UnlockedAbilities implements GenericAbility{
   DRYADS_GIFT("DryadsGift", DryadsGift.class, AbilityType.PASSIVE, Files.WOODCUTTING_CONFIG, false),
   FARMERS_DIET("FarmersDiet", FarmersDiet.class, AbilityType.PASSIVE, Files.HERBALISM_CONFIG, false),
   FRENZY_DIG("FrenzyDig", FrenzyDig.class, AbilityType.ACTIVE, Files.EXCAVATION_CONFIG, true),
-  FURY_OF_CEREBUS("FuryOfCerberus", FuryOfCerberus.class, AbilityType.ACTIVE, Files.TAMING_CONFIG, false),
+  FURY_OF_CERBERUS("FuryOfCerberus", FuryOfCerberus.class, AbilityType.ACTIVE, Files.TAMING_CONFIG, false),
   HADES_DOMAIN("HadesDomain", HadesDomain.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
   HAND_DIGGING("HandDigging", HandDigging.class, AbilityType.ACTIVE, Files.EXCAVATION_CONFIG, true),
   HEAVY_STRIKE("HeavyStrike", HeavyStrike.class, AbilityType.PASSIVE, Files.AXES_CONFIG, false),

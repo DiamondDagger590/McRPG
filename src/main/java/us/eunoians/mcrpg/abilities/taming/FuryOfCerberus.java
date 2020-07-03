@@ -6,6 +6,6 @@ import us.eunoians.mcrpg.types.UnlockedAbilities;
 public class FuryOfCerberus extends BaseAbility{
   
   public FuryOfCerberus(boolean isToggled, int currentTier) {
-    super(UnlockedAbilities.FURY_OF_CEREBUS, isToggled, currentTier);
+    super(UnlockedAbilities.FURY_OF_CERBERUS, isToggled, currentTier);
   }
 }
