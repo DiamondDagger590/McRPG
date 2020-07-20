@@ -338,7 +338,10 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
               cancel();
             }
             else{
-              amountToKick.addAndGet(iterator.next().purgeInactive(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.TimeInHoursToPurge", 168)));
+              Party party = iterator.next();
+              if(party != null){
+                amountToKick.addAndGet(party.purgeInactive(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.TimeInHoursToPurge", 168)));
+              }
             }
           }
         }.runTaskTimer(McRPG.getInstance(), 10 * 20, 10 * 20);
