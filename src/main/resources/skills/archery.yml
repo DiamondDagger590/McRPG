@@ -71,6 +71,12 @@ ExpAwardedPerMob:
   PIG_ZOMBIE: 35
   HUSK: 30
   ZOMBIE_HORSE: 20
+  HOGLIN: 30
+  PIGLIN: 30
+  STRIDER: 15
+  ZOGLIN: 30
+  ZOMBIFIED_PIGLIN: 30
+  PIGLIN_BRUTE: 50
 #What abilities are enabled
 EnabledAbilities:
   Daze: true
@@ -81,7 +87,7 @@ EnabledAbilities:
   BlessingOfApollo: true
   CurseOfHades: true
 #If perms should be used for players to unlock abilities.
-#Perms will be mcrpg.archery.unlock{ability} and mcrpg.archery.use.{ability}
+#Perms will be mcrpg.archery.unlock.{ability} and mcrpg.archery.use.{ability}
 UsePermsForAbilites:
   Daze: false
   Puncture: false

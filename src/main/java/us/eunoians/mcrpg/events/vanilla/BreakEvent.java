@@ -7,8 +7,13 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import lombok.Getter;
-import org.bukkit.*;
-import org.bukkit.block.Biome;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -56,7 +61,11 @@ import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.ExtraLumberEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.HeavySwingEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.woodcutting.TemporalHarvestEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
-import us.eunoians.mcrpg.api.util.*;
+import us.eunoians.mcrpg.api.util.BuriedTreasureData;
+import us.eunoians.mcrpg.api.util.DiamondFlowersData;
+import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
@@ -73,7 +82,14 @@ import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
 import us.eunoians.mcrpg.util.worldguard.WGRegion;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 public class BreakEvent implements Listener{
 
@@ -750,7 +766,7 @@ public class BreakEvent implements Listener{
           DropItemEvent.getBlockDropsToMultiplier().put(block.getLocation(), dropMultiplier);
         }
       }
-      if(block.getBiome() == Biome.NETHER){
+      if(block.getWorld().getEnvironment() == World.Environment.NETHER){
         if(sorceryConfig.getBoolean("SorceryEnabled") && UnlockedAbilities.HADES_DOMAIN.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HADES_DOMAIN)
              && mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN).isToggled()){
           HadesDomain hadesDomain = (HadesDomain) mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN);

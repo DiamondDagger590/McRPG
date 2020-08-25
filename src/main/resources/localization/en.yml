@@ -14,6 +14,7 @@ SkillNames:
   Axes: 'Axes'
   Fishing: 'Fishing'
   Sorcery: 'Sorcery'
+  Taming: 'Taming'
 SkillItemNames:
   Swords: "Sword"
   Mining: "Pickaxe"
@@ -23,6 +24,7 @@ SkillItemNames:
   Archery: "Bow"
   Woodcutting: "Axe"
   Axes: "Battle Axe"
+  Taming: 'Summoning Stick'
 Signs:
   PowerLeaderboard:
     Line1: '&7[&6Power&7]'
@@ -82,6 +84,8 @@ Messages:
   Misc:
     PoseidonsGuardianSummoned: '&cYour constant fishing has angered &bPoseidon&c. Kill his guardian for a reward'
     PoseidonsGuardianName: '&bPoseidons Guardian'
+    CallOfWild:
+      TooManyEntities: '&cThere are too many of that entity nearby to summon another.'
   Artifacts:
     ArtifactCreated: '&5A &e%ArtifactType% &5artifact has been created!'
     RedeemableExpArtifactUsed: '&aYou have used the artifact to gain &e%RedeemableExpAmount% &aredeemable exp.'
@@ -104,6 +108,12 @@ Messages:
     Listening: '&ePlease type in chat the amount you would like to redeem.'
     RedeemedExp: '&aYou redeemed &e%Amount% &aexp into &e%Skill%.'
     RedeemedLevels: '&aYou redeemed &e%Amount% &alevels into &e%Skill%.'
+  Blood:
+    ItemShatter: '&cThe Crystallized Blood was too strong and shattered the item.'
+    AppliedCurse: '&aYou have put &e%Target% under a &cBlood Curse &afor &6%Duration% &aseconds.'
+    BeenCursed: '&cYou have been cursed for &6%Duration% &cseconds. You cant use any abilities during this time.'
+    NoLongerCursed: '&aYou are no longer cursed.'
+    BloodLore: '&cBlood Buff: &7+&6%ExpBoost%&7% &cExp'
   #Messages used by commands
   Commands:
     #Messages used by misc command
@@ -570,6 +580,13 @@ Messages:
       - '&7[&5McRPG Tip&7]: &aYou can get rare items such as skill books or artifacts from brewing!'
       - '&7[&5McRPG Tip&7]: &aEnchanting will give Sorcery exp!'
       - '&7[&5McRPG Tip&7]: &aArtifacts are consumables that can be found from brewing!'
+    LevelUpTaming:
+      - '&7[&5McRPG Tip&7]: &aGore will inflict Bleed on an enemy along with any modifiers!'
+      - '&7[&5McRPG Tip&7]: &aComradery will let nearby wolves take damage for you!'
+      - '&7[&5McRPG Tip&7]: &aUse Call Of The Wild to summon an animal to your side!'
+      - '&7[&5McRPG Tip&7]: &aUsing Prismarine Shards, you can use Call Of The Wild to summon tropical fish!'
+      - '&7[&5McRPG Tip&7]: &aMobs summoned by Call Of The Wild cant be bred!'
+      - '&7[&5McRPG Tip&7]: &aCrystalized Blood has many applications! Bleeding enemies have a higher drop rate!'
     LevelUpParty:
       - '&7[&5McRPG Tip&7]: &aEvery time your party levels up, you gain an upgrade point!'
       - '&7[&5McRPG Tip&7]: &aParty owners can change role permissions by doing /mcparty roles!'

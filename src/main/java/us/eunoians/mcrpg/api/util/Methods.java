@@ -217,44 +217,51 @@ public class Methods{
    * @return The Skill that the item belongs to
    */
   public static Skills getSkillsItem(Material m, Material blockType){
-    switch(m){
-      case DIAMOND_SWORD:
-      case IRON_SWORD:
-      case GOLDEN_SWORD:
-      case STONE_SWORD:
-      case WOODEN_SWORD:
+    switch(m.name()){
+      case "NETHERITE_SWORD":
+      case "DIAMOND_SWORD":
+      case "IRON_SWORD":
+      case "GOLDEN_SWORD":
+      case "STONE_SWORD":
+      case "WOODEN_SWORD":
         return Skills.SWORDS;
-      case DIAMOND_PICKAXE:
-      case IRON_PICKAXE:
-      case GOLDEN_PICKAXE:
-      case STONE_PICKAXE:
-      case WOODEN_PICKAXE:
+      case "NETHERITE_PICKAXE":
+      case "DIAMOND_PICKAXE":
+      case "IRON_PICKAXE":
+      case "GOLDEN_PICKAXE":
+      case "STONE_PICKAXE":
+      case "WOODEN_PICKAXE":
         return Skills.MINING;
-      case DIAMOND_HOE:
-      case IRON_HOE:
-      case GOLDEN_HOE:
-      case STONE_HOE:
-      case WOODEN_HOE:
+      case "NETHERITE_HOE":
+      case "DIAMOND_HOE":
+      case "IRON_HOE":
+      case "GOLDEN_HOE":
+      case "STONE_HOE":
+      case "WOODEN_HOE":
         return Skills.HERBALISM;
-      case DIAMOND_AXE:
-      case IRON_AXE:
-      case GOLDEN_AXE:
-      case STONE_AXE:
-      case WOODEN_AXE:
+      case "NETHERITE_AXE":
+      case "DIAMOND_AXE":
+      case "IRON_AXE":
+      case "GOLDEN_AXE":
+      case "STONE_AXE":
+      case "WOODEN_AXE":
         switch(blockType){
           case AIR:
             return Skills.AXES;
         }
         return Skills.WOODCUTTING;
-      case BOW:
+      case "BOW":
         return Skills.ARCHERY;
-      case DIAMOND_SHOVEL:
-      case IRON_SHOVEL:
-      case GOLDEN_SHOVEL:
-      case STONE_SHOVEL:
-      case WOODEN_SHOVEL:
+      case "NETHERITE_SHOVEL":
+      case "DIAMOND_SHOVEL":
+      case "IRON_SHOVEL":
+      case "GOLDEN_SHOVEL":
+      case "STONE_SHOVEL":
+      case "WOODEN_SHOVEL":
         return Skills.EXCAVATION;
-      case AIR:
+      case "BLAZE_ROD":
+        return Skills.TAMING;
+      case "AIR":
         return Skills.UNARMED;
     }
     return null;
@@ -352,6 +359,9 @@ public class Methods{
    * @return An SQL friendly version of the string
    */
   public static String convertNameToSQL(String name){
+    if(name.equalsIgnoreCase("PETASWrath")){
+      return "petas_wrath";
+    }
     StringBuilder returnVal = new StringBuilder();
     boolean first = true;
     for(String s : name.split("")){

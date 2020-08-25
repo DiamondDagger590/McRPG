@@ -18,7 +18,7 @@ Potions:
         ChildTags:
           - 'SPEED.Default'
           - 'INCREASE_DAMAGE.Default'
-          - 'LEAP.Default'
+          - 'JUMP.Default'
           - 'HEAL.Default'
           - 'REGENERATION.Default'
           - 'FIRE_RESISTANCE.Default'

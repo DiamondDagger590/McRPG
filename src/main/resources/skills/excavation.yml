@@ -22,6 +22,9 @@ ExpAwardedPerBlock:
   RED_SAND: 15
   SOUL_SAND: 45
   CLAY: 30
+  CRIMSON_NYLIUM: 20
+  WARPED_NYLIUM: 20
+  SOUL_SOIL: 40
 ExtractionBlocks:
   - 'DIRT'
   - 'GRASS_BLOCK'

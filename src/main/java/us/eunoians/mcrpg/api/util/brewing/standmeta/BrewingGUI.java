@@ -7,8 +7,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.HumanEntity;
@@ -606,9 +609,23 @@ public class BrewingGUI extends GUI{
     BrewEvent brewEvent = new BrewEvent(holder.getBlock(), snapshotInventory, currentFuelLevel);
     Bukkit.getPluginManager().callEvent(brewEvent);
     if(!brewEvent.isCancelled()){
+  
+      OfflinePlayer offlinePlayer = getPlayerStartingBrew();
+      if(offlinePlayer != null && offlinePlayer.isOnline()){
+        Advancement advancement = Bukkit.getServer().getAdvancement(NamespacedKey.minecraft("nether/brew_potion"));
+        if(advancement != null){
+          AdvancementProgress advancementProgress = ((Player) offlinePlayer).getAdvancementProgress(advancement);
+          if(!advancementProgress.isDone()){
+            for(String criteria : advancementProgress.getRemainingCriteria()){
+              advancementProgress.awardCriteria(criteria);
+            }
+          }
+        }
+      }
+      
       FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
       holder.getLocation().getWorld().playSound(holder.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Brewing.FinishBrewSound.Sound")),
-        soundFile.getInt("Sounds.Brewing.FinishBrewSound.Volume"), soundFile.getInt("Sounds.Brewing.FinishBrewSound.Pitch"));
+        Float.parseFloat(soundFile.getString("Sounds.Brewing.FinishBrewSound.Volume")), Float.parseFloat(soundFile.getString("Sounds.Brewing.FinishBrewSound.Pitch")));
       int expToAward = 0;
       FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
       String expKey = "ExpAwardedPerBrewAmount.";

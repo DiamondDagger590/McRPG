@@ -26,6 +26,8 @@ Configuration:
   DisableTips: false
   #The maximum amount of damage allowed for giving experience
   MaxDamageCap: 1000000
+  #The max amount of exp multiplier that a player should be able to get from various exp modifiers
+  ExpMultiplierCap: 3.0
   #How much exp gain should be modified if the target is blocking with a shield.
   ShieldBlockingModifier: 0.5
   #If exp should be disabled for damage from ender pearls
@@ -88,6 +90,8 @@ DisplayConfig:
       Excavation: 'Blue'
       Axes: 'Red'
       Fishing: 'White'
+      Sorcery: 'Pink'
+      Taming: 'Red'
   ActionBar:
     Swords:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
@@ -110,6 +114,8 @@ DisplayConfig:
     Fishing:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
     Sorcery:
+      Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
+    Taming:
       Message: '&a+%Exp_Gained% &eexp &a%Exp_To_Level% &eremaining'
 PlayerConfiguration:
   #The size of ability loadout

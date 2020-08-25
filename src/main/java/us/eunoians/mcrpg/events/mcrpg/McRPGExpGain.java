@@ -6,15 +6,19 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Biome;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
@@ -24,6 +28,7 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.WorldModifierManager;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.books.SkillBookFactory;
 import us.eunoians.mcrpg.party.Party;
@@ -48,11 +53,16 @@ public class McRPGExpGain implements Listener{
   @Getter
   private static HashMap<UUID, Double> demetersShrineMultipliers = new HashMap<>();
   
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.LOWEST)
   public void expGain(McRPGPlayerExpGainEvent e){
     Skills skill = e.getSkillGained().getType();
     Player p = e.getMcRPGPlayer().getPlayer();
     McRPGPlayer mp = e.getMcRPGPlayer();
+    
+    final int unmodifiedExp = e.getExpGained();
+    int originalExp = e.getExpGained();
+    double expMultiplier = 1.0;
+    
     if(!skill.isEnabled()){
       e.setCancelled(true);
       return;
@@ -120,7 +130,7 @@ public class McRPGExpGain implements Listener{
             }
           }
         }
-        e.setExpGained((int) (e.getExpGained() * lowestMultiplier));
+        expMultiplier += (lowestMultiplier - 1);
       }
     }
     
@@ -128,7 +138,7 @@ public class McRPGExpGain implements Listener{
     if(McRPG.getInstance().getWorldModifierManager().getWorldModifiers().containsKey(p.getWorld().getName()) && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       WorldModifierManager.ExpModifierWrapper modifierWrapper = McRPG.getInstance().getWorldModifierManager().getWorldModifiers().get(p.getWorld().getName());
       if(modifierWrapper.isModified(e.getSkillGained().getType())){
-        e.setExpGained((int) (e.getExpGained() * modifierWrapper.getModifier(e.getSkillGained().getType())));
+        expMultiplier += (modifierWrapper.getModifier(e.getSkillGained().getType()) - 1);
       }
     }
     
@@ -139,7 +149,7 @@ public class McRPGExpGain implements Listener{
       if(extraExp > mp.getBoostedExp()){
         extraExp = mp.getBoostedExp();
       }
-      e.setExpGained(e.getExpGained() + extraExp);
+      originalExp += extraExp;
       mp.setBoostedExp(mp.getBoostedExp() - extraExp);
     }
     BookManager bookManager = McRPG.getInstance().getBookManager();
@@ -173,18 +183,62 @@ public class McRPGExpGain implements Listener{
       }
     }
     
+    //Blood
+    ItemStack heldItem = p.getInventory().getItemInMainHand();
+    if(heldItem.getType() != Material.AIR){
+      NBTItem nbtItem = new NBTItem(heldItem);
+      if((e.getGainType() == GainReason.BREAK && BloodManager.BloodType.TOOL.isMaterialApplicable(heldItem.getType()))
+           || (e.getGainType() == GainReason.KILL && BloodManager.BloodType.WEAPON.isMaterialApplicable(heldItem.getType()))){
+        if(nbtItem.hasKey("McRPGBloodItem")){
+          int multiplier = nbtItem.getInteger("ExpBoost");
+          expMultiplier += (double) (multiplier/100);
+    
+          double chance = nbtItem.getDouble("ShatterChance");
+          int val = (int) (chance * 1000);
+          if(val >= rand.nextInt(100000)){
+            p.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+            p.updateInventory();
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1f);
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.ItemShatter")));
+          }
+        }
+      }
+    }
+    ItemStack[] armorContents = p.getInventory().getArmorContents();
+    for(int i = 0; i < armorContents.length; i++){
+      ItemStack itemStack = p.getInventory().getArmorContents()[i];
+      if(itemStack != null && itemStack.getType() != Material.AIR){
+        NBTItem nbtItem = new NBTItem(itemStack);
+        if(nbtItem.hasKey("McRPGBloodItem")){
+          int multiplier = nbtItem.getInteger("ExpBoost");
+          
+          expMultiplier += (double) (multiplier/100);
+          
+          double chance = nbtItem.getDouble("ShatterChance");
+          int val = (int) (chance * 1000);
+          if(val >= rand.nextInt(100000)){
+            armorContents[i] = new ItemStack(Material.AIR);
+            p.updateInventory();
+            p.playSound(p.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1f);
+            p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.ItemShatter")));
+          }
+        }
+      }
+    }
+    p.getInventory().setArmorContents(armorContents);
+    
     //Divine Escape exp debuff
     if(e.getMcRPGPlayer().getDivineEscapeExpDebuff() > 0 && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND){
-      e.setExpGained((int) (e.getExpGained() * (1 - e.getMcRPGPlayer().getDivineEscapeExpDebuff() / 100)));
+      expMultiplier -= (e.getMcRPGPlayer().getDivineEscapeExpDebuff() / 100);
     }
     if((e.getGainType() == GainReason.BREAK || e.getGainType() == GainReason.ENCHANTING || e.getGainType() == GainReason.FISHING || e.getGainType() == GainReason.BREW) && demetersShrineMultipliers.containsKey(e.getMcRPGPlayer().getUuid())){
       Skills type = e.getSkillGained().getType();
       if(type == Skills.HERBALISM || type == Skills.WOODCUTTING || type == Skills.MINING || type == Skills.EXCAVATION || type == Skills.FISHING || type == Skills.SORCERY){
-        e.setExpGained((int) (e.getExpGained() * demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid())));
+        expMultiplier += (demetersShrineMultipliers.get(e.getMcRPGPlayer().getUuid()) - 1);
       }
     }
     FileConfiguration sorceryFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SORCERY_CONFIG);
-    if(sorceryFile.getBoolean("SorceryEnabled") && p.getLocation().getBlock().getBiome() == Biome.NETHER
+    if(sorceryFile.getBoolean("SorceryEnabled") && p.getLocation().getWorld().getEnvironment() == World.Environment.NETHER
          && UnlockedAbilities.HADES_DOMAIN.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.HADES_DOMAIN) && mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN).isToggled() &&
          e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       HadesDomain hadesDomain = (HadesDomain) mp.getBaseAbility(UnlockedAbilities.HADES_DOMAIN);
@@ -195,10 +249,13 @@ public class McRPGExpGain implements Listener{
         multiplier = hadesDomainEvent.getPercentBonusMcRPGExp();
         multiplier /= 100;
         multiplier += 1;
+        expMultiplier += (multiplier - 1);
         e.setExpGained((int) (e.getExpGained() * multiplier));
       }
     }
-    e.setExpGained((int) (e.getExpGained() * McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained())));
+    expMultiplier += (McRPG.getInstance().getExpPermissionManager().getPermBoost(p, e.getSkillGained()) - 1);
+    
+    e.setExpGained((int) (originalExp * Math.min(expMultiplier, McRPG.getInstance().getConfig().getInt("Configuration.ExpMultiplierCap"))));
     
     if(e.getGainType() != GainReason.ARTIFACT && e.getGainType() != GainReason.REDEEM && e.getGainType() != GainReason.COMMAND && e.getGainType() != GainReason.PARTY){
       if(!McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getBoolean("PartiesEnabled", false)){
@@ -207,8 +264,8 @@ public class McRPGExpGain implements Listener{
       if(mp.getPartyID() != null){
         Party party = McRPG.getInstance().getPartyManager().getParty(mp.getPartyID());
         if(party != null){
-          party.giveExp(e.getExpGained());
-          int expToGive = (int) (e.getExpGained() * (PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT)) / 100d));
+          party.giveExp(originalExp);
+          int expToGive = (int) (originalExp * (PartyUpgrades.getExpShareAmountAtTier(party.getUpgradeTier(PartyUpgrades.EXP_SHARE_AMOUNT)) / 100d));
           int expForPlayer = (int) (e.getExpGained() * (PartyUpgrades.getExpHolderPercent() / 100));
           boolean expGiven = false;
           for(Player player : party.getOnlinePlayers()){

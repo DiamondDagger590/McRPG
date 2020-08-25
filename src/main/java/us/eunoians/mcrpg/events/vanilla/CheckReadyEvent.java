@@ -61,6 +61,7 @@ public class CheckReadyEvent implements Listener{
     }
     ItemStack heldItem = e.getItem();
     Calendar cal = Calendar.getInstance();
+    
     //skill book checks
     if(heldItem != null && e.getAction() != null && e.getHand() == EquipmentSlot.HAND &&
          (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && heldItem.getType() != null && heldItem.getType() == Material.ENCHANTED_BOOK && Methods.isSkillBook(heldItem)){
@@ -137,6 +138,8 @@ public class CheckReadyEvent implements Listener{
         }
       }
     }
+    
+    //Handle artifacts
     if(heldItem != null && e.getAction() != null && e.getHand() == EquipmentSlot.HAND && (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Methods.isArtifact(heldItem)){
       NBTItem artifact = new NBTItem(heldItem);
       if(artifact.hasKey("RedeemableExpAmount")){
@@ -267,6 +270,7 @@ public class CheckReadyEvent implements Listener{
         return;
       }
     }
+    
     //verify a proper ready action/special case for archery
     if(e.isCancelled() && e.getAction() != Action.RIGHT_CLICK_AIR){
       if(e.getHand() != null && e.getAction() != null && heldItem != null && e.getHand() == EquipmentSlot.HAND && (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) && heldItem.getType() == Material.BOW){
@@ -285,6 +289,7 @@ public class CheckReadyEvent implements Listener{
       }
       return;
     }
+    
     Block target = e.getClickedBlock();
     Material type;
     if(target == null){
@@ -293,9 +298,11 @@ public class CheckReadyEvent implements Listener{
     else{
       type = target.getType();
     }
+    
     if(heldItem == null){
       heldItem = new ItemStack(Material.AIR);
     }
+    
     if(type == Material.CHEST || type == Material.ENDER_CHEST || type == Material.TRAPPED_CHEST
          || type == Material.BEACON || type.name().contains("DOOR") || type.name().contains("SIGN") || type.name().contains("SHULKER") || type == Material.ENCHANTING_TABLE || type == Material.LEVER
          || type.name().contains("BUTTON") || type == Material.REPEATER || type == Material.COMPARATOR || type == Material.CRAFTING_TABLE || type.name().contains("FURNACE") || type.name().contains("SMOKER")
@@ -316,8 +323,8 @@ public class CheckReadyEvent implements Listener{
           Material itemType = isOffHand ? offHand.getType() : p.getItemInHand().getType();
           FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
           Sound eatSound = Sound.valueOf(soundFile.getString("Sounds.Herbalism.NaturesWrath.Sound"));
-          int volume = soundFile.getInt("Sounds.Herbalism.NaturesWrath.Volume");
-          int pitch = soundFile.getInt("Sounds.Herbalism.NaturesWrath.Pitch");
+          float volume = Float.parseFloat(soundFile.getString("Sounds.Herbalism.NaturesWrath.Volume"));
+          float pitch = Float.parseFloat(soundFile.getString("Sounds.Herbalism.NaturesWrath.Pitch"));
           if(itemType == Material.POPPY && herbalism.getBoolean(key + itemType.toString())){
             int hungerLost = herbalism.getInt(key + "HungerLost");
             int hungerLimit = herbalism.getInt(key + "HungerLimit");
@@ -522,6 +529,9 @@ public class CheckReadyEvent implements Listener{
       }
       else if(skillType == Skills.AXES){
         skill = McRPG.getInstance().getLangFile().getString("SkillItemNames.Axes");
+      }
+      else if(skillType == Skills.TAMING){
+        skill = McRPG.getInstance().getLangFile().getString("SkillItemNames.Taming");
       }
       p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                                        McRPG.getInstance().getLangFile().getString("Messages.Players.PlayerReady").replace("%Skill_Item%", skill)));

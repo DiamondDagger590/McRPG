@@ -1,0 +1,88 @@
+#Control various aspects of Crystallized Blood
+CrystallizedBlood:
+  #If blood should be enabled
+  Enabled: true
+  #Control chances of Blood spawning when a mob dies from a tamed wolf
+  SpawnChances:
+    #The chance from a non-bleeding mob
+    Normal: 0.5
+    #The chance from a bleeding mob
+    Bleeding: 0.75
+    #If true, mobs from spawners/eggs won't drop blood
+    IgnoreNonNaturalMobs: true
+  #Control different types of Blood
+  Types:
+    #Blood of this type can be applied to any tool
+    Tools:
+      #Chance of this blood type being selected
+      SpawnChance: 50.0
+      #How much experience multiplier the blood should offer
+      #Format is LOW_END-HIGH_END
+      ExpMultiplierRange: '10-25'
+      #The chance that on each exp multiplier, that the item shatters
+      ItemShatterChanceRange: 0.5
+      #Display name of the blood
+      DisplayName: '&4Crystallized Tool Blood'
+      #The lore of the itemstack
+      Lore:
+        - '&7Apply this on a tool to gain'
+        - '&6%ExpBoost%% &7extra exp when mining'
+        - ''
+        - '&7The tool will have a &6%ShatterChance% &7of'
+        - '&7breaking on use with the blood applied'
+      #If the blood should be glowing
+      IsGlowing: true
+    #Blood of this type can be applied to any weapon or bow
+    Weapons:
+      #Chance of this blood type being selected
+      SpawnChance: 50.0
+      #How much experience multiplier the blood should offer
+      #Format is LOW_END-HIGH_END
+      ExpMultiplierRange: '10-25'
+      #The chance that on each exp multiplier, that the item shatters
+      ItemShatterChanceRange: 0.5
+      #Display name of the blood
+      DisplayName: '&4Crystallized Weapon Blood'
+      #The lore of the itemstack
+      Lore:
+        - '&7Apply this on a weapon to gain'
+        - '&6%ExpBoost%% &7extra exp when slaying mobs'
+        - ''
+        - '&7The weapon will have a &6%ShatterChance% &7of'
+        - '&7breaking on use with the blood applied'
+      #If the blood should be glowing
+      IsGlowing: true
+    #Blood of this type can be applied to any armor
+    Armor:
+      #Chance of this blood type being selected
+      SpawnChance: 50.0
+      #How much experience multiplier the blood should offer
+      #Format is LOW_END-HIGH_END
+      ExpMultiplierRange: '1-5'
+      #The chance that on each exp multiplier, that the item shatters
+      ItemShatterChanceRange: 0.5
+      #Display name of the blood
+      DisplayName: '&4Crystallized Armor Blood'
+      #The lore of the itemstack
+      Lore:
+        - '&7Apply this on armour to gain'
+        - '&6%ExpBoost%% &7extra exp'
+        - ''
+        - '&7The armour will have a &6%ShatterChance% &7of'
+        - '&7breaking on use with the blood applied'
+      #If the blood should be glowing
+      IsGlowing: true
+    #Blood of this type is used to attack a player. Attacking a player with this will result in
+    BloodCurse:
+      #Chance of this blood type being selected
+      SpawnChance: 20.0
+      #How long blood curse should last
+      Duration: 5
+      #Display name of the blood
+      DisplayName: '&4Crystallized Blood Curse'
+      #The lore of the itemstack
+      Lore:
+        - '&7Attack a player with this to prevent'
+        - '&7them from using abilities for &6%Duration% &7seconds'
+      #If the blood should be glowing
+      IsGlowing: true

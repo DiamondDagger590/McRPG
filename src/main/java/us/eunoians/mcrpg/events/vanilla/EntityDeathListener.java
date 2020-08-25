@@ -1,17 +1,24 @@
 package us.eunoians.mcrpg.events.vanilla;
 
 import org.bukkit.Bukkit;
-import org.bukkit.block.Biome;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor;
 import us.eunoians.mcrpg.abilities.sorcery.HadesDomain;
+import us.eunoians.mcrpg.abilities.taming.PETAsWrath;
 import us.eunoians.mcrpg.api.events.mcrpg.fishing.PoseidonsFavorEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.sorcery.HadesDomainEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.PETAsWrathEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
@@ -19,16 +26,21 @@ import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
-public class EntityDeathEvent implements Listener{
+import java.util.List;
+import java.util.Random;
+
+public class EntityDeathListener implements Listener{
   
   @EventHandler
-  public void deathEvent(org.bukkit.event.entity.EntityDeathEvent e){
+  public void deathEvent(EntityDeathEvent e){
     LivingEntity entity = e.getEntity();
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
          McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
       return;
     }
+    
+    //Handle poseidon's guardian
     if(entity.getKiller() != null && entity.hasMetadata("GuardianExp")){
       int exp = entity.getMetadata("GuardianExp").get(0).asInt();
       Player p = entity.getKiller();
@@ -51,7 +63,45 @@ public class EntityDeathEvent implements Listener{
       p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Utility.ObtainedRedeemableExp")
                                                                             .replace("%Amount%", Integer.toString(exp))));
     }
-    if(entity.getKiller() != null && entity.getLocation().getBlock().getBiome() == Biome.NETHER){
+    
+    //Handle PETAs Wrath
+    if(entity.getKiller() != null && entity.getKiller().isValid() && entity instanceof Tameable){
+      Tameable tameableEntity = (Tameable) entity;
+      AnimalTamer owner = tameableEntity.getOwner();
+      if(owner == null){
+        return;
+      }
+      if(PlayerManager.isPlayerStored(owner.getUniqueId())){
+        try{
+          McRPGPlayer mcRPGPlayer = PlayerManager.getPlayer(owner.getUniqueId());
+          FileConfiguration tamingFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+          if(tamingFile.getBoolean("TamingEnabled") && UnlockedAbilities.PETAS_WRATH.isEnabled() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.PETAS_WRATH)
+          && mcRPGPlayer.getBaseAbility(UnlockedAbilities.PETAS_WRATH).isToggled()){
+            PETAsWrath petasWrath = (PETAsWrath) mcRPGPlayer.getBaseAbility(UnlockedAbilities.PETAS_WRATH);
+            List<String> potionEffects = tamingFile.getStringList("PETAsWrathConfig.Tier" + Methods.convertToNumeral(petasWrath.getCurrentTier()) + ".PotionEffects");
+            Random random = new Random();
+            String[] data = potionEffects.get(random.nextInt(potionEffects.size())).split(":");
+            PotionEffectType potionEffectType = PotionEffectType.getByName(data[0]);
+            if(data.length != 3 || potionEffectType == null || !Methods.isInt(data[1]) || !Methods.isInt(data[2])){
+              return;
+            }
+            int level = Math.min(0, Integer.parseInt(data[1]) - 1);
+            int duration = Integer.parseInt(data[2]) * 20;
+            PotionEffect potionEffect = new PotionEffect(potionEffectType, duration, level);
+            PETAsWrathEvent petasWrathEvent = new PETAsWrathEvent(mcRPGPlayer, petasWrath, potionEffect);
+            Bukkit.getPluginManager().callEvent(petasWrathEvent);
+            if(!petasWrathEvent.isCancelled()){
+              entity.getKiller().addPotionEffect(potionEffect);
+            }
+          }
+        }catch(McRPGPlayerNotFoundException mcRPGPlayerNotFoundException){
+          return;
+        }
+      }
+    }
+    
+    //Handle hades domain
+    if(entity.getKiller() != null && entity.getLocation().getBlock().getWorld().getEnvironment() == World.Environment.NETHER){
       Player killer = entity.getKiller();
       try{
         McRPGPlayer mp = PlayerManager.getPlayer(killer.getUniqueId());
@@ -74,5 +124,6 @@ public class EntityDeathEvent implements Listener{
         ex.printStackTrace();
       }
     }
+    
   }
 }

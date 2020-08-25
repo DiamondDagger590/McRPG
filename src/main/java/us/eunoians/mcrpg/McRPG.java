@@ -33,6 +33,7 @@ import us.eunoians.mcrpg.api.util.McRPGPlaceHolders;
 import us.eunoians.mcrpg.api.util.RemoteTransferTracker;
 import us.eunoians.mcrpg.api.util.WorldModifierManager;
 import us.eunoians.mcrpg.api.util.artifacts.ArtifactManager;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
 import us.eunoians.mcrpg.api.util.books.BookManager;
 import us.eunoians.mcrpg.api.util.brewing.BrewingStandManager;
 import us.eunoians.mcrpg.api.util.brewing.PotionRecipeManager;
@@ -72,12 +73,14 @@ import us.eunoians.mcrpg.events.mcrpg.McRPGPlayerLevelChange;
 import us.eunoians.mcrpg.events.mcrpg.PartyLevelUp;
 import us.eunoians.mcrpg.events.vanilla.ArrowHitEvent;
 import us.eunoians.mcrpg.events.vanilla.BreakEvent;
+import us.eunoians.mcrpg.events.vanilla.CallOfWildListener;
 import us.eunoians.mcrpg.events.vanilla.ChatEvent;
 import us.eunoians.mcrpg.events.vanilla.CheckReadyEvent;
 import us.eunoians.mcrpg.events.vanilla.DeathEvent;
 import us.eunoians.mcrpg.events.vanilla.DropItemEvent;
 import us.eunoians.mcrpg.events.vanilla.EnchantingEvent;
-import us.eunoians.mcrpg.events.vanilla.EntityDeathEvent;
+import us.eunoians.mcrpg.events.vanilla.EntityDeathListener;
+import us.eunoians.mcrpg.events.vanilla.EntityTameListener;
 import us.eunoians.mcrpg.events.vanilla.FishCatchEvent;
 import us.eunoians.mcrpg.events.vanilla.InteractHandler;
 import us.eunoians.mcrpg.events.vanilla.InvClickEvent;
@@ -96,6 +99,7 @@ import us.eunoians.mcrpg.events.vanilla.ShootEvent;
 import us.eunoians.mcrpg.events.vanilla.SignEvent;
 import us.eunoians.mcrpg.events.vanilla.SpawnEvent;
 import us.eunoians.mcrpg.events.vanilla.VanillaDamageEvent;
+import us.eunoians.mcrpg.events.vanilla.WolfValidator;
 import us.eunoians.mcrpg.events.vanilla.WorldListener;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
@@ -201,6 +205,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getLogger().info("Loading Potions");
     potionRecipeManager = new PotionRecipeManager();
     new PlayerManager(this);
+    new BloodManager(this);
     if (healthBarPluginEnabled) {
       getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
     }
@@ -292,7 +297,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new PlayerTossItemEvent(), this);
     getServer().getPluginManager().registerEvents(new FishCatchEvent(), this);
     getServer().getPluginManager().registerEvents(new DeathEvent(), this);
-    getServer().getPluginManager().registerEvents(new EntityDeathEvent(), this);
+    getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
     getServer().getPluginManager().registerEvents(new SignEvent(), this);
     getServer().getPluginManager().registerEvents(new SpawnEvent(), this);
     getServer().getPluginManager().registerEvents(new PotionDrinkEvent(), this);
@@ -300,6 +305,9 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     getServer().getPluginManager().registerEvents(new EnchantingEvent(), this);
     getServer().getPluginManager().registerEvents(new MoveItemEvent(), this);
     getServer().getPluginManager().registerEvents(new PartyLevelUp(), this);
+    getServer().getPluginManager().registerEvents(new EntityTameListener(), this);
+    getServer().getPluginManager().registerEvents(new WolfValidator(), this);
+    getServer().getPluginManager().registerEvents(new CallOfWildListener(), this);
     
     if(sickleEnabled){
       getServer().getPluginManager().registerEvents(new Sickle(), this);
@@ -330,7 +338,10 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
               cancel();
             }
             else{
-              amountToKick.addAndGet(iterator.next().purgeInactive(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.TimeInHoursToPurge", 168)));
+              Party party = iterator.next();
+              if(party != null){
+                amountToKick.addAndGet(party.purgeInactive(McRPG.getInstance().getFileManager().getFile(FileManager.Files.PARTY_CONFIG).getInt("InactivePurge.TimeInHoursToPurge", 168)));
+              }
             }
           }
         }.runTaskTimer(McRPG.getInstance(), 10 * 20, 10 * 20);

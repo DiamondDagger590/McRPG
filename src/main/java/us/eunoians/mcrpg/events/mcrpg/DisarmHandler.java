@@ -58,7 +58,7 @@ public class DisarmHandler implements Listener{
           e.setCancelled(true);
           FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
           targ.getLocation().getWorld().playSound(targ.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.StickyFingers.Sound")),
-            soundFile.getInt("Sounds.Unarmed.StickyFingers.Volume"), soundFile.getInt("Sounds.Unarmed.StickyFingers.Pitch"));
+            Float.parseFloat(soundFile.getString("Sounds.Unarmed.StickyFingers.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.StickyFingers.Pitch")));
           targ.sendMessage(Methods.color(targ, McRPG.getInstance().getPluginPrefix()
                   + McRPG.getInstance().getLangFile().getString("Messages.Abilities.StickyFingers.Resisted")));
           return;

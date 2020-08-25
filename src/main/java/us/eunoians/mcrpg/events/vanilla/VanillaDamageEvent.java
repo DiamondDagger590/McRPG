@@ -6,45 +6,103 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.NPC;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.abilities.axes.*;
-import us.eunoians.mcrpg.abilities.fitness.*;
+import us.eunoians.mcrpg.abilities.axes.AresBlessing;
+import us.eunoians.mcrpg.abilities.axes.CripplingBlow;
+import us.eunoians.mcrpg.abilities.axes.HeavyStrike;
+import us.eunoians.mcrpg.abilities.axes.SharperAxe;
+import us.eunoians.mcrpg.abilities.axes.Shred;
+import us.eunoians.mcrpg.abilities.axes.WhirlwindStrike;
+import us.eunoians.mcrpg.abilities.fitness.BulletProof;
+import us.eunoians.mcrpg.abilities.fitness.Dodge;
+import us.eunoians.mcrpg.abilities.fitness.IronMuscles;
+import us.eunoians.mcrpg.abilities.fitness.Roll;
+import us.eunoians.mcrpg.abilities.fitness.ThickSkin;
 import us.eunoians.mcrpg.abilities.swords.Bleed;
 import us.eunoians.mcrpg.abilities.swords.SerratedStrikes;
 import us.eunoians.mcrpg.abilities.swords.TaintedBlade;
-import us.eunoians.mcrpg.abilities.unarmed.*;
-import us.eunoians.mcrpg.api.events.mcrpg.axes.*;
-import us.eunoians.mcrpg.api.events.mcrpg.fitness.*;
+import us.eunoians.mcrpg.abilities.taming.Comradery;
+import us.eunoians.mcrpg.abilities.taming.DivineFur;
+import us.eunoians.mcrpg.abilities.taming.FuryOfCerberus;
+import us.eunoians.mcrpg.abilities.taming.Gore;
+import us.eunoians.mcrpg.abilities.taming.LinkedFangs;
+import us.eunoians.mcrpg.abilities.taming.SharpenedFangs;
+import us.eunoians.mcrpg.abilities.unarmed.Berserk;
+import us.eunoians.mcrpg.abilities.unarmed.DenseImpact;
+import us.eunoians.mcrpg.abilities.unarmed.Disarm;
+import us.eunoians.mcrpg.abilities.unarmed.IronArm;
+import us.eunoians.mcrpg.abilities.unarmed.SmitingFist;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.AresBlessingEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.HeavyStrikeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.SharperAxeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.ShredEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.axes.WhirlwindStrikeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.BulletProofEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.DodgeEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.IronMusclesEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.RollEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.fitness.ThickSkinEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.BleedEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.SerratedStrikesEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.swords.TaintedBladeEvent;
-import us.eunoians.mcrpg.api.events.mcrpg.unarmed.*;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.ComraderyEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.DivineFurEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.FuryOfCerberusEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.GoreEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.LinkedFangsEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.taming.SharpenedFangsEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.BerserkEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.DenseImpactEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.DisarmEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.IronArmEvent;
+import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
+import us.eunoians.mcrpg.api.util.blood.BloodFactory;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
+import us.eunoians.mcrpg.events.mcrpg.BleedHandler;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 import us.eunoians.mcrpg.players.PlayerReadyBit;
 import us.eunoians.mcrpg.skills.Axes;
 import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.skills.Taming;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.Skills;
@@ -55,25 +113,41 @@ import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
 import us.eunoians.mcrpg.util.worldguard.WGRegion;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
-public class VanillaDamageEvent implements Listener {
-
+public class VanillaDamageEvent implements Listener{
+  
+  private static final String FALL_DAMAGE_DIVINE_FUR_KEY = "Fall_Damage";
+  private static final String FIRE_DAMAGE_DIVINE_FUR_KEY = "Fire_Damage";
+  private static final String MAGIC_DAMAGE_DIVINE_FUR_KEY = "Magic_Damage";
+  private static final String ALL_DAMAGE_DIVINE_FUR_KEY = "All_Damage";
+  
+  public static final NamespacedKey HELL_HOUND_KEY = new NamespacedKey(McRPG.getInstance(), "is-hell-hound");
+  public static final NamespacedKey HELL_HOUND_IGNITE_KEY = new NamespacedKey(McRPG.getInstance(), "hell-hound-ignite");
+  public static final NamespacedKey HELL_HOUND_DESTROY_KEY = new NamespacedKey(McRPG.getInstance(), "hell-hound-destroy");
+  public static final NamespacedKey HELL_HOUND_SELF_DESTRUCT_KEY = new NamespacedKey(McRPG.getInstance(), "self-destruct-time");
+  
+  private static Map<UUID, BukkitTask> hellHoundSelfDestructMap = new HashMap<>();
+  
   public static void handleHealthbars(Entity attacker, LivingEntity target, double damage){
     if(!(attacker instanceof Player) || target instanceof ArmorStand){
       return;
     }
-
+    
     Player player = (Player) attacker;
-
+    
     if(isNPCEntity(player) || isNPCEntity(target)){
       return;
     }
-
-
+    
     MobHealthbarUtils.handleMobHealthbars(player, target, damage);
   }
-
+  
   /**
    * This code is not mine. It is copyright from the original mcMMO allowed for use by their license.
    * This code has been modified from it source material
@@ -94,19 +168,157 @@ public class VanillaDamageEvent implements Listener {
     return (entity.getNoDamageTicks() > entity.getMaximumNoDamageTicks() / 2.0F) && (eventDamage <= entity.getLastDamage());
   }
   //End mcMMO code
-
+  
   private static boolean isNPCEntity(Entity entity){
     return (entity == null || entity.hasMetadata("NPC") || entity instanceof NPC || entity.getClass().getName().equalsIgnoreCase("cofh.entity.PlayerFake"));
   }
-
+  
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-  public void fallListener(EntityDamageEvent e){
+  public void genericDamageListener(EntityDamageEvent e){
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
-         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())){
       return;
     }
-    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    
+    if(e.getEntity() instanceof Wolf){
+      Wolf wolf = (Wolf) e.getEntity();
+      
+      if(wolf.getOwner() != null && wolf.isValid()){
+        
+        if(wolf.getPersistentDataContainer().has(HELL_HOUND_KEY, PersistentDataType.STRING)){
+          if(wolf.getHealth() > 0 && wolf.getHealth() - e.getDamage() <= 0){
+            e.setCancelled(true);
+            new BukkitRunnable(){
+              @Override
+              public void run(){
+                wolf.getWorld().createExplosion(wolf.getLocation(), 2, false, wolf.getPersistentDataContainer().get(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING).equalsIgnoreCase("true"));
+              }
+            }.runTaskLater(McRPG.getInstance(), 1);
+            wolf.setHealth(0);
+            hellHoundSelfDestructMap.remove(wolf.getUniqueId()).cancel();
+          }
+        }
+        
+        McRPGPlayer mcRPGPlayer;
+        try{
+          mcRPGPlayer = PlayerManager.getPlayer(wolf.getOwner().getUniqueId());
+        }catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
+        
+        if(UnlockedAbilities.DIVINE_FUR.isEnabled() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.DIVINE_FUR)
+             && mcRPGPlayer.getBaseAbility(UnlockedAbilities.DIVINE_FUR).isToggled()){
+          
+          FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+          DivineFur divineFur = (DivineFur) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DIVINE_FUR);
+          String tier = Methods.convertToNumeral(divineFur.getCurrentTier());
+          
+          List<String> damagePreventions = tamingConfig.getStringList("DivineFurConfig.Tier" + tier + ".Protections");
+          Map<String, Double> preventionAmounts = new HashMap<>();
+          
+          for(String prevention : damagePreventions){
+            String[] data = prevention.split(":");
+            preventionAmounts.put(data[0], Double.parseDouble(data[1]));
+          }
+          
+          if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
+            if(preventionAmounts.containsKey(FALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(FALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+            else if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+          else if(e.getCause() == EntityDamageEvent.DamageCause.FIRE || e.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK){
+            if(preventionAmounts.containsKey(FIRE_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(FIRE_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+            else if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+          else if(e.getCause() == EntityDamageEvent.DamageCause.MAGIC || e.getCause() == EntityDamageEvent.DamageCause.DRAGON_BREATH){
+            if(preventionAmounts.containsKey(MAGIC_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(MAGIC_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+            else if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+          else{
+            if(preventionAmounts.containsKey(ALL_DAMAGE_DIVINE_FUR_KEY)){
+              DivineFurEvent divineFurEvent = new DivineFurEvent(mcRPGPlayer, divineFur, e.getCause(), preventionAmounts.get(ALL_DAMAGE_DIVINE_FUR_KEY));
+              Bukkit.getPluginManager().callEvent(divineFurEvent);
+              if(!divineFurEvent.isCancelled()){
+                if(divineFurEvent.getPercentProtected() >= 100.0d){
+                  e.setCancelled(true);
+                }
+                else{
+                  e.setDamage(e.getDamage() - (e.getDamage() * divineFurEvent.getPercentProtected()));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
     if(!(e instanceof EntityDamageByEntityEvent)){
       if(e.isCancelled() || !Skills.FITNESS.isEnabled() || e.getEntity().isInsideVehicle()){
         return;
@@ -117,12 +329,12 @@ public class VanillaDamageEvent implements Listener {
           McRPGPlayer mcRPGPlayer;
           try{
             mcRPGPlayer = PlayerManager.getPlayer(player.getUniqueId());
-          } catch(McRPGPlayerNotFoundException exception){
+          }catch(McRPGPlayerNotFoundException exception){
             return;
           }
           if(McRPG.getInstance().isWorldGuardEnabled()){
             WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
-
+            
             if(wgSupportManager.isWorldTracker(player.getWorld())){
               RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
               Location loc = player.getLocation();
@@ -146,7 +358,7 @@ public class VanillaDamageEvent implements Listener {
                             e.setCancelled(true);
                             return;
                           }
-                        } catch(McRPGPlayerNotFoundException exception){
+                        }catch(McRPGPlayerNotFoundException exception){
                         }
                       }
                     }
@@ -162,9 +374,9 @@ public class VanillaDamageEvent implements Listener {
               }
             }
           }
-
+          
           int featherFallingLevel = player.getEquipment().getBoots() != null
-                  && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
+                                      && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
           int expAwarded;
           boolean afk = false;
           if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
@@ -180,10 +392,10 @@ public class VanillaDamageEvent implements Listener {
                 int diffInX = Math.abs(oldLoc.getBlockX() - currentLocation.getBlockX());
                 int diffInY = Math.abs(oldLoc.getBlockY() - currentLocation.getBlockY());
                 int diffInZ = Math.abs(oldLoc.getBlockZ() - currentLocation.getBlockZ());
-                int numOfDiffAxis = diffInY <= config.getInt("AntiAFK.YRange") ? 1 : 0;
-                numOfDiffAxis += diffInX <= config.getInt("AntiAfk.XRange") ? 1 : 0;
-                numOfDiffAxis += diffInZ <= config.getInt("AntiAfk.ZRange") ? 1 : 0;
-                afk = numOfDiffAxis >= config.getInt("AntiAFK.AmountOfDifferences", 1);
+                int numOfDiffAxis = diffInY <= fitnessConfig.getInt("AntiAFK.YRange") ? 1 : 0;
+                numOfDiffAxis += diffInX <= fitnessConfig.getInt("AntiAfk.XRange") ? 1 : 0;
+                numOfDiffAxis += diffInZ <= fitnessConfig.getInt("AntiAfk.ZRange") ? 1 : 0;
+                afk = numOfDiffAxis >= fitnessConfig.getInt("AntiAFK.AmountOfDifferences", 1);
               }
               if(mcRPGPlayer.getLastFallLocation().size() >= 4){
                 while(mcRPGPlayer.getLastFallLocation().size() >= 4){
@@ -193,8 +405,8 @@ public class VanillaDamageEvent implements Listener {
               }
             }
             if(!afk && player.getHealth() - e.getDamage() > 0){
-              expAwarded = config.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
-              Parser equation = new Parser(config.getString("FallEquation"));
+              expAwarded = fitnessConfig.getInt("ExpAwardedPerDamage.FALL_DAMAGE");
+              Parser equation = new Parser(fitnessConfig.getString("FallEquation"));
               equation.setVariable("damage", e.getDamage());
               equation.setVariable("exp_awarded", expAwarded);
               equation.setVariable("feather_falling_level", featherFallingLevel);
@@ -206,7 +418,7 @@ public class VanillaDamageEvent implements Listener {
             }
             Roll roll = (Roll) mcRPGPlayer.getBaseAbility(DefaultAbilities.ROLL);
             if(roll.getGenericAbility().isEnabled() && roll.isToggled()){
-              Parser rollEquation = new Parser(config.getString("RollConfig.RollChanceEquation"));
+              Parser rollEquation = new Parser(fitnessConfig.getString("RollConfig.RollChanceEquation"));
               rollEquation.setVariable("fitness_level", mcRPGPlayer.getSkill(Skills.FITNESS).getCurrentLevel());
               int chance = (int) (rollEquation.getValue() * 1000);
               Random rand = new Random();
@@ -225,20 +437,20 @@ public class VanillaDamageEvent implements Listener {
       }
     }
   }
-
+  
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-  public void fitnessEvent(EntityDamageByEntityEvent e){
+  public void handlePlayerDamageAbilities(EntityDamageByEntityEvent e){
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
-         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())){
       return;
     }
-    FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+    
     if(e.getEntity() instanceof Player){
       McRPGPlayer mcRPGPlayer;
       try{
         mcRPGPlayer = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      } catch(McRPGPlayerNotFoundException exception){
+      }catch(McRPGPlayerNotFoundException exception){
         return;
       }
       if(e.getDamager() instanceof Player && e.getEntity() instanceof Player){
@@ -246,90 +458,123 @@ public class VanillaDamageEvent implements Listener {
           return;
         }
       }
+      
       //Deal with Divine Escape debuff
       if(mcRPGPlayer.getDivineEscapeDamageDebuff() > 0){
         double debuff = mcRPGPlayer.getDivineEscapeDamageDebuff() / 100 + 1;
         e.setDamage(e.getDamage() * debuff);
       }
-      if(!Skills.FITNESS.isEnabled()){
-        return;
-      }
-      if(e.getDamager() instanceof LivingEntity){
-        LivingEntity attacker = (LivingEntity) e.getDamager();
-        Material weaponType = attacker.getEquipment().getItemInMainHand().getType();
-        if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")){
-          if(UnlockedAbilities.THICK_SKIN.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.THICK_SKIN)
-                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()){
-            ThickSkin thickSkin = (ThickSkin) mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN);
-            double damageDecrease = config.getDouble("ThickSkinConfig.Tier" + Methods.convertToNumeral(thickSkin.getCurrentTier())
-                    + ".DamageDecrease");
-            ThickSkinEvent thickSkinEvent = new ThickSkinEvent(mcRPGPlayer, thickSkin, damageDecrease, (LivingEntity) e.getDamager());
-            Bukkit.getPluginManager().callEvent(thickSkinEvent);
-            if(!thickSkinEvent.isCancelled()){
-              e.setDamage(e.getDamage() * ((100 - damageDecrease) / 100));
-            }
-          }
-          if(attacker instanceof Player && UnlockedAbilities.IRON_MUSCLES.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.IRON_MUSCLES)
-                  && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()){
-            IronMuscles ironMuscles = (IronMuscles) mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES);
-            double activationChance = config.getDouble("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier())
-                    + ".ActivationChance");
-            int chance = (int) (activationChance * 1000);
-            Random rand = new Random();
-            int val = rand.nextInt(100000);
-            if(chance >= val){
-              int weaponDamage = config.getInt("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier()) +
-                      ".WeaponDamage");
-              IronMusclesEvent ironMusclesEvent = new IronMusclesEvent(mcRPGPlayer, ironMuscles, weaponDamage, (Player) attacker);
-              Bukkit.getPluginManager().callEvent(ironMusclesEvent);
-              if(!ironMusclesEvent.isCancelled()){
-                attacker.getEquipment().getItemInMainHand().setDurability((short) (attacker.getEquipment().getItemInMainHand().getDurability() + ironMusclesEvent.getDurabilityLoss()));
+      
+      //Handle comradery
+      if(UnlockedAbilities.COMRADERY.isEnabled() && mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.COMRADERY) && mcRPGPlayer.getBaseAbility(UnlockedAbilities.COMRADERY).isToggled()){
+        
+        FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+        Comradery comradery = (Comradery) mcRPGPlayer.getBaseAbility(UnlockedAbilities.COMRADERY);
+        
+        String tier = Methods.convertToNumeral(comradery.getCurrentTier());
+        double activationChance = tamingConfig.getDouble("ComraderyConfig.Tier" + tier + ".ActivationChance") * 1000;
+        int wolfRange = tamingConfig.getInt("ComraderyConfig.Tier" + tier + ".WolfRange");
+        
+        Random random = new Random();
+        int val = random.nextInt(100000);
+        
+        if(activationChance >= val){
+          for(Entity entity : mcRPGPlayer.getPlayer().getNearbyEntities(wolfRange, 1, wolfRange)){
+            if(entity instanceof Wolf){
+              Wolf wolf = (Wolf) entity;
+              if(wolf.getOwner() != null && wolf.getOwner().getUniqueId() == mcRPGPlayer.getUuid()){
+                ComraderyEvent comraderyEvent = new ComraderyEvent(mcRPGPlayer, comradery, wolf);
+                if(!comraderyEvent.isCancelled()){
+                  e.setCancelled(true);
+                  wolf.damage(e.getDamage());
+                  return;
+                }
               }
             }
           }
         }
-        if(UnlockedAbilities.DODGE.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.DODGE) &&
-                mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()){
-          Dodge dodge = (Dodge) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE);
-          double activationChance = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier())
-                  + ".ActivationChance");
-          int chance = (int) (activationChance * 1000);
-          Random rand = new Random();
-          int val = rand.nextInt(100000);
-          if(chance >= val){
-            double damageReduction = config.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier()) +
-                    ".DamageReduction");
-            DodgeEvent dodgeEvent = new DodgeEvent(mcRPGPlayer, dodge, attacker, damageReduction);
-            Bukkit.getPluginManager().callEvent(dodgeEvent);
-            if(!dodgeEvent.isCancelled()){
-              e.setDamage(e.getDamage() * ((100 - damageReduction) / 100));
-              mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Dodge.Activated")));
+      }
+      
+      //Handle fitness abilities
+      if(Skills.FITNESS.isEnabled()){
+        FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+        if(e.getDamager() instanceof LivingEntity){
+          LivingEntity attacker = (LivingEntity) e.getDamager();
+          Material weaponType = attacker.getEquipment().getItemInMainHand().getType();
+          if(weaponType.toString().contains("SWORD") || weaponType.toString().contains("AXE") || weaponType.toString().contains("TRIDENT")){
+            if(UnlockedAbilities.THICK_SKIN.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.THICK_SKIN)
+                 && mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN).isToggled()){
+              ThickSkin thickSkin = (ThickSkin) mcRPGPlayer.getBaseAbility(UnlockedAbilities.THICK_SKIN);
+              double damageDecrease = fitnessConfig.getDouble("ThickSkinConfig.Tier" + Methods.convertToNumeral(thickSkin.getCurrentTier())
+                                                                + ".DamageDecrease");
+              ThickSkinEvent thickSkinEvent = new ThickSkinEvent(mcRPGPlayer, thickSkin, damageDecrease, (LivingEntity) e.getDamager());
+              Bukkit.getPluginManager().callEvent(thickSkinEvent);
+              if(!thickSkinEvent.isCancelled()){
+                e.setDamage(e.getDamage() * ((100 - damageDecrease) / 100));
+              }
+            }
+            if(attacker instanceof Player && UnlockedAbilities.IRON_MUSCLES.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.IRON_MUSCLES)
+                 && mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES).isToggled()){
+              IronMuscles ironMuscles = (IronMuscles) mcRPGPlayer.getBaseAbility(UnlockedAbilities.IRON_MUSCLES);
+              double activationChance = fitnessConfig.getDouble("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier())
+                                                                  + ".ActivationChance");
+              int chance = (int) (activationChance * 1000);
+              Random rand = new Random();
+              int val = rand.nextInt(100000);
+              if(chance >= val){
+                int weaponDamage = fitnessConfig.getInt("IronMusclesConfig.Tier" + Methods.convertToNumeral(ironMuscles.getCurrentTier()) +
+                                                          ".WeaponDamage");
+                IronMusclesEvent ironMusclesEvent = new IronMusclesEvent(mcRPGPlayer, ironMuscles, weaponDamage, (Player) attacker);
+                Bukkit.getPluginManager().callEvent(ironMusclesEvent);
+                if(!ironMusclesEvent.isCancelled()){
+                  attacker.getEquipment().getItemInMainHand().setDurability((short) (attacker.getEquipment().getItemInMainHand().getDurability() + ironMusclesEvent.getDurabilityLoss()));
+                }
+              }
+            }
+          }
+          if(UnlockedAbilities.DODGE.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.DODGE) &&
+               mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE).isToggled()){
+            Dodge dodge = (Dodge) mcRPGPlayer.getBaseAbility(UnlockedAbilities.DODGE);
+            double activationChance = fitnessConfig.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier())
+                                                                + ".ActivationChance");
+            int chance = (int) (activationChance * 1000);
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val){
+              double damageReduction = fitnessConfig.getDouble("DodgeConfig.Tier" + Methods.convertToNumeral(dodge.getCurrentTier()) +
+                                                                 ".DamageReduction");
+              DodgeEvent dodgeEvent = new DodgeEvent(mcRPGPlayer, dodge, attacker, damageReduction);
+              Bukkit.getPluginManager().callEvent(dodgeEvent);
+              if(!dodgeEvent.isCancelled()){
+                e.setDamage(e.getDamage() * ((100 - damageReduction) / 100));
+                mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Dodge.Activated")));
+              }
             }
           }
         }
-      }
-      else if(e.getDamager() instanceof Projectile){
-        if(UnlockedAbilities.BULLET_PROOF.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.BULLET_PROOF)
-                && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()){
-          BulletProof bulletProof = (BulletProof) mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF);
-          double activationChance = config.getDouble("BulletProofConfig.Tier" + Methods.convertToNumeral(bulletProof.getCurrentTier())
-                  + ".ActivationChance");
-          int chance = (int) (activationChance * 1000);
-          Random rand = new Random();
-          int val = rand.nextInt(100000);
-          if(chance >= val){
-            BulletProofEvent bulletProofEvent = new BulletProofEvent(mcRPGPlayer, bulletProof, (Projectile) e.getDamager());
-            Bukkit.getPluginManager().callEvent(bulletProofEvent);
-            if(!bulletProofEvent.isCancelled()){
-              e.setCancelled(true);
-              mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BulletProof.Activated")));
+        else if(e.getDamager() instanceof Projectile){
+          if(UnlockedAbilities.BULLET_PROOF.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.BULLET_PROOF)
+               && mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF).isToggled()){
+            BulletProof bulletProof = (BulletProof) mcRPGPlayer.getBaseAbility(UnlockedAbilities.BULLET_PROOF);
+            double activationChance = fitnessConfig.getDouble("BulletProofConfig.Tier" + Methods.convertToNumeral(bulletProof.getCurrentTier())
+                                                                + ".ActivationChance");
+            int chance = (int) (activationChance * 1000);
+            Random rand = new Random();
+            int val = rand.nextInt(100000);
+            if(chance >= val){
+              BulletProofEvent bulletProofEvent = new BulletProofEvent(mcRPGPlayer, bulletProof, (Projectile) e.getDamager());
+              Bukkit.getPluginManager().callEvent(bulletProofEvent);
+              if(!bulletProofEvent.isCancelled()){
+                e.setCancelled(true);
+                mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BulletProof.Activated")));
+              }
             }
           }
         }
       }
     }
   }
-
+  
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void awardFitnessExp(EntityDamageByEntityEvent e){
     if(e.getDamager().getType() == EntityType.ENDER_PEARL && McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableEPearlExp")){
@@ -337,7 +582,7 @@ public class VanillaDamageEvent implements Listener {
     }
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
-         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())){
       return;
     }
     if(e.getDamager() instanceof Player && e.getEntity() instanceof Player){
@@ -349,7 +594,7 @@ public class VanillaDamageEvent implements Listener {
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(e.getEntity().getUniqueId());
-      } catch(McRPGPlayerNotFoundException exception){
+      }catch(McRPGPlayerNotFoundException exception){
         return;
       }
       if(e.getEntity() instanceof Player && !((Player) e.getEntity()).isBlocking()){
@@ -359,7 +604,7 @@ public class VanillaDamageEvent implements Listener {
       }
     }
   }
-
+  
   /**
    * This code is not all mine. It is copyright from the original mcMMO allowed for use by their license.
    * This code has been modified from it source material
@@ -368,39 +613,174 @@ public class VanillaDamageEvent implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
   public void damageEvent(EntityDamageByEntityEvent e){
     //TODO do entity/plugin checks
-    if(e.isCancelled() || e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
+    if(e.getDamage() >= McRPG.getInstance().getConfig().getInt("Configuration.MaxDamageCap")){
       return;
     }
     //Disabled Worlds
     if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
-         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())) {
+         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getEntity().getWorld().getName())){
       return;
     }
+    
+    //We need to handle taming before we deal with player stuff
+    if(Skills.TAMING.isEnabled() && e.getDamager() instanceof Tameable && Skills.TAMING.isEnabled() && e.getDamager() instanceof LivingEntity &&
+         e.getEntity() instanceof LivingEntity && e.getDamage() > 0){
+      Tameable tameable = (Tameable) e.getDamager();
+      if(tameable.getOwner() != null){
+        
+        McRPGPlayer mp;
+        try{
+          mp = PlayerManager.getPlayer(tameable.getOwner().getUniqueId());
+        }catch(McRPGPlayerNotFoundException exception){
+          return;
+        }
+        
+        if(((LivingEntity) e.getEntity()).getHealth() - e.getDamage() <= 0){
+          if(BloodManager.getInstance().isEnabled()){
+            if(!BloodManager.getInstance().isIgnoreNaturalMobs() || !e.getEntity().hasMetadata("ExpModifier")){
+              double spawnChance = BloodManager.getInstance().getNormalSpawnChance();
+              if(BleedHandler.isTargeted(e.getEntity().getUniqueId())){
+                spawnChance = BloodManager.getInstance().getBleedingSpawnChance();
+              }
+              int val = (int) (spawnChance * 1000);
+              if(val >= new Random().nextInt(100000)){
+                e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), BloodFactory.generateBlood());
+              }
+            }
+          }
+        }
+        
+        FileConfiguration tamingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+        
+        //We want to handle increased damage before awarding exp to give exp in compensation of the extra damage
+        if(UnlockedAbilities.SHARPENED_FANGS.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.SHARPENED_FANGS)
+             && mp.getBaseAbility(UnlockedAbilities.SHARPENED_FANGS).isToggled()){
+          
+          SharpenedFangs sharpenedFangs = (SharpenedFangs) mp.getBaseAbility(UnlockedAbilities.SHARPENED_FANGS);
+          String tier = Methods.convertToNumeral(sharpenedFangs.getCurrentTier());
+          double activationChance = tamingConfig.getDouble("SharpenedFangsConfig.Tier" + tier + ".ActivationChance") * 1000;
+          int extraDamage = tamingConfig.getInt("SharpenedFangsConfig.Tier" + tier + ".ExtraDamage");
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(activationChance >= val){
+            SharpenedFangsEvent sharpenedFangsEvent = new SharpenedFangsEvent(mp, sharpenedFangs, extraDamage);
+            Bukkit.getPluginManager().callEvent(sharpenedFangsEvent);
+            if(!sharpenedFangsEvent.isCancelled()){
+              e.setDamage(e.getDamage() + sharpenedFangsEvent.getExtraDamage());
+            }
+          }
+        }
+        
+        int expToAward;
+        if(tamingConfig.contains("ExpAwardedPerMob." + e.getEntityType().name())){
+          expToAward = tamingConfig.getInt("ExpAwardedPerMob." + e.getEntityType().name());
+        }
+        else{
+          expToAward = tamingConfig.getInt("ExpAwardedPerMob.OTHER", 0);
+        }
+        mp.giveExp(Skills.TAMING, (int) (expToAward * e.getDamage()), GainReason.DAMAGE);
+        
+        if(DefaultAbilities.GORE.isEnabled() && mp.getBaseAbility(DefaultAbilities.GORE).isToggled()){
+          Gore gore = (Gore) mp.getBaseAbility(DefaultAbilities.GORE);
+          Parser parser = DefaultAbilities.GORE.getActivationEquation();
+          parser.setVariable("taming_level", mp.getSkill(Skills.TAMING).getCurrentLevel());
+          parser.setVariable("power_level", mp.getPowerLevel());
+          int chance = (int) (parser.getValue() * 1000);
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(chance >= val){
+            GoreEvent goreEvent = new GoreEvent(mp, gore);
+            Bukkit.getPluginManager().callEvent(goreEvent);
+            if(!goreEvent.isCancelled()){
+              BleedEvent bleedEvent = new BleedEvent(mp, (LivingEntity) e.getEntity(), (Bleed) mp.getBaseAbility(DefaultAbilities.BLEED));
+              Bukkit.getPluginManager().callEvent(bleedEvent);
+            }
+          }
+        }
+        
+        if(UnlockedAbilities.LINKED_FANGS.isEnabled() && mp.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.LINKED_FANGS) && mp.getBaseAbility(UnlockedAbilities.LINKED_FANGS).isToggled()){
+          LinkedFangs linkedFangs = (LinkedFangs) mp.getBaseAbility(UnlockedAbilities.LINKED_FANGS);
+          
+          String tier = Methods.convertToNumeral(linkedFangs.getCurrentTier());
+          double activationChance = tamingConfig.getDouble("LinkedFangsConfig.Tier" + tier + ".ActivationChance") * 1000;
+          int healthToRestore = tamingConfig.getInt("LinkedFangsConfig.Tier" + tier + ".HealthToRestore");
+          int hungerToRestore = tamingConfig.getInt("LinkedFangsConfig.Tier" + tier + ".HungerToRestore");
+          int saturationToRestore = tamingConfig.getInt("LinkedFangsConfig.Tier" + tier + ".SaturationToRestore");
+          
+          Random rand = new Random();
+          int val = rand.nextInt(100000);
+          if(activationChance >= val){
+            LinkedFangsEvent linkedFangsEvent = new LinkedFangsEvent(mp, linkedFangs, healthToRestore, hungerToRestore, saturationToRestore);
+            Bukkit.getPluginManager().callEvent(linkedFangsEvent);
+            if(!linkedFangsEvent.isCancelled()){
+              LivingEntity len = (LivingEntity) e.getDamager();
+              len.setHealth(Math.min(len.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(), len.getHealth() + linkedFangsEvent.getHealthToRestore()));
+              mp.getPlayer().setFoodLevel(Math.min(20, mp.getPlayer().getFoodLevel() + linkedFangsEvent.getHungerToRestore()));
+              if(mp.getPlayer().getSaturation() < 10){
+                mp.getPlayer().setSaturation(Math.min(10, mp.getPlayer().getSaturation() + linkedFangsEvent.getSaturationToRestore()));
+              }
+            }
+          }
+        }
+        
+        if(tameable instanceof Wolf){
+          Wolf wolf = (Wolf) tameable;
+          if(wolf.getPersistentDataContainer().has(HELL_HOUND_KEY, PersistentDataType.STRING)){
+            Calendar calendar = Calendar.getInstance();
+            if(calendar.getTimeInMillis() >= wolf.getPersistentDataContainer().get(HELL_HOUND_SELF_DESTRUCT_KEY, PersistentDataType.LONG)){
+              hellHoundSelfDestructMap.remove(wolf.getUniqueId()).cancel();
+              wolf.setHealth(0);
+              new BukkitRunnable(){
+                @Override
+                public void run(){
+                  wolf.getWorld().createExplosion(wolf.getLocation(), 2, false, wolf.getPersistentDataContainer().get(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING).equalsIgnoreCase("true"));
+                }
+              }.runTaskLater(McRPG.getInstance(), 1);
+            }
+            else if(wolf.getPersistentDataContainer().get(HELL_HOUND_IGNITE_KEY, PersistentDataType.STRING).equalsIgnoreCase("true")){
+              e.getEntity().setFireTicks(100);
+            }
+          }
+        }
+      }
+      
+      //We don't care about other abilities because a wolf can't do anything past here
+      return;
+    }
+    
     if(e.getEntity() instanceof Player && e.getDamager() instanceof Player){
       if(!Methods.canPlayersPVP((Player) e.getEntity(), (Player) e.getDamager())){
         e.setCancelled(true);
         return;
       }
     }
+    
     FileConfiguration config;
-    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && !isNPCEntity(e.getEntity())){
+    if(e.getDamager() instanceof Player && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof ArmorStand) && !
+      
+                                                                                                                                isNPCEntity(e.getEntity())){
       Player damager = (Player) e.getDamager();
+      
+      //Fixes exploit with /sit
       if(damager.isInsideVehicle()){
         return;
       }
+      
+      //Don't award exp for self harm
       if(e.getEntity().getUniqueId() == e.getDamager().getUniqueId()){
         return;
       }
       McRPGPlayer mp;
       try{
         mp = PlayerManager.getPlayer(damager.getUniqueId());
-      } catch(McRPGPlayerNotFoundException exception){
+      }catch(McRPGPlayerNotFoundException exception){
         return;
       }
+      
       //Deal with world guard
       if(McRPG.getInstance().isWorldGuardEnabled()){
         WGSupportManager wgSupportManager = McRPG.getInstance().getWgSupportManager();
-
+        
         if(wgSupportManager.isWorldTracker(damager.getWorld())){
           RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
           Location loc = damager.getLocation();
@@ -424,7 +804,7 @@ public class VanillaDamageEvent implements Listener {
                         e.setCancelled(true);
                         return;
                       }
-                    } catch(McRPGPlayerNotFoundException exception){
+                    }catch(McRPGPlayerNotFoundException exception){
                     }
                   }
                 }
@@ -440,8 +820,9 @@ public class VanillaDamageEvent implements Listener {
           }
         }
       }
+      
       //Deal with unarmed
-      if(damager.getItemInHand() == null || damager.getItemInHand().getType() == Material.AIR){
+      if(damager.getInventory().getItemInMainHand() == null || damager.getInventory().getItemInMainHand().getType() == Material.AIR){
         if(!Skills.UNARMED.isEnabled()){
           return;
         }
@@ -461,9 +842,12 @@ public class VanillaDamageEvent implements Listener {
           mobSpawnValue = e.getEntity().getMetadata("ExpModifier").get(0).asDouble();
         }
         int expAwarded = (int) ((dmg * baseExp) * mobSpawnValue);
+        
+        //Handle shield modifications
         if(e.getEntity() instanceof Player && ((Player) e.getEntity()).isBlocking()){
           expAwarded = (int) (expAwarded * McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getDouble("Configuration.ShieldBlockingModifier"));
         }
+        
         if(expAwarded > 0){
           mp.getSkill(Skills.UNARMED).giveExp(mp, expAwarded, GainReason.DAMAGE);
         }
@@ -480,11 +864,11 @@ public class VanillaDamageEvent implements Listener {
               entity.setFireTicks(mp.getSmitingFistData().getSmiteDuration() * 20);
               if(entity instanceof Player){
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited").replace("%Player%", entity.getName())));
+                                                           McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Smited").replace("%Player%", entity.getName())));
               }
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFist.Sound")),
-                soundFile.getInt("Sounds.Unarmed.SmitingFist.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFist.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFist.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFist.Pitch")));
             }
           }
         }
@@ -504,7 +888,7 @@ public class VanillaDamageEvent implements Listener {
           PlayerReadyBit playerReadyBit = mp.getReadyingAbilityBit();
           if(playerReadyBit.getAbilityReady().equals(UnlockedAbilities.BERSERK)){
             if(UnlockedAbilities.BERSERK.isEnabled() && mp.getBaseAbility(UnlockedAbilities.BERSERK).isToggled()){
-
+              
               Berserk berserk = (Berserk) mp.getBaseAbility(UnlockedAbilities.BERSERK);
               double bonusChance = config.getDouble("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".ActivationBoost");
               int bonusDmg = config.getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".DamageBoost");
@@ -521,25 +905,25 @@ public class VanillaDamageEvent implements Listener {
                 e.setDamage(e.getDamage() + event.getBonusDamage());
                 //Tell player ability started
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Activated")));
+                                                           McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Activated")));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.Berserk.Sound")),
-                  soundFile.getInt("Sounds.Unarmed.Berserk.Volume"), soundFile.getInt("Sounds.Unarmed.Berserk.Pitch"));
-                new BukkitRunnable() {
+                  Float.parseFloat(soundFile.getString("Sounds.Unarmed.Berserk.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.Berserk.Pitch")));
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     //Undo all the things that berserk did and set it on cooldown
                     disarm.setBonusChance(0);
                     if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Deactivated")));
+                                                                 McRPG.getInstance().getLangFile().getString("Messages.Abilities.Berserk.Deactivated")));
                     }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
-                            McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Cooldown"));
+                      McRPG.getInstance().getFileManager().getFile(FileManager.Files.UNARMED_CONFIG).getInt("BerserkConfig.Tier" + Methods.convertToNumeral(berserk.getCurrentTier()) + ".Cooldown"));
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.BerserkEnded.Sound")),
-                      soundFile.getInt("Sounds.Unarmed.BerserkEnded.Volume"), soundFile.getInt("Sounds.Unarmed.BerserkEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Unarmed.BerserkEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.BerserkEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.BERSERK);
                     mp.addAbilityOnCooldown(UnlockedAbilities.BERSERK, cal.getTimeInMillis());
                   }
@@ -566,10 +950,10 @@ public class VanillaDamageEvent implements Listener {
               if(!smitingFistEvent.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.SMITING_FIST);
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Activated")));
+                                                           McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Activated")));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Sound")),
-                  soundFile.getInt("Sounds.Unarmed.SmitingFistActivated.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFistActivated.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistActivated.Pitch")));
                 mp.setSmitingFistData(smitingFistEvent);
                 mp.setCanSmite(true);
                 if(smitingFistEvent.isRemoveDebuffs()){
@@ -580,7 +964,7 @@ public class VanillaDamageEvent implements Listener {
                   }
                 }
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, smitingFistEvent.getDuration() * 20, smitingFistEvent.getAbsorptionLevel()));
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     //Undo all the things that smiting fist did and set it on cooldown
@@ -588,14 +972,14 @@ public class VanillaDamageEvent implements Listener {
                     mp.setSmitingFistData(null);
                     if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Deactivated")));
+                                                                 McRPG.getInstance().getLangFile().getString("Messages.Abilities.SmitingFist.Deactivated")));
                     }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
-                            smitingFistEvent.getCooldown());
+                      smitingFistEvent.getCooldown());
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Sound")),
-                      soundFile.getInt("Sounds.Unarmed.SmitingFistEnded.Volume"), soundFile.getInt("Sounds.Unarmed.SmitingFistEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.SmitingFistEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.SMITING_FIST);
                     mp.addAbilityOnCooldown(UnlockedAbilities.SMITING_FIST, cal.getTimeInMillis());
                   }
@@ -617,13 +1001,13 @@ public class VanillaDamageEvent implements Listener {
               if(!denseImpactEvent.isCancelled()){
                 mp.getActiveAbilities().add(UnlockedAbilities.DENSE_IMPACT);
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Activated")));
+                                                           McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Activated")));
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Sound")),
-                  soundFile.getInt("Sounds.Unarmed.DenseImpactActivated.Volume"), soundFile.getInt("Sounds.Unarmed.DenseImpactActivated.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactActivated.Pitch")));
                 mp.setCanDenseImpact(true);
                 mp.setArmourDmg(denseImpactEvent.getArmourDmg());
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     //Undo all the things that dense impact did and set it on cooldown
@@ -631,13 +1015,13 @@ public class VanillaDamageEvent implements Listener {
                     mp.setArmourDmg(0);
                     if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Deactivated")));
+                                                                 McRPG.getInstance().getLangFile().getString("Messages.Abilities.DenseImpact.Deactivated")));
                     }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
-                            cooldown);
+                      cooldown);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Sound")),
-                      soundFile.getInt("Sounds.Unarmed.DenseImpactEnded.Volume"), soundFile.getInt("Sounds.Unarmed.DenseImpactEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Unarmed.DenseImpactEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.DENSE_IMPACT);
                     mp.addAbilityOnCooldown(UnlockedAbilities.DENSE_IMPACT, cal.getTimeInMillis());
                   }
@@ -653,7 +1037,7 @@ public class VanillaDamageEvent implements Listener {
           McRPGPlayer damagedMcRPGPlayer;
           try{
             damagedMcRPGPlayer = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-          } catch(McRPGPlayerNotFoundException exception){
+          }catch(McRPGPlayerNotFoundException exception){
             return;
           }
           if(damagedPlayer.getItemInHand() != null || damagedPlayer.getItemInHand().getType() != Material.AIR){
@@ -685,7 +1069,7 @@ public class VanillaDamageEvent implements Listener {
                 }
                 damagedPlayer.getInventory().setItem(heldSlot, new ItemStack(Material.AIR));
                 damager.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix()
-                        + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Disarm.PlayerDisarmed").replaceAll("%Player%", damagedPlayer.getDisplayName())));
+                                                    + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Disarm.PlayerDisarmed").replaceAll("%Player%", damagedPlayer.getDisplayName())));
                 damagedPlayer.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Disarm.BeenDisarmed")));
               }
             }
@@ -707,7 +1091,7 @@ public class VanillaDamageEvent implements Listener {
         }
       }
       else{
-        Material weapon = damager.getItemInHand().getType();
+        Material weapon = damager.getInventory().getItemInMainHand().getType();
         if(weapon.name().contains("SWORD")){
           Skill playersSkill = mp.getSkill(Skills.SWORDS);
           if(!Skills.SWORDS.isEnabled()){
@@ -730,22 +1114,22 @@ public class VanillaDamageEvent implements Listener {
                 bleed.setBonusChance(event.getActivationRateBoost());
                 //Tell player ability started
                 mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Activated")));
-                new BukkitRunnable() {
+                                                           McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Activated")));
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     //Undo all the things that serrated strikes did and set it on cooldown
                     bleed.setBonusChance(0);
                     if(mp.getPlayer().isOnline()){
                       mp.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Deactivated")));
+                                                                 McRPG.getInstance().getLangFile().getString("Messages.Abilities.SerratedStrikes.Deactivated")));
                     }
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.SECOND,
-                            event.getCooldown());
+                      event.getCooldown());
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Sound")),
-                      soundFile.getInt("Sounds.Swords.SerratedStrikesEnded.Volume"), soundFile.getInt("Sounds.Swords.SerratedStrikesEnded.Pitch"));
+                      Float.parseFloat(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Volume")), Float.parseFloat(soundFile.getString("Sounds.Swords.SerratedStrikesEnded.Pitch")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.SERRATED_STRIKES);
                     mp.addAbilityOnCooldown(UnlockedAbilities.SERRATED_STRIKES, cal.getTimeInMillis());
                   }
@@ -760,7 +1144,7 @@ public class VanillaDamageEvent implements Listener {
                 mp.getActiveAbilities().add(UnlockedAbilities.TAINTED_BLADE);
                 Player p = mp.getPlayer();
                 p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                        McRPG.getInstance().getLangFile().getString("Messages.Abilities.TaintedBlade.Activated")));
+                                              McRPG.getInstance().getLangFile().getString("Messages.Abilities.TaintedBlade.Activated")));
                 PotionEffect strength = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, event.getStrengthDuration() * 20, 1);
                 PotionEffect resistance = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, event.getResistanceDuration() * 20, 1);
                 PotionEffect hunger = new PotionEffect(PotionEffectType.HUNGER, event.getHungerDuration() * 20, 3);
@@ -769,10 +1153,10 @@ public class VanillaDamageEvent implements Listener {
                 p.addPotionEffect(hunger);
                 Calendar cal = Calendar.getInstance();
                 cal.add(Calendar.SECOND,
-                        event.getCooldown());
+                  event.getCooldown());
                 FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                 p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Sound")),
-                  soundFile.getInt("Sounds.Swords.TaintedBladeEnd.Volume"), soundFile.getInt("Sounds.Swords.TaintedBladeEnd.Pitch"));
+                  Float.parseFloat(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Volume")), Float.parseFloat(soundFile.getString("Sounds.Swords.TaintedBladeEnd.Pitch")));
                 mp.getActiveAbilities().remove(UnlockedAbilities.TAINTED_BLADE);
                 mp.addAbilityOnCooldown(UnlockedAbilities.TAINTED_BLADE, cal.getTimeInMillis());
               }
@@ -787,7 +1171,7 @@ public class VanillaDamageEvent implements Listener {
                 McRPGPlayer dmged;
                 try{
                   dmged = PlayerManager.getPlayer(damagedPlayer.getUniqueId());
-                } catch(McRPGPlayerNotFoundException exception){
+                }catch(McRPGPlayerNotFoundException exception){
                   return;
                 }
                 if(!dmged.isHasBleedImmunity() && bleed.canTarget()){
@@ -838,6 +1222,7 @@ public class VanillaDamageEvent implements Listener {
             mp.getSkill(Skills.SWORDS).giveExp(mp, expAwarded, GainReason.DAMAGE);
           }
         }
+        
         else if(weapon.name().contains("AXE")){
           Axes axes = (Axes) mp.getSkill(Skills.AXES);
           config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.AXES_CONFIG);
@@ -859,7 +1244,7 @@ public class VanillaDamageEvent implements Listener {
                 mp.getActiveAbilities().add(UnlockedAbilities.CRIPPLING_BLOW);
                 mp.setCripplingBlowData(cripplingBlowEvent);
                 damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CripplingBlow.Activated")));
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     mp.getActiveAbilities().remove(UnlockedAbilities.CRIPPLING_BLOW);
@@ -924,7 +1309,7 @@ public class VanillaDamageEvent implements Listener {
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, aresBlessingEvent.getStrengthDuration() * 20, aresBlessingEvent.getStrengthLevel()));
                 damager.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, aresBlessingEvent.getResistanceDuration() * 20, aresBlessingEvent.getResistanceLevel()));
                 damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Activated")));
-                new BukkitRunnable() {
+                new BukkitRunnable(){
                   @Override
                   public void run(){
                     damager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, aresBlessingEvent.getMiningFatigueDuration() * 20, aresBlessingEvent.getMiningFatigueLevel()));
@@ -1018,6 +1403,92 @@ public class VanillaDamageEvent implements Listener {
             mp.getSkill(Skills.AXES).giveExp(mp, expAwarded, GainReason.DAMAGE);
           }
         }
+        
+        else if(weapon == Material.BLAZE_ROD){
+          Taming taming = (Taming) mp.getSkill(Skills.TAMING);
+          config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.TAMING_CONFIG);
+          
+          if(mp.isReadying()){
+            if(mp.getReadyingAbilityBit().getAbilityReady() == UnlockedAbilities.FURY_OF_CERBERUS){
+              
+              FuryOfCerberus furyOfCerberus = (FuryOfCerberus) mp.getBaseAbility(UnlockedAbilities.FURY_OF_CERBERUS);
+              String tier = Methods.convertToNumeral(furyOfCerberus.getCurrentTier());
+              
+              int hellHoundHealth = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".HellHoundHealth");
+              boolean igniteTarget = config.getBoolean("FuryOfCerberusConfig.Tier" + tier + ".IgniteTarget");
+              boolean explosionsDestroyBlocks = config.getBoolean("FuryOfCerberusConfig.Tier" + tier + ".ExplosionDestroyBlocks");
+              int selfDestructTimer = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".SelfDestructTimer");
+              int cooldown = config.getInt("FuryOfCerberusConfig.Tier" + tier + ".Cooldown");
+              
+              FuryOfCerberusEvent furyOfCerberusEvent = new FuryOfCerberusEvent(mp, furyOfCerberus, hellHoundHealth, igniteTarget, explosionsDestroyBlocks, selfDestructTimer, cooldown);
+              Bukkit.getPluginManager().callEvent(furyOfCerberusEvent);
+              if(!furyOfCerberusEvent.isCancelled()){
+                Bukkit.getScheduler().cancelTask(mp.getReadyingAbilityBit().getEndTaskID());
+                mp.setReadyingAbilityBit(null);
+                mp.setReadying(false);
+                
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.SECOND, furyOfCerberusEvent.getSelfDestructTimer());
+                for(int i = 0; i < 3; i++){
+                  Wolf hellHound = (Wolf) mp.getPlayer().getWorld().spawnEntity(mp.getPlayer().getLocation(), EntityType.WOLF);
+                  hellHound.setCollarColor(DyeColor.ORANGE);
+                  hellHound.setAdult();
+                  hellHound.setOwner(mp.getPlayer());
+                  hellHound.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(furyOfCerberusEvent.getHellHoundHealth());
+                  hellHound.setHealth(furyOfCerberusEvent.getHellHoundHealth());
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_KEY, PersistentDataType.STRING, "true");
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_IGNITE_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerberusEvent.isIgniteTarget()));
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING, Boolean.toString(furyOfCerberusEvent.isExplosionDestroyBlocks()));
+                  hellHound.getPersistentDataContainer().set(HELL_HOUND_SELF_DESTRUCT_KEY, PersistentDataType.LONG, calendar.getTimeInMillis());
+                  hellHound.setTarget((LivingEntity) e.getEntity());
+                  hellHound.setCustomName(ChatColor.RED + "Hell Hound");
+                  hellHound.setCustomNameVisible(true);
+                  
+                  FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
+                  mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Taming.HellHoundSummon.Sound")),
+                    Float.parseFloat(soundFile.getString("Sounds.Taming.HellHoundSummon.Volume")), Float.parseFloat(soundFile.getString("Sounds.Taming.HellHoundSummon.Pitch")));
+                  
+                  Calendar cal = Calendar.getInstance();
+                  cal.add(Calendar.SECOND, furyOfCerberusEvent.getCooldown());
+                  mp.addAbilityOnCooldown(UnlockedAbilities.FURY_OF_CERBERUS, cal.getTimeInMillis());
+                  
+                  BukkitTask selfDestructTask = new BukkitRunnable(){
+                    @Override
+                    public void run(){
+                      if(hellHound.isValid()){
+                        hellHound.setHealth(0);
+                        new BukkitRunnable(){
+                          @Override
+                          public void run(){
+                            hellHound.getWorld().createExplosion(hellHound.getLocation(), 2, false, hellHound.getPersistentDataContainer().get(HELL_HOUND_DESTROY_KEY, PersistentDataType.STRING).equalsIgnoreCase("true"));
+                          }
+                        }.runTaskLater(McRPG.getInstance(), 1);
+                        hellHoundSelfDestructMap.remove(hellHound.getUniqueId());
+                      }
+                      cancel();
+                    }
+                  }.runTaskLater(McRPG.getInstance(), furyOfCerberusEvent.getSelfDestructTimer() * 20);
+                  hellHoundSelfDestructMap.put(hellHound.getUniqueId(), selfDestructTask);
+                }
+              }
+            }
+          }
+        }
+        
+        else if(weapon == Material.REDSTONE && e.getEntity() instanceof Player){
+          NBTItem nbtItem = new NBTItem(damager.getInventory().getItemInMainHand());
+          if(nbtItem.hasKey("McRPGBlood")){
+            BloodManager.BloodType bloodType = BloodManager.BloodType.getFromID(nbtItem.getString("BloodType"));
+            if(bloodType == BloodManager.BloodType.CURSE){
+              int duration = nbtItem.getInteger("Duration");
+              BloodManager.getInstance().setPlayerUnderCurse(e.getEntity().getUniqueId(), duration);
+              damager.getInventory().getItemInMainHand().setAmount(damager.getInventory().getItemInMainHand().getAmount() - 1);
+              damager.updateInventory();
+              damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.AppliedCurse").replace("%Target%", e.getEntity().getName()).replace("%Duration%", Integer.toString(duration))));
+              e.getEntity().sendMessage(Methods.color((Player) e.getEntity(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Blood.BeenCursed").replace("%Duration%", Integer.toString(duration))));
+            }
+          }
+        }
       }
       handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
     }
@@ -1031,7 +1502,7 @@ public class VanillaDamageEvent implements Listener {
         McRPGPlayer mp;
         try{
           mp = PlayerManager.getPlayer(shooter.getUniqueId());
-        } catch(McRPGPlayerNotFoundException exception){
+        }catch(McRPGPlayerNotFoundException exception){
           return;
         }
         //give exp
@@ -1065,7 +1536,7 @@ public class VanillaDamageEvent implements Listener {
         }
         //Handle the hp bars when dealing with archery
         handleHealthbars(e.getDamager(), (LivingEntity) e.getEntity(), e.getFinalDamage());
-
+        
         if(e.getEntity() instanceof LivingEntity){
           LivingEntity target = (LivingEntity) e.getEntity();
           if(arrow.hasMetadata("Artemis")){
@@ -1073,16 +1544,16 @@ public class VanillaDamageEvent implements Listener {
             e.setDamage(e.getDamage() * dmgMultiplier);
             if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
-                      McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Hit")));
+                                                                  McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Hit")));
             }
           }
-
+          
           else if(arrow.hasMetadata("Apollo")){
             int fireDuration = arrow.getMetadata("Apollo").get(0).asInt();
             target.setFireTicks(fireDuration * 20);
             if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
-                      McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Hit")));
+                                                                  McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Hit")));
             }
             target.removePotionEffect(PotionEffectType.INCREASE_DAMAGE);
             target.removePotionEffect(PotionEffectType.REGENERATION);
@@ -1094,7 +1565,7 @@ public class VanillaDamageEvent implements Listener {
             target.removePotionEffect(PotionEffectType.HEALTH_BOOST);
             target.removePotionEffect(PotionEffectType.WATER_BREATHING);
           }
-
+          
           else if(arrow.hasMetadata("Hades1")){
             int witherDuration = arrow.getMetadata("Hades1").get(0).asInt();
             int witherLevel = arrow.getMetadata("Hades2").get(0).asInt();
@@ -1104,18 +1575,18 @@ public class VanillaDamageEvent implements Listener {
             target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, witherDuration * 20, witherLevel - 1));
             target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slownessDuration * 20, slownessLevel - 1));
             target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, blindnessDuration * 20, 0));
-
+            
             if(target instanceof Player){
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
-                      McRPG.getInstance().getLangFile().getString("Messages.Abilities.CurseOfHades.Hit")));
+                                                                  McRPG.getInstance().getLangFile().getString("Messages.Abilities.CurseOfHades.Hit")));
             }
           }
-
+          
           if(arrow.hasMetadata("Puncture")){
             McRPGPlayer s;
             try{
               s = PlayerManager.getPlayer(UUID.fromString(arrow.getMetadata("Puncture").get(0).asString()));
-            } catch(McRPGPlayerNotFoundException exception){
+            }catch(McRPGPlayerNotFoundException exception){
               return;
             }
             BleedEvent bleedEvent = new BleedEvent(s, target, (Bleed) s.getBaseAbility(DefaultAbilities.BLEED));
@@ -1124,7 +1595,7 @@ public class VanillaDamageEvent implements Listener {
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.Puncture.Hit")));
             }
           }
-
+          
           if(arrow.hasMetadata("TippedArrows")){
             String effect = arrow.getMetadata("TippedArrows").get(0).asString();
             String[] data = effect.split(":");
@@ -1134,7 +1605,7 @@ public class VanillaDamageEvent implements Listener {
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.TippedArrows.Hit")));
             }
           }
-
+          
           if(arrow.hasMetadata("Combo1")){
             //Kinda unneeded but better safe than sorry ig?
             UUID shooterUUID = UUID.fromString(arrow.getMetadata("Combo1").get(0).asString());
@@ -1224,8 +1695,8 @@ public class VanillaDamageEvent implements Listener {
       return;
     }
   }
-
-  private enum Debuffs {
+  
+  private enum Debuffs{
     BLINDNESS(PotionEffectType.BLINDNESS),
     WEAKNESS(PotionEffectType.WEAKNESS),
     SLOWNESS(PotionEffectType.SLOW),
@@ -1233,14 +1704,14 @@ public class VanillaDamageEvent implements Listener {
     HUNGER(PotionEffectType.HUNGER),
     WITHER(PotionEffectType.WITHER),
     POISON(PotionEffectType.POISON);
-
+    
     @Getter
     private PotionEffectType effectType;
-
+    
     Debuffs(PotionEffectType effectType){
       this.effectType = effectType;
     }
-
+    
     public static boolean isDebuff(PotionEffectType test){
       for(Debuffs debuff : values()){
         if(debuff.getEffectType().equals(test)){

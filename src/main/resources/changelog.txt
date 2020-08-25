@@ -1,3 +1,29 @@
+1.4.0.0-BETA
++ Update to 1.16.2
+    - You will need to either delete skill files and let the new mobs/blocks generate that way or manually add them yourselves
+    - Reference the github files for the current values
++ Add new taming skill
+    - Default ability: Gore
+        - Has a chance to inflict enemy with bleed including all bleed modifiers
+    - Unlocked Abilities
+        - Divine Fur
+            - Offers protection from various sources of damage
+        - Sharpened Fangs
+            - Has a chance of dealing increased damage when a wolf attacks
+        - Linked Fangs
+            - When a wolf attacks, there is a chance to heal the wolf and restore your hunger/saturation
+        - Comradery
+            - A nearby wolf of yours may take an attack for you
+        - PETAs Wrath
+            - If an enemy kills your wolf, give a random debuff
+        - Fury Of Cerebus
+            - Ready with a blaze rod and attack to summon 3 hell hounds. They ignite enemies and explode on death. They auto explode after a few seconds
++ Added Crystallized Blood
+    - Can be applied to tools, armor, and weapons to increase exp gain when they are used. Using one however gives a very small chance the item breaks
+    - Can also attack with a special type of blood to silence someone, preventing ability usage for a few seconds
++ Add a cap to the amount of exp boost a player can get from mcrpg related exp boosts:   ExpMultiplierCap: 3.0 This is auto added to the config.yml
+= Many bug fixes I forgot to log as it's been... a very very long summer
+
 1.3.3.0-BETA
 + Add player auto teleport setting
 + Added Papi placeholders for default abilities. Example is %GreatRod_Chance%

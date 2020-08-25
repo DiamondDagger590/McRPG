@@ -73,6 +73,7 @@ public class InteractHandler implements Listener {
       meta.setUnbreakable(true);
       shovel.setItemMeta(meta);
     }
+    
     Player p = e.getPlayer();
     McRPGPlayer mp;
     try{
@@ -81,7 +82,8 @@ public class InteractHandler implements Listener {
     catch(McRPGPlayerNotFoundException exception){
       return;
     }
-    if(!e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.BREWING_STAND){
+    
+    if(e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock().getType() == Material.BREWING_STAND){
       if(p.isSneaking() && !(p.getInventory().getItemInMainHand() == null || p.getInventory().getItemInMainHand().getType() == Material.AIR)){
         return;
       }
@@ -114,11 +116,14 @@ public class InteractHandler implements Listener {
       }
       return;
     }
+    
     if(e.isCancelled() && e.getAction() == Action.RIGHT_CLICK_AIR) {
       return;
     }
+    
     Block target = e.getClickedBlock();
     Material type;
+    
     //prevent possible NPE's
     if(target == null) {
       type = Material.AIR;
@@ -126,9 +131,12 @@ public class InteractHandler implements Listener {
     else {
       type = target.getType();
     }
+    
     //If the player is readying
     if(mp.isReadying()) {
+      
       PlayerReadyBit bit = mp.getReadyingAbilityBit();
+      
       //If bit for some reason is null but they are readying we want to set it so they arent
       if(bit == null) {
         mp.setReadying(false);
@@ -139,7 +147,7 @@ public class InteractHandler implements Listener {
       BaseAbility ability = mp.getSkill(abilityType.getSkill()).getAbility(abilityType);
       //if they are readying blast mining
       if(abilityType == UnlockedAbilities.BLAST_MINING) {
-        //veryify they are trying to place tnt
+        //verify they are trying to place tnt
         if(heldItem.getType() == Material.TNT) {
           BlastMining blastMining = (BlastMining) ability;
           FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
@@ -173,7 +181,7 @@ public class InteractHandler implements Listener {
             p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, p.getLocation(), 30);
             FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.BlastMining.Sound")),
-              soundFile.getInt("Sounds.Mining.BlastMining.Volume"), soundFile.getInt("Sounds.Mining.BlastMining.Pitch"));
+              Float.parseFloat(soundFile.getString("Sounds.Mining.BlastMining.Volume")), Float.parseFloat(soundFile.getString("Sounds.Mining.BlastMining.Pitch")));
             ItemStack pick = new ItemStack(Material.DIAMOND_PICKAXE, 1);
             for(Block b : blastMiningEvent.getBlocks()) {
               Material material = b.getType();
@@ -207,6 +215,8 @@ public class InteractHandler implements Listener {
         }
         return;
       }
+      
+      //Handle Super Breaker
       else if(abilityType.equals(UnlockedAbilities.SUPER_BREAKER) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
         SuperBreaker superBreaker = (SuperBreaker) ability;
         FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
@@ -238,7 +248,7 @@ public class InteractHandler implements Listener {
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Deactivated")));
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.SuperBreaker.Sound")),
-                soundFile.getInt("Sounds.Mining.SuperBreaker.Volume"), soundFile.getInt("Sounds.Mining.SuperBreaker.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Mining.SuperBreaker.Volume")), Float.parseFloat(soundFile.getString("Sounds.Mining.SuperBreaker.Pitch")));
             }
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND,
@@ -249,6 +259,8 @@ public class InteractHandler implements Listener {
         }.runTaskLater(McRPG.getInstance(), superBreakerEvent.getHasteDuration() * 20);
         return;
       }
+     
+      //Handle Frenzy Dig
       else if(abilityType.equals(UnlockedAbilities.FRENZY_DIG) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
         FrenzyDig frenzyDig = (FrenzyDig) ability;
         FileConfiguration excavationConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EXCAVATION_CONFIG);
@@ -280,7 +292,7 @@ public class InteractHandler implements Listener {
                       McRPG.getInstance().getLangFile().getString("Messages.Abilities.FrenzyDig.Deactivated")));
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               mp.getPlayer().getLocation().getWorld().playSound(mp.getPlayer().getLocation(), Sound.valueOf(soundFile.getString("Sounds.Excavation.FrenzyDig.Sound")),
-                soundFile.getInt("Sounds.Excavation.FrenzyDig.Volume"), soundFile.getInt("Sounds.Excavation.FrenzyDig.Pitch"));
+                Float.parseFloat(soundFile.getString("Sounds.Excavation.FrenzyDig.Volume")), Float.parseFloat(soundFile.getString("Sounds.Excavation.FrenzyDig.Pitch")));
             }
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.SECOND,
@@ -291,6 +303,8 @@ public class InteractHandler implements Listener {
         }.runTaskLater(McRPG.getInstance(), frenzyDigEvent.getHasteDuration() * 20);
         return;
       }
+    
+      //Handle Hand Digging
       else if(abilityType.equals(UnlockedAbilities.HAND_DIGGING) && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)){
         HandDigging handDigging = (HandDigging) ability;
         FileConfiguration excavationConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.EXCAVATION_CONFIG);
@@ -327,6 +341,8 @@ public class InteractHandler implements Listener {
           }
         }
       }
+   
+      //Handle Ore Scanner
       else if(abilityType == UnlockedAbilities.ORE_SCANNER && (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR)) {
         OreScanner oreScanner = (OreScanner) ability;
         FileConfiguration mining = McRPG.getInstance().getFileManager().getFile(FileManager.Files.MINING_CONFIG);
@@ -418,6 +434,8 @@ public class InteractHandler implements Listener {
         }
         p.teleport(Methods.lookAt(p.getLocation(), lookAt));
       }
+      
+      //Handle Mass Harvest
       else if(abilityType == UnlockedAbilities.MASS_HARVEST && (e.getAction() == Action.LEFT_CLICK_BLOCK)) {
         if(ItemUtils.isCrop(type)) {
           FileConfiguration herbalism = McRPG.getInstance().getFileManager().getFile(FileManager.Files.HERBALISM_CONFIG);
@@ -463,6 +481,8 @@ public class InteractHandler implements Listener {
           }
         }
       }
+      
+      //Handle Pans Blessing
       else if(abilityType == UnlockedAbilities.PANS_BLESSING && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
         if(heldItem.getType() == Material.BONE_MEAL) {
           if(!ItemUtils.isCrop(type)) {

@@ -17,6 +17,7 @@ import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.events.mcrpg.AbilityActivateEvent;
 import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.api.util.blood.BloodManager;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.worldguard.ActionLimiterParser;
@@ -83,6 +84,9 @@ public class AbilityActivate implements Listener{
           }
         }
       }
+    }
+    else if(BloodManager.getInstance().isPlayerUnderCurse(e.getMcRPGPlayer().getUuid())){
+      e.setCancelled(true);
     }
   }
   

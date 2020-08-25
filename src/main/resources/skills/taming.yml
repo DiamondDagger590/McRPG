@@ -1,0 +1,496 @@
+#Is taming enabled
+TamingEnabled: true
+#Should this skill be locked behind a permission?
+RequirePermission: false
+#Exp equation for taming. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+# %party_level% - The level of the player's party. If not in a party, defaults to 0
+#
+ExpEquation: '2000+(20*(skill_level))'
+MaxLevel: 1000
+#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
+#Ex) Spider gives 150 exp. Deal 3 damage, get 150 exp
+ExpAwardedPerMob:
+  OTHER: 10
+  BAT: 10
+  BLAZE: 60
+  CAVE_SPIDER: 40
+  SPIDER: 40
+  CHICKEN: 20
+  COW: 20
+  MUSROOM_COW: 30
+  PIG: 20
+  SHEEP: 20
+  RABBIT: 20
+  COD: 20
+  TROPICAL_FISH: 20
+  SALMON: 20
+  PUFFERFISH: 20
+  DOLPHIN: 60
+  SQUID: 20
+  TURTLE: 30
+  DONKEY: 34
+  MULE: 34
+  HORSE: 34
+  LLAMA: 34
+  CREEPER: 60
+  GUARDIAN: 60
+  ELDER_GUARDIAN: 120
+  ENDER_DRAGON: 450
+  ENDERMAN: 60
+  SHULKER: 110
+  EVOKER: 90
+  VEX: 10
+  ILLUSIONER: 50
+  IRON_GOLEM: 30
+  SLIME: 40
+  MAGMA_CUBE: 50
+  OCELOT: 20
+  PARROT: 20
+  WOLF: 20
+  PHANTOM: 50
+  PLAYER: 30
+  POLAR_BEAR: 20
+  SILVERFISH: 14
+  ENDERMITE: 14
+  SKELETON: 50
+  STRAY: 60
+  WITHER_SKELETON: 50
+  SKELETON_HORSE: 40
+  SNOWMAN: 30
+  VILLAGER: 20
+  WITCH: 30
+  ZOMBIE: 50
+  ZOMBIE_VILLAGER: 60
+  DROWNED: 60
+  PIG_ZOMBIE: 70
+  HUSK: 60
+  ZOMBIE_HORSE: 40
+  HOGLIN: 30
+  PIGLIN: 30
+  STRIDER: 15
+  ZOGLIN: 30
+  ZOMBIFIED_PIGLIN: 30
+  PIGLIN_BRUTE: 50
+#How much exp should be awarded when a mob is tamed
+ExpPerMobTamed:
+  OTHER: 500
+  WOLF: 1000
+  CAT: 2500
+  HORSE: 3000
+  PARROT: 2000
+  DONKEY: 2500
+#Handles the Call Of The Wild feature
+CallOfWild:
+  #The type of entity to summon.
+  #Allowed Entities:
+  # - CAT, DONKEY, HORSE, SKELETON_HORSE, ZOMBIE_HORSE, MULE, WOLF, PARROT, LLAMA, TROPICAL_FISH, PANDA
+  WOLF:
+    #What materials can be used to summon the mob.
+    #Format is MATERIAL: Amount
+    SummonableMaterials:
+      BONE: 10
+    #The health of the summoned mob. Defaults to 20 if missing
+    Health: 20
+    #If the mob can breed. Defaults to false if missing
+    CanBreed: false
+    #Radius to check for similar mobs. If missing, feature is disabled
+    RadiusCheck:
+      #Checks 5 blocks in the x, y, z direction around the player for mobs of the same type
+      Radius: 5
+      #How many mobs is the limit before COTW stops working. Here, if there are 3 or more wolves nearby, COTW won't work
+      AmountAllowed: 3
+  CAT:
+    SummonableMaterials:
+      COD: 10
+    Health: 10
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  HORSE:
+    SummonableMaterials:
+      APPLE: 10
+    Health: 22.5
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  PARROT:
+    SummonableMaterials:
+      FEATHER: 10
+    Health: 6
+    CanBreed: false
+    RadiusCheck:
+      Radius: 5
+      AmountAllowed: 3
+  TROPICAL_FISH:
+    SummonableMaterials:
+      PRISMARINE_SHARD: 10
+    Health: 3
+#What abilities are enabled
+EnabledAbilities:
+  Gore: true
+  DivineFur: true
+  SharpenedFangs: true
+  LinkedFangs: true
+  Comradery: true
+  PETAsWrath: true
+  FuryOfCerberus: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.taming.unlock.{ability} and mcrpg.taming.use.{ability}
+UsePermsForAbilites:
+  Gore: false
+  DivineFur: false
+  SharpenedFangs: false
+  LinkedFangs: false
+  Comradery: false
+  PETAsWrath: false
+  FuryOfCerberus: false
+#At what taming level should these abilities be unlocked at
+UnlockLevelForAbility:
+  DivineFur: 50
+  SharpenedFangs: 100
+  LinkedFangs: 150
+  Comradery: 200
+  PETAsWrath: 250
+  FuryOfCerberus: 300
+#
+# Gore is the default ability that every player has. This ability will increase every time the players Taming level is increased
+#
+GoreConfig:
+  #Equation for gore chance. Default gives 10% at level 1000.
+  GoreChanceEquation: (taming_level)*.01
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cGore'
+    Material: FIRE_CHARGE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3You have a &6%Gore_Chance%% &3chance of wolves'
+      - '&3inflicting enemies with Bleed'
+    MenuLore:
+      - '&3This ability will cause enemies to Bleed'
+      - '&3and apply all Swords modifiers'
+#
+# Config for the ability Divine Fur
+# This passive ability adds various protections to wolves that a player owns
+#
+DivineFurConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 125
+    TierIII: 250
+    TierIV: 375
+    TierV: 500
+  TierI:
+    #Defines what type of protection wolves will have at this tier
+    #
+    #Format is: Damage_Cause:Percent_To_Protect
+    #
+    #Valid options:
+    #   - Fall_Damage -> For any fall damage
+    #   - Fire_Damage -> For any fire damage
+    #   - Magic_Damage -> For any damage from potions
+    #   - All_Damage -> Handles any damage that didn't have a protection type provided (includes things from swords, bows, etc)
+    Protections:
+      #Default is 100% of damage blocked from fall damage
+      - 'Fall_Damage:100'
+  TierII:
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+  TierIII:
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+      - 'Magic_Damage:100'
+  TierIV:
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+      - 'Magic_Damage:100'
+      - 'All_Damage:25'
+  TierV:
+    Protections:
+      - 'Fall_Damage:100'
+      - 'Fire_Damage:100'
+      - 'Magic_Damage:100'
+      - 'All_Damage:50'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cDivine Fur'
+    Material: WHITE_DYE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3Decreases damage dealt to your wolves'
+      - '&3The higher the tier, the more protections offered'
+    MenuLore:
+      - '&3Gives various protections to wolves'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability Sharpened Fangs
+# This ability increases the amount of damage wolves do
+#
+SharpenedFangsConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 225
+    TierIII: 350
+    TierIV: 500
+    TierV: 600
+  #Config for each Tier
+  TierI:
+    #The chance of Sharpened Fangs occurring per tier
+    ActivationChance: 5.0
+    #The amount of extra damage that each attack does
+    ExtraDamage: 1
+  TierII:
+    ActivationChance: 10.0
+    ExtraDamage: 1
+  TierIII:
+    ActivationChance: 15.0
+    ExtraDamage: 1
+  TierIV:
+    ActivationChance: 20.0
+    ExtraDamage: 1
+  TierV:
+    ActivationChance: 20.0
+    ExtraDamage: 2
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cSharpened Fangs'
+    Material: DIAMOND_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3Has a &6%ActivationChance%% &3chance of'
+      - '&3increases damage from wolves by &6%ExtraDamage%'
+    MenuLore:
+      - '&3Has a chance to increase wolf damage'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability Linked Fangs
+# This passive ability will heal the wolf and feed its owner when the wolf attacks
+#
+LinkedFangsConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 275
+    TierIII: 425
+    TierIV: 575
+    TierV: 700
+  #Config for each tier
+  TierI:
+    #Chance of this activating when a wolf attacks
+    ActivationChance: 5.0
+    #The amount of health to restore to the wolf
+    HealthToRestore: 1
+    #How much hunger to restore to the player
+    HungerToRestore: 1
+    #How much saturation to restore to the player
+    SaturationToRestore: 1.0
+  TierII:
+    ActivationChance: 10.0
+    HealthToRestore: 1
+    HungerToRestore: 1
+    SaturationToRestore: 1.0
+  TierIII:
+    ActivationChance: 15.0
+    HealthToRestore: 1
+    HungerToRestore: 1
+    SaturationToRestore: 1.0
+  TierIV:
+    ActivationChance: 20.0
+    HealthToRestore: 2
+    HungerToRestore: 1
+    SaturationToRestore: 2.0
+  TierV:
+    ActivationChance: 20.0
+    HealthToRestore: 3
+    HungerToRestore: 1
+    SaturationToRestore: 2.5
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cLinked Fangs'
+    Material: COOKED_BEEF
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3Has a &6%ActivationChance%% &3 to restore'
+      - '&6%HealthToRestore% &3to the wolf that attacked'
+      - '&3and give &6%HungerToRestore% &3hunger and'
+      - '&6%SaturationToRestore% &3staturation to the owner'
+    MenuLore:
+      - '&3Has a chance to heal the wolf when'
+      - '&3it attacks and restore hunger of owner'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability Comradery
+# This ability will let wolves take the hit for a player
+#
+ComraderyConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 350
+    TierIII: 500
+    TierIV: 650
+    TierV: 800
+  #Config for each tier
+  TierI:
+    #Chance of the ability activating
+    ActivationChance: 1.0
+    #The radius to search for wolves
+    WolfRange: 3
+  TierII:
+    ActivationChance: 2.5
+    WolfRange: 3
+  TierIII:
+    ActivationChance: 5.0
+    WolfRange: 3
+  TierIV:
+    ActivationChance: 8.5
+    WolfRange: 3
+  TierV:
+    ActivationChance: 12.5
+    WolfRange: 3
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cComradery'
+    Material: STONE_BRICK_WALL
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3Has a &6%ActivationChance%% &3of having one'
+      - '&3of your wolves in a &6%WolfRange% &3radius take'
+      - '&3the damage for you'
+    MenuLore:
+      - '&3Wolves have a chance to take damage for you'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability PETAsWrath
+# When a pet you have tamed dies, gives the killer a random debuff
+#
+PETAsWrathConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 400
+    TierIII: 650
+    TierIV: 700
+    TierV: 850
+  #Config for each tier
+  TierI:
+    #A random potion effect will be selected from this list
+    #Format is PotionEffectType:Level:DurationInSeconds
+    PotionEffects:
+      - 'SLOW:1:10'
+  TierII:
+    PotionEffects:
+      - 'SLOW:1:10'
+      - 'SLOW_DIGGING:1:10'
+  TierIII:
+    PotionEffects:
+      - 'SLOW:1:10'
+      - 'SLOW_DIGGING:1:10'
+      - 'POISON:1:10'
+  TierIV:
+    PotionEffects:
+      - 'CONFUSION:1:10'
+      - 'WITHER:1:10'
+  TierV:
+    PotionEffects:
+      - 'CONFUSION:1:10'
+      - 'WITHER:1:10'
+      - 'BLINDNESS:1:10'
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cPETAs Wrath'
+    Material: RABBIT_HIDE
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3Gives a random debuff to whatever enemy'
+      - '&3kills your pets'
+    MenuLore:
+      - '&3Gives a random debuff when a mob'
+      - '&3kills a pet'
+      - '&3Unlock Level: &6%UnlockLevel%'
+#
+# Config for the ability Fury Of Cerberus
+# Using a blaze rod to attack a mob, summon three Hell Hounds that explode when they die
+#
+FuryOfCerberusConfig:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  TierAmount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  TierUpgrade:
+    TierII: 475
+    TierIII: 650
+    TierIV: 825
+    TierV: 1000
+  #Config for each tier
+  TierI:
+    #How much health should each hell hound have
+    HellHoundHealth: 5
+    #If a hell hound should ignite the enemy it hits
+    IgniteTarget: false
+    #If the explosions from the deaths should break blocks
+    ExplosionDestroyBlocks: false
+    #Time in seconds before a hell hound should self destruct
+    SelfDestructTimer: 5
+    #Time in seconds before the ability can be used again
+    Cooldown: 80
+  TierII:
+    HellHoundHealth: 6
+    IgniteTarget: false
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 6
+    Cooldown: 80
+  TierIII:
+    HellHoundHealth: 7
+    IgniteTarget: true
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 6
+    Cooldown: 80
+  TierIV:
+    HellHoundHealth: 10
+    IgniteTarget: true
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 10
+    Cooldown: 80
+  TierV:
+    HellHoundHealth: 15
+    IgniteTarget: true
+    ExplosionDestroyBlocks: false
+    SelfDestructTimer: 15
+    Cooldown: 80
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&cFury Of Cerberus'
+    Material: BLAZE_ROD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&3Ready with a blaze rod and then hit a'
+      - '&3mob to summon three hell hounds.'
+      - '&3Health: &6%HellHoundHealth%'
+      - '&3Ignite Enemy: &6%IgniteTarget%'
+      - '&3Duration: &6%SelfDestructTimer%s'
+      - '&3Cooldown: &6%Cooldown%'
+    MenuLore:
+      - '&3Summon three hell hounds that explode on death'
+      - '&3Unlock Level: &6%UnlockLevel%'

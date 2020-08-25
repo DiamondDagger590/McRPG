@@ -17,7 +17,8 @@ public enum LevelCommandType{
   SORCERY("Sorcery"),
   SWORDS("Swords"),
   UNARMED("Unarmed"),
-  WOODCUTTING("Woodcutting");
+  WOODCUTTING("Woodcutting"),
+  TAMING("Taming");
   
   @Getter
   private final String name;
