@@ -2,10 +2,24 @@ package us.eunoians.mcrpg.player;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.skills.Skill;
+import us.eunoians.mcrpg.skills.SkillType;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
+/**
+ * This class serves as an object that holds data regarding a player
+ *
+ * @author Kitsune/DiamondDagger590
+ */
 public class McRPGPlayer {
+
+    /**
+     * The {@link Map} containing all {@link Skill}s of a {@link McRPGPlayer}
+     */
+    private Map<SkillType, Skill> skills;
 
     /**
      * The {@link UUID} of the {@link Player}
@@ -20,6 +34,9 @@ public class McRPGPlayer {
      */
     public McRPGPlayer(@NotNull UUID uniqueId) {
         this.uniqueId = uniqueId;
+        this.skills = new HashMap<>();
+
+        //TODO populate skills
     }
 
     /**
@@ -30,5 +47,16 @@ public class McRPGPlayer {
     @NotNull
     public UUID getUniqueId() {
         return uniqueId;
+    }
+
+    /**
+     * Gets the players {@link Skill} that is linked to the {@link SkillType} provided
+     *
+     * @param skillType The {@link SkillType} to get the corresponding {@link Skill} for
+     * @return The {@link Skill} linked to the {@link SkillType} provided
+     */
+    @NotNull
+    public Skill getSkill(SkillType skillType) {
+        return this.skills.get(skillType);
     }
 }

@@ -17,7 +17,7 @@ import java.util.Set;
  *
  * @author DiamondDagger590
  */
-public class Taming extends Skill{
+public class Taming extends Skill {
   
   /**
    * @param mcRPGPlayer The {@link McRPGPlayer} who owns this {@link Skill}
