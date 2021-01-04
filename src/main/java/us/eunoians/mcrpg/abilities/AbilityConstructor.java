@@ -19,7 +19,7 @@ public abstract class AbilityConstructor implements Ability {
     /**
      * A boolean representing if this {@link Ability} needs saving
      */
-    protected boolean isDirty;
+    protected boolean dirty;
 
     /**
      * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}

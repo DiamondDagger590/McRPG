@@ -15,6 +15,7 @@ import java.util.List;
  */
 public enum SkillType {
 
+    SWORDS,
     TAMING;
 
     //A list of abilities that belong to this skill

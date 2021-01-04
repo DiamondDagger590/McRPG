@@ -67,7 +67,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     @Override
     public boolean isDirty() {
-        return isDirty;
+        return dirty;
     }
 
     /**
@@ -77,7 +77,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     @Override
     public void setDirty(boolean dirty) {
-        this.isDirty = dirty;
+        this.dirty = dirty;
     }
 
     /**
