@@ -1,8 +1,8 @@
-package us.eunoians.mcrpg.api.events.taming;
+package us.eunoians.mcrpg.api.event.taming;
 
 import us.eunoians.mcrpg.abilities.Ability;
 import us.eunoians.mcrpg.abilities.impl.taming.Gore;
-import us.eunoians.mcrpg.api.events.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**

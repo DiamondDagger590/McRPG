@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.abilities;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.player.McRPGPlayer;
-import us.eunoians.mcrpg.skills.SkillType;
+import us.eunoians.mcrpg.skill.SkillType;
 
 /**
  * The generic base interface for all abilities to inherit from.

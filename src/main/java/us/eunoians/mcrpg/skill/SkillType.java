@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.skills;
+package us.eunoians.mcrpg.skill;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.abilities.AbilityType;

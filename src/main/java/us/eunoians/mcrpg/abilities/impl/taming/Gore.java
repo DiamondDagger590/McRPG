@@ -11,10 +11,10 @@ import us.eunoians.mcrpg.abilities.AbilityConstructor;
 import us.eunoians.mcrpg.abilities.AbilityType;
 import us.eunoians.mcrpg.abilities.DefaultAbility;
 import us.eunoians.mcrpg.abilities.ToggleableAbility;
-import us.eunoians.mcrpg.api.events.taming.GoreActivateEvent;
+import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
-import us.eunoians.mcrpg.skills.SkillType;
-import us.eunoians.mcrpg.skills.impl.Taming;
+import us.eunoians.mcrpg.skill.SkillType;
+import us.eunoians.mcrpg.skill.impl.Taming;
 import us.eunoians.mcrpg.util.Parser;
 
 import java.util.concurrent.ThreadLocalRandom;

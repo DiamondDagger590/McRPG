@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.abilities;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.skills.SkillType;
+import us.eunoians.mcrpg.skill.SkillType;
 
 /**
  * This enum holds all existing abilities

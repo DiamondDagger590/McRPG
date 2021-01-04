@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.events;
+package us.eunoians.mcrpg.api.event;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

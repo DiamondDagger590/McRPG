@@ -1,9 +1,9 @@
-package us.eunoians.mcrpg.skills.impl;
+package us.eunoians.mcrpg.skill.impl;
 
 import us.eunoians.mcrpg.abilities.AbilityType;
 import us.eunoians.mcrpg.player.McRPGPlayer;
-import us.eunoians.mcrpg.skills.Skill;
-import us.eunoians.mcrpg.skills.SkillType;
+import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.SkillType;
 
 import java.util.Set;
 

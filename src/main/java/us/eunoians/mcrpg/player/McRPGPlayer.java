@@ -2,8 +2,8 @@ package us.eunoians.mcrpg.player;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.skills.Skill;
-import us.eunoians.mcrpg.skills.SkillType;
+import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.SkillType;
 
 import java.util.HashMap;
 import java.util.Map;
