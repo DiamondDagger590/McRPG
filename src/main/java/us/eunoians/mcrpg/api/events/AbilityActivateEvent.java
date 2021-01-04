@@ -7,7 +7,7 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
 /**
  * This event is called when a {@link McRPGPlayer} activates an {@link Ability}. This will always be called with a custom implementation
  * for specific abilities but this defines the generic behaviour that all ability activation events will have.
- *
+ * <p>
  * This event is called BEFORE the actual ability is activated and can be cancelled. Any modified values will be used provided
  * the event actually is uncancelled by the time it gets returned.
  *
@@ -17,9 +17,9 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
 
     private boolean cancelled;
 
-    private McRPGPlayer mcRPGPlayer;
-    private Ability ability;
-    private AbilityEventType abilityEventType;
+    private final McRPGPlayer mcRPGPlayer;
+    private final Ability ability;
+    private final AbilityEventType abilityEventType;
 
     /**
      * @param mcRPGPlayer      The {@link McRPGPlayer} that is activating the event

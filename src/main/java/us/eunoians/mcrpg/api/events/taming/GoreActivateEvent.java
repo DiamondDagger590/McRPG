@@ -14,8 +14,8 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
 public class GoreActivateEvent extends AbilityActivateEvent {
 
     /**
-     * @param mcRPGPlayer      The {@link McRPGPlayer} that is activating the event
-     * @param ability          The {@link Ability} being activated
+     * @param mcRPGPlayer The {@link McRPGPlayer} that is activating the event
+     * @param ability     The {@link Ability} being activated
      */
     public GoreActivateEvent(McRPGPlayer mcRPGPlayer, Gore ability) {
         super(mcRPGPlayer, ability, AbilityEventType.COMBAT);

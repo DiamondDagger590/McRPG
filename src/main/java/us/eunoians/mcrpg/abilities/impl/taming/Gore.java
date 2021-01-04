@@ -6,7 +6,11 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.abilities.*;
+import us.eunoians.mcrpg.abilities.Ability;
+import us.eunoians.mcrpg.abilities.AbilityConstructor;
+import us.eunoians.mcrpg.abilities.AbilityType;
+import us.eunoians.mcrpg.abilities.DefaultAbility;
+import us.eunoians.mcrpg.abilities.ToggleableAbility;
 import us.eunoians.mcrpg.api.events.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skills.SkillType;
@@ -28,7 +32,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      * Represents whether the ability is toggled on or off
      */
     private boolean isToggled;
-
+    
     /**
      * The equation representing the chance at which this {@link us.eunoians.mcrpg.abilities.Ability}
      * can activate
@@ -110,12 +114,12 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
 
         this.getActivationEquation().setVariable("taming_level", taming.getCurrentLevel());
 
-        if(this.getActivationEquation().getValue() * 100000 >= ThreadLocalRandom.current().nextInt(100000)){
+        if (this.getActivationEquation().getValue() * 100000 >= ThreadLocalRandom.current().nextInt(100000)) {
 
             GoreActivateEvent goreActivateEvent = new GoreActivateEvent(this.getPlayer(), this);
             Bukkit.getPluginManager().callEvent(goreActivateEvent);
 
-            if(!goreActivateEvent.isCancelled()){
+            if (!goreActivateEvent.isCancelled()) {
                 //TODO activate
             }
         }

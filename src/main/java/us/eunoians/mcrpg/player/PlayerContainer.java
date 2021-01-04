@@ -27,7 +27,6 @@ public class PlayerContainer {
      * Get the {@link McRPGPlayer} from the player map.
      *
      * @param uniqueId the unique id of the player
-     *
      * @return the {@link McRPGPlayer} wrapped in an {@link Optional}.
      */
     public Optional<McRPGPlayer> getPlayer(UUID uniqueId) {
@@ -39,10 +38,9 @@ public class PlayerContainer {
      * Get the {@link McRPGPlayer} from the player map.
      *
      * @param player the player
-     *
      * @return the {@link McRPGPlayer} wrapped in an {@link Optional}.
      */
-    public Optional<McRPGPlayer> getPlayer (@NotNull Player player){
+    public Optional<McRPGPlayer> getPlayer(@NotNull Player player) {
         Validate.isTrue(player != null, "Player cannot be null!");
         return this.getPlayer(player.getUniqueId());
     }
