@@ -9,11 +9,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class represents the abstract of a {@link Skill}
+ * @deprecated Moved to {@link AbstractSkill} and {@link SkillProgression}, use to scrap code only
+ * This class represents the abstract of a {@link OldSkill}
+ *
  *
  * @author DiamondDagger590
  */
-public abstract class Skill {
+public abstract class OldSkill {
 
     /**
      * The {@link McRPGPlayer} that owns this skill
@@ -29,7 +31,7 @@ public abstract class Skill {
     protected Set<AbilityType> alreadyUnlockedAbilities;
 
     /**
-     * The amount of ability points already gained from this {@link Skill}
+     * The amount of ability points already gained from this {@link OldSkill}
      */
     protected int abilityPointsGained;
 
@@ -49,9 +51,9 @@ public abstract class Skill {
     protected int currentLevel;
 
     /**
-     * @param mcRPGPlayer The {@link McRPGPlayer} who owns this {@link Skill}
+     * @param mcRPGPlayer The {@link McRPGPlayer} who owns this {@link OldSkill}
      */
-    public Skill(McRPGPlayer mcRPGPlayer) {
+    public OldSkill(McRPGPlayer mcRPGPlayer) {
         this.mcRPGPlayer = mcRPGPlayer;
 
         this.alreadyUnlockedAbilities = new HashSet<>();
@@ -60,11 +62,11 @@ public abstract class Skill {
     }
 
     /**
-     * @param mcRPGPlayer  The {@link McRPGPlayer} who owns this {@link Skill}
-     * @param currentExp   The amount of exp this {@link Skill} already has
-     * @param currentLevel The amount of levels this {@link Skill} already has
+     * @param mcRPGPlayer  The {@link McRPGPlayer} who owns this {@link OldSkill}
+     * @param currentExp   The amount of exp this {@link OldSkill} already has
+     * @param currentLevel The amount of levels this {@link OldSkill} already has
      */
-    public Skill(McRPGPlayer mcRPGPlayer, int currentExp, int currentLevel) {
+    public OldSkill(McRPGPlayer mcRPGPlayer, int currentExp, int currentLevel) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.currentExp = currentExp;
         this.currentLevel = currentLevel;
@@ -75,14 +77,14 @@ public abstract class Skill {
     }
 
     /**
-     * @param mcRPGPlayer              The {@link McRPGPlayer} who owns this {@link Skill}
-     * @param currentExp               The amount of exp this {@link Skill} already has
-     * @param currentLevel             The amount of levels this {@link Skill} already has
+     * @param mcRPGPlayer              The {@link McRPGPlayer} who owns this {@link OldSkill}
+     * @param currentExp               The amount of exp this {@link OldSkill} already has
+     * @param currentLevel             The amount of levels this {@link OldSkill} already has
      * @param alreadyUnlockedAbilities The {@link Set} of {@link AbilityType}s the player has already unlocked
      * @param abilityPointsGained      The amount of ability points this skill has already awarded
      */
-    public Skill(McRPGPlayer mcRPGPlayer, int currentExp, int currentLevel,
-                 Set<AbilityType> alreadyUnlockedAbilities, int abilityPointsGained) {
+    public OldSkill(McRPGPlayer mcRPGPlayer, int currentExp, int currentLevel,
+                    Set<AbilityType> alreadyUnlockedAbilities, int abilityPointsGained) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.currentExp = currentExp;
         this.currentLevel = currentLevel;
@@ -94,9 +96,9 @@ public abstract class Skill {
     }
 
     /**
-     * Gets the {@link SkillType} that represents this {@link Skill}
+     * Gets the {@link SkillType} that represents this {@link OldSkill}
      *
-     * @return The {@link SkillType} that represents this {@link Skill}
+     * @return The {@link SkillType} that represents this {@link OldSkill}
      */
     public abstract SkillType getSkillType();
 
@@ -111,16 +113,16 @@ public abstract class Skill {
     }
 
     /**
-     * Gets the amount of exp this {@link Skill} has
+     * Gets the amount of exp this {@link OldSkill} has
      *
-     * @return The amount of exp this {@link Skill} has
+     * @return The amount of exp this {@link OldSkill} has
      */
     public int getCurrentExp() {
         return currentExp;
     }
 
     /**
-     * Gets the amount of exp needed to level up this {@link Skill}. This amount
+     * Gets the amount of exp needed to level up this {@link OldSkill}. This amount
      * is cached and if it hasn't been loaded yet, then this method loads and caches it before
      * returning the result.
      *
@@ -173,7 +175,7 @@ public abstract class Skill {
     }
 
     /**
-     * Sets the amount of currentExp a {@link McRPGPlayer} has for this {@link Skill}. This amount should be positive
+     * Sets the amount of currentExp a {@link McRPGPlayer} has for this {@link OldSkill}. This amount should be positive
      * and will be turned to 0 if a negative amount is provided.
      *
      * @param currentExp The new amount of current exp
@@ -185,10 +187,10 @@ public abstract class Skill {
     }
 
     /**
-     * Sets the current level for this {@link Skill}. This can not currently bypass the max level for the {@link Skill} and
+     * Sets the current level for this {@link OldSkill}. This can not currently bypass the max level for the {@link OldSkill} and
      * can't be negative.
      *
-     * @param currentLevel The new current level for this {@link Skill}
+     * @param currentLevel The new current level for this {@link OldSkill}
      */
     public void setCurrentLevel(int currentLevel) {
 
@@ -197,29 +199,17 @@ public abstract class Skill {
     }
 
     /**
-     * Gives the {@link McRPGPlayer} the provided amount of levels for this {@link Skill}. This can not currently
-     * bypass the max level for the {@link Skill} and can't be negative.
-     *
-     * @param levelsToGive The amount of levels to be given
-     */
-    public void giveLevels(int levelsToGive) {
-
-        levelsToGive = Math.max(levelsToGive, 0);
-        //TODO
-    }
-
-    /**
-     * Gets the amount of ability points gained from this {@link Skill} already to prevent giving double in
+     * Gets the amount of ability points gained from this {@link OldSkill} already to prevent giving double in
      * case of exp or level loss if it is implemented down the road
      *
-     * @return The amount of ability points gained from this {@link Skill} already
+     * @return The amount of ability points gained from this {@link OldSkill} already
      */
     public int getAbilityPointsGained() {
         return abilityPointsGained;
     }
 
     /**
-     * Gets the {@link Set} of {@link AbilityType}s already unlocked from this {@link Skill} to prevent allowing a {@link McRPGPlayer}
+     * Gets the {@link Set} of {@link AbilityType}s already unlocked from this {@link OldSkill} to prevent allowing a {@link McRPGPlayer}
      * unlocking the {@link us.eunoians.mcrpg.abilities.Ability} twice.
      *
      * @return The {@link Set} of {@link AbilityType}s already unlocked

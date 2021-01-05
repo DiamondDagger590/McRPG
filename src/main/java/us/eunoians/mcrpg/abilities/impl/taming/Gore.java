@@ -110,9 +110,9 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
 
         EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
 
-        Taming taming = (Taming) this.getPlayer().getSkill(this.getSkill());
+        //Taming taming = (Taming) this.getPlayer().getSkill(this.getSkill());
 
-        this.getActivationEquation().setVariable("taming_level", taming.getCurrentLevel());
+        //this.getActivationEquation().setVariable("taming_level", taming.getCurrentLevel());
 
         if (this.getActivationEquation().getValue() * 100000 >= ThreadLocalRandom.current().nextInt(100000)) {
 

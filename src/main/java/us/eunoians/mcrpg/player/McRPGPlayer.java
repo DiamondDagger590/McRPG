@@ -2,11 +2,12 @@ package us.eunoians.mcrpg.player;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.skill.Skill;
-import us.eunoians.mcrpg.skill.SkillType;
+import us.eunoians.mcrpg.skill.AbstractSkill;
+import us.eunoians.mcrpg.skill.SkillProgression;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,9 +18,9 @@ import java.util.UUID;
 public class McRPGPlayer {
 
     /**
-     * The {@link Map} containing all {@link Skill}s of a {@link McRPGPlayer}
+     * The {@link Map} containing the {@link Player}'s skill progression for each skill
      */
-    private Map<SkillType, Skill> skills;
+    private Map<String, SkillProgression> skillProgression;
 
     /**
      * The {@link UUID} of the {@link Player}
@@ -34,7 +35,7 @@ public class McRPGPlayer {
      */
     public McRPGPlayer(@NotNull UUID uniqueId) {
         this.uniqueId = uniqueId;
-        this.skills = new HashMap<>();
+        this.skillProgression = new HashMap<>();
 
         //TODO populate skills
     }
@@ -50,13 +51,28 @@ public class McRPGPlayer {
     }
 
     /**
-     * Gets the players {@link Skill} that is linked to the {@link SkillType} provided
+     * Gets the players {@link SkillProgression} that is linked to the skill-type provided
      *
-     * @param skillType The {@link SkillType} to get the corresponding {@link Skill} for
-     * @return The {@link Skill} linked to the {@link SkillType} provided
+     * @param skillType the id of the skill
+     *
+     * @return an {@link Optional} containing the {@link SkillProgression} object for the specified skill.
      */
-    @NotNull
-    public Skill getSkill(SkillType skillType) {
-        return this.skills.get(skillType);
+    public Optional<SkillProgression> getSkillProgression(@NotNull String skillType) {
+
+        // Make sure the skill type is lower-case
+        skillType = skillType.toLowerCase();
+        if (!skillProgression.containsKey(skillType)) return Optional.empty();
+        return Optional.of(skillProgression.get(skillType));
+    }
+
+    /**
+     * Gets the players {@link SkillProgression} that is linked to the {@link AbstractSkill} provided
+     *
+     * @param skill the skill
+     *
+     * @return an {@link Optional} containing the {@link SkillProgression} object for the specified skill
+     */
+    public Optional<SkillProgression> getSkillProgression(@NotNull AbstractSkill skill) {
+        return getSkillProgression(skill.getId());
     }
 }

@@ -2,6 +2,9 @@ package us.eunoians.mcrpg;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcrpg.player.PlayerContainer;
+import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.skill.impl.Swords;
+import us.eunoians.mcrpg.skill.impl.Taming;
 
 public class McRPG extends JavaPlugin {
 
@@ -15,18 +18,35 @@ public class McRPG extends JavaPlugin {
      */
     private PlayerContainer playerContainer;
 
+    /**
+     * The central skill registry object
+     */
+    private SkillRegistry skillRegistry;
+
     @Override
     public void onEnable() {
         instance = this;
 
         this.playerContainer = new PlayerContainer();
+        this.skillRegistry = new SkillRegistry();
+
+
+        // TODO: Move this to an appropriate place
+        // Register skills
+        McRPG.getInstance().getSkillRegistry().registerSkill("taming", Taming::new);
+        McRPG.getInstance().getSkillRegistry().registerSkill("taming", Swords::new);
     }
 
     @Override
     public void onDisable() {
     }
 
-    public static McRPG getInstance(){
+    /**
+     * Get the {@link McRPG} plugin instance.
+     *
+     * @return the plugin instance
+     */
+    public static McRPG getInstance() {
         return instance;
     }
 
@@ -37,5 +57,14 @@ public class McRPG extends JavaPlugin {
      */
     public PlayerContainer getPlayerContainer() {
         return playerContainer;
+    }
+
+    /**
+     * Get the {@link SkillRegistry} object that can be used to register skills to McRPG.
+     *
+     * @return the skill registry object
+     */
+    public SkillRegistry getSkillRegistry() {
+        return skillRegistry;
     }
 }
