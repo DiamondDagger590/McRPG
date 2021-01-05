@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.abilities.impl.taming;
+package us.eunoians.mcrpg.ability.impl.taming;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -6,15 +6,14 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.abilities.Ability;
-import us.eunoians.mcrpg.abilities.AbilityConstructor;
-import us.eunoians.mcrpg.abilities.AbilityType;
-import us.eunoians.mcrpg.abilities.DefaultAbility;
-import us.eunoians.mcrpg.abilities.ToggleableAbility;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityConstructor;
+import us.eunoians.mcrpg.ability.AbilityType;
+import us.eunoians.mcrpg.ability.DefaultAbility;
+import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
-import us.eunoians.mcrpg.skill.impl.Taming;
 import us.eunoians.mcrpg.util.Parser;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,7 +33,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
     private boolean isToggled;
     
     /**
-     * The equation representing the chance at which this {@link us.eunoians.mcrpg.abilities.Ability}
+     * The equation representing the chance at which this {@link us.eunoians.mcrpg.ability.Ability}
      * can activate
      */
     private Parser activationEquation;

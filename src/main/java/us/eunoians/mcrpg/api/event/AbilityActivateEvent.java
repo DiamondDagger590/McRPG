@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.api.event;
 
 import org.bukkit.event.Cancellable;
-import us.eunoians.mcrpg.abilities.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**

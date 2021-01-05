@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.abilities;
+package us.eunoians.mcrpg.ability;
 
 /**
  * This interface represents an ability that can be toggled on and off

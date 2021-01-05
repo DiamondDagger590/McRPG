@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.skill;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.abilities.AbilityType;
+import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.util.Parser;
 
 import java.util.ArrayList;

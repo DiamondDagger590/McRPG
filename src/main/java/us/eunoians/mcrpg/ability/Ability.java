@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.abilities;
+package us.eunoians.mcrpg.ability;
 
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;

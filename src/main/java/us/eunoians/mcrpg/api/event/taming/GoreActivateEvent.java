@@ -1,13 +1,13 @@
 package us.eunoians.mcrpg.api.event.taming;
 
-import us.eunoians.mcrpg.abilities.Ability;
-import us.eunoians.mcrpg.abilities.impl.taming.Gore;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.taming.Gore;
 import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**
  * This event is called whenever a {@link org.bukkit.entity.Wolf} attacks a {@link org.bukkit.entity.LivingEntity}
- * and activates {@link us.eunoians.mcrpg.abilities.impl.taming.Gore}
+ * and activates {@link us.eunoians.mcrpg.ability.impl.taming.Gore}
  *
  * @author DiamondDagger590
  */

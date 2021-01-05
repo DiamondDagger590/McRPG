@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.skill;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.abilities.AbilityType;
+import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.util.Parser;
 
@@ -210,7 +210,7 @@ public abstract class OldSkill {
 
     /**
      * Gets the {@link Set} of {@link AbilityType}s already unlocked from this {@link OldSkill} to prevent allowing a {@link McRPGPlayer}
-     * unlocking the {@link us.eunoians.mcrpg.abilities.Ability} twice.
+     * unlocking the {@link us.eunoians.mcrpg.ability.Ability} twice.
      *
      * @return The {@link Set} of {@link AbilityType}s already unlocked
      */
