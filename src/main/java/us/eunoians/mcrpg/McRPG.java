@@ -34,7 +34,7 @@ public class McRPG extends JavaPlugin {
         // TODO: Move this to an appropriate place
         // Register skills
         McRPG.getInstance().getSkillRegistry().registerSkill("taming", Taming::new);
-        McRPG.getInstance().getSkillRegistry().registerSkill("taming", Swords::new);
+        McRPG.getInstance().getSkillRegistry().registerSkill("swords", Swords::new);
     }
 
     @Override
