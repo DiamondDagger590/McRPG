@@ -1,8 +1,9 @@
 package us.eunoians.mcrpg.ability;
 
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
 
 /**
@@ -26,14 +27,6 @@ public interface Ability {
      * @param dirty True if the ability should be marked as dirty for storage
      */
     public void setDirty(boolean dirty);
-
-    /**
-     * Gets the {@link McRPGPlayer} that this {@link Ability} belongs to.
-     *
-     * @return The {@link McRPGPlayer} that this {@link Ability} belongs to
-     */
-    @NotNull
-    public McRPGPlayer getPlayer();
 
     /**
      * Gets the {@link AbilityType} enum that represents this ability
@@ -65,4 +58,23 @@ public interface Ability {
      * @return True if the event can be passed for testing
      */
     public boolean isValidEvent(Event event);
+
+    /**
+     * Handles activation of the ability outside of the {@link #handleEvent(Event)}
+     * as to allow for future proofing additions with a custom mob AI
+     *
+     * @param activator The {@link LivingEntity} that is activating this {@link Ability}
+     * @param optionalData Any objects that should be passed in. It is up to the implementation of the
+     *                     ability to sanitize this input but this is here as there is no way to allow a
+     *                     generic activation method without providing access for all types of ability
+     *                     activation.
+     */
+    public void activate(LivingEntity activator, Object... optionalData);
+
+    /**
+     * Get the {@link EventPriority} that this {@link Ability} should be ran on
+     * @return The {@link EventPriority} that this {@link Ability} should be ran on
+     */
+    @NotNull
+    public EventPriority getListenPriority();
 }

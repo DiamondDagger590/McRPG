@@ -11,7 +11,8 @@ import us.eunoians.mcrpg.skill.SkillType;
 public enum AbilityType {
 
     //Taming Abilities
-    GORE(SkillType.TAMING);
+    GORE(SkillType.TAMING),
+    BLEED(SkillType.SWORDS);
 
     private SkillType skillType;
 

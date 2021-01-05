@@ -37,4 +37,25 @@ public abstract class AbilityConstructor implements Ability {
     public @NotNull McRPGPlayer getPlayer() {
         return this.mcRPGPlayer;
     }
+
+    /**
+     * If an ability has been modified and needs saving in some sort of manner, this method will return
+     * true, indicating that it should be processed and stored to update the database.
+     *
+     * @return True if the ability has some dirty data in it that needs stored
+     */
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    /**
+     * Sets if this ability has dirty data that needs stored or not
+     *
+     * @param dirty True if the ability should be marked as dirty for storage
+     */
+    @Override
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
 }

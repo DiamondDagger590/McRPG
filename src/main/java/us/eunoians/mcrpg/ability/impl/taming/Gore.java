@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
@@ -11,6 +12,7 @@ import us.eunoians.mcrpg.ability.AbilityConstructor;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
+import us.eunoians.mcrpg.ability.impl.PlayerAbility;
 import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
@@ -21,16 +23,17 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * This is a Taming ability that activates whenever a {@link org.bukkit.entity.Wolf} attacks a
  * {@link org.bukkit.entity.LivingEntity}. The {@link org.bukkit.entity.LivingEntity} will be afflicted with
- * the Bleed status using all Bleed modifiers from the {@link McRPGPlayer}'s ability loadout.
+ * the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} status
+ * using all {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} modifiers from the {@link McRPGPlayer}'s ability loadout.
  *
  * @author DiamondDagger590
  */
-public class Gore extends AbilityConstructor implements ToggleableAbility, DefaultAbility {
+public class Gore extends AbilityConstructor implements ToggleableAbility, DefaultAbility, PlayerAbility {
 
     /**
      * Represents whether the ability is toggled on or off
      */
-    private boolean isToggled;
+    private boolean toggled;
     
     /**
      * The equation representing the chance at which this {@link us.eunoians.mcrpg.ability.Ability}
@@ -43,7 +46,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     public Gore(McRPGPlayer mcRPGPlayer) {
         super(mcRPGPlayer);
-        this.isToggled = true;
+        this.toggled = true;
 
         //TODO load activation equation
     }
@@ -53,30 +56,9 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     public Gore(McRPGPlayer mcRPGPlayer, boolean isToggled) {
         super(mcRPGPlayer);
-        this.isToggled = isToggled;
+        this.toggled = isToggled;
 
         //TODO load activation equation
-    }
-
-    /**
-     * If an ability has been modified and needs saving in some sort of manner, this method will return
-     * true, indicating that it should be processed and stored to update the database.
-     *
-     * @return True if the ability has some dirty data in it that needs stored
-     */
-    @Override
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    /**
-     * Sets if this ability has dirty data that needs stored or not
-     *
-     * @param dirty True if the ability should be marked as dirty for storage
-     */
-    @Override
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
     }
 
     /**
@@ -132,7 +114,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     @Override
     public boolean isValidEvent(Event event) {
-        return event instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) event).getDamager() instanceof Wolf
+        return this.isToggled() && event instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) event).getDamager() instanceof Wolf
                 && ((Wolf) ((EntityDamageByEntityEvent) event).getDamager()).getOwner() != null
                 && ((Wolf) ((EntityDamageByEntityEvent) event).getDamager()).getOwner().getUniqueId().equals(this.getPlayer().getUniqueId())
                 && ((EntityDamageByEntityEvent) event).getEntity() instanceof LivingEntity;
@@ -158,7 +140,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     @Override
     public boolean isToggled() {
-        return this.isToggled;
+        return this.toggled;
     }
 
     /**
@@ -171,7 +153,7 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     @Override
     public boolean toggle() {
-        this.isToggled = !this.isToggled;
+        this.toggled = !this.toggled;
         return isToggled();
     }
 
@@ -182,6 +164,30 @@ public class Gore extends AbilityConstructor implements ToggleableAbility, Defau
      */
     @Override
     public void setToggled(boolean toggled) {
-        this.isToggled = toggled;
+        this.toggled = toggled;
+    }
+
+    /**
+     * Handles activation of the ability outside of the {@link #handleEvent(Event)}
+     * as to allow for future proofing additions with a custom mob AI
+     *
+     * @param activator    The {@link LivingEntity} that is activating this {@link Ability}
+     * @param optionalData Any objects that should be passed in. It is up to the implementation of the
+     *                     ability to sanitize this input but this is here as there is no way to allow a
+     *                     generic activation method without providing access for all types of ability
+     */
+    @Override
+    public void activate(LivingEntity activator, Object... optionalData) {
+
+    }
+
+    /**
+     * Get the {@link EventPriority} that this {@link Ability} should be ran on
+     *
+     * @return The {@link EventPriority} that this {@link Ability} should be ran on
+     */
+    @Override
+    public @NotNull EventPriority getListenPriority() {
+        return EventPriority.MONITOR;
     }
 }
