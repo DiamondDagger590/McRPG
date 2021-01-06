@@ -1,12 +1,16 @@
 package us.eunoians.mcrpg;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
 import us.eunoians.mcrpg.api.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.Swords;
 import us.eunoians.mcrpg.skill.impl.Taming;
+
+import java.io.File;
 
 public class McRPG extends JavaPlugin {
 
@@ -30,6 +34,20 @@ public class McRPG extends JavaPlugin {
      * ability.
      */
     private BleedManager bleedManager;
+
+    /**
+     * Constructor used for unit tests.
+     */
+    public McRPG () {
+        super();
+    }
+
+    /**
+     * Constructor used for unit tests.
+     */
+    public McRPG (JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+        super(loader, description, dataFolder, file);
+    }
 
     @Override
     public void onEnable() {
