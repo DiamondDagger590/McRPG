@@ -213,6 +213,8 @@ public class SkillProgression {
     /**
      * Get the current level of skill.
      *
+     * This value can be any value from 0 to the current max level of the associated skill.
+     *
      * @return the current level
      */
     public int getCurrentLevel() {
@@ -220,7 +222,7 @@ public class SkillProgression {
     }
 
     /**
-     * Set the current level of the skill.
+     * Set the current level of the skill. This must be a positive zero inclusive number
      *
      * @param level the new level of the skill
      */

@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import us.eunoians.mcrpg.api.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.Swords;
@@ -23,13 +24,19 @@ public class McRPG extends JavaPlugin {
      */
     private SkillRegistry skillRegistry;
 
+    /**
+     * Handles various aspects relating to the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed}
+     * ability.
+     */
+    private BleedManager bleedManager;
+
     @Override
     public void onEnable() {
         instance = this;
 
         this.playerContainer = new PlayerContainer();
         this.skillRegistry = new SkillRegistry();
-
+        this.bleedManager = new BleedManager();
 
         // TODO: Move this to an appropriate place
         // Register skills
@@ -39,6 +46,15 @@ public class McRPG extends JavaPlugin {
 
     @Override
     public void onDisable() {
+    }
+
+    /**
+     * Initialize our various listeners
+     */
+    private void initListeners(){
+
+        //Initialize the Bleed manager
+        getServer().getPluginManager().registerEvents(getBleedManager(), this);
     }
 
     /**
@@ -66,5 +82,15 @@ public class McRPG extends JavaPlugin {
      */
     public SkillRegistry getSkillRegistry() {
         return skillRegistry;
+    }
+
+    /**
+     * Gets the {@link BleedManager} object that handles all {@link us.eunoians.mcrpg.ability.impl.swords.Bleed}
+     * related logic.
+     *
+     * @return The {@link BleedManager} object
+     */
+    public BleedManager getBleedManager(){
+        return bleedManager;
     }
 }

@@ -1,7 +1,6 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**

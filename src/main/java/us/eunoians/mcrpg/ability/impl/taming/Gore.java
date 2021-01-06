@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.ability.AbilityConstructor;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
-import us.eunoians.mcrpg.ability.impl.PlayerAbility;
+import us.eunoians.mcrpg.ability.PlayerAbility;
 import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
