@@ -76,6 +76,8 @@ $RECYCLE.BIN/
 # BlueJ files
 *.ctxt
 
+.idea
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
