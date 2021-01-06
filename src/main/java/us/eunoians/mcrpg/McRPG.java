@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 import us.eunoians.mcrpg.api.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
@@ -64,6 +65,17 @@ public class McRPG extends JavaPlugin {
      */
     public static McRPG getInstance() {
         return instance;
+    }
+
+    /**
+     * Get a {@link NamespacedKey} for {@link McRPG}.
+     *
+     * @param key the value of the key.
+     *
+     * @return the {@link NamespacedKey} using the McRPG namespace
+     */
+    public static NamespacedKey getNamespacedKey (String key) {
+        return new NamespacedKey(instance, key);
     }
 
     /**
