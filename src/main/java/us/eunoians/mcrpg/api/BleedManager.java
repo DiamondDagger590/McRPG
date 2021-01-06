@@ -66,9 +66,9 @@ public class BleedManager implements Listener {
      * Handle removing bleed when an {@link LivingEntity} dies
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void handleDeath(EntityDeathEvent entityDeathEvent){
+    public void handleDeath(EntityDeathEvent entityDeathEvent) {
 
-        if(isCurrentlyBleeding(entityDeathEvent.getEntity().getUniqueId())){
+        if (isCurrentlyBleeding(entityDeathEvent.getEntity().getUniqueId())) {
             cancelBleedTask(entityDeathEvent.getEntity().getUniqueId(), true);
         }
     }
@@ -84,8 +84,7 @@ public class BleedManager implements Listener {
      * @param restoreHealth      The amount of health to restore provided that health restoration is enabled
      * @param healthToRestore    If health should be restored on each Bleed cycle to the inflicter
      */
-    public void startBleed(@NotNull LivingEntity inflicter, @NotNull LivingEntity affected, int cycleTickFrequency, int damagePerCycle,
-                           int amountOfCycles, boolean restoreHealth, int healthToRestore) {
+    public void startBleed(@NotNull LivingEntity inflicter, @NotNull LivingEntity affected, int cycleTickFrequency, int damagePerCycle, int amountOfCycles, boolean restoreHealth, int healthToRestore) {
 
         AtomicInteger cycles = new AtomicInteger(0);
 
@@ -99,12 +98,15 @@ public class BleedManager implements Listener {
                 if (cycles.get() >= amountOfCycles) {
                     cancelBleedTask(affected.getUniqueId(), true);
                     return;
-                } else if (isPlayer && !((Player) affected).isOnline()) {
+                }
+                else if (isPlayer && !((Player) affected).isOnline()) {
                     return;
-                } else if (!affected.isValid()) {
+                }
+                else if (!affected.isValid()) {
                     cancelBleedTask(affected.getUniqueId(), true);
                     return;
-                } else if (affected.isDead()) {
+                }
+                else if (affected.isDead()) {
                     cancelBleedTask(affected.getUniqueId(), true);
                     return;
                 }

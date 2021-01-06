@@ -7,7 +7,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.*;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityConstructor;
+import us.eunoians.mcrpg.ability.AbilityType;
+import us.eunoians.mcrpg.ability.DefaultAbility;
+import us.eunoians.mcrpg.ability.ToggleableAbility;
+import us.eunoians.mcrpg.api.BleedManager;
 import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
@@ -78,17 +83,25 @@ public class Bleed extends AbilityConstructor implements DefaultAbility, Togglea
             LivingEntity damager = (LivingEntity) entityDamageByEntityEvent.getDamager();
             LivingEntity target = (LivingEntity) entityDamageByEntityEvent.getEntity();
 
-            if(damager instanceof Player){
+            if (damager instanceof Player) {
 
                 Optional<McRPGPlayer> mcRPGPlayerOptional = McRPG.getInstance().getPlayerContainer().getPlayer(damager.getUniqueId());
 
-                if(mcRPGPlayerOptional.isPresent()){
+                if (mcRPGPlayerOptional.isPresent()) {
 
                     McRPGPlayer mcRPGPlayer = mcRPGPlayerOptional.get();
 
                     //TODO handle checking odds
-                    if(true){
+                    if (true) {
 
+                        //TODO load from config
+                        int frequencyInTicks = 20;
+                        int cycles = 3;
+                        int damagePerCycle = 2;
+
+                        BleedManager bleedManager = McRPG.getInstance().getBleedManager();
+
+                        bleedManager.startBleed(damager, target, frequencyInTicks, damagePerCycle, cycles, false, 0);
                     }
 
                 }
@@ -104,12 +117,31 @@ public class Bleed extends AbilityConstructor implements DefaultAbility, Togglea
      */
     @Override
     public boolean isValidEvent(Event event) {
-        return this.isToggled() && (event instanceof GoreActivateEvent ||
-                (event instanceof EntityDamageByEntityEvent &&
-                        ((EntityDamageByEntityEvent) event).getDamager() instanceof LivingEntity
-                        && ((LivingEntity) ((EntityDamageByEntityEvent) event).getDamager()).getEquipment() != null
-                        && ((LivingEntity) ((EntityDamageByEntityEvent) event).getDamager()).getEquipment().getItemInMainHand().getType().toString().contains("_SWORD")
-                        && ((EntityDamageByEntityEvent) event).getEntity() instanceof LivingEntity));
+
+        if (!this.isToggled()) {
+            return false;
+        }
+        else if (event instanceof GoreActivateEvent) {
+            //TODO add handling for gore
+        }
+        else if (event instanceof EntityDamageByEntityEvent) {
+            EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
+
+            if (entityDamageByEntityEvent.getDamager() instanceof LivingEntity && entityDamageByEntityEvent.getEntity() instanceof LivingEntity) {
+
+                BleedManager bleedManager = McRPG.getInstance().getBleedManager();
+
+                LivingEntity damager = (LivingEntity) entityDamageByEntityEvent.getDamager();
+                LivingEntity damagee = (LivingEntity) entityDamageByEntityEvent.getEntity();
+
+                if (bleedManager.canInflictBleed(damagee.getUniqueId(), damagee.getUniqueId())
+                        && damager.getEquipment() != null && damager.getEquipment().getItemInMainHand().getType().toString().endsWith("_SWORD")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
