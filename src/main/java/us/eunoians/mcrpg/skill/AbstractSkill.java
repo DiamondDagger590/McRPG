@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.skill;
 
+import org.bukkit.NamespacedKey;
+
 /**
  * The abstract implementation for all {@link us.eunoians.mcrpg.McRPG} skills.
  *
@@ -10,14 +12,14 @@ public class AbstractSkill {
     /**
      * The id of the skill.
      */
-    private final String id;
+    private final NamespacedKey id;
 
     /**
      * Construct a new {@link AbstractSkill}.
      *
      * @param id the id of the skill
      */
-    public AbstractSkill(String id) {
+    public AbstractSkill(NamespacedKey id) {
         this.id = id;
     }
 
@@ -32,7 +34,7 @@ public class AbstractSkill {
      *
      * @return the id of the skill
      */
-    public String getId() {
+    public NamespacedKey getId() {
         return id;
     }
 }
