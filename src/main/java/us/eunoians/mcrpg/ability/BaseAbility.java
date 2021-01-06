@@ -9,7 +9,7 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
  *
  * @author DiamondDagger590
  */
-public abstract class AbilityConstructor implements Ability {
+public abstract class BaseAbility implements Ability {
 
     /**
      * The {@link McRPGPlayer} who this {@link Ability} belongs to
@@ -24,7 +24,7 @@ public abstract class AbilityConstructor implements Ability {
     /**
      * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}
      */
-    public AbilityConstructor(McRPGPlayer mcRPGPlayer) {
+    public BaseAbility(McRPGPlayer mcRPGPlayer) {
         this.mcRPGPlayer = mcRPGPlayer;
     }
 
@@ -33,7 +33,6 @@ public abstract class AbilityConstructor implements Ability {
      *
      * @return The {@link McRPGPlayer} that this {@link Ability} belongs to
      */
-    @Override
     public @NotNull McRPGPlayer getPlayer() {
         return this.mcRPGPlayer;
     }

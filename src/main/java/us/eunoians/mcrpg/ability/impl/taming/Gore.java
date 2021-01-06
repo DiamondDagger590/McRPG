@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.AbilityConstructor;
+import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
@@ -28,7 +28,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author DiamondDagger590
  */
-public class Gore extends AbilityConstructor implements ToggleableAbility, DefaultAbility, PlayerAbility {
+public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbility, PlayerAbility {
 
     /**
      * Represents whether the ability is toggled on or off

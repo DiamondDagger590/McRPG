@@ -8,7 +8,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.AbilityConstructor;
+import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
@@ -24,7 +24,7 @@ import java.util.Optional;
  * This ability is an {@link DefaultAbility} that activates when a {@link org.bukkit.entity.LivingEntity} attacks
  * another {@link org.bukkit.entity.LivingEntity}. This {@link Ability} will deal damage over time with a few modifiers
  */
-public class Bleed extends AbilityConstructor implements DefaultAbility, ToggleableAbility {
+public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbility {
 
     /**
      * Represents whether the ability is toggled on or off
@@ -94,14 +94,7 @@ public class Bleed extends AbilityConstructor implements DefaultAbility, Togglea
                     //TODO handle checking odds
                     if (true) {
 
-                        //TODO load from config
-                        int frequencyInTicks = 20;
-                        int cycles = 3;
-                        int damagePerCycle = 2;
 
-                        BleedManager bleedManager = McRPG.getInstance().getBleedManager();
-
-                        bleedManager.startBleed(damager, target, frequencyInTicks, damagePerCycle, cycles, false, 0);
                     }
 
                 }
@@ -156,6 +149,15 @@ public class Bleed extends AbilityConstructor implements DefaultAbility, Togglea
     @Override
     public void activate(LivingEntity activator, Object... optionalData) {
 
+        LivingEntity target = (LivingEntity) optionalData[0];
+        //TODO load from config
+        int frequencyInTicks = 20;
+        int cycles = 3;
+        int damagePerCycle = 2;
+
+        BleedManager bleedManager = McRPG.getInstance().getBleedManager();
+
+        bleedManager.startBleed(activator, target, frequencyInTicks, damagePerCycle, cycles, false, 0);
     }
 
     /**
