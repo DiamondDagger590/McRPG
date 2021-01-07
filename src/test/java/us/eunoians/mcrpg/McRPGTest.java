@@ -7,32 +7,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class McRPGTest {
-
-    /**
-     * Mocked server instance
-     */
-    private ServerMock server;
-
-    /**
-     * Mocked McRPG instance
-     */
-    private McRPG plugin;
-
-    @Before
-    public void setUp () {
-        this.server = MockBukkit.mock();
-        this.plugin = MockBukkit.load(McRPG.class);
-    }
+public class McRPGTest extends BaseTest {
 
     @Test
     public void enabledTest () {
-        Assert.assertTrue(server.getPluginManager().isPluginEnabled(plugin));
+        Assert.assertTrue(getServer().getPluginManager().isPluginEnabled(getPlugin()));
     }
-
-    @After
-    public void tearDown  () {
-        MockBukkit.unload();
-    }
-
 }
