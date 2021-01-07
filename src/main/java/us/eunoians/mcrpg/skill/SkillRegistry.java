@@ -34,10 +34,12 @@ public class SkillRegistry {
      * @param constructor the implementation of the skill itself.
      * @return the skill that got registered
      */
-    public AbstractSkill registerSkill(@NotNull NamespacedKey key, Function<NamespacedKey, ? extends AbstractSkill> constructor) {
+    public <T extends AbstractSkill> T registerSkill(@NotNull NamespacedKey key, Function<NamespacedKey, T> constructor) {
         if (getSkill(key).isPresent())
             throw new IllegalArgumentException("A skill with id: \"" + key.toString() + "\" is already registered!");
-        return registeredSkills.put(key, constructor.apply(key));
+        T skill =  constructor.apply(key);
+        registeredSkills.put(key, skill);
+        return skill;
     }
 
 
