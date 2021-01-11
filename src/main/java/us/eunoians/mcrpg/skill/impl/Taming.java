@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.impl;
 
+import org.bukkit.NamespacedKey;
 import us.eunoians.mcrpg.skill.AbstractSkill;
 import us.eunoians.mcrpg.skill.OldSkill;
 
@@ -20,7 +21,7 @@ public class Taming extends AbstractSkill {
      *
      * @param id the id of the skill
      */
-    public Taming(String id) {
+    public Taming(NamespacedKey id) {
         super(id);
     }
 

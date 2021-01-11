@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.impl;
 
+import org.bukkit.NamespacedKey;
 import us.eunoians.mcrpg.skill.AbstractSkill;
 
 public class Swords extends AbstractSkill {
@@ -9,7 +10,7 @@ public class Swords extends AbstractSkill {
      *
      * @param id the id of the skill
      */
-    public Swords(String id) {
+    public Swords(NamespacedKey id) {
         super(id);
     }
 

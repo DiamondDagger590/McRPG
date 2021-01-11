@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.player;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.skill.AbstractSkill;
@@ -20,7 +21,7 @@ public class McRPGPlayer {
     /**
      * The {@link Map} containing the {@link Player}'s skill progression for each skill
      */
-    private Map<String, SkillProgression> skillProgression;
+    private Map<NamespacedKey, SkillProgression> skillProgression;
 
     /**
      * The {@link UUID} of the {@link Player}
@@ -57,10 +58,8 @@ public class McRPGPlayer {
      *
      * @return an {@link Optional} containing the {@link SkillProgression} object for the specified skill.
      */
-    public Optional<SkillProgression> getSkillProgression(@NotNull String skillType) {
+    public Optional<SkillProgression> getSkillProgression(@NotNull NamespacedKey skillType) {
 
-        // Make sure the skill type is lower-case
-        skillType = skillType.toLowerCase();
         if (!skillProgression.containsKey(skillType)) return Optional.empty();
         return Optional.of(skillProgression.get(skillType));
     }

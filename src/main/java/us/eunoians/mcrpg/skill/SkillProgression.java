@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.skill;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.player.McRPGPlayer;
@@ -19,7 +20,7 @@ public class SkillProgression {
     /**
      * The id of the skill this progression object is associated with.
      */
-    private final String skillId;
+    private final NamespacedKey skillId;
 
     /**
      * The {@link UUID} of the {@link Player} this progression object is associated with.
@@ -57,7 +58,7 @@ public class SkillProgression {
      * @param skillId        the id of the skill this progression object is associated with
      * @param playerUniqueId the unique id of the player this progression object is associated with
      */
-    public SkillProgression(String skillId, UUID playerUniqueId) {
+    public SkillProgression(NamespacedKey skillId, UUID playerUniqueId) {
         this.skillId = skillId;
         this.playerUniqueId = playerUniqueId;
     }
@@ -93,7 +94,7 @@ public class SkillProgression {
      *
      * @return the id of the skill
      */
-    public String getSkillId() {
+    public NamespacedKey getSkillId() {
         return skillId;
     }
 
