@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api;
+package us.eunoians.mcrpg.api.manager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.event.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.api.event.swords.BleedEndEvent;
 
@@ -22,7 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * This is the central manager for handling all things relating to the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed}
+ * This is the central manager for handling all things relating to the {@link Bleed}
  * ability and it's various effects. It abstractly calls the {@link BleedDamageEvent} for other abilities such as {@link us.eunoians.mcrpg.ability.impl.swords.Vampire}
  * to hook into.
  *
@@ -40,17 +41,17 @@ public class BleedManager implements Listener {
 
     /**
      * This {@link Map} contains all entities who are immune to being afflicted with
-     * {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} and the time in millis that their
+     * {@link Bleed} and the time in millis that their
      * immunity wears off.
      * <p>
      * A entity's presence in this map doesn't indicate that they are currently immune from
-     * {@link us.eunoians.mcrpg.ability.impl.swords.Bleed}
+     * {@link Bleed}
      */
     private Map<UUID, Long> bleedImmunityDuration = new HashMap<>();
 
     /**
      * This {@link Map} contains the amount of entities that are currently afflicted by
-     * {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} by the entity that has their
+     * {@link Bleed} by the entity that has their
      * {@link UUID} stored as a key.
      * <p>
      * The reason this map exists is to prevent entities from triggering Bleed on multiple enemies

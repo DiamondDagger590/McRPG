@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.skill;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityType;
-import us.eunoians.mcrpg.util.Parser;
+import us.eunoians.mcrpg.util.parser.Parser;
 
 import java.util.ArrayList;
 import java.util.List;

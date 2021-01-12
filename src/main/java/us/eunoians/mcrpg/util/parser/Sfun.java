@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.util;
+package us.eunoians.mcrpg.util.parser;
 
 /**
  * -------------------------------------------------------------------------

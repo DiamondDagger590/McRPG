@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.event.swords;
 
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
@@ -8,7 +9,7 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
  * This {@link us.eunoians.mcrpg.ability.Ability} is called when a {@link org.bukkit.entity.LivingEntity}
  * attacks another {@link org.bukkit.entity.LivingEntity} with a Sword.
  *
- * This allows other abilities to modify how {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} functions.
+ * This allows other abilities to modify how {@link Bleed} functions.
  *
  * @author DiamondDagger590
  */

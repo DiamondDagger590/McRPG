@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.ability;
 
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.player.McRPGPlayer;
+import us.eunoians.mcrpg.api.AbilityHolder;
 
 import java.util.List;
 
@@ -15,9 +15,9 @@ import java.util.List;
 public abstract class BaseAbility implements Ability {
 
     /**
-     * The {@link McRPGPlayer} who this {@link Ability} belongs to
+     * The {@link AbilityHolder} who this {@link Ability} belongs to
      */
-    private final McRPGPlayer mcRPGPlayer;
+    private final AbilityHolder abilityHolder;
 
     /**
      * A list of listeners that this ability registers to function
@@ -30,10 +30,10 @@ public abstract class BaseAbility implements Ability {
     protected boolean dirty;
 
     /**
-     * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}
+     * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
      */
-    public BaseAbility(McRPGPlayer mcRPGPlayer) {
-        this.mcRPGPlayer = mcRPGPlayer;
+    public BaseAbility(AbilityHolder abilityHolder) {
+        this.abilityHolder = abilityHolder;
     }
 
     /**
@@ -46,12 +46,12 @@ public abstract class BaseAbility implements Ability {
     public abstract List<Listener> createListeners ();
 
     /**
-     * Gets the {@link McRPGPlayer} that this {@link Ability} belongs to.
+     * Gets the {@link AbilityHolder} that this {@link Ability} belongs to.
      *
-     * @return The {@link McRPGPlayer} that this {@link Ability} belongs to
+     * @return The {@link AbilityHolder} that this {@link Ability} belongs to
      */
-    public @NotNull McRPGPlayer getPlayer() {
-        return this.mcRPGPlayer;
+    public @NotNull AbilityHolder getAbilityHolder() {
+        return this.abilityHolder;
     }
 
     /**

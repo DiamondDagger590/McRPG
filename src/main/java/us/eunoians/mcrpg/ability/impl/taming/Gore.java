@@ -5,26 +5,30 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.PlayerAbility;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
-import us.eunoians.mcrpg.util.Parser;
+import us.eunoians.mcrpg.util.parser.Parser;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This is a Taming ability that activates whenever a {@link org.bukkit.entity.Wolf} attacks a
  * {@link org.bukkit.entity.LivingEntity}. The {@link org.bukkit.entity.LivingEntity} will be afflicted with
- * the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} status
- * using all {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} modifiers from the {@link McRPGPlayer}'s ability loadout.
+ * the {@link Bleed} status
+ * using all {@link Bleed} modifiers from the {@link McRPGPlayer}'s ability loadout.
  *
  * @author DiamondDagger590
  */
@@ -42,13 +46,25 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
     private Parser activationEquation;
 
     /**
-     * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}
+     * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
      */
-    public Gore(McRPGPlayer mcRPGPlayer) {
-        super(mcRPGPlayer);
+    public Gore(AbilityHolder abilityHolder) {
+        super(abilityHolder);
         this.toggled = true;
 
         //TODO load activation equation
+    }
+
+    /**
+     * Abstract method that can be used to create listeners for this specific ability.
+     * Note: This should only return a {@link List} of {@link Listener} objects. These shouldn't be registered yet!
+     * This will be done automatically.
+     *
+     * @return a list of listeners for this {@link Ability}
+     */
+    @Override
+    public List<Listener> createListeners() {
+        return null;
     }
 
     /**
@@ -189,5 +205,15 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
     @Override
     public @NotNull EventPriority getListenPriority() {
         return EventPriority.MONITOR;
+    }
+
+    /**
+     * Gets the {@link McRPGPlayer} that this {@link Ability} belongs to.
+     *
+     * @return The {@link McRPGPlayer} that this {@link Ability} belongs to
+     */
+    @Override
+    public @NotNull McRPGPlayer getPlayer() {
+        return (McRPGPlayer) getAbilityHolder();
     }
 }

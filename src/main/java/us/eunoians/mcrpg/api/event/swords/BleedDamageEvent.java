@@ -3,10 +3,11 @@ package us.eunoians.mcrpg.api.event.swords;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 
 /**
  * This event is a custom {@link EntityDamageEvent} that gets called to
- * handle damage dealt by the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} ability.
+ * handle damage dealt by the {@link Bleed} ability.
  *
  * @author DiamondDagger590
  */

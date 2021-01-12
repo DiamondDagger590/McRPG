@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.ability;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.util.Parser;
+import us.eunoians.mcrpg.util.parser.Parser;
 
 /**
  * This interface represents an ability that is unlocked and always equipped.

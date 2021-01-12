@@ -1,12 +1,13 @@
 package us.eunoians.mcrpg.api.event.swords;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.event.McRPGEvent;
 
 import java.util.UUID;
 
 /**
- * This event is called whenever {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} ends for a
+ * This event is called whenever {@link Bleed} ends for a
  * {@link org.bukkit.entity.LivingEntity}.
  *
  * @author DiamondDagger590

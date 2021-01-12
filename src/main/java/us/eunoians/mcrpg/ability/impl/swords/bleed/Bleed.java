@@ -1,24 +1,26 @@
-package us.eunoians.mcrpg.ability.impl.swords;
+package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.AbilityCreationData;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
-import us.eunoians.mcrpg.api.BleedManager;
+import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
-import us.eunoians.mcrpg.util.Parser;
+import us.eunoians.mcrpg.util.parser.Parser;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -39,10 +41,22 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     private Parser activationEquation;
 
     /**
-     * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}
+     * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
      */
-    public Bleed(McRPGPlayer mcRPGPlayer) {
-        super(mcRPGPlayer);
+    public Bleed(AbilityHolder abilityHolder) {
+        super(abilityHolder);
+    }
+
+    /**
+     * Abstract method that can be used to create listeners for this specific ability.
+     * Note: This should only return a {@link List} of {@link Listener} objects. These shouldn't be registered yet!
+     * This will be done automatically.
+     *
+     * @return a list of listeners for this {@link Ability}
+     */
+    @Override
+    public List<Listener> createListeners() {
+        return null;
     }
 
     /**

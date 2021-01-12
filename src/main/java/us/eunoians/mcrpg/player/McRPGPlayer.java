@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.player;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.skill.AbstractSkill;
 import us.eunoians.mcrpg.skill.SkillProgression;
 
@@ -16,7 +17,7 @@ import java.util.UUID;
  *
  * @author Kitsune/DiamondDagger590
  */
-public class McRPGPlayer {
+public class McRPGPlayer extends AbilityHolder {
 
     /**
      * The {@link Map} containing the {@link Player}'s skill progression for each skill
@@ -35,6 +36,7 @@ public class McRPGPlayer {
      * @param uniqueId the unique id of the player this object is representing
      */
     public McRPGPlayer(@NotNull UUID uniqueId) {
+        super(uniqueId, true);
         this.uniqueId = uniqueId;
         this.skillProgression = new HashMap<>();
 

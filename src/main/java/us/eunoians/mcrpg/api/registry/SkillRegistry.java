@@ -1,7 +1,8 @@
-package us.eunoians.mcrpg.skill;
+package us.eunoians.mcrpg.api.registry;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.skill.AbstractSkill;
 
 import java.util.HashMap;
 import java.util.Map;

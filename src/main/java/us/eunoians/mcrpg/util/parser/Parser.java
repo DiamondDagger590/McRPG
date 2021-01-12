@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package us.eunoians.mcrpg.util;
+package us.eunoians.mcrpg.util.parser;
 
 import java.util.HashSet;
 

@@ -4,11 +4,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
-import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.impl.swords.Bleed;
-import us.eunoians.mcrpg.api.BleedManager;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
+import us.eunoians.mcrpg.api.registry.AbilityRegistry;
+import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
-import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.api.registry.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.Swords;
 import us.eunoians.mcrpg.skill.impl.Taming;
 
@@ -37,7 +37,7 @@ public class McRPG extends JavaPlugin {
     private SkillRegistry skillRegistry;
 
     /**
-     * Handles various aspects relating to the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed}
+     * Handles various aspects relating to the {@link Bleed}
      * ability.
      */
     private BleedManager bleedManager;
@@ -123,7 +123,7 @@ public class McRPG extends JavaPlugin {
     }
 
     /**
-     * Gets the {@link BleedManager} object that handles all {@link us.eunoians.mcrpg.ability.impl.swords.Bleed}
+     * Gets the {@link BleedManager} object that handles all {@link Bleed}
      * related logic.
      *
      * @return The {@link BleedManager} object
