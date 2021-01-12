@@ -4,6 +4,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.api.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -23,6 +25,11 @@ public class McRPG extends JavaPlugin {
      * The player container, this object holds all the McRPG playesr
      */
     private PlayerContainer playerContainer;
+
+    /**
+     * The central ability registry object
+     */
+    private AbilityRegistry abilityRegistry;
 
     /**
      * The central skill registry object
@@ -54,6 +61,7 @@ public class McRPG extends JavaPlugin {
         instance = this;
 
         this.playerContainer = new PlayerContainer();
+        this.abilityRegistry = new AbilityRegistry();
         this.skillRegistry = new SkillRegistry();
         this.bleedManager = new BleedManager();
 

@@ -8,6 +8,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityCreationData;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;

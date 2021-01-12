@@ -1,7 +1,10 @@
 package us.eunoians.mcrpg.ability;
 
+import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.player.McRPGPlayer;
+
+import java.util.List;
 
 /**
  * This class offers some basic construction for an {@link Ability} and should
@@ -17,6 +20,11 @@ public abstract class BaseAbility implements Ability {
     private final McRPGPlayer mcRPGPlayer;
 
     /**
+     * A list of listeners that this ability registers to function
+     */
+    private List<Listener> registeredListeners;
+
+    /**
      * A boolean representing if this {@link Ability} needs saving
      */
     protected boolean dirty;
@@ -27,6 +35,15 @@ public abstract class BaseAbility implements Ability {
     public BaseAbility(McRPGPlayer mcRPGPlayer) {
         this.mcRPGPlayer = mcRPGPlayer;
     }
+
+    /**
+     * Abstract method that can be used to create listeners for this specific ability.
+     * Note: This should only return a {@link List} of {@link Listener} objects. These shouldn't be registered yet!
+     * This will be done automatically.
+     *
+     * @return a list of listeners for this {@link Ability}
+     */
+    public abstract List<Listener> createListeners ();
 
     /**
      * Gets the {@link McRPGPlayer} that this {@link Ability} belongs to.
