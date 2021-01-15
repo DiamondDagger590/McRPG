@@ -1,9 +1,13 @@
 package us.eunoians.mcrpg.ability;
 
+import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.api.AbilityHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,14 +24,15 @@ public abstract class BaseAbility implements Ability {
     private final AbilityHolder abilityHolder;
 
     /**
-     * A list of listeners that this ability registers to function
-     */
-    private List<Listener> registeredListeners;
-
-    /**
      * A boolean representing if this {@link Ability} needs saving
      */
     protected boolean dirty;
+
+    /**
+     * A {@link List} that contains all registered listeners for this {@link BaseAbility}.
+     * @return
+     */
+    private List<Listener> registeredListeners;
 
     /**
      * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
@@ -44,6 +49,27 @@ public abstract class BaseAbility implements Ability {
      * @return a list of listeners for this {@link Ability}
      */
     public abstract List<Listener> createListeners ();
+
+    /**
+     * Register the {@link Listener} objects for this {@link BaseAbility}.
+     *
+     * @param plugin the plugin that's creating the ability instance.
+     */
+    public void registerListeners (@NotNull Plugin plugin) {
+        this.registeredListeners = createListeners();
+        for (Listener listener : registeredListeners) {
+            Bukkit.getPluginManager().registerEvents(listener, plugin);
+        }
+    }
+
+    /**
+     * Unregister all {@link Listener} objects for this {@link BaseAbility}.
+     */
+    public void unregisterListeners () {
+        for (Listener listener : registeredListeners) {
+            HandlerList.unregisterAll(listener);
+        }
+    }
 
     /**
      * Gets the {@link AbilityHolder} that this {@link Ability} belongs to.

@@ -123,6 +123,15 @@ public class McRPG extends JavaPlugin {
     }
 
     /**
+     * Get the {@link AbilityRegistry} object that can be used to register abilities to McRPG.
+     *
+     * @return the ability registry object
+     */
+    public AbilityRegistry getAbilityRegistry() {
+        return abilityRegistry;
+    }
+
+    /**
      * Gets the {@link BleedManager} object that handles all {@link Bleed}
      * related logic.
      *

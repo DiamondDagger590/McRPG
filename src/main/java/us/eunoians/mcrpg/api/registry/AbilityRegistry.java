@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.api.registry;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
@@ -64,12 +65,15 @@ public class AbilityRegistry {
      * @throws IllegalArgumentException whenever the specified {@code abilityKey} isn't a valid ability!
      */
     @NotNull
-    public BaseAbility createAbility(@NotNull NamespacedKey abilityKey, @NotNull AbilityCreationData creationData) {
+    public <T extends BaseAbility> T createAbility(@NotNull NamespacedKey abilityKey, @NotNull AbilityCreationData creationData) {
         Function<AbilityCreationData, ? extends BaseAbility> constructor = getAbility(abilityKey).orElse(null);
         if (constructor == null) {
             throw new IllegalArgumentException("An ability with id: " + abilityKey.toString() + " doesn't exist!");
         }
 
-        return constructor.apply(creationData);
+        // This is kind of disgusting, need to figure out a way to prevent this
+        T ability = (T) constructor.apply(creationData);
+        ability.registerListeners(McRPG.getInstance());
+        return ability;
     }
 }
