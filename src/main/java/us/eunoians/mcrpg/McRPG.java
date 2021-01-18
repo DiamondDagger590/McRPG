@@ -4,11 +4,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
-import us.eunoians.mcrpg.api.registry.AbilityRegistry;
+import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
 import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
-import us.eunoians.mcrpg.api.registry.SkillRegistry;
+import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.Swords;
 import us.eunoians.mcrpg.skill.impl.Taming;
 
@@ -65,10 +66,9 @@ public class McRPG extends JavaPlugin {
         this.skillRegistry = new SkillRegistry();
         this.bleedManager = new BleedManager();
 
-        // TODO: Move this to an appropriate place
-        // Register skills
-        McRPG.getInstance().getSkillRegistry().registerSkill(getNamespacedKey("taming"), Taming::new);
-        McRPG.getInstance().getSkillRegistry().registerSkill(getNamespacedKey("swords"), Swords::new);
+        initAbilities();
+        initSkills();
+        initListeners();
     }
 
     @Override
@@ -82,6 +82,25 @@ public class McRPG extends JavaPlugin {
 
         //Initialize the Bleed manager
         getServer().getPluginManager().registerEvents(getBleedManager(), this);
+    }
+
+    /**
+     * Initialize all skills that McRPG provides
+     */
+    private void initSkills(){
+        getSkillRegistry().registerSkill(getNamespacedKey("taming"), Taming::new);
+        getSkillRegistry().registerSkill(getNamespacedKey("swords"), Swords::new);
+    }
+
+    /**
+     * Initialize all abilities that McRPG provides
+     */
+    private void initAbilities(){
+        //Swords abilities
+        getAbilityRegistry().registerAbility(getNamespacedKey("bleed"), Bleed::new);
+
+        //Taming abilities
+        getAbilityRegistry().registerAbility(getNamespacedKey("gore"), Gore::new);
     }
 
     /**

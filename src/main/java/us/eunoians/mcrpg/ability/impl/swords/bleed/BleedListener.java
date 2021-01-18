@@ -13,9 +13,14 @@ import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.util.parser.Parser;
 
+/**
+ * This {@link Listener} handles activation of {@link Bleed}
+ *
+ * @author DiamondDagger590
+ */
 public class BleedListener implements Listener {
 
-    private static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "bleed");
+    private static final NamespacedKey BLEED_KEY = McRPG.getNamespacedKey("bleed");
 
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -5,9 +5,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,9 +18,9 @@ import java.util.List;
 public abstract class BaseAbility implements Ability {
 
     /**
-     * The {@link AbilityHolder} who this {@link Ability} belongs to
+     * The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    private final AbilityHolder abilityHolder;
+    private final AbilityCreationData abilityCreationData;
 
     /**
      * A boolean representing if this {@link Ability} needs saving
@@ -30,15 +29,17 @@ public abstract class BaseAbility implements Ability {
 
     /**
      * A {@link List} that contains all registered listeners for this {@link BaseAbility}.
-     * @return
      */
     private List<Listener> registeredListeners;
 
     /**
-     * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
+     * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
+     * to sanitize the input.
+     *
+     * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public BaseAbility(AbilityHolder abilityHolder) {
-        this.abilityHolder = abilityHolder;
+    public BaseAbility(AbilityCreationData abilityCreationData) {
+        this.abilityCreationData = abilityCreationData;
     }
 
     /**
@@ -48,7 +49,7 @@ public abstract class BaseAbility implements Ability {
      *
      * @return a list of listeners for this {@link Ability}
      */
-    public abstract List<Listener> createListeners ();
+    protected abstract List<Listener> createListeners();
 
     /**
      * Register the {@link Listener} objects for this {@link BaseAbility}.
@@ -72,12 +73,12 @@ public abstract class BaseAbility implements Ability {
     }
 
     /**
-     * Gets the {@link AbilityHolder} that this {@link Ability} belongs to.
+     * Gets the {@link AbilityCreationData} that creates this {@link Ability}.
      *
-     * @return The {@link AbilityHolder} that this {@link Ability} belongs to
+     * @return The {@link AbilityCreationData} that creates this {@link Ability}
      */
-    public @NotNull AbilityHolder getAbilityHolder() {
-        return this.abilityHolder;
+    public @NotNull AbilityCreationData getAbilityCreationData() {
+        return this.abilityCreationData;
     }
 
     /**

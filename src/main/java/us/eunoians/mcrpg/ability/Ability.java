@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.ability;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.skill.SkillType;
 
 /**
  * The generic base interface for all abilities to inherit from.
@@ -27,20 +27,12 @@ public interface Ability {
     public void setDirty(boolean dirty);
 
     /**
-     * Gets the {@link AbilityType} enum that represents this ability
+     * Gets the {@link NamespacedKey} that this {@link Ability} belongs to
      *
-     * @return The {@link AbilityType} enum that represents this ability
+     * @return The {@link NamespacedKey} that this {@link Ability} belongs to
      */
     @NotNull
-    public AbilityType getAbilityType();
-
-    /**
-     * Gets the {@link SkillType} that this {@link Ability} belongs to
-     *
-     * @return The {@link SkillType} that this {@link Ability} belongs to
-     */
-    @NotNull
-    public SkillType getSkill();
+    public NamespacedKey getSkill();
 
     /**
      * @param activator The {@link LivingEntity} that is activating this {@link Ability}

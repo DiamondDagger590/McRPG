@@ -1,10 +1,8 @@
-package us.eunoians.mcrpg.api.registry;
+package us.eunoians.mcrpg.ability;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 
 import java.util.HashMap;

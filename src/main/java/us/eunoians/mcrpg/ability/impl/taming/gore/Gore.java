@@ -1,28 +1,22 @@
-package us.eunoians.mcrpg.ability.impl.taming;
+package us.eunoians.mcrpg.ability.impl.taming.gore;
 
-import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Wolf;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.ability.BaseAbility;
-import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.DefaultAbility;
-import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.PlayerAbility;
+import us.eunoians.mcrpg.ability.ToggleableAbility;
+import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
-import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
-import us.eunoians.mcrpg.skill.SkillType;
 import us.eunoians.mcrpg.util.parser.Parser;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This is a Taming ability that activates whenever a {@link org.bukkit.entity.Wolf} attacks a
@@ -46,11 +40,16 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
     private Parser activationEquation;
 
     /**
-     * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
+     * This assumes that you will be passing in {@link GoreCreationData} and will attempt sanitization.
+     *
+     * @param abilityCreationData The {@link GoreCreationData} is used to create this {@link Ability}
      */
-    public Gore(AbilityHolder abilityHolder) {
-        super(abilityHolder);
-        this.toggled = true;
+    public Gore(AbilityCreationData abilityCreationData) {
+        super(abilityCreationData);
+
+        if(abilityCreationData instanceof GoreCreationData) {
+            this.toggled = ((GoreCreationData) abilityCreationData).isToggled();
+        }
 
         //TODO load activation equation
     }
@@ -64,76 +63,17 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
      */
     @Override
     public List<Listener> createListeners() {
-        return null;
+        return Collections.singletonList(new GoreListener());
     }
 
     /**
-     * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}
-     */
-    public Gore(McRPGPlayer mcRPGPlayer, boolean isToggled) {
-        super(mcRPGPlayer);
-        this.toggled = isToggled;
-
-        //TODO load activation equation
-    }
-
-    /**
-     * Gets the {@link AbilityType} enum that represents this ability
+     * Gets the {@link NamespacedKey} that this {@link Ability} belongs to
      *
-     * @return The {@link AbilityType} enum that represents this ability
+     * @return The {@link NamespacedKey} that this {@link Ability} belongs to
      */
     @Override
-    public @NotNull AbilityType getAbilityType() {
-        return AbilityType.GORE;
-    }
-
-    /**
-     * Gets the {@link SkillType} that this {@link Ability} belongs to
-     *
-     * @return The {@link SkillType} that this {@link Ability} belongs to
-     */
-    @Override
-    public @NotNull SkillType getSkill() {
-        return SkillType.TAMING;
-    }
-
-    /**
-     * Attempts to handle the {@link Event} and activate the ability based on the event
-     *
-     * @param event The {@link Event} to handle
-     */
-    @Override
-    public void handleEvent(Event event) {
-
-        EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
-
-        //Taming taming = (Taming) this.getPlayer().getSkill(this.getSkill());
-
-        //this.getActivationEquation().setVariable("taming_level", taming.getCurrentLevel());
-
-        if (this.getActivationEquation().getValue() * 100000 >= ThreadLocalRandom.current().nextInt(100000)) {
-
-            GoreActivateEvent goreActivateEvent = new GoreActivateEvent(this.getPlayer(), this);
-            Bukkit.getPluginManager().callEvent(goreActivateEvent);
-
-            if (!goreActivateEvent.isCancelled()) {
-                //TODO activate
-            }
-        }
-    }
-
-    /**
-     * Checks to see if the provided {@link Event} is valid for handling
-     *
-     * @param event The {@link Event} to validate
-     * @return True if the event can be passed for testing
-     */
-    @Override
-    public boolean isValidEvent(Event event) {
-        return this.isToggled() && event instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) event).getDamager() instanceof Wolf
-                && ((Wolf) ((EntityDamageByEntityEvent) event).getDamager()).getOwner() != null
-                && ((Wolf) ((EntityDamageByEntityEvent) event).getDamager()).getOwner().getUniqueId().equals(this.getPlayer().getUniqueId())
-                && ((EntityDamageByEntityEvent) event).getEntity() instanceof LivingEntity;
+    public @NotNull NamespacedKey getSkill() {
+        return McRPG.getNamespacedKey("taming");
     }
 
     /**
@@ -184,9 +124,6 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
     }
 
     /**
-     * Handles activation of the ability outside of the {@link #handleEvent(Event)}
-     * as to allow for future proofing additions with a custom mob AI
-     *
      * @param activator    The {@link LivingEntity} that is activating this {@link Ability}
      * @param optionalData Any objects that should be passed in. It is up to the implementation of the
      *                     ability to sanitize this input but this is here as there is no way to allow a
@@ -198,22 +135,12 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
     }
 
     /**
-     * Get the {@link EventPriority} that this {@link Ability} should be ran on
-     *
-     * @return The {@link EventPriority} that this {@link Ability} should be ran on
-     */
-    @Override
-    public @NotNull EventPriority getListenPriority() {
-        return EventPriority.MONITOR;
-    }
-
-    /**
      * Gets the {@link McRPGPlayer} that this {@link Ability} belongs to.
      *
      * @return The {@link McRPGPlayer} that this {@link Ability} belongs to
      */
     @Override
     public @NotNull McRPGPlayer getPlayer() {
-        return (McRPGPlayer) getAbilityHolder();
+        return (McRPGPlayer) getAbilityCreationData().getAbilityHolder();
     }
 }

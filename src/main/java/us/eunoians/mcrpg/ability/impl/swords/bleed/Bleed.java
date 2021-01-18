@@ -1,20 +1,20 @@
 package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
+import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
-import us.eunoians.mcrpg.skill.SkillType;
 import us.eunoians.mcrpg.util.parser.Parser;
 
 import java.util.Collections;
@@ -38,10 +38,16 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     private Parser activationEquation;
 
     /**
-     * @param abilityHolder The {@link AbilityHolder} that owns this {@link Ability}
+     * This assumes that you will be passing in {@link BleedCreationData} and will attempt sanitization.
+     *
+     * @param abilityCreationData The {@link BleedCreationData} is used to create this {@link Ability}
      */
-    public Bleed(AbilityHolder abilityHolder) {
-        super(abilityHolder);
+    public Bleed(AbilityCreationData abilityCreationData) {
+        super(abilityCreationData);
+
+        if(abilityCreationData instanceof BleedCreationData) {
+            this.toggled = ((BleedCreationData) abilityCreationData).isToggled();
+        }
     }
 
     /**
@@ -57,23 +63,23 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     }
 
     /**
-     * Gets the {@link AbilityType} enum that represents this ability
+     * Gets the {@link NamespacedKey} that this {@link Ability} belongs to
      *
-     * @return The {@link AbilityType} enum that represents this ability
+     * @return The {@link NamespacedKey} that this {@link Ability} belongs to
      */
     @Override
-    public @NotNull AbilityType getAbilityType() {
-        return AbilityType.BLEED;
+    public @NotNull NamespacedKey getSkill() {
+        return McRPG.getNamespacedKey("swords");
     }
 
     /**
-     * Gets the {@link SkillType} that this {@link Ability} belongs to
+     * Gets the {@link BleedCreationData} that creates this {@link Ability}.
      *
-     * @return The {@link SkillType} that this {@link Ability} belongs to
+     * @return The {@link BleedCreationData} that creates this {@link Ability}
      */
     @Override
-    public @NotNull SkillType getSkill() {
-        return SkillType.SWORDS;
+    public @NotNull BleedCreationData getAbilityCreationData() {
+        return (BleedCreationData) super.getAbilityCreationData();
     }
 
     /**
