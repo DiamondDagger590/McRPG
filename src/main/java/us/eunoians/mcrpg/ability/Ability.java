@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.ability;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.AbilityIdentifier;
+import us.eunoians.mcrpg.McRPG;
 
 /**
  * The generic base interface for all abilities to inherit from.
@@ -42,4 +44,19 @@ public interface Ability {
      *                     activation.
      */
     public void activate(LivingEntity activator, Object... optionalData);
+
+    /**
+     * Get the {@link NamespacedKey} for a specified {@link Ability}.
+     *
+     * @param clazz the class of the ability implementation
+     *
+     * @return the {@link NamespacedKey} for the ability.
+     */
+    static NamespacedKey getId (Class<? extends BaseAbility> clazz) {
+        if (clazz.getAnnotation(AbilityIdentifier.class) == null) {
+            throw new IllegalArgumentException(clazz.getName() + " does not have the ability identifier annotation!");
+        }
+
+        return new NamespacedKey(McRPG.getInstance(), clazz.getAnnotation(AbilityIdentifier.class).id());
+    }
 }
