@@ -25,32 +25,15 @@ public class McRPGPlayer extends AbilityHolder {
     private Map<NamespacedKey, SkillProgression> skillProgression;
 
     /**
-     * The {@link UUID} of the {@link Player}
-     */
-    @NotNull
-    private final UUID uniqueId;
-
-    /**
      * Construct a new {@link McRPGPlayer}.
      *
      * @param uniqueId the unique id of the player this object is representing
      */
     public McRPGPlayer(@NotNull UUID uniqueId) {
         super(uniqueId, true);
-        this.uniqueId = uniqueId;
         this.skillProgression = new HashMap<>();
 
         //TODO populate skills
-    }
-
-    /**
-     * Get the {@link UUID} of the {@link Player}.
-     *
-     * @return the {@link UUID} of the {@link Player}
-     */
-    @NotNull
-    public UUID getUniqueId() {
-        return uniqueId;
     }
 
     /**

@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.ability.impl.swords.bleed;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,6 +11,7 @@ import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
+import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
@@ -24,7 +24,10 @@ import java.util.List;
  * This ability is an {@link DefaultAbility} that activates when a {@link org.bukkit.entity.LivingEntity} attacks
  * another {@link org.bukkit.entity.LivingEntity}. This {@link Ability} will deal damage over time with a few modifiers
  */
+@AbilityIdentifier(id = "bleed")
 public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbility {
+
+    private static final NamespacedKey NAMESPACED_KEY = McRPG.getNamespacedKey("bleed");
 
     /**
      * Represents whether the ability is toggled on or off
@@ -89,25 +92,25 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
      *                     generic activation method without providing access for all types of ability
      */
     @Override
-    public void activate(LivingEntity activator, Object... optionalData) {
+    public void activate(AbilityHolder activator, Object... optionalData) {
 
-        LivingEntity target = (LivingEntity) optionalData[0];
-        //TODO load from config
-        int frequencyInTicks = 20;
-        int cycles = 3;
-        int damagePerCycle = 2;
+        if(optionalData.length > 0 && optionalData[0] instanceof LivingEntity) {
+            LivingEntity target = (LivingEntity) optionalData[0];
+            //TODO load from config
+            int frequencyInTicks = 20;
+            int cycles = 3;
+            int damagePerCycle = 2;
 
-        BleedManager bleedManager = McRPG.getInstance().getBleedManager();
+            BleedManager bleedManager = McRPG.getInstance().getBleedManager();
 
-        AbilityHolder abilityHolder = activator instanceof Player ? new AbilityHolder((Player) activator) : AbilityHolder.getFromEntity(activator);
+            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(activator, this, target,
+                    frequencyInTicks, damagePerCycle, cycles, false, 0);
 
-        BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, this, target,
-                frequencyInTicks, damagePerCycle, cycles, false, 0);
-
-        Bukkit.getPluginManager().callEvent(bleedActivateEvent);
-        if(!bleedActivateEvent.isCancelled()) {
-            bleedManager.startBleed(activator, target, bleedActivateEvent.getCycleFrequencyInTicks(), bleedActivateEvent.getDamagePerCycle(),
-                    bleedActivateEvent.getAmountOfCycles(), bleedActivateEvent.isRestoreHealth(), bleedActivateEvent.getHealthToRestore());
+            Bukkit.getPluginManager().callEvent(bleedActivateEvent);
+            if (!bleedActivateEvent.isCancelled()) {
+                bleedManager.startBleed(activator, target, bleedActivateEvent.getCycleFrequencyInTicks(), bleedActivateEvent.getDamagePerCycle(),
+                        bleedActivateEvent.getAmountOfCycles(), bleedActivateEvent.isRestoreHealth(), bleedActivateEvent.getHealthToRestore());
+            }
         }
     }
 

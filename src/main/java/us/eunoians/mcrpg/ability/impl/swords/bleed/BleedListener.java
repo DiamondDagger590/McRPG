@@ -22,7 +22,6 @@ public class BleedListener implements Listener {
 
     private static final NamespacedKey BLEED_KEY = McRPG.getNamespacedKey("bleed");
 
-
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void handleGore(GoreActivateEvent goreActivateEvent){
 
@@ -52,7 +51,7 @@ public class BleedListener implements Listener {
 
                     //TODO try activation odds
                     if(true) {
-                        bleed.activate(damager, damagee);
+                        bleed.activate(abilityHolder, damagee);
                     }
                 }
             }

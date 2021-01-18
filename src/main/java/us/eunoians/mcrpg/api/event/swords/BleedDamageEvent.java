@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.api.event.swords;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 
 /**
@@ -16,7 +17,7 @@ public class BleedDamageEvent extends EntityDamageEvent {
     /**
      * The {@link LivingEntity} that caused Bleed to occur
      */
-    @NotNull
+    @Nullable
     private final LivingEntity inflicter;
 
     /**
@@ -30,7 +31,7 @@ public class BleedDamageEvent extends EntityDamageEvent {
      */
     private int healthToRestore;
 
-    public BleedDamageEvent(@NotNull LivingEntity inflicter, @NotNull LivingEntity damagee, double damage, boolean restoreHealth,
+    public BleedDamageEvent(@Nullable LivingEntity inflicter, @NotNull LivingEntity damagee, double damage, boolean restoreHealth,
                             int healthToRestore) {
         super(damagee, DamageCause.CUSTOM, Math.max(damage, 0));
 
@@ -44,7 +45,7 @@ public class BleedDamageEvent extends EntityDamageEvent {
      *
      * @return The {@link LivingEntity} that caused the Bleed to occur
      */
-    @NotNull
+    @Nullable
     public LivingEntity getInflicter() {
         return inflicter;
     }

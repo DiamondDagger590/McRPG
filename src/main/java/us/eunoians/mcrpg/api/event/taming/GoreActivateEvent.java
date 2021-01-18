@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.api.event.taming;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
 import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
@@ -17,7 +18,7 @@ public class GoreActivateEvent extends AbilityActivateEvent {
      * @param mcRPGPlayer The {@link McRPGPlayer} that is activating the event
      * @param ability     The {@link Ability} being activated
      */
-    public GoreActivateEvent(McRPGPlayer mcRPGPlayer, Gore ability) {
+    public GoreActivateEvent(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Gore ability) {
         super(mcRPGPlayer, ability, AbilityEventType.COMBAT);
     }
 
@@ -27,6 +28,7 @@ public class GoreActivateEvent extends AbilityActivateEvent {
      * @return The {@link Ability} that is being activated by this event
      */
     @Override
+    @NotNull
     public Gore getAbility() {
         return (Gore) super.getAbility();
     }

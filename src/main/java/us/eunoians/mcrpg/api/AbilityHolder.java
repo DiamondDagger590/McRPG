@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.api;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -77,6 +79,33 @@ public class AbilityHolder {
      */
     public boolean hasAbility(@NotNull NamespacedKey namespacedKey) {
         return abilities.containsKey(namespacedKey);
+    }
+
+    /**
+     * Gets the {@link UUID} of this {@link AbilityHolder}
+     *
+     * @return The {@link UUID} of this {@link AbilityHolder}
+     */
+    @NotNull
+    public UUID getUniqueId() {
+        return uuid;
+    }
+
+    /**
+     * Gets the {@link LivingEntity} that this object maps to
+     *
+     * @return The {@link LivingEntity} that this object maps to or {@code null} if invalid/dead/offline
+     */
+    @Nullable
+    public LivingEntity getEntity() {
+        if (isPlayer) {
+            return Bukkit.getPlayer(uuid);
+        }
+        else {
+            Entity entity = Bukkit.getEntity(uuid);
+
+            return entity instanceof LivingEntity ? (LivingEntity) entity : null;
+        }
     }
 
     /**

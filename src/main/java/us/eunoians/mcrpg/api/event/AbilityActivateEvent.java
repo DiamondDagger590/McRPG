@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.event;
 
 import org.bukkit.event.Cancellable;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.player.McRPGPlayer;
@@ -18,16 +19,16 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
 
     private boolean cancelled;
 
-    private final AbilityHolder abilityHolder;
-    private final Ability ability;
-    private final AbilityEventType abilityEventType;
+    private final @NotNull AbilityHolder abilityHolder;
+    private final @NotNull Ability ability;
+    private final @NotNull AbilityEventType abilityEventType;
 
     /**
-     * @param abilityHolder      The {@link AbilityHolder} that is activating the event
+     * @param abilityHolder    The {@link AbilityHolder} that is activating the event
      * @param ability          The {@link Ability} being activated
      * @param abilityEventType The {@link AbilityEventType} that specifies the generic reason the event was called
      */
-    public AbilityActivateEvent(AbilityHolder abilityHolder, Ability ability, AbilityEventType abilityEventType) {
+    public AbilityActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull Ability ability, @NotNull AbilityEventType abilityEventType) {
         this.abilityHolder = abilityHolder;
         this.ability = ability;
         this.abilityEventType = abilityEventType;
@@ -60,6 +61,7 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
      *
      * @return The {@link AbilityHolder} that activated this event
      */
+    @NotNull
     public AbilityHolder getAbilityHolder() {
         return abilityHolder;
     }
@@ -69,6 +71,7 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
      *
      * @return The {@link Ability} that is being activated by this event
      */
+    @NotNull
     public Ability getAbility() {
         return ability;
     }
@@ -78,6 +81,7 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
      *
      * @return The {@link AbilityEventType} that holds some basic information about why the event was activated
      */
+    @NotNull
     public AbilityEventType getAbilityEventType() {
         return abilityEventType;
     }

@@ -56,7 +56,7 @@ public class GoreListener implements Listener {
                         Bukkit.getPluginManager().callEvent(goreActivateEvent);
 
                         if (!goreActivateEvent.isCancelled()) {
-                            gore.activate(owner);
+                            gore.activate(abilityHolder);
                         }
                     }
                 }

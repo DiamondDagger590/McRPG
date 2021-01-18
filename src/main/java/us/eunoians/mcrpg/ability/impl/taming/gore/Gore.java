@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.taming.gore;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,6 +11,8 @@ import us.eunoians.mcrpg.ability.PlayerAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
+import us.eunoians.mcrpg.annotation.AbilityIdentifier;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.util.parser.Parser;
 
@@ -26,6 +27,7 @@ import java.util.List;
  *
  * @author DiamondDagger590
  */
+@AbilityIdentifier(id = "gore")
 public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbility, PlayerAbility {
 
     /**
@@ -52,6 +54,16 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
         }
 
         //TODO load activation equation
+    }
+
+    /**
+     * Gets the {@link GoreCreationData} that creates this {@link Ability}.
+     *
+     * @return The {@link GoreCreationData} that creates this {@link Ability}
+     */
+    @Override
+    public @NotNull GoreCreationData getAbilityCreationData() {
+        return (GoreCreationData) super.getAbilityCreationData();
     }
 
     /**
@@ -124,13 +136,13 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
     }
 
     /**
-     * @param activator    The {@link LivingEntity} that is activating this {@link Ability}
+     * @param abilityHolder    The {@link AbilityHolder} that is activating this {@link Ability}
      * @param optionalData Any objects that should be passed in. It is up to the implementation of the
      *                     ability to sanitize this input but this is here as there is no way to allow a
      *                     generic activation method without providing access for all types of ability
      */
     @Override
-    public void activate(LivingEntity activator, Object... optionalData) {
+    public void activate(AbilityHolder abilityHolder, Object... optionalData) {
 
     }
 

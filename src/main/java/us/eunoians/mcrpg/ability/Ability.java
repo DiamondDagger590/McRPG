@@ -1,10 +1,10 @@
 package us.eunoians.mcrpg.ability;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.AbilityIdentifier;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.annotation.AbilityIdentifier;
+import us.eunoians.mcrpg.api.AbilityHolder;
 
 /**
  * The generic base interface for all abilities to inherit from.
@@ -37,13 +37,13 @@ public interface Ability {
     public NamespacedKey getSkill();
 
     /**
-     * @param activator The {@link LivingEntity} that is activating this {@link Ability}
+     * @param activator The {@link AbilityHolder} that is activating this {@link Ability}
      * @param optionalData Any objects that should be passed in. It is up to the implementation of the
      *                     ability to sanitize this input but this is here as there is no way to allow a
      *                     generic activation method without providing access for all types of ability
      *                     activation.
      */
-    public void activate(LivingEntity activator, Object... optionalData);
+    public void activate(AbilityHolder activator, Object... optionalData);
 
     /**
      * Get the {@link NamespacedKey} for a specified {@link Ability}.

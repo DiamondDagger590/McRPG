@@ -4,8 +4,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
+import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
 import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
@@ -97,7 +99,8 @@ public class McRPG extends JavaPlugin {
      */
     private void initAbilities(){
         //Swords abilities
-        getAbilityRegistry().registerAbility(getNamespacedKey("bleed"), Bleed::new);
+        getAbilityRegistry().registerAbility(Ability.getId(Bleed.class), Bleed::new);
+        getAbilityRegistry().registerAbility(Ability.getId(DeeperWound.class), DeeperWound::new);
 
         //Taming abilities
         getAbilityRegistry().registerAbility(getNamespacedKey("gore"), Gore::new);

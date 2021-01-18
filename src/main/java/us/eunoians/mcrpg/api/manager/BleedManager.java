@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.api.event.swords.BleedEndEvent;
 
@@ -77,7 +78,7 @@ public class BleedManager implements Listener {
     /**
      * Starts the Bleed process using the provided data
      *
-     * @param inflicter          The {@link LivingEntity} inflicting the Bleed
+     * @param abilityHolder      The {@link AbilityHolder} inflicting the Bleed
      * @param affected           The {@link LivingEntity} being affected by the Bleed
      * @param cycleTickFrequency The amount of time in ticks that each cycle should run
      * @param damagePerCycle     The amount of damage to be dealt to the affected entity each cycle
@@ -85,9 +86,11 @@ public class BleedManager implements Listener {
      * @param restoreHealth      The amount of health to restore provided that health restoration is enabled
      * @param healthToRestore    If health should be restored on each Bleed cycle to the inflicter
      */
-    public void startBleed(@NotNull LivingEntity inflicter, @NotNull LivingEntity affected, int cycleTickFrequency, int damagePerCycle, int amountOfCycles, boolean restoreHealth, int healthToRestore) {
+    public void startBleed(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity affected, int cycleTickFrequency, int damagePerCycle, int amountOfCycles, boolean restoreHealth, int healthToRestore) {
 
         AtomicInteger cycles = new AtomicInteger(0);
+
+        LivingEntity inflicter = abilityHolder.getEntity();
 
         boolean isPlayer = affected instanceof Player;
 
@@ -121,18 +124,22 @@ public class BleedManager implements Listener {
 
                     cycles.incrementAndGet();
 
+                    if (inflicter instanceof Player && !(((Player) inflicter).isOnline())) {
+                        return;
+                    }
+
                     //Due to our above checks we can assume the entity or player is online and valid
-                    if (bleedDamageEvent.isRestoreHealth() && bleedDamageEvent.getHealthToRestore() > 0) {
+                    if (inflicter != null && bleedDamageEvent.isRestoreHealth() && bleedDamageEvent.getHealthToRestore() > 0) {
                         inflicter.setHealth(Math.min(20, inflicter.getHealth() + bleedDamageEvent.getHealthToRestore()));
                     }
                 }
             }
         }.runTaskTimer(McRPG.getInstance(), 0, cycleTickFrequency);
 
-        BleedTask bleedTask = new BleedTask(bukkitTask, inflicter.getUniqueId(), affected.getUniqueId());
+        BleedTask bleedTask = new BleedTask(bukkitTask, abilityHolder.getUniqueId(), affected.getUniqueId());
         bleedTasks.put(affected.getUniqueId(), bleedTask);
 
-        amountOfEntitiesAffected.put(inflicter.getUniqueId(), getAmountOfEntitiesAffected(inflicter.getUniqueId()) + 1);
+        amountOfEntitiesAffected.put(abilityHolder.getUniqueId(), getAmountOfEntitiesAffected(abilityHolder.getUniqueId()) + 1);
     }
 
     /**

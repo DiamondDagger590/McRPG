@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.event.swords;
 
 import org.bukkit.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
@@ -18,6 +19,7 @@ public class BleedActivateEvent extends AbilityActivateEvent {
     /**
      * Gets the {@link LivingEntity} being affected by {@link Bleed}
      */
+    @NotNull
     private final LivingEntity target;
 
     /**
@@ -45,7 +47,8 @@ public class BleedActivateEvent extends AbilityActivateEvent {
      */
     private int healthToRestore;
 
-    public BleedActivateEvent(AbilityHolder abilityHolder, Bleed bleed, LivingEntity target, int cycleFrequencyInTicks, int damagePerCycle, int amountOfCycles, boolean restoreHealth,
+    public BleedActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull Bleed bleed, @NotNull LivingEntity target,
+                              int cycleFrequencyInTicks, int damagePerCycle, int amountOfCycles, boolean restoreHealth,
                               int healthToRestore) {
         super(abilityHolder, bleed, AbilityEventType.COMBAT);
         this.target = target;
@@ -155,11 +158,13 @@ public class BleedActivateEvent extends AbilityActivateEvent {
      *
      * @return The {@link LivingEntity} that is being affected by the bleed task
      */
+    @NotNull
     public LivingEntity getTarget() {
         return target;
     }
 
     @Override
+    @NotNull
     public Bleed getAbility() {
         return (Bleed) super.getAbility();
     }
