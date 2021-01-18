@@ -56,6 +56,30 @@ public class AbilityHolder {
     }
 
     /**
+     * Gets the {@link Ability} mapped to the provided {@link NamespacedKey}
+     *
+     * @param namespacedKey The {@link NamespacedKey} that links to the desired {@link Ability}
+     * @return {@code null} if there isn't an {@link Ability} that matches the provided {@link NamespacedKey} or the
+     * {@link Ability} that maps if present.
+     */
+    @Nullable
+    public Ability getAbility(@NotNull NamespacedKey namespacedKey) {
+        return abilities.get(namespacedKey);
+    }
+
+    /**
+     * Checks to see if the {@link AbilityHolder} has the {@link Ability} that maps
+     * to the provided {@link NamespacedKey}
+     *
+     * @param namespacedKey The {@link NamespacedKey} to check
+     * @return {@code true} if the {@link AbilityHolder} has an {@link Ability} that maps to the
+     * provided {@link NamespacedKey}
+     */
+    public boolean hasAbility(@NotNull NamespacedKey namespacedKey) {
+        return abilities.containsKey(namespacedKey);
+    }
+
+    /**
      * This method is used to get an {@link AbilityHolder} from a {@link LivingEntity}.
      * <p>
      * Not all {@link LivingEntity}s are an {@link AbilityHolder} however. Usually they need
@@ -67,6 +91,17 @@ public class AbilityHolder {
      */
     @Nullable
     public static AbilityHolder getFromEntity(@NotNull LivingEntity livingEntity) {
+        //TODO
         return null;
+    }
+
+    /**
+     * Checks to see if the {@link LivingEntity} is an ability holder
+     *
+     * @param livingEntity The {@link LivingEntity} to check
+     * @return {@code true} if the {@link LivingEntity} is a valid {@link AbilityHolder}
+     */
+    public static boolean isAbilityHolder(@NotNull LivingEntity livingEntity) {
+        return livingEntity instanceof Player || getFromEntity(livingEntity) != null;
     }
 }

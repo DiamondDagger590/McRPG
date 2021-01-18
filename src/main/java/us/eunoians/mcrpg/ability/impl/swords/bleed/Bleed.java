@@ -1,27 +1,24 @@
 package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityType;
+import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.DefaultAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
+import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
-import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
-import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.SkillType;
 import us.eunoians.mcrpg.util.parser.Parser;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This ability is an {@link DefaultAbility} that activates when a {@link org.bukkit.entity.LivingEntity} attacks
@@ -56,7 +53,7 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
      */
     @Override
     public List<Listener> createListeners() {
-        return null;
+        return Collections.singletonList(new BleedListener());
     }
 
     /**
@@ -80,82 +77,6 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     }
 
     /**
-     * Attempts to handle the {@link Event} and activate the ability based on the event
-     *
-     * @param event The {@link Event} to handle
-     */
-    @Override
-    public void handleEvent(Event event) {
-
-        //The ability can activate from Gore so we want to handle that
-        if (event instanceof GoreActivateEvent) {
-
-        }
-        else {
-
-            EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
-
-            LivingEntity damager = (LivingEntity) entityDamageByEntityEvent.getDamager();
-            LivingEntity target = (LivingEntity) entityDamageByEntityEvent.getEntity();
-
-            if (damager instanceof Player) {
-
-                Optional<McRPGPlayer> mcRPGPlayerOptional = McRPG.getInstance().getPlayerContainer().getPlayer(damager.getUniqueId());
-
-                if (mcRPGPlayerOptional.isPresent()) {
-
-                    McRPGPlayer mcRPGPlayer = mcRPGPlayerOptional.get();
-
-                    //TODO handle checking odds
-                    if (true) {
-
-
-                    }
-
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks to see if the provided {@link Event} is valid for handling
-     *
-     * @param event The {@link Event} to validate
-     * @return True if the event can be passed for testing
-     */
-    @Override
-    public boolean isValidEvent(Event event) {
-
-        if (!this.isToggled()) {
-            return false;
-        }
-        else if (event instanceof GoreActivateEvent) {
-            //TODO add handling for gore
-        }
-        else if (event instanceof EntityDamageByEntityEvent) {
-            EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
-
-            if (entityDamageByEntityEvent.getDamager() instanceof LivingEntity && entityDamageByEntityEvent.getEntity() instanceof LivingEntity) {
-
-                BleedManager bleedManager = McRPG.getInstance().getBleedManager();
-
-                LivingEntity damager = (LivingEntity) entityDamageByEntityEvent.getDamager();
-                LivingEntity damagee = (LivingEntity) entityDamageByEntityEvent.getEntity();
-
-                if (bleedManager.canInflictBleed(damagee.getUniqueId(), damagee.getUniqueId())
-                        && damager.getEquipment() != null && damager.getEquipment().getItemInMainHand().getType().toString().endsWith("_SWORD")) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Handles activation of the ability outside of the {@link #handleEvent(Event)}
-     * as to allow for future proofing additions with a custom mob AI
-     *
      * @param activator    The {@link LivingEntity} that is activating this {@link Ability}
      * @param optionalData Any objects that should be passed in. It is up to the implementation of the
      *                     ability to sanitize this input but this is here as there is no way to allow a
@@ -172,7 +93,16 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
 
         BleedManager bleedManager = McRPG.getInstance().getBleedManager();
 
-        bleedManager.startBleed(activator, target, frequencyInTicks, damagePerCycle, cycles, false, 0);
+        AbilityHolder abilityHolder = activator instanceof Player ? new AbilityHolder((Player) activator) : AbilityHolder.getFromEntity(activator);
+
+        BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, this, target,
+                frequencyInTicks, damagePerCycle, cycles, false, 0);
+
+        Bukkit.getPluginManager().callEvent(bleedActivateEvent);
+        if(!bleedActivateEvent.isCancelled()) {
+            bleedManager.startBleed(activator, target, bleedActivateEvent.getCycleFrequencyInTicks(), bleedActivateEvent.getDamagePerCycle(),
+                    bleedActivateEvent.getAmountOfCycles(), bleedActivateEvent.isRestoreHealth(), bleedActivateEvent.getHealthToRestore());
+        }
     }
 
     /**
@@ -220,15 +150,5 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     @Override
     public void setToggled(boolean toggled) {
         this.toggled = toggled;
-    }
-
-    /**
-     * Get the {@link EventPriority} that this {@link Ability} should be ran on
-     *
-     * @return The {@link EventPriority} that this {@link Ability} should be ran on
-     */
-    @Override
-    public @NotNull EventPriority getListenPriority() {
-        return EventPriority.MONITOR;
     }
 }

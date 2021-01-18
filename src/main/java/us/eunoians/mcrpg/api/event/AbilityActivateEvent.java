@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.api.event;
 
 import org.bukkit.event.Cancellable;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**
@@ -17,17 +18,17 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
 
     private boolean cancelled;
 
-    private final McRPGPlayer mcRPGPlayer;
+    private final AbilityHolder abilityHolder;
     private final Ability ability;
     private final AbilityEventType abilityEventType;
 
     /**
-     * @param mcRPGPlayer      The {@link McRPGPlayer} that is activating the event
+     * @param abilityHolder      The {@link AbilityHolder} that is activating the event
      * @param ability          The {@link Ability} being activated
      * @param abilityEventType The {@link AbilityEventType} that specifies the generic reason the event was called
      */
-    public AbilityActivateEvent(McRPGPlayer mcRPGPlayer, Ability ability, AbilityEventType abilityEventType) {
-        this.mcRPGPlayer = mcRPGPlayer;
+    public AbilityActivateEvent(AbilityHolder abilityHolder, Ability ability, AbilityEventType abilityEventType) {
+        this.abilityHolder = abilityHolder;
         this.ability = ability;
         this.abilityEventType = abilityEventType;
     }
@@ -55,12 +56,12 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
     }
 
     /**
-     * The {@link McRPGPlayer} that activated this event
+     * The {@link AbilityHolder} that activated this event
      *
-     * @return The {@link McRPGPlayer} that activated this event
+     * @return The {@link AbilityHolder} that activated this event
      */
-    public McRPGPlayer getMcRPGPlayer() {
-        return mcRPGPlayer;
+    public AbilityHolder getAbilityHolder() {
+        return abilityHolder;
     }
 
     /**
