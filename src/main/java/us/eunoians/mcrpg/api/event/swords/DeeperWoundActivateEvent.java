@@ -39,20 +39,21 @@ public class DeeperWoundActivateEvent extends AbilityActivateEvent {
     }
 
     /**
-     * Gets the new amount of cycles for the {@link #getBleedActivateEvent()} to run for
+     * Gets the new amount of cycles for the bleed effect to run for
      *
-     * @return The new amount of cycles for the {@link #getBleedActivateEvent()} to run for
+     * @return A positive zero exclusive number of how many cycles the bleed effect should run for
      */
     public int getAmountOfCyclesToSet() {
         return amountOfCyclesToSet;
     }
 
     /**
-     * Sets the new amount of cycles for the {@link #getBleedActivateEvent()} to run for
+     * Sets the new amount of cycles for the bleed effect to run for
      *
-     * @param amountOfCyclesToSet The new amount of cycles for the {@link #getBleedActivateEvent()} to run for
+     * @param amountOfCyclesToSet The new amount of cycles for the bleed effect to run for. This
+     *                            needs to be a positive zero exclusive number.
      */
     public void setAmountOfCyclesToSet(int amountOfCyclesToSet) {
-        this.amountOfCyclesToSet = amountOfCyclesToSet;
+        this.amountOfCyclesToSet = Math.max(1, amountOfCyclesToSet);
     }
 }
