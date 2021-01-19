@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is the central manager for handling all things relating to the {@link Bleed}
- * ability and it's various effects. It abstractly calls the {@link BleedDamageEvent} for other abilities such as {@link us.eunoians.mcrpg.ability.impl.swords.Vampire}
+ * ability and it's various effects. It abstractly calls the {@link BleedDamageEvent} for other abilities such as {@link us.eunoians.mcrpg.ability.impl.swords.vampire.Vampire}
  * to hook into.
  *
  * @author DiamondDagger590
@@ -56,7 +56,7 @@ public class BleedManager implements Listener {
      * {@link UUID} stored as a key.
      * <p>
      * The reason this map exists is to prevent entities from triggering Bleed on multiple enemies
-     * and becoming nearly invincible due to perks such as {@link us.eunoians.mcrpg.ability.impl.swords.Vampire}
+     * and becoming nearly invincible due to perks such as {@link us.eunoians.mcrpg.ability.impl.swords.vampire.Vampire}
      */
     private Map<UUID, Integer> amountOfEntitiesAffected = new HashMap<>();
 
@@ -115,7 +115,7 @@ public class BleedManager implements Listener {
                     return;
                 }
 
-                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(inflicter, affected, damagePerCycle, restoreHealth, healthToRestore);
+                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(abilityHolder, affected, damagePerCycle, restoreHealth, healthToRestore);
                 Bukkit.getPluginManager().callEvent(bleedDamageEvent);
 
                 if (!bleedDamageEvent.isCancelled()) {

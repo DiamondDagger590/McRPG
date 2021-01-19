@@ -3,8 +3,8 @@ package us.eunoians.mcrpg.api.event.swords;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
+import us.eunoians.mcrpg.api.AbilityHolder;
 
 /**
  * This event is a custom {@link EntityDamageEvent} that gets called to
@@ -15,23 +15,23 @@ import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 public class BleedDamageEvent extends EntityDamageEvent {
 
     /**
-     * The {@link LivingEntity} that caused Bleed to occur
+     * The {@link AbilityHolder} that caused Bleed to occur
      */
-    @Nullable
-    private final LivingEntity inflicter;
+    @NotNull
+    private final AbilityHolder inflicter;
 
     /**
-     * If this Bleed cycle should heal the {@link #getInflicter()}
+     * If this Bleed cycle should heal the {@link #getAbilityHolder()}
      */
     private boolean restoreHealth;
 
     /**
-     * How much health should be restored to the {@link #getInflicter()} if
+     * How much health should be restored to the {@link #getAbilityHolder()} if
      * {@link #isRestoreHealth()} is true
      */
     private int healthToRestore;
 
-    public BleedDamageEvent(@Nullable LivingEntity inflicter, @NotNull LivingEntity damagee, double damage, boolean restoreHealth,
+    public BleedDamageEvent(@NotNull AbilityHolder inflicter, @NotNull LivingEntity damagee, double damage, boolean restoreHealth,
                             int healthToRestore) {
         super(damagee, DamageCause.CUSTOM, Math.max(damage, 0));
 
@@ -41,12 +41,12 @@ public class BleedDamageEvent extends EntityDamageEvent {
     }
 
     /**
-     * Gets the {@link LivingEntity} that caused the Bleed to occur
+     * Gets the {@link AbilityHolder} that caused the Bleed to occur
      *
-     * @return The {@link LivingEntity} that caused the Bleed to occur
+     * @return The {@link AbilityHolder} that caused the Bleed to occur
      */
-    @Nullable
-    public LivingEntity getInflicter() {
+    @NotNull
+    public AbilityHolder getAbilityHolder() {
         return inflicter;
     }
 
@@ -60,10 +60,10 @@ public class BleedDamageEvent extends EntityDamageEvent {
     }
 
     /**
-     * Returns a positive zero inclusive number representing the amount to heal the {@link #getInflicter()}
+     * Returns a positive zero inclusive number representing the amount to heal the {@link #getAbilityHolder()}
      * by for this bleed cycle
      *
-     * @return A positive zero inclusive number representing the amount to heal the {@link #getInflicter()}
+     * @return A positive zero inclusive number representing the amount to heal the {@link #getAbilityHolder()}
      * by for this bleed cycle
      */
     public int getHealthToRestore() {
