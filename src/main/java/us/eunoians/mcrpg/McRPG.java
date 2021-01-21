@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.bleedplus.BleedPlus;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
+import us.eunoians.mcrpg.api.chat.MessageSender;
 import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -47,16 +48,21 @@ public class McRPG extends JavaPlugin {
     private BleedManager bleedManager;
 
     /**
+     * Handles sending messages to {@link org.bukkit.entity.Player}s
+     */
+    private MessageSender messageSender;
+
+    /**
      * Constructor used for unit tests.
      */
-    public McRPG () {
+    public McRPG() {
         super();
     }
 
     /**
      * Constructor used for unit tests.
      */
-    public McRPG (JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+    public McRPG(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
         super(loader, description, dataFolder, file);
     }
 
@@ -68,6 +74,7 @@ public class McRPG extends JavaPlugin {
         this.abilityRegistry = new AbilityRegistry();
         this.skillRegistry = new SkillRegistry();
         this.bleedManager = new BleedManager();
+        this.messageSender = new MessageSender();
 
         initAbilities();
         initSkills();
@@ -78,10 +85,15 @@ public class McRPG extends JavaPlugin {
     public void onDisable() {
     }
 
+    public String getPluginPrefix() {
+        //TODO
+        return "";
+    }
+
     /**
      * Initialize our various listeners
      */
-    private void initListeners(){
+    private void initListeners() {
 
         //Initialize the Bleed manager
         getServer().getPluginManager().registerEvents(getBleedManager(), this);
@@ -90,7 +102,7 @@ public class McRPG extends JavaPlugin {
     /**
      * Initialize all skills that McRPG provides
      */
-    private void initSkills(){
+    private void initSkills() {
         getSkillRegistry().registerSkill(getNamespacedKey("taming"), Taming::new);
         getSkillRegistry().registerSkill(getNamespacedKey("swords"), Swords::new);
     }
@@ -98,7 +110,7 @@ public class McRPG extends JavaPlugin {
     /**
      * Initialize all abilities that McRPG provides
      */
-    private void initAbilities(){
+    private void initAbilities() {
         //Swords abilities
         getAbilityRegistry().registerAbility(Ability.getId(Bleed.class), Bleed::new);
         getAbilityRegistry().registerAbility(Ability.getId(DeeperWound.class), DeeperWound::new);
@@ -121,10 +133,9 @@ public class McRPG extends JavaPlugin {
      * Get a {@link NamespacedKey} for {@link McRPG}.
      *
      * @param key the value of the key.
-     *
      * @return the {@link NamespacedKey} using the McRPG namespace
      */
-    public static NamespacedKey getNamespacedKey (String key) {
+    public static NamespacedKey getNamespacedKey(String key) {
         return new NamespacedKey(instance, key);
     }
 
@@ -161,7 +172,17 @@ public class McRPG extends JavaPlugin {
      *
      * @return The {@link BleedManager} object
      */
-    public BleedManager getBleedManager(){
+    public BleedManager getBleedManager() {
         return bleedManager;
+    }
+
+    /**
+     * Gets the {@link MessageSender} object that handles sending messages
+     * to {@link org.bukkit.entity.Player}s.
+     *
+     * @return The {@link MessageSender} object
+     */
+    public MessageSender getMessageSender() {
+        return messageSender;
     }
 }

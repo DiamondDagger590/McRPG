@@ -37,7 +37,15 @@ public interface Ability {
     public NamespacedKey getSkill();
 
     /**
-     * @param activator The {@link AbilityHolder} that is activating this {@link Ability}
+     * Gets the {@link AbilityHolder} that owns this {@link Ability}
+     *
+     * @return THe {@link AbilityHolder} that owns this {@link Ability}
+     */
+    @NotNull
+    public AbilityHolder getAbilityHolder();
+
+    /**
+     * @param activator    The {@link AbilityHolder} that is activating this {@link Ability}
      * @param optionalData Any objects that should be passed in. It is up to the implementation of the
      *                     ability to sanitize this input but this is here as there is no way to allow a
      *                     generic activation method without providing access for all types of ability
@@ -49,10 +57,9 @@ public interface Ability {
      * Get the {@link NamespacedKey} for a specified {@link Ability}.
      *
      * @param clazz the class of the ability implementation
-     *
      * @return the {@link NamespacedKey} for the ability.
      */
-    static NamespacedKey getId (Class<? extends BaseAbility> clazz) {
+    static NamespacedKey getId(Class<? extends BaseAbility> clazz) {
         if (clazz.getAnnotation(AbilityIdentifier.class) == null) {
             throw new IllegalArgumentException(clazz.getName() + " does not have the ability identifier annotation!");
         }

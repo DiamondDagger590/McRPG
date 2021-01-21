@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
+import us.eunoians.mcrpg.api.AbilityHolder;
 
 import java.util.List;
 
@@ -79,6 +80,17 @@ public abstract class BaseAbility implements Ability {
      */
     public @NotNull AbilityCreationData getAbilityCreationData() {
         return this.abilityCreationData;
+    }
+
+    /**
+     * Gets the {@link AbilityHolder} that owns this {@link Ability}
+     *
+     * @return THe {@link AbilityHolder} that owns this {@link Ability}
+     */
+    @Override
+    @NotNull
+    public AbilityHolder getAbilityHolder(){
+        return getAbilityCreationData().getAbilityHolder();
     }
 
     /**

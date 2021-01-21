@@ -15,12 +15,9 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
  *
  * @author DiamondDagger590
  */
-public abstract class AbilityActivateEvent extends McRPGEvent implements Cancellable {
+public abstract class AbilityActivateEvent extends AbilityEvent implements Cancellable {
 
     private boolean cancelled;
-
-    private final @NotNull AbilityHolder abilityHolder;
-    private final @NotNull Ability ability;
     private final @NotNull AbilityEventType abilityEventType;
 
     /**
@@ -29,8 +26,7 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
      * @param abilityEventType The {@link AbilityEventType} that specifies the generic reason the event was called
      */
     public AbilityActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull Ability ability, @NotNull AbilityEventType abilityEventType) {
-        this.abilityHolder = abilityHolder;
-        this.ability = ability;
+        super(abilityHolder, ability);
         this.abilityEventType = abilityEventType;
     }
 
@@ -54,26 +50,6 @@ public abstract class AbilityActivateEvent extends McRPGEvent implements Cancell
     @Override
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
-    }
-
-    /**
-     * The {@link AbilityHolder} that activated this event
-     *
-     * @return The {@link AbilityHolder} that activated this event
-     */
-    @NotNull
-    public AbilityHolder getAbilityHolder() {
-        return abilityHolder;
-    }
-
-    /**
-     * The {@link Ability} that is being activated by this event
-     *
-     * @return The {@link Ability} that is being activated by this event
-     */
-    @NotNull
-    public Ability getAbility() {
-        return ability;
     }
 
     /**

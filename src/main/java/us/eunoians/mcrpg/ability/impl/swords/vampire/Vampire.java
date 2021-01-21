@@ -41,6 +41,15 @@ public class Vampire extends BaseAbility implements UnlockableAbility, Toggleabl
      */
     public Vampire(AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
+
+        if(abilityCreationData instanceof VampireCreationData){
+
+            VampireCreationData vampireCreationData = (VampireCreationData) abilityCreationData;
+
+            this.tier = vampireCreationData.getTier();
+            this.unlocked = vampireCreationData.isUnlocked();
+            this.toggled = vampireCreationData.isToggled();
+        }
     }
 
     /**

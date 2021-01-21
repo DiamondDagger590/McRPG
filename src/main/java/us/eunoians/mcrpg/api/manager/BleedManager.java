@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.api.manager;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -121,6 +123,7 @@ public class BleedManager implements Listener {
                 if (!bleedDamageEvent.isCancelled()) {
 
                     affected.damage(bleedDamageEvent.getDamage());
+                    affected.getWorld().playEffect(affected.getEyeLocation(), Effect.STEP_SOUND, Material.REDSTONE_WIRE);
 
                     cycles.incrementAndGet();
 
