@@ -46,7 +46,7 @@ public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbili
      *
      * @param abilityCreationData The {@link GoreCreationData} is used to create this {@link Ability}
      */
-    public Gore(AbilityCreationData abilityCreationData) {
+    public Gore(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
         if(abilityCreationData instanceof GoreCreationData) {

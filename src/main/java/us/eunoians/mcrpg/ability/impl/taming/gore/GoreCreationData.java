@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.taming.gore;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.ability.creation.ToggleableCreationData;
@@ -17,7 +18,7 @@ public class GoreCreationData extends AbilityCreationData implements ToggleableC
      */
     private final boolean toggled;
 
-    public GoreCreationData(AbilityHolder abilityHolder, boolean toggled) {
+    public GoreCreationData(@NotNull AbilityHolder abilityHolder, boolean toggled) {
         super(abilityHolder);
         this.toggled = toggled;
     }

@@ -1,35 +1,50 @@
-package us.eunoians.mcrpg.ability.impl.swords.bleedplus;
+package us.eunoians.mcrpg.ability.impl.swords.taintedblade;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
+import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.ActiveAbility;
 import us.eunoians.mcrpg.ability.BaseAbility;
+import us.eunoians.mcrpg.ability.PotionEffectableAbility;
+import us.eunoians.mcrpg.ability.ReadyableAbility;
 import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.api.event.swords.BleedPlusActivateEvent;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-/**
- * This ability increases the amount of damage done by {@link us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed}
- *
- * @author DiamondDagger590
- */
-public class BleedPlus extends BaseAbility implements UnlockableAbility, TierableAbility, ToggleableAbility {
+public class TaintedBlade extends BaseAbility implements UnlockableAbility, ToggleableAbility,
+        TierableAbility, ReadyableAbility, ActiveAbility, PotionEffectableAbility {
 
-    private int tier;
-    private boolean unlocked;
-    private boolean toggled;
+    private final static Set<Material> ACTIVATION_MATERIALS = new HashSet<>();
+
+    static {
+        for (Material material : Material.values()) {
+            if (material.toString().contains("_SWORD")) {
+                ACTIVATION_MATERIALS.add(material);
+            }
+        }
+    }
+
+    private int tier = 0;
+    private boolean toggled = false;
+    private boolean unlocked = false;
+    private boolean ready = false;
 
     /**
      * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
@@ -37,16 +52,15 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
      *
      * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public BleedPlus(@NotNull AbilityCreationData abilityCreationData) {
+    public TaintedBlade(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
-        if(abilityCreationData instanceof BleedPlusCreationData){
+        if (abilityCreationData instanceof TaintedBladeCreationData) {
+            TaintedBladeCreationData taintedBladeCreationData = (TaintedBladeCreationData) abilityCreationData;
 
-            BleedPlusCreationData bleedPlusCreationData = (BleedPlusCreationData) abilityCreationData;
-
-            this.tier = bleedPlusCreationData.getTier();
-            this.unlocked = bleedPlusCreationData.isUnlocked();
-            this.toggled = bleedPlusCreationData.isToggled();
+            this.tier = taintedBladeCreationData.getTier();
+            this.toggled = taintedBladeCreationData.isToggled();
+            this.unlocked = taintedBladeCreationData.isUnlocked();
         }
     }
 
@@ -69,19 +83,6 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
     @Override
     public void activate(AbilityHolder activator, Object... optionalData) {
 
-        if(optionalData.length > 0 && optionalData[0] instanceof BleedActivateEvent) {
-            BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) optionalData[0];
-            ConfigurationSection configurationSection = getTierConfigSection(getTier());
-
-            int damagePerCycle = configurationSection.getInt("damage-per-cycle", 3);
-
-            BleedPlusActivateEvent bleedPlusActivateEvent = new BleedPlusActivateEvent(bleedActivateEvent.getAbilityHolder(), this, damagePerCycle, bleedActivateEvent);
-            Bukkit.getPluginManager().callEvent(bleedPlusActivateEvent);
-
-            if(!bleedPlusActivateEvent.isCancelled()){
-                bleedActivateEvent.setDamagePerCycle(bleedPlusActivateEvent.getDamagePerCycle());
-            }
-        }
     }
 
     /**
@@ -93,7 +94,105 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
      */
     @Override
     protected List<Listener> createListeners() {
-        return Collections.singletonList(new BleedPlusListener());
+        return Collections.singletonList(new TaintedBladeListener());
+    }
+
+    /**
+     * Gets the {@link Set} of {@link PotionEffect}s that should be given to either
+     * the user of the {@link Ability} or the target of such {@link Ability}
+     *
+     * @return The {@link Set} of {@link PotionEffect}s
+     */
+    @Override
+    public Set<PotionEffect> getPotionEffects() {
+        //TODO
+        return null;
+    }
+
+    /**
+     * Checks to see if this ability is currently in a ready status
+     *
+     * @return {@code true} if this ability is currently in a ready status
+     */
+    @Override
+    public boolean isReady() {
+        return this.ready;
+    }
+
+    /**
+     * Sets if this ability is currently in a ready status or not
+     *
+     * @param ready If this ability should be in a ready state or note
+     */
+    @Override
+    public void setReady(boolean ready) {
+        this.ready = ready;
+    }
+
+    /**
+     * Handles parsing an {@link Event} to see if this ability should enter "ready" status.
+     * <p>
+     * This method should call {@link #startReady()} if the ready status should be enabled
+     *
+     * @param event The {@link Event} that needs to be parsed
+     * @return {@code true} if the {@link ReadyableAbility} entered "ready" status from this method call
+     */
+    @Override
+    public boolean handleReadyAttempt(Event event) {
+
+        if (!isReady() && event instanceof PlayerInteractEvent && ((PlayerInteractEvent) event).getItem() != null &&
+                getActivatableMaterials().contains(((PlayerInteractEvent) event).getItem().getType())) {
+            startReady();
+            readyTasks.remove(((PlayerInteractEvent) event).getPlayer().getUniqueId()).cancel();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets a {@link Set} of all {@link Material}s that can activate this {@link ReadyableAbility}
+     *
+     * @return A {@link Set} of all {@link Material}s that can activate this {@link ReadyableAbility}
+     */
+    @Override
+    public Set<Material> getActivatableMaterials() {
+        return ACTIVATION_MATERIALS;
+    }
+
+    /**
+     * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with a block.
+     * <p>
+     * If this returns {@code false}, then {@link #isValidReadyableBlock(Block)}  will not be called.
+     *
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link org.bukkit.block.Block}
+     */
+    @Override
+    public boolean readyFromBlock() {
+        return true;
+    }
+
+    /**
+     * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with an entity.
+     * <p>
+     * If this returns {@code false}, then {@link #isValidReadyableEntity(Entity)}   will not be called.
+     *
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link org.bukkit.entity.Entity}
+     */
+    @Override
+    public boolean readyFromEntity() {
+        return true;
+    }
+
+    /**
+     * Gets the amount of seconds that the "ready" status should last for this ability
+     *
+     * @return The amount of seconds that the "ready" status should last for this ability
+     */
+    @Override
+    public long getReadyDurationSeconds() {
+        return 5;
     }
 
     /**

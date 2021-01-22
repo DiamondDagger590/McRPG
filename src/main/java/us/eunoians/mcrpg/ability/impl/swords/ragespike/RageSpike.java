@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -45,8 +46,6 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
         TierableAbility, ReadyableAbility, ActiveAbility, PlayerAbility {
 
     private final static Set<Material> ACTIVATION_MATERIALS = new HashSet<>();
-    private @Nullable BukkitTask chargingTask;
-    private @Nullable BukkitTask flyingTask;
 
     static {
         for (Material material : Material.values()) {
@@ -60,6 +59,8 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
     private boolean toggled = false;
     private boolean unlocked = false;
     private boolean ready = false;
+    private @Nullable BukkitTask chargingTask;
+    private @Nullable BukkitTask flyingTask;
 
     /**
      * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
@@ -67,7 +68,7 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
      *
      * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public RageSpike(AbilityCreationData abilityCreationData) {
+    public RageSpike(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
         if (abilityCreationData instanceof RageSpikeCreationData) {
@@ -324,15 +325,19 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
      * This method should call {@link #startReady()} if the ready status should be enabled
      *
      * @param event The {@link Event} that needs to be parsed
+     * @return {@code true} if the {@link ReadyableAbility} entered "ready" status from this method call
      */
     @Override
-    public void handleReadyAttempt(Event event) {
+    public boolean handleReadyAttempt(Event event) {
 
         if (!isReady() && event instanceof PlayerInteractEvent && ((PlayerInteractEvent) event).getItem() != null &&
                 getActivatableMaterials().contains(((PlayerInteractEvent) event).getItem().getType())) {
             startReady();
             readyTasks.remove(((PlayerInteractEvent) event).getPlayer().getUniqueId()).cancel();
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -343,6 +348,40 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
     @Override
     public Set<Material> getActivatableMaterials() {
         return ACTIVATION_MATERIALS;
+    }
+
+    /**
+     * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with a block.
+     * <p>
+     * If this returns {@code false}, then {@link #isValidReadyableBlock(Block)} will not be called.
+     *
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link org.bukkit.block.Block}
+     */
+    @Override
+    public boolean readyFromBlock() {
+        return true;
+    }
+
+    /**
+     * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with an entity.
+     * <p>
+     * If this returns {@code false}, then {@link #isValidReadyableEntity(Entity)}  will not be called.
+     *
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link Entity}
+     */
+    @Override
+    public boolean readyFromEntity() {
+        return true;
+    }
+
+    /**
+     * Gets the amount of seconds that the "ready" status should last for this ability
+     *
+     * @return The amount of seconds that the "ready" status should last for this ability
+     */
+    @Override
+    public long getReadyDurationSeconds() {
+        return 5;
     }
 
     /**
@@ -390,12 +429,12 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
     /**
      * Cancels the {@link #getChargingTask()} if there is one valid
      */
-    public void cancelChargingTask(){
-        if(getChargingTask() != null){
+    public void cancelChargingTask() {
+        if (getChargingTask() != null) {
 
             Entity entity = getPlayer().getEntity();
 
-            if(entity != null){
+            if (entity != null) {
                 Player player = (Player) entity;
                 McRPG.getInstance().getMessageSender().sendMessage(player, ChatColor.RED + "You cancelled the charge of Rage Spike", false);
             }
@@ -408,8 +447,8 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
     /**
      * Cancels the {@link #getFlyingTask()} if there is one valid
      */
-    public void cancelFlyingTask(){
-        if(getFlyingTask() != null){
+    public void cancelFlyingTask() {
+        if (getFlyingTask() != null) {
             getFlyingTask().cancel();
         }
 

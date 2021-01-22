@@ -45,7 +45,7 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
      *
      * @param abilityCreationData The {@link BleedCreationData} is used to create this {@link Ability}
      */
-    public Bleed(AbilityCreationData abilityCreationData) {
+    public Bleed(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
         if(abilityCreationData instanceof BleedCreationData) {

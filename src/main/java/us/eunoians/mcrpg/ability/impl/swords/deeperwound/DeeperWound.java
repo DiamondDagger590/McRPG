@@ -40,7 +40,7 @@ public class DeeperWound extends BaseAbility implements UnlockableAbility, Toggl
      *
      * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public DeeperWound(AbilityCreationData abilityCreationData) {
+    public DeeperWound(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
         if(abilityCreationData instanceof DeeperWoundCreationData){

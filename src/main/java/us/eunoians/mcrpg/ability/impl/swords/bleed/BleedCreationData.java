@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
@@ -18,7 +19,7 @@ public class BleedCreationData extends AbilityCreationData implements Toggleable
      */
     private final boolean toggled;
 
-    public BleedCreationData(AbilityHolder abilityHolder, boolean toggled) {
+    public BleedCreationData(@NotNull AbilityHolder abilityHolder, boolean toggled) {
         super(abilityHolder);
         this.toggled = toggled;
     }

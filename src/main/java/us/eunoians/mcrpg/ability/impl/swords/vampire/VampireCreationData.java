@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords.vampire;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.ability.creation.TierableCreationData;
@@ -18,7 +19,7 @@ public class VampireCreationData extends AbilityCreationData implements Unlockab
     private final boolean toggled;
     private final boolean unlocked;
 
-    public VampireCreationData(AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked){
+    public VampireCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked){
         super(abilityHolder);
         this.tier = tier;
         this.toggled = toggled;

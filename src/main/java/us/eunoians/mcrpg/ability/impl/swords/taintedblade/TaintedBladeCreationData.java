@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl.swords.deeperwound;
+package us.eunoians.mcrpg.ability.impl.swords.taintedblade;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
@@ -8,29 +8,13 @@ import us.eunoians.mcrpg.ability.creation.ToggleableCreationData;
 import us.eunoians.mcrpg.ability.creation.UnlockableCreationData;
 import us.eunoians.mcrpg.api.AbilityHolder;
 
-/**
- * Contains data needed to construct {@link DeeperWound}
- *
- * @author DiamondDagger590
- */
-public class DeeperWoundCreationData extends AbilityCreationData implements TierableCreationData, ToggleableCreationData, UnlockableCreationData {
+public class TaintedBladeCreationData extends AbilityCreationData implements TierableCreationData, UnlockableCreationData, ToggleableCreationData {
 
-    /**
-     * The tier of the ability
-     */
     private final int tier;
-
-    /**
-     * If the ability is toggled on or off
-     */
+    private final boolean unlocked;
     private final boolean toggled;
 
-    /**
-     * If the ability is unlocked or not
-     */
-    private final boolean unlocked;
-
-    public DeeperWoundCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
+    public TaintedBladeCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
         super(abilityHolder);
         this.tier = tier;
         this.toggled = toggled;

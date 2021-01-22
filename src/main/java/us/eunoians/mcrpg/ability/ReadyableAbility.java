@@ -1,11 +1,9 @@
 package us.eunoians.mcrpg.ability;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import us.eunoians.mcrpg.McRPG;
 
@@ -44,8 +42,9 @@ public interface ReadyableAbility extends Ability {
      * This method should call {@link #startReady()} if the ready status should be enabled
      *
      * @param event The {@link Event} that needs to be parsed
+     * @return {@code true} if the {@link ReadyableAbility} entered "ready" status from this method call
      */
-    public void handleReadyAttempt(Event event);
+    public boolean handleReadyAttempt(Event event);
 
     /**
      * This method should only be called by {@link #handleReadyAttempt(Event)} which
@@ -53,40 +52,7 @@ public interface ReadyableAbility extends Ability {
      * a ready state.
      */
     public default void startReady() {
-
-        if (!isReady()) {
-
-            LivingEntity livingEntity = getAbilityHolder().getEntity();
-
-            if (livingEntity == null) {
-                return;
-            }
-
-            setReady(true);
-
-            if (livingEntity instanceof Player) {
-                Player player = (Player) livingEntity;
-
-                McRPG.getInstance().getMessageSender().sendMessage(player, ChatColor.YELLOW + "Readying...", false);
-            }
-
-            BukkitTask bukkitTask = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (!isReady()) {
-                        setReady(false);
-
-                        if (livingEntity instanceof Player) {
-                            Player player = (Player) livingEntity;
-
-                            McRPG.getInstance().getMessageSender().sendMessage(player, ChatColor.RED + "You are no longer ready...", false);
-                        }
-                    }
-                }
-            }.runTaskLater(McRPG.getInstance(), 5 * 20);//TODO configure
-
-            readyTasks.put(livingEntity.getUniqueId(), bukkitTask);
-        }
+        McRPG.getInstance().getReadyTaskManager().startReadyTask(getAbilityHolder(), this, getReadyDurationSeconds());
     }
 
     /**
@@ -95,4 +61,55 @@ public interface ReadyableAbility extends Ability {
      * @return A {@link Set} of all {@link Material}s that can activate this {@link ReadyableAbility}
      */
     public Set<Material> getActivatableMaterials();
+
+    /**
+     * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with a block.
+     * <p>
+     * If this returns {@code false}, then {@link #isValidReadyableBlock(Block)} will not be called.
+     *
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link Block}
+     */
+    public boolean readyFromBlock();
+
+    /**
+     * Checks to see if interacting with the provided {@link Block} can trigger a ready status
+     * for this ability.
+     * <p>
+     * This method will not be called unless {@link #readyFromBlock()} returns {@code true}
+     *
+     * @param block The {@link Block} to check for ready status
+     * @return {@code true} if the provided {@link Block} is valid for this ability to enter ready status
+     */
+    default boolean isValidReadyableBlock(Block block) {
+        return true;
+    }
+
+    /**
+     * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with an entity.
+     * <p>
+     * If this returns {@code false}, then {@link #isValidReadyableEntity(Entity)}  will not be called.
+     *
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link Entity}
+     */
+    public boolean readyFromEntity();
+
+    /**
+     * Checks to see if interacting with the provided {@link Entity} can trigger a ready status
+     * for this ability.
+     * <p>
+     * This method will not be called unless {@link #readyFromEntity()} returns {@code true}
+     *
+     * @param entity The {@link Entity} to be checked
+     * @return {@code true} if the {@link Entity} is valid for triggering ready status
+     */
+    default boolean isValidReadyableEntity(Entity entity) {
+        return true;
+    }
+
+    /**
+     * Gets the amount of seconds that the "ready" status should last for this ability
+     *
+     * @return The amount of seconds that the "ready" status should last for this ability
+     */
+    public long getReadyDurationSeconds();
 }

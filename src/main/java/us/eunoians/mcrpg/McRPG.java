@@ -10,8 +10,10 @@ import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.bleedplus.BleedPlus;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
+import us.eunoians.mcrpg.ability.listener.ReadyableAbilityCheckListener;
 import us.eunoians.mcrpg.api.chat.MessageSender;
 import us.eunoians.mcrpg.api.manager.BleedManager;
+import us.eunoians.mcrpg.api.manager.ReadyTaskManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.Swords;
@@ -53,6 +55,11 @@ public class McRPG extends JavaPlugin {
     private MessageSender messageSender;
 
     /**
+     * Handles readying {@link us.eunoians.mcrpg.ability.ReadyableAbility}s
+     */
+    private ReadyTaskManager readyTaskManager;
+
+    /**
      * Constructor used for unit tests.
      */
     public McRPG() {
@@ -75,6 +82,7 @@ public class McRPG extends JavaPlugin {
         this.skillRegistry = new SkillRegistry();
         this.bleedManager = new BleedManager();
         this.messageSender = new MessageSender();
+        this.readyTaskManager = new ReadyTaskManager();
 
         initAbilities();
         initSkills();
@@ -97,6 +105,7 @@ public class McRPG extends JavaPlugin {
 
         //Initialize the Bleed manager
         getServer().getPluginManager().registerEvents(getBleedManager(), this);
+        getServer().getPluginManager().registerEvents(new ReadyableAbilityCheckListener(), this);
     }
 
     /**
@@ -184,5 +193,13 @@ public class McRPG extends JavaPlugin {
      */
     public MessageSender getMessageSender() {
         return messageSender;
+    }
+
+    /**
+     * Gets the {@link ReadyTaskManager} object that handles "readying" {@link us.eunoians.mcrpg.ability.ReadyableAbility}s.
+     * @return The {@link ReadyTaskManager} object
+     */
+    public ReadyTaskManager getReadyTaskManager() {
+        return readyTaskManager;
     }
 }

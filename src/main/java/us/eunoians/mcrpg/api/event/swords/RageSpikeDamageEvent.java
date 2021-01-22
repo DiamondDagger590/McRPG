@@ -29,6 +29,7 @@ public class RageSpikeDamageEvent extends RageSpikeEvent implements Cancellable 
         super(abilityHolder, rageSpike);
         this.target = target;
         this.damage = Math.max(0, damage);
+        this.targetVectorMultiplier = targetVectorMultiplier;
     }
 
     /**

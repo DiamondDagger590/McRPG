@@ -21,7 +21,7 @@ public abstract class BaseAbility implements Ability {
     /**
      * The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    private final AbilityCreationData abilityCreationData;
+    private final @NotNull AbilityCreationData abilityCreationData;
 
     /**
      * A boolean representing if this {@link Ability} needs saving
@@ -39,7 +39,7 @@ public abstract class BaseAbility implements Ability {
      *
      * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public BaseAbility(AbilityCreationData abilityCreationData) {
+    public BaseAbility(@NotNull AbilityCreationData abilityCreationData) {
         this.abilityCreationData = abilityCreationData;
     }
 

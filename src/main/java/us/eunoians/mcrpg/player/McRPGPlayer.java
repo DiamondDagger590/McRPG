@@ -1,8 +1,10 @@
 package us.eunoians.mcrpg.player;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.skill.AbstractSkill;
 import us.eunoians.mcrpg.skill.SkillProgression;
@@ -58,5 +60,15 @@ public class McRPGPlayer extends AbilityHolder {
      */
     public Optional<SkillProgression> getSkillProgression(@NotNull AbstractSkill skill) {
         return getSkillProgression(skill.getId());
+    }
+
+    /**
+     * Gets the {@link LivingEntity} that this object maps to
+     *
+     * @return The {@link LivingEntity} that this object maps to or {@code null} if invalid/dead/offline
+     */
+    @Override
+    public @Nullable Player getEntity() {
+        return (Player) super.getEntity();
     }
 }

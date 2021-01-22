@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords.ragespike;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.ability.creation.TierableCreationData;
@@ -18,7 +19,7 @@ public class RageSpikeCreationData extends AbilityCreationData implements Unlock
     private final boolean unlocked;
     private final boolean toggled;
 
-    public RageSpikeCreationData(AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
+    public RageSpikeCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
         super(abilityHolder);
         this.tier = tier;
         this.toggled = toggled;

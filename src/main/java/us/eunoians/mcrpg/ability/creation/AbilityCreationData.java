@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.creation;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.api.AbilityHolder;
 
 /**
@@ -14,9 +15,10 @@ public abstract class AbilityCreationData {
     /**
      * The {@link AbilityHolder} that has data being created for
      */
+    @NotNull
     private AbilityHolder abilityHolder;
 
-    public AbilityCreationData(AbilityHolder abilityHolder) {
+    public AbilityCreationData(@NotNull AbilityHolder abilityHolder) {
         this.abilityHolder = abilityHolder;
     }
 
@@ -25,6 +27,7 @@ public abstract class AbilityCreationData {
      *
      * @return The {@link AbilityHolder} that has data being created for.
      */
+    @NotNull
     public AbilityHolder getAbilityHolder() {
         return abilityHolder;
     }

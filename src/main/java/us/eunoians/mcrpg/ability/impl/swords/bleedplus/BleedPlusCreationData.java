@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords.bleedplus;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.ability.creation.TierableCreationData;
@@ -29,7 +30,7 @@ public class BleedPlusCreationData extends AbilityCreationData implements Unlock
      */
     private final boolean unlocked;
 
-    public BleedPlusCreationData(AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
+    public BleedPlusCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
         super(abilityHolder);
         this.tier = tier;
         this.toggled = toggled;

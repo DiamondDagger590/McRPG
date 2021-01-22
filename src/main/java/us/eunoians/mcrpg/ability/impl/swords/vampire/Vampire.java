@@ -39,7 +39,7 @@ public class Vampire extends BaseAbility implements UnlockableAbility, Toggleabl
      *
      * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public Vampire(AbilityCreationData abilityCreationData) {
+    public Vampire(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
         if(abilityCreationData instanceof VampireCreationData){
