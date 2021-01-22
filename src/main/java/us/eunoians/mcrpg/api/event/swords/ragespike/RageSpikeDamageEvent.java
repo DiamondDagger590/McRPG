@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.swords.ragespike;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Cancellable;
@@ -18,7 +18,7 @@ import us.eunoians.mcrpg.api.AbilityHolder;
  *
  * @author DiamondDagger590
  */
-public class RageSpikeDamageEvent extends RageSpikeEvent implements Cancellable {
+public class RageSpikeDamageEvent extends RageSpikeNonActivationEvent implements Cancellable {
 
     private final @NotNull LivingEntity target;
     private boolean cancelled;

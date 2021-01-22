@@ -28,6 +28,16 @@ public class VampireActivateEvent extends AbilityActivateEvent {
     }
 
     /**
+     * The {@link Ability} that is being activated by this event
+     *
+     * @return The {@link Ability} that is being activated by this event
+     */
+    @Override
+    public @NotNull Vampire getAbility() {
+        return (Vampire) super.getAbility();
+    }
+
+    /**
      * Gets the amount of health to restore to the {@link BleedActivateEvent#getAbilityHolder()} each bleed cycle
      * @return The amount of health to restore to the {@link BleedActivateEvent#getAbilityHolder()} each bleed cycle
      */

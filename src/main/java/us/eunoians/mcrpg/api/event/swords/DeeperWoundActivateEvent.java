@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.api.event.swords;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
@@ -26,6 +27,16 @@ public class DeeperWoundActivateEvent extends AbilityActivateEvent {
         super(abilityHolder, deeperWound, AbilityEventType.COMBAT);
         this.amountOfCyclesToSet = amountOfCyclesToSet;
         this.bleedActivateEvent = bleedActivateEvent;
+    }
+
+    /**
+     * The {@link Ability} that is being activated by this event
+     *
+     * @return The {@link Ability} that is being activated by this event
+     */
+    @Override
+    public @NotNull DeeperWound getAbility() {
+        return (DeeperWound) super.getAbility();
     }
 
     /**

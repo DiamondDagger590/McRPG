@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.swords.ragespike;
 
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import us.eunoians.mcrpg.api.AbilityHolder;
  *
  * @author DiamondDagger590
  */
-public class RageSpikeBeginChargeEvent extends RageSpikeEvent implements Cancellable {
+public class RageSpikeBeginChargeEvent extends RageSpikeNonActivationEvent implements Cancellable {
 
     private boolean cancelled;
     private double chargeSeconds;

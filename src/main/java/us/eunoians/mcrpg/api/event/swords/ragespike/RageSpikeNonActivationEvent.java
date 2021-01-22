@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.swords.ragespike;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
@@ -12,9 +12,9 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
  *
  * @author DiamondDagger590
  */
-public abstract class RageSpikeEvent extends AbilityEvent {
+public abstract class RageSpikeNonActivationEvent extends AbilityEvent {
 
-    public RageSpikeEvent(@NotNull AbilityHolder abilityHolder, @NotNull RageSpike rageSpike) {
+    public RageSpikeNonActivationEvent(@NotNull AbilityHolder abilityHolder, @NotNull RageSpike rageSpike) {
         super(abilityHolder, rageSpike);
     }
 

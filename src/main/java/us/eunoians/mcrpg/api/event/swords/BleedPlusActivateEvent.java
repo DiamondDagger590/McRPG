@@ -30,6 +30,16 @@ public class BleedPlusActivateEvent extends AbilityActivateEvent {
     }
 
     /**
+     * The {@link Ability} that is being activated by this event
+     *
+     * @return The {@link Ability} that is being activated by this event
+     */
+    @Override
+    public @NotNull BleedPlus getAbility() {
+        return (BleedPlus) super.getAbility();
+    }
+
+    /**
      * Gets the {@link BleedActivateEvent} that caused this to activate
      *
      * @return The {@link BleedActivateEvent} that caused this to activate

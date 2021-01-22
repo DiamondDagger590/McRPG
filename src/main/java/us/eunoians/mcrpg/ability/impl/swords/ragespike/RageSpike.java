@@ -30,9 +30,9 @@ import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.RageSpikeBeginChargeEvent;
-import us.eunoians.mcrpg.api.event.swords.RageSpikeDamageEvent;
-import us.eunoians.mcrpg.api.event.swords.RageSpikeLaunchEvent;
+import us.eunoians.mcrpg.api.event.swords.ragespike.RageSpikeBeginChargeEvent;
+import us.eunoians.mcrpg.api.event.swords.ragespike.RageSpikeDamageEvent;
+import us.eunoians.mcrpg.api.event.swords.ragespike.RageSpikeLaunchEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 import java.util.Collections;

@@ -83,6 +83,7 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     @Override
     public void activate(AbilityHolder activator, Object... optionalData) {
 
+
     }
 
     /**

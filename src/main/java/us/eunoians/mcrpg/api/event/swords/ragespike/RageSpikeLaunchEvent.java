@@ -1,11 +1,19 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.swords.ragespike;
 
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.ragespike.RageSpike;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
 
-public class RageSpikeLaunchEvent extends RageSpikeEvent implements Cancellable {
+/**
+ * This event is called whenever a {@link us.eunoians.mcrpg.player.McRPGPlayer} launches due to
+ * ability {@link RageSpike}
+ *
+ * @author DiamondDagger590
+ */
+public class RageSpikeLaunchEvent extends AbilityActivateEvent implements Cancellable {
 
     private boolean cancelled;
     private double vectorMultiplier;
@@ -14,11 +22,21 @@ public class RageSpikeLaunchEvent extends RageSpikeEvent implements Cancellable 
     private double targetVectorMultiplier;
 
     public RageSpikeLaunchEvent(@NotNull AbilityHolder abilityHolder, @NotNull RageSpike rageSpike, double vectorMultiplier, double damage, double damageRadius, double targetVectorMultiplier) {
-        super(abilityHolder, rageSpike);
+        super(abilityHolder, rageSpike, AbilityEventType.COMBAT);
         this.vectorMultiplier = vectorMultiplier;
         this.damage = Math.max(0, damage);
         this.damageRadius = Math.max(0, damageRadius);
         this.targetVectorMultiplier = targetVectorMultiplier;
+    }
+
+    /**
+     * The {@link Ability} that is being activated by this event
+     *
+     * @return The {@link Ability} that is being activated by this event
+     */
+    @Override
+    public @NotNull RageSpike getAbility() {
+        return (RageSpike) super.getAbility();
     }
 
     /**
