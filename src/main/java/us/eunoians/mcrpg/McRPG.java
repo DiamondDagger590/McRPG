@@ -1,18 +1,23 @@
 package us.eunoians.mcrpg;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.bleedplus.BleedPlus;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
+import us.eunoians.mcrpg.ability.listener.CooldownableAbilityListener;
 import us.eunoians.mcrpg.ability.listener.ReadyableAbilityCheckListener;
 import us.eunoians.mcrpg.api.chat.MessageSender;
+import us.eunoians.mcrpg.api.lunar.LunarClientHook;
 import us.eunoians.mcrpg.api.manager.BleedManager;
+import us.eunoians.mcrpg.api.manager.CooldownManager;
 import us.eunoians.mcrpg.api.manager.ReadyTaskManager;
 import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -60,6 +65,16 @@ public class McRPG extends JavaPlugin {
     private ReadyTaskManager readyTaskManager;
 
     /**
+     * Handles checking to see if lunar client is enabled or not
+     */
+    private LunarClientHook lunarClientHook;
+
+    /**
+     * Handles managing cooldowns for {@link us.eunoians.mcrpg.ability.CooldownableAbility}s
+     */
+    private CooldownManager cooldownManager;
+
+    /**
      * Constructor used for unit tests.
      */
     public McRPG() {
@@ -83,10 +98,17 @@ public class McRPG extends JavaPlugin {
         this.bleedManager = new BleedManager();
         this.messageSender = new MessageSender();
         this.readyTaskManager = new ReadyTaskManager();
+        this.cooldownManager = new CooldownManager();
+
+        if (Bukkit.getPluginManager().isPluginEnabled("LunarClient-API")) {
+            this.lunarClientHook = new LunarClientHook();
+        }
 
         initAbilities();
         initSkills();
         initListeners();
+
+
     }
 
     @Override
@@ -105,7 +127,9 @@ public class McRPG extends JavaPlugin {
 
         //Initialize the Bleed manager
         getServer().getPluginManager().registerEvents(getBleedManager(), this);
+
         getServer().getPluginManager().registerEvents(new ReadyableAbilityCheckListener(), this);
+        getServer().getPluginManager().registerEvents(new CooldownableAbilityListener(), this);
     }
 
     /**
@@ -197,9 +221,29 @@ public class McRPG extends JavaPlugin {
 
     /**
      * Gets the {@link ReadyTaskManager} object that handles "readying" {@link us.eunoians.mcrpg.ability.ReadyableAbility}s.
+     *
      * @return The {@link ReadyTaskManager} object
      */
     public ReadyTaskManager getReadyTaskManager() {
         return readyTaskManager;
+    }
+
+    /**
+     * Returns the {@link LunarClientHook} provided the API is running
+     *
+     * @return {@code null} if the lunar API is not running or the {@link LunarClientHook} object
+     */
+    @Nullable
+    public LunarClientHook getLunarClientHook() {
+        return this.lunarClientHook;
+    }
+
+    /**
+     * Gets the {@link CooldownManager} object that handles cooldowns for {@link us.eunoians.mcrpg.ability.CooldownableAbility}s
+     *
+     * @return The {@link CooldownManager} object that handles cooldowns for {@link us.eunoians.mcrpg.ability.CooldownableAbility}s
+     */
+    public CooldownManager getCooldownManager() {
+        return this.cooldownManager;
     }
 }

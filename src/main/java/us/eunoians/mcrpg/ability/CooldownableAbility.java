@@ -1,39 +1,28 @@
 package us.eunoians.mcrpg.ability;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
+/**
+ * This interface represents an {@link Ability} that should be put on cooldown after activation.
+ * <p>
+ * Handling of the cooldown system is fully automated provided that implementation meets two requirements.
+ * <p>
+ * 1) The {@link Ability} implementation extends this ({@link CooldownableAbility}) interface
+ * <p>
+ * 2) There is an {@link us.eunoians.mcrpg.api.event.CooldownableAbilityActivateEvent} called for this {@link CooldownableAbility}s activation
+ * that adheres to the Bukkit/Spigot event calling order.
+ * <p>
+ * If both of these conditions are true, then McRPG will automatically handle putting abilities on cooldown (with lunar support!!!)
+ * and cancelling {@link us.eunoians.mcrpg.api.event.CooldownableAbilityActivateEvent} calls if the {@link CooldownableAbility} is on cooldown.
+ * <p>
+ * This means that the implementor doesn't need to care about any cooldown related information besides providing implementation to the
+ * methods provided in this interface.
+ *
+ * @author DiamondDagger590
+ */
 public interface CooldownableAbility extends Ability {
 
     /**
-     * A map of all cooldowns for this ability
+     * Gets the amount of time in seconds that this {@link CooldownableAbility} should be on cooldown for after activation
+     * @return The postivie zero exclusive amount of time in seconds this {@link CooldownableAbility} should be on cooldown for after activation.
      */
-    Map<UUID, Long> cooldowns = new HashMap<>();
-
-    /**
-     * Gets the amount of millis left on cooldown for this {@link CooldownableAbility} for the {@link UUID} provided
-     *
-     * @param uuid The {@link UUID} to check
-     * @return The remaining milis of the cooldown or {@code -1} if there is no cooldown.
-     */
-    default long getMilisLeftOnCooldown(@NotNull UUID uuid) {
-
-        long cooldownRemaining = cooldowns.getOrDefault(uuid, -1L);
-
-        if (cooldownRemaining <= System.currentTimeMillis()) {
-            cooldowns.remove(uuid);
-            cooldownRemaining = -1;
-        }
-
-        return cooldownRemaining - System.currentTimeMillis();
-    }
-
-    public boolean isOnCooldown();
-
-    public boolean setOnCooldown();
-
-    public long getMilisLeftOnCooldown();
+    public long getCooldownDuration();
 }

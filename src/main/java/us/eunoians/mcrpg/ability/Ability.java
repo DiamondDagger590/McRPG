@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
@@ -43,6 +44,13 @@ public interface Ability {
      */
     @NotNull
     public AbilityHolder getAbilityHolder();
+
+    /**
+     * Gets the {@link ItemStack} to represent this ability in GUI's
+     * @return The {@link ItemStack} to represent this ability in GUI's
+     */
+    @NotNull
+    public ItemStack getDisplayItem();
 
     /**
      * @param activator    The {@link AbilityHolder} that is activating this {@link Ability}

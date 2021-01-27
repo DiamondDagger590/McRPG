@@ -4,7 +4,7 @@ author: Eunoians
 description: A RPG plugin for 1.13+
 main: us.eunoians.mcrpg.McRPG
 api-version: 1.13
-soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO]
+soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO, LunarClient-API]
 commands:
   mcrpg:
     description: Opens the main menu for McRPG

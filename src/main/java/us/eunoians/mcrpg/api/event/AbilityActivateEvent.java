@@ -12,6 +12,15 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
  * <p>
  * This event is called BEFORE the actual ability is activated and can be cancelled. Any modified values will be used provided
  * the event actually is uncancelled by the time it gets returned.
+ * <p>
+ * For {@link us.eunoians.mcrpg.ability.CooldownableAbility}s, {@link us.eunoians.mcrpg.ability.listener.CooldownableAbilityListener} automatically
+ * listens to the child of this class, {@link CooldownableAbilityActivateEvent}, and handles all needed integration provided this event is called
+ * before activation and adheres to Bukkit/Spigot event call standards.
+ * <p>
+ * {@link us.eunoians.mcrpg.ability.listener.CooldownableAbilityListener} listens to the child of this class, {@link CooldownableAbilityActivateEvent},
+ * on {@link org.bukkit.event.EventPriority#LOWEST} which means that no other plugin should listen to this event
+ * on the same priority because there is a chance that you will get an uncancelled event when it should be cancelled due to your event handler being
+ * called first.
  *
  * @author DiamondDagger590
  */

@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -73,5 +74,15 @@ public class AbilityRegistry {
         T ability = (T) constructor.apply(creationData);
         ability.registerListeners(McRPG.getInstance());
         return ability;
+    }
+
+    /**
+     * Gets the {@link Set} of all registered {@link NamespacedKey}s
+     *
+     * @return The {@link Set} of all registered {@link NamespacedKey}s
+     */
+    @NotNull
+    public Set<NamespacedKey> getAllRegisteredAbilityKeys() {
+        return this.registeredAbilities.keySet();
     }
 }

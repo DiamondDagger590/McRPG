@@ -1,8 +1,10 @@
 package us.eunoians.mcrpg.ability;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
@@ -32,6 +34,14 @@ public abstract class BaseAbility implements Ability {
      * A {@link List} that contains all registered listeners for this {@link BaseAbility}.
      */
     private List<Listener> registeredListeners;
+
+    /**
+     * The {@link ItemStack} to be displayed to players in GUI's and such
+     *
+     * //TODO load from config
+     */
+    @NotNull
+    protected ItemStack displayItem = new ItemStack(Material.AIR);
 
     /**
      * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
@@ -112,5 +122,15 @@ public abstract class BaseAbility implements Ability {
     @Override
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
+    }
+
+    /**
+     * Gets the {@link ItemStack} to represent this ability in GUI's
+     *
+     * @return The {@link ItemStack} to represent this ability in GUI's
+     */
+    @Override
+    public @NotNull ItemStack getDisplayItem() {
+        return this.displayItem;
     }
 }
