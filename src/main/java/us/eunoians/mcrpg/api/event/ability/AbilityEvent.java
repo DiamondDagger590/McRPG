@@ -1,15 +1,16 @@
-package us.eunoians.mcrpg.api.event;
+package us.eunoians.mcrpg.api.event.ability;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.event.McRPGEvent;
 
 /**
  * This event relates to any event that handles some sort of {@link Ability} interaction.
  *
  * @author DiamondDagger590
  */
-public abstract class AbilityEvent extends McRPGEvent{
+public abstract class AbilityEvent extends McRPGEvent {
 
     private final @NotNull AbilityHolder abilityHolder;
     private final @NotNull Ability ability;

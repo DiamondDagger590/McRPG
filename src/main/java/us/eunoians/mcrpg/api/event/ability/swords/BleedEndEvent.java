@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.ability.swords;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;

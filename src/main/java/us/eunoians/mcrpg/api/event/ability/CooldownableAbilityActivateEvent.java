@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event;
+package us.eunoians.mcrpg.api.event.ability;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;

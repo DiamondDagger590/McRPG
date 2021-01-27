@@ -1,9 +1,9 @@
-package us.eunoians.mcrpg.api.event.taming;
+package us.eunoians.mcrpg.api.event.ability.taming;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
-import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**

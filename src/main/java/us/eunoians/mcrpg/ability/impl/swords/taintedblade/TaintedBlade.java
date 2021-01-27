@@ -133,19 +133,15 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     /**
      * Handles parsing an {@link Event} to see if this ability should enter "ready" status.
      * <p>
-     * This method should call {@link #startReady()} if the ready status should be enabled
      *
      * @param event The {@link Event} that needs to be parsed
-     * @return {@code true} if the {@link ReadyableAbility} entered "ready" status from this method call
+     * @return {@code true} if the {@link ReadyableAbility} should enter "ready" status from this method call
      */
     @Override
     public boolean handleReadyAttempt(Event event) {
 
         if (!isReady() && event instanceof PlayerInteractEvent && ((PlayerInteractEvent) event).getItem() != null &&
                 getActivatableMaterials().contains(((PlayerInteractEvent) event).getItem().getType())) {
-            startReady();
-            readyTasks.remove(((PlayerInteractEvent) event).getPlayer().getUniqueId()).cancel();
-
             return true;
         }
 
@@ -192,7 +188,7 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
      * @return The amount of seconds that the "ready" status should last for this ability
      */
     @Override
-    public long getReadyDurationSeconds() {
+    public int getReadyDurationSeconds() {
         return 5;
     }
 

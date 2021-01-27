@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.listener;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -9,6 +10,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.ReadyableAbility;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.event.ability.AbilityReadyEvent;
 import us.eunoians.mcrpg.api.manager.ReadyTaskManager;
 
 /**
@@ -37,6 +39,14 @@ public class ReadyableAbilityCheckListener implements Listener {
                     if(readyableAbility.readyFromBlock() && readyableAbility.isValidReadyableBlock(playerInteractEvent.getClickedBlock())
                             && readyableAbility.handleReadyAttempt(playerInteractEvent)){
 
+                        AbilityReadyEvent abilityReadyEvent = new AbilityReadyEvent(abilityHolder, readyableAbility, readyableAbility.getReadyDurationSeconds());
+                        Bukkit.getPluginManager().callEvent(abilityReadyEvent);
+
+                        if(abilityReadyEvent.isCancelled()){
+                            return;
+                        }
+
+                        readyableAbility.startReady(abilityReadyEvent.getReadySeconds());
                         //Return because there can only be one "ready" ability at once, and if all statements are true, then they are now on ready status
                         return;
                     }
@@ -64,6 +74,14 @@ public class ReadyableAbilityCheckListener implements Listener {
                     if(readyableAbility.readyFromEntity() && readyableAbility.isValidReadyableEntity(playerInteractAtEntityEvent.getRightClicked())
                             && readyableAbility.handleReadyAttempt(playerInteractAtEntityEvent)){
 
+                        AbilityReadyEvent abilityReadyEvent = new AbilityReadyEvent(abilityHolder, readyableAbility, readyableAbility.getReadyDurationSeconds());
+                        Bukkit.getPluginManager().callEvent(abilityReadyEvent);
+
+                        if(abilityReadyEvent.isCancelled()){
+                            return;
+                        }
+
+                        readyableAbility.startReady(abilityReadyEvent.getReadySeconds());
                         //Return because there can only be one "ready" ability at once, and if all statements are true, then they are now on ready status
                         return;
                     }

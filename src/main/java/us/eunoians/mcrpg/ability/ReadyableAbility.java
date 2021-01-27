@@ -39,20 +39,24 @@ public interface ReadyableAbility extends Ability {
     /**
      * Handles parsing an {@link Event} to see if this ability should enter "ready" status.
      * <p>
-     * This method should call {@link #startReady()} if the ready status should be enabled
      *
      * @param event The {@link Event} that needs to be parsed
-     * @return {@code true} if the {@link ReadyableAbility} entered "ready" status from this method call
+     * @return {@code true} if the {@link ReadyableAbility} should enter "ready" status from this method call
      */
     public boolean handleReadyAttempt(Event event);
 
     /**
-     * This method should only be called by {@link #handleReadyAttempt(Event)} which
+     * This method should only be called by {@link us.eunoians.mcrpg.ability.listener.ReadyableAbilityCheckListener} which
      * handles parsing events to set the {@link us.eunoians.mcrpg.api.AbilityHolder} into
      * a ready state.
+     *
+     * Actually setting {@link ReadyableAbility#isReady()} is automatically called by {@link us.eunoians.mcrpg.api.manager.ReadyTaskManager}
      */
-    public default void startReady() {
-        McRPG.getInstance().getReadyTaskManager().startReadyTask(getAbilityHolder(), this, getReadyDurationSeconds());
+    public default void startReady(int readySeconds) {
+        if(readyTasks.containsKey(getAbilityHolder().getUniqueId())) {
+            readyTasks.remove(getAbilityHolder().getUniqueId()).cancel();
+        }
+        McRPG.getInstance().getReadyTaskManager().startReadyTask(getAbilityHolder(), this, readySeconds);
     }
 
     /**
@@ -111,5 +115,5 @@ public interface ReadyableAbility extends Ability {
      *
      * @return The amount of seconds that the "ready" status should last for this ability
      */
-    public long getReadyDurationSeconds();
+    public int getReadyDurationSeconds();
 }

@@ -15,8 +15,8 @@ import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.api.event.swords.VampireActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.VampireActivateEvent;
 
 import java.util.Collections;
 import java.util.List;

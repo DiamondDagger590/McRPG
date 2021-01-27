@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.util.parser.Parser;
 

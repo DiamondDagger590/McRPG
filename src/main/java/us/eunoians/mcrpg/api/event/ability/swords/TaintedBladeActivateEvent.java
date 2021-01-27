@@ -1,11 +1,11 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.ability.swords;
 
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.taintedblade.TaintedBlade;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 
 import java.util.Set;
 

@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.ActiveAbility;
 import us.eunoians.mcrpg.ability.BaseAbility;
+import us.eunoians.mcrpg.ability.CooldownableAbility;
 import us.eunoians.mcrpg.ability.PlayerAbility;
 import us.eunoians.mcrpg.ability.ReadyableAbility;
 import us.eunoians.mcrpg.ability.TierableAbility;
@@ -30,9 +31,9 @@ import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.ragespike.RageSpikeBeginChargeEvent;
-import us.eunoians.mcrpg.api.event.swords.ragespike.RageSpikeDamageEvent;
-import us.eunoians.mcrpg.api.event.swords.ragespike.RageSpikeLaunchEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.ragespike.RageSpikeBeginChargeEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.ragespike.RageSpikeDamageEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.ragespike.RageSpikeLaunchEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 import java.util.Collections;
@@ -43,7 +44,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RageSpike extends BaseAbility implements UnlockableAbility, ToggleableAbility,
-        TierableAbility, ReadyableAbility, ActiveAbility, PlayerAbility {
+        TierableAbility, ReadyableAbility, ActiveAbility, PlayerAbility, CooldownableAbility {
 
     private final static Set<Material> ACTIVATION_MATERIALS = new HashSet<>();
 
@@ -123,7 +124,7 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
                     //We don't know that the player is online at this point so we need to validate this
                     if (player != null && player.isOnline()) {
 
-                        RageSpikeLaunchEvent rageSpikeLaunchEvent = new RageSpikeLaunchEvent(getAbilityHolder(), rageSpikeReference, 5.0, 2, 2, -4.3); //TODO make configurable
+                        RageSpikeLaunchEvent rageSpikeLaunchEvent = new RageSpikeLaunchEvent(getAbilityHolder(), rageSpikeReference, 5.0, 2, 2, -4.3, getCooldownDuration()); //TODO make configurable
                         Bukkit.getPluginManager().callEvent(rageSpikeLaunchEvent);
 
                         if (!rageSpikeLaunchEvent.isCancelled()) {
@@ -322,18 +323,15 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
     /**
      * Handles parsing an {@link Event} to see if this ability should enter "ready" status.
      * <p>
-     * This method should call {@link #startReady()} if the ready status should be enabled
      *
      * @param event The {@link Event} that needs to be parsed
-     * @return {@code true} if the {@link ReadyableAbility} entered "ready" status from this method call
+     * @return {@code true} if the {@link ReadyableAbility} should enter "ready" status from this method call
      */
     @Override
     public boolean handleReadyAttempt(Event event) {
 
         if (!isReady() && event instanceof PlayerInteractEvent && ((PlayerInteractEvent) event).getItem() != null &&
                 getActivatableMaterials().contains(((PlayerInteractEvent) event).getItem().getType())) {
-            startReady();
-            readyTasks.remove(((PlayerInteractEvent) event).getPlayer().getUniqueId()).cancel();
             return true;
         }
 
@@ -380,7 +378,7 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
      * @return The amount of seconds that the "ready" status should last for this ability
      */
     @Override
-    public long getReadyDurationSeconds() {
+    public int getReadyDurationSeconds() {
         return 5;
     }
 
@@ -453,5 +451,15 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
         }
 
         this.flyingTask = null;
+    }
+
+    /**
+     * Gets the amount of time in seconds that this {@link CooldownableAbility} should be on cooldown for after activation
+     *
+     * @return The postivie zero exclusive amount of time in seconds this {@link CooldownableAbility} should be on cooldown for after activation.
+     */
+    @Override
+    public int getCooldownDuration() {
+        return 180; //TODO make configable
     }
 }

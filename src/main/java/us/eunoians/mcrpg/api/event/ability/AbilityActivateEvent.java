@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event;
+package us.eunoians.mcrpg.api.event.ability;
 
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;

@@ -11,7 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.taming.GoreActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.util.parser.Parser;
 

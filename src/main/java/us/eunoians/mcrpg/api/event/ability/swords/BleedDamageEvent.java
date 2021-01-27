@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.ability.swords;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;

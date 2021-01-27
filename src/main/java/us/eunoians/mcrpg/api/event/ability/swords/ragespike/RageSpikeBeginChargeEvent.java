@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.api.event.swords.ragespike;
+package us.eunoians.mcrpg.api.event.ability.swords.ragespike;
 
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;

@@ -1,11 +1,11 @@
-package us.eunoians.mcrpg.api.event.swords.ragespike;
+package us.eunoians.mcrpg.api.event.ability.swords.ragespike;
 
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.ragespike.RageSpike;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.CooldownableAbilityActivateEvent;
 
 /**
  * This event is called whenever a {@link us.eunoians.mcrpg.player.McRPGPlayer} launches due to
@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
  *
  * @author DiamondDagger590
  */
-public class RageSpikeLaunchEvent extends AbilityActivateEvent implements Cancellable {
+public class RageSpikeLaunchEvent extends CooldownableAbilityActivateEvent implements Cancellable {
 
     private boolean cancelled;
     private double vectorMultiplier;
@@ -21,8 +21,8 @@ public class RageSpikeLaunchEvent extends AbilityActivateEvent implements Cancel
     private double damageRadius;
     private double targetVectorMultiplier;
 
-    public RageSpikeLaunchEvent(@NotNull AbilityHolder abilityHolder, @NotNull RageSpike rageSpike, double vectorMultiplier, double damage, double damageRadius, double targetVectorMultiplier) {
-        super(abilityHolder, rageSpike, AbilityEventType.COMBAT);
+    public RageSpikeLaunchEvent(@NotNull AbilityHolder abilityHolder, @NotNull RageSpike rageSpike, double vectorMultiplier, double damage, double damageRadius, double targetVectorMultiplier, int cooldownSeconds) {
+        super(abilityHolder, rageSpike, AbilityEventType.COMBAT, cooldownSeconds);
         this.vectorMultiplier = vectorMultiplier;
         this.damage = Math.max(0, damage);
         this.damageRadius = Math.max(0, damageRadius);

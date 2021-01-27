@@ -5,9 +5,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 
 /**
  * This listener handles activation of {@link BleedPlus}

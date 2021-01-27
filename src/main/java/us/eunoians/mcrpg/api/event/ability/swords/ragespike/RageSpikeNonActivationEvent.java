@@ -1,10 +1,10 @@
-package us.eunoians.mcrpg.api.event.swords.ragespike;
+package us.eunoians.mcrpg.api.event.ability.swords.ragespike;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.ragespike.RageSpike;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.AbilityEvent;
+import us.eunoians.mcrpg.api.event.ability.AbilityEvent;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**

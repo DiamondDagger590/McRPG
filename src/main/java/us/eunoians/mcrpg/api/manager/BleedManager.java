@@ -16,8 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.swords.BleedDamageEvent;
-import us.eunoians.mcrpg.api.event.swords.BleedEndEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedEndEvent;
 
 import java.util.Collection;
 import java.util.HashMap;

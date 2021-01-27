@@ -1,10 +1,10 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.ability.swords;
 
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 
 /**
  * This {@link us.eunoians.mcrpg.ability.Ability} is called when a {@link org.bukkit.entity.LivingEntity}

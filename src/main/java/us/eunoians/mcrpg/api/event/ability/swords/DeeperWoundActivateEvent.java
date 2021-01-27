@@ -1,10 +1,10 @@
-package us.eunoians.mcrpg.api.event.swords;
+package us.eunoians.mcrpg.api.event.ability.swords;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 
 /**
  * This event is called when {@link DeeperWound} is activated
