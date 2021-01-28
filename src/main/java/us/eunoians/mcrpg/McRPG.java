@@ -1,10 +1,12 @@
 package us.eunoians.mcrpg;
 
+import com.google.common.base.Charsets;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
@@ -23,8 +25,12 @@ import us.eunoians.mcrpg.player.PlayerContainer;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.Swords;
 import us.eunoians.mcrpg.skill.impl.Taming;
+import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
+import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class McRPG extends JavaPlugin {
 
@@ -32,6 +38,11 @@ public class McRPG extends JavaPlugin {
      * Plugin instance
      */
     private static McRPG instance;
+
+    /**
+     * Handles block data
+     */
+    private static ChunkManager placeStore;
 
     /**
      * The player container, this object holds all the McRPG playesr
@@ -74,6 +85,11 @@ public class McRPG extends JavaPlugin {
      */
     private CooldownManager cooldownManager;
 
+    //Needed to support McMMO's Healthbars
+    private final String customNameKey = "mcMMO: Custom Name";
+    private final String customVisibleKey = "mcMMO: Name Visibility";
+    private boolean healthBarPluginEnabled = false;
+
     /**
      * Constructor used for unit tests.
      */
@@ -91,6 +107,7 @@ public class McRPG extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        placeStore = ChunkManagerFactory.getChunkManager();
 
         this.playerContainer = new PlayerContainer();
         this.abilityRegistry = new AbilityRegistry();
@@ -99,6 +116,7 @@ public class McRPG extends JavaPlugin {
         this.messageSender = new MessageSender();
         this.readyTaskManager = new ReadyTaskManager();
         this.cooldownManager = new CooldownManager();
+        healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
 
         if (Bukkit.getPluginManager().isPluginEnabled("LunarClient-API")) {
             this.lunarClientHook = new LunarClientHook();
@@ -160,6 +178,15 @@ public class McRPG extends JavaPlugin {
      */
     public static McRPG getInstance() {
         return instance;
+    }
+
+    /**
+     * Gets the {@link ChunkManager} that is handling block tracking
+     *
+     * @return The {@link ChunkManager} object
+     */
+    public static ChunkManager getPlaceStore() {
+        return placeStore;
     }
 
     /**
@@ -245,5 +272,42 @@ public class McRPG extends JavaPlugin {
      */
     public CooldownManager getCooldownManager() {
         return this.cooldownManager;
+    }
+
+    /**
+     * Gets the key to store the custom name for an entity
+     * @return The key to store the custom name for an entity
+     */
+    @NotNull
+    public String getCustomNameKey() {
+        return customNameKey;
+    }
+
+    /**
+     * Gets the key that relates to if an entities custom name is visible
+     * @return The key that relates to if an entities custom name is visible
+     */
+    @NotNull
+    public String getCustomVisibleKey() {
+        return customVisibleKey;
+    }
+
+    /**
+     * Checks to see if a supported healthbar plugin is already enabled
+     * @return {@code true} if a supported healthbar plugin is already enabled
+     */
+    public boolean isHealthBarPluginEnabled() {
+        return healthBarPluginEnabled;
+    }
+
+    /**
+     * Reads in a file as an {@link InputStreamReader}
+     * @param fileName The path of the file to read
+     * @return The {@link InputStreamReader} or {@code null} if invalid
+     */
+    @Nullable
+    public InputStreamReader getResourceAsReader(@NotNull String fileName) {
+        InputStream in = getResource(fileName);
+        return in == null ? null : new InputStreamReader(in, Charsets.UTF_8);
     }
 }
