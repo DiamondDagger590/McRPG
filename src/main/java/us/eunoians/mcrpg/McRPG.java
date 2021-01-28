@@ -13,6 +13,10 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.bleedplus.BleedPlus;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;
+import us.eunoians.mcrpg.ability.impl.swords.ragespike.RageSpike;
+import us.eunoians.mcrpg.ability.impl.swords.serratedstrikes.SerratedStrikes;
+import us.eunoians.mcrpg.ability.impl.swords.taintedblade.TaintedBlade;
+import us.eunoians.mcrpg.ability.impl.swords.vampire.Vampire;
 import us.eunoians.mcrpg.ability.impl.taming.gore.Gore;
 import us.eunoians.mcrpg.ability.listener.CooldownableAbilityListener;
 import us.eunoians.mcrpg.ability.listener.ReadyableAbilityCheckListener;
@@ -166,6 +170,10 @@ public class McRPG extends JavaPlugin {
         getAbilityRegistry().registerAbility(Ability.getId(Bleed.class), Bleed::new);
         getAbilityRegistry().registerAbility(Ability.getId(DeeperWound.class), DeeperWound::new);
         getAbilityRegistry().registerAbility(Ability.getId(BleedPlus.class), BleedPlus::new);
+        getAbilityRegistry().registerAbility(Ability.getId(Vampire.class), Vampire::new);
+        getAbilityRegistry().registerAbility(Ability.getId(SerratedStrikes.class), SerratedStrikes::new);
+        getAbilityRegistry().registerAbility(Ability.getId(RageSpike.class), RageSpike::new);
+        getAbilityRegistry().registerAbility(Ability.getId(TaintedBlade.class), TaintedBlade::new);
 
         //Taming abilities
         getAbilityRegistry().registerAbility(getNamespacedKey("gore"), Gore::new);
