@@ -8,9 +8,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.swords.serratedstrikes.SerratedStrikes;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.ability.taming.GoreActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
+import us.eunoians.mcrpg.player.McRPGPlayer;
 import us.eunoians.mcrpg.util.parser.Parser;
 
 /**
@@ -36,9 +38,13 @@ public class BleedListener implements Listener {
             LivingEntity damager = (LivingEntity) entityDamageByEntityEvent.getDamager();
             AbilityHolder abilityHolder = damager instanceof Player ? new AbilityHolder((Player) damager) : AbilityHolder.getFromEntity(damager);
 
-            if(abilityHolder.hasAbility(BLEED_KEY)){
+            if(abilityHolder instanceof McRPGPlayer ? abilityHolder.getAbilityFromLoadout(BLEED_KEY) != null : abilityHolder.hasAbility(BLEED_KEY)){
 
                 Bleed bleed = (Bleed) abilityHolder.getAbility(BLEED_KEY);
+
+                if(!bleed.isToggled()){
+                    return;
+                }
 
                 BleedManager bleedManager = McRPG.getInstance().getBleedManager();
 
@@ -48,6 +54,10 @@ public class BleedListener implements Listener {
                         && damager.getEquipment() != null && damager.getEquipment().getItemInMainHand().getType().toString().endsWith("_SWORD")) {
 
                     Parser parser = bleed.getActivationEquation();
+
+                    if(damager.hasMetadata(SerratedStrikes.METADATA_KEY)){
+                        double serratedStrikesModifier = damager.getMetadata(SerratedStrikes.METADATA_KEY).get(0).asDouble();
+                    }
 
                     //TODO try activation odds
                     if(true) {

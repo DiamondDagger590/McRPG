@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**
  * Handles activation of {@link Vampire}
@@ -21,10 +22,13 @@ public class VampireListener implements Listener {
         AbilityHolder abilityHolder = bleedActivateEvent.getAbilityHolder();
 
         NamespacedKey id = Ability.getId(Vampire.class);
-        if (abilityHolder.hasAbility(id)) {
+        if (abilityHolder instanceof McRPGPlayer ? abilityHolder.getLoadout().contains(bleedActivateEvent.getAbility()) : abilityHolder.hasAbility(id)) {
 
             Vampire vampire = (Vampire) abilityHolder.getAbility(id);
-            vampire.activate(abilityHolder, bleedActivateEvent);
+
+            if(vampire.isToggled()) {
+                vampire.activate(abilityHolder, bleedActivateEvent);
+            }
         }
     }
 }

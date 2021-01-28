@@ -50,6 +50,6 @@ public abstract class CooldownableAbilityActivateEvent extends AbilityActivateEv
      * @param cooldownSeconds A positive non-zero amount of cooldown seconds to place the {@link CooldownableAbility} on provided this event in uncancelled
      */
     public void setCooldownSeconds(int cooldownSeconds) {
-        this.cooldownSeconds = Math.min(1, cooldownSeconds);
+        this.cooldownSeconds = Math.max(1, cooldownSeconds);
     }
 }

@@ -120,7 +120,7 @@ public class Vampire extends BaseAbility implements UnlockableAbility, Toggleabl
      */
     @Override
     public void setTier(int tier) {
-        this.tier = tier;
+        this.tier = Math.max(0, tier);
     }
 
     /**

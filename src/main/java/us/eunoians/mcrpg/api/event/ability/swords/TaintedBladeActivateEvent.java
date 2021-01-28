@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.taintedblade.TaintedBlade;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.CooldownableAbilityActivateEvent;
 
 import java.util.Set;
 
@@ -14,7 +14,7 @@ import java.util.Set;
  *
  * @author DiamondDagger590
  */
-public class TaintedBladeActivateEvent extends AbilityActivateEvent {
+public class TaintedBladeActivateEvent extends CooldownableAbilityActivateEvent {
 
     @NotNull
     private final Set<PotionEffect> potionEffects;
@@ -23,8 +23,8 @@ public class TaintedBladeActivateEvent extends AbilityActivateEvent {
      * @param abilityHolder The {@link AbilityHolder} that is activating the event
      * @param taintedBlade  The {@link TaintedBlade} being activated
      */
-    public TaintedBladeActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull TaintedBlade taintedBlade, @NotNull Set<PotionEffect> potionEffects) {
-        super(abilityHolder, taintedBlade, AbilityEventType.COMBAT);
+    public TaintedBladeActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull TaintedBlade taintedBlade, @NotNull Set<PotionEffect> potionEffects, int cooldown) {
+        super(abilityHolder, taintedBlade, AbilityEventType.COMBAT, cooldown);
         this.potionEffects = potionEffects;
     }
 

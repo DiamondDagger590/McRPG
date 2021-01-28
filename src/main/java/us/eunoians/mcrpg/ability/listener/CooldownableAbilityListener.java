@@ -51,7 +51,7 @@ public class CooldownableAbilityListener implements Listener {
                 abilityActivateEvent.setCancelled(true);
 
                 if (abilityHolder instanceof McRPGPlayer) {
-                    int secondsRemaining = (int) Math.min(1, skillCooldownWrapper.getMilisLeftOnCooldown(abilityKey) / 1000L);
+                    int secondsRemaining = (int) Math.max(1, skillCooldownWrapper.getMilisLeftOnCooldown(abilityKey) / 1000L);
                     McRPG.getInstance().getMessageSender()
                             .sendMessage(((McRPGPlayer) abilityHolder).getEntity(), ChatColor.RED + "You are on cooldown for " + ChatColor.GOLD + secondsRemaining + ChatColor.RED + " seconds.", false);
                 }
@@ -83,7 +83,7 @@ public class CooldownableAbilityListener implements Listener {
                 abilityReadyEvent.setCancelled(true);
 
                 if (abilityHolder instanceof McRPGPlayer) {
-                    int secondsRemaining = (int) Math.min(1, skillCooldownWrapper.getMilisLeftOnCooldown(abilityKey) / 1000L);
+                    int secondsRemaining = (int) Math.max(1, skillCooldownWrapper.getMilisLeftOnCooldown(abilityKey) / 1000L);
                     McRPG.getInstance().getMessageSender()
                             .sendMessage(((McRPGPlayer) abilityHolder).getEntity(), ChatColor.RED + "You are on cooldown for " + ChatColor.GOLD + secondsRemaining + ChatColor.RED + " seconds.", false);
                 }

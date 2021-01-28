@@ -5,8 +5,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.player.McRPGPlayer;
+
+import java.util.Optional;
 
 /**
  * This listener handles activation of {@link RageSpike}
@@ -18,15 +21,21 @@ public class RageSpikeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void handleShift(PlayerToggleSneakEvent playerToggleSneakEvent){
 
-        AbilityHolder abilityHolder = new AbilityHolder(playerToggleSneakEvent.getPlayer());
+        Optional<McRPGPlayer> mcRPGPlayerOptional = McRPG.getInstance().getPlayerContainer().getPlayer(playerToggleSneakEvent.getPlayer());
+
+        if(!mcRPGPlayerOptional.isPresent()){
+            return;
+        }
+
+        McRPGPlayer abilityHolder = mcRPGPlayerOptional.get();
 
         NamespacedKey id = Ability.getId(RageSpike.class);
 
-        if(abilityHolder.hasAbility(id)) {
+        if (abilityHolder.getAbilityFromLoadout(id) != null) {
 
             RageSpike rageSpike = (RageSpike) abilityHolder.getAbility(id);
 
-            if (playerToggleSneakEvent.isSneaking()) {
+            if (rageSpike.isToggled() && playerToggleSneakEvent.isSneaking()) {
 
                 if (rageSpike.isReady()) {
                     rageSpike.activate(abilityHolder);

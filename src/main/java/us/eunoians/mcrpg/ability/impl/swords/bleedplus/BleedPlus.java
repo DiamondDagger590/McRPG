@@ -118,7 +118,7 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
      */
     @Override
     public void setTier(int tier) {
-        this.tier = tier;
+        this.tier = Math.max(0, tier);
     }
 
     /**

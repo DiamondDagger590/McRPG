@@ -40,7 +40,7 @@ public class AbilityReadyEvent extends AbilityEvent implements Cancellable {
      * @param readySeconds A positive zero exclusive amount of seconds that the user should be put on ready status for
      */
     public void setReadySeconds(int readySeconds) {
-        this.readySeconds = Math.min(1, readySeconds);
+        this.readySeconds = Math.max(1, readySeconds);
     }
 
     /**

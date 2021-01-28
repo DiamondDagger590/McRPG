@@ -1,16 +1,19 @@
-package us.eunoians.mcrpg.ability.impl.swords.taintedblade;
+package us.eunoians.mcrpg.ability.impl.swords.serratedstrikes;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.potion.PotionEffect;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
@@ -18,7 +21,6 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.ActiveAbility;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.CooldownableAbility;
-import us.eunoians.mcrpg.ability.PotionEffectableAbility;
 import us.eunoians.mcrpg.ability.ReadyableAbility;
 import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.ability.ToggleableAbility;
@@ -26,7 +28,7 @@ import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.event.ability.swords.TaintedBladeActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.SerratedStrikesActivateEvent;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,14 +36,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This ability gives the user buffs along with a few debuffs for a few seconds for a spurt of strength to help end a fight
+ * This ability increases the activation rate of {@link us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed} for a short time
  *
  * @author DiamondDagger590
  */
-@AbilityIdentifier(id = "tainted_blade")
-public class TaintedBlade extends BaseAbility implements UnlockableAbility, ToggleableAbility,
-        TierableAbility, ReadyableAbility, ActiveAbility, PotionEffectableAbility, CooldownableAbility {
+@AbilityIdentifier(id = "serrated_strikes")
+public class SerratedStrikes extends BaseAbility implements UnlockableAbility, ToggleableAbility,
+        TierableAbility, ReadyableAbility, ActiveAbility, CooldownableAbility {
 
+    public final static String METADATA_KEY = "serrated_strikes_modifier";
     private final static Set<Material> ACTIVATION_MATERIALS = new HashSet<>();
 
     static {
@@ -63,15 +66,15 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
      *
      * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    public TaintedBlade(@NotNull AbilityCreationData abilityCreationData) {
+    public SerratedStrikes(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
-        if (abilityCreationData instanceof TaintedBladeCreationData) {
-            TaintedBladeCreationData taintedBladeCreationData = (TaintedBladeCreationData) abilityCreationData;
+        if (abilityCreationData instanceof SerratedStrikesCreationData) {
+            SerratedStrikesCreationData serratedStrikesCreationData = (SerratedStrikesCreationData) abilityCreationData;
 
-            this.tier = taintedBladeCreationData.getTier();
-            this.toggled = taintedBladeCreationData.isToggled();
-            this.unlocked = taintedBladeCreationData.isUnlocked();
+            this.tier = serratedStrikesCreationData.getTier();
+            this.toggled = serratedStrikesCreationData.isToggled();
+            this.unlocked = serratedStrikesCreationData.isUnlocked();
         }
     }
 
@@ -94,20 +97,34 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     @Override
     public void activate(AbilityHolder activator, Object... optionalData) {
 
-        Set<PotionEffect> potionEffects = getPotionEffects();
+        ConfigurationSection configurationSection = getTierConfigSection(getTier());
 
-        TaintedBladeActivateEvent taintedBladeActivateEvent = new TaintedBladeActivateEvent(getAbilityHolder(), this, potionEffects, getCooldownDuration());
-        Bukkit.getPluginManager().callEvent(taintedBladeActivateEvent);
+        int duration = 5; //TODO pull from config
 
-        if(!taintedBladeActivateEvent.isCancelled()){
+        SerratedStrikesActivateEvent serratedStrikesActivateEvent = new SerratedStrikesActivateEvent(getAbilityHolder(), this, getCooldownDuration(), 20, duration);
+        Bukkit.getPluginManager().callEvent(serratedStrikesActivateEvent);
+
+        if(!serratedStrikesActivateEvent.isCancelled()){
 
             LivingEntity livingEntity = getAbilityHolder().getEntity();
 
-            for(PotionEffect potionEffect : taintedBladeActivateEvent.getPotionEffects()){
-                livingEntity.addPotionEffect(potionEffect);
-            }
-        }
+            livingEntity.setMetadata(SerratedStrikes.METADATA_KEY, new FixedMetadataValue(McRPG.getInstance(), serratedStrikesActivateEvent.getBleedModifyChance()));
 
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    if(livingEntity.hasMetadata(SerratedStrikes.METADATA_KEY) && (
+                            (livingEntity instanceof Player && ((Player) livingEntity).isOnline())
+                            || (livingEntity.isValid() && !livingEntity.isDead()))){
+                        livingEntity.removeMetadata(SerratedStrikes.METADATA_KEY, McRPG.getInstance());
+
+                        if(livingEntity instanceof Player){
+                            McRPG.getInstance().getMessageSender().sendMessage((Player) livingEntity, ChatColor.YELLOW + "Serrated Strikes has ended", false);
+                        }
+                    }
+                }
+            }.runTaskLater(McRPG.getInstance(), serratedStrikesActivateEvent.getDurationInSeconds() * 20L);
+        }
     }
 
     /**
@@ -119,19 +136,17 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
      */
     @Override
     protected List<Listener> createListeners() {
-        return Collections.singletonList(new TaintedBladeListener());
+        return Collections.singletonList(new SerratedStrikesListener());
     }
 
     /**
-     * Gets the {@link Set} of {@link PotionEffect}s that should be given to either
-     * the user of the {@link Ability} or the target of such {@link Ability}
+     * Gets the amount of time in seconds that this {@link CooldownableAbility} should be on cooldown for after activation
      *
-     * @return The {@link Set} of {@link PotionEffect}s
+     * @return The postivie zero exclusive amount of time in seconds this {@link CooldownableAbility} should be on cooldown for after activation.
      */
     @Override
-    public Set<PotionEffect> getPotionEffects() {
-        //TODO
-        return null;
+    public int getCooldownDuration() {
+        return 180; //TODO
     }
 
     /**
@@ -185,9 +200,9 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     /**
      * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with a block.
      * <p>
-     * If this returns {@code false}, then {@link #isValidReadyableBlock(Block)}  will not be called.
+     * If this returns {@code false}, then {@link #isValidReadyableBlock(Block)} will not be called.
      *
-     * @return {@code true} if this ability can be ready'd from interacting with a {@link org.bukkit.block.Block}
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link Block}
      */
     @Override
     public boolean readyFromBlock() {
@@ -197,9 +212,9 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     /**
      * Checks to see if this {@link ReadyableAbility} can be set to a ready status by interacting with an entity.
      * <p>
-     * If this returns {@code false}, then {@link #isValidReadyableEntity(Entity)}   will not be called.
+     * If this returns {@code false}, then {@link #isValidReadyableEntity(Entity)}  will not be called.
      *
-     * @return {@code true} if this ability can be ready'd from interacting with a {@link org.bukkit.entity.Entity}
+     * @return {@code true} if this ability can be ready'd from interacting with a {@link Entity}
      */
     @Override
     public boolean readyFromEntity() {
@@ -213,7 +228,7 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
      */
     @Override
     public int getReadyDurationSeconds() {
-        return 5;
+        return 3;
     }
 
     /**
@@ -304,15 +319,5 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     @Override
     public void setUnlocked(boolean unlocked) {
         this.unlocked = unlocked;
-    }
-
-    /**
-     * Gets the amount of time in seconds that this {@link CooldownableAbility} should be on cooldown for after activation
-     *
-     * @return The postivie zero exclusive amount of time in seconds this {@link CooldownableAbility} should be on cooldown for after activation.
-     */
-    @Override
-    public int getCooldownDuration() {
-        return 180; //TODO pull from config
     }
 }

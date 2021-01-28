@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.ReadyableAbility;
+import us.eunoians.mcrpg.ability.ToggleableAbility;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.ability.AbilityReadyEvent;
 import us.eunoians.mcrpg.api.manager.ReadyTaskManager;
@@ -34,6 +35,11 @@ public class ReadyableAbilityCheckListener implements Listener {
                 if (ability instanceof ReadyableAbility) {
 
                     ReadyableAbility readyableAbility = (ReadyableAbility) ability;
+
+                    //Handle toggled abilities
+                    if(ability instanceof ToggleableAbility && !(((ToggleableAbility) ability).isToggled())){
+                        continue;
+                    }
 
                     //Short circuit before calling the handle ready attempt where it calls the ready activation code
                     if(readyableAbility.readyFromBlock() && readyableAbility.isValidReadyableBlock(playerInteractEvent.getClickedBlock())
@@ -69,6 +75,11 @@ public class ReadyableAbilityCheckListener implements Listener {
                 if (ability instanceof ReadyableAbility) {
 
                     ReadyableAbility readyableAbility = (ReadyableAbility) ability;
+
+                    //Handle toggled abilities
+                    if(ability instanceof ToggleableAbility && !(((ToggleableAbility) ability).isToggled())){
+                        continue;
+                    }
 
                     //Short circuit before calling the handle ready attempt where it calls the ready activation code
                     if(readyableAbility.readyFromEntity() && readyableAbility.isValidReadyableEntity(playerInteractAtEntityEvent.getRightClicked())

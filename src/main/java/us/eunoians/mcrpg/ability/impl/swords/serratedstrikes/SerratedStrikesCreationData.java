@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl.swords.taintedblade;
+package us.eunoians.mcrpg.ability.impl.swords.serratedstrikes;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
@@ -9,17 +9,17 @@ import us.eunoians.mcrpg.ability.creation.UnlockableCreationData;
 import us.eunoians.mcrpg.api.AbilityHolder;
 
 /**
- * Contains data needed to create a {@link TaintedBlade}
+ * Contains data needed to create {@link SerratedStrikes}.
  *
  * @author DiamondDagger590
  */
-public class TaintedBladeCreationData extends AbilityCreationData implements TierableCreationData, UnlockableCreationData, ToggleableCreationData {
+public class SerratedStrikesCreationData extends AbilityCreationData implements TierableCreationData, UnlockableCreationData, ToggleableCreationData {
 
     private final int tier;
     private final boolean unlocked;
     private final boolean toggled;
 
-    public TaintedBladeCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
+    public SerratedStrikesCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
         super(abilityHolder);
         this.tier = tier;
         this.toggled = toggled;

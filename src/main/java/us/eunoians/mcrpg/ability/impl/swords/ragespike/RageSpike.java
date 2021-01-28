@@ -232,7 +232,7 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
      */
     @Override
     public void setTier(int tier) {
-        this.tier = tier;
+        this.tier = Math.max(0, tier);
     }
 
     /**

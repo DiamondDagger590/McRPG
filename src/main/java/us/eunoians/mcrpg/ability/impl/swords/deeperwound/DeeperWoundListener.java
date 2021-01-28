@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**
  * This listener handles activation of {@link DeeperWound}
@@ -21,10 +22,13 @@ public class DeeperWoundListener implements Listener {
         AbilityHolder abilityHolder = bleedActivateEvent.getAbilityHolder();
 
         NamespacedKey id = Ability.getId(DeeperWound.class);
-        if (abilityHolder.hasAbility(id)) {
+        if (abilityHolder instanceof McRPGPlayer ? abilityHolder.getLoadout().contains(bleedActivateEvent.getAbility()) : abilityHolder.hasAbility(id)) {
 
             DeeperWound deeperWound = (DeeperWound) abilityHolder.getAbility(id);
-            deeperWound.activate(abilityHolder, bleedActivateEvent);
+
+            if(deeperWound.isToggled()) {
+                deeperWound.activate(abilityHolder, bleedActivateEvent);
+            }
         }
     }
 }
