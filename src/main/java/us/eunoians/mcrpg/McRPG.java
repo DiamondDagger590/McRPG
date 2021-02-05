@@ -9,7 +9,7 @@ import org.bukkit.plugin.java.JavaPluginLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.registry.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.bleedplus.BleedPlus;
 import us.eunoians.mcrpg.ability.impl.swords.deeperwound.DeeperWound;

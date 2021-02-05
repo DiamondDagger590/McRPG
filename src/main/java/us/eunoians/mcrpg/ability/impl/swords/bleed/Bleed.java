@@ -10,11 +10,12 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.*;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableAbilityDisplayItem;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableEnableableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
-import us.eunoians.mcrpg.api.error.EnabledAbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
 import us.eunoians.mcrpg.util.configuration.FileManager;
@@ -28,20 +29,19 @@ import java.util.List;
  * another {@link org.bukkit.entity.LivingEntity}. This {@link Ability} will deal damage over time with a few modifiers
  */
 @AbilityIdentifier(id = "bleed", abilityCreationData = BleedCreationData.class)
-public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbility, EnableableAbility {
+public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbility, ConfigurableEnableableAbility,
+        ConfigurableAbilityDisplayItem {
 
-    private static final NamespacedKey NAMESPACED_KEY = McRPG.getNamespacedKey("bleed");
+    private static final String BLEED_CHANCE_EQUATION_KEY = "bleed-chance-activation";
+    private static final String BLEED_FREQUENCY_KEY = "frequency";
+    private static final String BLEED_FREQUENCY_TICKS_KEY = "frequency-ticks";
+    private static final String BLEED_CYCLES_KEY = "cycles";
+    private static final String BLEED_DAMAGE_KEY = "base-damage";
 
     /**
      * Represents whether the ability is toggled on or off
      */
     private boolean toggled = false;
-
-    /**
-     * The equation representing the chance at which this {@link us.eunoians.mcrpg.ability.Ability}
-     * can activate
-     */
-    private Parser activationEquation;
 
     /**
      * This assumes that you will be passing in {@link BleedCreationData} and will attempt sanitization.
@@ -51,7 +51,7 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     public Bleed(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
-        if(abilityCreationData instanceof BleedCreationData) {
+        if (abilityCreationData instanceof BleedCreationData) {
             this.toggled = ((BleedCreationData) abilityCreationData).isToggled();
         }
     }
@@ -97,12 +97,23 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     @Override
     public void activate(AbilityHolder activator, Object... optionalData) {
 
-        if(optionalData.length > 0 && optionalData[0] instanceof LivingEntity) {
+        if (optionalData.length > 0 && optionalData[0] instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) optionalData[0];
-            //TODO load from config
-            int frequencyInTicks = 20;
-            int cycles = 3;
-            int damagePerCycle = 2;
+
+            int frequencyInTicks;
+            int cycles;
+            int damagePerCycle;
+
+            try {
+                ConfigurationSection abilityConfiguration = getAbilityConfigurationSection();
+                frequencyInTicks = abilityConfiguration.contains(BLEED_FREQUENCY_KEY) ? abilityConfiguration.getInt(BLEED_FREQUENCY_KEY) * 20 : abilityConfiguration.getInt(BLEED_FREQUENCY_TICKS_KEY, 40);
+                cycles = abilityConfiguration.getInt(BLEED_CYCLES_KEY, 3);
+                damagePerCycle = abilityConfiguration.getInt(BLEED_DAMAGE_KEY, 1);
+
+            } catch (AbilityConfigurationNotFoundException e) {
+                e.printStackTrace();
+                return;
+            }
 
             BleedManager bleedManager = McRPG.getInstance().getBleedManager();
 
@@ -127,7 +138,13 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
      */
     @Override
     public @NotNull Parser getActivationEquation() {
-        return activationEquation;
+
+        try {
+            return new Parser(getAbilityConfigurationSection().getString(BLEED_CHANCE_EQUATION_KEY));
+        } catch (AbilityConfigurationNotFoundException e) {
+            e.printStackTrace();
+            return new Parser("");
+        }
     }
 
     /**
@@ -170,7 +187,7 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
      * @return The {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
      */
     @Override
-    public @NotNull FileConfiguration getAbilityConfigurationFile(){
+    public @NotNull FileConfiguration getAbilityConfigurationFile() {
         return McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
     }
 
@@ -184,8 +201,8 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
 
         ConfigurationSection configurationSection = getAbilityConfigurationFile().getConfigurationSection("bleed-config");
 
-        if(configurationSection == null){
-            throw new AbilityConfigurationNotFoundException("Configuration section known as: 'bleed-config' is missing from the " + FileManager.Files.SWORDS_CONFIG.getFileName() + " file.");
+        if (configurationSection == null) {
+            throw new AbilityConfigurationNotFoundException("Configuration section known as: 'bleed-config' is missing from the " + FileManager.Files.SWORDS_CONFIG.getFileName() + " file.", getAbilityID());
         }
         return configurationSection;
     }
@@ -198,15 +215,5 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     @Override
     public @NotNull ItemStack getDisplayItem() {
         return super.getDisplayItem();
-    }
-
-    /**
-     * Checks to see if this {@link Ability} is enabled
-     *
-     * @return {@code true} if this {@link Ability} is enabled
-     */
-    @Override
-    public boolean isEnabled() throws EnabledAbilityConfigurationNotFoundException {
-        return getEnabledSection().getBoolean(Ability.getId(this.getClass()).getKey());
     }
 }

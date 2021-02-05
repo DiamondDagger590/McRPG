@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.api.manager;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,6 +19,7 @@ import us.eunoians.mcrpg.ability.impl.swords.bleed.Bleed;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedEndEvent;
+import us.eunoians.mcrpg.util.configuration.FileManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +35,31 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author DiamondDagger590
  */
 public class BleedManager implements Listener {
+
+    /**
+     * The base key for getting bleed information
+     */
+    private final String BLEED_BASE_KEY = "bleed-config";
+    /**
+     * The key for getting if immunity is enabled or not
+     */
+    private final String BLEED_IMMUNITY_KEY = BLEED_BASE_KEY + ".bleed-immunity-enabled";
+    /**
+     * The key for getting the amount of seconds to activate immunity for (legacy support)
+     */
+    private final String BLEED_IMMUNITY_DURATION_KEY = BLEED_BASE_KEY + ".bleed-immunity-duration";
+    /**
+     * The key for getting the amount of ticks to activate immunity for
+     */
+    private final String BLEED_IMMUNITY_DURATION_TICKS_KEY = BLEED_BASE_KEY + ".bleed-immunity-ticks";
+    /**
+     * The key for getting the min amount of health an entity can be put at due to bleed
+     */
+    private final String BLEED_MIN_HEALTH_KEY = BLEED_BASE_KEY + ".minimum-health-allowed";
+    /**
+     * The key for getting the max amount of entities that can be bleeding at once due to a single user
+     */
+    private final String BLEED_MAX_ENTITY_KEY = BLEED_BASE_KEY + ".max-entities-affected";
 
     /**
      * This {@link Map} contains all current {@link BleedTask}s that are issuing damage.
@@ -73,7 +100,7 @@ public class BleedManager implements Listener {
     public void handleDeath(EntityDeathEvent entityDeathEvent) {
 
         if (isCurrentlyBleeding(entityDeathEvent.getEntity().getUniqueId())) {
-            cancelBleedTask(entityDeathEvent.getEntity().getUniqueId(), true);
+            cancelBleedTask(entityDeathEvent.getEntity().getUniqueId(), isBleedImmunityEnabled());
         }
     }
 
@@ -102,18 +129,24 @@ public class BleedManager implements Listener {
 
                 //Validate entities and player specific edge cases along with handle cycles
                 if (cycles.get() >= amountOfCycles) {
-                    cancelBleedTask(affected.getUniqueId(), true);
+                    cancelBleedTask(affected.getUniqueId(), isBleedImmunityEnabled());
                     return;
                 }
                 else if (isPlayer && !((Player) affected).isOnline()) {
                     return;
                 }
                 else if (!affected.isValid()) {
-                    cancelBleedTask(affected.getUniqueId(), true);
+                    cancelBleedTask(affected.getUniqueId(), isBleedImmunityEnabled());
                     return;
                 }
                 else if (affected.isDead()) {
-                    cancelBleedTask(affected.getUniqueId(), true);
+                    cancelBleedTask(affected.getUniqueId(), isBleedImmunityEnabled());
+                    return;
+                }
+
+                //Skip if health is too low
+                if(affected.getHealth() <= getMinHealthAllowed()){
+                    cycles.incrementAndGet();
                     return;
                 }
 
@@ -199,7 +232,9 @@ public class BleedManager implements Listener {
 
     /**
      * Cancels the {@link BleedTask} for the {@link UUID} provided and removes it from the
-     * {@link Collection}
+     * {@link Collection}.
+     * <p>
+     * Internal calls to this method pass in {@link #isBleedImmunityEnabled()} as the "setImmune" variable.
      *
      * @param uuid      The {@link UUID} of the {@link org.bukkit.entity.LivingEntity} whose Bleed task is being cancelled
      * @param setImmune If the {@link UUID} should be set to immune after cancellation
@@ -242,10 +277,7 @@ public class BleedManager implements Listener {
      *             be put on Bleed immunity
      */
     public void startImmunity(@NotNull UUID uuid) {
-
-        //TODO pull seconds from a config
-        int seconds = 5;
-        setImmunity(uuid, seconds);
+        setImmunityTicks(uuid, getBleedImmunityDurationTicks());
     }
 
     /**
@@ -255,8 +287,19 @@ public class BleedManager implements Listener {
      * @param uuid    The {@link UUID} that is being set to be immune
      * @param seconds The amount of seconds to put on Bleed Immunity for
      */
-    public void setImmunity(@NotNull UUID uuid, long seconds) {
+    public void setImmunitySeconds(@NotNull UUID uuid, long seconds) {
         bleedImmunityDuration.put(uuid, System.currentTimeMillis() + (seconds * 1000L));
+    }
+
+    /**
+     * Sets the {@link org.bukkit.entity.LivingEntity} that is mapped to the provided
+     * {@link UUID} on Bleed immunity for the specified amount of ticks
+     *
+     * @param uuid    The {@link UUID} that is being set to be immune
+     * @param ticks The amount of ticks to put on Bleed Immunity for
+     */
+    public void setImmunityTicks(@NotNull UUID uuid, long ticks) {
+        bleedImmunityDuration.put(uuid, (long) (System.currentTimeMillis() + (((double) (ticks/20)) * 1000L)));
     }
 
     /**
@@ -306,9 +349,7 @@ public class BleedManager implements Listener {
      */
     public boolean canInflictBleed(@NotNull UUID inflicter, @NotNull UUID affected) {
 
-        //TODO move this to config
-        int maxBleedVictims = 2;
-
+        int maxBleedVictims = getMaxVictims();
         boolean canInflict = getAmountOfEntitiesAffected(inflicter) < maxBleedVictims && !isCurrentlyImmune(affected) && !isCurrentlyBleeding(affected);
 
         return canInflict;
@@ -349,6 +390,52 @@ public class BleedManager implements Listener {
      */
     public boolean isCurrentlyBleeding(@NotNull UUID uuid) {
         return getBleedTask(uuid) != null;
+    }
+
+    /**
+     * Checks to see if immunity from bleed is enabled
+     *
+     * @return {@code true} if immunity from bleed is enabled
+     */
+    public boolean isBleedImmunityEnabled() {
+        FileConfiguration fileConfiguration = FileManager.Files.SWORDS_CONFIG.getFile();
+        return fileConfiguration.getBoolean(BLEED_IMMUNITY_KEY, false);
+    }
+
+    /**
+     * Gets the duration of bleed immunity in ticks.
+     * <p>
+     * The number returned doesn't indicate enabled/disabled status, which should instead be checked
+     * by {@link #isBleedImmunityEnabled()}.
+     *
+     * @return A positive zero inclusive number of ticks to run bleed immunity for
+     */
+    public int getBleedImmunityDurationTicks() {
+        FileConfiguration fileConfiguration = FileManager.Files.SWORDS_CONFIG.getFile();
+        return Math.max(0, fileConfiguration.contains(BLEED_IMMUNITY_DURATION_KEY) ? fileConfiguration.getInt(BLEED_IMMUNITY_DURATION_KEY) * 20 : fileConfiguration.getInt(BLEED_IMMUNITY_DURATION_TICKS_KEY, 100));
+    }
+
+    /**
+     * Gets the minimum amount of health that bleed can put a target at.
+     * <p>
+     * This means if this method returns {@code 1}, then bleed can't put the target
+     * below 1/2 heart.
+     *
+     * @return A positive zero inclusive number that represents the minimum amount of health that bleed can put a target at
+     */
+    public int getMinHealthAllowed() {
+        FileConfiguration fileConfiguration = FileManager.Files.SWORDS_CONFIG.getFile();
+        return Math.max(0, fileConfiguration.getInt(BLEED_MIN_HEALTH_KEY, 1));
+    }
+
+    /**
+     * Gets the max amount of victims allowed to be bleeding at once due to a single entity
+     *
+     * @return A positive zero exclusive amount of victims allowed to be bleeding at once due to a single entity
+     */
+    public int getMaxVictims() {
+        FileConfiguration fileConfiguration = FileManager.Files.SWORDS_CONFIG.getFile();
+        return Math.max(1, fileConfiguration.getInt(BLEED_MAX_ENTITY_KEY, 1));
     }
 
     /**

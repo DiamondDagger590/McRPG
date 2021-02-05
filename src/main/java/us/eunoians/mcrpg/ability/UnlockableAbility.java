@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.ability;
 
+import us.eunoians.mcrpg.api.error.UnlockableAbilityConfigurationNotFoundException;
+
 /**
  * This interface represents an {@link Ability} that can be unlocked.
  *
@@ -25,6 +27,8 @@ public interface UnlockableAbility extends Ability {
      * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
      *
      * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
+     * @throws UnlockableAbilityConfigurationNotFoundException If this is an instance of {@link us.eunoians.mcrpg.ability.configurable.ConfigurableUnlockableAbility} and
+     *                                                         the {@link org.bukkit.configuration.ConfigurationSection} returns {@code null}.
      */
-    public int getUnlockLevel();
+    public int getUnlockLevel() throws UnlockableAbilityConfigurationNotFoundException;
 }

@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -122,6 +123,16 @@ public abstract class BaseAbility implements Ability {
     @Override
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
+    }
+
+    /**
+     * Gets the {@link NamespacedKey} that this {@link Ability} belongs to
+     *
+     * @return The {@link NamespacedKey} that this {@link Ability} belongs to
+     */
+    @Override
+    public @NotNull NamespacedKey getAbilityID() {
+        return Ability.getId(this.getClass());
     }
 
     /**

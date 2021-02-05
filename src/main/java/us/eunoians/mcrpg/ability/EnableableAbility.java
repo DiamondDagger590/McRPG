@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.ability;
 
-import org.bukkit.configuration.ConfigurationSection;
 import us.eunoians.mcrpg.api.error.EnabledAbilityConfigurationNotFoundException;
 
 /**
@@ -9,28 +8,14 @@ import us.eunoians.mcrpg.api.error.EnabledAbilityConfigurationNotFoundException;
  *
  * @author DiamondDagger590
  */
-public interface EnableableAbility extends ConfigurableAbility {
-
-    /**
-     * Gets the {@link ConfigurationSection} containing enabled information for the ability
-     *
-     * @return The {@link ConfigurationSection} that contains enabled information for the ability
-     * @throws EnabledAbilityConfigurationNotFoundException if there is a null {@link ConfigurationSection} returned
-     */
-    public default ConfigurationSection getEnabledSection() throws EnabledAbilityConfigurationNotFoundException {
-
-        ConfigurationSection configurationSection = getAbilityConfigurationFile().getConfigurationSection("enabled-abilities");
-
-        if (configurationSection == null) {
-            throw new EnabledAbilityConfigurationNotFoundException("Configuration section known as: 'enabled-abilities' is missing from the " + this.getAbilityConfigurationFile().getName() + " file.");
-        }
-        return configurationSection;
-    }
+public interface EnableableAbility {
 
     /**
      * Gets if this {@link EnableableAbility} is currently enabled
      *
      * @return {@code true} if this {@link EnableableAbility} is currently enabled
+     * @throws EnabledAbilityConfigurationNotFoundException if this is an instance of {@link us.eunoians.mcrpg.ability.configurable.ConfigurableEnableableAbility}
+     * and the configuration section is null.
      */
     public boolean isEnabled() throws EnabledAbilityConfigurationNotFoundException;
 }

@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.CooldownableAbility;
+import us.eunoians.mcrpg.api.error.AbilityDisplayItemNotFoundException;
 import us.eunoians.mcrpg.api.lunar.LunarClientHook;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
@@ -223,8 +224,13 @@ public class CooldownManager {
                         Ability ability = mcRPGPlayer.getAbility(namespacedKey);
 
                         if (ability != null) {
-                            lunarClientAPI.clearCooldown(Objects.requireNonNull(mcRPGPlayer.getEntity()),
-                                    new LCCooldown("Ability Cooldown", 0, TimeUnit.SECONDS, ability.getDisplayItem().getType()));
+                            try {
+                                lunarClientAPI.clearCooldown(Objects.requireNonNull(mcRPGPlayer.getEntity()),
+                                        new LCCooldown("Ability Cooldown", 0, TimeUnit.SECONDS, ability.getDisplayItem().getType()));
+                            } catch (AbilityDisplayItemNotFoundException e) {
+                                e.printStackTrace();
+                                return;
+                            }
                         }
                     }
                 }

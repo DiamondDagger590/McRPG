@@ -9,7 +9,7 @@ import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
 /**
- * A base ability listener that can be extended to create listeners for abilties. This class contains most of the
+ * A base ability listener that can be extended to create listeners for abilities. This class contains most of the
  * necessary objects to write ability listeners.
  *
  * @author OxKitsune

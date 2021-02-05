@@ -117,16 +117,18 @@ bleed-config:
   bleed-chance-activation: (swords_level)*.033
   #How the amount of health that bleed cant go lower than. Ex) if set to 4, bleed wont bring the player below two hearts
   minimum-health-allowed: 1
-  #How long bleed should last for without Deeper Wound in seconds
-  base-duration: 6
+  #The amount of cycles that Bleed should go through without Bleed+
+  cycles: 3
   #How often should bleed be applied in seconds
-  frequency: 2
+  frequency-ticks: 2
   #How much damage it should deal without BleedPlus
   base-damage: 1
   #Grant immunity from bleed for a short bit after it has been applied
   bleed-immunity-enabled: true
-  #Duration of the immunity in seconds
-  bleed-immunity-duration: 5
+  #Duration of the immunity in ticks
+  bleed-immunity-ticks: 100
+  #The max amount of entities that can be affected by Bleed from a single entity at once
+  max-entities-affected: 2
   #How this ability should be seen in the GUIS
   display-item:
     display-name: '&4Bleed'
