@@ -187,4 +187,14 @@ public class Vampire extends BaseAbility implements UnlockableAbility, Toggleabl
     public void setUnlocked(boolean unlocked) {
         this.unlocked = unlocked;
     }
+
+    /**
+     * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
+     *
+     * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
+     */
+    @Override
+    public int getUnlockLevel() {
+        return 0;
+    }
 }

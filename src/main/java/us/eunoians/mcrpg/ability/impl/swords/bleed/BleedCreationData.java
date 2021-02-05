@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.AbilityHolder;
@@ -19,9 +20,9 @@ public class BleedCreationData extends AbilityCreationData implements Toggleable
      */
     private final boolean toggled;
 
-    public BleedCreationData(@NotNull AbilityHolder abilityHolder, boolean toggled) {
-        super(abilityHolder);
-        this.toggled = toggled;
+    public BleedCreationData(@NotNull AbilityHolder abilityHolder, @NotNull JsonObject jsonObject) {
+        super(abilityHolder, jsonObject);
+        this.toggled = jsonObject.has("toggled") && jsonObject.get("toggled").getAsBoolean();
     }
 
     /**

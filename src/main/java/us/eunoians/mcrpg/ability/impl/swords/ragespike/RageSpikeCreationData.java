@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords.ragespike;
 
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
@@ -19,11 +20,11 @@ public class RageSpikeCreationData extends AbilityCreationData implements Unlock
     private final boolean unlocked;
     private final boolean toggled;
 
-    public RageSpikeCreationData(@NotNull AbilityHolder abilityHolder, int tier, boolean toggled, boolean unlocked) {
-        super(abilityHolder);
-        this.tier = tier;
-        this.toggled = toggled;
-        this.unlocked = unlocked;
+    public RageSpikeCreationData(@NotNull AbilityHolder abilityHolder, @NotNull JsonObject jsonObject) {
+        super(abilityHolder, jsonObject);
+        this.tier = jsonObject.has("tier") ? jsonObject.get("tier").getAsInt() : 0;
+        this.toggled = jsonObject.has("toggled") && jsonObject.get("toggled").getAsBoolean();
+        this.unlocked = jsonObject.has("unlocked") && jsonObject.get("unlocked").getAsBoolean();
     }
 
     /**

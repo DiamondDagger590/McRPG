@@ -31,6 +31,7 @@ import us.eunoians.mcrpg.skill.impl.Swords;
 import us.eunoians.mcrpg.skill.impl.Taming;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
+import us.eunoians.mcrpg.util.configuration.FileManager;
 
 import java.io.File;
 import java.io.InputStream;
@@ -89,6 +90,11 @@ public class McRPG extends JavaPlugin {
      */
     private CooldownManager cooldownManager;
 
+    /**
+     * Handles files for McRPG
+     */
+    private FileManager fileManager;
+
     //Needed to support McMMO's Healthbars
     private final String customNameKey = "mcMMO: Custom Name";
     private final String customVisibleKey = "mcMMO: Name Visibility";
@@ -111,6 +117,10 @@ public class McRPG extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        fileManager = FileManager.getInstance();
+        fileManager.setup(this);
+
         placeStore = ChunkManagerFactory.getChunkManager();
 
         this.playerContainer = new PlayerContainer();
@@ -283,7 +293,17 @@ public class McRPG extends JavaPlugin {
     }
 
     /**
+     * Gets the {@link FileManager} object
+     *
+     * @return The {@link FileManager} object
+     */
+    public FileManager getFileManager() {
+        return this.fileManager;
+    }
+
+    /**
      * Gets the key to store the custom name for an entity
+     *
      * @return The key to store the custom name for an entity
      */
     @NotNull
@@ -293,6 +313,7 @@ public class McRPG extends JavaPlugin {
 
     /**
      * Gets the key that relates to if an entities custom name is visible
+     *
      * @return The key that relates to if an entities custom name is visible
      */
     @NotNull
@@ -302,6 +323,7 @@ public class McRPG extends JavaPlugin {
 
     /**
      * Checks to see if a supported healthbar plugin is already enabled
+     *
      * @return {@code true} if a supported healthbar plugin is already enabled
      */
     public boolean isHealthBarPluginEnabled() {
@@ -310,6 +332,7 @@ public class McRPG extends JavaPlugin {
 
     /**
      * Reads in a file as an {@link InputStreamReader}
+     *
      * @param fileName The path of the file to read
      * @return The {@link InputStreamReader} or {@code null} if invalid
      */

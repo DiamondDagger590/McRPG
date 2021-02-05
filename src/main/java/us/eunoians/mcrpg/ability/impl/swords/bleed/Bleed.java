@@ -2,19 +2,22 @@ package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.BaseAbility;
-import us.eunoians.mcrpg.ability.DefaultAbility;
-import us.eunoians.mcrpg.ability.ToggleableAbility;
+import us.eunoians.mcrpg.ability.*;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
+import us.eunoians.mcrpg.api.error.EnabledAbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.manager.BleedManager;
+import us.eunoians.mcrpg.util.configuration.FileManager;
 import us.eunoians.mcrpg.util.parser.Parser;
 
 import java.util.Collections;
@@ -24,8 +27,8 @@ import java.util.List;
  * This ability is an {@link DefaultAbility} that activates when a {@link org.bukkit.entity.LivingEntity} attacks
  * another {@link org.bukkit.entity.LivingEntity}. This {@link Ability} will deal damage over time with a few modifiers
  */
-@AbilityIdentifier(id = "bleed")
-public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbility {
+@AbilityIdentifier(id = "bleed", abilityCreationData = BleedCreationData.class)
+public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbility, EnableableAbility {
 
     private static final NamespacedKey NAMESPACED_KEY = McRPG.getNamespacedKey("bleed");
 
@@ -159,5 +162,51 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
     @Override
     public void setToggled(boolean toggled) {
         this.toggled = toggled;
+    }
+
+    /**
+     * Gets the {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
+     *
+     * @return The {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
+     */
+    @Override
+    public @NotNull FileConfiguration getAbilityConfigurationFile(){
+        return McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
+    }
+
+    /**
+     * Gets the exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
+     *
+     * @return The exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
+     */
+    @Override
+    public @NotNull ConfigurationSection getAbilityConfigurationSection() throws AbilityConfigurationNotFoundException {
+
+        ConfigurationSection configurationSection = getAbilityConfigurationFile().getConfigurationSection("bleed-config");
+
+        if(configurationSection == null){
+            throw new AbilityConfigurationNotFoundException("Configuration section known as: 'bleed-config' is missing from the " + FileManager.Files.SWORDS_CONFIG.getFileName() + " file.");
+        }
+        return configurationSection;
+    }
+
+    /**
+     * Gets the {@link ItemStack} to represent this ability in GUI's
+     *
+     * @return The {@link ItemStack} to represent this ability in GUI's
+     */
+    @Override
+    public @NotNull ItemStack getDisplayItem() {
+        return super.getDisplayItem();
+    }
+
+    /**
+     * Checks to see if this {@link Ability} is enabled
+     *
+     * @return {@code true} if this {@link Ability} is enabled
+     */
+    @Override
+    public boolean isEnabled() throws EnabledAbilityConfigurationNotFoundException {
+        return getEnabledSection().getBoolean(Ability.getId(this.getClass()).getKey());
     }
 }

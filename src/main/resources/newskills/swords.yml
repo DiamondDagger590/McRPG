@@ -96,44 +96,42 @@ enabled-abilities:
 use-perms-for-abilities:
   bleed: false
   bleed_plus: false
-  DeeperWound: false
-  Vampire: false
-  RageSpike: false
-  SerratedStrikes: false
-  TaintedBlade: false
+  deeper_wound: false
+  vampire: false
+  rage_spike: false
+  serrated_strikes: false
+  tainted_blade: false
 #At what swords level should these abilities be unlocked at
-UnlockLevelForAbility:
-  Bleed+: 50
-  DeeperWound: 150
-  Vampire: 250
-  RageSpike: 100
-  SerratedStrikes: 200
-  TaintedBlade: 300
+unlock-level-for-ability:
+  bleed_plus: 50
+  deeper_wound: 150
+  vampire: 250
+  rage_spike: 100
+  serrated_strikes: 200
+  tainted_blade: 300
 #
 # Bleed is the default ability that every player has. This ability will increase every time the players Swords level is increased
 #
-BleedConfig:
+bleed-config:
   #Equation for bleed chance. Default gives 33% at level 1000.
-  BleedChanceEquation: (swords_level)*.033
+  bleed-chance-activation: (swords_level)*.033
   #How the amount of health that bleed cant go lower than. Ex) if set to 4, bleed wont bring the player below two hearts
-  MinimumHealthAllowed: 1
-  #How long bleed should last for without DeeperSlash in seconds
-  BaseDuration: 6
+  minimum-health-allowed: 1
+  #How long bleed should last for without Deeper Wound in seconds
+  base-duration: 6
   #How often should bleed be applied in seconds
-  Frequency: 2
+  frequency: 2
   #How much damage it should deal without BleedPlus
-  BaseDamage: 1
+  base-damage: 1
   #Grant immunity from bleed for a short bit after it has been applied
-  BleedImmunityEnabled: true
+  bleed-immunity-enabled: true
   #Duration of the immunity in seconds
-  BleedImmunityDuration: 5
-  #Should bleed pierce armor
-  BleedPierceArmour: true
+  bleed-immunity-duration: 5
   #How this ability should be seen in the GUIS
-  Item:
-    DisplayName: '&4Bleed'
-    Material: REDSTONE
-    Amount: 1
+  display-item:
+    display-name: '&4Bleed'
+    material: REDSTONE
+    amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:
       - '&cYou have a &e%Bleed_Chance%% &cchance of inflicting bleed'

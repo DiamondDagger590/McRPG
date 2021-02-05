@@ -20,4 +20,11 @@ public interface UnlockableAbility extends Ability {
      * @param unlocked If this {@link UnlockableAbility} is currently unlocked or not.
      */
     public void setUnlocked(boolean unlocked);
+
+    /**
+     * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
+     *
+     * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
+     */
+    public int getUnlockLevel();
 }

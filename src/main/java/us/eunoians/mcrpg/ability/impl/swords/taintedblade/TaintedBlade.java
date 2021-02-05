@@ -307,6 +307,16 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     }
 
     /**
+     * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
+     *
+     * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
+     */
+    @Override
+    public int getUnlockLevel() {
+        return 0;
+    }
+
+    /**
      * Gets the amount of time in seconds that this {@link CooldownableAbility} should be on cooldown for after activation
      *
      * @return The postivie zero exclusive amount of time in seconds this {@link CooldownableAbility} should be on cooldown for after activation.

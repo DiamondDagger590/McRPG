@@ -301,6 +301,16 @@ public class RageSpike extends BaseAbility implements UnlockableAbility, Togglea
     }
 
     /**
+     * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
+     *
+     * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
+     */
+    @Override
+    public int getUnlockLevel() {
+        return 0;
+    }
+
+    /**
      * Checks to see if this ability is currently in a ready status
      *
      * @return {@code true} if this ability is currently in a ready status
