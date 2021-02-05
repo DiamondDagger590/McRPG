@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
-import us.eunoians.mcrpg.api.error.AbilityDisplayItemNotFoundException;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 
 /**
  * The generic base interface for all abilities to inherit from.
@@ -59,11 +59,11 @@ public interface Ability {
      * Gets the {@link ItemStack} to represent this ability in GUI's
      *
      * @return The {@link ItemStack} to represent this ability in GUI's
-     * @throws AbilityDisplayItemNotFoundException if this is an instance of {@link us.eunoians.mcrpg.ability.configurable.ConfigurableAbilityDisplayItem} and
+     * @throws AbilityConfigurationNotFoundException if this is an instance of {@link us.eunoians.mcrpg.ability.configurable.ConfigurableAbilityDisplayItem} and
      *                                             the configuration section is null.
      */
     @NotNull
-    public ItemStack getDisplayItem() throws AbilityDisplayItemNotFoundException;
+    public ItemStack getDisplayItem() throws AbilityConfigurationNotFoundException;
 
     /**
      * @param activator    The {@link AbilityHolder} that is activating this {@link Ability}

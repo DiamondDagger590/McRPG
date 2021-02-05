@@ -10,16 +10,11 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.CooldownableAbility;
-import us.eunoians.mcrpg.api.error.AbilityDisplayItemNotFoundException;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.lunar.LunarClientHook;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -227,7 +222,7 @@ public class CooldownManager {
                             try {
                                 lunarClientAPI.clearCooldown(Objects.requireNonNull(mcRPGPlayer.getEntity()),
                                         new LCCooldown("Ability Cooldown", 0, TimeUnit.SECONDS, ability.getDisplayItem().getType()));
-                            } catch (AbilityDisplayItemNotFoundException e) {
+                            } catch (AbilityConfigurationNotFoundException e) {
                                 e.printStackTrace();
                                 return;
                             }

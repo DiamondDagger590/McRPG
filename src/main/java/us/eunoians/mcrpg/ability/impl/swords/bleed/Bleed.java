@@ -6,7 +6,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.*;
@@ -205,15 +204,5 @@ public class Bleed extends BaseAbility implements DefaultAbility, ToggleableAbil
             throw new AbilityConfigurationNotFoundException("Configuration section known as: 'bleed-config' is missing from the " + FileManager.Files.SWORDS_CONFIG.getFileName() + " file.", getAbilityID());
         }
         return configurationSection;
-    }
-
-    /**
-     * Gets the {@link ItemStack} to represent this ability in GUI's
-     *
-     * @return The {@link ItemStack} to represent this ability in GUI's
-     */
-    @Override
-    public @NotNull ItemStack getDisplayItem() {
-        return super.getDisplayItem();
     }
 }

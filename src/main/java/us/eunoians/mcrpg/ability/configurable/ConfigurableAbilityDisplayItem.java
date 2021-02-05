@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.ConfigurableAbility;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.error.AbilityDisplayItemNotFoundException;
 
 import java.util.Objects;
@@ -24,12 +25,12 @@ public interface ConfigurableAbilityDisplayItem extends ConfigurableAbility {
      * @throws AbilityDisplayItemNotFoundException if there is a null {@link ConfigurationSection} returned
      */
     @NotNull
-    public default ConfigurationSection getDisplayItemSection() throws AbilityDisplayItemNotFoundException {
+    public default ConfigurationSection getDisplayItemSection() throws AbilityConfigurationNotFoundException {
 
-        ConfigurationSection configurationSection = getAbilityConfigurationFile().getConfigurationSection("display-item");
+        ConfigurationSection configurationSection = getAbilityConfigurationSection().getConfigurationSection("display-item");
 
         if (configurationSection == null) {
-            throw new AbilityDisplayItemNotFoundException("Configuration section known as: 'display-item' is missing from the " + this.getAbilityConfigurationFile().getName() + " file.", getAbilityID());
+            throw new AbilityDisplayItemNotFoundException("Configuration section known as: '" + getAbilityID().getKey() + ".display-item' is missing from the " + this.getAbilityConfigurationFile().getName() + " file.", getAbilityID());
         }
         return configurationSection;
     }
@@ -41,7 +42,7 @@ public interface ConfigurableAbilityDisplayItem extends ConfigurableAbility {
      */
     @Override
     @NotNull
-    public default ItemStack getDisplayItem() throws AbilityDisplayItemNotFoundException{
+    public default ItemStack getDisplayItem() throws AbilityConfigurationNotFoundException{
 
         ConfigurationSection displayItemSection = getDisplayItemSection();
 

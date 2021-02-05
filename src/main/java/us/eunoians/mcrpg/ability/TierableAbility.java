@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.ability;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 
 /**
  * This interface represents an {@link Ability} that has a tier associated with it
@@ -30,11 +29,12 @@ public interface TierableAbility extends Ability {
     public void setTier(int tier);
 
     /**
-     * Gets the {@link ConfigurationSection} that belongs to this ability
+     * Gets the level at which the provided tier is unlocked at
      *
-     * @param tier The tier at which to get the {@link ConfigurationSection} for
-     * @return Either the {@link ConfigurationSection} mapped to the provided tier or {@code null} if invalid
+     * @param tier A positive zero exclusive tier at which to get the unlock level for
+     * @return The level at which the tier becomes available or {@code -1} if missing from config.
+     * @throws AbilityConfigurationNotFoundException if this is an instance of {@link us.eunoians.mcrpg.ability.configurable.ConfigurableTierableAbility}
+     *                                               and there is an issue
      */
-    @Nullable
-    public ConfigurationSection getTierConfigSection(int tier);
+    public int getTierUnlockLevel(int tier) throws AbilityConfigurationNotFoundException;
 }

@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
@@ -14,18 +15,15 @@ import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.ActiveAbility;
-import us.eunoians.mcrpg.ability.BaseAbility;
-import us.eunoians.mcrpg.ability.CooldownableAbility;
-import us.eunoians.mcrpg.ability.PotionEffectableAbility;
-import us.eunoians.mcrpg.ability.ReadyableAbility;
-import us.eunoians.mcrpg.ability.TierableAbility;
-import us.eunoians.mcrpg.ability.ToggleableAbility;
-import us.eunoians.mcrpg.ability.UnlockableAbility;
+import us.eunoians.mcrpg.ability.*;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableAbilityDisplayItem;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableEnableableAbility;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableUnlockableAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.event.ability.swords.TaintedBladeActivateEvent;
 
 import java.util.Collections;
@@ -38,9 +36,10 @@ import java.util.Set;
  *
  * @author DiamondDagger590
  */
-@AbilityIdentifier(id = "tainted_blade")
-public class TaintedBlade extends BaseAbility implements UnlockableAbility, ToggleableAbility,
-        TierableAbility, ReadyableAbility, ActiveAbility, PotionEffectableAbility, CooldownableAbility {
+@AbilityIdentifier(id = "tainted_blade", abilityCreationData = TaintedBladeCreationData.class)
+public class TaintedBlade extends BaseAbility implements ConfigurableUnlockableAbility, ToggleableAbility,
+        ConfigurableTierableAbility, ReadyableAbility, ActiveAbility, PotionEffectableAbility, CooldownableAbility,
+        ConfigurableAbilityDisplayItem, ConfigurableEnableableAbility {
 
     private final static Set<Material> ACTIVATION_MATERIALS = new HashSet<>();
 
@@ -99,11 +98,11 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
         TaintedBladeActivateEvent taintedBladeActivateEvent = new TaintedBladeActivateEvent(getAbilityHolder(), this, potionEffects, getCooldownDuration());
         Bukkit.getPluginManager().callEvent(taintedBladeActivateEvent);
 
-        if(!taintedBladeActivateEvent.isCancelled()){
+        if (!taintedBladeActivateEvent.isCancelled()) {
 
             LivingEntity livingEntity = getAbilityHolder().getEntity();
 
-            for(PotionEffect potionEffect : taintedBladeActivateEvent.getPotionEffects()){
+            for (PotionEffect potionEffect : taintedBladeActivateEvent.getPotionEffects()) {
                 livingEntity.addPotionEffect(potionEffect);
             }
         }
@@ -324,5 +323,26 @@ public class TaintedBlade extends BaseAbility implements UnlockableAbility, Togg
     @Override
     public int getCooldownDuration() {
         return 180; //TODO pull from config
+    }
+
+    /**
+     * Gets the {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
+     *
+     * @return The {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
+     */
+    @Override
+    public @NotNull FileConfiguration getAbilityConfigurationFile() {
+        return null;
+    }
+
+    /**
+     * Gets the exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
+     *
+     * @return The exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
+     * @throws AbilityConfigurationNotFoundException Whenever the {@link ConfigurationSection} pulled is null
+     */
+    @Override
+    public @NotNull ConfigurationSection getAbilityConfigurationSection() throws AbilityConfigurationNotFoundException {
+        return null;
     }
 }

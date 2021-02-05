@@ -3,19 +3,20 @@ package us.eunoians.mcrpg.ability.impl.swords.bleedplus;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.BaseAbility;
-import us.eunoians.mcrpg.ability.TierableAbility;
-import us.eunoians.mcrpg.ability.ToggleableAbility;
-import us.eunoians.mcrpg.ability.UnlockableAbility;
+import us.eunoians.mcrpg.ability.ConfigurableAbility;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableBaseAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
+import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedPlusActivateEvent;
+import us.eunoians.mcrpg.util.configuration.FileManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,11 +26,8 @@ import java.util.List;
  *
  * @author DiamondDagger590
  */
-public class BleedPlus extends BaseAbility implements UnlockableAbility, TierableAbility, ToggleableAbility {
-
-    private int tier;
-    private boolean unlocked;
-    private boolean toggled;
+@AbilityIdentifier(id = "bleed_plus", abilityCreationData = BleedPlusCreationData.class)
+public class BleedPlus extends ConfigurableBaseAbility {
 
     /**
      * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
@@ -40,7 +38,7 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
     public BleedPlus(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
-        if(abilityCreationData instanceof BleedPlusCreationData){
+        if (abilityCreationData instanceof BleedPlusCreationData) {
 
             BleedPlusCreationData bleedPlusCreationData = (BleedPlusCreationData) abilityCreationData;
 
@@ -69,16 +67,23 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
     @Override
     public void activate(AbilityHolder activator, Object... optionalData) {
 
-        if(optionalData.length > 0 && optionalData[0] instanceof BleedActivateEvent) {
+        if (optionalData.length > 0 && optionalData[0] instanceof BleedActivateEvent) {
             BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) optionalData[0];
-            ConfigurationSection configurationSection = getTierConfigSection(getTier());
+            ConfigurationSection configurationSection;
+
+            try {
+                configurationSection = getSpecificTierSection(getTier());
+            } catch (AbilityConfigurationNotFoundException e) {
+                e.printStackTrace();
+                return;
+            }
 
             int damagePerCycle = configurationSection.getInt("damage-per-cycle", 3);
 
             BleedPlusActivateEvent bleedPlusActivateEvent = new BleedPlusActivateEvent(bleedActivateEvent.getAbilityHolder(), this, damagePerCycle, bleedActivateEvent);
             Bukkit.getPluginManager().callEvent(bleedPlusActivateEvent);
 
-            if(!bleedPlusActivateEvent.isCancelled()){
+            if (!bleedPlusActivateEvent.isCancelled()) {
                 bleedActivateEvent.setDamagePerCycle(bleedPlusActivateEvent.getDamagePerCycle());
             }
         }
@@ -97,102 +102,28 @@ public class BleedPlus extends BaseAbility implements UnlockableAbility, Tierabl
     }
 
     /**
-     * Gets the tier of this {@link Ability}.
-     * <p>
-     * A tier of 0 represents an ability that is currently not unlocked but this should be checked by
-     * {@link UnlockableAbility#isUnlocked()}.
+     * Gets the {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
      *
-     * @return A positive zero inclusive number representing the current tier of this {@link TierableAbility}.
+     * @return The {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
      */
     @Override
-    public int getTier() {
-        return this.tier;
+    public @NotNull FileConfiguration getAbilityConfigurationFile() {
+        return McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
     }
 
     /**
-     * Sets the tier of this {@link TierableAbility}.
-     * <p>
-     * This should only accept positive zero inclusive numbers and should sanitize for them.
+     * Gets the exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
      *
-     * @param tier A positive zero inclusive number representing the new tier of this {@link TierableAbility}
+     * @return The exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
      */
     @Override
-    public void setTier(int tier) {
-        this.tier = Math.max(0, tier);
-    }
+    public @NotNull ConfigurationSection getAbilityConfigurationSection() throws AbilityConfigurationNotFoundException {
 
-    /**
-     * Gets the {@link ConfigurationSection} that belongs to this ability
-     *
-     * @param tier The tier at which to get the {@link ConfigurationSection} for
-     * @return Either the {@link ConfigurationSection} mapped to the provided tier or {@code null} if invalid
-     */
-    @Override
-    public @Nullable ConfigurationSection getTierConfigSection(int tier) {
-        return null;
-    }
+        ConfigurationSection configurationSection = getAbilityConfigurationFile().getConfigurationSection("bleed-plus-config");
 
-    /**
-     * This method checks to see if the {@link ToggleableAbility} is currently toggled on
-     *
-     * @return True if the {@link ToggleableAbility} is currently toggled on
-     */
-    @Override
-    public boolean isToggled() {
-        return this.toggled;
-    }
-
-    /**
-     * This method inverts the current toggled state of the ability and returns the result.
-     * <p>
-     * This is more of a lazy way of calling {@link #setToggled(boolean)} without also needing to call
-     * {@link #isToggled()} to invert
-     *
-     * @return The stored result of the inverted version of {@link #isToggled()}
-     */
-    @Override
-    public boolean toggle() {
-        this.toggled = !this.toggled;
-        return this.toggled;
-    }
-
-    /**
-     * This method sets the toggled status of the ability
-     *
-     * @param toggled True if the ability should be toggled on
-     */
-    @Override
-    public void setToggled(boolean toggled) {
-        this.toggled = toggled;
-    }
-
-    /**
-     * Checks to see if the {@link UnlockableAbility} is currently unlocked or not.
-     *
-     * @return {@code true} if this {@link UnlockableAbility} is currently unlocked.
-     */
-    @Override
-    public boolean isUnlocked() {
-        return this.unlocked;
-    }
-
-    /**
-     * Sets if this {@link UnlockableAbility} is currently unlocked or not.
-     *
-     * @param unlocked If this {@link UnlockableAbility} is currently unlocked or not.
-     */
-    @Override
-    public void setUnlocked(boolean unlocked) {
-        this.unlocked = unlocked;
-    }
-
-    /**
-     * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
-     *
-     * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
-     */
-    @Override
-    public int getUnlockLevel() {
-        return 0;
+        if (configurationSection == null) {
+            throw new AbilityConfigurationNotFoundException("Configuration section known as: 'bleed-plus-config' is missing from the " + FileManager.Files.SWORDS_CONFIG.getFileName() + " file.", getAbilityID());
+        }
+        return configurationSection;
     }
 }

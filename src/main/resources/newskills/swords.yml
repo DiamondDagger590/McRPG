@@ -135,21 +135,21 @@ bleed-config:
     material: REDSTONE
     amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
-    PlayerLore:
+    player-lore:
       - '&cYou have a &e%Bleed_Chance%% &cchance of inflicting bleed'
       - '&cDealing damage over time'
-    MenuLore:
+    menu-lore:
       - '&cThis ability has a chance of'
       - '&ccausing damage over time to a target'
 #
 # Config for the ability Bleed+
 # This passive ability increases the damage the the default ability Bleed applies
 #
-Bleed+Config:
+bleed-plus-config:
   #How many tiers there should be. Highly recommended to keep at 5.
-  TierAmount: 5
+  tier-amount: 5
   #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
+  tier-upgrade:
     TierII: 125
     TierIII: 250
     TierIV: 375
