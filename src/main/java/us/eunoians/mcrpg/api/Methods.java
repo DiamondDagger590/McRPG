@@ -451,13 +451,7 @@ public class Methods {
         degree = Math.max(0, degree);
         chance = Math.max(0, chance);
 
-        int multiplier;
-
-        if (!POWER_OF_TEN_CACHE.containsKey(degree)) {
-            POWER_OF_TEN_CACHE.put(degree, (int) Math.pow(10, degree));
-        }
-
-        multiplier = POWER_OF_TEN_CACHE.get(degree);
+        int multiplier = getAndUpdateTensPowerCache(degree);
         int upperBound = 100 * multiplier;
         int lowerBound = (int) Math.floor(chance * multiplier);
 
@@ -467,11 +461,11 @@ public class Methods {
     /**
      * Calculates a chance based on the provided parameters as a way to easily check chance calculations. This method is the
      * same as {@link #calculateChance(double, int)}, however it automatically detects the degree needed for precise calculations rather
-     * than relying on user input. It is however a bit more expensive than the aforementioned method as it relies on a {@link String#split(String)} call
+     * than relying on user input. It is however, a bit more expensive than the aforementioned method, as it relies on a {@link String#split(String)} call
      * to detect the amount of decimal places that the chance variable contains.
      * <p>
-     * Even in a case where there is no decimal place, this is still performed making it the more expensive option out of the two but the ease
-     * of automation is a great benefit especially when considering configurable values but anything with set degrees should use the previously
+     * Even in a case where there is no decimal place, this is still performed, making it the more expensive option out of the two. However, the ease
+     * of automation is a great benefit especially when considering configurable values, but anything with set degrees should use the previously
      * mentioned method.
      * <p>
      * For example, if the 'chance' of 30.3 is passed in, the degree is automatically detected to be 1 and that value will be used.
@@ -483,7 +477,6 @@ public class Methods {
      * the equation has a 303/1000 chance to return true. Any value greater than 1 in this example will return the same effect, just with bigger numbers.
      *
      * @param chance The base chance to check
-     * @param degree The degree of 10 to use. A degree of 2 would multiply chance by 100 and then get a random number using 10000 (100% * 100) as the upper bound.
      * @return {@code true} if the randomly chosen number between 1-(100 * 10^degree) is less than or equal to chance * 10^degree.
      */
     public static boolean calculateChance(double chance) {
@@ -494,16 +487,24 @@ public class Methods {
 
         chance = Math.max(0, chance);
 
-        int multiplier;
+        int multiplier = getAndUpdateTensPowerCache(degree);
+        int upperBound = 100 * multiplier;
+        int lowerBound = (int) Math.floor(chance * multiplier);
+
+        return ThreadLocalRandom.current().nextInt(upperBound) + 1 <= lowerBound;
+    }
+
+    /**
+     * Updates the internal cache of powers of 10 and returns 10^degree
+     * @param degree The degree to get from the cache or if not present, store then get from cache
+     * @return 10^degree
+     */
+    private static int getAndUpdateTensPowerCache(int degree){
 
         if (!POWER_OF_TEN_CACHE.containsKey(degree)) {
             POWER_OF_TEN_CACHE.put(degree, (int) Math.pow(10, degree));
         }
 
-        multiplier = POWER_OF_TEN_CACHE.get(degree);
-        int upperBound = 100 * multiplier;
-        int lowerBound = (int) Math.floor(chance * multiplier);
-
-        return ThreadLocalRandom.current().nextInt(upperBound) + 1 <= lowerBound;
+        return POWER_OF_TEN_CACHE.get(degree);
     }
 }

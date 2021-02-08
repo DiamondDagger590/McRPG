@@ -117,7 +117,7 @@ bleed-config:
   bleed-chance-activation: (swords_level)*.033
   #How the amount of health that bleed cant go lower than. Ex) if set to 4, bleed wont bring the player below two hearts
   minimum-health-allowed: 1
-  #The amount of cycles that Bleed should go through without Bleed+
+  #The amount of cycles that Bleed should go through without modifiers suc as deeper wound
   cycles: 3
   #How often should bleed be applied in seconds
   frequency-ticks: 2
@@ -157,21 +157,20 @@ bleed-plus-config:
   tier-I:
     #The chance of Bleed+ occurring per tier
     activation-chance: 30.0
+    #The amount of damage that is added to each bleed cycle
     damage-boost: 1
-  TierII:
-    ActivationChance: 40.0
-    DamageBoost: 1
-  TierIII:
-    ActivationChance: 50.0
-    DamageBoost: 1
-  TierIV:
-    ActivationChance: 75.0
-    DamageBoost: 1
-  TierV:
-    ActivationChance: 100.0
-    DamageBoost: 1
-  #How much should the damage increase when Bleed+ occurs
-  BleedPlusModifier: 1
+  tier-II:
+    activation-chance: 40.0
+    damage-boost: 1
+  tier-III:
+    activation-chance: 50.0
+    damage-boost: 1
+  tier-IV:
+    activation-chance: 75.0
+    damage-boost: 1
+  tier-V:
+    activation-chance: 100.0
+    damage-boost: 1
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Bleed+'
@@ -188,33 +187,33 @@ bleed-plus-config:
 # Config for the ability Deeper Wound
 # This ability extends the duration of the Bleed effect
 #
-DeeperWoundConfig:
+deeper-wound-config:
   #How many tiers there should be. Highly recommended to keep at 5.
-  TierAmount: 5
+  tier-amount: 5
   #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
-    TierII: 275
-    TierIII: 425
-    TierIV: 575
-    TierV: 700
+  tier-upgrade:
+    tier-II: 275
+    tier-III: 425
+    tier-IV: 575
+    tier-V: 700
   #Config for each Tier
-  TierI:
+  tier-I:
     #The chance of DeeperWound occurring per tier
-    ActivationChance: 33.3
-    #How much the duration of Bleed is boosted in seconds per tier
-    DurationBoost: 2
-  TierII:
-    ActivationChance: 40.0
-    DurationBoost: 2
-  TierIII:
-    ActivationChance: 45.0
-    DurationBoost: 3
-  TierIV:
-    ActivationChance: 50.0
-    DurationBoost: 5
-  TierV:
-    ActivationChance: 60.0
-    DurationBoost: 7
+    activation-chance: 20.0
+    #How many more cycles should Bleed run for if Deeper Wound activates
+    extra-cycles: 1
+  tier-II:
+    activation-chance: 30.0
+    extra-cycles: 1
+  tier-III:
+    activation-chance: 40.0
+    extra-cycles: 2
+  tier-IV:
+    activation-chance: 55
+    extra-cycles: 3
+  tier-V:
+    activation-chance: 75.0
+    extra-cycles: 4
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Deeper Wound'
