@@ -150,14 +150,14 @@ bleed-plus-config:
   tier-amount: 5
   #At what level should each tier become available. Tier I is the unlock level
   tier-upgrade:
-    TierII: 125
-    TierIII: 250
-    TierIV: 375
-    TierV: 500
-  TierI:
+    tier-II: 125
+    tier-III: 250
+    tier-IV: 375
+    tier-V: 500
+  tier-I:
     #The chance of Bleed+ occurring per tier
-    ActivationChance: 30.0
-    DamageBoost: 1
+    activation-chance: 30.0
+    damage-boost: 1
   TierII:
     ActivationChance: 40.0
     DamageBoost: 1

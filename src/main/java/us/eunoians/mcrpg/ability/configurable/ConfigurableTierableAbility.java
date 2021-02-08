@@ -46,7 +46,7 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
         ConfigurationSection configurationSection = getAbilityConfigurationSection().getConfigurationSection(tierName);
 
         if (configurationSection == null) {
-            throw new TierableAbilityConfigurationNotFoundException("Configuration section known as: 'unlock-level-for-ability' is missing from the " + this.getAbilityConfigurationFile().getName() + " file.", getAbilityID());
+            throw new TierableAbilityConfigurationNotFoundException("Configuration section known as: '" + tierName +  "' is missing from the " + this.getAbilityConfigurationFile().getName() + " file.", getAbilityID());
         }
         return configurationSection;
     }

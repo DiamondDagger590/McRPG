@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.ability.configurable.ConfigurableBaseAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.Methods;
 import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedPlusActivateEvent;
@@ -78,13 +79,17 @@ public class BleedPlus extends ConfigurableBaseAbility {
                 return;
             }
 
-            int damagePerCycle = configurationSection.getInt("damage-per-cycle", 3);
+            double activationChance = configurationSection.getDouble("activation-chance");
 
-            BleedPlusActivateEvent bleedPlusActivateEvent = new BleedPlusActivateEvent(bleedActivateEvent.getAbilityHolder(), this, damagePerCycle, bleedActivateEvent);
-            Bukkit.getPluginManager().callEvent(bleedPlusActivateEvent);
+            if (Methods.calculateChance(activationChance)) {
+                int damagePerCycle = configurationSection.getInt("damage-boost", 3);
 
-            if (!bleedPlusActivateEvent.isCancelled()) {
-                bleedActivateEvent.setDamagePerCycle(bleedPlusActivateEvent.getDamagePerCycle());
+                BleedPlusActivateEvent bleedPlusActivateEvent = new BleedPlusActivateEvent(bleedActivateEvent.getAbilityHolder(), this, bleedActivateEvent.getDamagePerCycle() + damagePerCycle, bleedActivateEvent);
+                Bukkit.getPluginManager().callEvent(bleedPlusActivateEvent);
+
+                if (!bleedPlusActivateEvent.isCancelled()) {
+                    bleedActivateEvent.setDamagePerCycle(bleedPlusActivateEvent.getDamagePerCycle());
+                }
             }
         }
     }
