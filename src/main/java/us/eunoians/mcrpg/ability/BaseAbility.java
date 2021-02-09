@@ -1,7 +1,17 @@
 package us.eunoians.mcrpg.ability;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.player.McRPGPlayer;
+import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
+import us.eunoians.mcrpg.api.AbilityHolder;
+
+import java.util.List;
 
 /**
  * This class offers some basic construction for an {@link Ability} and should
@@ -12,9 +22,9 @@ import us.eunoians.mcrpg.player.McRPGPlayer;
 public abstract class BaseAbility implements Ability {
 
     /**
-     * The {@link McRPGPlayer} who this {@link Ability} belongs to
+     * The {@link AbilityCreationData} that is used to create this {@link Ability}
      */
-    private final McRPGPlayer mcRPGPlayer;
+    private final @NotNull AbilityCreationData abilityCreationData;
 
     /**
      * A boolean representing if this {@link Ability} needs saving
@@ -22,19 +32,76 @@ public abstract class BaseAbility implements Ability {
     protected boolean dirty;
 
     /**
-     * @param mcRPGPlayer The {@link McRPGPlayer} that owns this {@link Ability}
+     * A {@link List} that contains all registered listeners for this {@link BaseAbility}.
      */
-    public BaseAbility(McRPGPlayer mcRPGPlayer) {
-        this.mcRPGPlayer = mcRPGPlayer;
+    private List<Listener> registeredListeners;
+
+    /**
+     * The {@link ItemStack} to be displayed to players in GUI's and such
+     *
+     * //TODO load from config
+     */
+    @NotNull
+    protected ItemStack displayItem = new ItemStack(Material.AIR);
+
+    /**
+     * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
+     * to sanitize the input.
+     *
+     * @param abilityCreationData The {@link AbilityCreationData} that is used to create this {@link Ability}
+     */
+    public BaseAbility(@NotNull AbilityCreationData abilityCreationData) {
+        this.abilityCreationData = abilityCreationData;
     }
 
     /**
-     * Gets the {@link McRPGPlayer} that this {@link Ability} belongs to.
+     * Abstract method that can be used to create listeners for this specific ability.
+     * Note: This should only return a {@link List} of {@link Listener} objects. These shouldn't be registered yet!
+     * This will be done automatically.
      *
-     * @return The {@link McRPGPlayer} that this {@link Ability} belongs to
+     * @return a list of listeners for this {@link Ability}
      */
-    public @NotNull McRPGPlayer getPlayer() {
-        return this.mcRPGPlayer;
+    protected abstract List<Listener> createListeners();
+
+    /**
+     * Register the {@link Listener} objects for this {@link BaseAbility}.
+     *
+     * @param plugin the plugin that's creating the ability instance.
+     */
+    public void registerListeners (@NotNull Plugin plugin) {
+        this.registeredListeners = createListeners();
+        for (Listener listener : registeredListeners) {
+            Bukkit.getPluginManager().registerEvents(listener, plugin);
+        }
+    }
+
+    /**
+     * Unregister all {@link Listener} objects for this {@link BaseAbility}.
+     */
+    public void unregisterListeners () {
+        for (Listener listener : registeredListeners) {
+            HandlerList.unregisterAll(listener);
+        }
+    }
+
+    /**
+     * Gets the {@link AbilityCreationData} that creates this {@link Ability}.
+     *
+     * @return The {@link AbilityCreationData} that creates this {@link Ability}
+     */
+    public @NotNull AbilityCreationData getAbilityCreationData() {
+        return this.abilityCreationData;
+    }
+
+    /**
+     * Gets the {@link AbilityHolder} that owns this {@link Ability}
+     *
+     * @return THe {@link AbilityHolder} that owns this {@link Ability}
+     */
+    @Override
+    @NotNull
+    public AbilityHolder getAbilityHolder(){
+        return getAbilityCreationData().getAbilityHolder();
     }
 
     /**
@@ -56,5 +123,25 @@ public abstract class BaseAbility implements Ability {
     @Override
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
+    }
+
+    /**
+     * Gets the {@link NamespacedKey} that this {@link Ability} belongs to
+     *
+     * @return The {@link NamespacedKey} that this {@link Ability} belongs to
+     */
+    @Override
+    public @NotNull NamespacedKey getAbilityID() {
+        return Ability.getId(this.getClass());
+    }
+
+    /**
+     * Gets the {@link ItemStack} to represent this ability in GUI's
+     *
+     * @return The {@link ItemStack} to represent this ability in GUI's
+     */
+    @Override
+    public @NotNull ItemStack getDisplayItem() {
+        return this.displayItem;
     }
 }

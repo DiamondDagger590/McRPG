@@ -1,0 +1,433 @@
+#Is swords enabled
+swords-enabled: true
+#Should this skill be locked behind a permission?
+require-permission: false
+#Exp equation for swords. Allowed placeholders are:
+#
+# %power_level% - The power level of the player
+# %skill_level% - The skill level of the player
+# %party_level% - The level of the player's party. If not in a party, defaults to 0
+#
+exp-equation: '2000+(20*(skill_level))'
+max-level: 1000
+#If different materials of swords should give more exp. WOOD_SWORD: 1.0 means 100% of default exp
+material-bonus:
+  WOODEN_SWORD: 1.0
+  STONE_SWORD: 1.1
+  GOLDEN_SWORD: 1.5
+  IRON_SWORD: 1.25
+  DIAMOND_SWORD: 1.3
+  NETHERITE_SWORD: 1.4
+#How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
+#Ex) Spider gives 50 exp. Deal 3 damage, get 150 exp with a wood sword
+exp-awarded-per-mob:
+  OTHER: 5
+  BAT: 5
+  BLAZE: 30
+  CAVE_SPIDER: 20
+  SPIDER: 20
+  CHICKEN: 10
+  COW: 10
+  MUSROOM_COW: 15
+  PIG: 10
+  SHEEP: 10
+  RABBIT: 10
+  COD: 10
+  TROPICAL_FISH: 10
+  SALMON: 10
+  PUFFERFISH: 10
+  DOLPHIN: 30
+  SQUID: 10
+  TURTLE: 15
+  DONKEY: 17
+  MULE: 17
+  HORSE: 17
+  LLAMA: 17
+  CREEPER: 30
+  GUARDIAN: 10
+  ELDER_GUARDIAN: 60
+  ENDER_DRAGON: 75
+  ENDERMAN: 30
+  SHULKER: 55
+  EVOKER: 45
+  VEX: 5
+  ILLUSIONER: 25
+  IRON_GOLEM: 15
+  SLIME: 20
+  MAGMA_CUBE: 25
+  OCELOT: 10
+  PARROT: 10
+  WOLF: 10
+  PHANTOM: 25
+  PLAYER: 15
+  POLAR_BEAR: 10
+  SILVERFISH: 7
+  ENDERMITE: 7
+  SKELETON: 25
+  STRAY: 30
+  WITHER_SKELETON: 35
+  SKELETON_HORSE: 20
+  SNOWMAN: 10
+  VILLAGER: 10
+  WITCH: 30
+  ZOMBIE: 25
+  ZOMBIE_VILLAGER: 30
+  DROWNED: 30
+  PIG_ZOMBIE: 35
+  HUSK: 30
+  ZOMBIE_HORSE: 20
+  HOGLIN: 30
+  PIGLIN: 30
+  STRIDER: 15
+  ZOGLIN: 30
+  ZOMBIFIED_PIGLIN: 30
+  PIGLIN_BRUTE: 50
+#What abilities are enabled
+enabled-abilities:
+  bleed: true
+  bleed_plus: true
+  deeper_wound: true
+  vampire: true
+  rage_spike: true
+  serrated_strike: true
+  tainted_blade: true
+#If perms should be used for players to unlock abilities.
+#Perms will be mcrpg.swords.unlock{ability} and mcrpg.swords.use.{ability}
+use-perms-for-abilities:
+  bleed: false
+  bleed_plus: false
+  deeper_wound: false
+  vampire: false
+  rage_spike: false
+  serrated_strikes: false
+  tainted_blade: false
+#At what swords level should these abilities be unlocked at
+unlock-level-for-ability:
+  bleed_plus: 50
+  deeper_wound: 150
+  vampire: 250
+  rage_spike: 100
+  serrated_strikes: 200
+  tainted_blade: 300
+#
+# Bleed is the default ability that every player has. This ability will increase every time the players Swords level is increased
+#
+bleed-config:
+  #Equation for bleed chance. Default gives 33% at level 1000.
+  bleed-chance-activation: (swords_level)*.033
+  #How the amount of health that bleed cant go lower than. Ex) if set to 4, bleed wont bring the player below two hearts
+  minimum-health-allowed: 1
+  #The amount of cycles that Bleed should go through without modifiers suc as deeper wound
+  cycles: 3
+  #How often should bleed be applied in seconds
+  frequency-ticks: 2
+  #How much damage it should deal without BleedPlus
+  base-damage: 1
+  #Grant immunity from bleed for a short bit after it has been applied
+  bleed-immunity-enabled: true
+  #Duration of the immunity in ticks
+  bleed-immunity-ticks: 100
+  #The max amount of entities that can be affected by Bleed from a single entity at once
+  max-entities-affected: 2
+  #How this ability should be seen in the GUIS
+  display-item:
+    display-name: '&4Bleed'
+    material: REDSTONE
+    amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    player-lore:
+      - '&cYou have a &e%Bleed_Chance%% &cchance of inflicting bleed'
+      - '&cDealing damage over time'
+    menu-lore:
+      - '&cThis ability has a chance of'
+      - '&ccausing damage over time to a target'
+#
+# Config for the ability Bleed+
+# This passive ability increases the damage the the default ability Bleed applies
+#
+bleed-plus-config:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  tier-amount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  tier-upgrade:
+    tier-II: 125
+    tier-III: 250
+    tier-IV: 375
+    tier-V: 500
+  tier-I:
+    #The chance of Bleed+ occurring per tier
+    activation-chance: 30.0
+    #The amount of damage that is added to each bleed cycle
+    damage-boost: 1
+  tier-II:
+    activation-chance: 40.0
+    damage-boost: 1
+  tier-III:
+    activation-chance: 50.0
+    damage-boost: 1
+  tier-IV:
+    activation-chance: 75.0
+    damage-boost: 1
+  tier-V:
+    activation-chance: 100.0
+    damage-boost: 1
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Bleed+'
+    Material: REDSTONE_BLOCK
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%ActivationChance%% &cchance of Bleed+ activating'
+      - '&cDamage Boost: &e%DamageBoost%'
+    MenuLore:
+      - '&cThis ability increases the damage dealt by Bleed'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Deeper Wound
+# This ability extends the duration of the Bleed effect
+#
+deeper-wound-config:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  tier-amount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  tier-upgrade:
+    tier-II: 275
+    tier-III: 425
+    tier-IV: 575
+    tier-V: 700
+  #Config for each Tier
+  tier-I:
+    #The chance of DeeperWound occurring per tier
+    activation-chance: 20.0
+    #How many more cycles should Bleed run for if Deeper Wound activates
+    extra-cycles: 1
+  tier-II:
+    activation-chance: 30.0
+    extra-cycles: 1
+  tier-III:
+    activation-chance: 40.0
+    extra-cycles: 2
+  tier-IV:
+    activation-chance: 55
+    extra-cycles: 3
+  tier-V:
+    activation-chance: 75.0
+    extra-cycles: 4
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Deeper Wound'
+    Material: ROSE_RED
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%ActivationChance%% &cchance'
+      - '&cof Deeper Wound activating for plus'
+      - '&e%DurationBoost% &cseconds'
+    MenuLore:
+      - '&cThis ability extends the duration of Bleed'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Vampire
+# This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
+#
+vampire-config:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  tier-amount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  tier-upgrade:
+    tier-II: 400
+    tier-III: 550
+    tier-IV: 700
+    tier-V: 850
+  #Config for each tier
+  tier-I:
+    #Odds of activation per tier
+    activation-chance: 50.0
+    amount-to-heal: 1
+  tier-II:
+    activation-chance: 60.0
+    amount-to-heal: 1
+  tier-III:
+    activation-chance: 70.0
+    amount-to-heal: 1
+  tier-IV:
+    activation-chance: 80.0
+    amount-to-heal: 1
+  tier-V:
+    activation-chance: 100.0
+    amount-to-heal: 1
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Vampire'
+    Material: GHAST_TEAR
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cYou have a &e%ActivationChance%% &cchance'
+      - '&cof Vampire activating'
+      - '&cAmount Healed: &e%AmountToHeal%'
+    MenuLore:
+      - '&cThis ability has a chance of healing you'
+      - '&con target Bleed'
+      - '&aUnlock Level: &e%UnlockLevel%'
+#
+# Config for the ability Serrated Strikes
+# This active ability increases the chance of applying bleed for a short time
+#
+serrated-strikes-config:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  tier-amount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  tier-upgrade:
+    tier-II: 350
+    tier-III: 500
+    tier-IV: 650
+    tier-V: 800
+  #Config for each tier
+  tier-I:
+    #How much should the activation rate be boosted at each tier
+    activation-boost: 5.0
+    #Duration of the ability at each tier in seconds
+    duration: 3
+    cooldown: 120
+  tier-II:
+    activation-boost: 7.5
+    duration: 3
+    cooldown: 120
+  tier-III:
+    activation-boost: 10.0
+    duration: 5
+    cooldown: 120
+  tier-IV:
+    activation-boost: 15.0
+    Duration: 5
+    cooldown: 120
+  tier-V:
+    activation-boost: 20.0
+    duration: 8
+    cooldown: 120
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Serrated Strikes'
+    Material: GOLDEN_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cThis ability increases the'
+      - '&c activation rate of Bleed'
+      - '&cGain &e%ActivationBoost%% &cfor &e%Duration% &cseconds'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
+    MenuLore:
+      - '&cIncrease activation rate of Bleed'
+      - '&cfor a short while'
+      - '&aUnlock Level: &e%UnlockLevel%'
+rage-spike-config:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  tier-amount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  tier-upgrade:
+    tier-II: 225
+    tier-III: 350
+    tier-IV: 500
+    tier-V: 650
+  #Config for each tier
+  tier-I:
+    #How long the ability takes to charge
+    charge-time: 2.5
+    #Damage dealt via collision
+    damage: 1
+    #Cooldown in seconds
+    cooldown: 140
+  tier-II:
+    charge-time: 2.3
+    damage: 1
+    cooldown: 140
+  tier-III:
+    charge-time: 2.0
+    damage: 2
+    cooldown: 140
+  tier-IV:
+    charge-time: 1.5
+    damage: 3
+    cooldown: 140
+  tier-V:
+    charge-time: 1.0
+    damage: 3
+    cooldown: 140
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Rage Spike'
+    Material: IRON_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cCharge by crouching for &e%ChargeTime%'
+      - '&cto dash forward'
+      - '&cDealing &e%Damage% &cdamage.'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and crouching'
+      - '&eHold crouch for the charge time'
+    MenuLore:
+      - '&cThis ability dashes you forward'
+      - '&cdealing damage and knockback'
+      - '&cafter having charged for a few seconds'
+      - '&aUnlock Level: &e%UnlockLevel%'
+tainted-blade-config:
+  #How many tiers there should be. Highly recommended to keep at 5.
+  tier-amount: 5
+  #At what level should each tier become available. Tier I is the unlock level
+  tier-upgrade:
+    tier-II: 475
+    tier-III: 650
+    tier-IV: 825
+    tier-V: 1000
+  #Config for each tier
+  tier-I:
+    strength-duration: 10
+    resistance-duration: 10
+    speed-duration: 10
+    hunger-duration: 10
+    #Cooldown in seconds
+    cooldown: 160
+  tier-II:
+    strength-duration: 12
+    resistance-duration: 12
+    speed-duration: 12
+    hunger-duration: 15
+    cooldown: 160
+  tier-III:
+    strength-duration: 15
+    resistance-duration: 15
+    speed-duration: 15
+    hunger-duration: 25
+    cooldown: 160
+  tier-IV:
+    strength-duration: 23
+    resistance-duration: 23
+    speed-duration: 23
+    hunger-duration: 30
+    cooldown: 160
+  tier-V:
+    strength-duration: 35
+    resistance-duration: 35
+    speed-duration: 35
+    hunger-duration: 45
+    cooldown: 160
+  #How this ability should be seen in the GUIS
+  Item:
+    DisplayName: '&4Tainted Blade'
+    Material: STONE_SWORD
+    Amount: 1
+    #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
+    PlayerLore:
+      - '&cTake &e%HungerDuration% &cseconds of hunger for'
+      - '&e%StrengthDuration% &cseconds of strength'
+      - '&e%ResistanceDuration% &Cseconds of resistance'
+      - '&cCooldown: &e%Cooldown%'
+      - '&eActivate by readying and attacking an enemy'
+    MenuLore:
+      - '&cGain hunger in exchange'
+      - '&cfor Strength and Resistance'
+      - '&aUnlock Level: &e%UnlockLevel%'

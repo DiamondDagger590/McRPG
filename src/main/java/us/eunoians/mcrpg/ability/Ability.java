@@ -1,10 +1,12 @@
 package us.eunoians.mcrpg.ability;
 
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.skill.SkillType;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.annotation.AbilityIdentifier;
+import us.eunoians.mcrpg.api.AbilityHolder;
+import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 
 /**
  * The generic base interface for all abilities to inherit from.
@@ -29,52 +31,60 @@ public interface Ability {
     public void setDirty(boolean dirty);
 
     /**
-     * Gets the {@link AbilityType} enum that represents this ability
+     * Gets the {@link NamespacedKey} that represents this ability that gets pulled from
+     * {@link AbilityIdentifier} annotation.
      *
-     * @return The {@link AbilityType} enum that represents this ability
+     * @return The {@link NamespacedKey} that represents this ability
      */
     @NotNull
-    public AbilityType getAbilityType();
+    public NamespacedKey getAbilityID();
 
     /**
-     * Gets the {@link SkillType} that this {@link Ability} belongs to
+     * Gets the {@link NamespacedKey} that this {@link Ability} belongs to
      *
-     * @return The {@link SkillType} that this {@link Ability} belongs to
+     * @return The {@link NamespacedKey} that this {@link Ability} belongs to
      */
     @NotNull
-    public SkillType getSkill();
+    public NamespacedKey getSkill();
 
     /**
-     * Attempts to handle the {@link Event} and activate the ability based on the event
+     * Gets the {@link AbilityHolder} that owns this {@link Ability}
      *
-     * @param event The {@link Event} to handle
+     * @return THe {@link AbilityHolder} that owns this {@link Ability}
      */
-    public void handleEvent(Event event);
+    @NotNull
+    public AbilityHolder getAbilityHolder();
 
     /**
-     * Checks to see if the provided {@link Event} is valid for handling
+     * Gets the {@link ItemStack} to represent this ability in GUI's
      *
-     * @param event The {@link Event} to validate
-     * @return True if the event can be passed for testing
+     * @return The {@link ItemStack} to represent this ability in GUI's
+     * @throws AbilityConfigurationNotFoundException if this is an instance of {@link us.eunoians.mcrpg.ability.configurable.ConfigurableAbilityDisplayItem} and
+     *                                             the configuration section is null.
      */
-    public boolean isValidEvent(Event event);
+    @NotNull
+    public ItemStack getDisplayItem() throws AbilityConfigurationNotFoundException;
 
     /**
-     * Handles activation of the ability outside of the {@link #handleEvent(Event)}
-     * as to allow for future proofing additions with a custom mob AI
-     *
-     * @param activator The {@link LivingEntity} that is activating this {@link Ability}
+     * @param activator    The {@link AbilityHolder} that is activating this {@link Ability}
      * @param optionalData Any objects that should be passed in. It is up to the implementation of the
      *                     ability to sanitize this input but this is here as there is no way to allow a
      *                     generic activation method without providing access for all types of ability
      *                     activation.
      */
-    public void activate(LivingEntity activator, Object... optionalData);
+    public void activate(AbilityHolder activator, Object... optionalData);
 
     /**
-     * Get the {@link EventPriority} that this {@link Ability} should be ran on
-     * @return The {@link EventPriority} that this {@link Ability} should be ran on
+     * Get the {@link NamespacedKey} for a specified {@link Ability}.
+     *
+     * @param clazz the class of the ability implementation
+     * @return the {@link NamespacedKey} for the ability.
      */
-    @NotNull
-    public EventPriority getListenPriority();
+    static NamespacedKey getId(Class<? extends BaseAbility> clazz) {
+        if (clazz.getAnnotation(AbilityIdentifier.class) == null) {
+            throw new IllegalArgumentException(clazz.getName() + " does not have the ability identifier annotation!");
+        }
+
+        return new NamespacedKey(McRPG.getInstance(), clazz.getAnnotation(AbilityIdentifier.class).id());
+    }
 }

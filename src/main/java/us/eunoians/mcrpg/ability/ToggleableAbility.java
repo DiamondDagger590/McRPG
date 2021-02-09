@@ -10,7 +10,7 @@ public interface ToggleableAbility extends Ability {
     /**
      * This method checks to see if the {@link ToggleableAbility} is currently toggled on
      *
-     * @return True if the {@link ToggleableAbility} is currently toggled on
+     * @return {@code true} if the {@link ToggleableAbility} is currently toggled on
      */
     public boolean isToggled();
 
@@ -27,7 +27,7 @@ public interface ToggleableAbility extends Ability {
     /**
      * This method sets the toggled status of the ability
      *
-     * @param toggled True if the ability should be toggled on
+     * @param toggled {@code true} if the ability should be toggled on
      */
     public void setToggled(boolean toggled);
 }

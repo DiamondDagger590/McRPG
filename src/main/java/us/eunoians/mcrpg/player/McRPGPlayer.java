@@ -1,8 +1,11 @@
 package us.eunoians.mcrpg.player;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.skill.AbstractSkill;
 import us.eunoians.mcrpg.skill.SkillProgression;
 
@@ -16,7 +19,7 @@ import java.util.UUID;
  *
  * @author Kitsune/DiamondDagger590
  */
-public class McRPGPlayer {
+public class McRPGPlayer extends AbilityHolder {
 
     /**
      * The {@link Map} containing the {@link Player}'s skill progression for each skill
@@ -24,31 +27,15 @@ public class McRPGPlayer {
     private Map<NamespacedKey, SkillProgression> skillProgression;
 
     /**
-     * The {@link UUID} of the {@link Player}
-     */
-    @NotNull
-    private final UUID uniqueId;
-
-    /**
      * Construct a new {@link McRPGPlayer}.
      *
      * @param uniqueId the unique id of the player this object is representing
      */
     public McRPGPlayer(@NotNull UUID uniqueId) {
-        this.uniqueId = uniqueId;
+        super(uniqueId, true);
         this.skillProgression = new HashMap<>();
 
         //TODO populate skills
-    }
-
-    /**
-     * Get the {@link UUID} of the {@link Player}.
-     *
-     * @return the {@link UUID} of the {@link Player}
-     */
-    @NotNull
-    public UUID getUniqueId() {
-        return uniqueId;
     }
 
     /**
@@ -73,5 +60,15 @@ public class McRPGPlayer {
      */
     public Optional<SkillProgression> getSkillProgression(@NotNull AbstractSkill skill) {
         return getSkillProgression(skill.getId());
+    }
+
+    /**
+     * Gets the {@link LivingEntity} that this object maps to
+     *
+     * @return The {@link LivingEntity} that this object maps to or {@code null} if invalid/dead/offline
+     */
+    @Override
+    public @Nullable Player getEntity() {
+        return (Player) super.getEntity();
     }
 }
