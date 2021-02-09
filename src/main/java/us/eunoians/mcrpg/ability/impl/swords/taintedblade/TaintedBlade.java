@@ -12,19 +12,20 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.*;
-import us.eunoians.mcrpg.ability.configurable.ConfigurableAbilityDisplayItem;
-import us.eunoians.mcrpg.ability.configurable.ConfigurableEnableableAbility;
-import us.eunoians.mcrpg.ability.configurable.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.ability.configurable.ConfigurableUnlockableAbility;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.ConfigurableAbility;
+import us.eunoians.mcrpg.ability.PotionEffectableAbility;
+import us.eunoians.mcrpg.ability.ReadyableAbility;
+import us.eunoians.mcrpg.ability.configurable.ConfigurableBaseActiveAbility;
 import us.eunoians.mcrpg.ability.creation.AbilityCreationData;
 import us.eunoians.mcrpg.annotation.AbilityIdentifier;
 import us.eunoians.mcrpg.api.AbilityHolder;
 import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.event.ability.swords.TaintedBladeActivateEvent;
+import us.eunoians.mcrpg.util.configuration.FileManager;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,9 +38,7 @@ import java.util.Set;
  * @author DiamondDagger590
  */
 @AbilityIdentifier(id = "tainted_blade", abilityCreationData = TaintedBladeCreationData.class)
-public class TaintedBlade extends BaseAbility implements ConfigurableUnlockableAbility, ToggleableAbility,
-        ConfigurableTierableAbility, ReadyableAbility, ActiveAbility, PotionEffectableAbility, CooldownableAbility,
-        ConfigurableAbilityDisplayItem, ConfigurableEnableableAbility {
+public class TaintedBlade extends ConfigurableBaseActiveAbility implements PotionEffectableAbility {
 
     private final static Set<Material> ACTIVATION_MATERIALS = new HashSet<>();
 
@@ -50,11 +49,6 @@ public class TaintedBlade extends BaseAbility implements ConfigurableUnlockableA
             }
         }
     }
-
-    private int tier = 0;
-    private boolean toggled = false;
-    private boolean unlocked = false;
-    private boolean ready = false;
 
     /**
      * This assumes that the required extension of {@link AbilityCreationData}. Implementations of this will need
@@ -129,28 +123,24 @@ public class TaintedBlade extends BaseAbility implements ConfigurableUnlockableA
      */
     @Override
     public Set<PotionEffect> getPotionEffects() {
-        //TODO
-        return null;
-    }
 
-    /**
-     * Checks to see if this ability is currently in a ready status
-     *
-     * @return {@code true} if this ability is currently in a ready status
-     */
-    @Override
-    public boolean isReady() {
-        return this.ready;
-    }
+        ConfigurationSection configurationSection;
 
-    /**
-     * Sets if this ability is currently in a ready status or not
-     *
-     * @param ready If this ability should be in a ready state or note
-     */
-    @Override
-    public void setReady(boolean ready) {
-        this.ready = ready;
+        try {
+            configurationSection = getSpecificTierSection(getTier());
+        } catch (AbilityConfigurationNotFoundException e) {
+            e.printStackTrace();
+            return new HashSet<>();
+        }
+
+        Set<PotionEffect> effects = new HashSet<>();
+
+        effects.add(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, configurationSection.getInt("strength-duration", 3), 1));
+        effects.add(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, configurationSection.getInt("resistance-duration", 3), 1));
+        effects.add(new PotionEffect(PotionEffectType.SPEED, configurationSection.getInt("speed-duration", 3), 2));
+        effects.add(new PotionEffect(PotionEffectType.HUNGER, configurationSection.getInt("hunger-duration", 3), 1));
+
+        return effects;
     }
 
     /**
@@ -206,143 +196,28 @@ public class TaintedBlade extends BaseAbility implements ConfigurableUnlockableA
     }
 
     /**
-     * Gets the amount of seconds that the "ready" status should last for this ability
-     *
-     * @return The amount of seconds that the "ready" status should last for this ability
-     */
-    @Override
-    public int getReadyDurationSeconds() {
-        return 5;
-    }
-
-    /**
-     * Gets the tier of this {@link Ability}.
-     * <p>
-     * A tier of 0 represents an ability that is currently not unlocked but this should be checked by
-     * {@link UnlockableAbility#isUnlocked()}.
-     *
-     * @return A positive zero inclusive number representing the current tier of this {@link TierableAbility}.
-     */
-    @Override
-    public int getTier() {
-        return this.tier;
-    }
-
-    /**
-     * Sets the tier of this {@link TierableAbility}.
-     * <p>
-     * This should only accept positive zero inclusive numbers and should sanitize for them.
-     *
-     * @param tier A positive zero inclusive number representing the new tier of this {@link TierableAbility}
-     */
-    @Override
-    public void setTier(int tier) {
-        this.tier = Math.max(0, tier);
-    }
-
-    /**
-     * Gets the {@link ConfigurationSection} that belongs to this ability
-     *
-     * @param tier The tier at which to get the {@link ConfigurationSection} for
-     * @return Either the {@link ConfigurationSection} mapped to the provided tier or {@code null} if invalid
-     */
-    @Override
-    public @Nullable ConfigurationSection getTierConfigSection(int tier) {
-        return null;
-    }
-
-    /**
-     * This method checks to see if the {@link ToggleableAbility} is currently toggled on
-     *
-     * @return True if the {@link ToggleableAbility} is currently toggled on
-     */
-    @Override
-    public boolean isToggled() {
-        return this.toggled;
-    }
-
-    /**
-     * This method inverts the current toggled state of the ability and returns the result.
-     * <p>
-     * This is more of a lazy way of calling {@link #setToggled(boolean)} without also needing to call
-     * {@link #isToggled()} to invert
-     *
-     * @return The stored result of the inverted version of {@link #isToggled()}
-     */
-    @Override
-    public boolean toggle() {
-        this.toggled = !this.toggled;
-        return this.toggled;
-    }
-
-    /**
-     * This method sets the toggled status of the ability
-     *
-     * @param toggled True if the ability should be toggled on
-     */
-    @Override
-    public void setToggled(boolean toggled) {
-        this.toggled = toggled;
-    }
-
-    /**
-     * Checks to see if the {@link UnlockableAbility} is currently unlocked or not.
-     *
-     * @return {@code true} if this {@link UnlockableAbility} is currently unlocked.
-     */
-    @Override
-    public boolean isUnlocked() {
-        return this.unlocked;
-    }
-
-    /**
-     * Sets if this {@link UnlockableAbility} is currently unlocked or not.
-     *
-     * @param unlocked If this {@link UnlockableAbility} is currently unlocked or not.
-     */
-    @Override
-    public void setUnlocked(boolean unlocked) {
-        this.unlocked = unlocked;
-    }
-
-    /**
-     * Gets the level at which this {@link UnlockableAbility} is automatically unlocked
-     *
-     * @return A positive zero-exclusive that is the level at which this {@link UnlockableAbility} is unlocked
-     */
-    @Override
-    public int getUnlockLevel() {
-        return 0;
-    }
-
-    /**
-     * Gets the amount of time in seconds that this {@link CooldownableAbility} should be on cooldown for after activation
-     *
-     * @return The postivie zero exclusive amount of time in seconds this {@link CooldownableAbility} should be on cooldown for after activation.
-     */
-    @Override
-    public int getCooldownDuration() {
-        return 180; //TODO pull from config
-    }
-
-    /**
      * Gets the {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
      *
      * @return The {@link FileConfiguration} that is used to configure this {@link ConfigurableAbility}
      */
     @Override
     public @NotNull FileConfiguration getAbilityConfigurationFile() {
-        return null;
+        return McRPG.getInstance().getFileManager().getFile(FileManager.Files.SWORDS_CONFIG);
     }
 
     /**
      * Gets the exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
      *
      * @return The exact {@link ConfigurationSection} that is used to configure this {@link ConfigurableAbility}.
-     * @throws AbilityConfigurationNotFoundException Whenever the {@link ConfigurationSection} pulled is null
      */
     @Override
     public @NotNull ConfigurationSection getAbilityConfigurationSection() throws AbilityConfigurationNotFoundException {
-        return null;
+
+        ConfigurationSection configurationSection = getAbilityConfigurationFile().getConfigurationSection("tainted-blade-config");
+
+        if (configurationSection == null) {
+            throw new AbilityConfigurationNotFoundException("Configuration section known as: 'tainted-blade-config' is missing from the " + FileManager.Files.SWORDS_CONFIG.getFileName() + " file.", getAbilityID());
+        }
+        return configurationSection;
     }
 }

@@ -231,32 +231,32 @@ deeper-wound-config:
 # Config for the ability Vampire
 # This passive ability has a chance of healing the player by half a heart when an enemy is affected by bleed. (Non stackable)
 #
-VampireConfig:
+vampire-config:
   #How many tiers there should be. Highly recommended to keep at 5.
-  TierAmount: 5
+  tier-amount: 5
   #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
-    TierII: 400
-    TierIII: 550
-    TierIV: 700
-    TierV: 850
+  tier-upgrade:
+    tier-II: 400
+    tier-III: 550
+    tier-IV: 700
+    tier-V: 850
   #Config for each tier
-  TierI:
+  tier-I:
     #Odds of activation per tier
-    ActivationChance: 50.0
-    AmountToHeal: 1
-  TierII:
-    ActivationChance: 60.0
-    AmountToHeal: 1
-  TierIII:
-    ActivationChance: 70.0
-    AmountToHeal: 1
-  TierIV:
-    ActivationChance: 80.0
-    AmountToHeal: 1
-  TierV:
-    ActivationChance: 100.0
-    AmountToHeal: 1
+    activation-chance: 50.0
+    amount-to-heal: 1
+  tier-II:
+    activation-chance: 60.0
+    amount-to-heal: 1
+  tier-III:
+    activation-chance: 70.0
+    amount-to-heal: 1
+  tier-IV:
+    activation-chance: 80.0
+    amount-to-heal: 1
+  tier-V:
+    activation-chance: 100.0
+    amount-to-heal: 1
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Vampire'
@@ -275,38 +275,38 @@ VampireConfig:
 # Config for the ability Serrated Strikes
 # This active ability increases the chance of applying bleed for a short time
 #
-SerratedStrikesConfig:
+serrated-strikes-config:
   #How many tiers there should be. Highly recommended to keep at 5.
-  TierAmount: 5
+  tier-amount: 5
   #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
-    TierII: 350
-    TierIII: 500
-    TierIV: 650
-    TierV: 800
+  tier-upgrade:
+    tier-II: 350
+    tier-III: 500
+    tier-IV: 650
+    tier-V: 800
   #Config for each tier
-  TierI:
+  tier-I:
     #How much should the activation rate be boosted at each tier
-    ActivationBoost: 5.0
+    activation-boost: 5.0
     #Duration of the ability at each tier in seconds
-    Duration: 3
-    Cooldown: 120
-  TierII:
-    ActivationBoost: 7.5
-    Duration: 3
-    Cooldown: 120
-  TierIII:
-    ActivationBoost: 10.0
+    duration: 3
+    cooldown: 120
+  tier-II:
+    activation-boost: 7.5
+    duration: 3
+    cooldown: 120
+  tier-III:
+    activation-boost: 10.0
+    duration: 5
+    cooldown: 120
+  tier-IV:
+    activation-boost: 15.0
     Duration: 5
-    Cooldown: 120
-  TierIV:
-    ActivationBoost: 15.0
-    Duration: 5
-    Cooldown: 120
-  TierV:
-    ActivationBoost: 20.0
-    Duration: 8
-    Cooldown: 120
+    cooldown: 120
+  tier-V:
+    activation-boost: 20.0
+    duration: 8
+    cooldown: 120
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Serrated Strikes'
@@ -340,19 +340,19 @@ rage-spike-config:
     damage: 1
     #Cooldown in seconds
     cooldown: 140
-  TierII:
+  tier-II:
     charge-time: 2.3
     damage: 1
     cooldown: 140
-  TierIII:
+  tier-III:
     charge-time: 2.0
     damage: 2
     cooldown: 140
-  TierIV:
+  tier-IV:
     charge-time: 1.5
     damage: 3
     cooldown: 140
-  TierV:
+  tier-V:
     charge-time: 1.0
     damage: 3
     cooldown: 140
@@ -374,46 +374,47 @@ rage-spike-config:
       - '&cdealing damage and knockback'
       - '&cafter having charged for a few seconds'
       - '&aUnlock Level: &e%UnlockLevel%'
-TaintedBladeConfig:
+tainted-blade-config:
   #How many tiers there should be. Highly recommended to keep at 5.
-  TierAmount: 5
+  tier-amount: 5
   #At what level should each tier become available. Tier I is the unlock level
-  TierUpgrade:
-    TierII: 475
-    TierIII: 650
-    TierIV: 825
-    TierV: 1000
+  tier-upgrade:
+    tier-II: 475
+    tier-III: 650
+    tier-IV: 825
+    tier-V: 1000
   #Config for each tier
-  TierI:
-    StrengthDuration: 5
-    ResistanceDuration: 5
-    HungerDuration: 10
+  tier-I:
+    strength-duration: 10
+    resistance-duration: 10
+    speed-duration: 10
+    hunger-duration: 10
     #Cooldown in seconds
-    Cooldown: 160
-  TierII:
-    StrengthDuration: 6
-    ResistanceDuration: 6
-    HungerDuration: 15
-    #Cooldown in seconds
-    Cooldown: 160
-  TierIII:
-    StrengthDuration: 7
-    ResistanceDuration: 7
-    HungerDuration: 25
-    #Cooldown in seconds
-    Cooldown: 160
-  TierIV:
-    StrengthDuration: 10
-    ResistanceDuration: 10
-    HungerDuration: 30
-    #Cooldown in seconds
-    Cooldown: 160
-  TierV:
-    StrengthDuration: 15
-    ResistanceDuration: 15
-    HungerDuration: 45
-    #Cooldown in seconds
-    Cooldown: 160
+    cooldown: 160
+  tier-II:
+    strength-duration: 12
+    resistance-duration: 12
+    speed-duration: 12
+    hunger-duration: 15
+    cooldown: 160
+  tier-III:
+    strength-duration: 15
+    resistance-duration: 15
+    speed-duration: 15
+    hunger-duration: 25
+    cooldown: 160
+  tier-IV:
+    strength-duration: 23
+    resistance-duration: 23
+    speed-duration: 23
+    hunger-duration: 30
+    cooldown: 160
+  tier-V:
+    strength-duration: 35
+    resistance-duration: 35
+    speed-duration: 35
+    hunger-duration: 45
+    cooldown: 160
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Tainted Blade'
