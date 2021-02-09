@@ -40,7 +40,7 @@ public class DeeperWound extends ConfigurableBaseAbility {
     public DeeperWound(@NotNull AbilityCreationData abilityCreationData) {
         super(abilityCreationData);
 
-        if(abilityCreationData instanceof DeeperWoundCreationData){
+        if (abilityCreationData instanceof DeeperWoundCreationData) {
             DeeperWoundCreationData deeperWoundCreationData = (DeeperWoundCreationData) abilityCreationData;
 
             this.tier = deeperWoundCreationData.getTier();
@@ -78,7 +78,7 @@ public class DeeperWound extends ConfigurableBaseAbility {
     @Override
     public void activate(AbilityHolder activator, Object... optionalData) {
 
-        if(optionalData.length > 0 && optionalData[0] instanceof BleedActivateEvent) {
+        if (optionalData.length > 0 && optionalData[0] instanceof BleedActivateEvent) {
 
             BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) optionalData[0];
             ConfigurationSection configurationSection;
