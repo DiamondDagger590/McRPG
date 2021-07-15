@@ -2,12 +2,11 @@ package us.eunoians.mcrpg.skill;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
-import org.junit.Test;
 import us.eunoians.mcrpg.BaseTest;
 
 public class SkillRegistryTest extends BaseTest {
 
-    @Test
+    //@Test
     public void skillRegistryTest () {
         TestSkill skill = getPlugin().getSkillRegistry().registerSkill(new NamespacedKey("unit-test", "test"), TestSkill::new);
         Validate.notNull(skill, "Failed to register skill!");

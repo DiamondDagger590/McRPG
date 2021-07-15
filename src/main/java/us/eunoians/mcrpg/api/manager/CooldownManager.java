@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.api.manager;
 
 import com.lunarclient.bukkitapi.LunarClientAPI;
-import com.lunarclient.bukkitapi.object.LCCooldown;
+import com.lunarclient.bukkitapi.cooldown.LCCooldown;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -10,12 +10,14 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.CooldownableAbility;
-import us.eunoians.mcrpg.api.error.AbilityConfigurationNotFoundException;
 import us.eunoians.mcrpg.api.lunar.LunarClientHook;
 import us.eunoians.mcrpg.player.McRPGPlayer;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * This class handles managing all cooldowns for {@link us.eunoians.mcrpg.ability.CooldownableAbility}s.
@@ -126,8 +128,11 @@ public class CooldownManager {
                 LunarClientAPI lunarClientAPI = lunarClientHook.getLunarClientAPI();
 
                 //We have to subtract current time from expire time in order to handle modifying of a cooldown before passing into this method
-                LCCooldown lcCooldown = new LCCooldown("Ability Cooldown", expireTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS, ability.getDisplayItem().getType());
-                lunarClientAPI.sendCooldown(Objects.requireNonNull(Bukkit.getPlayer(uuid)), lcCooldown);
+                LCCooldown lcCooldown = null;
+                //TODO we need to update this when they update their api
+                ///if(LunarClientAPICooldown.sendCooldown();)
+                //= new LCCooldown(ability.getAbilityID().getKey(), (int) (expireTime - System.currentTimeMillis()), TimeUnit.MILLISECONDS, ability.getDisplayItem().getType());
+                lcCooldown.send(Bukkit.getPlayer(uuid));
             }
         }
 
@@ -219,13 +224,15 @@ public class CooldownManager {
                         Ability ability = mcRPGPlayer.getAbility(namespacedKey);
 
                         if (ability != null) {
-                            try {
-                                lunarClientAPI.clearCooldown(Objects.requireNonNull(mcRPGPlayer.getEntity()),
-                                        new LCCooldown("Ability Cooldown", 0, TimeUnit.SECONDS, ability.getDisplayItem().getType()));
-                            } catch (AbilityConfigurationNotFoundException e) {
-                                e.printStackTrace();
-                                return;
-                            }
+                            //TODO update whenever lunar updates their API
+//                            try {
+//                                LunarClientAPICooldown.clearCooldown(mcRPGPlayer.getEntity(), );
+//                                lunarClientAPI.clearCooldown(Objects.requireNonNull(mcRPGPlayer.getEntity()),
+//                                        new LCCooldown("Ability Cooldown", 0, TimeUnit.SECONDS, ability.getDisplayItem().getType()));
+//                            } catch (AbilityConfigurationNotFoundException e) {
+//                                e.printStackTrace();
+//                                return;
+//                            }
                         }
                     }
                 }
