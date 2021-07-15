@@ -1,28 +1,27 @@
 plugins {
     id 'java'
-    id 'maven'
-    id 'io.franzbecker.gradle-lombok' version '1.14'
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'maven-publish'
+    id "io.freefair.lombok" version "6.0.0-m2"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
+
 //from now on this is how you'll change version
-def versionObj = new Version(major: 1, minor: 4, patch: 0, fix: 0, state: 'BETA')
+def versionObj = new Version(major: 1, minor: 5, patch: 0, fix: 0, state: 'ALPHA')
 
 group 'us.eunoians'
 version = "${versionObj.toString()}"
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 repositories {
     mavenCentral()
-    jcenter()
     mavenLocal()
     maven { url 'https://repo.aikar.co/content/groups/aikar/' }
     maven { url 'https://jitpack.io' }
-    maven { url 'http://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
     maven { url 'https://nexus.articdive.de/repository/maven-public/' }
-    maven { url 'http://maven.sk89q.com/repo/' }
+    maven { url 'https://maven.sk89q.com/repo/' }
     maven { url 'https://nexus.wesjd.net/repository/thirdparty/' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
@@ -33,34 +32,45 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.cyr1en:javen:1.0.2'
-    annotationProcessor 'com.github.cyr1en:javen:1.0.2'
-    compile 'org.jetbrains:annotations:16.0.2'
+    //compile 'com.github.cyr1en:javen:1.0.2'
+    //annotationProcessor 'com.github.cyr1en:javen:1.0.2'
+
+    // Why :(
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.20'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+
 
     //compile 'com.github.CyR1en:McUtils:1.6.11'
-    compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.26'
 
     compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
-    compileOnly 'com.github.DiamondDagger590:FlatDB:1.0.7'
-    compileOnly 'com.github.DiamondDagger590:EnumToYaml:1.0'
-    compile 'de.tr7zw:item-nbt-api:2.5.0'
-    compile group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
+    implementation files('libs/FlatDB-1.0.11.jar')
+    //compile 'com.github.DiamondDagger590:FlatDB:1.0.7'
+    implementation 'com.github.DiamondDagger590:EnumToYaml:1.0'
+    implementation 'de.tr7zw:item-nbt-api:2.8.0'
+    implementation group: 'org.javassist', name: 'javassist', version: '3.21.0-GA'
     compileOnly 'me.clip:placeholderapi:2.9.2'
     compileOnly 'com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
-    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
-    compile 'org.bstats:bstats-bukkit:1.7'
+    compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
+    implementation 'org.bstats:bstats-bukkit:1.7'
+    implementation 'org.jetbrains:annotations:16.0.2'
     compileOnly files('libs/Sickle.jar')
     compileOnly files('libs/SpartanAPI.jar')
     compileOnly files('libs/mcMMO.jar')
 
-    implementation 'com.lunarclient:bukkitapi:1.0-20200729.212152-7'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation 'com.lunarclient:bukkitapi:1.0'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'com.github.seeseemelk:MockBukkit-v1.16:0.5.0'
 }
 
 processResources {
+    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
     from(sourceSets.main.resources.srcDirs) {
         expand 'pluginVersion': version
         include 'plugin.yml'
@@ -68,7 +78,7 @@ processResources {
 }
 
 shadowJar {
-    archiveName = "McRPG-${version}.jar"
+    archiveFileName = "McRPG-${versionObj.toString()}.jar"
     relocate 'de.tr7zw.changeme.nbtapi', 'us.eunoians.mcrpg.nbtapi'
     relocate 'org.slf4j', 'us.eunoians.mcrpg'
     relocate 'org.bstats', 'us.eunoians.mcrpg'
@@ -79,8 +89,7 @@ artifacts {
 }
 
 lombok {
-    version = "1.18.4"
-    sha256 = ""
+    version = "1.18.20"
 }
 
 tasks.withType(JavaCompile) {
