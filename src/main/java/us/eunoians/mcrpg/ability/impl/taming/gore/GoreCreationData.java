@@ -19,7 +19,7 @@ public class GoreCreationData extends AbilityCreationData implements ToggleableC
     private final boolean toggled;
 
     public GoreCreationData(@NotNull AbilityHolder abilityHolder, boolean toggled) {
-        super(abilityHolder, );
+        super(abilityHolder, null);
         this.toggled = toggled;
     }
 

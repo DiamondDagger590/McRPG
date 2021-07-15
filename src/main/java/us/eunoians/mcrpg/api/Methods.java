@@ -213,7 +213,7 @@ public class Methods {
             case DIRT:
             case COARSE_DIRT:
             case GRASS_BLOCK:
-            case GRASS_PATH:
+            case DIRT_PATH:
             case FARMLAND:
             case MYCELIUM:
             case PODZOL:

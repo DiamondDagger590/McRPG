@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author DiamondDagger590
  */
-@AbilityIdentifier(id = "gore")
+@AbilityIdentifier(id = "gore", abilityCreationData = GoreCreationData.class)
 public class Gore extends BaseAbility implements ToggleableAbility, DefaultAbility, PlayerAbility {
 
     /**

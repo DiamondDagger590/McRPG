@@ -132,7 +132,7 @@ public final class BlockUtils {
 	switch(blockState.getType()){
 	  case COBBLESTONE:
 	  case DIRT:
-	  case GRASS_PATH:
+	  case DIRT_PATH:
 		return true;
 	  case STONE_BRICKS:
 		return true;
@@ -175,7 +175,7 @@ public final class BlockUtils {
 	switch(blockState.getType()){
 	  case DIRT:
 	  case GRASS:
-	  case GRASS_PATH:
+	  case DIRT_PATH:
 	  case FARMLAND:
 		return false;
 
