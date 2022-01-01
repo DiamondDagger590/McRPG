@@ -60,7 +60,7 @@ import us.eunoians.mcrpg.commands.prompts.McHelpPrompt;
 import us.eunoians.mcrpg.commands.prompts.McPartyPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRankPrompt;
 import us.eunoians.mcrpg.commands.prompts.McRedeemPrompt;
-import us.eunoians.mcrpg.database.McRPGDb;
+import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.events.external.sickle.Sickle;
 import us.eunoians.mcrpg.events.mcrpg.AbilityActivate;
 import us.eunoians.mcrpg.events.mcrpg.AbilityUnlock;
@@ -132,7 +132,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
  // @Getter private PluginUpdater pluginUpdater;
   @Getter private FileManager fileManager;
   @Getter private ExpPermissionManager expPermissionManager;
-  @Getter private McRPGDb mcRPGDb;
+  @Getter private DatabaseManager mcRPGDb;
   @Getter private DisplayManager displayManager;
   @Getter private static ChunkManager placeStore;
   @Getter private RemoteTransferTracker remoteTransferTracker;
@@ -187,7 +187,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
       }.runTaskLater(this, 400);
     }
     expPermissionManager = ExpPermissionManager.getInstance().setup(this);
-    this.mcRPGDb = new McRPGDb(this);
+    this.mcRPGDb = new DatabaseManager(this);
     healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
     sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
     fishingItemManager = new FishingItemManager();
