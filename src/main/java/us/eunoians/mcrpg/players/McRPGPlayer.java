@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
@@ -21,6 +22,7 @@ import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.SkillDataSnapshot;
 import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
+import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.party.TeleportRequest;
 import us.eunoians.mcrpg.skills.Skill;
@@ -236,111 +238,111 @@ public class McRPGPlayer {
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
         Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
         //TODO reimplement using DAO's
-//        Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
-//
-//        boolean isNew = false;
-//        try {
-//            if (playerDataSet.isPresent()) {
-//                isNew = !playerDataSet.get().next();
-//            }
-//            else {
-//                isNew = true;
-//            }
-//        }
-//        catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        if (isNew) {
-//            for (Skills type : Skills.values()) {
-//                String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
-//                database.executeUpdate(query);
-//            }
-//            String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
-//            database.executeUpdate(query);
-//            query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES ('" + uuid.toString() + "')";
-//            database.executeUpdate(query);
-//            query = "INSERT INTO MCRPG_LOADOUT (UUID) VALUES ('" + uuid.toString() + "')";
-//            database.executeUpdate(query);
-//            playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
-//            try {
-//                playerDataSet.get().next();
-//            }
-//            catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        playerDataSet.ifPresent(resultSet -> {
-//            try {
-//                //if(resultSet.next()) {
-//                this.abilityPoints = resultSet.getInt("ability_points");
-//                this.redeemableExp = resultSet.getInt("redeemable_exp");
-//                this.redeemableLevels = resultSet.getInt("redeemable_levels");
-//                long replaceCooldown = resultSet.getLong("replace_ability_cooldown_time");
-//                this.boostedExp = resultSet.getInt("boosted_exp");
-//                this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
-//                this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
-//                this.divineEscapeExpEnd = resultSet.getLong("divine_escape_exp_end_time");
-//                this.divineEscapeDamageEnd = resultSet.getLong("divine_escape_damage_end_time");
-//                String partyIDString = resultSet.getString("party_uuid");
-//                if (partyIDString.equalsIgnoreCase("nu")) {
-//                    partyID = null;
-//                }
-//                else {
-//                    partyID = UUID.fromString(partyIDString);
-//                    Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
-//                    StringBuilder nullPartyMessage = new StringBuilder();
-//                    if (party == null) {
-//                        partyID = null;
-//                        nullPartyMessage.append("&cYour party no longer exists.");
-//                    }
-//                    else {
-//                        if (!party.isPlayerInParty(uuid)) {
-//                            partyID = null;
-//                            nullPartyMessage.append("&cYou were removed from your party whilst offline.");
-//                        }
-//                    }
-//                    if (nullPartyMessage.length() != 0) {
-//                        new BukkitRunnable() {
-//                            @Override
-//                            public void run() {
-//                                OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
-//                                if (offlinePlayer.isOnline()) {
-//                                    ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
-//                                }
-//                            }
-//                        }.runTaskLater(McRPG.getInstance(), 2 * 20);
-//                    }
-//                }
-//                Calendar cal1 = Calendar.getInstance();
-//                Calendar cal = Calendar.getInstance();
-//                cal1.setTimeInMillis(replaceCooldown);
-//                if (cal.getTimeInMillis() < cal1.getTimeInMillis()) {
-//                    this.endTimeForReplaceCooldown = cal1.getTimeInMillis();
-//                }
-//            }
-//            catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//
-//        final Optional<ResultSet> settingsSet = database.executeQuery("SELECT * FROM mcrpg_player_settings WHERE uuid = '" + uuid.toString() + "'");
-//        settingsSet.ifPresent(rs -> {
-//            try {
-//                if (rs.next()) {
-//                    this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(rs.getString("health_type"));
-//                    this.keepHandEmpty = rs.getBoolean("keep_hand");
-//                    this.displayType = DisplayType.fromString(rs.getString("display_type"));
-//                    this.autoDeny = rs.getBoolean("auto_deny");
-//                    this.ignoreTips = rs.getBoolean("ignore_tips");
-//                    this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
-//                    this.unarmedIgnoreSlot = rs.getInt("unarmed_ignore_slot");
-//                    this.autoAcceptPartyInvites = rs.getBoolean("auto_accept_party_teleports");
-//                }
-//            }
-//            catch (SQLException e) {
-//                e.printStackTrace();
-//            }
-//        });
+        Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
+
+        boolean isNew = false;
+        try {
+            if (playerDataSet.isPresent()) {
+                isNew = !playerDataSet.get().next();
+            }
+            else {
+                isNew = true;
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (isNew) {
+            for (Skills type : Skills.values()) {
+                String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
+                database.executeUpdate(query);
+            }
+            String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
+            database.executeUpdate(query);
+            query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES ('" + uuid.toString() + "')";
+            database.executeUpdate(query);
+            query = "INSERT INTO MCRPG_LOADOUT (UUID) VALUES ('" + uuid.toString() + "')";
+            database.executeUpdate(query);
+            playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
+            try {
+                playerDataSet.get().next();
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        playerDataSet.ifPresent(resultSet -> {
+            try {
+                //if(resultSet.next()) {
+                this.abilityPoints = resultSet.getInt("ability_points");
+                this.redeemableExp = resultSet.getInt("redeemable_exp");
+                this.redeemableLevels = resultSet.getInt("redeemable_levels");
+                long replaceCooldown = resultSet.getLong("replace_ability_cooldown_time");
+                this.boostedExp = resultSet.getInt("boosted_exp");
+                this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
+                this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
+                this.divineEscapeExpEnd = resultSet.getLong("divine_escape_exp_end_time");
+                this.divineEscapeDamageEnd = resultSet.getLong("divine_escape_damage_end_time");
+                String partyIDString = resultSet.getString("party_uuid");
+                if (partyIDString.equalsIgnoreCase("nu")) {
+                    partyID = null;
+                }
+                else {
+                    partyID = UUID.fromString(partyIDString);
+                    Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
+                    StringBuilder nullPartyMessage = new StringBuilder();
+                    if (party == null) {
+                        partyID = null;
+                        nullPartyMessage.append("&cYour party no longer exists.");
+                    }
+                    else {
+                        if (!party.isPlayerInParty(uuid)) {
+                            partyID = null;
+                            nullPartyMessage.append("&cYou were removed from your party whilst offline.");
+                        }
+                    }
+                    if (nullPartyMessage.length() != 0) {
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
+                                if (offlinePlayer.isOnline()) {
+                                    ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
+                                }
+                            }
+                        }.runTaskLater(McRPG.getInstance(), 2 * 20);
+                    }
+                }
+                Calendar cal1 = Calendar.getInstance();
+                Calendar cal = Calendar.getInstance();
+                cal1.setTimeInMillis(replaceCooldown);
+                if (cal.getTimeInMillis() < cal1.getTimeInMillis()) {
+                    this.endTimeForReplaceCooldown = cal1.getTimeInMillis();
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        final Optional<ResultSet> settingsSet = database.executeQuery("SELECT * FROM mcrpg_player_settings WHERE uuid = '" + uuid.toString() + "'");
+        settingsSet.ifPresent(rs -> {
+            try {
+                if (rs.next()) {
+                    this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(rs.getString("health_type"));
+                    this.keepHandEmpty = rs.getBoolean("keep_hand");
+                    this.displayType = DisplayType.fromString(rs.getString("display_type"));
+                    this.autoDeny = rs.getBoolean("auto_deny");
+                    this.ignoreTips = rs.getBoolean("ignore_tips");
+                    this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
+                    this.unarmedIgnoreSlot = rs.getInt("unarmed_ignore_slot");
+                    this.autoAcceptPartyInvites = rs.getBoolean("auto_accept_party_teleports");
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
 
         //Initialize skills
 
@@ -377,7 +379,7 @@ public class McRPGPlayer {
         List<UnlockedAbilities> toRemove = new ArrayList<>();
         for (UnlockedAbilities abilityType : abilityLoadout) {
             BaseAbility baseAbility = getBaseAbility(abilityType);
-            if (baseAbility.getCurrentTier() < 1) {
+            if (baseAbility != null && baseAbility.getCurrentTier() < 1) {
                 baseAbility.setUnlocked(false);
                 toRemove.add(abilityType);
             }
@@ -520,7 +522,7 @@ public class McRPGPlayer {
      * @return The BaseAbility of the provided enum value
      */
     public BaseAbility getBaseAbility(GenericAbility ability) {
-        return ability != null ? getSkill(ability.getSkill()).getAbility(ability) : null;
+        return ability != null && getSkill(ability.getSkill()) != null ? getSkill(ability.getSkill()).getAbility(ability) : null;
     }
 
     public void giveExp(Skills skill, int exp, GainReason reason) {

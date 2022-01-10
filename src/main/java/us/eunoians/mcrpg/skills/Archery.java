@@ -5,11 +5,11 @@ import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.GenericAbility;
 import us.eunoians.mcrpg.types.Skills;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class Archery extends Skill {
 
-  public Archery(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map, McRPGPlayer player) {
+  public Archery(int currentLevel, int currentExp, Map<GenericAbility, BaseAbility> map, McRPGPlayer player) {
 	super(Skills.ARCHERY, map, currentLevel, currentExp, player);
   }
 }
