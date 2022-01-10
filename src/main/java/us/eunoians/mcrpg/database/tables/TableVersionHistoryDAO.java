@@ -6,11 +6,22 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.util.Calendar;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * A DAO used to track the versions for different tables which can be used
+ * to run updates for those tables as needed.
+ *
+ * @author DiamondDagger590
+ */
 public class TableVersionHistoryDAO {
 
+    private static final String TABLE_NAME = "table_history";
     private static final int CURRENT_TABLE_VERSION = 1;
+
+    private static boolean isAcceptingQueries = true;
 
     /**
      * Gets a {@link CompletableFuture} containing an {@link Integer} that contains the latest version the
@@ -19,11 +30,16 @@ public class TableVersionHistoryDAO {
      *
      * @param connection The databased {@link Connection} to use to save the query to
      * @param tableName  The name of the table we are checking
-     * @return The {@link Integer} version of the table or {@code 0} if the table doesn't have any version saved
+     * @return The {@link Integer} version of the table, {@code 0} if the table doesn't have any version saved or {@code -1}
+     * if {@link #isAcceptingQueries()} returns {@code false}.
      */
     public static CompletableFuture<Integer> getLatestVersion(Connection connection, String tableName) {
 
         return CompletableFuture.supplyAsync(() -> {
+
+            if(!isAcceptingQueries()){
+                return -1;
+            }
 
             int lastVersion = 0;
             try (PreparedStatement statement = connection.prepareStatement("SELECT table_version FROM table_history WHERE table_name = ?;")) {
@@ -43,8 +59,38 @@ public class TableVersionHistoryDAO {
         });
     }
 
-    public static void setTableVersion(Connection connection, String tableName, int version) {
+    /**
+     * Sets the version for a table to mark an update having been processed
+     *
+     * @param connection The {@link Connection} to use for this update
+     * @param tableName  The name of the table having its version updated
+     * @param version    The new version of the table to store
+     * @return A {@link CompletableFuture} that is being used to run this change which returns {@code true}
+     * if ran successfully or {@code false} otherwise.
+     */
+    public static CompletableFuture<Boolean> setTableVersion(Connection connection, String tableName, int version) {
 
+        return CompletableFuture.supplyAsync(() -> {
+
+            if(!isAcceptingQueries()){
+                return false;
+            }
+
+            //Update table to contain new table version
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (table_name, updated_time, table_version) VALUES (?, ?, ?);")) {
+                statement.setString(1, tableName);
+                statement.setTime(2, new Time(Calendar.getInstance().getTimeInMillis()));
+                statement.setInt(3, version); //We know the version needs to be 1, so we are hard coding it here rather than incrementing the variable, as we can't confirm that this query works so it's unsafe to assume so
+
+                statement.executeUpdate();
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return true;
+        });
     }
 
     /**
@@ -59,9 +105,11 @@ public class TableVersionHistoryDAO {
 
         return CompletableFuture.supplyAsync(() -> {
 
-            if (databaseManager.getDatabase().tableExists("table_history")) {
+            if (databaseManager.getDatabase().tableExists(TABLE_NAME)) {
                 return false;
             }
+
+            isAcceptingQueries = false;
 
             /*****
              ** Table Description:
@@ -74,7 +122,7 @@ public class TableVersionHistoryDAO {
              ** Reasoning for structure:
              ** PK is the `table_name` field, as each table has one version assigned to it
              *****/
-            try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `table_history`" +
+            try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
                                                                            "`table_name` varchar(32) NOT NULL," +
                                                                            "`updated_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP," +
@@ -86,14 +134,57 @@ public class TableVersionHistoryDAO {
             catch (SQLException e) {
                 e.printStackTrace();
             }
+
+            isAcceptingQueries = true;
+
             return true;
         });
     }
 
-    public static void updateTable(Connection connection) throws SQLException {
+    /**
+     * Checks to see if there are any version differences from the live version of this SQL table and then current version.
+     * <p>
+     * If there are any differences, it will iteratively go through and update through each version to ensure the database is
+     * safe to run queries on.
+     *
+     * @param connection The {@link Connection} that will be used to run the changes
+     * @return The {@link  CompletableFuture} that is running these changes.
+     */
+    public static CompletableFuture<Void> updateTable(Connection connection) {
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement("")) {
+        return CompletableFuture.supplyAsync(() -> {
 
-        }
+            getLatestVersion(connection, TABLE_NAME).thenAccept(latestStoredVersion -> {
+
+                if (latestStoredVersion >= CURRENT_TABLE_VERSION) {
+                    return;
+                }
+
+                isAcceptingQueries = false;
+
+                //We need multiple if statements since we are going to be incrementing any values by one each time we find an absent version. This will allow us to update from 0 to a version like 2 in one go.
+
+                //Table version 0 (doesn't exist or value isn't present)
+                if (latestStoredVersion == 0) {
+                    setTableVersion(connection, TABLE_NAME, 1);
+                    latestStoredVersion = 1;
+                }
+
+                isAcceptingQueries = true;
+
+            });
+
+            return null;
+        });
+    }
+
+    /**
+     * Checks to see if this table is accepting queries at the moment. A reason it could be false is either the table is
+     * in creation or the table is being updated and for some reason a query is attempting to be ran.
+     *
+     * @return {@code true} if this table is accepting queries
+     */
+    public static boolean isAcceptingQueries() {
+        return isAcceptingQueries;
     }
 }
