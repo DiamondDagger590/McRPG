@@ -9,8 +9,6 @@ import com.cyr1en.mcutils.initializers.annotation.Initialize;
 import com.cyr1en.mcutils.initializers.annotation.process.Initializer;
 import com.cyr1en.mcutils.logger.Logger;*/
 
-import com.cyr1en.javen.Javen;
-import com.cyr1en.javen.annotation.Lib;
 import com.google.common.base.Charsets;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.Getter;
@@ -111,18 +109,10 @@ import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-
-/*JAVEN ISSUES*/
-@Lib(group = "com.google.guava", name = "guava", version = "27.1-jre")
-@Lib(group = "com.github.DiamondDagger590", name = "FlatDB", version = "1.0.7")
-//@Lib(group = "org.javassist", name = "javassist", version = "3.21.0-GA")
-@Lib(group = "com.github.DiamondDagger590", name = "EnumToYAML", version = "1.0")
 
 public class McRPG extends JavaPlugin {//implements //Initializable {
 
@@ -166,11 +156,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
       getDataFolder().mkdir();
     }
     //JAVEN ISSUES
-    Path path = Paths.get(getDataFolder().getAbsolutePath() + "/libs");
-    Javen javen = new Javen(path);
-    javen.addRepository("jitPack", "https://jitpack.io");
-    javen.addClassLoader(this.getClass().getClassLoader());
-    javen.loadDependencies();
     McRPG t = this;
     //Misc
     //localizationFiles = new LocalizationFiles(this, true);

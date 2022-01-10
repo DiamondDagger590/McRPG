@@ -56,24 +56,18 @@ dependencies {
     val spigotVersion = "1.18.1-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
 
-    val javenVersion = "1.0.2"
-    implementation("com.github.cyr1en:javen:$javenVersion")
-    annotationProcessor("com.github.cyr1en:javen:$javenVersion")
-
+    //Only used for loadout table so can be removed later
     val javassistVersion = "3.28.0-GA"
     implementation("org.javassist:javassist:$javassistVersion")
 
-    val slf4jVersion = "1.7.26"
-    //implementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
-
     val flatDBVersion = "1.0.7"
-    compileOnly("com.github.DiamondDagger590:FlatDB:$flatDBVersion")
+    implementation("com.github.DiamondDagger590:FlatDB:$flatDBVersion")
 
     // TODO Look into new spigot yaml comment api
     val enumToYamlVersion = "1.0"
-    compileOnly("com.github.DiamondDagger590:EnumToYaml:$enumToYamlVersion")
+    implementation("com.github.DiamondDagger590:EnumToYaml:$enumToYamlVersion")
 
-    val nbtAPIVersion = "2.5.0"
+    val nbtAPIVersion = "2.9.0-SNAPSHOT"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val placeholderAPIVersion = "2.9.2"
