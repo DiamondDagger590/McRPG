@@ -5,9 +5,11 @@ import com.cyr1en.flatdb.DatabaseBuilder;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
+import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -58,23 +60,33 @@ public class DatabaseManager {
         return databaseExecutorService;
     }
 
-    private void attemptCreateTables() {
+    private CompletableFuture<Void> attemptCreateTables() {
 
         Connection connection = database.getConnection();
         Logger logger = McRPG.getInstance().getLogger();
 
-        //We need to create this first to ensure that versioning is setup
-        TableVersionHistoryDAO.attemptCreateTable(connection, this).thenAccept(tableVersionHistoryTableCreated -> {
+        CompletableFuture<Void> tableCreationFuture = new CompletableFuture<>();
+        getDatabaseExecutorService().submit(() -> {
 
-            logger.log(Level.INFO, "Database Creation - Table Version History DAO "
-                                   + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
+            //We need to create this first to ensure that versioning is setup
+            TableVersionHistoryDAO.attemptCreateTable(connection, this).thenAccept(tableVersionHistoryTableCreated -> {
 
-            //Can now start creating skill tables since the table version has already been created
-            ArcheryDAO.attemptCreateTable(connection, this).thenAccept(archeryTableCreated -> logger.log(Level.INFO, "Database Creation - Archery DAO "
-                                                                                                                     + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")));
+                logger.log(Level.INFO, "Database Creation - Table Version History DAO "
+                                       + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
+
+                //Can now start creating skill tables since the table version has already been created
+                ArcheryDAO.attemptCreateTable(connection, this).thenAccept(archeryTableCreated -> logger.log(Level.INFO, "Database Creation - Archery DAO "
+                                                                                                                         + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")));
+                AxesDAO.attemptCreateTable(connection, this).thenAccept(axesTableCreated -> logger.log(Level.INFO, "Database Creation - Axes DAO "
+                                                                                                                      + (axesTableCreated ? "created a new table." : "already existed so skipping creation.")));
 
 
+                tableCreationFuture.complete(null);
+            });
         });
+
+        return tableCreationFuture;
+
     }
 
     private void updateTables() {

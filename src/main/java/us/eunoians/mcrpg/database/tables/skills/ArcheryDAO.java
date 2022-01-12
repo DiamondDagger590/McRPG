@@ -187,11 +187,12 @@ public class ArcheryDAO {
     public static CompletableFuture<SkillDataSnapshot> getPlayerArcheryData(Connection connection, UUID uuid) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        Skills skillType = Skills.ARCHERY;
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            SkillDataSnapshot skillDAOWrapper = new SkillDataSnapshot(uuid, Skills.ARCHERY);
+            SkillDataSnapshot skillDAOWrapper = new SkillDataSnapshot(uuid, skillType);
 
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE uuid = ?;")) {
 
@@ -208,16 +209,14 @@ public class ArcheryDAO {
                         skillDAOWrapper.setCurrentExp(currentExp);
                         skillDAOWrapper.setCurrentLevel(currentLevel);
 
-                        //Daze
-                        skillDAOWrapper.addAbilityToggledData(DefaultAbilities.DAZE, resultSet.getBoolean("is_daze_toggled"));
+                        //Default Ability
+                        DefaultAbilities defaultAbility = skillType.getDefaultAbility();
+                        skillDAOWrapper.addAbilityToggledData(defaultAbility, resultSet.getBoolean("is_" + defaultAbility.getDatabaseName() + "_toggled"));
 
                         //Unlocked Abilities
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.PUNCTURE, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.TIPPED_ARROWS, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.COMBO, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.BLESSING_OF_ARTEMIS, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.BLESSING_OF_APOLLO, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.CURSE_OF_HADES, resultSet);
+                        for(UnlockedAbilities ability : skillType.getUnlockedAbilities()){
+                            skillDAOWrapper.addAbilityData(ability, resultSet);
+                        }
                     }
 
                 }
