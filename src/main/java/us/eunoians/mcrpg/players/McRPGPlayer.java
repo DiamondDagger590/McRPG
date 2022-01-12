@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
 import us.eunoians.mcrpg.database.tables.skills.FishingDAO;
 import us.eunoians.mcrpg.database.tables.skills.FitnessDAO;
+import us.eunoians.mcrpg.database.tables.skills.HerbalismDAO;
 import us.eunoians.mcrpg.database.tables.skills.SkillDataSnapshot;
 import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
 import us.eunoians.mcrpg.party.Party;
@@ -355,6 +356,7 @@ public class McRPGPlayer {
         ExcavationDAO.getPlayerExcavationData(connection, uuid).thenAccept(this::initializeSkill);
         FishingDAO.getPlayerFishingData(connection, uuid).thenAccept(this::initializeSkill);
         FitnessDAO.getPlayerFitnessData(connection, uuid).thenAccept(this::initializeSkill);
+        HerbalismDAO.getPlayerHerbalismData(connection, uuid).thenAccept(this::initializeSkill);
 
         final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
         loadoutSet.ifPresent(rs -> {

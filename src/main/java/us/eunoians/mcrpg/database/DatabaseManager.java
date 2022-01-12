@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
 import us.eunoians.mcrpg.database.tables.skills.FishingDAO;
 import us.eunoians.mcrpg.database.tables.skills.FitnessDAO;
+import us.eunoians.mcrpg.database.tables.skills.HerbalismDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -122,6 +123,15 @@ public class DatabaseManager {
                                                        + (fitnessTableCreated ? "created a new table." : "already existed so skipping creation.")))
                         .exceptionally(throwable -> {
                             logger.log(Level.WARNING, "Database Creation - Fitness DAO had an error when creating.");
+                            return null;
+                        });
+
+                HerbalismDAO.attemptCreateTable(connection, this)
+                        .thenAccept(herbalismTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Herbalism DAO "
+                                                       + (herbalismTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Herbalism DAO had an error when creating.");
                             return null;
                         });
 
