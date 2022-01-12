@@ -16,13 +16,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Excavation} skill
+ * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Fishing} skill
  *
  * @author DiamondDagger590
  */
-public class ExcavationDAO {
+public class FishingDAO {
 
-    private static final String TABLE_NAME = "mcrpg_excavation_data";
+    private static final String TABLE_NAME = "mcrpg_fishing_data";
     private static final int CURRENT_TABLE_VERSION = 1;
 
     private static boolean isAcceptingQueries = true;
@@ -59,28 +59,25 @@ public class ExcavationDAO {
              * uuid is the {@link java.util.UUID} of the player being stored
              * current_exp is the amount of exp a player currently has in this skill
              * current_level is the level a player currently has in this skill
-             * is_extraction_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.excavation.Extraction} ability toggled
-             * is_buried_treasure_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.excavation.BuriedTreasure} ability toggled
-             * is_larger_spade_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.excavation.LargerSpade} ability toggled
-             * is_mana_deposit_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.excavation.ManaDeposit} ability toggled
-             * is_hand_digging_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.excavation.HandDigging} ability toggled
-             * is_frenzy_dig_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.excavation.FrenzyDig} ability toggled
-             * is_pans_shrine_toggled represents if the player ahs the {@link us.eunoians.mcrpg.abilities.excavation.PansShrine} ability toggled
-             * buried_treasure_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.excavation.BuriedTreasure} ability
-             * larger_spade_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.excavation.LargerSpade} ability
-             * mana_deposit_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.excavation.ManaDeposit} ability
-             * hand_digging_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.excavation.HandDigging} ability
-             * frenzy_dig_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.excavation.FrenzyDig} ability
-             * pans_shrine_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.excavation.PansShrine} ability
-             * is_buried_treasure_pending represents if the player has {@link us.eunoians.mcrpg.abilities.excavation.BuriedTreasure} pending to be accepted
-             * is_larger_spade_pending represents if the player has {@link us.eunoians.mcrpg.abilities.excavation.LargerSpade} pending to be accepted
-             * is_mana_deposit_pending represents if the player has {@link us.eunoians.mcrpg.abilities.excavation.ManaDeposit} pending to be accepted
-             * is_hand_digging_pending represents if the player has {@link us.eunoians.mcrpg.abilities.excavation.HandDigging} pending to be accepted
-             * is_frenzy_dig_pending represents if the player has {@link us.eunoians.mcrpg.abilities.excavation.FrenzyDig} pending to be accepted
-             * is_pans_shrine_pending represents if the player has {@link us.eunoians.mcrpg.abilities.excavation.PansShrine} pending to be accepted
-             * hand_digging_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.excavation.HandDigging} ability
-             * frenzy_dig_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.excavation.FrenzyDig} ability
-             * pans_shrine_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.excavation.PansShrine} ability
+             * is_great_rod_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.fishing.GreatRod} ability toggled
+             * is_poseidons_favor_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor} ability toggled
+             * is_magic_touch_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.fishing.MagicTouch} ability toggled
+             * is_sea_gods_blessing_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.fishing.SeaGodsBlessing} ability toggled
+             * is_sunken_armory_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.fishing.SunkenArmory} ability toggled
+             * is_shake_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.fishing.Shake} ability toggled
+             * is_super_rod_toggled represents if the player ahs the {@link us.eunoians.mcrpg.abilities.fishing.SuperRod} ability toggled
+             * poseidons_favor_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor} ability
+             * magic_touch_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.fishing.MagicTouch} ability
+             * sea_gods_blessing_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.fishing.SeaGodsBlessing} ability
+             * sunken_armory_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.fishing.SunkenArmory} ability
+             * shake_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.fishing.Shake} ability
+             * super_rod_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.fishing.SuperRod} ability
+             * is_poseidons_favor_pending represents if the player has {@link us.eunoians.mcrpg.abilities.fishing.PoseidonsFavor} pending to be accepted
+             * is_magic_touch_pending represents if the player has {@link us.eunoians.mcrpg.abilities.fishing.MagicTouch} pending to be accepted
+             * is_sea_gods_blessing_pending represents if the player has {@link us.eunoians.mcrpg.abilities.fishing.SeaGodsBlessing} pending to be accepted
+             * is_sunken_armory_pending represents if the player has {@link us.eunoians.mcrpg.abilities.fishing.SunkenArmory} pending to be accepted
+             * is_shake_pending represents if the player has {@link us.eunoians.mcrpg.abilities.fishing.Shake} pending to be accepted
+             * is_super_rod_pending represents if the player has {@link us.eunoians.mcrpg.abilities.fishing.SuperRod} pending to be accepted
              **
              ** Reasoning for structure:
              ** PK is the `uuid` field, as each player only has one uuid
@@ -91,28 +88,25 @@ public class ExcavationDAO {
                                                                            "`uuid` varchar(32) NOT NULL," +
                                                                            "`current_exp` int(11) NOT NULL DEFAULT 0," +
                                                                            "`current_level` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`is_extraction_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_buried_treasure_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_larger_spade_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_mana_deposit_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_hand_digging_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_frenzy_dig_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_pans_shrine_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`buried_treasure_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`larger_spade_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`mana_deposit_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`hand_digging_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`frenzy_dig_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`pans_shrine_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`is_buried_treasure_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_larger_spade_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_mana_deposit_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_hand_digging_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_frenzy_dig_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_pans_shrine_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`hand_digging_cooldown` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`frenzy_dig_cooldown` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`pans_shrine_cooldown` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`is_great_rod_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_poseidons_favor_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_magic_touch_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_sea_gods_blessing_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_sunken_armory_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_shake_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_super_rod_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`poseidons_favor_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`magic_touch_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`sea_gods_blessing_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`sunken_armory_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`shake_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`super_rod_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`is_poseidons_favor_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_magic_touch_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_sea_gods_blessing_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_sunken_armory_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_shake_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_super_rod_pending` BIT NOT NULL DEFAULT 0," +
                                                                            "PRIMARY KEY (`uuid`)" +
                                                                            ");")) {
                 statement.executeUpdate();
@@ -174,20 +168,20 @@ public class ExcavationDAO {
     }
 
     /**
-     * Gets a {@link SkillDataSnapshot} containing all of the player's skill data for {@link us.eunoians.mcrpg.skills.Excavation}. If
+     * Gets a {@link SkillDataSnapshot} containing all of the player's skill data for {@link us.eunoians.mcrpg.skills.Fishing}. If
      * the provided {@link UUID} doesn't have any data, any empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      *
      * @param connection The {@link Connection} to use to get the skill data
      * @param uuid       The {@link UUID} of the player who's data is being obtained
-     * @return A {@link CompletableFuture} containing a {@link SkillDataSnapshot} that has all of the player's {@link us.eunoians.mcrpg.skills.Excavation} skill
+     * @return A {@link CompletableFuture} containing a {@link SkillDataSnapshot} that has all of the player's {@link us.eunoians.mcrpg.skills.Fishing} skill
      * data. If the provided {@link UUID} doesn't have any data, any empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      */
-    public static CompletableFuture<SkillDataSnapshot> getPlayerExcavationData(Connection connection, UUID uuid) {
+    public static CompletableFuture<SkillDataSnapshot> getPlayerFishingData(Connection connection, UUID uuid) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        Skills skillType = Skills.EXCAVATION;
+        Skills skillType = Skills.FISHING;
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -234,7 +228,7 @@ public class ExcavationDAO {
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerExcavationData(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerFishingData(Connection connection, McRPGPlayer mcRPGPlayer) {
 
     }
 

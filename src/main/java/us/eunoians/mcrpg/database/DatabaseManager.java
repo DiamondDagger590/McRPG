@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
+import us.eunoians.mcrpg.database.tables.skills.FishingDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -82,6 +83,8 @@ public class DatabaseManager {
                                                                                                                       + (axesTableCreated ? "created a new table." : "already existed so skipping creation.")));
                 ExcavationDAO.attemptCreateTable(connection, this).thenAccept(excavationTableCreated -> logger.log(Level.INFO, "Database Creation - Excavation DAO "
                                                                                                                                + (excavationTableCreated ? "created a new table." : "already existed so skipping creation.")));
+                FishingDAO.attemptCreateTable(connection, this).thenAccept(fishingTableCreated -> logger.log(Level.INFO, "Database Creation - Fishing DAO "
+                                                                                                                            + (fishingTableCreated ? "created a new table." : "already existed so skipping creation.")));
 
                 tableCreationFuture.complete(null);
             });

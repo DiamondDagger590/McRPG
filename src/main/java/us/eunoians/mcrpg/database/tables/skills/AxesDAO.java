@@ -234,7 +234,7 @@ public class AxesDAO {
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerArxesyData(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerAxesData(Connection connection, McRPGPlayer mcRPGPlayer) {
 
     }
 
