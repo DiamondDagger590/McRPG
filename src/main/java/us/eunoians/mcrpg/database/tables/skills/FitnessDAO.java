@@ -4,13 +4,10 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.Skills;
-import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author DiamondDagger590
  */
-public class FitnessDAO {
+public class FitnessDAO extends SkillDAO {
 
     private static final String TABLE_NAME = "mcrpg_fitness_data";
     private static final int CURRENT_TABLE_VERSION = 1;
@@ -181,52 +178,7 @@ public class FitnessDAO {
      * and default exp/level values set to 0
      */
     public static CompletableFuture<SkillDataSnapshot> getPlayerFitnessData(Connection connection, UUID uuid) {
-
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        Skills skillType = Skills.FITNESS;
-        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
-
-            SkillDataSnapshot skillDAOWrapper = new SkillDataSnapshot(uuid, skillType);
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE uuid = ?;")) {
-
-                preparedStatement.setString(1, uuid.toString());
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
-
-                    while (resultSet.next()) {
-
-                        int currentExp = resultSet.getInt("current_exp");
-                        int currentLevel = resultSet.getInt("current_level");
-
-                        skillDAOWrapper.setCurrentExp(currentExp);
-                        skillDAOWrapper.setCurrentLevel(currentLevel);
-
-                        //Default Ability
-                        DefaultAbilities defaultAbility = skillType.getDefaultAbility();
-                        skillDAOWrapper.addAbilityToggledData(defaultAbility, resultSet.getBoolean("is_" + defaultAbility.getDatabaseName() + "_toggled"));
-
-                        //Unlocked Abilities
-                        for(UnlockedAbilities ability : skillType.getUnlockedAbilities()){
-                            skillDAOWrapper.addAbilityData(ability, resultSet);
-                        }
-                    }
-
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-                completableFuture.completeExceptionally(e);
-            }
-
-            completableFuture.complete(skillDAOWrapper);
-
-        });
-
-        return completableFuture;
+        return getSkillData(TABLE_NAME, connection, uuid, Skills.FITNESS);
     }
 
     //TODO because I only care about loading player data rn and cba to save it
