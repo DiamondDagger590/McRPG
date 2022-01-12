@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables;
 
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 
 import java.sql.Connection;
@@ -35,10 +36,14 @@ public class TableVersionHistoryDAO {
      */
     public static CompletableFuture<Integer> getLatestVersion(Connection connection, String tableName) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
             if(!isAcceptingQueries()){
-                return -1;
+                completableFuture.complete(-1);
+                return;
             }
 
             int lastVersion = 0;
@@ -53,10 +58,13 @@ public class TableVersionHistoryDAO {
             }
             catch (SQLException e) {
                 e.printStackTrace();
+                completableFuture.completeExceptionally(e);
             }
 
-            return lastVersion;
+            completableFuture.complete(lastVersion);
         });
+
+        return completableFuture;
     }
 
     /**
@@ -70,10 +78,14 @@ public class TableVersionHistoryDAO {
      */
     public static CompletableFuture<Boolean> setTableVersion(Connection connection, String tableName, int version) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
             if(!isAcceptingQueries()){
-                return false;
+                completableFuture.complete(false);
+                return;
             }
 
             //Update table to contain new table version
@@ -86,11 +98,13 @@ public class TableVersionHistoryDAO {
             }
             catch (SQLException e) {
                 e.printStackTrace();
-                return false;
+                completableFuture.completeExceptionally(e);
             }
 
-            return true;
+            completableFuture.complete(true);
         });
+
+        return completableFuture;
     }
 
     /**
@@ -103,10 +117,13 @@ public class TableVersionHistoryDAO {
      */
     public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
             if (databaseManager.getDatabase().tableExists(TABLE_NAME)) {
-                return false;
+                completableFuture.complete(false);
+                return;
             }
 
             isAcceptingQueries = false;
@@ -133,12 +150,14 @@ public class TableVersionHistoryDAO {
             }
             catch (SQLException e) {
                 e.printStackTrace();
+                completableFuture.completeExceptionally(e);
             }
 
             isAcceptingQueries = true;
-
-            return true;
+            completableFuture.complete(true);
         });
+
+        return completableFuture;
     }
 
     /**
@@ -152,11 +171,15 @@ public class TableVersionHistoryDAO {
      */
     public static CompletableFuture<Void> updateTable(Connection connection) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
             getLatestVersion(connection, TABLE_NAME).thenAccept(latestStoredVersion -> {
 
                 if (latestStoredVersion >= CURRENT_TABLE_VERSION) {
+                    completableFuture.complete(null);
                     return;
                 }
 
@@ -174,8 +197,10 @@ public class TableVersionHistoryDAO {
 
             });
 
-            return null;
+            completableFuture.complete(null);
         });
+
+        return completableFuture;
     }
 
     /**
