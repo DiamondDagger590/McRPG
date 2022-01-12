@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
+import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
 import us.eunoians.mcrpg.database.tables.skills.SkillDataSnapshot;
 import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
 import us.eunoians.mcrpg.party.Party;
@@ -349,6 +350,7 @@ public class McRPGPlayer {
         Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
         ArcheryDAO.getPlayerArcheryData(connection, uuid).thenAccept(this::initializeSkill);//TODO probably should respect ArcheryDAO#isAcceptingQueries but I don't have some sort of actual mutex handling so we just pretend it's always gonna be true
         AxesDAO.getPlayerAxesData(connection, uuid).thenAccept(this::initializeSkill);
+        ExcavationDAO.getPlayerExcavationData(connection, uuid).thenAccept(this::initializeSkill);
 
         final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
         loadoutSet.ifPresent(rs -> {
