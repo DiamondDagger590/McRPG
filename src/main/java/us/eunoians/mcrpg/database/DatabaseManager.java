@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.database.tables.skills.FitnessDAO;
 import us.eunoians.mcrpg.database.tables.skills.HerbalismDAO;
 import us.eunoians.mcrpg.database.tables.skills.MiningDAO;
 import us.eunoians.mcrpg.database.tables.skills.SorceryDAO;
+import us.eunoians.mcrpg.database.tables.skills.SwordsDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -154,6 +155,16 @@ public class DatabaseManager {
                             logger.log(Level.WARNING, "Database Creation - Sorcery DAO had an error when creating.");
                             return null;
                         });
+
+                SwordsDAO.attemptCreateTable(connection, this)
+                        .thenAccept(swordsTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Swords DAO "
+                                                       + (swordsTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Swords DAO had an error when creating.");
+                            return null;
+                        });
+
 
                 tableCreationFuture.complete(null);
 
