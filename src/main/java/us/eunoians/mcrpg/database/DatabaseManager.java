@@ -69,6 +69,7 @@ public class DatabaseManager {
         Logger logger = McRPG.getInstance().getLogger();
 
         CompletableFuture<Void> tableCreationFuture = new CompletableFuture<>();
+
         getDatabaseExecutorService().submit(() -> {
 
             //We need to create this first to ensure that versioning is setup
@@ -78,18 +79,57 @@ public class DatabaseManager {
                                        + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
 
                 //Can now start creating skill tables since the table version has already been created
-                ArcheryDAO.attemptCreateTable(connection, this).thenAccept(archeryTableCreated -> logger.log(Level.INFO, "Database Creation - Archery DAO "
-                                                                                                                         + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")));
-                AxesDAO.attemptCreateTable(connection, this).thenAccept(axesTableCreated -> logger.log(Level.INFO, "Database Creation - Axes DAO "
-                                                                                                                      + (axesTableCreated ? "created a new table." : "already existed so skipping creation.")));
-                ExcavationDAO.attemptCreateTable(connection, this).thenAccept(excavationTableCreated -> logger.log(Level.INFO, "Database Creation - Excavation DAO "
-                                                                                                                               + (excavationTableCreated ? "created a new table." : "already existed so skipping creation.")));
-                FishingDAO.attemptCreateTable(connection, this).thenAccept(fishingTableCreated -> logger.log(Level.INFO, "Database Creation - Fishing DAO "
-                                                                                                                            + (fishingTableCreated ? "created a new table." : "already existed so skipping creation.")));
-                FitnessDAO.attemptCreateTable(connection, this).thenAccept(fitnessTableCreated -> logger.log(Level.INFO, "Database Creation - Fitness DAO "
-                                                                                                                         + (fitnessTableCreated ? "created a new table." : "already existed so skipping creation.")));
+                ArcheryDAO.attemptCreateTable(connection, this)
+                        .thenAccept(archeryTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Archery DAO "
+                                                       + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Archery DAO had an error when creating.");
+                            return null;
+                        });
+
+                AxesDAO.attemptCreateTable(connection, this)
+                        .thenAccept(axesTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Axes DAO "
+                                                       + (axesTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Axes DAO had an error when creating.");
+                            return null;
+                        });
+
+                ExcavationDAO.attemptCreateTable(connection, this)
+                        .thenAccept(excavationTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Excavation DAO "
+                                                       + (excavationTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Excavation DAO had an error when creating.");
+                            return null;
+                        });
+
+                FishingDAO.attemptCreateTable(connection, this)
+                        .thenAccept(fishingTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Fishing DAO "
+                                                       + (fishingTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                                    logger.log(Level.WARNING, "Database Creation - Fishing DAO had an error when creating.");
+                                    return null;
+                                }
+                        );
+
+                FitnessDAO.attemptCreateTable(connection, this)
+                        .thenAccept(fitnessTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Fitness DAO "
+                                                       + (fitnessTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Fitness DAO had an error when creating.");
+                            return null;
+                        });
 
                 tableCreationFuture.complete(null);
+
+            }).exceptionally(throwable -> {
+                tableCreationFuture.completeExceptionally(throwable);
+                return null;
             });
         });
 
