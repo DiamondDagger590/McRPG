@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.database.tables.skills;
 
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -15,14 +14,9 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Archery} skill
- *
- * @author DiamondDagger590
- */
-public class ArcheryDAO {
+public class AxesDAO {
 
-    private static final String TABLE_NAME = "mcrpg_archery_data";
+    private static final String TABLE_NAME = "mcrpg_axes_data";
     private static final int CURRENT_TABLE_VERSION = 1;
 
     private static boolean isAcceptingQueries = true;
@@ -37,14 +31,11 @@ public class ArcheryDAO {
      */
     public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
 
-        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
+        return CompletableFuture.supplyAsync(() -> {
 
             //Check to see if the table already exists
             if (databaseManager.getDatabase().tableExists(TABLE_NAME)) {
-                completableFuture.complete(false);
-                return;
+                return false;
             }
 
             isAcceptingQueries = false;
@@ -118,15 +109,12 @@ public class ArcheryDAO {
             }
             catch (SQLException e) {
                 e.printStackTrace();
-                completableFuture.completeExceptionally(e);
             }
 
             isAcceptingQueries = true;
 
-            completableFuture.complete(true);
+            return true;
         });
-
-        return completableFuture;
     }
 
     /**
@@ -140,17 +128,13 @@ public class ArcheryDAO {
      */
     public static CompletableFuture<Void> updateTable(Connection connection) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
+        return CompletableFuture.supplyAsync(() -> {
 
             if (TableVersionHistoryDAO.isAcceptingQueries()) {
 
                 TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME).thenAccept(lastStoredVersion -> {
 
                     if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                        completableFuture.complete(null);
                         return;
                     }
 
@@ -166,10 +150,8 @@ public class ArcheryDAO {
 
             }
 
-            completableFuture.complete(null);
+            return null;
         });
-
-        return completableFuture;
     }
 
     /**
@@ -185,10 +167,7 @@ public class ArcheryDAO {
      */
     public static CompletableFuture<SkillDataSnapshot> getPlayerArcheryData(Connection connection, UUID uuid) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
+        return CompletableFuture.supplyAsync(() -> {
 
             SkillDataSnapshot skillDAOWrapper = new SkillDataSnapshot(uuid, Skills.ARCHERY);
 
@@ -223,14 +202,11 @@ public class ArcheryDAO {
             }
             catch (SQLException e) {
                 e.printStackTrace();
-                completableFuture.completeExceptionally(e);
             }
 
-            completableFuture.complete(skillDAOWrapper);
-
+            return skillDAOWrapper;
         });
 
-        return completableFuture;
     }
 
     //TODO because I only care about loading player data rn and cba to save it

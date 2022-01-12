@@ -33,9 +33,9 @@ public class LeaderboardManager{
   public LeaderboardManager(McRPG plugin){
     this.plugin = plugin;
     try{
-      powerLevelStatement = plugin.getMcRPGDb().getDatabase().getConnection().prepareStatement("SELECT uuid, power_level FROM mcrpg_player_data ORDER BY power_level DESC ");
+      powerLevelStatement = plugin.getDatabaseManager().getDatabase().getConnection().prepareStatement("SELECT uuid, power_level FROM mcrpg_player_data ORDER BY power_level DESC ");
       for(Skills skill : Skills.values()){
-        PreparedStatement statement = plugin.getMcRPGDb().getDatabase().getConnection()
+        PreparedStatement statement = plugin.getDatabaseManager().getDatabase().getConnection()
                                         .prepareStatement("SELECT uuid, current_level FROM mcrpg_" + skill.getName().toLowerCase() + "_data ORDER BY current_level DESC ");
         skillsPreparedStatementMap.put(skill, statement);
       }

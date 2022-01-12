@@ -236,7 +236,7 @@ public class McRPGPlayer {
     public McRPGPlayer(UUID uuid) {
         this.uuid = uuid;
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
-        Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         //TODO reimplement using DAO's
         Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
 
@@ -346,7 +346,7 @@ public class McRPGPlayer {
 
         //Initialize skills
 
-        Connection connection = McRPG.getInstance().getMcRPGDb().getDatabase().getConnection();
+        Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
         ArcheryDAO.getPlayerArcheryData(connection, uuid).thenAccept(this::initializeSkill); //TODO probably should respect ArcheryDAO#isAcceptingQueries but I don't have some sort of actual mutex handling so we just pretend it's always gonna be true
 
         final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
@@ -613,7 +613,7 @@ public class McRPGPlayer {
                 toRemove.add(ability);
             }
         }
-        Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         if (!toRemove.isEmpty()) {
             for (UnlockedAbilities ab : toRemove) {
                 database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().getName().toLowerCase() + "_data SET "
@@ -649,7 +649,7 @@ public class McRPGPlayer {
      * Reset all cooldowns to be 0
      */
     public void resetCooldowns() {
-        Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         for (UnlockedAbilities ability : abilitiesOnCooldown.keySet()) {
             long timeToEnd = abilitiesOnCooldown.get(ability);
             if (Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
@@ -675,7 +675,7 @@ public class McRPGPlayer {
      * Save players data
      */
     public void saveData() {
-        Database database = McRPG.getInstance().getMcRPGDb().getDatabase();
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         for (Skills type : Skills.values()) {
             Skill skill = getSkill(type);
             String query = "UPDATE mcrpg_" + skill.getName().toLowerCase() + "_data SET current_level = " + skill.getCurrentLevel() + ", current_exp = " + skill.getCurrentExp();

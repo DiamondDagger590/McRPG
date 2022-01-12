@@ -8,6 +8,9 @@ import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,6 +18,9 @@ public class DatabaseManager {
 
     private McRPG instance;
     private Database database;
+    private final ThreadPoolExecutor databaseExecutorService =
+            new ThreadPoolExecutor(1, 4, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+
 
     public DatabaseManager(McRPG plugin) {
         this.instance = plugin;
@@ -43,6 +49,15 @@ public class DatabaseManager {
         return database;
     }
 
+    /**
+     * Gets the {@link ThreadPoolExecutor} used to run database queries
+     *
+     * @return The {@link ThreadPoolExecutor} used to run database queries
+     */
+    public ThreadPoolExecutor getDatabaseExecutorService() {
+        return databaseExecutorService;
+    }
+
     private void attemptCreateTables() {
 
         Connection connection = database.getConnection();
@@ -56,8 +71,7 @@ public class DatabaseManager {
 
             //Can now start creating skill tables since the table version has already been created
             ArcheryDAO.attemptCreateTable(connection, this).thenAccept(archeryTableCreated -> logger.log(Level.INFO, "Database Creation - Archery DAO "
-                                                                                                                 + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")));
-
+                                                                                                                     + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")));
 
 
         });
