@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables.skills;
 
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -14,6 +15,11 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Axes} skill
+ *
+ * @author DiamondDagger590
+ */
 public class AxesDAO {
 
     private static final String TABLE_NAME = "mcrpg_axes_data";
@@ -31,11 +37,14 @@ public class AxesDAO {
      */
     public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
             //Check to see if the table already exists
             if (databaseManager.getDatabase().tableExists(TABLE_NAME)) {
-                return false;
+                completableFuture.complete(false);
+                return;
             }
 
             isAcceptingQueries = false;
@@ -50,28 +59,28 @@ public class AxesDAO {
              * uuid is the {@link java.util.UUID} of the player being stored
              * current_exp is the amount of exp a player currently has in this skill
              * current_level is the level a player currently has in this skill
-             * is_daze_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.archery.Daze} ability toggled
-             * is_puncture_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.archery.Puncture} ability toggled
-             * is_tipped_arrows_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.archery.TippedArrows} ability toggled
-             * is_combo_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.archery.Combo} ability toggled
-             * is_blessing_of_artemis_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.archery.BlessingOfArtemis} ability toggled
-             * is_blessing_of_apollo_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.archery.BlessingOfApollo} ability toggled
-             * is_curse_of_hades_toggled represents if the player ahs the {@link us.eunoians.mcrpg.api.events.mcrpg.archery.CurseOfHadesEvent} ability toggled
-             * puncture_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.archery.Puncture} ability
-             * tipped_arrows_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.archery.TippedArrows} ability
-             * combo_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.archery.Combo} ability
-             * blessing_of_artemis_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.archery.BlessingOfArtemis} ability
-             * blessing_of_apollo_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.archery.BlessingOfApollo} ability
-             * curse_of_hades_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.archery.CurseOfHades} ability
-             * is_puncture_pending represents if the player has {@link us.eunoians.mcrpg.abilities.archery.Puncture} pending to be accepted
-             * is_tipped_arrows_pending represents if the player has {@link us.eunoians.mcrpg.abilities.archery.TippedArrows} pending to be accepted
-             * is_combo_pending represents if the player has {@link us.eunoians.mcrpg.abilities.archery.Combo} pending to be accepted
-             * is_blessing_of_artemis_pending represents if the player has {@link us.eunoians.mcrpg.abilities.archery.BlessingOfArtemis} pending to be accepted
-             * is_blessing_of_apollo_pending represents if the player has {@link us.eunoians.mcrpg.abilities.archery.BlessingOfApollo} pending to be accepted
-             * is_curse_of_hades_pending represents if the player has {@link us.eunoians.mcrpg.abilities.archery.CurseOfHades} pending to be accepted
-             * blessing_of_artemis_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.archery.BlessingOfArtemis} ability
-             * blessing_of_apollo_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.archery.BlessingOfApollo} ability
-             * curse_of_hades_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.archery.CurseOfHades} ability
+             * is_shred_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.axes.Shred} ability toggled
+             * is_heavy_strike_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.axes.HeavyStrike} ability toggled
+             * is_blood_frenzy_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.axes.BloodFrenzy} ability toggled
+             * is_sharper_axe_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.axes.SharperAxe} ability toggled
+             * is_whirlwind_strike_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.axes.WhirlwindStrike} ability toggled
+             * is_ares_blessing_toggled represents if the player has the {@link us.eunoians.mcrpg.abilities.axes.AresBlessing} ability toggled
+             * is_crippling_blow_toggled represents if the player ahs the {@link us.eunoians.mcrpg.abilities.axes.CripplingBlow} ability toggled
+             * heavy_strike_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.axes.HeavyStrike} ability
+             * blood_frenzy_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.axes.BloodFrenzy} ability
+             * sharper_axe_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.axes.SharperAxe} ability
+             * whirlwind_strike_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.axes.WhirlwindStrike} ability
+             * ares_blessing_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.axes.AresBlessing} ability
+             * crippling_blow_tier represents the tier for the player's {@link us.eunoians.mcrpg.abilities.axes.CripplingBlow} ability
+             * is_heavy_strike_pending represents if the player has {@link us.eunoians.mcrpg.abilities.axes.HeavyStrike} pending to be accepted
+             * is_blood_frenzy_pending represents if the player has {@link us.eunoians.mcrpg.abilities.axes.BloodFrenzy} pending to be accepted
+             * is_sharper_axe_pending represents if the player has {@link us.eunoians.mcrpg.abilities.axes.SharperAxe} pending to be accepted
+             * is_whirlwind_strike_pending represents if the player has {@link us.eunoians.mcrpg.abilities.axes.WhirlwindStrike} pending to be accepted
+             * is_ares_blessing_pending represents if the player has {@link us.eunoians.mcrpg.abilities.axes.AresBlessing} pending to be accepted
+             * is_crippling_blow_pending represents if the player has {@link us.eunoians.mcrpg.abilities.axes.CripplingBlow} pending to be accepted
+             * whirlwind_strike_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.axes.WhirlwindStrike} ability
+             * ares_blessing_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.axes.AresBlessing} ability
+             * crippling_blow_cooldown represents the cooldown for the player's {@link us.eunoians.mcrpg.abilities.axes.CripplingBlow} ability
              **
              ** Reasoning for structure:
              ** PK is the `uuid` field, as each player only has one uuid
@@ -82,39 +91,43 @@ public class AxesDAO {
                                                                            "`uuid` varchar(32) NOT NULL," +
                                                                            "`current_exp` int(11) NOT NULL DEFAULT 0," +
                                                                            "`current_level` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`is_daze_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_puncture_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_tipped_arrows_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_combo_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_blessing_of_artemis_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_blessing_of_apollo_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`is_curse_of_hades_toggled` BIT NOT NULL DEFAULT 1," +
-                                                                           "`puncture_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`tipped_arrows_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`combo_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`blessing_of_artemis_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`blessing_of_apollo_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`curse_of_hades_tier` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`is_puncture_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_combo_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_blessing_of_artemis_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_blessing_of_apollo_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`is_curse_of_hades_pending` BIT NOT NULL DEFAULT 0," +
-                                                                           "`blessing_of_artemis_cooldown` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`blessing_of_apollo_cooldown` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`curse_of_hades_cooldown` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`is_shred_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_heavy_strike_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_blood_frenzy_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_sharper_axe_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_whirlwind_strike_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_ares_blessing_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`is_crippling_blow_toggled` BIT NOT NULL DEFAULT 1," +
+                                                                           "`heavy_strike_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`blood_frenzy_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`sharper_axe_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`whirlwind_strike_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`ares_blessing_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`crippling_blow_tier` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`is_heavy_strike_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_blood_frenzy_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_sharper_axe_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_whirlwind_strike_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_ares_blessing_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_crippling_blow_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`whirlwind_strike_cooldown` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`ares_blessing_cooldown` int(11) NOT NULL DEFAULT 0," +
+                                                                           "`crippling_blow_cooldown` int(11) NOT NULL DEFAULT 0," +
                                                                            "PRIMARY KEY (`uuid`)" +
                                                                            ");")) {
                 statement.executeUpdate();
             }
             catch (SQLException e) {
                 e.printStackTrace();
+                completableFuture.completeExceptionally(e);
             }
 
             isAcceptingQueries = true;
 
-            return true;
+            completableFuture.complete(true);
         });
+
+        return completableFuture;
     }
 
     /**
@@ -128,13 +141,17 @@ public class AxesDAO {
      */
     public static CompletableFuture<Void> updateTable(Connection connection) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
             if (TableVersionHistoryDAO.isAcceptingQueries()) {
 
                 TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME).thenAccept(lastStoredVersion -> {
 
                     if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+                        completableFuture.complete(null);
                         return;
                     }
 
@@ -150,26 +167,31 @@ public class AxesDAO {
 
             }
 
-            return null;
+            completableFuture.complete(null);
         });
+
+        return completableFuture;
     }
 
     /**
-     * Gets a {@link SkillDataSnapshot} containing all of the player's skill data for {@link us.eunoians.mcrpg.skills.Archery}. If
+     * Gets a {@link SkillDataSnapshot} containing all of the player's skill data for {@link us.eunoians.mcrpg.skills.Axes}. If
      * the provided {@link UUID} doesn't have any data, any empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      *
      * @param connection The {@link Connection} to use to get the skill data
      * @param uuid       The {@link UUID} of the player who's data is being obtained
-     * @return A {@link CompletableFuture} containing a {@link SkillDataSnapshot} that has all of the player's {@link us.eunoians.mcrpg.skills.Archery} skill
+     * @return A {@link CompletableFuture} containing a {@link SkillDataSnapshot} that has all of the player's {@link us.eunoians.mcrpg.skills.Axes} skill
      * data. If the provided {@link UUID} doesn't have any data, any empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      */
-    public static CompletableFuture<SkillDataSnapshot> getPlayerArcheryData(Connection connection, UUID uuid) {
+    public static CompletableFuture<SkillDataSnapshot> getPlayerAxesData(Connection connection, UUID uuid) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
-            SkillDataSnapshot skillDAOWrapper = new SkillDataSnapshot(uuid, Skills.ARCHERY);
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            SkillDataSnapshot skillDAOWrapper = new SkillDataSnapshot(uuid, Skills.AXES);
 
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE uuid = ?;")) {
 
@@ -186,37 +208,40 @@ public class AxesDAO {
                         skillDAOWrapper.setCurrentExp(currentExp);
                         skillDAOWrapper.setCurrentLevel(currentLevel);
 
-                        //Daze
-                        skillDAOWrapper.addAbilityToggledData(DefaultAbilities.DAZE, resultSet.getBoolean("is_daze_toggled"));
+                        //Shred
+                        skillDAOWrapper.addAbilityToggledData(DefaultAbilities.SHRED, resultSet.getBoolean("is_daze_toggled"));
 
-                        //Puncture
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.PUNCTURE, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.TIPPED_ARROWS, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.COMBO, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.BLESSING_OF_ARTEMIS, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.BLESSING_OF_APOLLO, resultSet);
-                        skillDAOWrapper.addAbilityData(UnlockedAbilities.CURSE_OF_HADES, resultSet);
+                        //Unlocked Abilities
+                        skillDAOWrapper.addAbilityData(UnlockedAbilities.HEAVY_STRIKE, resultSet);
+                        skillDAOWrapper.addAbilityData(UnlockedAbilities.BLOOD_FRENZY, resultSet);
+                        skillDAOWrapper.addAbilityData(UnlockedAbilities.SHARPER_AXE, resultSet);
+                        skillDAOWrapper.addAbilityData(UnlockedAbilities.WHIRLWIND_STRIKE, resultSet);
+                        skillDAOWrapper.addAbilityData(UnlockedAbilities.ARES_BLESSING, resultSet);
+                        skillDAOWrapper.addAbilityData(UnlockedAbilities.CRIPPLING_BLOW, resultSet);
                     }
 
                 }
             }
             catch (SQLException e) {
                 e.printStackTrace();
+                completableFuture.completeExceptionally(e);
             }
 
-            return skillDAOWrapper;
+            completableFuture.complete(skillDAOWrapper);
+
         });
 
+        return completableFuture;
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerArcheryData(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerArxesyData(Connection connection, McRPGPlayer mcRPGPlayer) {
 
     }
 
     /**
      * Checks to see if this table is accepting queries at the moment. A reason it could be false is either the table is
-     * in creation or the table is being updated and for some reason a query is attempting to be ran.
+     * in creation or the table is being updated and for some reason a query is attempting to be run.
      *
      * @return {@code true} if this table is accepting queries
      */

@@ -105,6 +105,7 @@ public class ArcheryDAO {
                                                                            "`blessing_of_apollo_tier` int(11) NOT NULL DEFAULT 0," +
                                                                            "`curse_of_hades_tier` int(11) NOT NULL DEFAULT 0," +
                                                                            "`is_puncture_pending` BIT NOT NULL DEFAULT 0," +
+                                                                           "`is_tipped_arrows_pending` BIT NOT NULL DEFAULT 0," +
                                                                            "`is_combo_pending` BIT NOT NULL DEFAULT 0," +
                                                                            "`is_blessing_of_artemis_pending` BIT NOT NULL DEFAULT 0," +
                                                                            "`is_blessing_of_apollo_pending` BIT NOT NULL DEFAULT 0," +
@@ -210,7 +211,7 @@ public class ArcheryDAO {
                         //Daze
                         skillDAOWrapper.addAbilityToggledData(DefaultAbilities.DAZE, resultSet.getBoolean("is_daze_toggled"));
 
-                        //Puncture
+                        //Unlocked Abilities
                         skillDAOWrapper.addAbilityData(UnlockedAbilities.PUNCTURE, resultSet);
                         skillDAOWrapper.addAbilityData(UnlockedAbilities.TIPPED_ARROWS, resultSet);
                         skillDAOWrapper.addAbilityData(UnlockedAbilities.COMBO, resultSet);
@@ -240,7 +241,7 @@ public class ArcheryDAO {
 
     /**
      * Checks to see if this table is accepting queries at the moment. A reason it could be false is either the table is
-     * in creation or the table is being updated and for some reason a query is attempting to be ran.
+     * in creation or the table is being updated and for some reason a query is attempting to be run.
      *
      * @return {@code true} if this table is accepting queries
      */
