@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.database.tables.skills.HerbalismDAO;
 import us.eunoians.mcrpg.database.tables.skills.MiningDAO;
 import us.eunoians.mcrpg.database.tables.skills.SorceryDAO;
 import us.eunoians.mcrpg.database.tables.skills.SwordsDAO;
+import us.eunoians.mcrpg.database.tables.skills.TamingDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -165,6 +166,14 @@ public class DatabaseManager {
                             return null;
                         });
 
+                TamingDAO.attemptCreateTable(connection, this)
+                        .thenAccept(tamingTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Taming DAO "
+                                                       + (tamingTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Taming DAO had an error when creating.");
+                            return null;
+                        });
 
                 tableCreationFuture.complete(null);
 

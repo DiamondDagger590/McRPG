@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Axes} skill
+ * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Swords} skill
  *
  * @author DiamondDagger590
  */
