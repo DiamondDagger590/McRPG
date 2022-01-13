@@ -89,7 +89,7 @@ public class TableVersionHistoryDAO {
             }
 
             //Update table to contain new table version
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (table_name, updated_time, table_version) VALUES (?, ?, ?);")) {
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (table_name, updated_time, table_version) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE updated_time = VALUES(updated_time), table_version = VALUES(table_version);")) {
                 statement.setString(1, tableName);
                 statement.setTime(2, new Time(Calendar.getInstance().getTimeInMillis()));
                 statement.setInt(3, version); //We know the version needs to be 1, so we are hard coding it here rather than incrementing the variable, as we can't confirm that this query works so it's unsafe to assume so

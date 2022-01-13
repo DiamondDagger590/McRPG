@@ -47,7 +47,21 @@ public class DatabaseManager {
             e.printStackTrace();
         }
 
-        attemptCreateTables();
+        Logger logger = plugin.getLogger();
+
+        //Create any missing tables
+        attemptCreateTables().thenAccept(tableCreationNull -> {
+
+            logger.log(Level.INFO, "Any missing database tables have been created! Now starting the updating process...");
+            //Update all tables and alert console
+            updateTables().thenAccept(tableUpdateNull -> {
+                logger.log(Level.INFO, "All database tables are now updated to their latest versions!");
+            });
+
+        }).exceptionally(throwable -> {
+            logger.log(Level.WARNING, "There was an error creating any missing database tables... please alert the developer of this plugin.");
+            return null;
+        });
         //TODO Fire events to allow custom DAO's to be created from 3rd party plugins?
 
     }
@@ -207,13 +221,52 @@ public class DatabaseManager {
 
     }
 
-    private void updateTables() {
+    private CompletableFuture<Void> updateTables() {
 
         Connection connection = database.getConnection();
+        Logger logger = McRPG.getInstance().getLogger();
 
-        //We need to first update the table version history and then we can update other tables
-        TableVersionHistoryDAO.updateTable(connection).thenAccept(thisIsNullThouLol -> {
+        CompletableFuture<Void> tableUpdateFuture = new CompletableFuture<>();
 
+        logger.log(Level.INFO, "Starting the Database Update process... This will check existing tables for updates and update them as needed.");
+
+        getDatabaseExecutorService().submit(() -> {
+
+            //We need to first update the table version history, and then we can update other tables
+            TableVersionHistoryDAO.updateTable(connection).thenAccept(thisIsNullThouLol -> {
+
+                logger.log(Level.INFO, "Database Update - Table Version History DAO has undergone any applicable updates.");
+
+                ArcheryDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Archery DAO has undergone any applicable updates."));
+                AxesDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Axes DAO has undergone any applicable updates."));
+                ExcavationDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Excavation DAO has undergone any applicable updates."));
+                FishingDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Fishing DAO has undergone any applicable updates."));
+                FitnessDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Fitness DAO has undergone any applicable updates."));
+                HerbalismDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Herbalism DAO has undergone any applicable updates."));
+                MiningDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Mining DAO has undergone any applicable updates."));
+                SorceryDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Sorcery DAO has undergone any applicable updates."));
+                SwordsDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Swords Update - Archery DAO has undergone any applicable updates."));
+                TamingDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Taming DAO has undergone any applicable updates."));
+                UnarmedDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Unarmed DAO has undergone any applicable updates."));
+                WoodcuttingDAO.updateTable(connection).thenAccept(archeryNull ->
+                        logger.log(Level.INFO, "Database Update - Woodcutting DAO has undergone any applicable updates."));
+
+                tableUpdateFuture.complete(null);
+            });
         });
+
+        return tableUpdateFuture;
+
     }
 }

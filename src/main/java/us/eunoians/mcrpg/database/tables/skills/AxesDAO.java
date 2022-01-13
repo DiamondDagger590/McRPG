@@ -154,9 +154,10 @@ public class AxesDAO extends SkillDAO {
 
                     isAcceptingQueries = false;
 
-                    //This is where we would add any updates but we don't have any
-                    if (lastStoredVersion == 1) { //Would be used whenever our CURRENT_TABLE_VERSION is 2
-
+                    //Adds table to our tracking
+                    if (lastStoredVersion == 0) {
+                        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+                        lastStoredVersion = 1;
                     }
 
                     isAcceptingQueries = true;
