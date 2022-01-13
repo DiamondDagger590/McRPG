@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.database.tables.skills.SorceryDAO;
 import us.eunoians.mcrpg.database.tables.skills.SwordsDAO;
 import us.eunoians.mcrpg.database.tables.skills.TamingDAO;
 import us.eunoians.mcrpg.database.tables.skills.UnarmedDAO;
+import us.eunoians.mcrpg.database.tables.skills.WoodcuttingDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -182,6 +183,15 @@ public class DatabaseManager {
                                                        + (unarmedTabledCreated ? "created a new table." : "already existed so skipping creation.")))
                         .exceptionally(throwable -> {
                             logger.log(Level.WARNING, "Database Creation - Unarmed DAO had an error when creating.");
+                            return null;
+                        });
+
+                WoodcuttingDAO.attemptCreateTable(connection, this)
+                        .thenAccept(woodcuttingTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Woodcutting DAO "
+                                                       + (woodcuttingTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Woodcutting DAO had an error when creating.");
                             return null;
                         });
 

@@ -31,6 +31,7 @@ import us.eunoians.mcrpg.database.tables.skills.SorceryDAO;
 import us.eunoians.mcrpg.database.tables.skills.SwordsDAO;
 import us.eunoians.mcrpg.database.tables.skills.TamingDAO;
 import us.eunoians.mcrpg.database.tables.skills.UnarmedDAO;
+import us.eunoians.mcrpg.database.tables.skills.WoodcuttingDAO;
 import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
@@ -367,6 +368,7 @@ public class McRPGPlayer {
         SwordsDAO.getPlayerSwordsData(connection, uuid).thenAccept(this::initializeSkill);
         TamingDAO.getPlayerTamingsData(connection, uuid).thenAccept(this::initializeSkill);
         UnarmedDAO.getPlayerUnarmedData(connection, uuid).thenAccept(this::initializeSkill);
+        WoodcuttingDAO.getPlayerWoodcuttingData(connection, uuid).thenAccept(this::initializeSkill);
 
         final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
         loadoutSet.ifPresent(rs -> {
