@@ -33,7 +33,6 @@ public interface GenericAbility {
 
       //On the first letter, we don't need to add a `_`, so we skip
       if (!first) {
-
         //Check here for uppercase except on the first letter
         if (Character.isUpperCase(letter)) {
           string.append("_");
@@ -43,7 +42,11 @@ public interface GenericAbility {
         first = false;
       }
 
-      string.append(letter == '+' ? "plus" : letter);//Hardcode to handle Bleed+
+      if(letter == ' '){ //Why have I done this to myself
+        continue;
+      }
+
+      string.append(letter == '+' ? "_plus" : letter);//Hardcode to handle Bleed+
     }
     return string.toString().toLowerCase(Locale.ROOT); //Lowercase it all
   }

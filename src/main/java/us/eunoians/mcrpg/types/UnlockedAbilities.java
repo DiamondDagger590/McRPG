@@ -135,7 +135,7 @@ public enum UnlockedAbilities implements GenericAbility {
     ORE_SCANNER("OreScanner", OreScanner.class, AbilityType.ACTIVE, Files.MINING_CONFIG, true),
     PANS_BLESSING("PansBlessing", PansBlessing.class, AbilityType.ACTIVE, Files.HERBALISM_CONFIG, true),
     PANS_SHRINE("PansShrine", PansShrine.class, AbilityType.ACTIVE, Files.EXCAVATION_CONFIG, true),
-    PETAS_WRATH("PETAsWrath", PETAsWrath.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
+    PETAS_WRATH("PetasWrath", PETAsWrath.class, AbilityType.PASSIVE, Files.TAMING_CONFIG, false),
     POSEIDONS_FAVOR("PoseidonsFavor", PoseidonsFavor.class, AbilityType.PASSIVE, Files.FISHING_CONFIG, false),
     POTION_AFFINITY("PotionAffinity", PotionAffinity.class, AbilityType.PASSIVE, Files.SORCERY_CONFIG, false),
     PUNCTURE("Puncture", Puncture.class, AbilityType.PASSIVE, Files.ARCHERY_CONFIG, false),

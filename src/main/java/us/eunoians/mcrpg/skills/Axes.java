@@ -5,11 +5,11 @@ import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.GenericAbility;
 import us.eunoians.mcrpg.types.Skills;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class Axes extends Skill {
 
-  public Axes(int currentLevel, int currentExp, HashMap<GenericAbility, BaseAbility> map, McRPGPlayer player) {
+  public Axes(int currentLevel, int currentExp, Map<GenericAbility, BaseAbility> map, McRPGPlayer player) {
     super(Skills.AXES, map, currentLevel, currentExp, player);
   }
 }
