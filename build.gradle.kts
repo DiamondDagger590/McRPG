@@ -35,9 +35,9 @@ repositories {
     mavenCentral()
     mavenLocal()
     jcenter()
+
     maven("https://jitpack.io")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
-    maven("https://nexus.articdive.de/repository/maven-public/") //EnumToYaml
     maven("https://maven.sk89q.com/repo/") //WorldGuard
     maven("https://nexus.wesjd.net/repository/thirdparty/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -60,8 +60,8 @@ dependencies {
     val javassistVersion = "3.28.0-GA"
     implementation("org.javassist:javassist:$javassistVersion")
 
-    val flatDBVersion = "1.0.7"
-    implementation("com.github.DiamondDagger590:FlatDB:$flatDBVersion")
+    val flatDBVersion = "1.1.0.7"
+    implementation("com.cyr1en:flatdb:$flatDBVersion")
 
     // TODO Look into new spigot yaml comment api
     val enumToYamlVersion = "1.0"

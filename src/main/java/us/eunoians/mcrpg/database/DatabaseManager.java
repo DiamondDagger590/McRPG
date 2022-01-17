@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.database;
 import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
@@ -40,6 +41,8 @@ public class DatabaseManager {
         DatabaseBuilder dbBuilder = new DatabaseBuilder();
         dbBuilder.setDatabasePrefix("mcrpg_");
         dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
+        dbBuilder.setUpgradeVersion(plugin.getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.UpgradeSQLDatabase"));
+
         try {
             database = dbBuilder.build();
         }
