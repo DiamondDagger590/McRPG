@@ -4,6 +4,7 @@ import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
+import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
@@ -107,6 +108,15 @@ public class DatabaseManager {
                                                        + (playerDataTableCreated ? "created a new table." : "already existed so skipping creation.")))
                         .exceptionally(throwable -> {
                             logger.log(Level.WARNING, "Database Creation - Player Data DAO had an error when creating.");
+                            return null;
+                        });
+
+                PlayerSettingsDAO.attemptCreateTable(connection, this)
+                        .thenAccept(playerSettingsTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Player Settings DAO "
+                                                       + (playerSettingsTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Player Settings DAO had an error when creating.");
                             return null;
                         });
 
@@ -250,6 +260,9 @@ public class DatabaseManager {
 
                 PlayerDataDAO.updateTable(connection).thenAccept(playerDataNull ->
                         logger.log(Level.INFO, "Database Update - Player Data DAO has undergone any applicable updates."));
+
+                PlayerSettingsDAO.updateTable(connection).thenAccept(playerSettingsNull ->
+                        logger.log(Level.INFO, "Database Update - Player Settings DAO has undergone any applicable updates."));
 
                 ArcheryDAO.updateTable(connection).thenAccept(archeryNull ->
                         logger.log(Level.INFO, "Database Update - Archery DAO has undergone any applicable updates."));

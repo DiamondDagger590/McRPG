@@ -186,6 +186,7 @@ public class PlayerDataDAO {
                         long divineEscapeExpEndTime = resultSet.getLong("divine_escape_exp_end_time");
                         long divineEscapeDamageEndTime = resultSet.getLong("divine_escape_damage_end_time");
 
+
                         playerDataSnapshot.setPartyUUID(partyUUID);
                         playerDataSnapshot.setPowerLevel(powerLevel);
                         playerDataSnapshot.setAbilityPoints(abilityPoints);
@@ -227,7 +228,9 @@ public class PlayerDataDAO {
         return isAcceptingQueries;
     }
 
-
+    /**
+     * A POJO containing all relevant player data obtained from this DAO
+     */
     public static class PlayerDataSnapshot {
 
         private final UUID uuid;

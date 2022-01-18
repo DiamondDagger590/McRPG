@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
+import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
@@ -305,23 +306,16 @@ public class McRPGPlayer {
             }.runTask(McRPG.getInstance());
         });
 
-        final Optional<ResultSet> settingsSet = database.executeQuery("SELECT * FROM mcrpg_player_settings WHERE uuid = '" + uuid.toString() + "'");
-        settingsSet.ifPresent(rs -> {
-            try {
-                if (rs.next()) {
-                    this.healthbarType = MobHealthbarUtils.MobHealthbarType.fromString(rs.getString("health_type"));
-                    this.keepHandEmpty = rs.getBoolean("keep_hand");
-                    this.displayType = DisplayType.fromString(rs.getString("display_type"));
-                    this.autoDeny = rs.getBoolean("auto_deny");
-                    this.ignoreTips = rs.getBoolean("ignore_tips");
-                    this.requireEmptyOffHand = rs.getBoolean("require_empty_offhand");
-                    this.unarmedIgnoreSlot = rs.getInt("unarmed_ignore_slot");
-                    this.autoAcceptPartyInvites = rs.getBoolean("auto_accept_party_teleports");
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
+        PlayerSettingsDAO.getPlayerSettings(connection, uuid).thenAccept(playerSettingsSnapshot -> {
+
+            this.healthbarType = playerSettingsSnapshot.getHealthbarType();
+            this.keepHandEmpty = playerSettingsSnapshot.isKeepHandEmpty();
+            this.displayType = playerSettingsSnapshot.getDisplayType();
+            this.autoDeny = playerSettingsSnapshot.isAutoDeny();
+            this.ignoreTips = playerSettingsSnapshot.isIgnoreTips();
+            this.requireEmptyOffHand = playerSettingsSnapshot.isRequireOffHand();
+            this.unarmedIgnoreSlot = playerSettingsSnapshot.getUnarmedIgnoreSlot();
+            this.autoAcceptPartyInvites = playerSettingsSnapshot.isAutoAcceptPartyTeleports();
         });
 
         //Initialize skills
