@@ -60,7 +60,7 @@ dependencies {
     val javassistVersion = "3.28.0-GA"
     implementation("org.javassist:javassist:$javassistVersion")
 
-    val flatDBVersion = "1.1.0.7"
+    val flatDBVersion = "1.1.0.8"
     implementation("com.cyr1en:flatdb:$flatDBVersion")
 
     // TODO Look into new spigot yaml comment api
