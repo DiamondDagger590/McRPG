@@ -210,7 +210,8 @@ public class PlayerDataDAO {
 
         });
 
-        return completableFuture;    }
+        return completableFuture;
+    }
 
     //TODO because I only care about loading player data rn and cba to save it
     public static void savePlayerData(Connection connection, McRPGPlayer mcRPGPlayer) {
@@ -227,7 +228,7 @@ public class PlayerDataDAO {
     }
 
 
-    public static class PlayerDataSnapshot{
+    public static class PlayerDataSnapshot {
 
         private final UUID uuid;
 
@@ -243,101 +244,218 @@ public class PlayerDataDAO {
         private long divineEscapeExpEndTime;
         private long divineEscapeDamageEndTime;
 
-        public PlayerDataSnapshot(@NotNull UUID uuid){
+        public PlayerDataSnapshot(@NotNull UUID uuid) {
             this.uuid = uuid;
         }
 
+        /**
+         * Gets the {@link UUID} of the player represented by this snapshot
+         *
+         * @return The {@link UUID} of the player represented by this snapshot
+         */
         @NotNull
         public UUID getUuid() {
             return uuid;
         }
 
+        /**
+         * Gets the {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party}
+         *
+         * @return The {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party} or {@code null} if the
+         * player isn't in a party
+         */
         @Nullable
         public UUID getPartyUUID() {
             return partyUUID;
         }
 
-        public void setPartyUUID(@Nullable UUID partyUUID) {
+        /**
+         * Sets the {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party} for this snapshot
+         *
+         * @param partyUUID The {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party} for this snapshot
+         *                  or {@code null} if the player isn't in a party
+         */
+        void setPartyUUID(@Nullable UUID partyUUID) {
             this.partyUUID = partyUUID;
         }
 
+        /**
+         * Gets the power level of the player, which is the sum of all of the player's skill levels
+         *
+         * @return The positive, zero inclusive power level of a player
+         */
         public int getPowerLevel() {
             return powerLevel;
         }
 
-        public void setPowerLevel(int powerLevel) {
-            this.powerLevel = powerLevel;
+        /**
+         * Sets the power level of the player represented by this snapshot
+         *
+         * @param powerLevel The new positive, zero inclusive power level of the player represented by this snapshot
+         */
+        void setPowerLevel(int powerLevel) {
+            this.powerLevel = Math.max(0, powerLevel);
         }
 
+        /**
+         * Gets the amount of ability points that the player has left to spend
+         *
+         * @return The positive, zero inclusive amout of ability points that the player has left to spend
+         */
         public int getAbilityPoints() {
             return abilityPoints;
         }
 
-        public void setAbilityPoints(int abilityPoints) {
-            this.abilityPoints = abilityPoints;
+        /**
+         * Sets the amount of ability points that the player has to spend as represented by this snapshot
+         *
+         * @param abilityPoints The positive, zero inclusive amount of ability points for the player to be represented by this snapshot
+         */
+        void setAbilityPoints(int abilityPoints) {
+            this.abilityPoints = Math.max(0, abilityPoints);
         }
 
+        /**
+         * Gets the time in millis that the player is able to replace an ability again for this snapshot
+         *
+         * @return The time in millis that the player is able to replace an ability again for this snapshot
+         */
         public long getReplaceAbilityCooldownTime() {
             return replaceAbilityCooldownTime;
         }
 
-        public void setReplaceAbilityCooldownTime(long replaceAbilityCooldownTime) {
+        /**
+         * Sets the time in millis that the player is able to replace an ability again according to this snapshot
+         *
+         * @param replaceAbilityCooldownTime The time in millis that the player is able to replace an ability again according to this snapshot
+         */
+        void setReplaceAbilityCooldownTime(long replaceAbilityCooldownTime) {
             this.replaceAbilityCooldownTime = replaceAbilityCooldownTime;
         }
 
+        /**
+         * Gets the amount of redeemable exp that the player has according to this snapshot
+         *
+         * @return The positive, zero inclusive amount of redeemable exp that the player has according to this snapshot
+         */
         public int getRedeemableExp() {
             return redeemableExp;
         }
 
-        public void setRedeemableExp(int redeemableExp) {
-            this.redeemableExp = redeemableExp;
+        /**
+         * Sets the amount of redeemable exp that the player has according to this snapshot
+         *
+         * @param redeemableExp A positive, zero inclusive amount of redeemable exp that this snapshot should report the player having
+         */
+        void setRedeemableExp(int redeemableExp) {
+            this.redeemableExp = Math.max(0, redeemableExp);
         }
 
+        /**
+         * Gets the amount of redeemable levels that the player has according to this snapshot
+         *
+         * @return The positive, zero inclusive amount of redeemable leves that the player has according to this snapshot
+         */
         public int getRedeemableLevels() {
             return redeemableLevels;
         }
 
-        public void setRedeemableLevels(int redeemableLevels) {
-            this.redeemableLevels = redeemableLevels;
+        /**
+         * Sets the amount of redeemable levels that the player has according to this snapshot
+         *
+         * @param redeemableLevels A positive, zero inclusive amount of redeemable levels that this snapshot should report the player having
+         */
+        void setRedeemableLevels(int redeemableLevels) {
+            this.redeemableLevels = Math.max(0, redeemableLevels);
         }
 
+        /**
+         * Gets the amount of boosted exp that the player has according to this snapshot
+         *
+         * @return The positive, zero inclusive amount of boosted exp that the player has according to this snapshot
+         */
         public int getBoostedExp() {
             return boostedExp;
         }
 
-        public void setBoostedExp(int boostedExp) {
-            this.boostedExp = boostedExp;
+        /**
+         * Sets the amount of boosted exp that the player has according to this snapshot
+         *
+         * @param boostedExp A positive, zero inclusive amount of boosted exp that this snapshot should report the player having
+         */
+        void setBoostedExp(int boostedExp) {
+            this.boostedExp = Math.max(0, boostedExp);
         }
 
+        /**
+         * Gets the percentage to debuff the player's exp gain by according to this snapshot
+         *
+         * @return The percentage to debuff the player's exp gain by according to this snapshot
+         */
         public double getDivineEscapeExpDebuff() {
             return divineEscapeExpDebuff;
         }
 
-        public void setDivineEscapeExpDebuff(double divineEscapeExpDebuff) {
+        /**
+         * Sets the percentage to debuff the player's exp gain by according to this snapshot
+         *
+         * @param divineEscapeExpDebuff The percentage to debuff the player's exp gain by according to this snapshot
+         */
+        void setDivineEscapeExpDebuff(double divineEscapeExpDebuff) {
             this.divineEscapeExpDebuff = divineEscapeExpDebuff;
         }
 
+        /**
+         * Gets the percentage to debuff the player's damage output by according to this snapshot
+         *
+         * @return The percentage to debuff the player's damage output by according to this snapshot
+         */
         public double getDivineEscapeDamageDebuff() {
             return divineEscapeDamageDebuff;
         }
 
-        public void setDivineEscapeDamageDebuff(double divineEscapeDamageDebuff) {
+        /**
+         * Sets the percentage to debuff the player's damage output by according to this snapshot
+         *
+         * @param divineEscapeDamageDebuff The percentage to debuff the player's damage output by according to this snapshot
+         */
+        void setDivineEscapeDamageDebuff(double divineEscapeDamageDebuff) {
             this.divineEscapeDamageDebuff = divineEscapeDamageDebuff;
         }
 
+        /**
+         * Gets the time in millis that the player's exp debuff ends for this snapshot
+         *
+         * @return The time in millis that the player's exp debuff ends for this snapshot
+         */
         public long getDivineEscapeExpEndTime() {
             return divineEscapeExpEndTime;
         }
 
-        public void setDivineEscapeExpEndTime(long divineEscapeExpEndTime) {
+        /**
+         * Gets the time in millis that the player's exp debuff ends for this snapshot
+         *
+         * @param divineEscapeExpEndTime  The time in millis that the player's exp debuff ends for this snapshot
+         */
+        void setDivineEscapeExpEndTime(long divineEscapeExpEndTime) {
             this.divineEscapeExpEndTime = divineEscapeExpEndTime;
         }
 
+        /**
+         * Gets the time in millis that the player's damage debuff ends for this snapshot
+         *
+         * @return The time in millis that the player's damage debuff ends for this snapshot
+         */
         public long getDivineEscapeDamageEndTime() {
             return divineEscapeDamageEndTime;
         }
 
-        public void setDivineEscapeDamageEndTime(long divineEscapeDamageEndTime) {
+        /**
+         * Gets the time in millis that the player's damage debuff ends for this snapshot
+         *
+         * @param divineEscapeDamageEndTime  The time in millis that the player's damage debuff ends for this snapshot
+         */
+        void setDivineEscapeDamageEndTime(long divineEscapeDamageEndTime) {
             this.divineEscapeDamageEndTime = divineEscapeDamageEndTime;
         }
 
