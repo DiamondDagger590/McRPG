@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
+import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
@@ -248,92 +249,60 @@ public class McRPGPlayer {
         this.uuid = uuid;
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+        Connection connection = database.getConnection();
         //TODO reimplement using DAO's
-        Optional<ResultSet> playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
 
-        boolean isNew = false;
-        try {
-            if (playerDataSet.isPresent()) {
-                isNew = !playerDataSet.get().next();
-            }
-            else {
-                isNew = true;
-            }
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (isNew) {
-            for (Skills type : Skills.values()) {
-                String query = "INSERT INTO mcrpg_" + type.getName() + "_data (uuid) VALUES ('" + uuid.toString() + "')";
-                database.executeUpdate(query);
-            }
-            String query = "INSERT INTO MCRPG_PLAYER_SETTINGS (UUID) VALUES ('" + uuid.toString() + "')";
-            database.executeUpdate(query);
-            query = "INSERT INTO MCRPG_PLAYER_DATA (UUID) VALUES ('" + uuid.toString() + "')";
-            database.executeUpdate(query);
-            query = "INSERT INTO MCRPG_LOADOUT (UUID) VALUES ('" + uuid.toString() + "')";
-            database.executeUpdate(query);
-            playerDataSet = database.executeQuery("SELECT * FROM mcrpg_player_data WHERE uuid = '" + uuid.toString() + "'");
-            try {
-                playerDataSet.get().next();
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        playerDataSet.ifPresent(resultSet -> {
-            try {
-                //if(resultSet.next()) {
-                this.abilityPoints = resultSet.getInt("ability_points");
-                this.redeemableExp = resultSet.getInt("redeemable_exp");
-                this.redeemableLevels = resultSet.getInt("redeemable_levels");
-                long replaceCooldown = resultSet.getLong("replace_ability_cooldown_time");
-                this.boostedExp = resultSet.getInt("boosted_exp");
-                this.divineEscapeExpDebuff = resultSet.getDouble("divine_escape_exp_debuff");
-                this.divineEscapeDamageDebuff = resultSet.getDouble("divine_escape_damage_debuff");
-                this.divineEscapeExpEnd = resultSet.getLong("divine_escape_exp_end_time");
-                this.divineEscapeDamageEnd = resultSet.getLong("divine_escape_damage_end_time");
-                String partyIDString = resultSet.getString("party_uuid");
-                if (partyIDString.equalsIgnoreCase("nu")) {
-                    partyID = null;
-                }
-                else {
-                    partyID = UUID.fromString(partyIDString);
-                    Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
-                    StringBuilder nullPartyMessage = new StringBuilder();
-                    if (party == null) {
-                        partyID = null;
-                        nullPartyMessage.append("&cYour party no longer exists.");
-                    }
-                    else {
-                        if (!party.isPlayerInParty(uuid)) {
+        PlayerDataDAO.getPlayerData(connection, uuid).thenAccept(playerDataSnapshot -> {
+
+            this.abilityPoints = playerDataSnapshot.getAbilityPoints();
+            this.redeemableExp = playerDataSnapshot.getRedeemableExp();
+            this.redeemableLevels = playerDataSnapshot.getRedeemableLevels();
+            long replaceCooldown = playerDataSnapshot.getReplaceAbilityCooldownTime();
+            this.boostedExp = playerDataSnapshot.getBoostedExp();
+            this.divineEscapeExpDebuff = playerDataSnapshot.getDivineEscapeExpDebuff();
+            this.divineEscapeDamageDebuff = playerDataSnapshot.getDivineEscapeDamageDebuff();
+            this.divineEscapeExpEnd = playerDataSnapshot.getDivineEscapeExpEndTime();
+            this.divineEscapeDamageEnd = playerDataSnapshot.getDivineEscapeDamageEndTime();
+            this.partyID = playerDataSnapshot.getPartyUUID();
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    if (partyID != null) {
+                        Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
+                        StringBuilder nullPartyMessage = new StringBuilder();
+
+                        if (party == null) {
+                            partyID = null;
+                            nullPartyMessage.append("&cYour party no longer exists.");
+                        }
+                        else if (!party.isPlayerInParty(uuid)) {
                             partyID = null;
                             nullPartyMessage.append("&cYou were removed from your party whilst offline.");
                         }
-                    }
-                    if (nullPartyMessage.length() != 0) {
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
-                                if (offlinePlayer.isOnline()) {
-                                    ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
+
+                        if (nullPartyMessage.length() != 0) {
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
+                                    if (offlinePlayer.isOnline()) {
+                                        ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
+                                    }
                                 }
-                            }
-                        }.runTaskLater(McRPG.getInstance(), 2 * 20);
+                            }.runTaskLater(McRPG.getInstance(), 2 * 20);
+                        }
+                    }
+
+                    Calendar cal1 = Calendar.getInstance();
+                    Calendar cal = Calendar.getInstance();
+                    cal1.setTimeInMillis(replaceCooldown);
+                    if (cal.getTimeInMillis() < cal1.getTimeInMillis()) {
+                        endTimeForReplaceCooldown = cal1.getTimeInMillis();
                     }
                 }
-                Calendar cal1 = Calendar.getInstance();
-                Calendar cal = Calendar.getInstance();
-                cal1.setTimeInMillis(replaceCooldown);
-                if (cal.getTimeInMillis() < cal1.getTimeInMillis()) {
-                    this.endTimeForReplaceCooldown = cal1.getTimeInMillis();
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
+            }.runTask(McRPG.getInstance());
         });
 
         final Optional<ResultSet> settingsSet = database.executeQuery("SELECT * FROM mcrpg_player_settings WHERE uuid = '" + uuid.toString() + "'");
@@ -356,7 +325,6 @@ public class McRPGPlayer {
         });
 
         //Initialize skills
-        Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
         ArcheryDAO.getPlayerArcheryData(connection, uuid).thenAccept(this::initializeSkill);//TODO probably should respect ArcheryDAO#isAcceptingQueries but I don't have some sort of actual mutex handling so we just pretend it's always gonna be true
         AxesDAO.getPlayerAxesData(connection, uuid).thenAccept(this::initializeSkill);
         ExcavationDAO.getPlayerExcavationData(connection, uuid).thenAccept(this::initializeSkill);
@@ -412,7 +380,7 @@ public class McRPGPlayer {
         }
     }
 
-    void initializeSkill(SkillDataSnapshot skillDataSnapshot){
+    void initializeSkill(SkillDataSnapshot skillDataSnapshot) {
 
         Skills skillType = skillDataSnapshot.getSkillType();
         Class<? extends Skill> skillClazz = skillType.getClazz();
