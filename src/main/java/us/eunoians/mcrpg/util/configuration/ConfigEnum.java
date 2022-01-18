@@ -14,7 +14,6 @@ public enum ConfigEnum implements ConfigurationEnum {
           "#   - This plugin supports player name place holders as %Player%", "# If you receive an error when McRPG loads, ensure that:",
           "#   - No tabs are present: YAML only allows spaces", "#   - Indents are correct: YAML hierarchy is based entirely on indentation",
           "###################################"),
-  UPGRADE_SQL_DATABASE("Configuration.UpgradeSQLDatabase", false, "#If true, McRPG will attempt to upgrade the database on the next startup"),
   MCMMO_CONVERSION_EQUATION("Configuration.McMMOConversionEquation", "((skill_exp)*0.5)", "#Converts a players level to exp and then convert that into boosted experience using the equation below"),
   BOOSTED_EXP_USAGE_RATE("Configuration.BoostedExpUsageRate", "((gained_exp)*2.25)", "#When a player gains exp, this equation is factored in and if there is remaining boosted exp,", "#then it will add this equation value to the gained amount"),
   DISABLE_TIPS("Configuration.DisableTips", false, "#If all tips should be disabled"),
