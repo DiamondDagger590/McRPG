@@ -53,6 +53,9 @@ repositories {
 
 dependencies {
 
+    val intellijAnnotationVersion = "12.0"
+    implementation("com.intellij:annotations:$intellijAnnotationVersion")
+
     val spigotVersion = "1.18.1-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
 
