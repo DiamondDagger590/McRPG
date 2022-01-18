@@ -173,13 +173,13 @@ public class SwordsDAO extends SkillDAO {
 
     /**
      * Gets a {@link SkillDataSnapshot} containing all of the player's skill data for {@link us.eunoians.mcrpg.skills.Swords}. If
-     * the provided {@link UUID} doesn't have any data, any empty {@link SkillDataSnapshot} will be returned instead with no populated maps
+     * the provided {@link UUID} doesn't have any data, an empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      *
      * @param connection The {@link Connection} to use to get the skill data
-     * @param uuid       The {@link UUID} of the player who's data is being obtained
+     * @param uuid       The {@link UUID} of the player whose data is being obtained
      * @return A {@link CompletableFuture} containing a {@link SkillDataSnapshot} that has all of the player's {@link us.eunoians.mcrpg.skills.Swords} skill
-     * data. If the provided {@link UUID} doesn't have any data, any empty {@link SkillDataSnapshot} will be returned instead with no populated maps
+     * data. If the provided {@link UUID} doesn't have any data, an empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      */
     public static CompletableFuture<SkillDataSnapshot> getPlayerSwordsData(Connection connection, UUID uuid) {
