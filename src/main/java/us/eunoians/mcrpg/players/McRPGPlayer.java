@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
 import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
+import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
@@ -53,15 +54,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -332,23 +330,13 @@ public class McRPGPlayer {
         UnarmedDAO.getPlayerUnarmedData(connection, uuid).thenAccept(this::initializeSkill);
         WoodcuttingDAO.getPlayerWoodcuttingData(connection, uuid).thenAccept(this::initializeSkill);
 
-        final Optional<ResultSet> loadoutSet = database.executeQuery("SELECT * FROM mcrpg_loadout WHERE uuid = '" + uuid.toString() + "'");
-        loadoutSet.ifPresent(rs -> {
-            try {
-                if (rs.next()) {
-                    for (int i = 1; i <= McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities"); i++) {
-                        //It has to be an unlocked ability since default ones cant be in the loadout
-                        String s = rs.getString("Slot" + i);
-                        if (s == null || s.equalsIgnoreCase("null")) {
-                            continue;
-                        }
-                        UnlockedAbilities ability = UnlockedAbilities.fromString(s);
-                        abilityLoadout.add(ability);
-                    }
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
+        PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
+
+            int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
+
+            //There may be abilities in the loadout that might not be usable due to lowering the max ability amount, so we need to respect the config as the hard limit
+            for(int i = 0; i < maxAbilities; i++){
+                abilityLoadout.add(unlockedAbilityList.get(i));
             }
         });
 

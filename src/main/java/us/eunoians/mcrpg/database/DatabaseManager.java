@@ -6,6 +6,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
 import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
+import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
 import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
@@ -101,6 +102,15 @@ public class DatabaseManager {
 
                 logger.log(Level.INFO, "Database Creation - Table Version History DAO "
                                        + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
+
+                PlayerLoadoutDAO.attemptCreateTable(connection, this)
+                        .thenAccept(playerLoadoutTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Player Loadout DAO "
+                                                       + (playerLoadoutTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                        .exceptionally(throwable -> {
+                            logger.log(Level.WARNING, "Database Creation - Player Loadout DAO had an error when creating.");
+                            return null;
+                        });
 
                 PlayerDataDAO.attemptCreateTable(connection, this)
                         .thenAccept(playerDataTableCreated ->
@@ -258,6 +268,9 @@ public class DatabaseManager {
 
                 logger.log(Level.INFO, "Database Update - Table Version History DAO has undergone any applicable updates.");
 
+                PlayerLoadoutDAO.updateTable(connection).thenAccept(playerLoadoutNull ->
+                        logger.log(Level.INFO, "Database Update - Player Loadout DAO has undergone any applicable updates."));
+
                 PlayerDataDAO.updateTable(connection).thenAccept(playerDataNull ->
                         logger.log(Level.INFO, "Database Update - Player Data DAO has undergone any applicable updates."));
 
@@ -281,7 +294,7 @@ public class DatabaseManager {
                 SorceryDAO.updateTable(connection).thenAccept(sorceryNull ->
                         logger.log(Level.INFO, "Database Update - Sorcery DAO has undergone any applicable updates."));
                 SwordsDAO.updateTable(connection).thenAccept(swordsNull ->
-                        logger.log(Level.INFO, "Swords Update - Archery DAO has undergone any applicable updates."));
+                        logger.log(Level.INFO, "Database Update - Swords DAO has undergone any applicable updates."));
                 TamingDAO.updateTable(connection).thenAccept(tamingNull ->
                         logger.log(Level.INFO, "Database Update - Taming DAO has undergone any applicable updates."));
                 UnarmedDAO.updateTable(connection).thenAccept(unarmedNull ->
