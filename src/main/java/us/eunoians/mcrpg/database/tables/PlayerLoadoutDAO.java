@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
@@ -15,6 +16,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 
 /**
  * A DAO used to store a player's loadout
@@ -38,7 +40,8 @@ public class PlayerLoadoutDAO {
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
-    public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
+    @NotNull
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -131,7 +134,8 @@ public class PlayerLoadoutDAO {
      * @param connection The {@link Connection} that will be used to run the changes
      * @return The {@link  CompletableFuture} that is running these changes.
      */
-    public static CompletableFuture<Void> updateTable(Connection connection) {
+    @NotNull
+    public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
@@ -233,20 +237,39 @@ public class PlayerLoadoutDAO {
         return completableFuture;
     }
 
-    public static CompletableFuture<List<UnlockedAbilities>> getPlayerLoadout(Connection connection, UUID playerUUID){ //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
+    /**
+     * Gets a {@link List} of {@link UnlockedAbilities} that the provided player {@link UUID} has equipped.
+     * <p>
+     * This list is ordered by the slots that the player put them in, so this will persist order for player experience.
+     *
+     * @param connection The {@link Connection} that will be running the query
+     * @param playerUUID The {@link UUID} of the player to get the loadout for
+     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the
+     * provided player {@link UUID} has equipped.
+     */
+    @NotNull
+    public static CompletableFuture<List<UnlockedAbilities>> getPlayerLoadout(@NotNull Connection connection, @NotNull UUID playerUUID) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            //We are getting the first loadout since we only support single loadouts right now
             getPlayerLoadoutUUID(connection, playerUUID).thenAccept(optional -> {
 
+                //If loadout exists, return it. Otherwise return an empty list
                 if (optional.isPresent()) {
                     UUID loadoutUUID = optional.get();
                     getLoadoutByUUID(connection, loadoutUUID).thenAccept(completableFuture::complete);
                 }
                 else {
-                    completableFuture.complete(new ArrayList<>());
+                    initializeNewPlayerLoadout(connection, playerUUID).thenAccept(unused -> completableFuture.complete(new ArrayList<>())).exceptionally(throwable -> {
+                        McRPG.getInstance().getLogger().log(Level.WARNING, "Player with UUID of " + playerUUID + " attempted to generate a new loadout but failed. Please report the following error to the McRPG developer.");
+                        throwable.printStackTrace();
+                        completableFuture.complete(new ArrayList<>());
+                        return null;
+                    }); //Create a new loadout for the player for the next time we query. Only complete once it's done so that way we can't make multiple calls and have weird edge cases
                 }
             });
         });
@@ -254,7 +277,20 @@ public class PlayerLoadoutDAO {
         return completableFuture;
     }
 
-    public static CompletableFuture<List<UnlockedAbilities>> getLoadoutByUUID(Connection connection, UUID loadoutUUID){
+    /**
+     * Gets a {@link List} of {@link UnlockedAbilities} that the provided loadout {@link UUID} has stored in it.
+     * <p>
+     * Keep in mind a player must have a loadout but a loadout doesn't always have a player. This method is private as
+     * we don't really want to expose the internals of how the loadout system works. So a developer should access {@link #getPlayerLoadout(Connection, UUID)}
+     * to get the loadout of a player. That method will use {@link #getPlayerLoadoutUUID(Connection, UUID)} to get the {@link UUID} for the loadout belonging
+     * to that player, then {@link #getLoadoutByUUID(Connection, UUID)} will be called using that loadout {@link UUID} in one seamless call for the developer.
+     *
+     * @param connection  The {@link Connection} that will be running the query
+     * @param loadoutUUID The {@link UUID} of the loadout
+     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the provided loadout {@link UUID} has stored in it.
+     */
+    @NotNull
+    private static CompletableFuture<List<UnlockedAbilities>> getLoadoutByUUID(@NotNull Connection connection, @NotNull UUID loadoutUUID) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
@@ -263,20 +299,20 @@ public class PlayerLoadoutDAO {
 
             List<UnlockedAbilities> unlockedAbilities = new ArrayList<>();
 
-            try(PreparedStatement preparedStatement = connection.prepareStatement("SELECT ABILITY_ID, SLOT_NUMBER FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE LOADOUT_ID = ? ORDER BY SLOT_NUMBER;")){
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ABILITY_ID, SLOT_NUMBER FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE LOADOUT_ID = ? ORDER BY SLOT_NUMBER;")) {
 
                 preparedStatement.setString(1, loadoutUUID.toString());
 
-                try(ResultSet resultSet = preparedStatement.executeQuery()){
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
-                    while(resultSet.next()){
+                    while (resultSet.next()) {
 
                         UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(resultSet.getString("ability_id"));
                         unlockedAbilities.add(unlockedAbility);
                     }
                 }
             }
-            catch (SQLException e){
+            catch (SQLException e) {
                 completableFuture.completeExceptionally(e);
             }
 
@@ -286,7 +322,16 @@ public class PlayerLoadoutDAO {
         return completableFuture;
     }
 
-    static CompletableFuture<Optional<UUID>> getPlayerLoadoutUUID(Connection connection, UUID uuid) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
+    /**
+     * Gets the loadout {@link UUID} that belongs to the provided player {@link UUID}
+     *
+     * @param connection The {@link Connection} that will be running the query
+     * @param uuid       The {@link UUID} of the player to get the loadout {@link UUID} of
+     * @return A {@link CompletableFuture} containing an {@link Optional} which will either be empty or contain the {@link UUID}
+     * of the loadout belonging to the provided player {@link UUID}
+     */
+    @NotNull
+    private static CompletableFuture<Optional<UUID>> getPlayerLoadoutUUID(@NotNull Connection connection, @NotNull UUID uuid) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
 
         int loadoutNumber = 1;//Same as above TODO
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
@@ -323,12 +368,46 @@ public class PlayerLoadoutDAO {
         return completableFuture;
     }
 
-    public static CompletableFuture<Void> initializeNewPlayerLoadout(Connection connection, UUID uuid){
-        return null;
+    /**
+     * Creates a new loadout for the player. This assumes that a loadout doesn't exist when called and as such, will do no handling of that edge case.
+     * <p>
+     * This updates the {@link #LOADOUT_TABLE_NAME} with the loadout information but doesn't populate {@link #LOADOUT_SLOTS_TABLE_NAME}.
+     *
+     * @param connection The {@link Connection} that is used to execute the update
+     * @param uuid       The player {@link UUID} to generate a new loadout for
+     * @return A {@link CompletableFuture} that returns the new {@link UUID} of a created loadout whenever the table has been updated, or completes with an
+     * exception provided something goes wrong with the update.
+     */
+    @NotNull
+    private static CompletableFuture<UUID> initializeNewPlayerLoadout(@NotNull Connection connection, @NotNull UUID uuid) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<UUID> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            UUID loadoutUUID = UUID.randomUUID();
+            int loadoutNumber = 1;
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_TABLE_NAME + " (LOADOUT_ID, PLAYER_UUID, PLAYER_LOADOUT_ID) VALUES (?, ?, ?);")) {
+
+                preparedStatement.setString(1, loadoutUUID.toString());
+                preparedStatement.setString(2, uuid.toString());
+                preparedStatement.setInt(3, loadoutNumber);
+
+                preparedStatement.executeUpdate();
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+
+            completableFuture.complete(loadoutUUID);
+        });
+        return completableFuture;
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerLoadout(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerLoadout(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
     }
 
     /**
