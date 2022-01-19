@@ -48,7 +48,7 @@ public class UnarmedDAO extends SkillDAO {
 
             /*****
              ** Table Description:
-             ** Contains player data for the archery skill
+             ** Contains player data for the unarmed skill
              *
              *
              * id is the id of the entry which auto increments but doesn't really serve a large purpose since it isn't
