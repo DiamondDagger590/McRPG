@@ -49,7 +49,7 @@ public class PlayerDataDAO {
 
             /*****
              ** Table Description:
-             ** Contains player data for the archery skill
+             ** Contains player data that doesn't have another table to be located
              *
              *
              * id is the id of the entry which auto increments but doesn't really serve a large purpose since it isn't
@@ -73,7 +73,7 @@ public class PlayerDataDAO {
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
                                                                            "`id` int(11) NOT NULL AUTO_INCREMENT," +
-                                                                           "`uuid` varchar(32) NOT NULL," +
+                                                                           "`uuid` varchar(36) NOT NULL," +
                                                                            "`party_uuid` varchar(32) NOT NULL DEFAULT 'nu'," +
                                                                            "`power_level` int(11) NOT NULL DEFAULT 0," +
                                                                            "`ability_points` int(11) NOT NULL DEFAULT 1," +

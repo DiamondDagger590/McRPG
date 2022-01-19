@@ -85,7 +85,7 @@ public class HerbalismDAO extends SkillDAO {
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
                                                                            "`id` int(11) NOT NULL AUTO_INCREMENT," +
-                                                                           "`uuid` varchar(32) NOT NULL," +
+                                                                           "`uuid` varchar(36) NOT NULL," +
                                                                            "`current_exp` int(11) NOT NULL DEFAULT 0," +
                                                                            "`current_level` int(11) NOT NULL DEFAULT 0," +
                                                                            "`is_too_many_plants_toggled` BIT NOT NULL DEFAULT 1," +

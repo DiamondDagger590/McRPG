@@ -50,7 +50,7 @@ public class PlayerSettingsDAO {
 
             /*****
              ** Table Description:
-             ** Contains player data for the archery skill
+             ** Contains player settings
              *
              *
              * id is the id of the entry which auto increments but doesn't really serve a large purpose since it isn't
@@ -71,7 +71,7 @@ public class PlayerSettingsDAO {
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
                                                                            "`id` int(11) NOT NULL AUTO_INCREMENT," +
-                                                                           "`uuid` varchar(32) NOT NULL," +
+                                                                           "`uuid` varchar(36) NOT NULL," +
                                                                            "`keep_hand` BIT NOT NULL DEFAULT 0," +
                                                                            "`ignore_tips` BIT NOT NULL DEFAULT 0," +
                                                                            "`auto_deny` BIT NOT NULL DEFAULT 0," +
