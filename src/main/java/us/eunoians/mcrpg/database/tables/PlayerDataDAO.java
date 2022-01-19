@@ -33,7 +33,8 @@ public class PlayerDataDAO {
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
-    public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
+    @NotNull
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -111,7 +112,8 @@ public class PlayerDataDAO {
      * @param connection The {@link Connection} that will be used to run the changes
      * @return The {@link  CompletableFuture} that is running these changes.
      */
-    public static CompletableFuture<Void> updateTable(Connection connection) {
+    @NotNull
+    public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
@@ -155,7 +157,8 @@ public class PlayerDataDAO {
      * @return A {@link CompletableFuture} containing a {@link PlayerDataSnapshot} that has all of the player's misc
      * data. If the provided {@link UUID} doesn't have any data, an empty {@link PlayerDataSnapshot} will be returned instead with null or defaulted 0 values.
      */
-    public static CompletableFuture<PlayerDataSnapshot> getPlayerData(Connection connection, UUID uuid) {
+    @NotNull
+    public static CompletableFuture<PlayerDataSnapshot> getPlayerData(@NotNull Connection connection, @NotNull UUID uuid) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<PlayerDataSnapshot> completableFuture = new CompletableFuture<>();
@@ -215,7 +218,7 @@ public class PlayerDataDAO {
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerData(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
     }
 
     /**

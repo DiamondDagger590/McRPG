@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables.skills;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
@@ -32,7 +33,8 @@ public class SorceryDAO extends SkillDAO {
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
-    public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
+    @NotNull
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -132,7 +134,8 @@ public class SorceryDAO extends SkillDAO {
      * @param connection The {@link Connection} that will be used to run the changes
      * @return The {@link  CompletableFuture} that is running these changes.
      */
-    public static CompletableFuture<Void> updateTable(Connection connection) {
+    @NotNull
+    public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
@@ -178,12 +181,13 @@ public class SorceryDAO extends SkillDAO {
      * data. If the provided {@link UUID} doesn't have any data, an empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      */
-    public static CompletableFuture<SkillDataSnapshot> getPlayerSorceryData(Connection connection, UUID uuid) {
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerSorceryData(@NotNull Connection connection, @NotNull UUID uuid) {
         return getSkillData(TABLE_NAME, connection, uuid, Skills.SORCERY);
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerSorceryData(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerSorceryData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
     }
 

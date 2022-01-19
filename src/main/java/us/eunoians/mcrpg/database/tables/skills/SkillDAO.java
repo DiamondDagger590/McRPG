@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables.skills;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -34,7 +35,8 @@ public abstract class SkillDAO {
      * data. If the provided {@link UUID} doesn't have any data, an empty {@link SkillDataSnapshot} will be returned instead with no populated maps
      * and default exp/level values set to 0
      */
-    public static CompletableFuture<SkillDataSnapshot> getSkillData(String tableName, Connection connection, UUID uuid, Skills skillType) {
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getSkillData(@NotNull String tableName, @NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();

@@ -34,7 +34,8 @@ public class PlayerSettingsDAO {
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
-    public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
+    @NotNull
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -106,7 +107,8 @@ public class PlayerSettingsDAO {
      * @param connection The {@link Connection} that will be used to run the changes
      * @return The {@link  CompletableFuture} that is running these changes.
      */
-    public static CompletableFuture<Void> updateTable(Connection connection) {
+    @NotNull
+    public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
@@ -150,7 +152,8 @@ public class PlayerSettingsDAO {
      * @return A {@link CompletableFuture} containing a {@link PlayerSettingsSnapshot} that has all of the player's settings.
      * If the provided {@link UUID} doesn't have any data, an empty {@link PlayerSettingsSnapshot} will be returned instead with all the default setting values.
      */
-    public static CompletableFuture<PlayerSettingsSnapshot> getPlayerSettings(Connection connection, UUID uuid) {
+    @NotNull
+    public static CompletableFuture<PlayerSettingsSnapshot> getPlayerSettings(@NotNull Connection connection, @NotNull UUID uuid) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<PlayerSettingsSnapshot> completableFuture = new CompletableFuture<>();
@@ -202,7 +205,7 @@ public class PlayerSettingsDAO {
     }
 
     //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerSettings(Connection connection, McRPGPlayer mcRPGPlayer) {
+    public static void savePlayerSettings(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
     }
 
@@ -244,6 +247,7 @@ public class PlayerSettingsDAO {
          *
          * @return The {@link UUID} of the player represented by this snapshot
          */
+        @NotNull
         public UUID getUuid() {
             return uuid;
         }
@@ -354,7 +358,7 @@ public class PlayerSettingsDAO {
          *
          * @param healthbarType The snapshotted value for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
          */
-        void setHealthbarType(MobHealthbarUtils.MobHealthbarType healthbarType) {
+        void setHealthbarType(@NotNull MobHealthbarUtils.MobHealthbarType healthbarType) {
             this.healthbarType = healthbarType;
         }
 

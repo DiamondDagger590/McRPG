@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables.skills;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.GenericAbility;
@@ -41,7 +42,7 @@ public class SkillDataSnapshot {
      * @param uuid      The {@link UUID} of the player this snapshot is for
      * @param skillType The {@link Skills} which represents the {@link us.eunoians.mcrpg.skills.Skill} this snapshot has data for
      */
-    SkillDataSnapshot(UUID uuid, Skills skillType) {
+    SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType) {
         this.uuid = uuid;
         this.skillType = skillType;
         this.currentExp = 0;
@@ -58,7 +59,7 @@ public class SkillDataSnapshot {
      * @param currentExp   The amount of exp the skill currently has
      * @param currentLevel The current level of the skill
      */
-    SkillDataSnapshot(UUID uuid, Skills skillType, int currentExp, int currentLevel) {
+    SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType, int currentExp, int currentLevel) {
         this.uuid = uuid;
         this.skillType = skillType;
         this.currentExp = currentExp;
@@ -74,6 +75,7 @@ public class SkillDataSnapshot {
      *
      * @return The {@link  UUID} of the player this snapshot has data for
      */
+    @NotNull
     public UUID getUUID() {
         return uuid;
     }
@@ -85,6 +87,7 @@ public class SkillDataSnapshot {
      * @return The {@link Skills} which represents the {@link us.eunoians.mcrpg.skills.Skill} this
      * snapshot has data for
      */
+    @NotNull
     public Skills getSkillType() {
         return skillType;
     }
@@ -135,6 +138,7 @@ public class SkillDataSnapshot {
      * this snapshot. The key is the {@link GenericAbility} for all abilities under the snapshot's {@link Skills} found under {@link #getSkillType()} with
      * the value being {@code true} if the ability is toggled on and {@code false} otherwise
      */
+    @NotNull
     public Map<GenericAbility, Boolean> getAbilityToggledMap() {
         return Collections.unmodifiableMap(abilityToggledMap);
     }
@@ -147,6 +151,7 @@ public class SkillDataSnapshot {
      * this snapshot. The key is the {@link UnlockedAbilities} for all abilities under the snapshot's {@link Skills} found under {@link #getSkillType()} with
      * the value being an {@link Integer} which ranges from {@code 0} to a configurable positive value.
      */
+    @NotNull
     public Map<UnlockedAbilities, Integer> getAbilityTiers() {
         return Collections.unmodifiableMap(abilityTiers);
     }
@@ -161,6 +166,7 @@ public class SkillDataSnapshot {
      * this snapshot. The key is the {@link GenericAbility} for all active abilities under the snapshot's {@link Skills} found under {@link #getSkillType()} with
      * the value being an {@link Integer} which represents the amount of seconds remaining (I think, if this is wrong and you read this yell at me lmao) for the cooldown.
      */
+    @NotNull
     public Map<GenericAbility, Integer> getAbilityCooldowns() {
         return Collections.unmodifiableMap(abilityCooldowns);
     }
@@ -172,6 +178,7 @@ public class SkillDataSnapshot {
      * @return An unmodifiable copy of the snapshot's map of what abilities are pending for the skill represented by
      * this snapshot. The value will be {@code true} if the ability is pending and {@code false} otherwise
      */
+    @NotNull
     public Map<UnlockedAbilities, Boolean> getPendingAbilities() {
         return Collections.unmodifiableMap(pendingAbilities);
     }
@@ -182,7 +189,7 @@ public class SkillDataSnapshot {
      * @param ability The {@link GenericAbility} to store data for
      * @param toggled The toggled state of the provided ability
      */
-    void addAbilityToggledData(GenericAbility ability, boolean toggled) {
+    void addAbilityToggledData(@NotNull GenericAbility ability, boolean toggled) {
         abilityToggledMap.put(ability, toggled);
     }
 
@@ -192,7 +199,7 @@ public class SkillDataSnapshot {
      * @param ability The {@link UnlockedAbilities} to store data for
      * @param tier    The tier of the provided ability
      */
-    void addAbilityTierData(UnlockedAbilities ability, int tier) {
+    void addAbilityTierData(@NotNull UnlockedAbilities ability, int tier) {
         abilityTiers.put(ability, tier);
     }
 
@@ -202,7 +209,7 @@ public class SkillDataSnapshot {
      * @param ability  The {@link GenericAbility} to store data for
      * @param cooldown The current cooldown of the provided ability
      */
-    void addAbilityCooldownData(GenericAbility ability, int cooldown) {
+    void addAbilityCooldownData(@NotNull GenericAbility ability, int cooldown) {
         abilityCooldowns.put(ability, cooldown);
     }
 
@@ -212,7 +219,7 @@ public class SkillDataSnapshot {
      * @param ability The {@link UnlockedAbilities} to store data for
      * @param pending The current pending status of the provided ability
      */
-    void addAbilityPendingData(UnlockedAbilities ability, boolean pending) {
+    void addAbilityPendingData(@NotNull UnlockedAbilities ability, boolean pending) {
         pendingAbilities.put(ability, pending);
     }
 
@@ -227,7 +234,7 @@ public class SkillDataSnapshot {
      * @param resultSet The {@link ResultSet} containing all of the expected information for the ability
      * @throws SQLException Whenever the {@link ResultSet} doesn't have the expected columns
      */
-    public void addAbilityData(UnlockedAbilities ability, ResultSet resultSet) throws SQLException {
+    public void addAbilityData(@NotNull UnlockedAbilities ability, @NotNull ResultSet resultSet) throws SQLException {
 
         String abilityDatabaseName = ability.getDatabaseName();
         addAbilityToggledData(ability, resultSet.getBoolean("is_" + abilityDatabaseName + "_toggled"));
@@ -240,7 +247,7 @@ public class SkillDataSnapshot {
     }
 
     //TODO Put this here and maybe a #snapshot() method into Skill?
-    public static SkillDataSnapshot fromSkill(McRPGPlayer mcRPGPlayer, Skill skill) {
+    public static SkillDataSnapshot fromSkill(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
         return null;
     }
 }

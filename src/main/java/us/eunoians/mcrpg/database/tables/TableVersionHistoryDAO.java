@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.tables;
 
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
 
@@ -76,7 +77,8 @@ public class TableVersionHistoryDAO {
      * @return A {@link CompletableFuture} that is being used to run this change which returns {@code true}
      * if ran successfully or {@code false} otherwise.
      */
-    public static CompletableFuture<Boolean> setTableVersion(Connection connection, String tableName, int version) {
+    @NotNull
+    public static CompletableFuture<Boolean> setTableVersion(@NotNull Connection connection, @NotNull String tableName, int version) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
@@ -115,7 +117,8 @@ public class TableVersionHistoryDAO {
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
-    public static CompletableFuture<Boolean> attemptCreateTable(Connection connection, DatabaseManager databaseManager) {
+    @NotNull
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -169,7 +172,8 @@ public class TableVersionHistoryDAO {
      * @param connection The {@link Connection} that will be used to run the changes
      * @return The {@link  CompletableFuture} that is running these changes.
      */
-    public static CompletableFuture<Void> updateTable(Connection connection) {
+    @NotNull
+    public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
