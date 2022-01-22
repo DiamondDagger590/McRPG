@@ -53,8 +53,6 @@ public class SorceryDAO extends SkillDAO {
              ** Contains player data for the sorcery skill
              *
              *
-             * id is the id of the entry which auto increments but doesn't really serve a large purpose since it isn't
-             * guaranteed to be the same for players across the board
              * uuid is the {@link java.util.UUID} of the player being stored
              * current_exp is the amount of exp a player currently has in this skill
              * current_level is the level a player currently has in this skill
@@ -84,7 +82,6 @@ public class SorceryDAO extends SkillDAO {
              *****/
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
-                                                                           "`id` int(11) NOT NULL AUTO_INCREMENT," +
                                                                            "`uuid` varchar(36) NOT NULL," +
                                                                            "`current_exp` int(11) NOT NULL DEFAULT 0," +
                                                                            "`current_level` int(11) NOT NULL DEFAULT 0," +

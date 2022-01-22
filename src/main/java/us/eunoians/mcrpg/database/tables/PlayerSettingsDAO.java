@@ -54,8 +54,6 @@ public class PlayerSettingsDAO {
              ** Contains player settings
              *
              *
-             * id is the id of the entry which auto increments but doesn't really serve a large purpose since it isn't
-             * guaranteed to be the same for players across the board
              * uuid is the {@link java.util.UUID} of the player being stored
              * keep_hand is the setting for preventing items from going into the player's held item slot if that slot is empty
              * ignore_tips is the setting for if a player wants to ignore McRPG's automatic tips
@@ -71,7 +69,6 @@ public class PlayerSettingsDAO {
              *****/
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
-                                                                           "`id` int(11) NOT NULL AUTO_INCREMENT," +
                                                                            "`uuid` varchar(36) NOT NULL," +
                                                                            "`keep_hand` BIT NOT NULL DEFAULT 0," +
                                                                            "`ignore_tips` BIT NOT NULL DEFAULT 0," +

@@ -53,8 +53,6 @@ public class PlayerDataDAO {
              ** Contains player data that doesn't have another table to be located
              *
              *
-             * id is the id of the entry which auto increments but doesn't really serve a large purpose since it isn't
-             * guaranteed to be the same for players across the board
              * uuid is the {@link java.util.UUID} of the player being stored
              * party_uuid is the uuid string of the player's current party. The absence of a party means that the value "nu" will be present
              * power_level is the last calculated power level for that player. This is a sum of the current_level field from all skill tables for the player
@@ -73,7 +71,6 @@ public class PlayerDataDAO {
              *****/
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
-                                                                           "`id` int(11) NOT NULL AUTO_INCREMENT," +
                                                                            "`uuid` varchar(36) NOT NULL," +
                                                                            "`party_uuid` varchar(32) NOT NULL DEFAULT 'nu'," +
                                                                            "`power_level` int(11) NOT NULL DEFAULT 0," +
