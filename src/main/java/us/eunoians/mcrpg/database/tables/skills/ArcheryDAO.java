@@ -16,8 +16,10 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A DAO used to store data regarding a player's {@link us.eunoians.mcrpg.skills.Archery} skill
  *
+ * @deprecated Instead working on implementing {@link us.eunoians.mcrpg.database.tables.SkillDAO} as a general solution
  * @author DiamondDagger590
  */
+@Deprecated
 public class ArcheryDAO extends SkillDAO {
 
     private static final String TABLE_NAME = "mcrpg_archery_data";

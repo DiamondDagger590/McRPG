@@ -2,7 +2,10 @@ package us.eunoians.mcrpg.database.tables.skills;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
@@ -18,8 +21,10 @@ import java.util.concurrent.CompletableFuture;
  * An abstract class containing some shared queries among all DAO's that
  * store skill information.
  *
+ * @deprecated Instead working on implementing {@link us.eunoians.mcrpg.database.tables.SkillDAO} as a general solution
  * @author DiamondDagger590
  */
+@Deprecated
 public abstract class SkillDAO {
 
     /**
@@ -82,5 +87,57 @@ public abstract class SkillDAO {
         });
 
         return completableFuture;
+    }
+
+    public static CompletableFuture<Void> savePlayerData(String tableName, Connection connection, McRPGPlayer mcRPGPlayer, Skills skillType) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try {
+
+                UUID uuid = mcRPGPlayer.getUuid();
+                Skill skill = mcRPGPlayer.getSkill(skillType);
+
+                //Update player data
+                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + tableName + " (uuid, current_exp, current_level) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE current_exp=VALUES(current_exp), current_level(current_level);")) {
+                    preparedStatement.setString(1, uuid.toString());
+                    preparedStatement.setInt(2, skill.getCurrentExp());
+                    preparedStatement.setInt(3, skill.getCurrentLevel());
+
+                    preparedStatement.executeUpdate();
+                }
+
+                //Update default ability
+                DefaultAbilities defaultAbility = skillType.getDefaultAbility();
+                BaseAbility baseAbility = skill.getDefaultAbility();
+                String defaultAbilitySQLName = "is_" + defaultAbility.getDatabaseName() + "_toggled";
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + tableName + " (uuid, " + defaultAbilitySQLName + ") VALUES (?, ?) ON DUPLICATE KEY UPDATE " + defaultAbilitySQLName + "=VALUES(" + defaultAbilitySQLName + ");")) {
+
+                    preparedStatement.setString(1, uuid.toString());
+                    preparedStatement.setBoolean(2, baseAbility.isToggled());
+
+                    preparedStatement.executeUpdate();
+                }
+
+                //Unlocked abilities
+                for (BaseAbility ability : skill.getAbilities()) {
+
+                    //Ignore default abilities
+                    if (ability.getGenericAbility() instanceof DefaultAbilities) {
+                        continue;
+                    }
+
+                }
+            }
+            catch (SQLException e) {
+
+            }
+
+        });
+        return null;
     }
 }
