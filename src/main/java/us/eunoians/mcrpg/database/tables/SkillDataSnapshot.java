@@ -1,6 +1,7 @@
-package us.eunoians.mcrpg.database.tables.skills;
+package us.eunoians.mcrpg.database.tables;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.GenericAbility;
@@ -42,7 +43,7 @@ public class SkillDataSnapshot {
      * @param uuid      The {@link UUID} of the player this snapshot is for
      * @param skillType The {@link Skills} which represents the {@link us.eunoians.mcrpg.skills.Skill} this snapshot has data for
      */
-    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType) {
+    SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType) {
         this.uuid = uuid;
         this.skillType = skillType;
         this.currentExp = 0;
@@ -59,7 +60,7 @@ public class SkillDataSnapshot {
      * @param currentExp   The amount of exp the skill currently has
      * @param currentLevel The current level of the skill
      */
-    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType, int currentExp, int currentLevel) {
+    SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType, int currentExp, int currentLevel) {
         this.uuid = uuid;
         this.skillType = skillType;
         this.currentExp = currentExp;

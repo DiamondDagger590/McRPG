@@ -3,14 +3,17 @@ package us.eunoians.mcrpg.database.tables;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
-import us.eunoians.mcrpg.database.tables.skills.SkillDataSnapshot;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.DefaultAbilities;
+import us.eunoians.mcrpg.types.GenericAbility;
 import us.eunoians.mcrpg.types.Skills;
+import us.eunoians.mcrpg.types.UnlockedAbilities;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -333,6 +336,79 @@ public class SkillDAO {
 
         return completableFuture;
     }
+
+    /**
+     * Gets the ability toggled statuses for a specific player's skill. This method calls {@link #getPlayerAbilityToggles(Connection, UUID, SkillDataSnapshot)},
+     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link Skills}.
+     *
+     * @param connection The {@link Connection} to use to run the query
+     * @param uuid       The {@link UUID} of the player to get the data for
+     * @param skillType  The {@link Skills} to get the ability toggle data for
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability toggle data of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
+        return getPlayerAbilityToggles(connection, uuid, new SkillDataSnapshot(uuid, skillType));
+    }
+
+    /**
+     * Gets the ability toggled statuses for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
+     * {@link SkillDataSnapshot#addAbilityToggledData(GenericAbility, boolean)}.
+     * <p>
+     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillType()}.
+     *
+     * @param connection        The {@link Connection} to use to run the query
+     * @param uuid              The {@link UUID} of the player to get the data for
+     * @param skillDataSnapshot The {@link SkillDataSnapshot} to update
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the toggled statuses for all abilities in the specified skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ability_id FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME + " WHERE player_uuid = ?")) {
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                    while (resultSet.next()) {
+
+                        String abilityID = resultSet.getString("ability_id");
+
+                        UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(abilityID);
+                        GenericAbility genericAbility = unlockedAbility != null ? unlockedAbility : DefaultAbilities.getFromID(abilityID);
+
+                        if (genericAbility != null) {
+                            skillDataSnapshot.addAbilityToggledData(genericAbility, false);
+                        }
+                    }
+
+                    //Populate toggled on abilities
+                    Skills skillType = skillDataSnapshot.getSkillType();
+                    Map<GenericAbility, Boolean> savedToggledOffAbilities = skillDataSnapshot.getAbilityToggledMap();
+
+                    for (GenericAbility genericAbility : skillType.getAllAbilities()) {
+                        if (!savedToggledOffAbilities.containsKey(genericAbility)) {
+                            skillDataSnapshot.addAbilityToggledData(genericAbility, true);
+                        }
+                    }
+
+                    completableFuture.complete(skillDataSnapshot);
+                }
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+
+        return completableFuture;
+    }
+
 
     //TODO because I only care about loading player data rn and cba to save it
     public static void savePlayerSkill(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
