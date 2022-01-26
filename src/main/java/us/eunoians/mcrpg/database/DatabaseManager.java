@@ -4,21 +4,10 @@ import com.cyr1en.flatdb.Database;
 import com.cyr1en.flatdb.DatabaseBuilder;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
-import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
-import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
-import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
-import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
-import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
-import us.eunoians.mcrpg.database.tables.skills.FishingDAO;
-import us.eunoians.mcrpg.database.tables.skills.FitnessDAO;
-import us.eunoians.mcrpg.database.tables.skills.HerbalismDAO;
-import us.eunoians.mcrpg.database.tables.skills.MiningDAO;
-import us.eunoians.mcrpg.database.tables.skills.SorceryDAO;
-import us.eunoians.mcrpg.database.tables.skills.SwordsDAO;
-import us.eunoians.mcrpg.database.tables.skills.TamingDAO;
-import us.eunoians.mcrpg.database.tables.skills.UnarmedDAO;
-import us.eunoians.mcrpg.database.tables.skills.WoodcuttingDAO;
+import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
+import us.eunoians.mcrpg.database.tables.SkillDAO;
+import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -103,6 +92,11 @@ public class DatabaseManager {
                 logger.log(Level.INFO, "Database Creation - Table Version History DAO "
                                        + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
 
+                SkillDAO.attemptCreateTable(connection, this)
+                        .thenAccept(skillTableCreated ->
+                                logger.log(Level.INFO, "Database Creation - Player Loadout DAO "
+                                                       + (skillTableCreated ? "created a new table." : "already existed so skipping creation.")));
+
                 PlayerLoadoutDAO.attemptCreateTable(connection, this)
                         .thenAccept(playerLoadoutTableCreated ->
                                 logger.log(Level.INFO, "Database Creation - Player Loadout DAO "
@@ -127,116 +121,6 @@ public class DatabaseManager {
                                                        + (playerSettingsTableCreated ? "created a new table." : "already existed so skipping creation.")))
                         .exceptionally(throwable -> {
                             logger.log(Level.WARNING, "Database Creation - Player Settings DAO had an error when creating.");
-                            return null;
-                        });
-
-                //Can now start creating skill tables since the table version has already been created
-                ArcheryDAO.attemptCreateTable(connection, this)
-                        .thenAccept(archeryTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Archery DAO "
-                                                       + (archeryTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Archery DAO had an error when creating.");
-                            return null;
-                        });
-
-                AxesDAO.attemptCreateTable(connection, this)
-                        .thenAccept(axesTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Axes DAO "
-                                                       + (axesTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Axes DAO had an error when creating.");
-                            return null;
-                        });
-
-                ExcavationDAO.attemptCreateTable(connection, this)
-                        .thenAccept(excavationTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Excavation DAO "
-                                                       + (excavationTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Excavation DAO had an error when creating.");
-                            return null;
-                        });
-
-                FishingDAO.attemptCreateTable(connection, this)
-                        .thenAccept(fishingTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Fishing DAO "
-                                                       + (fishingTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                                    logger.log(Level.WARNING, "Database Creation - Fishing DAO had an error when creating.");
-                                    return null;
-                                }
-                        );
-
-                FitnessDAO.attemptCreateTable(connection, this)
-                        .thenAccept(fitnessTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Fitness DAO "
-                                                       + (fitnessTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Fitness DAO had an error when creating.");
-                            return null;
-                        });
-
-                HerbalismDAO.attemptCreateTable(connection, this)
-                        .thenAccept(herbalismTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Herbalism DAO "
-                                                       + (herbalismTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Herbalism DAO had an error when creating.");
-                            return null;
-                        });
-
-                MiningDAO.attemptCreateTable(connection, this)
-                        .thenAccept(miningTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Mining DAO "
-                                                       + (miningTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Mining DAO had an error when creating.");
-                            return null;
-                        });
-
-                SorceryDAO.attemptCreateTable(connection, this)
-                        .thenAccept(sorceryTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Sorcery DAO "
-                                                       + (sorceryTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Sorcery DAO had an error when creating.");
-                            return null;
-                        });
-
-                SwordsDAO.attemptCreateTable(connection, this)
-                        .thenAccept(swordsTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Swords DAO "
-                                                       + (swordsTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Swords DAO had an error when creating.");
-                            return null;
-                        });
-
-                TamingDAO.attemptCreateTable(connection, this)
-                        .thenAccept(tamingTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Taming DAO "
-                                                       + (tamingTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Taming DAO had an error when creating.");
-                            return null;
-                        });
-
-                UnarmedDAO.attemptCreateTable(connection, this)
-                        .thenAccept(unarmedTabledCreated ->
-                                logger.log(Level.INFO, "Database Creation - Unarmed DAO "
-                                                       + (unarmedTabledCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Unarmed DAO had an error when creating.");
-                            return null;
-                        });
-
-                WoodcuttingDAO.attemptCreateTable(connection, this)
-                        .thenAccept(woodcuttingTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Woodcutting DAO "
-                                                       + (woodcuttingTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Woodcutting DAO had an error when creating.");
                             return null;
                         });
 
@@ -268,6 +152,9 @@ public class DatabaseManager {
 
                 logger.log(Level.INFO, "Database Update - Table Version History DAO has undergone any applicable updates.");
 
+                SkillDAO.updateTable(connection).thenAccept(skillNull ->
+                        logger.log(Level.INFO, "Database Update - Skill DAO has undergone any applicable updates."));
+
                 PlayerLoadoutDAO.updateTable(connection).thenAccept(playerLoadoutNull ->
                         logger.log(Level.INFO, "Database Update - Player Loadout DAO has undergone any applicable updates."));
 
@@ -276,31 +163,6 @@ public class DatabaseManager {
 
                 PlayerSettingsDAO.updateTable(connection).thenAccept(playerSettingsNull ->
                         logger.log(Level.INFO, "Database Update - Player Settings DAO has undergone any applicable updates."));
-
-                ArcheryDAO.updateTable(connection).thenAccept(archeryNull ->
-                        logger.log(Level.INFO, "Database Update - Archery DAO has undergone any applicable updates."));
-                AxesDAO.updateTable(connection).thenAccept(axesNull ->
-                        logger.log(Level.INFO, "Database Update - Axes DAO has undergone any applicable updates."));
-                ExcavationDAO.updateTable(connection).thenAccept(excavationNull ->
-                        logger.log(Level.INFO, "Database Update - Excavation DAO has undergone any applicable updates."));
-                FishingDAO.updateTable(connection).thenAccept(fishingNull ->
-                        logger.log(Level.INFO, "Database Update - Fishing DAO has undergone any applicable updates."));
-                FitnessDAO.updateTable(connection).thenAccept(fitnessNull ->
-                        logger.log(Level.INFO, "Database Update - Fitness DAO has undergone any applicable updates."));
-                HerbalismDAO.updateTable(connection).thenAccept(herbalismNull ->
-                        logger.log(Level.INFO, "Database Update - Herbalism DAO has undergone any applicable updates."));
-                MiningDAO.updateTable(connection).thenAccept(miningNull ->
-                        logger.log(Level.INFO, "Database Update - Mining DAO has undergone any applicable updates."));
-                SorceryDAO.updateTable(connection).thenAccept(sorceryNull ->
-                        logger.log(Level.INFO, "Database Update - Sorcery DAO has undergone any applicable updates."));
-                SwordsDAO.updateTable(connection).thenAccept(swordsNull ->
-                        logger.log(Level.INFO, "Database Update - Swords DAO has undergone any applicable updates."));
-                TamingDAO.updateTable(connection).thenAccept(tamingNull ->
-                        logger.log(Level.INFO, "Database Update - Taming DAO has undergone any applicable updates."));
-                UnarmedDAO.updateTable(connection).thenAccept(unarmedNull ->
-                        logger.log(Level.INFO, "Database Update - Unarmed DAO has undergone any applicable updates."));
-                WoodcuttingDAO.updateTable(connection).thenAccept(woodcuttingNull ->
-                        logger.log(Level.INFO, "Database Update - Woodcutting DAO has undergone any applicable updates."));
 
                 tableUpdateFuture.complete(null);
             });
