@@ -42,7 +42,7 @@ public class SkillDataSnapshot {
      * @param uuid      The {@link UUID} of the player this snapshot is for
      * @param skillType The {@link Skills} which represents the {@link us.eunoians.mcrpg.skills.Skill} this snapshot has data for
      */
-    SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType) {
+    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType) {
         this.uuid = uuid;
         this.skillType = skillType;
         this.currentExp = 0;
@@ -59,7 +59,7 @@ public class SkillDataSnapshot {
      * @param currentExp   The amount of exp the skill currently has
      * @param currentLevel The current level of the skill
      */
-    SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType, int currentExp, int currentLevel) {
+    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull Skills skillType, int currentExp, int currentLevel) {
         this.uuid = uuid;
         this.skillType = skillType;
         this.currentExp = currentExp;

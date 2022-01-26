@@ -3,7 +3,9 @@ package us.eunoians.mcrpg.database.tables;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.tables.skills.SkillDataSnapshot;
 import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.types.Skills;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -267,6 +269,65 @@ public class SkillDAO {
             }
 
             completableFuture.complete(null);
+
+        });
+
+        return completableFuture;
+    }
+
+    /**
+     * Gets the player leveling information for a specific player's skill. This method calls {@link #getPlayerSkillLevelingData(Connection, UUID, SkillDataSnapshot)},
+     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link Skills}.
+     *
+     * @param connection The {@link Connection} to use to run the query
+     * @param uuid       The {@link UUID} of the player to get the data for
+     * @param skillType  The {@link Skills} to get the skill leveling data for
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the exp and level of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
+        return getPlayerSkillLevelingData(connection, uuid, new SkillDataSnapshot(uuid, skillType));
+    }
+
+    /**
+     * Gets the player leveling information for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
+     * {@link SkillDataSnapshot#setCurrentExp(int)} and {@link SkillDataSnapshot#setCurrentLevel(int)}.
+     * <p>
+     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillType()}.
+     *
+     * @param connection        The {@link Connection} to use to run the query
+     * @param uuid              The {@link UUID} of the player to get the data for
+     * @param skillDataSnapshot The {@link SkillDataSnapshot} to update
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the exp and level of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT current_exp, current_level FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?")) {
+                preparedStatement.setString(1, uuid.toString());
+                preparedStatement.setString(2, skillDataSnapshot.getSkillType().getName());
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                    int currentExp = resultSet.getInt("current_exp");
+                    int currentLevel = resultSet.getInt("current_level");
+
+                    skillDataSnapshot.setCurrentExp(currentExp);
+                    skillDataSnapshot.setCurrentLevel(currentLevel);
+
+                    completableFuture.complete(skillDataSnapshot);
+                }
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
 
         });
 
