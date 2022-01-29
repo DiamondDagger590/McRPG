@@ -20,21 +20,9 @@ import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
-import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
 import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
-import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
-import us.eunoians.mcrpg.database.tables.skills.AxesDAO;
-import us.eunoians.mcrpg.database.tables.skills.ExcavationDAO;
-import us.eunoians.mcrpg.database.tables.skills.FishingDAO;
-import us.eunoians.mcrpg.database.tables.skills.FitnessDAO;
-import us.eunoians.mcrpg.database.tables.skills.HerbalismDAO;
-import us.eunoians.mcrpg.database.tables.skills.MiningDAO;
-import us.eunoians.mcrpg.database.tables.skills.SkillDataSnapshot;
-import us.eunoians.mcrpg.database.tables.skills.SorceryDAO;
-import us.eunoians.mcrpg.database.tables.skills.SwordsDAO;
-import us.eunoians.mcrpg.database.tables.skills.TamingDAO;
-import us.eunoians.mcrpg.database.tables.skills.UnarmedDAO;
-import us.eunoians.mcrpg.database.tables.skills.WoodcuttingDAO;
+import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
+import us.eunoians.mcrpg.database.tables.SkillDataSnapshot;
 import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyInvite;
@@ -316,19 +304,22 @@ public class McRPGPlayer {
             this.autoAcceptPartyInvites = playerSettingsSnapshot.isAutoAcceptPartyTeleports();
         });
 
-        //Initialize skills
-        ArcheryDAO.getPlayerArcheryData(connection, uuid).thenAccept(this::initializeSkill);//TODO probably should respect ArcheryDAO#isAcceptingQueries but I don't have some sort of actual mutex handling so we just pretend it's always gonna be true
-        AxesDAO.getPlayerAxesData(connection, uuid).thenAccept(this::initializeSkill);
-        ExcavationDAO.getPlayerExcavationData(connection, uuid).thenAccept(this::initializeSkill);
-        FishingDAO.getPlayerFishingData(connection, uuid).thenAccept(this::initializeSkill);
-        FitnessDAO.getPlayerFitnessData(connection, uuid).thenAccept(this::initializeSkill);
-        HerbalismDAO.getPlayerHerbalismData(connection, uuid).thenAccept(this::initializeSkill);
-        MiningDAO.getPlayerMiningData(connection, uuid).thenAccept(this::initializeSkill);
-        SorceryDAO.getPlayerSorceryData(connection, uuid).thenAccept(this::initializeSkill);
-        SwordsDAO.getPlayerSwordsData(connection, uuid).thenAccept(this::initializeSkill);
-        TamingDAO.getPlayerTamingsData(connection, uuid).thenAccept(this::initializeSkill);
-        UnarmedDAO.getPlayerUnarmedData(connection, uuid).thenAccept(this::initializeSkill);
-        WoodcuttingDAO.getPlayerWoodcuttingData(connection, uuid).thenAccept(this::initializeSkill);
+        //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
+        for(Skills skillType : Skills.values()){
+
+        }
+//        ArcheryDAO.getPlayerArcheryData(connection, uuid).thenAccept(this::initializeSkill);//TODO probably should respect ArcheryDAO#isAcceptingQueries but I don't have some sort of actual mutex handling so we just pretend it's always gonna be true
+//        AxesDAO.getPlayerAxesData(connection, uuid).thenAccept(this::initializeSkill);
+//        ExcavationDAO.getPlayerExcavationData(connection, uuid).thenAccept(this::initializeSkill);
+//        FishingDAO.getPlayerFishingData(connection, uuid).thenAccept(this::initializeSkill);
+//        FitnessDAO.getPlayerFitnessData(connection, uuid).thenAccept(this::initializeSkill);
+//        HerbalismDAO.getPlayerHerbalismData(connection, uuid).thenAccept(this::initializeSkill);
+//        MiningDAO.getPlayerMiningData(connection, uuid).thenAccept(this::initializeSkill);
+//        SorceryDAO.getPlayerSorceryData(connection, uuid).thenAccept(this::initializeSkill);
+//        SwordsDAO.getPlayerSwordsData(connection, uuid).thenAccept(this::initializeSkill);
+//        TamingDAO.getPlayerTamingsData(connection, uuid).thenAccept(this::initializeSkill);
+//        UnarmedDAO.getPlayerUnarmedData(connection, uuid).thenAccept(this::initializeSkill);
+//        WoodcuttingDAO.getPlayerWoodcuttingData(connection, uuid).thenAccept(this::initializeSkill);
 
         PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
 

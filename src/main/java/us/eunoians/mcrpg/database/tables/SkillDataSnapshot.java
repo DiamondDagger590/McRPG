@@ -1,14 +1,12 @@
 package us.eunoians.mcrpg.database.tables;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.database.tables.skills.ArcheryDAO;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.GenericAbility;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -17,8 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * This class serves as a POJO wraps player's skill data into a singular object. This is often
- * returned on some sort of "get data" query such as {@link ArcheryDAO#getPlayerArcheryData(Connection, UUID)}.
+ * This class serves as a POJO wraps player's skill data into a singular object.
  * <p>
  * This allows developers to request information and be able to access it in a concise way. This snapshot is only created whenever
  * a player's data is obtained from a DAO and can not be modified past that point.

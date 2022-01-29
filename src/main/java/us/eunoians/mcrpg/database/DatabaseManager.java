@@ -94,7 +94,7 @@ public class DatabaseManager {
 
                 SkillDAO.attemptCreateTable(connection, this)
                         .thenAccept(skillTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Player Loadout DAO "
+                                logger.log(Level.INFO, "Database Creation - Skill DAO "
                                                        + (skillTableCreated ? "created a new table." : "already existed so skipping creation.")));
 
                 PlayerLoadoutDAO.attemptCreateTable(connection, this)

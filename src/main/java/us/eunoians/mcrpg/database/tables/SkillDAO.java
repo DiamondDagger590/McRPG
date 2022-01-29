@@ -13,6 +13,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -130,7 +133,7 @@ public class SkillDAO {
                  * value is a string value that is stored against the key. The reason it's MAX in size is that we don't know what sort of data 3rd party plugins may want to store in the future when support is added
                  **
                  ** Reasoning for structure:
-                 ** The composite key is the `player_uuid` field and the `ability_id` field, as there should only be one unique combination of the two per player and ability
+                 ** The composite key is the `player_uuid` field, `key` field and the `ability_id` field, as there should only be one unique combination of those three per each ability, since each ability will only have a single attribute once at most
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + ABILITY_ATTRIBUTE_TABLE_NAME + "`" +
                                                                                "(" +
@@ -138,7 +141,7 @@ public class SkillDAO {
                                                                                "`ability_id` varchar(32) NOT NULL," +
                                                                                "`key` varchar(32) NOT NULL," +
                                                                                "`value` varchar(MAX) NOT NULL," +
-                                                                               "PRIMARY KEY (`player_uuid`, `ability_id`)" +
+                                                                               "PRIMARY KEY (`player_uuid`, `ability_id`, `key`)" +
                                                                                ");")) {
                     statement.executeUpdate();
                 }
@@ -168,7 +171,6 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
-        //TODO need help with this to convert the data from all existing skill tables (provided they exist) to the new tables (rip)
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
@@ -180,7 +182,6 @@ public class SkillDAO {
                 TableVersionHistoryDAO.getLatestVersion(connection, SKILL_DATA_TABLE_NAME).thenAccept(lastStoredVersion -> {
 
                     if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                        completableFuture.complete(null);
                         return;
                     }
 
@@ -188,6 +189,69 @@ public class SkillDAO {
 
                     //Adds table to our tracking
                     if (lastStoredVersion == 0) {
+
+                        List<String> queries = new ArrayList<>();
+                        for(Skills skillType : Skills.values()){
+
+                            String skillDatabaseName = skillType.getName().toLowerCase(Locale.ROOT);
+                            String legacyTableName = "mcrpg_" + skillDatabaseName + "_data";
+
+                            //Skill data query
+                            String skillInfoQuery = "MERGE INTO " + SKILL_DATA_TABLE_NAME + " SELECT uuid as player_uuid, '" + skillDatabaseName + "' as skill_id, current_level, current_exp FROM " + legacyTableName + ";" ;
+                            queries.add(skillInfoQuery);
+
+                            //Ability toggled off queries
+                            for(GenericAbility abilityType : skillType.getAllAbilities()){
+                                String abilityDatabaseName = abilityType.getDatabaseName();
+                                String abilityToggledOffQuery = "MERGE INTO " + ABILITY_TOGGLED_OFF_TABLE_NAME + " SELECT uuid as player_uuid, '" + abilityDatabaseName + "' as ability_id FROM " + legacyTableName + " WHERE is_" + abilityDatabaseName + "_toggled = 0" ;
+
+                                queries.add(abilityToggledOffQuery);
+                            }
+
+                            String abilityAttributeQuery = "MERGE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " SELECT ";
+                            boolean first = true; //Handle a column count mismatch issue for the union statements
+
+                            //Ability attribute queries
+                            for(UnlockedAbilities abilityType : skillType.getUnlockedAbilities()){
+
+                                String abilityDatabaseName = abilityType.getDatabaseName();
+
+                                String tierColumnName = abilityDatabaseName + "_tier";
+                                String pendingColumnName = "is_" + abilityDatabaseName + "_pending";
+
+                                abilityAttributeQuery += ((first ? "" : "(SELECT ") +"uuid as player_uuid, '" + abilityDatabaseName + "' as ability_id, 'tier' as key, " + tierColumnName + " as value FROM " + legacyTableName + " WHERE " + tierColumnName + " > 0" + (first ? "" : ")") + " UNION ALL ");
+                                abilityAttributeQuery += ("(SELECT uuid as player_uuid, '" + abilityDatabaseName + "' as ability_id, 'pending_status' as key, " + pendingColumnName + " as value FROM " + legacyTableName + " WHERE " + pendingColumnName + " = 1) UNION ALL ");
+
+                                if(abilityType.isCooldown()) {
+                                    String cooldownColumnName = abilityDatabaseName + "_cooldown";
+                                    abilityAttributeQuery += ("(SELECT uuid as player_uuid, '" + abilityDatabaseName + "' as ability_id, 'cooldown' as key, " + cooldownColumnName + " as value FROM " + legacyTableName + " WHERE " + cooldownColumnName + " > 0) UNION ALL ");
+                                }
+
+                                if(first){
+                                    first = false;
+                                }
+                            }
+
+                            abilityAttributeQuery = abilityAttributeQuery.trim();
+                            abilityAttributeQuery = abilityAttributeQuery.substring(0, abilityAttributeQuery.length() - 9); //Trim the trailing UNION ALL
+                            abilityAttributeQuery += ";";
+
+                            queries.add(abilityAttributeQuery);
+                        }
+
+                        //Execute queries
+                        for(String query : queries){
+
+                            try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
+                                preparedStatement.executeUpdate();
+                            }
+                            catch (SQLException e){
+                                e.printStackTrace();
+                                completableFuture.completeExceptionally(e);
+                                return;
+                            }
+                        }
+
                         TableVersionHistoryDAO.setTableVersion(connection, SKILL_DATA_TABLE_NAME, 1);
                         lastStoredVersion = 1;
                     }
@@ -200,7 +264,6 @@ public class SkillDAO {
                     TableVersionHistoryDAO.getLatestVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME).thenAccept(lastStoredVersion -> {
 
                         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                            completableFuture.complete(null);
                             return;
                         }
 
@@ -374,6 +437,8 @@ public class SkillDAO {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ability_id FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME + " WHERE player_uuid = ?")) {
 
+                preparedStatement.setString(1, uuid.toString());
+
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                     while (resultSet.next()) {
@@ -409,6 +474,10 @@ public class SkillDAO {
         return completableFuture;
     }
 
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(){
+        return null;
+    }
 
     //TODO because I only care about loading player data rn and cba to save it
     public static void savePlayerSkill(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
