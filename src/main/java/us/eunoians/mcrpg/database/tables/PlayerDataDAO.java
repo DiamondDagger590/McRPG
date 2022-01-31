@@ -214,8 +214,52 @@ public class PlayerDataDAO {
         return completableFuture;
     }
 
-    //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
+    /**
+     * Saves all the player data that is stored inside this table, such as redeemable exp, for the provided {@link McRPGPlayer}.
+     *
+     * @param connection The {@link Connection} to use to get the player data
+     * @param mcRPGPlayer       The {@link McRPGPlayer} whose data is being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try(PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME +
+                                                                                  " (uuid, power_level, ability_points, redeemable_exp, redeemable_levels, " +
+                                                                                  "divine_escape_exp_debuff, divine_escape_damage_debuff, divine_escape_exp_end_time, divine_escape_damage_end_time, " +
+                                                                                  "replace_ability_cooldown_time, boosted_exp, party_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+                                                                                  "power_level=VALUES(power_level), ability_points=VALUES(ability_points), " +
+                                                                                  "redeemable_exp=VALUES(redeemable_exp), redeemable_levels=VALUES(redeemable_levels), divine_escape_exp_debuff=VALUES(divine_escape_exp_debuff), " +
+                                                                                  "divine_escape_damage_debuff=VALUES(divine_escape_damage_debuff), divine_escape_exp_end_time=VALUES(divine_escape_exp_end_time), divine_escape_damage_end_time=VALUES(divine_escape_damage_end_time), " +
+                                                                                  "replace_ability_cooldown_time=VALUES(replace_ability_cooldown_time), boosted_exp=VALUES(boosted_exp), party_uuid=VALUES(party_uuid);")){
+                preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
+                preparedStatement.setInt(2, mcRPGPlayer.getPowerLevel());
+                preparedStatement.setInt(3, mcRPGPlayer.getAbilityPoints());
+                preparedStatement.setInt(4, mcRPGPlayer.getRedeemableExp());
+                preparedStatement.setInt(5, mcRPGPlayer.getRedeemableLevels());
+                preparedStatement.setDouble(6, mcRPGPlayer.getDivineEscapeExpDebuff());
+                preparedStatement.setDouble(7, mcRPGPlayer.getDivineEscapeDamageDebuff());
+                preparedStatement.setLong(8, mcRPGPlayer.getDivineEscapeExpEnd());
+                preparedStatement.setLong(9, mcRPGPlayer.getDivineEscapeDamageEnd());
+                preparedStatement.setLong(10, mcRPGPlayer.getEndTimeForReplaceCooldown());
+                preparedStatement.setInt(11, mcRPGPlayer.getBoostedExp());
+                UUID partyID = mcRPGPlayer.getPartyID();
+                preparedStatement.setString(12, (partyID == null ? "nu" : partyID.toString()));
+
+                preparedStatement.executeUpdate();
+                completableFuture.complete(null);
+            }
+            catch (SQLException e){
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
     }
 
     /**

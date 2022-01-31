@@ -649,6 +649,7 @@ public class McRPGPlayer {
      */
     public void saveData() {
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+        Connection connection = database.getConnection();
         for (Skills type : Skills.values()) {
             Skill skill = getSkill(type);
             String query = "UPDATE mcrpg_" + skill.getName().toLowerCase() + "_data SET current_level = " + skill.getCurrentLevel() + ", current_exp = " + skill.getCurrentExp();
@@ -672,12 +673,12 @@ public class McRPGPlayer {
             query += " WHERE uuid = '" + this.uuid.toString() + "'";
             database.executeUpdate(query);
         }
-        if (endTimeForReplaceCooldown != 0) {
-            database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = " + endTimeForReplaceCooldown + " WHERE uuid = '" + uuid.toString() + "'");
-        }
-        database.executeUpdate("UPDATE mcrpg_player_data SET ability_points = " + abilityPoints + ", power_level = " + powerLevel + ", redeemable_exp = " + redeemableExp + ", redeemable_levels = " + redeemableLevels + ", boosted_exp = " + boostedExp + ", divine_escape_exp_debuff = " + divineEscapeExpDebuff
-                               + ", divine_escape_damage_debuff = " + divineEscapeDamageDebuff + ", divine_escape_exp_end_time = " + divineEscapeExpEnd +
-                               ", divine_escape_damage_end_time = " + divineEscapeDamageEnd + ", party_uuid = '" + (partyID == null ? "nu" : partyID.toString()) + "' WHERE uuid = '" + uuid.toString() + "'");
+
+        PlayerDataDAO.savePlayerData(connection, this).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
+        });
+
         String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
                        + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
                        "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + ", auto_accept_party_teleports = "
