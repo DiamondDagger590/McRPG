@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,6 +14,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
+import us.eunoians.mcrpg.abilities.attributes.AbilityAttribute;
+import us.eunoians.mcrpg.abilities.attributes.AbilityAttributeManager;
+import us.eunoians.mcrpg.abilities.attributes.AbilityCooldownAttribute;
+import us.eunoians.mcrpg.abilities.attributes.AbilityPendingAttribute;
+import us.eunoians.mcrpg.abilities.attributes.AbilityTierAttribute;
 import us.eunoians.mcrpg.abilities.mining.RemoteTransfer;
 import us.eunoians.mcrpg.api.events.mcrpg.axes.CripplingBlowEvent;
 import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
@@ -22,6 +28,7 @@ import us.eunoians.mcrpg.api.util.RedeemBit;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
 import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
+import us.eunoians.mcrpg.database.tables.SkillDAO;
 import us.eunoians.mcrpg.database.tables.SkillDataSnapshot;
 import us.eunoians.mcrpg.party.AcceptedTeleportRequest;
 import us.eunoians.mcrpg.party.Party;
@@ -237,7 +244,6 @@ public class McRPGPlayer {
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
-        //TODO reimplement using DAO's
 
         PlayerDataDAO.getPlayerData(connection, uuid).thenAccept(playerDataSnapshot -> {
 
@@ -293,7 +299,6 @@ public class McRPGPlayer {
         });
 
         PlayerSettingsDAO.getPlayerSettings(connection, uuid).thenAccept(playerSettingsSnapshot -> {
-
             this.healthbarType = playerSettingsSnapshot.getHealthbarType();
             this.keepHandEmpty = playerSettingsSnapshot.isKeepHandEmpty();
             this.displayType = playerSettingsSnapshot.getDisplayType();
@@ -305,28 +310,31 @@ public class McRPGPlayer {
         });
 
         //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
-        for(Skills skillType : Skills.values()){
+        for (Skills skillType : Skills.values()) {
 
+            SkillDAO.getAbilityAttributes(connection, uuid, skillType)
+                    .thenAccept(skillDataSnapshot -> SkillDAO.getPlayerAbilityToggles(connection, uuid, skillDataSnapshot)
+                            .thenAccept(updatedSnapshot -> SkillDAO.getPlayerSkillLevelingData(connection, uuid, updatedSnapshot)
+                                    .thenAccept(this::initializeSkill).exceptionally(throwable -> {
+                                        throwable.printStackTrace();
+                                        return null;
+                                    }))
+                            .exceptionally(throwable -> {
+                                throwable.printStackTrace();
+                                return null;
+                            }))
+                    .exceptionally(throwable -> {
+                        throwable.printStackTrace();
+                        return null;
+                    });
         }
-//        ArcheryDAO.getPlayerArcheryData(connection, uuid).thenAccept(this::initializeSkill);//TODO probably should respect ArcheryDAO#isAcceptingQueries but I don't have some sort of actual mutex handling so we just pretend it's always gonna be true
-//        AxesDAO.getPlayerAxesData(connection, uuid).thenAccept(this::initializeSkill);
-//        ExcavationDAO.getPlayerExcavationData(connection, uuid).thenAccept(this::initializeSkill);
-//        FishingDAO.getPlayerFishingData(connection, uuid).thenAccept(this::initializeSkill);
-//        FitnessDAO.getPlayerFitnessData(connection, uuid).thenAccept(this::initializeSkill);
-//        HerbalismDAO.getPlayerHerbalismData(connection, uuid).thenAccept(this::initializeSkill);
-//        MiningDAO.getPlayerMiningData(connection, uuid).thenAccept(this::initializeSkill);
-//        SorceryDAO.getPlayerSorceryData(connection, uuid).thenAccept(this::initializeSkill);
-//        SwordsDAO.getPlayerSwordsData(connection, uuid).thenAccept(this::initializeSkill);
-//        TamingDAO.getPlayerTamingsData(connection, uuid).thenAccept(this::initializeSkill);
-//        UnarmedDAO.getPlayerUnarmedData(connection, uuid).thenAccept(this::initializeSkill);
-//        WoodcuttingDAO.getPlayerWoodcuttingData(connection, uuid).thenAccept(this::initializeSkill);
 
         PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
 
             int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
             //There may be abilities in the loadout that might not be usable due to lowering the max ability amount, so we need to respect the config as the hard limit
-            for(int i = 0; i < maxAbilities; i++){
+            for (int i = 0; i < maxAbilities; i++) {
                 abilityLoadout.add(unlockedAbilityList.get(i));
             }
         });
@@ -366,13 +374,14 @@ public class McRPGPlayer {
 
                 BaseAbility abilityInstance;
                 Class<? extends BaseAbility> abilityClazz = genericAbility.getClazz();
-
+                Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes = skillDataSnapshot.getAbilityAttributes(genericAbility);
                 boolean toggled = skillDataSnapshot.getAbilityToggledMap().getOrDefault(genericAbility, true);
 
                 //Unlocked abilities have special data so we need to deal with those
                 if (genericAbility instanceof UnlockedAbilities unlockedAbility) {
 
-                    int tier = skillDataSnapshot.getAbilityTiers().getOrDefault(genericAbility, 0);
+                    AbilityTierAttribute abilityTierAttribute = (AbilityTierAttribute) abilityAttributes.get(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+                    int tier = abilityTierAttribute != null ? abilityTierAttribute.getContent() : 0;
 
                     //Remote transfer needs Jesus
                     if (genericAbility.equals(UnlockedAbilities.REMOTE_TRANSFER)) { // yes, i know this is quirky. deal with it. this ability should be re-worked in the future anyways -Jared (Thx Jared -Coleman)
@@ -387,15 +396,17 @@ public class McRPGPlayer {
                                 .newInstance(toggled, tier);
                     }
 
-                    //If it can be unlocked, we need to see if it needs to be put as currently pending
-                    if (skillDataSnapshot.getPendingAbilities().getOrDefault(genericAbility, false)) {
+                    AbilityPendingAttribute abilityPendingAttribute = (AbilityPendingAttribute) abilityAttributes.get(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
+                    if(abilityPendingAttribute != null && abilityPendingAttribute.getContent()){
+                        System.out.println("Pending");
                         pendingUnlockAbilities.add(unlockedAbility);
                     }
 
                     //Unlocked abilities can be put on cooldown, so check here
                     if (genericAbility.isCooldown()) { //Deal with cooldowns (I hate this and this will be redone)
 
-                        int cooldown = skillDataSnapshot.getAbilityCooldowns().getOrDefault(genericAbility, 0);
+                        AbilityCooldownAttribute abilityCooldownAttribute = (AbilityCooldownAttribute) abilityAttributes.get(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
+                        int cooldown = (int) (abilityCooldownAttribute != null ? abilityCooldownAttribute.getContent() : 0);
 
                         if (cooldown > 0) {
                             Calendar calendar = Calendar.getInstance();
