@@ -36,7 +36,6 @@ import us.eunoians.mcrpg.party.PartyInvite;
 import us.eunoians.mcrpg.party.TeleportRequest;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.AbilityType;
-import us.eunoians.mcrpg.types.DefaultAbilities;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.types.GainReason;
 import us.eunoians.mcrpg.types.GenericAbility;
@@ -648,53 +647,18 @@ public class McRPGPlayer {
      * Save players data
      */
     public void saveData() {
+
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
-        for (Skills type : Skills.values()) {
-            Skill skill = getSkill(type);
-            String query = "UPDATE mcrpg_" + skill.getName().toLowerCase() + "_data SET current_level = " + skill.getCurrentLevel() + ", current_exp = " + skill.getCurrentExp();
-            for (GenericAbility ability : skill.getAbilityKeys()) {
-                if (ability instanceof DefaultAbilities) {
-                    query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_toggled = " + Methods.convertBool(skill.getAbility(ability).isToggled());
-                }
-                if (ability instanceof UnlockedAbilities) {
-                    query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_toggled = " + Methods.convertBool(skill.getAbility(ability).isToggled());
-                    query += ", is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = " + Methods.convertBool(pendingUnlockAbilities.contains(ability));
-                    query += ", " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_tier = " + skill.getAbility(ability).getCurrentTier();
-                }
-                Calendar cal = Calendar.getInstance();
-                if (abilitiesOnCooldown.containsKey(ability)) {
-                    Calendar temp = Calendar.getInstance();
-                    temp.setTimeInMillis(abilitiesOnCooldown.get(ability));
-                    int seconds = (int) (temp.getTimeInMillis() - cal.getTimeInMillis()) / 1000;
-                    query += ", " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = " + seconds;
-                }
-            }
-            query += " WHERE uuid = '" + this.uuid.toString() + "'";
-            database.executeUpdate(query);
-        }
 
-        PlayerDataDAO.savePlayerData(connection, this).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        });
-
-        PlayerSettingsDAO.savePlayerSettings(connection, this).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        });
-
-        String query;
-        for (UnlockedAbilities ability : pendingUnlockAbilities) {
-            query = "UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
-                    " WHERE uuid = '" + uuid.toString() + "'";
-            database.executeUpdate(query);
-        }
-
-        PlayerLoadoutDAO.savePlayerLoadout(connection, this).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        });
+        PlayerDataDAO.savePlayerData(connection, this)
+                .thenCompose(unused -> PlayerSettingsDAO.savePlayerSettings(connection, this))
+                .thenCompose(unused -> SkillDAO.saveAllPlayerSkillInfo(connection, this))
+                .thenCompose(unused -> PlayerLoadoutDAO.savePlayerLoadout(connection, this))
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    return null;
+                });
 
         RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
         if (transfer.isUnlocked()) {
