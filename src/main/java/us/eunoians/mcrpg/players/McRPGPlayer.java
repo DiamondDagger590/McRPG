@@ -310,18 +310,8 @@ public class McRPGPlayer {
 
         //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
         for (Skills skillType : Skills.values()) {
-
-            SkillDAO.getAbilityAttributes(connection, uuid, skillType)
-                    .thenAccept(skillDataSnapshot -> SkillDAO.getPlayerAbilityToggles(connection, uuid, skillDataSnapshot)
-                            .thenAccept(updatedSnapshot -> SkillDAO.getPlayerSkillLevelingData(connection, uuid, updatedSnapshot)
-                                    .thenAccept(this::initializeSkill).exceptionally(throwable -> {
-                                        throwable.printStackTrace();
-                                        return null;
-                                    }))
-                            .exceptionally(throwable -> {
-                                throwable.printStackTrace();
-                                return null;
-                            }))
+            SkillDAO.getAllPlayerSkillInformation(connection, uuid, skillType)
+                    .thenAccept(this::initializeSkill)
                     .exceptionally(throwable -> {
                         throwable.printStackTrace();
                         return null;

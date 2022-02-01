@@ -314,34 +314,34 @@ public class SkillDAO {
         return completableFuture;
     }
 
-    //TODO
+    /**
+     * Gets all information that can be provided through this DAO and returns one single {@link SkillDataSnapshot} containing all the information requested.
+     *
+     * This should be where most developers get the skill or ability information, unless they desire specific information for which they can use the specific individual method for.
+     *
+     * @param connection The {@link Connection} to use to run the query
+     * @param uuid       The {@link UUID} of the player to get the data for
+     * @param skillType  The {@link Skills} to get all data for
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, with all the data this DAO can provide. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
     @NotNull
-    public static CompletableFuture<Void> getPlayerSkillData(@NotNull Connection connection, @NotNull UUID uuid) {
+    public static CompletableFuture<SkillDataSnapshot> getAllPlayerSkillInformation(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
 
-        //TODO
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ?;")) {
+            getPlayerSkillLevelingData(connection, uuid, skillType)
+                    .thenCompose(skillDataSnapshot -> getPlayerAbilityToggles(connection, uuid, skillDataSnapshot))
+                    .thenCompose(skillDataSnapshot -> getAbilityAttributes(connection, uuid, skillDataSnapshot))
+                    .thenAccept(completableFuture::complete)
+                    .exceptionally(throwable -> {
+                        completableFuture.completeExceptionally(throwable);
+                        return null;
+                    });
 
-                preparedStatement.setString(1, uuid.toString());
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                    while (resultSet.next()) {
-
-                    }
-
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-                completableFuture.completeExceptionally(e);
-            }
-
-            completableFuture.complete(null);
 
         });
 
@@ -505,6 +505,66 @@ public class SkillDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
 
                 SkillDataSnapshot skillDataSnapshot = new SkillDataSnapshot(uuid, skillType);
+                preparedStatement.setString(1, uuid.toString());
+
+                //Get data for all abilities
+                for (GenericAbility genericAbility : skillType.getAllAbilities()) {
+
+                    String databaseName = genericAbility.getName();
+                    preparedStatement.setString(2, databaseName);
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                        //Iterate over all found values
+                        while (resultSet.next()) {
+
+                            String attributeName = resultSet.getString("key");
+                            String attributeValue = resultSet.getString("value");
+
+                            Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
+                            AbilityAttribute<?> returnValue;
+
+                            if (attributeOptional.isPresent()) {
+                                AbilityAttribute<?> abilityAttribute = attributeOptional.get();
+                                returnValue = abilityAttribute.create(attributeValue);
+                                skillDataSnapshot.addAttribute(genericAbility, returnValue);
+                            }
+
+                        }
+
+                        completableFuture.complete(skillDataSnapshot);
+                    }
+                }
+
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
+
+    /**
+     * Gets all stored {@link AbilityAttribute}s that belong to abilities for a specific player's skill.
+     *
+     * @param connection        The {@link Connection} to use to run the query
+     * @param uuid              The {@link UUID} of the player to get the data for
+     * @param skillDataSnapshot The {@link SkillDataSnapshot} to populate with ability attributes
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability attributes of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, SkillDataSnapshot skillDataSnapshot) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        Skills skillType = skillDataSnapshot.getSkillType();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
+
                 preparedStatement.setString(1, uuid.toString());
 
                 //Get data for all abilities
