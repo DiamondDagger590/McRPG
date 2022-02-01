@@ -618,7 +618,7 @@ public class SkillDAO {
      * is an error with saving
      */
     @NotNull
-    public static CompletableFuture<Void> saveAllPlayerSkillInfo(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
+    public static CompletableFuture<Void> saveAllPlayerSkillInformation(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
