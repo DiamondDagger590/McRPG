@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A DAO used to store a player's loadout
@@ -357,7 +358,6 @@ public class PlayerLoadoutDAO {
                 }
             }
             catch (SQLException e) {
-                e.printStackTrace();
                 completableFuture.completeExceptionally(e);
             }
 
@@ -406,8 +406,66 @@ public class PlayerLoadoutDAO {
         return completableFuture;
     }
 
-    //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerLoadout(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
+    /**
+     * Saves the player loadout for the provided {@link McRPGPlayer}.
+     *
+     * @param connection  The {@link Connection} to use to save the player loadout
+     * @param mcRPGPlayer The {@link McRPGPlayer} whose loadout is being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerLoadout(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
+
+        UUID playerUUID = mcRPGPlayer.getUuid();
+        Logger logger = McRPG.getInstance().getLogger();
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        List<UnlockedAbilities> abilityLoadout = new ArrayList<>(mcRPGPlayer.getAbilityLoadout()); //Make a copy because async stuffs and I don't want the ghost of Trigary to haunt me
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            getPlayerLoadoutUUID(connection, playerUUID).thenAccept(loadoutOptional -> {
+
+                if (loadoutOptional.isPresent()) {
+
+                    UUID loadoutUUID = loadoutOptional.get();
+
+                    try {
+                        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE loadout_id = ?")) {
+                            preparedStatement.setString(1, loadoutUUID.toString());
+                            preparedStatement.executeUpdate();
+                        }
+                        try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_SLOTS_TABLE_NAME + " (loadout_id, slot_number, ability_id) VALUES(?, ?, ?);")) {
+
+                            preparedStatement.setString(1, loadoutUUID.toString());
+
+                            for (int i = 0; i < abilityLoadout.size(); i++) {
+                                UnlockedAbilities abilityType = abilityLoadout.get(i);
+                                preparedStatement.setInt(2, i);
+                                preparedStatement.setString(3, abilityType.getName());
+
+                                preparedStatement.executeUpdate();
+                            }
+                        }
+                    }
+                    catch (SQLException e) {
+                        e.printStackTrace();
+                        completableFuture.completeExceptionally(e);
+                    }
+                }
+
+
+                completableFuture.complete(null);
+
+            }).exceptionally(throwable -> {
+                logger.log(Level.SEVERE, "An error occured while getting the loadout UUID to save for player with the UUID of: " + playerUUID);
+                throwable.printStackTrace();
+                return null;
+            });
+        });
+
+        return completableFuture;
     }
 
     /**

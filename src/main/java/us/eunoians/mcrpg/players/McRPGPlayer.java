@@ -689,17 +689,11 @@ public class McRPGPlayer {
                     " WHERE uuid = '" + uuid.toString() + "'";
             database.executeUpdate(query);
         }
-        String loadoutQuery = "UPDATE mcrpg_loadout SET";
-        for (int i = 1; i <= McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities"); i++) {
-            if (i != 1) {
-                loadoutQuery += ",";
-            }
-            String toAdd = "null";
-            loadoutQuery += " Slot" + i + " = '" + (abilityLoadout.size() >= i ? abilityLoadout.get(i - 1).getName() : toAdd) + "'";
 
-        }
-        loadoutQuery += " WHERE uuid = '" + uuid.toString() + "'";
-        database.executeUpdate(loadoutQuery);
+        PlayerLoadoutDAO.savePlayerLoadout(connection, this).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
+        });
 
         RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
         if (transfer.isUnlocked()) {

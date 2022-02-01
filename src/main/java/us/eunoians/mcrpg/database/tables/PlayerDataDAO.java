@@ -217,7 +217,7 @@ public class PlayerDataDAO {
     /**
      * Saves all the player data that is stored inside this table, such as redeemable exp, for the provided {@link McRPGPlayer}.
      *
-     * @param connection The {@link Connection} to use to get the player data
+     * @param connection The {@link Connection} to use to save the player data
      * @param mcRPGPlayer       The {@link McRPGPlayer} whose data is being saved
      * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
      * is an error with saving
