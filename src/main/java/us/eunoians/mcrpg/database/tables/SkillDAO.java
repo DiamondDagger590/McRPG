@@ -758,6 +758,9 @@ public class SkillDAO {
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
             try {
+
+                connection.setAutoCommit(false);
+
                 //Remove existing values
                 try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME + " WHERE player_uuid = ?;")) {
                     preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
@@ -777,9 +780,22 @@ public class SkillDAO {
                     }
                 }
 
+                connection.commit();
+                connection.setAutoCommit(true);
+
                 completableFuture.complete(null);
             }
             catch (SQLException e) {
+
+                try {
+                    connection.rollback();
+                    connection.setAutoCommit(true);
+                }
+                catch (SQLException ex) {
+                    ex.printStackTrace();
+                    completableFuture.completeExceptionally(ex);
+                }
+
                 completableFuture.completeExceptionally(e);
             }
 

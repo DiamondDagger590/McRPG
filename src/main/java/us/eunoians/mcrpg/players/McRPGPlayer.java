@@ -643,7 +643,7 @@ public class McRPGPlayer {
 
         PlayerDataDAO.savePlayerData(connection, this)
                 .thenCompose(unused -> PlayerSettingsDAO.savePlayerSettings(connection, this))
-                .thenCompose(unused -> SkillDAO.saveAllPlayerSkillInfo(connection, this))
+                .thenCompose(unused -> SkillDAO.saveAllPlayerSkillInformation(connection, this))
                 .thenCompose(unused -> PlayerLoadoutDAO.savePlayerLoadout(connection, this))
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
