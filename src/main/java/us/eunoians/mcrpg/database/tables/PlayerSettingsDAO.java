@@ -201,9 +201,47 @@ public class PlayerSettingsDAO {
         return completableFuture;
     }
 
-    //TODO because I only care about loading player data rn and cba to save it
-    public static void savePlayerSettings(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
+    /**
+     * Saves the player settings for the provided {@link McRPGPlayer}.
+     *
+     * @param connection  The {@link Connection} to use to save the player settings
+     * @param mcRPGPlayer The {@link McRPGPlayer} whose settings are being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerSettings(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (uuid, keep_hand, ignore_tips, auto_deny, require_empty_offhand, display_type, health_type, unarmed_ignore_slot, auto_accept_party_teleports) " +
+                                                                                   "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+                                                                                   "keep_hand=VALUES(keep_hand), ignore_tips=VALUES(ignore_tips), auto_deny=VALUES(auto_deny), require_empty_offhand=VALUES(require_empty_offhand), " +
+                                                                                   "display_type=VALUES(display_type), health_type=VALUES(health_type), unarmed_ignore_slot=VALUES(unarmed_ignore_slot), auto_accept_party_teleports=VALUES(auto_accept_party_teleports);")) {
+
+                preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
+                preparedStatement.setBoolean(2, mcRPGPlayer.isKeepHandEmpty());
+                preparedStatement.setBoolean(3, mcRPGPlayer.isIgnoreTips());
+                preparedStatement.setBoolean(4, mcRPGPlayer.isAutoDeny());
+                preparedStatement.setBoolean(5, mcRPGPlayer.isRequireEmptyOffHand());
+                preparedStatement.setString(6, mcRPGPlayer.getDisplayType().getName());
+                preparedStatement.setString(7, mcRPGPlayer.getHealthbarType().getName());
+                preparedStatement.setInt(8, mcRPGPlayer.getUnarmedIgnoreSlot());
+                preparedStatement.setBoolean(9, mcRPGPlayer.isAutoAcceptPartyInvites());
+
+                preparedStatement.executeUpdate();
+
+                completableFuture.complete(null);
+
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
     }
 
     /**

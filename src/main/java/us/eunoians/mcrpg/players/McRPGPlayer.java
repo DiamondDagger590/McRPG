@@ -397,7 +397,7 @@ public class McRPGPlayer {
                     }
 
                     AbilityPendingAttribute abilityPendingAttribute = (AbilityPendingAttribute) abilityAttributes.get(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
-                    if(abilityPendingAttribute != null && abilityPendingAttribute.getContent()){
+                    if (abilityPendingAttribute != null && abilityPendingAttribute.getContent()) {
                         System.out.println("Pending");
                         pendingUnlockAbilities.add(unlockedAbility);
                     }
@@ -679,11 +679,12 @@ public class McRPGPlayer {
             return null;
         });
 
-        String query = "UPDATE mcrpg_player_settings SET require_empty_offhand = " + Methods.convertBool(requireEmptyOffHand) + ", keep_hand = " + Methods.convertBool(keepHandEmpty)
-                       + ", ignore_tips = " + Methods.convertBool(ignoreTips) + ", auto_deny = " + Methods.convertBool(autoDeny) + ", display_type = '" + displayType.getName() +
-                       "', health_type = '" + healthbarType.getName() + "', unarmed_ignore_slot = " + unarmedIgnoreSlot + ", auto_accept_party_teleports = "
-                       + Methods.convertBool(autoAcceptPartyInvites) + " WHERE uuid = '" + uuid.toString() + "'";
-        database.executeUpdate(query);
+        PlayerSettingsDAO.savePlayerSettings(connection, this).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
+        });
+
+        String query;
         for (UnlockedAbilities ability : pendingUnlockAbilities) {
             query = "UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET is_" + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_pending = 1" +
                     " WHERE uuid = '" + uuid.toString() + "'";
