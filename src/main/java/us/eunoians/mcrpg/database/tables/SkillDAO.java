@@ -822,15 +822,18 @@ public class SkillDAO {
 
             try (PreparedStatement skillDataStatement = connection.prepareStatement("INSERT INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
                                                                                     "current_level=VALUES(current_level), current_exp=VALUES(current_exp);")) {
+
+                skillDataStatement.setString(1, mcRPGPlayer.getUuid().toString());
+
                 for (Skills skillType : Skills.values()) {
 
                     Skill skill = mcRPGPlayer.getSkill(skillType);
                     int currentExp = skill.getCurrentExp();
                     int currentLevel = skill.getCurrentLevel();
 
-                    skillDataStatement.setString(1, skillType.getName().toLowerCase(Locale.ROOT));
-                    skillDataStatement.setInt(2, currentLevel);
-                    skillDataStatement.setInt(3, currentExp);
+                    skillDataStatement.setString(2, skill.getName().toLowerCase(Locale.ROOT));
+                    skillDataStatement.setInt(3, currentLevel);
+                    skillDataStatement.setInt(4, currentExp);
 
                     skillDataStatement.executeUpdate();
                 }

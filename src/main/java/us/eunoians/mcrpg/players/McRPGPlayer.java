@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -636,34 +637,49 @@ public class McRPGPlayer {
     /**
      * Save players data
      */
-    public void saveData() {
+    public CompletableFuture<Void> saveData() {
 
+        System.out.println("Saving in player class");
+        for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+            System.out.println(stackTraceElement);
+        }
+
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
 
-        PlayerDataDAO.savePlayerData(connection, this)
-                .thenCompose(unused -> PlayerSettingsDAO.savePlayerSettings(connection, this))
-                .thenCompose(unused -> SkillDAO.saveAllPlayerSkillInformation(connection, this))
-                .thenCompose(unused -> PlayerLoadoutDAO.savePlayerLoadout(connection, this))
+        CompletableFuture.allOf(PlayerDataDAO.savePlayerData(connection, this),
+                        PlayerSettingsDAO.savePlayerSettings(connection, this), SkillDAO.saveAllPlayerSkillInformation(connection, this),
+                        PlayerLoadoutDAO.savePlayerLoadout(connection, this))
+                .thenAccept(unused -> {
+
+                    System.out.println("All saves finished");
+
+                    RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
+                    if (transfer.isUnlocked()) {
+                        File remoteTransferFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
+                        FileConfiguration data = YamlConfiguration.loadConfiguration(remoteTransferFile);
+                        for (Material mat : transfer.getItemsToSync().keySet()) {
+                            data.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
+                        }
+                        try {
+                            data.save(remoteTransferFile);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    completableFuture.complete(null);
+                })
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
+                    completableFuture.completeExceptionally(throwable);
                     return null;
                 });
 
-        RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
-        if (transfer.isUnlocked()) {
-            File remoteTransferFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
-            FileConfiguration data = YamlConfiguration.loadConfiguration(remoteTransferFile);
-            for (Material mat : transfer.getItemsToSync().keySet()) {
-                data.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
-            }
-            try {
-                data.save(remoteTransferFile);
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
+        return completableFuture;
     }
 
     /**

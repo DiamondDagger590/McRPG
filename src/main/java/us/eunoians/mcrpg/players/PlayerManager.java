@@ -10,119 +10,177 @@ import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.types.TipType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class PlayerManager {
 
-  //Players who are currently logged on
-  private static HashMap<UUID, McRPGPlayer> players = new HashMap<>();
-  private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
-  private static McRPG plugin;
-  private static BukkitTask saveTask;
+    //Players who are currently logged on
+    private static HashMap<UUID, McRPGPlayer> players = new HashMap<>();
+    private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
+    private static McRPG plugin;
+    private static BukkitTask saveTask;
 
-  public PlayerManager(McRPG plugin){
-    PlayerManager.plugin = plugin;
-  }
-
-  public static void addMcRPGPlayer(Player player, boolean freeze) {
-    if(players.containsKey(player.getUniqueId())) {
-      return;
-    }
-    UUID uuid = player.getUniqueId();
-    if(freeze) {
-      playersFrozen.add(uuid);
+    public PlayerManager(McRPG plugin) {
+        PlayerManager.plugin = plugin;
     }
 
-    BukkitTask task = new BukkitRunnable() {
-      public void run() {
-        McRPGPlayer mp = new McRPGPlayer(uuid);
-        mp.getUsedTips().add(TipType.LOGIN_TIP);
-        if(mp.isOnline()) {
-          if(!McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableTips") && !mp.isIgnoreTips()) {
-            List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
-            Random rand = new Random();
-            int val = rand.nextInt(possibleMessages.size());
-            new BukkitRunnable(){
-              @Override
-              public void run() {
-                if(mp.isOnline()){
-                  mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+    public static void addMcRPGPlayer(Player player, boolean freeze) {
+        if (players.containsKey(player.getUniqueId())) {
+            return;
+        }
+        UUID uuid = player.getUniqueId();
+        if (freeze) {
+            playersFrozen.add(uuid);
+        }
+
+        BukkitTask task = new BukkitRunnable() {
+            public void run() {
+                McRPGPlayer mp = new McRPGPlayer(uuid);
+                mp.getUsedTips().add(TipType.LOGIN_TIP);
+                if (mp.isOnline()) {
+                    if (!McRPG.getInstance().getFileManager().getFile(FileManager.Files.CONFIG).getBoolean("Configuration.DisableTips") && !mp.isIgnoreTips()) {
+                        List<String> possibleMessages = McRPG.getInstance().getLangFile().getStringList("Messages.Tips.LoginTips");
+                        Random rand = new Random();
+                        int val = rand.nextInt(possibleMessages.size());
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (mp.isOnline()) {
+                                    mp.getPlayer().sendMessage(Methods.color(mp.getPlayer(), possibleMessages.get(val)));
+                                }
+                            }
+                        }.runTaskLater(McRPG.getInstance(), 40L);
+                    }
+                    players.put(uuid, mp);
                 }
-              }
-            }.runTaskLater(McRPG.getInstance(), 40L);
-          }
-          players.put(uuid, mp);
+                playersFrozen.remove(uuid);
+            }
+        }.runTaskAsynchronously(plugin);
+    }
+
+    public static boolean isPlayerFrozen(UUID uuid) {
+        if (isPlayerStored(uuid)) {
+            playersFrozen.remove(uuid);
         }
-        playersFrozen.remove(uuid);
-      }
-    }.runTaskAsynchronously(plugin);
-  }
-
-  public static boolean isPlayerFrozen(UUID uuid) {
-    if(isPlayerStored(uuid)){
-      playersFrozen.remove(uuid);
+        return playersFrozen.contains(uuid);
     }
-    return playersFrozen.contains(uuid);
-  }
 
-  public static McRPGPlayer getPlayer(UUID uuid) throws McRPGPlayerNotFoundException{
-    if(players.containsKey(uuid)) {
-      return players.get(uuid);
-    }
-    else{
-      throw new McRPGPlayerNotFoundException("Player is not found or loaded yet.");
-    }
-  }
-
-  public static boolean isPlayerStored(UUID uuid) {
-    return players.containsKey(uuid);
-  }
-
-  public static void removePlayer(UUID uuid) {
-    players.remove(uuid).saveData();
-  }
-
-  public static void startSave(Plugin p) {
-    plugin = (McRPG) p;
-    if(saveTask != null) {
-      System.out.println(Methods.color(plugin.getPluginPrefix() + "&eRestarting player saving task...."));
-      saveTask.cancel();
-    }
-    saveTask = new BukkitRunnable(){
-      @Override
-      public void run() {
-        PlayerManager.run();
-      }
-    }.runTaskTimerAsynchronously(p, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
-    System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
-    new BukkitRunnable() {
-      @Override
-      public void run() {
-        Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
-        for(McRPGPlayer mp : clone) {
-          if(isPlayerFrozen(mp.getUuid())) {
-            continue;
-          }
-          mp.updateCooldowns();
+    public static McRPGPlayer getPlayer(UUID uuid) throws McRPGPlayerNotFoundException {
+        if (players.containsKey(uuid)) {
+            return players.get(uuid);
         }
-      }
-    }.runTaskTimer(p, 0, 20);
-  }
-
-
-  private static void run() {
-    HashMap<UUID, McRPGPlayer> clone = (HashMap<UUID, McRPGPlayer>) players.clone();
-    if(!players.values().isEmpty()) {
-      clone.values().forEach(McRPGPlayer::saveData);
+        else {
+            throw new McRPGPlayerNotFoundException("Player is not found or loaded yet.");
+        }
     }
-  }
 
-  public static void saveAll() {run();}
-
-  public static void shutDownManager() {
-    saveAll();
-    if(saveTask != null) {
-      saveTask.cancel();
+    public static boolean isPlayerStored(UUID uuid) {
+        return players.containsKey(uuid);
     }
-  }
+
+    public static void removePlayer(UUID uuid) {
+
+        if(players.containsKey(uuid)){
+            McRPGPlayer mcRPGPlayer = players.remove(uuid);
+
+            if(plugin.isEnabled()){
+                mcRPGPlayer.saveData();
+            }
+        }
+    }
+
+    public static void startSave(Plugin p) {
+        plugin = (McRPG) p;
+
+        if (saveTask != null) {
+            System.out.println(Methods.color(plugin.getPluginPrefix() + "&eRestarting player saving task...."));
+            saveTask.cancel();
+        }
+
+        saveTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                if (p.isEnabled()) {
+                    PlayerManager.run();
+                }
+            }
+        }.runTaskTimerAsynchronously(p, 500, ((McRPG) p).getFileManager().getFile(FileManager.Files.CONFIG).getInt("Configuration.SaveInterval") * 1200);
+
+        System.out.println(Methods.color(plugin.getPluginPrefix() + "&aPlayer saving task has been started!"));
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
+
+                if (p.isEnabled()) {
+
+                    for (McRPGPlayer mp : clone) {
+
+                        if (isPlayerFrozen(mp.getUuid())) {
+                            continue;
+                        }
+
+                        mp.updateCooldowns();
+                    }
+                }
+            }
+        }.runTaskTimer(p, 0, 20);
+    }
+
+
+    private static CompletableFuture<Void> run() {
+        List<McRPGPlayer> playerList = new ArrayList<>(players.values());
+
+        CompletableFuture<Void>[] completableFutures = new CompletableFuture[playerList.size()];
+
+        for (int i = 0; i < playerList.size(); i++) {
+            completableFutures[i] = playerList.get(i).saveData();
+        }
+
+        return CompletableFuture.allOf(completableFutures);
+    }
+
+    private static CompletableFuture<Void> runAndShutdown() {
+        List<McRPGPlayer> playerList = new ArrayList<>(players.values());
+        players.clear();
+
+        CompletableFuture<Void>[] completableFutures = new CompletableFuture[playerList.size()];
+
+        for (int i = 0; i < playerList.size(); i++) {
+            completableFutures[i] = playerList.get(i).saveData();
+        }
+
+        return CompletableFuture.allOf(completableFutures);
+    }
+
+    public static void saveAll() {
+        run();
+    }
+
+    public static CompletableFuture<Void> shutDownManager() {
+
+        System.out.println("Shutting down player manager");
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        if (saveTask != null) {
+            saveTask.cancel();
+        }
+
+        runAndShutdown().thenAccept(unused -> {
+            System.out.println("Finished shutting down");
+            completableFuture.complete(unused);
+        }).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
+        });
+
+        return completableFuture;
+    }
 }

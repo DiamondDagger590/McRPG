@@ -372,11 +372,13 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
 
     @Override
     public void onDisable() {
-        PlayerManager.shutDownManager();
         brewingStandManager.shutDown();
         partyManager.saveAllParties();
         placeStore.saveAll();
-        databaseManager.getDatabaseExecutorService().shutdown();
+        PlayerManager.shutDownManager().thenAccept(unused -> {
+            System.out.println("Shutting down database executor");
+            databaseManager.getDatabaseExecutorService().shutdown();
+        });
     }
 
     public static McRPG getInstance() {
