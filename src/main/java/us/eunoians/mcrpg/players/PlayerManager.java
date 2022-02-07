@@ -167,16 +167,13 @@ public class PlayerManager {
 
     public static CompletableFuture<Void> shutDownManager() {
 
-        System.out.println("Shutting down player manager");
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         if (saveTask != null) {
             saveTask.cancel();
         }
 
-        runAndShutdown().thenAccept(unused -> {
-            System.out.println("Finished shutting down");
-            completableFuture.complete(unused);
-        }).exceptionally(throwable -> {
+        runAndShutdown().thenAccept(completableFuture::complete)
+                .exceptionally(throwable -> {
             throwable.printStackTrace();
             completableFuture.completeExceptionally(throwable);
             return null;

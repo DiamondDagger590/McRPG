@@ -388,7 +388,6 @@ public class McRPGPlayer {
 
                     AbilityPendingAttribute abilityPendingAttribute = (AbilityPendingAttribute) abilityAttributes.get(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
                     if (abilityPendingAttribute != null && abilityPendingAttribute.getContent()) {
-                        System.out.println("Pending");
                         pendingUnlockAbilities.add(unlockedAbility);
                     }
 
@@ -639,11 +638,6 @@ public class McRPGPlayer {
      */
     public CompletableFuture<Void> saveData() {
 
-        System.out.println("Saving in player class");
-        for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-            System.out.println(stackTraceElement);
-        }
-
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
@@ -652,8 +646,6 @@ public class McRPGPlayer {
                         PlayerSettingsDAO.savePlayerSettings(connection, this), SkillDAO.saveAllPlayerSkillInformation(connection, this),
                         PlayerLoadoutDAO.savePlayerLoadout(connection, this))
                 .thenAccept(unused -> {
-
-                    System.out.println("All saves finished");
 
                     RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
                     if (transfer.isUnlocked()) {
