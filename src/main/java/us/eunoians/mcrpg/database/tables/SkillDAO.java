@@ -316,7 +316,7 @@ public class SkillDAO {
 
     /**
      * Gets all information that can be provided through this DAO and returns one single {@link SkillDataSnapshot} containing all the information requested.
-     *
+     * <p>
      * This should be where most developers get the skill or ability information, unless they desire specific information for which they can use the specific individual method for.
      *
      * @param connection The {@link Connection} to use to run the query
@@ -625,9 +625,8 @@ public class SkillDAO {
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            savePlayerSkillData(connection, mcRPGPlayer)
-                    .thenCompose(unused -> savePlayerAbilityToggles(connection, mcRPGPlayer))
-                    .thenCompose(unused -> savePlayerAbilityAttributes(connection, mcRPGPlayer))
+            CompletableFuture.allOf(savePlayerSkillData(connection, mcRPGPlayer),
+                            savePlayerAbilityToggles(connection, mcRPGPlayer), savePlayerAbilityAttributes(connection, mcRPGPlayer))
                     .thenAccept(completableFuture::complete)
                     .exceptionally(throwable -> {
                         throwable.printStackTrace();

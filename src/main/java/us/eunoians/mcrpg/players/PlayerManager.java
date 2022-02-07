@@ -178,6 +178,7 @@ public class PlayerManager {
             completableFuture.complete(unused);
         }).exceptionally(throwable -> {
             throwable.printStackTrace();
+            completableFuture.completeExceptionally(throwable);
             return null;
         });
 
