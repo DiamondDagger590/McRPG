@@ -5,7 +5,10 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
 import us.eunoians.mcrpg.abilities.attributes.AbilityAttribute;
 import us.eunoians.mcrpg.abilities.attributes.AbilityAttributeManager;
+import us.eunoians.mcrpg.api.leaderboards.LeaderboardData;
+import us.eunoians.mcrpg.api.leaderboards.PlayerLeaderboardData;
 import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.builder.DatabaseDriver;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
 import us.eunoians.mcrpg.types.DefaultAbilities;
@@ -18,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -145,7 +149,7 @@ public class SkillDAO {
                                                                                "`player_uuid` varchar(36) NOT NULL," +
                                                                                "`ability_id` varchar(32) NOT NULL," +
                                                                                "`key` varchar(32) NOT NULL," +
-                                                                               "`value` varchar(MAX) NOT NULL," +
+                                                                               "`value` varchar(4096) NOT NULL," +
                                                                                "PRIMARY KEY (`player_uuid`, `ability_id`, `key`)" +
                                                                                ");")) {
                     statement.executeUpdate();
@@ -200,6 +204,11 @@ public class SkillDAO {
 
                             String skillDatabaseName = skillType.getName().toLowerCase(Locale.ROOT);
                             String legacyTableName = "mcrpg_" + skillDatabaseName + "_data";
+
+                            //Ensure legacy tables exist
+                            if (databaseManager.getDatabase() != null && !databaseManager.getDatabase().tableExists(legacyTableName)) {
+                                continue;
+                            }
 
                             //Skill data query
                             String skillInfoQuery = "MERGE INTO " + SKILL_DATA_TABLE_NAME + " SELECT uuid as player_uuid, '" + skillDatabaseName + "' as skill_id, current_level, current_exp FROM " + legacyTableName + ";";
@@ -815,12 +824,14 @@ public class SkillDAO {
     public static CompletableFuture<Void> savePlayerSkillData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        DatabaseDriver databaseDriver = databaseManager.getDriver();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            try (PreparedStatement skillDataStatement = connection.prepareStatement("INSERT INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-                                                                                    "current_level=VALUES(current_level), current_exp=VALUES(current_exp);")) {
+            try (PreparedStatement skillDataStatement = databaseDriver == DatabaseDriver.H2 ? connection.prepareStatement("INSERT INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+                                                                                                                          "current_level=VALUES(current_level), current_exp=VALUES(current_exp);")
+                                                                                            : connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
 
                 skillDataStatement.setString(1, mcRPGPlayer.getUuid().toString());
 
@@ -843,6 +854,98 @@ public class SkillDAO {
                 completableFuture.completeExceptionally(e);
             }
         });
+        return completableFuture;
+    }
+
+    /**
+     * Gets the player leaderboard rankings for the provided {@link Skills} skill type.
+     *
+     * @param connection The {@link Connection} to use to get the player leaderboard rankings
+     * @param skillType  The {@link Skills} skill type to use to get the player leaderboard rankings for
+     * @return A {@link CompletableFuture} completed with a {@link LeaderboardData} which stores all of the player rankings for the given {@link Skills} skill type or will
+     * be completed exceptionally with an {@link SQLException} if an error occurs.
+     */
+    @NotNull
+    public static CompletableFuture<LeaderboardData> getPlayerLeaderboardRankings(@NotNull Connection connection, @NotNull Skills skillType) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<LeaderboardData> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            List<PlayerLeaderboardData> playerLeaderboardData = new ArrayList<>();
+            Map<UUID, Integer> playerRankings = new HashMap<>();
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT player_uuid, current_level FROM " + SKILL_DATA_TABLE_NAME + " WHERE skill_id = ? ORDER BY current_level DESC;")) {
+
+                preparedStatement.setString(1, skillType.getName());
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                    while (resultSet.next()) {
+
+                        UUID uuid = UUID.fromString(resultSet.getString("player_uuid"));
+                        int level = resultSet.getInt("current_level");
+
+                        playerLeaderboardData.add(new PlayerLeaderboardData(uuid, level));
+                        playerRankings.put(uuid, playerLeaderboardData.size() + 1);
+                    }
+                }
+
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+                return;
+            }
+
+            completableFuture.complete(new LeaderboardData(playerLeaderboardData, playerRankings));
+        });
+
+        return completableFuture;
+    }
+
+    /**
+     * Gets the player leaderboard power level rankings.
+     *
+     * @param connection The {@link Connection} to use to get the player leaderboard rankings
+     * @return A {@link CompletableFuture} completed with a {@link LeaderboardData} which stores all of the player power level rankings or will
+     * be completed exceptionally with an {@link SQLException} if an error occurs.
+     */
+    @NotNull
+    public static CompletableFuture<LeaderboardData> getPlayerPowerLeaderboardRankings(@NotNull Connection connection) {
+
+        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<LeaderboardData> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            List<PlayerLeaderboardData> playerLeaderboardData = new ArrayList<>();
+            Map<UUID, Integer> playerRankings = new HashMap<>();
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT player_uuid, SUM(current_level) AS total_level_sum FROM " + SKILL_DATA_TABLE_NAME + " GROUP BY player_uuid ORDER BY total_level_sum DESC;")) {
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                    while (resultSet.next()) {
+
+                        UUID uuid = UUID.fromString(resultSet.getString("player_uuid"));
+                        int powerLevel = resultSet.getInt("total_level_sum");
+
+                        playerLeaderboardData.add(new PlayerLeaderboardData(uuid, powerLevel));
+                        playerRankings.put(uuid, playerLeaderboardData.size() + 1);
+                    }
+                }
+
+            }
+            catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+                return;
+            }
+
+            completableFuture.complete(new LeaderboardData(playerLeaderboardData, playerRankings));
+
+        });
+
         return completableFuture;
     }
 

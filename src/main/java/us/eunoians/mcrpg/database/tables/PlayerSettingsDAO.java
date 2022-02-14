@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.database.tables;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.builder.DatabaseDriver;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.DisplayType;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
@@ -213,14 +214,17 @@ public class PlayerSettingsDAO {
     public static CompletableFuture<Void> savePlayerSettings(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        DatabaseDriver databaseDriver = databaseManager.getDriver();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (uuid, keep_hand, ignore_tips, auto_deny, require_empty_offhand, display_type, health_type, unarmed_ignore_slot, auto_accept_party_teleports) " +
-                                                                                   "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-                                                                                   "keep_hand=VALUES(keep_hand), ignore_tips=VALUES(ignore_tips), auto_deny=VALUES(auto_deny), require_empty_offhand=VALUES(require_empty_offhand), " +
-                                                                                   "display_type=VALUES(display_type), health_type=VALUES(health_type), unarmed_ignore_slot=VALUES(unarmed_ignore_slot), auto_accept_party_teleports=VALUES(auto_accept_party_teleports);")) {
+            try (PreparedStatement preparedStatement = databaseDriver == DatabaseDriver.H2 ? connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (uuid, keep_hand, ignore_tips, auto_deny, require_empty_offhand, display_type, health_type, unarmed_ignore_slot, auto_accept_party_teleports) " +
+                                                                                                                         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+                                                                                                                         "keep_hand = VALUES(keep_hand), ignore_tips = VALUES(ignore_tips), auto_deny = VALUES(auto_deny), require_empty_offhand = VALUES(require_empty_offhand), " +
+                                                                                                                         "display_type = VALUES(display_type), health_type = VALUES(health_type), unarmed_ignore_slot = VALUES(unarmed_ignore_slot), auto_accept_party_teleports = VALUES(auto_accept_party_teleports);")
+                                                                                           : connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, keep_hand, ignore_tips, auto_deny, require_empty_offhand, display_type, health_type, unarmed_ignore_slot, auto_accept_party_teleports) " +
+                                                                                                                         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
 
                 preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
                 preparedStatement.setBoolean(2, mcRPGPlayer.isKeepHandEmpty());

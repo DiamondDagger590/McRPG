@@ -202,15 +202,25 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
             }.runTaskLater(this, 400);
         }
         expPermissionManager = ExpPermissionManager.getInstance().setup(this);
+        new PlayerManager(this);
+
         this.databaseManager = new DatabaseManager(this);
+        databaseManager.initialize()
+                .thenAccept(unused -> {
+                    leaderboardManager = new LeaderboardManager(this);
+                    leaderboardHeadManager = new LeaderboardHeadManager();
+                    PlayerManager.startSave(this);
+                }).exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    return null;
+                });
+
         healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
         sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
         fishingItemManager = new FishingItemManager();
         bookManager = new BookManager(this);
         artifactManager = new ArtifactManager(this);
         worldModifierManager = new WorldModifierManager();
-        leaderboardManager = new LeaderboardManager(this);
-        leaderboardHeadManager = new LeaderboardHeadManager();
         this.partyManager = new PartyManager();
         this.abilityAttributeManager = new AbilityAttributeManager(this);
         partyManager.init();
@@ -220,7 +230,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         levelCommandManager = new LevelCommandManager();
         getLogger().info("Loading Potions");
         potionRecipeManager = new PotionRecipeManager();
-        new PlayerManager(this);
         new BloodManager(this);
         if (healthBarPluginEnabled) {
             getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
@@ -261,7 +270,6 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         DiamondFlowersData.init();
         BuriedTreasureData.init();
         HiddenConfig.getInstance();
-        PlayerManager.startSave(this);
         //Commands
         getCommand("mcrpg").setExecutor(new McRPGStub());
         getCommand("mcdisplay").setExecutor(new McDisplay());

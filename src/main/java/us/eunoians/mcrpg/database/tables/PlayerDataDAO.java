@@ -1,11 +1,10 @@
 package us.eunoians.mcrpg.database.tables;
 
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.builder.DatabaseDriver;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 
 import java.sql.Connection;
@@ -228,18 +227,23 @@ public class PlayerDataDAO {
     public static CompletableFuture<Void> savePlayerData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        DatabaseDriver databaseDriver = databaseManager.getDriver();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME +
-                                                                                   " (uuid, power_level, ability_points, redeemable_exp, redeemable_levels, " +
-                                                                                   "divine_escape_exp_debuff, divine_escape_damage_debuff, divine_escape_exp_end_time, divine_escape_damage_end_time, " +
-                                                                                   "replace_ability_cooldown_time, boosted_exp, party_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-                                                                                   "power_level=VALUES(power_level), ability_points=VALUES(ability_points), " +
-                                                                                   "redeemable_exp=VALUES(redeemable_exp), redeemable_levels=VALUES(redeemable_levels), divine_escape_exp_debuff=VALUES(divine_escape_exp_debuff), " +
-                                                                                   "divine_escape_damage_debuff=VALUES(divine_escape_damage_debuff), divine_escape_exp_end_time=VALUES(divine_escape_exp_end_time), divine_escape_damage_end_time=VALUES(divine_escape_damage_end_time), " +
-                                                                                   "replace_ability_cooldown_time=VALUES(replace_ability_cooldown_time), boosted_exp=VALUES(boosted_exp), party_uuid=VALUES(party_uuid);")) {
+            try (PreparedStatement preparedStatement = databaseDriver == DatabaseDriver.H2 ? connection.prepareStatement("INSERT INTO " + TABLE_NAME +
+                                                                                                                         " (uuid, power_level, ability_points, redeemable_exp, redeemable_levels, " +
+                                                                                                                         "divine_escape_exp_debuff, divine_escape_damage_debuff, divine_escape_exp_end_time, divine_escape_damage_end_time, " +
+                                                                                                                         "replace_ability_cooldown_time, boosted_exp, party_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+                                                                                                                         "power_level=VALUES(power_level), ability_points=VALUES(ability_points), " +
+                                                                                                                         "redeemable_exp=VALUES(redeemable_exp), redeemable_levels=VALUES(redeemable_levels), divine_escape_exp_debuff=VALUES(divine_escape_exp_debuff), " +
+                                                                                                                         "divine_escape_damage_debuff=VALUES(divine_escape_damage_debuff), divine_escape_exp_end_time=VALUES(divine_escape_exp_end_time), divine_escape_damage_end_time=VALUES(divine_escape_damage_end_time), " +
+                                                                                                                         "replace_ability_cooldown_time=VALUES(replace_ability_cooldown_time), boosted_exp=VALUES(boosted_exp), party_uuid=VALUES(party_uuid);")
+                                                                                           : connection.prepareStatement("REPLACE INTO " + TABLE_NAME +
+                                                                                                                         " (uuid, power_level, ability_points, redeemable_exp, redeemable_levels, " +
+                                                                                                                         "divine_escape_exp_debuff, divine_escape_damage_debuff, divine_escape_exp_end_time, divine_escape_damage_end_time, " +
+                                                                                                                         "replace_ability_cooldown_time, boosted_exp, party_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
                 preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
                 preparedStatement.setInt(2, mcRPGPlayer.getPowerLevel());
                 preparedStatement.setInt(3, mcRPGPlayer.getAbilityPoints());

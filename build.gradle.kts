@@ -23,7 +23,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.0.1-BETA-SNAPSHOT"
+version = "1.5.0.7-BETA-SNAPSHOT"
 group = "us.eunoians"
 
 java {
@@ -59,13 +59,6 @@ dependencies {
     val spigotVersion = "1.18.1-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
 
-    //Only used for loadout table so can be removed later
-    val javassistVersion = "3.28.0-GA"
-    implementation("org.javassist:javassist:$javassistVersion")
-
-    val flatDBVersion = "1.1.0.8"
-    implementation("com.cyr1en:flatdb:$flatDBVersion")
-
     // TODO Look into new spigot yaml comment api
     val enumToYamlVersion = "1.0"
     implementation("com.github.DiamondDagger590:EnumToYaml:$enumToYamlVersion")
@@ -73,15 +66,15 @@ dependencies {
     val nbtAPIVersion = "2.9.0-SNAPSHOT"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
+    val bstatsVersion = "2.2.1"
+    implementation("org.bstats:bstats-bukkit:$bstatsVersion")
+
     val placeholderAPIVersion = "2.9.2"
     compileOnly("me.clip:placeholderapi:$placeholderAPIVersion")
 
     val worldGuardVersion = "7.0.0-SNAPSHOT"
     compileOnly("com.sk89q.worldguard:worldguard-core:$worldGuardVersion")
     compileOnly("com.sk89q.worldguard:worldguard-legacy:$worldGuardVersion")
-
-    val bstatsVersion = "2.2.1"
-    implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
     //Jar deps
     compileOnly(files("libs/Sickle.jar"))
@@ -101,6 +94,10 @@ tasks.withType<ProcessResources>{
 }
 
 tasks.jar {
+
+    manifest.attributes["Manifest-Version"] = "1.0"
+    manifest.attributes["Main-Class"] = "us.eunoians.mcrpg.McRPG"
+    manifest.attributes["Class-Path"] = "McRPG/libs/h2.jar"
 
     // Open git
     val git = org.ajoberstar.grgit.Grgit.open(file("."))
@@ -132,7 +129,6 @@ tasks {
 
         mergeServiceFiles()
         relocate("de.tr7zw.changeme.nbtapi", "us.eunoians.mcrpg.nbtapi")
-        //relocate("org.slf4j", "us.eunoians.mcrpg")
         relocate("org.bstats", "us.eunoians.mcrpg")
     }
 }

@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.players;
 
-import com.cyr1en.flatdb.Database;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -25,6 +24,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.unarmed.SmitingFistEvent;
 import us.eunoians.mcrpg.api.leaderboards.PlayerRank;
 import us.eunoians.mcrpg.api.util.Methods;
 import us.eunoians.mcrpg.api.util.RedeemBit;
+import us.eunoians.mcrpg.database.builder.Database;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
 import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;

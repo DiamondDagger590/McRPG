@@ -1,8 +1,12 @@
 package us.eunoians.mcrpg.database;
 
-import com.cyr1en.flatdb.Database;
-import com.cyr1en.flatdb.DatabaseBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.util.FileManager;
+import us.eunoians.mcrpg.database.builder.Database;
+import us.eunoians.mcrpg.database.builder.DatabaseBuilder;
+import us.eunoians.mcrpg.database.builder.DatabaseDriver;
 import us.eunoians.mcrpg.database.tables.PlayerDataDAO;
 import us.eunoians.mcrpg.database.tables.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
@@ -11,6 +15,7 @@ import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,17 +25,28 @@ import java.util.logging.Logger;
 
 public class DatabaseManager {
 
-    private McRPG instance;
+    private McRPG plugin;
     private Database database;
     private final ThreadPoolExecutor databaseExecutorService =
             new ThreadPoolExecutor(1, 4, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+    private final DatabaseDriver driver;
 
+    public DatabaseManager(@NotNull McRPG plugin) {
+        this.plugin = plugin;
+        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager().getFile(FileManager.Files.CONFIG).getString("Configuration.DatabaseDriver", "SQLite"));
 
-    public DatabaseManager(McRPG plugin) {
-        this.instance = plugin;
+        if(databaseDriver.isEmpty()){
+            plugin.getLogger().log(Level.SEVERE, "The configured database driver in the config.yml is invalid and is being defaulted to SQLite.");
+            databaseDriver = Optional.of(DatabaseDriver.SQLITE);
+        }
+        this.driver = databaseDriver.get();
+    }
 
-        DatabaseBuilder dbBuilder = new DatabaseBuilder();
-        dbBuilder.setDatabasePrefix("mcrpg_");
+    public CompletableFuture<Void> initialize() {
+
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        DatabaseBuilder dbBuilder = new DatabaseBuilder(driver);
+
         dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
 
         try {
@@ -43,20 +59,22 @@ public class DatabaseManager {
         Logger logger = plugin.getLogger();
 
         //Create any missing tables
-        attemptCreateTables().thenAccept(tableCreationNull -> {
+        attemptCreateTables().thenAccept(unused -> {
 
             logger.log(Level.INFO, "Any missing database tables have been created! Now starting the updating process...");
             //Update all tables and alert console
-            updateTables().thenAccept(tableUpdateNull -> {
+            updateTables().thenAccept(unused1 -> {
                 logger.log(Level.INFO, "All database tables are now updated to their latest versions!");
             });
 
         }).exceptionally(throwable -> {
             logger.log(Level.WARNING, "There was an error creating any missing database tables... please alert the developer of this plugin.");
+            throwable.printStackTrace();
             return null;
         });
         //TODO Fire events to allow custom DAO's to be created from 3rd party plugins?
 
+        return completableFuture;
     }
 
     /**
@@ -64,6 +82,7 @@ public class DatabaseManager {
      *
      * @return The {@link Database} that is being used
      */
+    @Nullable
     public Database getDatabase() {
         return database;
     }
@@ -73,10 +92,17 @@ public class DatabaseManager {
      *
      * @return The {@link ThreadPoolExecutor} used to run database queries
      */
+    @NotNull
     public ThreadPoolExecutor getDatabaseExecutorService() {
         return databaseExecutorService;
     }
 
+    @NotNull
+    public DatabaseDriver getDriver(){
+        return this.driver;
+    }
+
+    @NotNull
     private CompletableFuture<Void> attemptCreateTables() {
 
         Connection connection = database.getConnection();
@@ -92,39 +118,14 @@ public class DatabaseManager {
                 logger.log(Level.INFO, "Database Creation - Table Version History DAO "
                                        + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
 
-                SkillDAO.attemptCreateTable(connection, this)
-                        .thenAccept(skillTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Skill DAO "
-                                                       + (skillTableCreated ? "created a new table." : "already existed so skipping creation.")));
-
-                PlayerLoadoutDAO.attemptCreateTable(connection, this)
-                        .thenAccept(playerLoadoutTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Player Loadout DAO "
-                                                       + (playerLoadoutTableCreated ? "created a new table." : "already existed so skipping creation.")))
+                CompletableFuture.allOf(SkillDAO.attemptCreateTable(connection, this),
+                        PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
+                        PlayerSettingsDAO.attemptCreateTable(connection, this))
+                        .thenAccept(tableCreationFuture::complete)
                         .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Player Loadout DAO had an error when creating.");
-                            return null;
-                        });
-
-                PlayerDataDAO.attemptCreateTable(connection, this)
-                        .thenAccept(playerDataTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Player Data DAO "
-                                                       + (playerDataTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Player Data DAO had an error when creating.");
-                            return null;
-                        });
-
-                PlayerSettingsDAO.attemptCreateTable(connection, this)
-                        .thenAccept(playerSettingsTableCreated ->
-                                logger.log(Level.INFO, "Database Creation - Player Settings DAO "
-                                                       + (playerSettingsTableCreated ? "created a new table." : "already existed so skipping creation.")))
-                        .exceptionally(throwable -> {
-                            logger.log(Level.WARNING, "Database Creation - Player Settings DAO had an error when creating.");
-                            return null;
-                        });
-
-                tableCreationFuture.complete(null);
+                    tableCreationFuture.completeExceptionally(throwable);
+                    return null;
+                });
 
             }).exceptionally(throwable -> {
                 tableCreationFuture.completeExceptionally(throwable);
@@ -136,6 +137,7 @@ public class DatabaseManager {
 
     }
 
+    @NotNull
     private CompletableFuture<Void> updateTables() {
 
         Connection connection = database.getConnection();
@@ -147,24 +149,15 @@ public class DatabaseManager {
 
         getDatabaseExecutorService().submit(() -> {
 
+
             //We need to first update the table version history, and then we can update other tables
-            TableVersionHistoryDAO.updateTable(connection).thenAccept(thisIsNullThouLol -> {
+            TableVersionHistoryDAO.updateTable(connection).thenAccept(unused -> {
 
                 logger.log(Level.INFO, "Database Update - Table Version History DAO has undergone any applicable updates.");
 
-                SkillDAO.updateTable(connection).thenAccept(skillNull ->
-                        logger.log(Level.INFO, "Database Update - Skill DAO has undergone any applicable updates."));
-
-                PlayerLoadoutDAO.updateTable(connection).thenAccept(playerLoadoutNull ->
-                        logger.log(Level.INFO, "Database Update - Player Loadout DAO has undergone any applicable updates."));
-
-                PlayerDataDAO.updateTable(connection).thenAccept(playerDataNull ->
-                        logger.log(Level.INFO, "Database Update - Player Data DAO has undergone any applicable updates."));
-
-                PlayerSettingsDAO.updateTable(connection).thenAccept(playerSettingsNull ->
-                        logger.log(Level.INFO, "Database Update - Player Settings DAO has undergone any applicable updates."));
-
-                tableUpdateFuture.complete(null);
+                CompletableFuture.allOf(SkillDAO.updateTable(connection), PlayerLoadoutDAO.updateTable(connection),
+                                PlayerDataDAO.updateTable(connection), PlayerSettingsDAO.updateTable(connection))
+                        .thenAccept(tableUpdateFuture::complete);
             });
         });
 

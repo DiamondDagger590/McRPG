@@ -141,7 +141,7 @@ public class PlayerLoadoutDAO {
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
-        boolean updateFromLegacy = databaseManager.getDatabase().tableExists(LEGACY_LOADOUT_TABLE_NAME);
+        boolean updateFromLegacy = databaseManager.getDatabase() != null && databaseManager.getDatabase().tableExists(LEGACY_LOADOUT_TABLE_NAME);
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 

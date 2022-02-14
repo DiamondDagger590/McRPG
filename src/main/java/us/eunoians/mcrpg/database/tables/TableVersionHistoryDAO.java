@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.database.tables;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.builder.DatabaseDriver;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,7 +43,7 @@ public class TableVersionHistoryDAO {
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            if(!isAcceptingQueries()){
+            if (!isAcceptingQueries()) {
                 completableFuture.complete(-1);
                 return;
             }
@@ -81,17 +82,22 @@ public class TableVersionHistoryDAO {
     public static CompletableFuture<Boolean> setTableVersion(@NotNull Connection connection, @NotNull String tableName, int version) {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        DatabaseDriver databaseDriver = databaseManager.getDriver();
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            if(!isAcceptingQueries()){
+            if (!isAcceptingQueries()) {
                 completableFuture.complete(false);
                 return;
             }
 
             //Update table to contain new table version
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (table_name, updated_time, table_version) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE updated_time = VALUES(updated_time), table_version = VALUES(table_version);")) {
+            try (PreparedStatement statement = databaseDriver == DatabaseDriver.H2 ? connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (table_name, updated_time, table_version) " +
+                                                                                                                 "VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE updated_time = VALUES(updated_time), " +
+                                                                                                                 "table_version = VALUES(table_version);")
+                                                                                   : connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (table_name, updated_time, table_version) " +
+                                                                                                                 "VALUES (?, ?, ?);")) {
                 statement.setString(1, tableName);
                 statement.setTime(2, new Time(Calendar.getInstance().getTimeInMillis()));
                 statement.setInt(3, version); //We know the version needs to be 1, so we are hard coding it here rather than incrementing the variable, as we can't confirm that this query works so it's unsafe to assume so
