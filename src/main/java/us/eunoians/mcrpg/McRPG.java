@@ -207,9 +207,9 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         this.databaseManager = new DatabaseManager(this);
         databaseManager.initialize()
                 .thenAccept(unused -> {
-                    leaderboardManager = new LeaderboardManager(this);
+                    leaderboardManager = new LeaderboardManager(instance);
                     leaderboardHeadManager = new LeaderboardHeadManager();
-                    PlayerManager.startSave(this);
+                    PlayerManager.startSave(instance);
                 }).exceptionally(throwable -> {
                     throwable.printStackTrace();
                     return null;

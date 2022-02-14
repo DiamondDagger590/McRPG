@@ -35,7 +35,7 @@ public class DatabaseManager {
         this.plugin = plugin;
         Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager().getFile(FileManager.Files.CONFIG).getString("Configuration.DatabaseDriver", "SQLite"));
 
-        if(databaseDriver.isEmpty()){
+        if (databaseDriver.isEmpty()) {
             plugin.getLogger().log(Level.SEVERE, "The configured database driver in the config.yml is invalid and is being defaulted to SQLite.");
             databaseDriver = Optional.of(DatabaseDriver.SQLITE);
         }
@@ -63,13 +63,19 @@ public class DatabaseManager {
 
             logger.log(Level.INFO, "Any missing database tables have been created! Now starting the updating process...");
             //Update all tables and alert console
-            updateTables().thenAccept(unused1 -> {
-                logger.log(Level.INFO, "All database tables are now updated to their latest versions!");
-            });
+            updateTables()
+                    .thenAccept(unused1 -> {
+                        logger.log(Level.INFO, "All database tables are now updated to their latest versions!");
+                        completableFuture.complete(null);
+                    }).exceptionally(throwable -> {
+                        logger.log(Level.WARNING, "There was an error updating database tables... please alert the developer of this plugin.");
+                        completableFuture.completeExceptionally(throwable);
+                        return null;
+                    });
 
         }).exceptionally(throwable -> {
             logger.log(Level.WARNING, "There was an error creating any missing database tables... please alert the developer of this plugin.");
-            throwable.printStackTrace();
+            completableFuture.completeExceptionally(throwable);
             return null;
         });
         //TODO Fire events to allow custom DAO's to be created from 3rd party plugins?
@@ -98,7 +104,7 @@ public class DatabaseManager {
     }
 
     @NotNull
-    public DatabaseDriver getDriver(){
+    public DatabaseDriver getDriver() {
         return this.driver;
     }
 
@@ -119,13 +125,13 @@ public class DatabaseManager {
                                        + (tableVersionHistoryTableCreated ? "created a new table." : "already existed so skipping creation."));
 
                 CompletableFuture.allOf(SkillDAO.attemptCreateTable(connection, this),
-                        PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
-                        PlayerSettingsDAO.attemptCreateTable(connection, this))
+                                PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
+                                PlayerSettingsDAO.attemptCreateTable(connection, this))
                         .thenAccept(tableCreationFuture::complete)
                         .exceptionally(throwable -> {
-                    tableCreationFuture.completeExceptionally(throwable);
-                    return null;
-                });
+                            tableCreationFuture.completeExceptionally(throwable);
+                            return null;
+                        });
 
             }).exceptionally(throwable -> {
                 tableCreationFuture.completeExceptionally(throwable);

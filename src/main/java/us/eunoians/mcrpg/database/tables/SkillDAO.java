@@ -878,7 +878,7 @@ public class SkillDAO {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT player_uuid, current_level FROM " + SKILL_DATA_TABLE_NAME + " WHERE skill_id = ? ORDER BY current_level DESC;")) {
 
-                preparedStatement.setString(1, skillType.getName());
+                preparedStatement.setString(1, skillType.getName().toLowerCase());
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 

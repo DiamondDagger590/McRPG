@@ -199,7 +199,7 @@ public class LeaderboardManager {
 
                                 playerSkillRanks.put(skillType, playerRankings);
                                 skillSets.put(skillType, playerLeaderboardData);
-                                
+
                             })
                             .exceptionally(throwable -> {
                                 throwable.printStackTrace();
@@ -215,6 +215,8 @@ public class LeaderboardManager {
 
                             powerLevel = playerLeaderboardData;
                             playerPowerMap = playerRankings;
+
+                            System.out.println("Updating power leaderboard: " + playerRankings.size() + " " + playerLeaderboardData.size());
 
                         })
                         .exceptionally(throwable -> {

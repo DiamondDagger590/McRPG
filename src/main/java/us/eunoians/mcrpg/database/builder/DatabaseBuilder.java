@@ -49,11 +49,9 @@ public class DatabaseBuilder {
 
   private void tryDriverName(String driverName) {
 
-    System.out.println("Trying driver name: " + driverName);
     try {
       Class.forName(driverName).newInstance();
       this.driverName = driverName.split("\\.")[1];
-      System.out.println("Driver name stored: " + driverName);
     } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       throw new RuntimeException(e);
     }
@@ -64,7 +62,6 @@ public class DatabaseBuilder {
   }
 
   public Database build() throws SQLException {
-    System.out.println("Driver name: " + driverName);
     if(FastStrings.isBlank(driverName)) throw new SQLException("The driver name was left empty!");
     connectionURL = getConnectionURL();
 
