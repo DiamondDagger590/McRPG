@@ -1,4 +1,22 @@
-1.4.0.0-BETA
+1.5.0.0-BETA
+
++ Update to 1.18.1
+    - You will need to either delete skill files and let the new mobs/blocks generate that way or manually add them yourselves
+        - Updated files include archery.yml, axes.yml, excavation.yml, herbalism.yml, mining.yml, swords.yml, taming.yml, unarmed.yml, and woodcutting.yml
+    - Reference the github files for the current values
++ All database code has been rewritten
+    - If you are already using McRPG, please see the following steps to keep your database working
+        - Add the following configuration to the config.yml: Configuration.DatabaseDriver: 'H2'
+        - Download the H2 jar from the following URL: https://h2database.com/h2-2019-02-22.zip
+        - Unzip the downloaded folder
+        - In the McRPG plugins folder, create a new folder called "libs"
+        - Move the H2 jar from the unzipped folder into the "libs" folder
+        - Rename the jar to "h2.jar"
+
+    - All databases now use SQLite by default. H2 is only supported as legacy, but this allows easier addition of other databases like MySQL
+    - Database code is now using better SQL structure and is setup in a way that will support the rewrite
+
++1.4.0.0-BETA
 + Update to 1.16.2
     - You will need to either delete skill files and let the new mobs/blocks generate that way or manually add them yourselves
     - Reference the github files for the current values

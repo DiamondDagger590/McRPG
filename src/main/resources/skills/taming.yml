@@ -74,6 +74,9 @@ ExpAwardedPerMob:
   ZOGLIN: 30
   ZOMBIFIED_PIGLIN: 30
   PIGLIN_BRUTE: 50
+  AXOLOTL: 30
+  GLOW_SQUID: 50
+  GOAT: 20
 #How much exp should be awarded when a mob is tamed
 ExpPerMobTamed:
   OTHER: 500
