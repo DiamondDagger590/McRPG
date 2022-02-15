@@ -25,6 +25,7 @@ ExpAwardedPerBlock:
   CRIMSON_NYLIUM: 20
   WARPED_NYLIUM: 20
   SOUL_SOIL: 40
+  POWDER_SNOW: 20
 ExtractionBlocks:
   - 'DIRT'
   - 'GRASS_BLOCK'

@@ -215,6 +215,8 @@ NymphsVitalityConfig:
     - 'GIANT_TREE_TAIGA'
     - 'GIANT_TREE_TAIGA_HILLS'
     - 'WOODED_MOUNTAINS'
+    - 'MEADOW'
+    - 'GROVE'
   #Config for each tier
   TierI:
     #How far can hunger be depleted
