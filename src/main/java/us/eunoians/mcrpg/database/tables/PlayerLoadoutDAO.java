@@ -74,12 +74,12 @@ public class PlayerLoadoutDAO {
                  ** PK is the `loadout_id` field, as each loadout id can only exist once
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + LOADOUT_TABLE_NAME + "`" +
-                                                                               "(" +
-                                                                               "`loadout_id` varchar(36) NOT NULL," +
-                                                                               "`player_uuid` varchar(36) NOT NULL," +
-                                                                               "`player_loadout_id` int(11) NOT NULL DEFAULT 1," +
-                                                                               "PRIMARY KEY (`loadout_id`)" +
-                                                                               ");")) {
+                                                                                   "(" +
+                                                                                   "`loadout_id` varchar(36) NOT NULL," +
+                                                                                   "`player_uuid` varchar(36) NOT NULL," +
+                                                                                   "`player_loadout_id` int(11) NOT NULL DEFAULT 1," +
+                                                                                   "PRIMARY KEY (`loadout_id`)" +
+                                                                                   ");")) {
                     statement.executeUpdate();
                 }
                 catch (SQLException e) {
@@ -104,12 +104,12 @@ public class PlayerLoadoutDAO {
                  *****/
                 //TODO update javadoc
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + LOADOUT_SLOTS_TABLE_NAME + "`" +
-                                                                               "(" +
-                                                                               "`loadout_id` varchar(36) NOT NULL," +
-                                                                               "`slot_number` int(11) NOT NULL," +
-                                                                               "`ability_id` varchar(32) NOT NULL," +
-                                                                               "PRIMARY KEY (`loadout_id`, `slot_number`)" +
-                                                                               ");")) {
+                                                                                   "(" +
+                                                                                   "`loadout_id` varchar(36) NOT NULL," +
+                                                                                   "`slot_number` int(11) NOT NULL," +
+                                                                                   "`ability_id` varchar(32) NOT NULL," +
+                                                                                   "PRIMARY KEY (`loadout_id`, `slot_number`)" +
+                                                                                   ");")) {
                     statement.executeUpdate();
                 }
                 catch (SQLException e) {
@@ -147,91 +147,100 @@ public class PlayerLoadoutDAO {
 
             if (TableVersionHistoryDAO.isAcceptingQueries()) {
 
+                CompletableFuture<Void> loadoutTableFuture = new CompletableFuture<>();
+
                 TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_TABLE_NAME)
-                        //Update the mcrpg_loadout_info first
-                        .thenAccept(lastStoredVersion -> {
+                    //Update the mcrpg_loadout_info first
+                    .thenAccept(lastStoredVersion -> {
 
-                            if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                                completableFuture.complete(null);
-                                return;
+                        if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+                            loadoutTableFuture.complete(null);
+                            return;
+                        }
+
+                        isAcceptingQueries = false;
+
+                        //Adds table to our tracking
+                        if (lastStoredVersion == 0) {
+
+                            if (updateFromLegacy) {
+
+                                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_TABLE_NAME + " SELECT RANDOM_UUID() AS loadout_id, uuid AS player_uuid, 1 AS player_loadout_id  FROM " + LEGACY_LOADOUT_TABLE_NAME)) {
+                                    preparedStatement.executeUpdate();
+                                }
+                                catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
-                            isAcceptingQueries = false;
+                            TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_TABLE_NAME, 1);
+                            lastStoredVersion = 1;
+                        }
 
-                            //Adds table to our tracking
-                            if (lastStoredVersion == 0) {
+                        isAcceptingQueries = true;
 
-                                if (updateFromLegacy) {
+                        loadoutTableFuture.complete(null);
 
-                                    try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_TABLE_NAME + " SELECT RANDOM_UUID() AS loadout_id, uuid AS player_uuid, 1 AS player_loadout_id  FROM " + LEGACY_LOADOUT_TABLE_NAME)) {
-                                        preparedStatement.executeUpdate();
-                                    }
-                                    catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
+                    });
 
-                                TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_TABLE_NAME, 1);
-                                lastStoredVersion = 1;
-                            }
+                loadoutTableFuture.thenAccept(unused -> {
 
-                            isAcceptingQueries = true;
+                    TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_SLOTS_TABLE_NAME).thenAccept(lastStoredSlotsVersion -> {
 
-                        })
-                        //Update the mcrpg_loadout_slots table after
-                        .thenAccept(unused -> {
-                            TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_SLOTS_TABLE_NAME).thenAccept(lastStoredVersion -> {
+                        if (lastStoredSlotsVersion >= CURRENT_TABLE_VERSION) {
+                            completableFuture.complete(null);
+                            return;
+                        }
 
-                                if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                                    completableFuture.complete(null);
-                                    return;
-                                }
+                        isAcceptingQueries = false;
 
-                                isAcceptingQueries = false;
+                        //Adds table to our tracking
+                        if (lastStoredSlotsVersion == 0) {
 
-                                //Adds table to our tracking
-                                if (lastStoredVersion == 0) {
+                            if (updateFromLegacy) {
 
-                                    if (updateFromLegacy) {
+                                try {
 
-                                        try {
+                                    //Get the amount of slots in the legacy table
+                                    int slotAmount = 0;
+                                    try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'" + LEGACY_LOADOUT_TABLE_NAME.toUpperCase(Locale.ROOT) + "' ")) {
 
-                                            //Get the amount of slots in the legacy table
-                                            int slotAmount = 0;
-                                            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'" + LEGACY_LOADOUT_TABLE_NAME.toUpperCase(Locale.ROOT) + "' ")) {
+                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
-                                                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                            //Check the last column to get the highest amount of slots
+                                            resultSet.last();
 
-                                                    //Check the last column to get the highest amount of slots
-                                                    resultSet.last();
-
-                                                    //Get the slot amount
-                                                    slotAmount = Integer.parseInt(resultSet.getString("column_name").toLowerCase(Locale.ROOT).replace("slot", ""));
-                                                }
-                                            }
-
-                                            //Go through all legacy slot columns and convert them to new
-                                            for (int i = 1; i <= slotAmount; i++) {
-
-                                                try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + LOADOUT_SLOTS_TABLE_NAME + " SELECT loadout.loadout_id AS loadout_id, " + i + " AS slot_number, legacy.slot" + i + " AS ability_id FROM " + LOADOUT_TABLE_NAME + " AS loadout JOIN " + LEGACY_LOADOUT_TABLE_NAME + " AS legacy ON legacy.uuid = loadout.player_uuid WHERE legacy.slot" + i + " IS NOT NULL AND legacy.slot" + i + " <> 'null';")) {
-                                                    preparedStatement.executeUpdate();
-                                                }
-                                            }
-                                        }
-                                        catch (SQLException e) {
-                                            e.printStackTrace();
+                                            //Get the slot amount
+                                            slotAmount = Integer.parseInt(resultSet.getString("column_name").toLowerCase(Locale.ROOT).replace("slot", ""));
                                         }
                                     }
 
-                                    TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_SLOTS_TABLE_NAME, 1);
-                                    lastStoredVersion = 1;
+                                    //Go through all legacy slot columns and convert them to new
+                                    for (int i = 1; i <= slotAmount; i++) {
+
+                                        try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + LOADOUT_SLOTS_TABLE_NAME + " SELECT loadout.loadout_id AS loadout_id, " + i + " AS slot_number, legacy.slot" + i + " AS ability_id FROM " + LOADOUT_TABLE_NAME + " AS loadout JOIN " + LEGACY_LOADOUT_TABLE_NAME + " AS legacy ON legacy.uuid = loadout.player_uuid WHERE legacy.slot" + i + " IS NOT NULL AND legacy.slot" + i + " <> 'null';")) {
+
+                                            System.out.println(preparedStatement.toString());
+
+                                            preparedStatement.executeUpdate();
+                                        }
+                                    }
                                 }
+                                catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            }
 
-                                isAcceptingQueries = true;
+                            TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_SLOTS_TABLE_NAME, 1);
+                            lastStoredSlotsVersion = 1;
+                        }
 
-                                completableFuture.complete(null);
-                            });
-                        });
+                        isAcceptingQueries = true;
+
+                        completableFuture.complete(null);
+                    });
+
+                });
             }
         });
 
