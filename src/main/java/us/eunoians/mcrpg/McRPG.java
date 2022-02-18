@@ -12,6 +12,11 @@ import us.eunoians.mcrpg.util.blockmeta.ChunkManagerFactory;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
+ *
+ * @author DiamondDagger590
+ */
 public class McRPG extends JavaPlugin {
 
     private static McRPG instance;
@@ -25,7 +30,6 @@ public class McRPG extends JavaPlugin {
 
 
     private DatabaseManager databaseManager;
-
     private AbilityAttributeManager abilityAttributeManager;
 
     private boolean healthBarPluginEnabled = false;
@@ -36,19 +40,16 @@ public class McRPG extends JavaPlugin {
     private boolean worldGuardEnabled = false;
     private boolean mcmmoEnabled = false;
 
-
     @Override
     public void onEnable() {
 
         instance = this;
-        placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
+        placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
 
+        preloadNBTAPI();
+        setupHooks();
+        initializeDatabase();
         abilityAttributeManager = new AbilityAttributeManager(this);
-
-        //Preload nbt class
-        ItemStack itemStack = new ItemStack(Material.DIAMOND);
-        NBTItem item = new NBTItem(itemStack);
-        item.setString("temp", "temp");
     }
 
     @Override
@@ -56,15 +57,24 @@ public class McRPG extends JavaPlugin {
         databaseManager.getDatabaseExecutorService().shutdown();
     }
 
+    /**
+     * Initializes the databases for McRPG
+     *
+     * @return A {@link CompletableFuture} that is completed whenever all databases are created and/or updated
+     */
     private CompletableFuture<Void> initializeDatabase() {
         this.databaseManager = new DatabaseManager(this);
-        return databaseManager.initialize().exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        });
+        return databaseManager.initialize()
+            .exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
     }
 
-    private void setupHooks(){
+    /**
+     * Setup 3rd party plugin hooks that are natively supported by McRPG
+     */
+    private void setupHooks() {
 
         healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
         sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
@@ -94,14 +104,20 @@ public class McRPG extends JavaPlugin {
         }
     }
 
+    /**
+     * Preloads the NBTItem classes, as this can cause lag on the first call for some reason
+     */
+    private void preloadNBTAPI() {
+        //Preload nbt class
+        ItemStack itemStack = new ItemStack(Material.DIAMOND);
+        NBTItem item = new NBTItem(itemStack);
+        item.setString("temp", "temp");
+    }
+
     public static McRPG getInstance() {
         if (instance == null) {
             throw new NullPointerException("Plugin was not initialized.");
         }
         return instance;
-    }
-
-    public static void resetPlaceStore() {
-        placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
     }
 }
