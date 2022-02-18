@@ -219,9 +219,6 @@ public class PlayerLoadoutDAO {
                                     for (int i = 1; i <= slotAmount; i++) {
 
                                         try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + LOADOUT_SLOTS_TABLE_NAME + " SELECT loadout.loadout_id AS loadout_id, " + i + " AS slot_number, legacy.slot" + i + " AS ability_id FROM " + LOADOUT_TABLE_NAME + " AS loadout JOIN " + LEGACY_LOADOUT_TABLE_NAME + " AS legacy ON legacy.uuid = loadout.player_uuid WHERE legacy.slot" + i + " IS NOT NULL AND legacy.slot" + i + " <> 'null';")) {
-
-                                            System.out.println(preparedStatement.toString());
-
                                             preparedStatement.executeUpdate();
                                         }
                                     }

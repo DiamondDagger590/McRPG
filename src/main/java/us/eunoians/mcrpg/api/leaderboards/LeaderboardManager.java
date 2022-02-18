@@ -216,8 +216,6 @@ public class LeaderboardManager {
                             powerLevel = playerLeaderboardData;
                             playerPowerMap = playerRankings;
 
-                            System.out.println("Updating power leaderboard: " + playerRankings.size() + " " + playerLeaderboardData.size());
-
                         })
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();

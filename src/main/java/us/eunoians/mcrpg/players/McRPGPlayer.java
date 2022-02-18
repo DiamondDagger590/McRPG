@@ -59,7 +59,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class McRPGPlayer {
 
@@ -310,45 +309,62 @@ public class McRPGPlayer {
         });
 
         //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
-        for (Skills skillType : Skills.values()) {
-            SkillDAO.getAllPlayerSkillInformation(connection, uuid, skillType)
-                    .thenAccept(this::initializeSkill)
-                    .exceptionally(throwable -> {
-                        throwable.printStackTrace();
-                        return null;
-                    });
+        CompletableFuture<SkillDataSnapshot>[] completableFutures = new CompletableFuture[Skills.values().length];
+
+        for (int i = 0; i < Skills.values().length; i++) {
+
+            Skills skillType = Skills.values()[i];
+
+            CompletableFuture<SkillDataSnapshot> completableFuture = SkillDAO.getAllPlayerSkillInformation(connection, uuid, skillType);
+
+            completableFuture
+                .thenAccept(this::initializeSkill)
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    return null;
+                });
+
+            completableFutures[i] = completableFuture;
         }
 
-        PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
+        CompletableFuture.allOf(completableFutures)
+            .thenAccept(unused -> {
 
-            int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
+                updatePowerLevel();
 
-            //There may be abilities in the loadout that might not be usable due to lowering the max ability amount, so we need to respect the config as the hard limit
-            for (int i = 0; i < maxAbilities; i++) {
-                abilityLoadout.add(unlockedAbilityList.get(i));
-            }
-        });
+                for (Skill skill : skills) {
+                    skill.updateExpToLevel();
+                }
 
-        updatePowerLevel();
+                PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
 
-        for (Skill skill : skills) {
-            skill.updateExpToLevel();
-        }
+                    int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
-        //Remove any abilities that shouldn't be in the player's loadout
-        List<UnlockedAbilities> toRemove = new ArrayList<>();
-        for (UnlockedAbilities abilityType : abilityLoadout) {
-            BaseAbility baseAbility = getBaseAbility(abilityType);
-            if (baseAbility != null && baseAbility.getCurrentTier() < 1) {
-                baseAbility.setUnlocked(false);
-                toRemove.add(abilityType);
-            }
-        }
+                    //There may be abilities in the loadout that might not be usable due to lowering the max ability amount, so we need to respect the config as the hard limit
+                    for (int i = 0; i < maxAbilities; i++) {
+                        abilityLoadout.add(unlockedAbilityList.get(i));
+                    }
 
-        //Needed to prevent a CME lol
-        for (UnlockedAbilities abilityType : toRemove) {
-            abilityLoadout.remove(abilityType);
-        }
+                    //Remove any abilities that shouldn't be in the player's loadout
+                    List<UnlockedAbilities> toRemove = new ArrayList<>();
+                    for (UnlockedAbilities abilityType : abilityLoadout) {
+                        BaseAbility baseAbility = getBaseAbility(abilityType);
+                        if (baseAbility != null && baseAbility.getCurrentTier() < 1) {
+                            baseAbility.setUnlocked(false);
+                            toRemove.add(abilityType);
+                        }
+                    }
+
+                    //Needed to prevent a CME lol
+                    for (UnlockedAbilities abilityType : toRemove) {
+                        abilityLoadout.remove(abilityType);
+                    }
+                });
+            }).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+
     }
 
     void initializeSkill(SkillDataSnapshot skillDataSnapshot) {
@@ -365,6 +381,7 @@ public class McRPGPlayer {
                 BaseAbility abilityInstance;
                 Class<? extends BaseAbility> abilityClazz = genericAbility.getClazz();
                 Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes = skillDataSnapshot.getAbilityAttributes(genericAbility);
+
                 boolean toggled = skillDataSnapshot.getAbilityToggledMap().getOrDefault(genericAbility, true);
 
                 //Unlocked abilities have special data so we need to deal with those
@@ -376,14 +393,14 @@ public class McRPGPlayer {
                     //Remote transfer needs Jesus
                     if (genericAbility.equals(UnlockedAbilities.REMOTE_TRANSFER)) { // yes, i know this is quirky. deal with it. this ability should be re-worked in the future anyways -Jared (Thx Jared -Coleman)
                         abilityInstance = abilityClazz.getConstructor(UUID.class, boolean.class, int.class)
-                                .newInstance(uuid, toggled, tier);
+                            .newInstance(uuid, toggled, tier);
 
                         this.isLinkedToRemoteTransfer = ((RemoteTransfer) abilityInstance).isAbilityLinked();
                     }
                     //Any other non-Jesus needing ability
                     else {
                         abilityInstance = abilityClazz.getConstructor(boolean.class, int.class)
-                                .newInstance(toggled, tier);
+                            .newInstance(toggled, tier);
                     }
 
                     AbilityPendingAttribute abilityPendingAttribute = (AbilityPendingAttribute) abilityAttributes.get(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
@@ -408,7 +425,7 @@ public class McRPGPlayer {
                 //We know it's a default ability
                 else {
                     abilityInstance = abilityClazz.getConstructor(boolean.class)
-                            .newInstance(toggled);
+                        .newInstance(toggled);
                 }
 
                 //Put the created ability into the map
@@ -417,7 +434,7 @@ public class McRPGPlayer {
 
             //Initialize the skill (We need a better way of doing this lmfao, maybe look at spawning an entity in bukkit?)
             Skill skillInstance = skillClazz.getConstructor(int.class, int.class, Map.class, McRPGPlayer.class)
-                    .newInstance(currentLevel, currentExp, abilityMap, this);
+                .newInstance(currentLevel, currentExp, abilityMap, this);
 
             skills.add(skillInstance);
         }
@@ -452,9 +469,7 @@ public class McRPGPlayer {
             powerLevel = 0;
         }
         else {
-            final AtomicInteger powerLevelUpdater = new AtomicInteger(0);
-            skills.forEach(skill -> powerLevelUpdater.addAndGet(skill.getCurrentLevel()));
-            this.powerLevel = powerLevelUpdater.get();
+            this.powerLevel = skills.stream().map(Skill::getCurrentLevel).reduce(Integer::sum).get();
         }
         return powerLevel;
     }
@@ -567,7 +582,7 @@ public class McRPGPlayer {
             if (Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
                 if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
                     this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                                                               McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
+                                                                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
                 }
                 toRemove.add(ability);
             }
@@ -579,7 +594,7 @@ public class McRPGPlayer {
         if (!toRemove.isEmpty()) {
             for (UnlockedAbilities ab : toRemove) {
                 database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().getName().toLowerCase() + "_data SET "
-                                       + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
+                                           + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
                 abilitiesOnCooldown.remove(ab);
             }
         }
@@ -587,7 +602,7 @@ public class McRPGPlayer {
             this.endTimeForReplaceCooldown = 0;
             if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
                 this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                                                           McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
+                                                               McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
             }
             database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = 0 WHERE uuid = '" + uuid.toString() + "'");
         }
@@ -617,10 +632,10 @@ public class McRPGPlayer {
             if (Calendar.getInstance().getTimeInMillis() >= timeToEnd) {
                 if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
                     this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                                                               McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
+                                                                   McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
                 }
                 database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
-                                       + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
+                                           + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
 
             }
         }
@@ -629,7 +644,7 @@ public class McRPGPlayer {
         database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = 0 WHERE uuid = `" + uuid.toString() + "`");
         if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
             this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
-                                                       McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
+                                                           McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
         }
     }
 
@@ -643,32 +658,32 @@ public class McRPGPlayer {
         Connection connection = database.getConnection();
 
         CompletableFuture.allOf(PlayerDataDAO.savePlayerData(connection, this),
-                        PlayerSettingsDAO.savePlayerSettings(connection, this), SkillDAO.saveAllPlayerSkillInformation(connection, this),
-                        PlayerLoadoutDAO.savePlayerLoadout(connection, this))
-                .thenAccept(unused -> {
+                PlayerSettingsDAO.savePlayerSettings(connection, this), SkillDAO.saveAllPlayerSkillInformation(connection, this),
+                PlayerLoadoutDAO.savePlayerLoadout(connection, this))
+            .thenAccept(unused -> {
 
-                    RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
-                    if (transfer.isUnlocked()) {
-                        File remoteTransferFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
-                        FileConfiguration data = YamlConfiguration.loadConfiguration(remoteTransferFile);
-                        for (Material mat : transfer.getItemsToSync().keySet()) {
-                            data.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
-                        }
-                        try {
-                            data.save(remoteTransferFile);
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                RemoteTransfer transfer = (RemoteTransfer) getBaseAbility(UnlockedAbilities.REMOTE_TRANSFER);
+                if (transfer.isUnlocked()) {
+                    File remoteTransferFile = new File(McRPG.getInstance().getDataFolder(), File.separator + "remote_transfer_data" + File.separator + uuid.toString() + ".yml");
+                    FileConfiguration data = YamlConfiguration.loadConfiguration(remoteTransferFile);
+                    for (Material mat : transfer.getItemsToSync().keySet()) {
+                        data.set("RemoteTransferBlocks." + mat.toString(), transfer.getItemsToSync().get(mat));
                     }
+                    try {
+                        data.save(remoteTransferFile);
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
 
-                    completableFuture.complete(null);
-                })
-                .exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    completableFuture.completeExceptionally(throwable);
-                    return null;
-                });
+                completableFuture.complete(null);
+            })
+            .exceptionally(throwable -> {
+                throwable.printStackTrace();
+                completableFuture.completeExceptionally(throwable);
+                return null;
+            });
 
 
         return completableFuture;
@@ -735,7 +750,7 @@ public class McRPGPlayer {
      */
     public boolean doesPlayerHaveActiveAbilityFromSkill(Skills skill) {
         return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill))
-                       .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
+            .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null) != null;
     }
 
     /**
@@ -744,7 +759,7 @@ public class McRPGPlayer {
      */
     public UnlockedAbilities getActiveAbilityForSkill(Skills skill) {
         return abilityLoadout.stream().filter(ability -> ability.getSkill().equals(skill))
-                .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
+            .filter(ability -> ability.getAbilityType() == AbilityType.ACTIVE).findFirst().orElse(null);
     }
 
     /**
