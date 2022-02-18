@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.database;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.util.FileManager;
 import us.eunoians.mcrpg.database.builder.Database;
 import us.eunoians.mcrpg.database.builder.DatabaseBuilder;
 import us.eunoians.mcrpg.database.builder.DatabaseDriver;
