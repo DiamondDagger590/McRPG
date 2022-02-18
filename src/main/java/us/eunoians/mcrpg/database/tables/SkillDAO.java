@@ -86,13 +86,13 @@ public class SkillDAO {
                  ** The composite key is the `player_uuid` field and the `skill_id` field, as there should only be one unique combination of the two per player and skill
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + SKILL_DATA_TABLE_NAME + "`" +
-                                                                               "(" +
-                                                                               "`player_uuid` varchar(36) NOT NULL," +
-                                                                               "`skill_id` varchar(32) NOT NULL," +
-                                                                               "`current_level` int(11) NOT NULL DEFAULT 0," +
-                                                                               "`current_exp` int(11) NOT NULL DEFAULT 0," +
-                                                                               "PRIMARY KEY (`player_uuid`, `skill_id`)" +
-                                                                               ");")) {
+                                                                                   "(" +
+                                                                                   "`player_uuid` varchar(36) NOT NULL," +
+                                                                                   "`skill_id` varchar(32) NOT NULL," +
+                                                                                   "`current_level` int(11) NOT NULL DEFAULT 0," +
+                                                                                   "`current_exp` int(11) NOT NULL DEFAULT 0," +
+                                                                                   "PRIMARY KEY (`player_uuid`, `skill_id`)" +
+                                                                                   ");")) {
                     statement.executeUpdate();
                 }
                 catch (SQLException e) {
@@ -115,11 +115,11 @@ public class SkillDAO {
                  ** The composite key is the `player_uuid` field and the `ability_id` field, as there should only be one unique combination of the two per player and ability
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + ABILITY_TOGGLED_OFF_TABLE_NAME + "`" +
-                                                                               "(" +
-                                                                               "`player_uuid` varchar(36) NOT NULL," +
-                                                                               "`ability_id` varchar(32) NOT NULL," +
-                                                                               "PRIMARY KEY (`player_uuid`, `ability_id`)" +
-                                                                               ");")) {
+                                                                                   "(" +
+                                                                                   "`player_uuid` varchar(36) NOT NULL," +
+                                                                                   "`ability_id` varchar(32) NOT NULL," +
+                                                                                   "PRIMARY KEY (`player_uuid`, `ability_id`)" +
+                                                                                   ");")) {
                     statement.executeUpdate();
                 }
                 catch (SQLException e) {
@@ -145,13 +145,13 @@ public class SkillDAO {
                  ** The composite key is the `player_uuid` field, `key` field and the `ability_id` field, as there should only be one unique combination of those three per each ability, since each ability will only have a single attribute once at most
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + ABILITY_ATTRIBUTE_TABLE_NAME + "`" +
-                                                                               "(" +
-                                                                               "`player_uuid` varchar(36) NOT NULL," +
-                                                                               "`ability_id` varchar(32) NOT NULL," +
-                                                                               "`key` varchar(32) NOT NULL," +
-                                                                               "`value` varchar(4096) NOT NULL," +
-                                                                               "PRIMARY KEY (`player_uuid`, `ability_id`, `key`)" +
-                                                                               ");")) {
+                                                                                   "(" +
+                                                                                   "`player_uuid` varchar(36) NOT NULL," +
+                                                                                   "`ability_id` varchar(32) NOT NULL," +
+                                                                                   "`key` varchar(32) NOT NULL," +
+                                                                                   "`value` varchar(4096) NOT NULL," +
+                                                                                   "PRIMARY KEY (`player_uuid`, `ability_id`, `key`)" +
+                                                                                   ");")) {
                     statement.executeUpdate();
                 }
                 catch (SQLException e) {
@@ -343,16 +343,15 @@ public class SkillDAO {
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
             getPlayerSkillLevelingData(connection, uuid, skillType)
-                    .thenCompose(skillDataSnapshot -> getPlayerAbilityToggles(connection, uuid, skillDataSnapshot))
-                    .thenCompose(skillDataSnapshot -> getAbilityAttributes(connection, uuid, skillDataSnapshot))
-                    .thenAccept(completableFuture::complete)
-                    .exceptionally(throwable -> {
-                        completableFuture.completeExceptionally(throwable);
-                        return null;
-                    });
-
-
+                .thenCompose(skillDataSnapshot -> getPlayerAbilityToggles(connection, uuid, skillDataSnapshot)
+                    .thenCompose(updatedSnapshot -> getAbilityAttributes(connection, uuid, updatedSnapshot)
+                        .thenAccept(completableFuture::complete)))
+                .exceptionally(throwable -> {
+                    completableFuture.completeExceptionally(throwable);
+                    return null;
+                });
         });
+
 
         return completableFuture;
     }
@@ -540,10 +539,10 @@ public class SkillDAO {
                             }
 
                         }
-
-                        completableFuture.complete(skillDataSnapshot);
                     }
                 }
+
+                completableFuture.complete(skillDataSnapshot);
 
             }
             catch (SQLException e) {
@@ -598,12 +597,11 @@ public class SkillDAO {
                                 returnValue = abilityAttribute.create(attributeValue);
                                 skillDataSnapshot.addAttribute(genericAbility, returnValue);
                             }
-
                         }
-
-                        completableFuture.complete(skillDataSnapshot);
                     }
                 }
+
+                completableFuture.complete(skillDataSnapshot);
 
             }
             catch (SQLException e) {
@@ -635,12 +633,12 @@ public class SkillDAO {
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
             CompletableFuture.allOf(savePlayerSkillData(connection, mcRPGPlayer),
-                            savePlayerAbilityToggles(connection, mcRPGPlayer), savePlayerAbilityAttributes(connection, mcRPGPlayer))
-                    .thenAccept(completableFuture::complete)
-                    .exceptionally(throwable -> {
-                        throwable.printStackTrace();
-                        return null;
-                    });
+                    savePlayerAbilityToggles(connection, mcRPGPlayer), savePlayerAbilityAttributes(connection, mcRPGPlayer))
+                .thenAccept(completableFuture::complete)
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    return null;
+                });
 
         });
         return completableFuture;
@@ -830,8 +828,8 @@ public class SkillDAO {
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
             try (PreparedStatement skillDataStatement = databaseDriver == DatabaseDriver.H2 ? connection.prepareStatement("INSERT INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-                                                                                                                          "current_level=VALUES(current_level), current_exp=VALUES(current_exp);")
-                                                                                            : connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
+                                                                                                                              "current_level=VALUES(current_level), current_exp=VALUES(current_exp);")
+                                                            : connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
 
                 skillDataStatement.setString(1, mcRPGPlayer.getUuid().toString());
 

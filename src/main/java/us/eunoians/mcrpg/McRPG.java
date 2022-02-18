@@ -103,8 +103,8 @@ import us.eunoians.mcrpg.events.vanilla.WorldListener;
 import us.eunoians.mcrpg.party.Party;
 import us.eunoians.mcrpg.party.PartyManager;
 import us.eunoians.mcrpg.players.PlayerManager;
-import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManager;
-import us.eunoians.mcrpg.util.blockmeta.chunkmeta.ChunkManagerFactory;
+import us.eunoians.mcrpg.util.blockmeta.ChunkManager;
+import us.eunoians.mcrpg.util.blockmeta.ChunkManagerFactory;
 import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
 import java.io.File;
@@ -382,7 +382,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
     public void onDisable() {
         brewingStandManager.shutDown();
         partyManager.saveAllParties();
-        placeStore.saveAll();
+        placeStore.closeAll();
 
         //Block main thread until saves are done
         PlayerManager.shutDownManager().join();
