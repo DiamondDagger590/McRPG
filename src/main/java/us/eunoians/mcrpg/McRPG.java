@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.abilities.attributes.AbilityAttributeManager;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManager;
@@ -62,6 +63,7 @@ public class McRPG extends JavaPlugin {
      *
      * @return A {@link CompletableFuture} that is completed whenever all databases are created and/or updated
      */
+    @NotNull
     private CompletableFuture<Void> initializeDatabase() {
         this.databaseManager = new DatabaseManager(this);
         return databaseManager.initialize()
@@ -114,6 +116,7 @@ public class McRPG extends JavaPlugin {
         item.setString("temp", "temp");
     }
 
+    @NotNull
     public static McRPG getInstance() {
         if (instance == null) {
             throw new NullPointerException("Plugin was not initialized.");

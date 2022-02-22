@@ -3,7 +3,7 @@ version: ${version}
 author: Eunoians
 description: A RPG plugin for 1.13+
 main: us.eunoians.mcrpg.McRPG
-api-version: 1.13
+api-version: 1.16
 soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO]
 commands:
   mcrpg:
