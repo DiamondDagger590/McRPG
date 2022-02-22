@@ -7,6 +7,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,91 +33,100 @@ import us.eunoians.mcrpg.util.worldguard.WGSupportManager;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
-public class MoveEvent implements Listener{
+public class MoveEvent implements Listener {
 
-  @EventHandler(priority = EventPriority.HIGHEST)
-  public void playerMove(PlayerMoveEvent e){
-    if(PlayerManager.isPlayerFrozen(e.getPlayer().getUniqueId())){
-      e.setCancelled(true);
-      return;
-    }
-    McRPGPlayer player;
-    try{
-      player = PlayerManager.getPlayer(e.getPlayer().getUniqueId());
-    }
-    catch(McRPGPlayerNotFoundException exception){
-      return;
-    }
-    if(player.getAcceptedTeleportRequest() != null && (e.getFrom().getX() != e.getTo().getX() ||
-                                                         e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getTo().getZ())){
-      player.getAcceptedTeleportRequest().getWaitTask().cancel();
-      player.setAcceptedTeleportRequest(null);
-      player.getPlayer().sendMessage(Methods.color(player.getPlayer(),McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TeleportationCanceled")));
-    }
-    if(player.getAbilityLoadout() == null){
-      return;
-    }
-    //Disabled Worlds
-    if(McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
-         McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(e.getPlayer().getWorld().getName())) {
-      return;
-    }
-    if(player.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&
-            UnlockedAbilities.NYMPHS_VITALITY.isEnabled() && player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY).isToggled()){
-      Biome biome = e.getPlayer().getLocation().getBlock().getBiome();
-      FileConfiguration woodCuttingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG);
-      if(woodCuttingConfig.getStringList("NymphsVitalityConfig.Biomes").contains(biome.name())){
-        NymphsVitality nymphsVitality = (NymphsVitality) player.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY);
-        int minHunger = woodCuttingConfig.getInt("NymphsVitalityConfig.Tier" + Methods.convertToNumeral(nymphsVitality.getCurrentTier()) + ".MinimumHunger");
-        Player p = e.getPlayer();
-        if(p.getFoodLevel() < minHunger){
-          NymphsVitalityEvent nymphsVitalityEvent = new NymphsVitalityEvent(player, nymphsVitality, p.getFoodLevel() + 1, p.getFoodLevel());
-          Bukkit.getPluginManager().callEvent(nymphsVitalityEvent);
-          if(!nymphsVitalityEvent.isCancelled()){
-            p.setFoodLevel(nymphsVitalityEvent.getNewHunger());
-          }
+    @EventHandler (priority = EventPriority.HIGHEST)
+    public void playerMove(PlayerMoveEvent playerMoveEvent) {
+
+      Player player = playerMoveEvent.getPlayer();
+      UUID uniqueId = player.getUniqueId();
+
+      if (PlayerManager.isPlayerFrozen(uniqueId)) {
+            playerMoveEvent.setCancelled(true);
+            return;
         }
-      }
-    }
-    if(UnlockedAbilities.RUNNERS_DIET.isEnabled() && player.getAbilityLoadout().contains(UnlockedAbilities.RUNNERS_DIET)
-            && player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET).isToggled()){
-      FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
-      RunnersDiet runnersDiet = (RunnersDiet) player.getBaseAbility(UnlockedAbilities.RUNNERS_DIET);
-      int minHunger = fitnessConfig.getInt("RunnersDietConfig.Tier" + Methods.convertToNumeral(runnersDiet.getCurrentTier())
-              + ".MinHunger");
-      Player p = e.getPlayer();
-      if(p.isSprinting() && p.getFoodLevel() < minHunger){
-        RunnersDietEvent runnersDietEvent = new RunnersDietEvent(player, runnersDiet);
-        Bukkit.getPluginManager().callEvent(runnersDietEvent);
-        if(!runnersDietEvent.isCancelled()){
-          p.setFoodLevel(p.getFoodLevel() + 1);
+        McRPGPlayer mcRPGPlayer;
+        try {
+            mcRPGPlayer = PlayerManager.getPlayer(uniqueId);
         }
-      }
-    }
-    if(McRPG.getInstance().isWorldGuardEnabled()){
-      WGSupportManager supportManager = McRPG.getInstance().getWgSupportManager();
-      World w = e.getTo().getWorld();
-      if(!supportManager.isWorldTracker(w)){
-        return;
-      }
-      RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-      RegionManager manager = container.get(BukkitAdapter.adapt(w));
-      assert manager != null;
-      ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(e.getTo()));
-      HashMap<String, WGRegion> regions = supportManager.getRegionManager().get(w);
-      EntryLimiterParser entryLimiterParser = new EntryLimiterParser();
-      for(ProtectedRegion region : set){
-        if(regions.containsKey(region.getId())){
-          List<String> entryExpressions = regions.get(region.getId()).getEnterExpressions();
-          for(String expression : entryExpressions){
-            if(entryLimiterParser.evaluateExpression(player, expression)){
-              e.setCancelled(true);
-              return;
+        catch (McRPGPlayerNotFoundException exception) {
+            return;
+        }
+
+      Location from = playerMoveEvent.getFrom();
+      Location to = playerMoveEvent.getTo();
+
+      if (mcRPGPlayer.getAcceptedTeleportRequest() != null && (from.getX() != to.getX() ||
+                                                                from.getY() != to.getY() || from.getZ() != to.getZ())) {
+            mcRPGPlayer.getAcceptedTeleportRequest().getWaitTask().cancel();
+            mcRPGPlayer.setAcceptedTeleportRequest(null);
+            mcRPGPlayer.getPlayer().sendMessage(Methods.color(mcRPGPlayer.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Commands.Parties.TeleportationCanceled")));
+        }
+        if (mcRPGPlayer.getAbilityLoadout() == null) {
+            return;
+        }
+        //Disabled Worlds
+        if (McRPG.getInstance().getConfig().contains("Configuration.DisabledWorlds") &&
+                McRPG.getInstance().getConfig().getStringList("Configuration.DisabledWorlds").contains(player.getWorld().getName())) {
+            return;
+        }
+        if (mcRPGPlayer.doesPlayerHaveAbilityInLoadout(UnlockedAbilities.NYMPHS_VITALITY) &&
+                UnlockedAbilities.NYMPHS_VITALITY.isEnabled() && mcRPGPlayer.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY).isToggled()) {
+            Biome biome = player.getLocation().getBlock().getBiome();
+            FileConfiguration woodCuttingConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WOODCUTTING_CONFIG);
+            if (woodCuttingConfig.getStringList("NymphsVitalityConfig.Biomes").contains(biome.name())) {
+                NymphsVitality nymphsVitality = (NymphsVitality) mcRPGPlayer.getBaseAbility(UnlockedAbilities.NYMPHS_VITALITY);
+                int minHunger = woodCuttingConfig.getInt("NymphsVitalityConfig.Tier" + Methods.convertToNumeral(nymphsVitality.getCurrentTier()) + ".MinimumHunger");
+
+                if (player.getFoodLevel() < minHunger) {
+
+                    NymphsVitalityEvent nymphsVitalityEvent = new NymphsVitalityEvent(mcRPGPlayer, nymphsVitality, player.getFoodLevel() + 1, player.getFoodLevel());
+                    Bukkit.getPluginManager().callEvent(nymphsVitalityEvent);
+                    if (!nymphsVitalityEvent.isCancelled()) {
+                        player.setFoodLevel(nymphsVitalityEvent.getNewHunger());
+                    }
+                }
             }
-          }
         }
-      }
+        if (UnlockedAbilities.RUNNERS_DIET.isEnabled() && mcRPGPlayer.getAbilityLoadout().contains(UnlockedAbilities.RUNNERS_DIET)
+                && mcRPGPlayer.getBaseAbility(UnlockedAbilities.RUNNERS_DIET).isToggled()) {
+            FileConfiguration fitnessConfig = McRPG.getInstance().getFileManager().getFile(FileManager.Files.FITNESS_CONFIG);
+            RunnersDiet runnersDiet = (RunnersDiet) mcRPGPlayer.getBaseAbility(UnlockedAbilities.RUNNERS_DIET);
+            int minHunger = fitnessConfig.getInt("RunnersDietConfig.Tier" + Methods.convertToNumeral(runnersDiet.getCurrentTier())
+                                                     + ".MinHunger");
+            if (player.isSprinting() && player.getFoodLevel() < minHunger) {
+                RunnersDietEvent runnersDietEvent = new RunnersDietEvent(mcRPGPlayer, runnersDiet);
+                Bukkit.getPluginManager().callEvent(runnersDietEvent);
+                if (!runnersDietEvent.isCancelled()) {
+                    player.setFoodLevel(player.getFoodLevel() + 1);
+                }
+            }
+        }
+        if (McRPG.getInstance().isWorldGuardEnabled()) {
+            WGSupportManager supportManager = McRPG.getInstance().getWgSupportManager();
+            World w = to.getWorld();
+            if (!supportManager.isWorldTracker(w)) {
+                return;
+            }
+            RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+            RegionManager manager = container.get(BukkitAdapter.adapt(w));
+            assert manager != null;
+            ApplicableRegionSet set = manager.getApplicableRegions(BukkitAdapter.asBlockVector(to));
+            HashMap<String, WGRegion> regions = supportManager.getRegionManager().get(w);
+            EntryLimiterParser entryLimiterParser = new EntryLimiterParser();
+            for (ProtectedRegion region : set) {
+                if (regions.containsKey(region.getId())) {
+                    List<String> entryExpressions = regions.get(region.getId()).getEnterExpressions();
+                    for (String expression : entryExpressions) {
+                        if (entryLimiterParser.evaluateExpression(mcRPGPlayer, expression)) {
+                            playerMoveEvent.setCancelled(true);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
-  }
 }
