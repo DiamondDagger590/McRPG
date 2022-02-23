@@ -24,20 +24,22 @@ public enum MainConfig implements ConfigurationEnum {
         "#Download and unzip this. You then will need to create a new folder called 'libs' under McRPG's plugin folder and upload the jar there",
         "#Once done, rename the jar to 'h2.jar' and McRPG will use that as the database driver."),
 
-    //McMMO
-    MCMMO_CONVERSION_EQUATION("mcmmo.conversion-equation", "((skill_exp)*0.5)",
-        "#Converts a players level to exp and then convert that into 'boosted experience' using the equation below",
-        "#To configure how boosted exp works, please look at the 'boosted-exp' section"),
-
-    //General Configuration
+    //Miscellaneous Configuration
     DISABLED_WORLDS("configuration.disabled-worlds", Collections.singletonList("test"),
         "#What worlds should McRPG be disabled in"),
     SAVE_INTERVAL("configuration.save-interval", 1,
         "#This is how often the plugin saves player data (async) in minutes"),
-    DISABLE_TIPS("configuration.disable-tips", false,
-        "#If true, then McRPG gameplay tips will not be sent to any players"),
     LANGUAGE_FILE("configuration.language-file", "en",
         "#What lang file you want to use. Do not include the .yml"),
+    
+    //Admin
+    ABILITY_SPY_ENABLED("configuration.admin.enable-ability-spy", false,
+        "#If enabled, admins will be alerted when abilities are unlocked and upgraded"),
+
+    //McMMO
+    MCMMO_CONVERSION_EQUATION("mcmmo.conversion-equation", "((skill_exp)*0.5)",
+        "#Converts a players level to exp and then convert that into 'boosted experience' using the equation below",
+        "#To configure how boosted exp works, please look at the 'boosted-exp' section"),
 
     //Exp modifications
     MAX_DAMAGE_CAP("configuration.experience.max-damage-cap-to-award-exp", 1000000,
@@ -52,14 +54,16 @@ public enum MainConfig implements ConfigurationEnum {
     BOOSTED_EXP_USAGE_RATE("configuration.experience.boosted-exp.usage-rate", "((gained_exp)*2.25)",
         "#When a player gains exp, this equation is factored in and if there is remaining boosted exp,",
         "#then it will add this equation value to the gained amount"),
+    MODIFY_MOB_EXP_SECTION_HEADER("configuration.experience.modify-mob-spawn-experience", "",
+        "#Modify the exp worth of mobs from spawners and eggs"),
+    MODIFY_SPAWNER_MOB_EXP("configuration.experience.modify-mob-spawn-experience.spawner", 0.5,
+        "#The multiplier to apply whenever a mob from spawners gives experience"),
+    MODIFY_EGG_MOB_EXP("configuration.experience.modify-mob-spawn-experience.spawn-eggs", 0.5,
+        "#The multiplier to apply whenever a mob from spawn eggs gives experience"),
 
     //Skill Books
     DISABLE_BOOKS_IN_END("configuration.skill-books.disable-books-in-end", true,
         "#If enabled, skill books will be unable to be dropped by blocks and mobs in the end"),
-
-    //Admin
-    ABILITY_SPY_ENABLED("configuration.admin.enable-ability-spy", false,
-        "#If enabled, admins will be alerted when abilities are unlocked and upgraded"),
 
     //Exp display
     EXP_UPDATES_ENABLED("configuration.display.exp-updates.enabled", false,
@@ -70,11 +74,21 @@ public enum MainConfig implements ConfigurationEnum {
         "#Duration of the reminder in seconds. Only used for scoreboard and bossbar"),
 
     //Gameplay
+    DISABLE_TIPS("configuration.disable-tips", false,
+        "#If true, then McRPG gameplay tips will not be sent to any players"),
     REPLACE_ABILITY_COOLDOWN("configuration.gameplay.replace-ability-cooldown", 1440,
         "#How long the cooldown for replacing an ability should be in minutes"),
     REQUIRE_EMPTY_OFF_HAND("configuration.gameplay-require-empty-off-hand-to-ready", false,
         "#If enabled, players will be required to have an empty off hand in order to ready their abilities"),
-
+    USE_LEVEL_PERMS("configuration.gameplay.enable-levelup-permissions", false,
+        "#If enabled, then a player will not be able to gain experience past a certain level.",
+        "#An example is if we set a player to have the permission 'mcrpg.swords.500'. This player would gain no exp past level 500 in swords",
+        "#Use mcrpg.%skill%.%level% as the perm"),
+    MOB_HEALTH_BAR_ENABLED("configuration.gameplay.mob-health-bar.enabled", true,
+        "#If mobs should display their current health above their head when attacked",
+        "#The type of display is configured per player in their player settings"),
+    MOB_HEALTH_BAR_DISPLAY_DURATION("configuration.gameplay.mob-health-bar.health-bar-display-duration", 5,
+        "#How long should the health bars be displayed for in seconds"),
     ;
 
     private final String path;
