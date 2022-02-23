@@ -590,11 +590,9 @@ public class McRPGPlayer {
                 toRemove.add(ability);
             }
         }
-        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+
         if (!toRemove.isEmpty()) {
             for (UnlockedAbilities ab : toRemove) {
-                database.executeUpdate("UPDATE mcrpg_" + ab.getSkill().getName().toLowerCase() + "_data SET "
-                                           + Methods.convertNameToSQL(ab.getName().replace(" ", "").replace("_", "").replace("+", "Plus")) + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
                 abilitiesOnCooldown.remove(ab);
             }
         }
@@ -604,7 +602,6 @@ public class McRPGPlayer {
                 this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                                                                McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
             }
-            database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = 0 WHERE uuid = '" + uuid.toString() + "'");
         }
         if (divineEscapeExpEnd != 0 && divineEscapeExpEnd <= Calendar.getInstance().getTimeInMillis()) {
             divineEscapeExpEnd = 0;
@@ -620,6 +617,15 @@ public class McRPGPlayer {
                 getPlayer().sendMessage(Methods.color(getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.DivineEscape.DamageDebuffExpire")));
             }
         }
+
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+
+        if(database != null) {
+            Connection connection = database.getConnection();
+
+            PlayerDataDAO.savePlayerData(connection, this);
+            SkillDAO.savePlayerAbilityAttributes(connection, this);
+        }
     }
 
     /**
@@ -634,17 +640,22 @@ public class McRPGPlayer {
                     this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                                                                    McRPG.getInstance().getLangFile().getString("Messages.Players.CooldownExpire").replace("%Ability%", ability.getName())));
                 }
-                database.executeUpdate("UPDATE mcrpg_" + ability.getSkill().getName().toLowerCase() + "_data SET " + Methods.convertNameToSQL(ability.getName().replace(" ", "").replace("_", "").replace("+", "Plus"))
-                                           + "_cooldown = 0 WHERE uuid = '" + uuid.toString() + "'");
+
 
             }
         }
         abilitiesOnCooldown.clear();
         endTimeForReplaceCooldown = 0;
-        database.executeUpdate("UPDATE mcrpg_player_data SET replace_ability_cooldown_time = 0 WHERE uuid = `" + uuid.toString() + "`");
         if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
             this.getPlayer().sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                                                            McRPG.getInstance().getLangFile().getString("Messages.Players.ReplaceCooldownExpire")));
+        }
+
+        if(database != null) {
+            Connection connection = database.getConnection();
+
+            PlayerDataDAO.savePlayerData(connection, this);
+            SkillDAO.savePlayerAbilityAttributes(connection, this);
         }
     }
 
