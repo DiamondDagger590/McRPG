@@ -221,7 +221,7 @@ DeeperWoundConfig:
   #How this ability should be seen in the GUIS
   Item:
     DisplayName: '&4Deeper Wound'
-    Material: ROSE_RED
+    Material: RED_DYE
     Amount: 1
     #This lore is shown in most guis but will be ignored for certain hard coded lores for things like confirmation guis
     PlayerLore:

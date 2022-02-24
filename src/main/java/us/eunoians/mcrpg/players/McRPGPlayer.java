@@ -705,6 +705,12 @@ public class McRPGPlayer {
      */
     public void addPendingAbilityUnlock(UnlockedAbilities abilities) {
         this.pendingUnlockAbilities.add(abilities);
+
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+
+        if(database != null) {
+            SkillDAO.savePlayerAbilityAttributes(database.getConnection(), this);
+        }
     }
 
     /**
@@ -712,6 +718,12 @@ public class McRPGPlayer {
      */
     public void removePendingAbilityUnlock(UnlockedAbilities abilities) {
         this.pendingUnlockAbilities.remove(abilities);
+
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+
+        if(database != null) {
+            SkillDAO.savePlayerAbilityAttributes(database.getConnection(), this);
+        }
     }
 
     /**
