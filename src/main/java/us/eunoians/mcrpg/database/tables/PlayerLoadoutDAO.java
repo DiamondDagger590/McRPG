@@ -108,7 +108,9 @@ public class PlayerLoadoutDAO {
                                                                                    "`loadout_id` varchar(36) NOT NULL," +
                                                                                    "`slot_number` int(11) NOT NULL," +
                                                                                    "`ability_id` varchar(32) NOT NULL," +
-                                                                                   "PRIMARY KEY (`loadout_id`, `slot_number`)" +
+                                                                                   "PRIMARY KEY (`loadout_id`, `slot_number`), " +
+                                                                                   "CONSTRAINT abilityUnique UNIQUE(`loadout_id`, `ability_id`), " +
+                                                                                   "CONSTRAINT FK_loadout FOREIGN KEY (`loadout_id`) REFERENCES " + LOADOUT_TABLE_NAME + "(`loadout_id`)" +
                                                                                    ");")) {
                     statement.executeUpdate();
                 }
@@ -315,7 +317,11 @@ public class PlayerLoadoutDAO {
                     while (resultSet.next()) {
 
                         UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(resultSet.getString("ability_id"));
-                        unlockedAbilities.add(unlockedAbility);
+
+                        //Handle duplicates from any existing tables that didn't have constraints
+                        if(!unlockedAbilities.contains(unlockedAbility)) {
+                            unlockedAbilities.add(unlockedAbility);
+                        }
                     }
                 }
             }
