@@ -17,8 +17,6 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * A DAO used to store data regarding a player's settings
- *
- * @author DiamondDagger590
  */
 public class PlayerSettingsDAO {
 

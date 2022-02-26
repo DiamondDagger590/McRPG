@@ -16,8 +16,6 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * A DAO used to store data regarding a player's specific data that doesn't really belong in another table
- *
- * @author DiamondDagger590
  */
 public class PlayerDataDAO {
 

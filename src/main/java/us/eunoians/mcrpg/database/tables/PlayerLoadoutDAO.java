@@ -21,8 +21,6 @@ import java.util.logging.Logger;
 
 /**
  * A DAO used to store a player's loadout
- *
- * @author DiamondDagger590
  */
 public class PlayerLoadoutDAO {
 

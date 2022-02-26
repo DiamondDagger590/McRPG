@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.abilities.attributes;
+package us.eunoians.mcrpg.ability.attribute;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -14,8 +14,6 @@ import java.util.Optional;
  * <p>
  * The code at this time isn't dynamic enough to fully support the desired 3rd party plugin implementation, however
  * this is the initial version of the system with the intent for the plugin recode to expand upon this.
- *
- * @author DiamondDagger590
  */
 public class AbilityAttributeManager {
 

@@ -7,8 +7,6 @@ import java.util.Optional;
 
 /**
  * An enum representing the different types of database drivers that are supported.
- *
- * @author DiamondDagger590
  */
 public enum DatabaseDriver {
 

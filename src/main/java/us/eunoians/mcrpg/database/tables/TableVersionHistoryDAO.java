@@ -16,8 +16,6 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A DAO used to track the versions for different tables which can be used
  * to run updates for those tables as needed.
- *
- * @author DiamondDagger590
  */
 public class TableVersionHistoryDAO {
 

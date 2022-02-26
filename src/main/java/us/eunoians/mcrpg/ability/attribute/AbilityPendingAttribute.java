@@ -1,12 +1,10 @@
-package us.eunoians.mcrpg.abilities.attributes;
+package us.eunoians.mcrpg.ability.attribute;
 
 import org.jetbrains.annotations.NotNull;
 
 /**
  * This attribute stores the pending status for an ability, being {@code true} if the ability
  * is pending being accepted by the player.
- *
- * @author DiamondDagger590
  */
 public class AbilityPendingAttribute extends AbilityAttribute<Boolean> {
 

@@ -7,8 +7,6 @@ import java.util.Collections;
 
 /**
  * The enum that is used to generate the main config.yml for McRPG
- *
- * @author DiamondDagger590
  */
 public enum MainConfig implements ConfigurationEnum {
 

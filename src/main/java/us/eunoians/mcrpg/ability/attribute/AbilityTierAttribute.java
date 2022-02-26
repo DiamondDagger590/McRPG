@@ -1,11 +1,9 @@
-package us.eunoians.mcrpg.abilities.attributes;
+package us.eunoians.mcrpg.ability.attribute;
 
 import org.jetbrains.annotations.NotNull;
 
 /**
  * This attribute stores the tier for an ability.
- *
- * @author DiamondDagger590
  */
 public class AbilityTierAttribute extends AbilityAttribute<Integer> {
 

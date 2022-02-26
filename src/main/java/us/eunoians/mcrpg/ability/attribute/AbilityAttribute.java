@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.abilities.attributes;
+package us.eunoians.mcrpg.ability.attribute;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +30,6 @@ import java.util.Optional;
  * 3rd party plugins in mind.
  *
  * @param <T> The type of the value that should be stored in this attribute
- * @author DiamondDagger590
  */
 public abstract class AbilityAttribute<T> {
 

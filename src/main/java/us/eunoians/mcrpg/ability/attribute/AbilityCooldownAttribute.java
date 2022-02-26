@@ -1,11 +1,9 @@
-package us.eunoians.mcrpg.abilities.attributes;
+package us.eunoians.mcrpg.ability.attribute;
 
 import org.jetbrains.annotations.NotNull;
 
 /**
  * This attribute stores the cooldown that an ability has left before it can be activated again
- *
- * @author DiamondDagger590
  */
 public class AbilityCooldownAttribute extends AbilityAttribute<Long> {
 

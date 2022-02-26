@@ -3,8 +3,8 @@ package us.eunoians.mcrpg.database.tables;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.BaseAbility;
-import us.eunoians.mcrpg.abilities.attributes.AbilityAttribute;
-import us.eunoians.mcrpg.abilities.attributes.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardData;
 import us.eunoians.mcrpg.api.leaderboards.PlayerLeaderboardData;
 import us.eunoians.mcrpg.database.DatabaseManager;
@@ -31,8 +31,6 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * A DAO used to store data regarding a player's specific data that doesn't really belong in another table
- *
- * @author DiamondDagger590
  */
 public class SkillDAO {
 

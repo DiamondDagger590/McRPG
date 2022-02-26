@@ -6,7 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.abilities.attributes.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManagerFactory;
@@ -15,8 +15,6 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
- *
- * @author DiamondDagger590
  */
 public class McRPG extends JavaPlugin {
 
