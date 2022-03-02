@@ -386,7 +386,7 @@ ComraderyConfig:
 # Config for the ability PETAsWrath
 # When a pet you have tamed dies, gives the killer a random debuff
 #
-PETAsWrathConfig:
+PetasWrathConfig:
   #How many tiers there should be. Highly recommended to keep at 5.
   TierAmount: 5
   #At what level should each tier become available. Tier I is the unlock level

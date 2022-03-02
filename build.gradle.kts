@@ -87,6 +87,10 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
+tasks.withType<Javadoc> {
+    options.encoding = "UTF-8"
+}
+
 tasks.withType<ProcessResources>{
     filesMatching("**/*.yml"){
         expand(project.properties)
@@ -140,5 +144,16 @@ tasks {
     }
     jar {
         dependsOn(shadowJar)
+    }
+    publish {
+        dependsOn(compileJava)
+    }
+}
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            from(components["java"])
+        }
     }
 }

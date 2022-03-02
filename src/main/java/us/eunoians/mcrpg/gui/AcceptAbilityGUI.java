@@ -61,7 +61,9 @@ public class AcceptAbilityGUI extends GUI{
         denyMeta.setLore(Methods.colorLore(guiConfig.getStringList("AcceptAbility.DenyItem.Lore")));
         denyItem.setItemMeta(denyMeta);
         items.add(new GUIItem(denyItem, guiConfig.getInt("AcceptAbility.DenyItem.Slot")));
-        
+
+        Bukkit.broadcastMessage(path + " " + config.getString(path + "Material"));
+
         ItemStack abilityItem = new ItemStack(Material.getMaterial(config.getString(path + "Material")),
           config.getInt(path + "Amount"));
         ItemMeta abilityMeta = abilityItem.getItemMeta();
