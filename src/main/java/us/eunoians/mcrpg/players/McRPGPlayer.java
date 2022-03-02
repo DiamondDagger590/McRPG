@@ -341,7 +341,7 @@ public class McRPGPlayer {
                     int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
                     //There may be abilities in the loadout that might not be usable due to lowering the max ability amount, so we need to respect the config as the hard limit
-                    for (int i = 0; i < maxAbilities; i++) {
+                    for (int i = 0; i < Math.min(unlockedAbilityList.size(), maxAbilities); i++) {
                         abilityLoadout.add(unlockedAbilityList.get(i));
                     }
 
