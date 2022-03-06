@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.database.tables.PlayerSettingsDAO;
 import us.eunoians.mcrpg.database.tables.SkillDAO;
 import us.eunoians.mcrpg.database.tables.TableVersionHistoryDAO;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -46,6 +47,12 @@ public class DatabaseManager {
 
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         DatabaseBuilder dbBuilder = new DatabaseBuilder(driver);
+
+        File databaseFolder = new File(plugin.getDataFolder().getAbsolutePath() + "/database");
+
+        if(!databaseFolder.exists()){
+            databaseFolder.mkdir();
+        }
 
         dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
 
