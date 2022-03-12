@@ -31,6 +31,7 @@ public class McAdminPrompt implements TabCompleter {
       completions.add("cooldown");
       completions.add("reset");
       completions.add("party");
+      completions.add("copy");
       return StringUtil.copyPartialMatches(args[0], completions, new ArrayList<>());
     }
     else if(args.length == 2){
@@ -75,6 +76,8 @@ public class McAdminPrompt implements TabCompleter {
           completions.add("name");
           completions.add("give");
           break;
+        case "copy":
+          completions.add("from-uuid");
       }
       return StringUtil.copyPartialMatches(args[1], completions, new ArrayList<>());
     }
@@ -177,6 +180,8 @@ public class McAdminPrompt implements TabCompleter {
               completions.add("level");
               break;
           }
+        case "copy":
+          completions.add("to-uuid");
           break;
       }
       return StringUtil.copyPartialMatches(args[2], completions, new ArrayList<>());

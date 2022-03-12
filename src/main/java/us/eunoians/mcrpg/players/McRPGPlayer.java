@@ -44,6 +44,7 @@ import us.eunoians.mcrpg.types.TipType;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -238,6 +239,10 @@ public class McRPGPlayer {
     @Setter
     private AcceptedTeleportRequest acceptedTeleportRequest = null;
 
+    @Getter
+    @Nullable
+    private CompletableFuture<Void> copyFuture;
+
     public McRPGPlayer(UUID uuid) {
         this.uuid = uuid;
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
@@ -348,10 +353,16 @@ public class McRPGPlayer {
                     //Remove any abilities that shouldn't be in the player's loadout
                     List<UnlockedAbilities> toRemove = new ArrayList<>();
                     for (UnlockedAbilities abilityType : abilityLoadout) {
+
                         BaseAbility baseAbility = getBaseAbility(abilityType);
+
                         if (baseAbility != null && baseAbility.getCurrentTier() < 1) {
                             baseAbility.setUnlocked(false);
                             toRemove.add(abilityType);
+                        }
+                        //If it's a valid ability but somehow is pending and in the loadout
+                        else if(pendingUnlockAbilities.contains(abilityType)){
+                            pendingUnlockAbilities.remove(abilityType); //Prevent duplicates in an edge case
                         }
                     }
 
@@ -364,6 +375,163 @@ public class McRPGPlayer {
                 throwable.printStackTrace();
                 return null;
             });
+
+    }
+
+    //A very sloppy solution for copying, but this whole class is a mess so #techdebt
+    public McRPGPlayer(UUID playerUUID, UUID playerToLoadFromUUID) {
+        this.uuid = playerUUID;
+        this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
+        Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
+        Connection connection = database.getConnection();
+
+        List<CompletableFuture> completableFutures = new ArrayList<>();
+
+        CompletableFuture<PlayerDataDAO.PlayerDataSnapshot> playerDataFuture = PlayerDataDAO.getPlayerData(connection, playerToLoadFromUUID);
+        completableFutures.add(playerDataFuture);
+        playerDataFuture.thenAccept(playerDataSnapshot -> {
+
+            this.abilityPoints = playerDataSnapshot.getAbilityPoints();
+            this.redeemableExp = playerDataSnapshot.getRedeemableExp();
+            this.redeemableLevels = playerDataSnapshot.getRedeemableLevels();
+            long replaceCooldown = playerDataSnapshot.getReplaceAbilityCooldownTime();
+            this.boostedExp = playerDataSnapshot.getBoostedExp();
+            this.divineEscapeExpDebuff = playerDataSnapshot.getDivineEscapeExpDebuff();
+            this.divineEscapeDamageDebuff = playerDataSnapshot.getDivineEscapeDamageDebuff();
+            this.divineEscapeExpEnd = playerDataSnapshot.getDivineEscapeExpEndTime();
+            this.divineEscapeDamageEnd = playerDataSnapshot.getDivineEscapeDamageEndTime();
+            this.partyID = playerDataSnapshot.getPartyUUID();
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    if (partyID != null) {
+                        Party party = McRPG.getInstance().getPartyManager().getParty(partyID);
+                        StringBuilder nullPartyMessage = new StringBuilder();
+
+                        if (party == null) {
+                            partyID = null;
+                            nullPartyMessage.append("&cYour party no longer exists.");
+                        }
+                        else if (!party.isPlayerInParty(uuid)) {
+                            partyID = null;
+                            nullPartyMessage.append("&cYou were removed from your party whilst offline.");
+                        }
+
+                        if (nullPartyMessage.length() != 0) {
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    OfflinePlayer offlinePlayer = getOfflineMcRPGPlayer();
+                                    if (offlinePlayer.isOnline()) {
+                                        ((Player) offlinePlayer).sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() + nullPartyMessage.toString()));
+                                    }
+                                }
+                            }.runTaskLater(McRPG.getInstance(), 2 * 20);
+                        }
+                    }
+
+                    Calendar cal1 = Calendar.getInstance();
+                    Calendar cal = Calendar.getInstance();
+                    cal1.setTimeInMillis(replaceCooldown);
+                    if (cal.getTimeInMillis() < cal1.getTimeInMillis()) {
+                        endTimeForReplaceCooldown = cal1.getTimeInMillis();
+                    }
+                }
+            }.runTask(McRPG.getInstance());
+        });
+
+        CompletableFuture<PlayerSettingsDAO.PlayerSettingsSnapshot> playerSettingsFuture = PlayerSettingsDAO.getPlayerSettings(connection, playerToLoadFromUUID);
+        completableFutures.add(playerSettingsFuture);
+        playerSettingsFuture.thenAccept(playerSettingsSnapshot -> {
+            this.healthbarType = playerSettingsSnapshot.getHealthbarType();
+            this.keepHandEmpty = playerSettingsSnapshot.isKeepHandEmpty();
+            this.displayType = playerSettingsSnapshot.getDisplayType();
+            this.autoDeny = playerSettingsSnapshot.isAutoDeny();
+            this.ignoreTips = playerSettingsSnapshot.isIgnoreTips();
+            this.requireEmptyOffHand = playerSettingsSnapshot.isRequireOffHand();
+            this.unarmedIgnoreSlot = playerSettingsSnapshot.getUnarmedIgnoreSlot();
+            this.autoAcceptPartyInvites = playerSettingsSnapshot.isAutoAcceptPartyTeleports();
+        });
+
+        //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
+        CompletableFuture<SkillDataSnapshot>[] skillFutures = new CompletableFuture[Skills.values().length];
+
+        for (int i = 0; i < Skills.values().length; i++) {
+
+            Skills skillType = Skills.values()[i];
+
+            CompletableFuture<SkillDataSnapshot> completableFuture = SkillDAO.getAllPlayerSkillInformation(connection, playerToLoadFromUUID, skillType);
+
+            completableFuture
+                .thenAccept(this::initializeSkill)
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    return null;
+                });
+
+            skillFutures[i] = completableFuture;
+            completableFutures.add(completableFuture);
+        }
+
+        CompletableFuture<Void> compositeSkillFuture = CompletableFuture.allOf(skillFutures);
+        completableFutures.add(compositeSkillFuture);
+
+        CompletableFuture<List<UnlockedAbilities>> loadoutFuture = PlayerLoadoutDAO.getPlayerLoadout(connection, uuid);
+        completableFutures.add(loadoutFuture);
+
+        compositeSkillFuture
+            .thenAccept(unused -> {
+
+                updatePowerLevel();
+
+                for (Skill skill : skills) {
+                    skill.updateExpToLevel();
+                }
+
+                loadoutFuture.thenAccept(unlockedAbilityList -> {
+
+                    int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
+
+                    //There may be abilities in the loadout that might not be usable due to lowering the max ability amount, so we need to respect the config as the hard limit
+                    for (int i = 0; i < Math.min(unlockedAbilityList.size(), maxAbilities); i++) {
+                        abilityLoadout.add(unlockedAbilityList.get(i));
+                    }
+
+                    //Remove any abilities that shouldn't be in the player's loadout
+                    List<UnlockedAbilities> toRemove = new ArrayList<>();
+                    for (UnlockedAbilities abilityType : abilityLoadout) {
+
+                        BaseAbility baseAbility = getBaseAbility(abilityType);
+
+                        if (baseAbility != null && baseAbility.getCurrentTier() < 1) {
+                            baseAbility.setUnlocked(false);
+                            toRemove.add(abilityType);
+                        }
+                        //If it's a valid ability but somehow is pending and in the loadout
+                        else if(pendingUnlockAbilities.contains(abilityType)){
+                            pendingUnlockAbilities.remove(abilityType); //Prevent duplicates in an edge case
+                        }
+                    }
+
+                    //Needed to prevent a CME lol
+                    for (UnlockedAbilities abilityType : toRemove) {
+                        abilityLoadout.remove(abilityType);
+                    }
+                });
+            }).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+
+        CompletableFuture<?>[] futureArray = new CompletableFuture<?>[completableFutures.size()];
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(completableFutures.toArray(futureArray));
+        this.copyFuture = new CompletableFuture<>();
+        allFutures.thenAccept(unused -> {
+            saveData().thenAccept(copyFuture::complete);
+        });
+
 
     }
 
