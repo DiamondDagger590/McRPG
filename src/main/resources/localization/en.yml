@@ -391,6 +391,11 @@ Messages:
       AbilitySpy:
         Unlock: '&a%Player% unlocked %Ability%'
         Upgrade: '&a%Player% upgraded %Ability% to tier %Tier%'
+      Copy:
+        InvalidUUIDs: '&cThe UUIDs provided are invalid.'
+        DuplicateUUIDs: '&cYou must provide two unique UUIDs.'
+        PlayersAreOnline: '&cYou can only use this command whenever both players are offline.'
+        DataCopied: '&aPlayer data has successfully been copied from the two UUIDs.'
   Abilities:
     Bleed:
       PlayerBleeding: '&cYou are now bleeding'

@@ -23,7 +23,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.1.0"
+version = "1.5.2.0"
 group = "us.eunoians"
 
 java {
@@ -63,7 +63,7 @@ dependencies {
     val enumToYamlVersion = "1.0"
     implementation("com.github.DiamondDagger590:EnumToYaml:$enumToYamlVersion")
 
-    val nbtAPIVersion = "2.9.2-SNAPSHOT"
+    val nbtAPIVersion = "2.9.2"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val bstatsVersion = "2.2.1"
