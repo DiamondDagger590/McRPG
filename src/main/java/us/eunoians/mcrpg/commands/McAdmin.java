@@ -1378,6 +1378,11 @@ public class McAdmin implements CommandExecutor {
                 }
                 else if (args[0].equalsIgnoreCase("copy")) {
 
+                    if (!(admin.hasPermission("mcrpg.*") || admin.hasPermission("mcadmin.*") || admin.hasPermission("mcadmin.copy"))) {
+                        admin.sendMessage(Methods.color(plugin.getPluginPrefix() + config.getString("Messages.Utility.NoPerms")));
+                        return true;
+                    }
+
                     try {
                         UUID fromUUID = UUID.fromString(args[1]);
                         UUID toUUID = UUID.fromString(args[2]);
