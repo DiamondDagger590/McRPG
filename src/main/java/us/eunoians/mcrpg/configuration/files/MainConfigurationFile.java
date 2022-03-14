@@ -1,14 +1,15 @@
-package us.eunoians.mcrpg.config;
+package us.eunoians.mcrpg.configuration.files;
 
 import de.articdive.enum_to_yaml.interfaces.ConfigurationEnum;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.configuration.FileType;
 
 import java.util.Collections;
 
 /**
  * The enum that is used to generate the main config.yml for McRPG
  */
-public enum MainConfig implements ConfigurationEnum {
+public enum MainConfigurationFile implements McRPGConfigurationFile, ConfigurationEnum {
 
     //Header
     CONFIGURATION_HEADER("configuration", "", "##################################",
@@ -29,7 +30,7 @@ public enum MainConfig implements ConfigurationEnum {
         "#This is how often the plugin saves player data (async) in minutes"),
     LANGUAGE_FILE("configuration.language-file", "en",
         "#What lang file you want to use. Do not include the .yml"),
-    
+
     //Admin
     ABILITY_SPY_ENABLED("configuration.admin.enable-ability-spy", false,
         "#If enabled, admins will be alerted when abilities are unlocked and upgraded"),
@@ -58,6 +59,8 @@ public enum MainConfig implements ConfigurationEnum {
         "#The multiplier to apply whenever a mob from spawners gives experience"),
     MODIFY_EGG_MOB_EXP("configuration.experience.modify-mob-spawn-experience.spawn-eggs", 0.5,
         "#The multiplier to apply whenever a mob from spawn eggs gives experience"),
+    REDEEM_LEVELS_RESET_EXP("configuration.experience.reset-exp-upon-redeem-levels", true,
+        "#If when players redeem levels, should this reset the amount of exp needed to level up."),
 
     //Skill Books
     DISABLE_BOOKS_IN_END("configuration.skill-books.disable-books-in-end", true,
@@ -93,7 +96,7 @@ public enum MainConfig implements ConfigurationEnum {
     private final Object defaultValue;
     private final String[] comments;
 
-    MainConfig(@NotNull String path, @NotNull Object defaultValue, @NotNull String... comments) {
+    MainConfigurationFile(@NotNull String path, @NotNull Object defaultValue, @NotNull String... comments) {
         this.path = path;
         this.defaultValue = defaultValue;
         this.comments = comments;
@@ -126,4 +129,12 @@ public enum MainConfig implements ConfigurationEnum {
         return comments;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public FileType getFileType() {
+        return FileType.MAIN_CONFIG;
+    }
 }

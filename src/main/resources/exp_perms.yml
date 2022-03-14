@@ -1,9 +1,15 @@
+#This can be named whatever, and simply serves as a unique internal identifier for the permission node
 miner:
-  Perm: 'mcrpg.expbuff.miner'
-  AffectedSkills:
+  #The permission node that this will affect
+  permission-node: mcrpg.expbuff.miner
+  #This section lets you define the skills that will be affected by this permission
+  #
+  # Example: skill-name: modifier
+  # Note) Skill names need to be lower case
+  applicable-skill-modifier:
     #1.5 gives 150% exp.
     #0.7 gives 70% exp
-    Mining: 1.5
-    Herbalism: 0.7
-  #Higher priority overrides lower prio perms
-  Priority: 10
+    mining: 1.5
+    herbalism: 0.7
+  #Higher priority overrides lower priority permissions if 2 or more are applicable
+  priority: 10

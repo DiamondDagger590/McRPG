@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.DatabaseManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManagerFactory;
@@ -27,6 +28,7 @@ public class McRPG extends JavaPlugin {
     private static final String customNameKey = "mcMMO: Custom Name";
     private static final String customVisibleKey = "mcMMO: Name Visibility";
 
+    private FileManager fileManager;
 
     private DatabaseManager databaseManager;
     private AbilityAttributeManager abilityAttributeManager;
@@ -45,6 +47,8 @@ public class McRPG extends JavaPlugin {
         instance = this;
         placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
 
+        initializeFiles();
+
         preloadNBTAPI();
         setupHooks();
         initializeDatabase();
@@ -54,6 +58,14 @@ public class McRPG extends JavaPlugin {
     @Override
     public void onDisable() {
         databaseManager.getDatabaseExecutorService().shutdown();
+    }
+
+    /**
+     * Initializes the {@link FileManager} and populates it with all files McRPG needs
+     */
+    private void initializeFiles() {
+        fileManager = new FileManager(this);
+        fileManager.initializeAndLoadFiles();
     }
 
     /**
@@ -112,6 +124,16 @@ public class McRPG extends JavaPlugin {
         ItemStack itemStack = new ItemStack(Material.DIAMOND);
         NBTItem item = new NBTItem(itemStack);
         item.setString("temp", "temp");
+    }
+
+    /**
+     * Get the {@link FileManager} used by McRPG
+     *
+     * @return The {@link FileManager} used by McRPG
+     */
+    @NotNull
+    public FileManager getFileManager() {
+        return fileManager;
     }
 
     @NotNull
