@@ -1,12 +1,9 @@
 package us.eunoians.mcrpg.database.tables;
 
+import com.gmail.nossr50.datatypes.skills.interfaces.Skill;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
-import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.skills.Skill;
-import us.eunoians.mcrpg.types.GenericAbility;
-import us.eunoians.mcrpg.types.Skills;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +17,8 @@ import java.util.UUID;
  * a player's data is obtained from a DAO and can not be modified past that point.
  *
  * @author DiamondDagger590
+ */
+public class SkillDataSnapshot {
 
     private final UUID uuid;
     private final Skills skillType;
@@ -171,4 +170,4 @@ import java.util.UUID;
     public static SkillDataSnapshot fromSkill(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
         return null;
     }
-}
+                                                                                             }
