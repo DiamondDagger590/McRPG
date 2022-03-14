@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.database;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.files.MainConfigurationFile;
 import us.eunoians.mcrpg.database.builder.Database;
 import us.eunoians.mcrpg.database.builder.DatabaseBuilder;
 import us.eunoians.mcrpg.database.builder.DatabaseDriver;
@@ -32,7 +34,8 @@ public class DatabaseManager {
 
     public DatabaseManager(@NotNull McRPG plugin) {
         this.plugin = plugin;
-        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager().getFile(FileManager.Files.CONFIG).getString("Configuration.DatabaseDriver", "SQLite"));
+        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(McRPG.getInstance().getFileManager()
+            .getFileConfiguration(FileType.MAIN_CONFIG).getString(MainConfigurationFile.DATABASE_DRIVER.getPath(), (String) MainConfigurationFile.DATABASE_DRIVER.getDefaultValue()));
 
         if (databaseDriver.isEmpty()) {
             plugin.getLogger().log(Level.SEVERE, "The configured database driver in the config.yml is invalid and is being defaulted to SQLite.");

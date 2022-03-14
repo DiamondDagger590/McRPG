@@ -9,7 +9,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * This class manages all McRPG files, including the ability to load files, reload files, and get files from memory.
@@ -34,7 +33,7 @@ public class FileManager {
     public void initializeAndLoadFiles() {
 
         //Preemptively check and create if absent the McRPG data folder
-        if(!mcRPG.getDataFolder().exists()){
+        if (!mcRPG.getDataFolder().exists()) {
             mcRPG.getDataFolder().mkdirs();
         }
 
@@ -61,9 +60,8 @@ public class FileManager {
 
         fileConfigurations.remove(fileType);
 
-        Optional<File> file = getFile(fileType);
-        if (file.isPresent()) { //If the file exists, we don't need to recreate it
-            FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(file.get());
+        if (files.containsKey(fileType)) { //If the file exists, we don't need to recreate it
+            FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(files.get(fileType));
             fileConfigurations.put(fileType, fileConfiguration);
         }
         else { //Otherwise create the file through standard loading
@@ -85,24 +83,24 @@ public class FileManager {
     }
 
     /**
-     * Gets an {@link Optional} that is either empty, or contains the {@link File} associated with the provided {@link FileType}.
+     * Gets the {@link File} associated with the provided {@link FileType}.
      *
      * @param fileType The {@link FileType} to get the associated {@link File} for
-     * @return An {@link Optional} that is either empty, or contains the {@link File} associated with the provided {@link FileType}.
+     * @return The {@link File} associated with the provided {@link FileType}.
      */
     @NotNull
-    public Optional<File> getFile(@NotNull FileType fileType) {
-        return Optional.ofNullable(files.get(fileType));
+    public File getFile(@NotNull FileType fileType) {
+        return files.getOrDefault(fileType, new File(fileType.getPath()));
     }
 
     /**
-     * Gets an {@link Optional} that is either empty, or contains the {@link FileConfiguration} associated with the provided {@link FileType}.
+     * Gets the {@link FileConfiguration} associated with the provided {@link FileType}.
      *
      * @param fileType The {@link FileType} to get the associated {@link FileConfiguration} for
-     * @return An {@link Optional} that is either empty, or contains the {@link FileConfiguration} associated with the provided {@link FileType}.
+     * @return The {@link FileConfiguration} associated with the provided {@link FileType}.
      */
     @NotNull
-    public Optional<FileConfiguration> getFileConfiguration(@NotNull FileType fileType) {
-        return Optional.ofNullable(fileConfigurations.get(fileType));
+    public FileConfiguration getFileConfiguration(@NotNull FileType fileType) {
+        return fileConfigurations.getOrDefault(fileType, YamlConfiguration.loadConfiguration(getFile(fileType)));
     }
 }
