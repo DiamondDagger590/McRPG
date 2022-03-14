@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.DatabaseManager;
@@ -31,6 +32,7 @@ public class McRPG extends JavaPlugin {
     private FileManager fileManager;
 
     private DatabaseManager databaseManager;
+    private AbilityRegistry abilityRegistry;
     private AbilityAttributeManager abilityAttributeManager;
 
     private boolean healthBarPluginEnabled = false;
@@ -48,6 +50,8 @@ public class McRPG extends JavaPlugin {
         placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
 
         initializeFiles();
+
+        abilityRegistry = new AbilityRegistry(this);
 
         preloadNBTAPI();
         setupHooks();
@@ -134,6 +138,26 @@ public class McRPG extends JavaPlugin {
     @NotNull
     public FileManager getFileManager() {
         return fileManager;
+    }
+
+    /**
+     * Get the {@link DatabaseManager} used by McRPG
+     *
+     * @return The {@link DatabaseManager} used by McRPG
+     */
+    @NotNull
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    /**
+     * Gets the {@link AbilityRegistry} used by McRPG
+     *
+     * @return The {@link AbilityRegistry} used by McRPG
+     */
+    @NotNull
+    public AbilityRegistry getAbilityRegistry() {
+        return abilityRegistry;
     }
 
     @NotNull
