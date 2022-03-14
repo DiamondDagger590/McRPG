@@ -4,7 +4,6 @@ import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.files.MainConfigurationFile;
-import us.eunoians.mcrpg.util.IOUtil;
 
 import java.io.File;
 
@@ -25,20 +24,9 @@ public enum FileType {
         return file;
     }),
 
-    EXP_PERMISSIONS(McRPG.getInstance().getDataFolder() + File.separator + "exp_perms.yml", (filePath) -> {
+    //The exp_perms.yml
+    EXP_PERMISSIONS(McRPG.getInstance().getDataFolder() + File.separator + "exp_perms.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
 
-        McRPG mcRPG = McRPG.getInstance();
-        File file = new File(mcRPG.getDataFolder(), filePath);
-        if (!file.exists()) {
-            try {
-                IOUtil.saveResource(mcRPG, filePath, false);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return file;
-    }),
     ;
 
     private final String path;

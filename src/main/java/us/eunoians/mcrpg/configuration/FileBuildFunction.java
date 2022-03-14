@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.configuration;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.util.IOUtil;
 
 import java.io.File;
 
@@ -10,6 +12,24 @@ import java.io.File;
  */
 @FunctionalInterface
 public interface FileBuildFunction {
+
+    /**
+     * The default YAML configuration build function that is used by most non-auto updating configs
+     */
+    FileBuildFunction DEFAULT_YAML_BUILD_FUNCTION = (filePath) -> {
+        McRPG mcRPG = McRPG.getInstance();
+        File file = new File(mcRPG.getDataFolder(), filePath);
+
+        if (!file.exists()) {
+            try {
+                IOUtil.saveResource(mcRPG, filePath, false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return file;
+    };
 
     /**
      * Builds (if non-existent) or loads the {@link File} that is found at the provided file path.
