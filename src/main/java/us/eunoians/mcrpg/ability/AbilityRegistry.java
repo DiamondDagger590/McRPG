@@ -10,11 +10,12 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
+import us.eunoians.mcrpg.util.pair.ImmutablePair;
+import us.eunoians.mcrpg.util.pair.Pair;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The central ability registry for McRPG.
@@ -26,12 +27,15 @@ public class AbilityRegistry {
 
     private final McRPG mcRPG;
     private final Map<NamespacedKey, Ability> abilities;
-    private final List<EntityAlliedFunction> entityAlliedFunctions;
+    //TODO find a new home for these two
+    private final Map<NamespacedKey, EntityAlliedFunction> entityAlliedFunctions;
+    private final Map<NamespacedKey, AlliedAttackCheckFunction> alliedAttackCheckFunctions;
 
     public AbilityRegistry(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
         abilities = new HashMap<>();
-        entityAlliedFunctions = new ArrayList<>();
+        entityAlliedFunctions = new HashMap<>();
+        alliedAttackCheckFunctions = new HashMap<>();
     }
 
     /**
@@ -116,12 +120,18 @@ public class AbilityRegistry {
     }
 
     /**
-     * Register the provided {@link EntityAlliedFunction} to be checked when {@link #areEntitiesAllied(Entity, Entity)} is called
+     * Register the provided {@link EntityAlliedFunction} to be checked when {@link #areEntitiesAllied(Entity, Entity)} is called.
+     * <p>
+     * This also registers {@link AlliedAttackCheckFunction#DEFAULT_ALLIED_ATTACK_CHECK_FUNCTION} as the default function to prevent allies
+     * from attacking each other. This behavior can be overridden by calling {@link #registerAlliedAttackCheckFunction(NamespacedKey, AlliedAttackCheckFunction)} with
+     * a different implementation.
      *
+     * @param namespacedKey        The {@link NamespacedKey} to register this {@link EntityAlliedFunction} against
      * @param entityAlliedFunction The {@link EntityAlliedFunction} to register
      */
-    public void registerEntityAlliedFunction(@NotNull EntityAlliedFunction entityAlliedFunction) {
-        entityAlliedFunctions.add(entityAlliedFunction);
+    public void registerEntityAlliedFunction(@NotNull NamespacedKey namespacedKey, @NotNull EntityAlliedFunction entityAlliedFunction) {
+        entityAlliedFunctions.put(namespacedKey, entityAlliedFunction);
+        registerAlliedAttackCheckFunction(namespacedKey, AlliedAttackCheckFunction.DEFAULT_ALLIED_ATTACK_CHECK_FUNCTION);
     }
 
     /**
@@ -135,17 +145,72 @@ public class AbilityRegistry {
      * @param entity2 The second {@link Entity} to check
      * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link EntityAlliedFunction EntityAlliedFunctions}.
      */
-    public boolean areEntitiesAllied(@NotNull Entity entity1, @NotNull Entity entity2) {
+    public boolean areEntitiesAllied(@NotNull Entity entity1, @NotNull Entity entity2, @NotNull NamespacedKey namespacedKey) {
 
-        for (EntityAlliedFunction entityAlliedFunction : entityAlliedFunctions) {
-
-            //We don't care about any others, something considers them allies so stop early
-            if (entityAlliedFunction.areAllies(entity1, entity2)) {
-                return true;
-            }
+        if (entityAlliedFunctions.containsKey(namespacedKey)) {
+            return entityAlliedFunctions.get(namespacedKey).areAllies(entity1, entity2);
         }
 
         return false;
     }
 
+    /**
+     * Checks to see if the two provided {@link Entity entities} are allies or not using registered {@link EntityAlliedFunction EntityAlliedFunctions}.
+     * <p>
+     * This allows 3rd party plugins to anonymously register handling for their specific definition of what an "ally" is.
+     * <p>
+     * The order of the two entities should not matter as well.
+     *
+     * @param entity1 The first {@link Entity} to check
+     * @param entity2 The second {@link Entity} to check
+     * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link EntityAlliedFunction EntityAlliedFunctions}.
+     */
+    public Pair<Boolean, Optional<NamespacedKey>> areEntitiesAllied(@NotNull Entity entity1, @NotNull Entity entity2) {
+
+        for (NamespacedKey namespacedKey : entityAlliedFunctions.keySet()) {
+
+            //We don't care about any others, something considers them allies so stop early
+            if (areEntitiesAllied(entity1, entity2, namespacedKey)) {
+                return ImmutablePair.of(true, Optional.of(namespacedKey));
+            }
+        }
+
+        return ImmutablePair.of(false, Optional.empty());
+    }
+
+    /**
+     * Register the provided {@link AlliedAttackCheckFunction} to be checked when {@link #areEntitiesAllied(Entity, Entity)} is called
+     *
+     * @param alliedAttackCheckFunction The {@link AlliedAttackCheckFunction} to register
+     */
+    public void registerAlliedAttackCheckFunction(@NotNull NamespacedKey namespacedKey, @NotNull AlliedAttackCheckFunction alliedAttackCheckFunction) {
+        alliedAttackCheckFunctions.put(namespacedKey, alliedAttackCheckFunction);
+    }
+
+    /**
+     * Checks to see if the two provided {@link Entity entities} should be unable to attack each other, assuming {@link #areEntitiesAllied(Entity, Entity)} returns
+     * {@code true}. This first checks that {@link #areEntitiesAllied(Entity, Entity)} returns {@code true} before proceeding to check the matching {@link AlliedAttackCheckFunction}.
+     * <p>
+     * This allows 3rd party plugins to anonymously register handling for their specific definition for when allies should be unable to attack each other.
+     * <p>
+     * The order of the two entities should not matter as well.
+     *
+     * @param entity1 The first {@link Entity} to check
+     * @param entity2 The second {@link Entity} to check
+     * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link AlliedAttackCheckFunction EntityAlliedFunctions}.
+     */
+    public Pair<Boolean, Optional<NamespacedKey>> shouldAlliesBeUnableToDamage(@NotNull Entity entity1, @NotNull Entity entity2) {
+
+        for (NamespacedKey namespacedKey : alliedAttackCheckFunctions.keySet()) {
+
+            AlliedAttackCheckFunction alliedAttackCheckFunction = alliedAttackCheckFunctions.get(namespacedKey);
+
+            //Require the entities to currently be allies and them to be unable to damage each other
+            if (areEntitiesAllied(entity1, entity2, namespacedKey) && alliedAttackCheckFunction.shouldBeUnableToDamage(entity1, entity2)) {
+                return ImmutablePair.of(true, Optional.of(namespacedKey));
+            }
+        }
+
+        return ImmutablePair.of(false, Optional.empty());
+    }
 }
