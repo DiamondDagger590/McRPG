@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.util.worldguard;
+package us.eunoians.mcrpg.worldguard;
 
 public class McRPGParser {
 

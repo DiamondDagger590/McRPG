@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.util.blockmeta;
+package us.eunoians.mcrpg.chunk;
 
 import org.bukkit.World;
 import org.bukkit.block.Block;

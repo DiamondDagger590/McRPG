@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package us.eunoians.mcrpg.util.blockmeta;
+package us.eunoians.mcrpg.chunk;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

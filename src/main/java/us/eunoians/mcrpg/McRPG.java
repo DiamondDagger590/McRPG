@@ -10,8 +10,8 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
-import us.eunoians.mcrpg.util.blockmeta.ChunkManager;
-import us.eunoians.mcrpg.util.blockmeta.ChunkManagerFactory;
+import us.eunoians.mcrpg.chunk.ChunkManager;
+import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
