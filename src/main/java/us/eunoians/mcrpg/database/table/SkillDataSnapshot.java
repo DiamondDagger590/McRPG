@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.database.tables;
+package us.eunoians.mcrpg.database.table;
 
 import com.gmail.nossr50.datatypes.skills.interfaces.Skill;
 import org.bukkit.NamespacedKey;

@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.database.tables;
+package us.eunoians.mcrpg.database.table;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -7,7 +7,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.api.leaderboards.LeaderboardData;
 import us.eunoians.mcrpg.api.leaderboards.PlayerLeaderboardData;
-import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.database.builder.DatabaseDriver;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.skills.Skill;
@@ -45,12 +45,12 @@ public class SkillDAO {
      * Attempts to create a new table for this DAO provided that the table does not already exist.
      *
      * @param connection      The {@link Connection} to use to attempt the creation
-     * @param databaseManager The {@link DatabaseManager} being used to attempt to create the table
+     * @param databaseManager The {@link McRPGDatabaseManager} being used to attempt to create the table
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
     @NotNull
-    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull McRPGDatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -178,7 +178,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -335,7 +335,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<SkillDataSnapshot> getAllPlayerSkillInformation(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -384,7 +384,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -445,7 +445,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -502,7 +502,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, Skills skillType) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
         AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
 
@@ -562,7 +562,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, SkillDataSnapshot skillDataSnapshot) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
         AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
         Skills skillType = skillDataSnapshot.getSkillType();
@@ -625,7 +625,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<Void> saveAllPlayerSkillInformation(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -653,7 +653,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<Void> savePlayerAbilityAttributes(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         UUID playerUUID = mcRPGPlayer.getUuid();
 
@@ -756,7 +756,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<Void> savePlayerAbilityToggles(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -819,7 +819,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<Void> savePlayerSkillData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         DatabaseDriver databaseDriver = databaseManager.getDriver();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
@@ -864,7 +864,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<LeaderboardData> getPlayerLeaderboardRankings(@NotNull Connection connection, @NotNull Skills skillType) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<LeaderboardData> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -910,7 +910,7 @@ public class SkillDAO {
     @NotNull
     public static CompletableFuture<LeaderboardData> getPlayerPowerLeaderboardRankings(@NotNull Connection connection) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<LeaderboardData> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {

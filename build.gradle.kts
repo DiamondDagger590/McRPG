@@ -34,17 +34,16 @@ java {
 repositories {
     mavenCentral()
     mavenLocal()
-    jcenter()
 
     maven("https://jitpack.io")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
     maven("https://maven.sk89q.com/repo/") //WorldGuard
     maven("https://nexus.wesjd.net/repository/thirdparty/")
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.codemc.org/repository/maven-public/")
     maven("https://repo.aikar.co/content/groups/aikar/")
 
     //Spigot
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.md-5.net/content/repositories/snapshots/")
     maven("https://repo.md-5.net/content/repositories/releases/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
@@ -58,6 +57,9 @@ dependencies {
 
     val spigotVersion = "1.18.2-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
+
+    val mccoreVersion = "1.0.0.1-SNAPSHOT"
+    implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     // TODO Look into new spigot yaml comment api
     val enumToYamlVersion = "1.0"
@@ -87,8 +89,8 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
-tasks.withType<ProcessResources>{
-    filesMatching("**/*.yml"){
+tasks.withType<ProcessResources> {
+    filesMatching("**/*.yml") {
         expand(project.properties)
     }
 }
@@ -130,6 +132,7 @@ tasks {
         mergeServiceFiles()
         relocate("de.tr7zw.changeme.nbtapi", "us.eunoians.mcrpg.nbtapi")
         relocate("org.bstats", "us.eunoians.mcrpg")
+        relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")
     }
 }
 

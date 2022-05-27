@@ -31,7 +31,7 @@ public class AbilityPendingAttribute extends AbilityAttribute<Boolean> {
     /**
      * Converts the provided {@link String} content into content that matches the type of {@link Boolean}.
      * <p>
-     * This serves to allow abstraction to exist and all values to be stored as strings inside of {@link us.eunoians.mcrpg.database.tables.SkillDAO}.
+     * This serves to allow abstraction to exist and all values to be stored as strings inside of {@link us.eunoians.mcrpg.database.table.SkillDAO}.
      *
      * @param stringContent The {@link String} content to be converted into type {@link Boolean}
      * @return The {@link String} content that is now converted into {@link Boolean} content

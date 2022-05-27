@@ -79,7 +79,7 @@ public class AbilityAttributeManager {
      * or an empty {@link Optional} if none are found.
      * <p>
      * The database name used is the {@link AbilityAttribute#getDatabaseKeyName()}, which is used to store the key/value pairs in the
-     * {@link us.eunoians.mcrpg.database.tables.SkillDAO}.
+     * {@link us.eunoians.mcrpg.database.table.SkillDAO}.
      *
      * @param attributeDatabaseName The {@link String} database name to use
      * @return An {@link Optional} containing the found {@link AbilityAttribute} or an empty {@link Optional} if no matches were found.

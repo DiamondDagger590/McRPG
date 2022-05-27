@@ -1,8 +1,8 @@
-package us.eunoians.mcrpg.database.tables;
+package us.eunoians.mcrpg.database.table;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.types.UnlockedAbilities;
 
@@ -35,12 +35,12 @@ public class PlayerLoadoutDAO {
      * Attempts to create a new table for this DAO provided that the table does not already exist.
      *
      * @param connection      The {@link Connection} to use to attempt the creation
-     * @param databaseManager The {@link DatabaseManager} being used to attempt to create the table
+     * @param databaseManager The {@link McRPGDatabaseManager} being used to attempt to create the table
      * @return A {@link CompletableFuture} containing a {@link Boolean} that is {@code true} if a new table was made,
      * or {@code false} otherwise.
      */
     @NotNull
-    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull DatabaseManager databaseManager) {
+    public static CompletableFuture<Boolean> attemptCreateTable(@NotNull Connection connection, @NotNull McRPGDatabaseManager databaseManager) {
 
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
 
@@ -138,7 +138,7 @@ public class PlayerLoadoutDAO {
     @NotNull
     public static CompletableFuture<Void> updateTable(@NotNull Connection connection) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
         boolean updateFromLegacy = databaseManager.getDatabase() != null && databaseManager.getDatabase().tableExists(LEGACY_LOADOUT_TABLE_NAME);
@@ -257,7 +257,7 @@ public class PlayerLoadoutDAO {
     @NotNull
     public static CompletableFuture<List<UnlockedAbilities>> getPlayerLoadout(@NotNull Connection connection, @NotNull UUID playerUUID) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -299,7 +299,7 @@ public class PlayerLoadoutDAO {
     @NotNull
     private static CompletableFuture<List<UnlockedAbilities>> getLoadoutByUUID(@NotNull Connection connection, @NotNull UUID loadoutUUID) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -345,7 +345,7 @@ public class PlayerLoadoutDAO {
     private static CompletableFuture<Optional<UUID>> getPlayerLoadoutUUID(@NotNull Connection connection, @NotNull UUID uuid) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
 
         int loadoutNumber = 1;//Same as above TODO
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Optional<UUID>> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -391,7 +391,7 @@ public class PlayerLoadoutDAO {
     @NotNull
     private static CompletableFuture<UUID> initializeNewPlayerLoadout(@NotNull Connection connection, @NotNull UUID uuid) {
 
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<UUID> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
@@ -429,7 +429,7 @@ public class PlayerLoadoutDAO {
 
         UUID playerUUID = mcRPGPlayer.getUuid();
         Logger logger = McRPG.getInstance().getLogger();
-        DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         List<UnlockedAbilities> abilityLoadout = new ArrayList<>(mcRPGPlayer.getAbilityLoadout()); //Make a copy because async stuffs and I don't want the ghost of Trigary to haunt me
 

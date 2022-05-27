@@ -1,6 +1,49 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.component.OnAttackAbility;
+import us.eunoians.mcrpg.entity.AbilityHolder;
 
-public class Bleed extends Ability {
+public class Bleed extends Ability implements OnAttackAbility {
+
+    private static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "bleed");
+
+    public Bleed() {
+        super(BLEED_KEY);
+    }
+
+    @Override
+    public void playActivationNoise() {
+
+    }
+
+    @Override
+    public void playActivationParticle() {
+
+    }
+
+    @Override
+    public void shouldActivate(@NotNull AbilityHolder abilityHolder, Object... data) {
+
+    }
+
+    @Override
+    public void activate(@NotNull AbilityHolder abilityHolder, Object... data) {
+
+    }
+
+    @Override
+    public boolean affectsEntity(@NotNull Entity entity) {
+        return false;
+    }
+
+    @Override
+    public void onEntityAttack(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent) {
+        OnAttackAbility.super.onEntityAttack(entityDamageByEntityEvent);
+    }
 }

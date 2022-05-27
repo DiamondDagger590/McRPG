@@ -1,24 +1,22 @@
 package us.eunoians.mcrpg;
 
+import com.diamonddagger590.mccore.CorePlugin;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.configuration.FileManager;
-import us.eunoians.mcrpg.database.DatabaseManager;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManager;
 import us.eunoians.mcrpg.util.blockmeta.ChunkManagerFactory;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
  */
-public class McRPG extends JavaPlugin {
+public class McRPG extends CorePlugin {
 
     private static McRPG instance;
     private static ChunkManager placeStore;
@@ -31,7 +29,6 @@ public class McRPG extends JavaPlugin {
 
     private FileManager fileManager;
 
-    private DatabaseManager databaseManager;
     private AbilityRegistry abilityRegistry;
     private AbilityAttributeManager abilityAttributeManager;
 
@@ -59,9 +56,13 @@ public class McRPG extends JavaPlugin {
         abilityAttributeManager = new AbilityAttributeManager(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void onDisable() {
-        databaseManager.getDatabaseExecutorService().shutdown();
+    public void initializeDatabase() {
+        this.databaseManager = new McRPGDatabaseManager(this);
+        this.databaseManager.initializeDatabase();
     }
 
     /**
@@ -70,21 +71,6 @@ public class McRPG extends JavaPlugin {
     private void initializeFiles() {
         fileManager = new FileManager(this);
         fileManager.initializeAndLoadFiles();
-    }
-
-    /**
-     * Initializes the databases for McRPG
-     *
-     * @return A {@link CompletableFuture} that is completed whenever all databases are created and/or updated
-     */
-    @NotNull
-    private CompletableFuture<Void> initializeDatabase() {
-        this.databaseManager = new DatabaseManager(this);
-        return databaseManager.initialize()
-            .exceptionally(throwable -> {
-                throwable.printStackTrace();
-                return null;
-            });
     }
 
     /**
@@ -138,16 +124,6 @@ public class McRPG extends JavaPlugin {
     @NotNull
     public FileManager getFileManager() {
         return fileManager;
-    }
-
-    /**
-     * Get the {@link DatabaseManager} used by McRPG
-     *
-     * @return The {@link DatabaseManager} used by McRPG
-     */
-    @NotNull
-    public DatabaseManager getDatabaseManager() {
-        return databaseManager;
     }
 
     /**
