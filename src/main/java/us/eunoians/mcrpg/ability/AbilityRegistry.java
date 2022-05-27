@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.ability;
 
+import com.diamonddagger590.mccore.pair.ImmutablePair;
+import com.diamonddagger590.mccore.pair.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -10,8 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
-import us.eunoians.mcrpg.util.pair.ImmutablePair;
-import us.eunoians.mcrpg.util.pair.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
