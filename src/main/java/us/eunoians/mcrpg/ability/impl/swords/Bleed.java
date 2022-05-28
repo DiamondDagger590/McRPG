@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability.impl.swords;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -28,22 +29,19 @@ public class Bleed extends Ability implements OnAttackAbility {
     }
 
     @Override
-    public void shouldActivate(@NotNull AbilityHolder abilityHolder, Object... data) {
-
-    }
-
-    @Override
     public void activate(@NotNull AbilityHolder abilityHolder, Object... data) {
 
     }
 
     @Override
     public boolean affectsEntity(@NotNull Entity entity) {
-        return false;
+        return entity instanceof LivingEntity;
     }
 
     @Override
-    public void onEntityAttack(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent) {
-        OnAttackAbility.super.onEntityAttack(entityDamageByEntityEvent);
+    public boolean shouldActivateOnAttack(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent) {
+
+
+        return OnAttackAbility.super.shouldActivateOnAttack(entityDamageByEntityEvent);
     }
 }

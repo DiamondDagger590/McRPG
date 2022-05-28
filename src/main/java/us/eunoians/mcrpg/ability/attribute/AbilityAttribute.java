@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.ability.attribute;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.types.GenericAbility;
 
 import java.util.Optional;
 
@@ -40,7 +39,7 @@ public abstract class AbilityAttribute<T> {
     @NotNull
     private final T content;
     @NotNull
-    private final Optional<GenericAbility> abilityType;
+    private final Optional<NamespacedKey> abilityType;
 
     protected AbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey) {
         this.databaseKeyName = databaseKeyName;
@@ -56,7 +55,7 @@ public abstract class AbilityAttribute<T> {
         this.abilityType = Optional.empty();
     }
 
-    protected AbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content, @NotNull GenericAbility abilityType) {
+    protected AbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content, @NotNull NamespacedKey abilityType) {
         this.databaseKeyName = databaseKeyName;
         this.namespacedKey = namespacedKey;
         this.content = content;
@@ -142,17 +141,17 @@ public abstract class AbilityAttribute<T> {
     }
 
     /**
-     * Gets the {@link us.eunoians.mcrpg.types.AbilityType} that this current {@link AbilityAttribute} instance is storing data for.
+     * Gets the {@link NamespacedKey} that this current {@link AbilityAttribute} instance is storing data for.
      * <p>
      * In the case that this is the default instance provided by {@link AbilityAttributeManager#getAttribute(NamespacedKey)}, this will return an empty
      * {@link Optional}, as no value is being represented.
      *
-     * @return An {@link Optional} containing the {@link us.eunoians.mcrpg.types.AbilityType} that is having data represented by this attribute,
+     * @return An {@link Optional} containing the {@link NamespacedKey} that is having data represented by this attribute,
      * or an empty {@link Optional} if this is a default instance provided by {@link AbilityAttributeManager#getAttribute(NamespacedKey)} which represents
      * a blank attribute.
      */
     @NotNull
-    public Optional<GenericAbility> getAbilityType() {
+    public Optional<NamespacedKey> getAbilityType() {
         return abilityType;
     }
 
