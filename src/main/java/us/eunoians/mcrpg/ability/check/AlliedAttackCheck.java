@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability;
+package us.eunoians.mcrpg.ability.check;
 
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -11,9 +11,9 @@ import org.jetbrains.annotations.NotNull;
  * pvp setting
  */
 @FunctionalInterface
-public interface AlliedAttackCheckFunction {
+public interface AlliedAttackCheck {
 
-    AlliedAttackCheckFunction DEFAULT_ALLIED_ATTACK_CHECK_FUNCTION = (@NotNull Entity entity1, @NotNull Entity entity2) -> true;
+    AlliedAttackCheck DEFAULT_ALLIED_ATTACK_CHECK_FUNCTION = (@NotNull Entity entity1, @NotNull Entity entity2) -> true;
 
     /**
      * Checks to see if the two {@link Entity entities} are unable to attack each other if they are "allies".

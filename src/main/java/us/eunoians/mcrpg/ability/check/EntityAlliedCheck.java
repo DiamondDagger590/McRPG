@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability;
+package us.eunoians.mcrpg.ability.check;
 
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Such definitions could be two players in a party together or in a Town together and so forth.
  */
 @FunctionalInterface
-public interface EntityAlliedFunction {
+public interface EntityAlliedCheck {
 
     /**
      * Checks to see if the two provided {@link Entity entities} are considered "allies" in an anonymous context.
