@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.configuration.files;
+package us.eunoians.mcrpg.configuration.file;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -9,17 +9,19 @@ import us.eunoians.mcrpg.configuration.FileType;
  */
 public enum ExpPermissionsFile implements McRPGConfigurationFile {
 
-    PERMISSION_CONFIGURATION_SECTION("", ""),
-    PERMISSION_NODE("%s.permission-node", "mcrpg.expbuff.miner"),
-    APPLICABLE_SKILL_MODIFIER("%s.affected-skills.%s", 0.5),
-    PRIORITY("%s.priority", 0);
+    PERMISSION_CONFIGURATION_SECTION("", "", false),
+    PERMISSION_NODE("%s.permission-node", "mcrpg.expbuff.miner", true),
+    APPLICABLE_SKILL_MODIFIER("%s.affected-skills.%s", 0.5, true),
+    PRIORITY("%s.priority", 0, true);
 
     private final String path;
     private final Object defaultValue;
+    private final boolean acceptsPlaceholders;
 
-    ExpPermissionsFile(@NotNull String path, @NotNull Object defaultValue) {
+    ExpPermissionsFile(@NotNull String path, @NotNull Object defaultValue, boolean acceptsPlaceholders) {
         this.path = path;
         this.defaultValue = defaultValue;
+        this.acceptsPlaceholders = acceptsPlaceholders;
     }
 
     /**
@@ -38,6 +40,14 @@ public enum ExpPermissionsFile implements McRPGConfigurationFile {
     @NotNull
     public Object getDefaultValue() {
         return defaultValue;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean acceptsPlaceholders() {
+        return acceptsPlaceholders;
     }
 
     /**

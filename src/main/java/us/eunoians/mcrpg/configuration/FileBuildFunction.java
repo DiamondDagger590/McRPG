@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.configuration;
 
+import com.diamonddagger590.mccore.file.IOUtil;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.util.IOUtil;
 
 import java.io.File;
 

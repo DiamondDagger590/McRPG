@@ -9,7 +9,7 @@ import com.diamonddagger590.mccore.exception.CoreDatabaseInitializationException
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.files.MainConfigurationFile;
+import us.eunoians.mcrpg.configuration.file.MainConfigurationFile;
 import us.eunoians.mcrpg.database.table.PlayerDataDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.PlayerSettingsDAO;

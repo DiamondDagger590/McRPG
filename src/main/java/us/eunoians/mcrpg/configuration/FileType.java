@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.configuration;
 import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.files.MainConfigurationFile;
+import us.eunoians.mcrpg.configuration.file.MainConfigurationFile;
 
 import java.io.File;
 
@@ -23,10 +23,15 @@ public enum FileType {
 
         return file;
     }),
-
     //The exp_perms.yml
     EXP_PERMISSIONS(McRPG.getInstance().getDataFolder() + File.separator + "exp_perms.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
 
+    /*
+        Skills
+     */
+
+    //Swords
+    SWORDS_CONFIG(McRPG.getInstance().getDataFolder() + File.separator + "skill_configuration" + File.separator + "swords_configuration.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
     ;
 
     private final String path;
