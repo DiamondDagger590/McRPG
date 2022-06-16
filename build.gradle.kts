@@ -23,7 +23,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.2.0"
+version = "1.5.2.1"
 group = "us.eunoians"
 
 java {
@@ -56,14 +56,14 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     implementation("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val spigotVersion = "1.18.1-R0.1-SNAPSHOT"
+    val spigotVersion = "1.19-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
 
     // TODO Look into new spigot yaml comment api
     val enumToYamlVersion = "1.0"
     implementation("com.github.DiamondDagger590:EnumToYaml:$enumToYamlVersion")
 
-    val nbtAPIVersion = "2.9.2"
+    val nbtAPIVersion = "2.10.0"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val bstatsVersion = "2.2.1"
