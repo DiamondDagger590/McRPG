@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.player.PlayerManager;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -8,17 +9,18 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
-import us.eunoians.mcrpg.configuration.FileManager;
-import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
+import us.eunoians.mcrpg.configuration.FileManager;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.listener.PlayerJoinListener;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
  */
 public class McRPG extends CorePlugin {
 
-    private static McRPG instance;
     private static ChunkManager placeStore;
 
     private static final int id = 6386;
@@ -32,6 +34,8 @@ public class McRPG extends CorePlugin {
     private AbilityRegistry abilityRegistry;
     private AbilityAttributeManager abilityAttributeManager;
 
+    private AbilityHolderTracker entityManager;
+
     private boolean healthBarPluginEnabled = false;
     private boolean mvdwEnabled = false;
     private boolean papiEnabled = false;
@@ -43,16 +47,22 @@ public class McRPG extends CorePlugin {
     @Override
     public void onEnable() {
 
-        instance = this;
+        super.onEnable();
+
         placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
 
         initializeFiles();
+
+        entityManager = new AbilityHolderTracker(this);
+        playerManager = new PlayerManager(this);
 
         abilityRegistry = new AbilityRegistry(this);
 
         preloadNBTAPI();
         setupHooks();
         initializeDatabase();
+        registerListeners();
+
         abilityAttributeManager = new AbilityAttributeManager(this);
     }
 
@@ -106,6 +116,10 @@ public class McRPG extends CorePlugin {
         }
     }
 
+    private void registerListeners() {
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
+    }
+
     /**
      * Preloads the NBTItem classes, as this can cause lag on the first call for some reason
      */
@@ -126,6 +140,17 @@ public class McRPG extends CorePlugin {
         return fileManager;
     }
 
+    @NotNull
+    public AbilityHolderTracker getEntityManager() {
+        return entityManager;
+    }
+
+    @Override
+    @NotNull
+    public McRPGDatabaseManager getDatabaseManager() {
+        return (McRPGDatabaseManager) databaseManager;
+    }
+
     /**
      * Gets the {@link AbilityRegistry} used by McRPG
      *
@@ -138,9 +163,6 @@ public class McRPG extends CorePlugin {
 
     @NotNull
     public static McRPG getInstance() {
-        if (instance == null) {
-            throw new NullPointerException("Plugin was not initialized.");
-        }
-        return instance;
+        return (McRPG) CorePlugin.getInstance();
     }
 }

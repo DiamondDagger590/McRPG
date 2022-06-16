@@ -1,1 +1,54 @@
-skill_enabled: true
+skill-enabled: true
+permissions:
+  restrict-skill-to-permission: false
+  use-permissions-to-unlock-abilities: false
+  use-permissions-to-activate-abilities: false
+leveling:
+  level-up-equation: '2000+(20*(skill_level))'
+  maximum-skill-level: 1000
+experience:
+  material-modifiers:
+    WOODEN_SWORD: 1.0
+    STONE_SWORD: 1.05
+    GOLDEN_SWORD: 1.5
+    IRON_SWORD: 1.1
+    DIAMOND_SWORD: 1.15
+    NETHERITE_SWORD: 1.25
+ability-configuration:
+  bleed:
+    activation-equation: (swords_level)*.033
+    minimum-health-allowed: 1
+    bleed-base-duration: 6
+    bleed-base-frequency: 2
+    bleed-base-damage: 1
+    grant-bleed-immunity-after-expire: true
+    bleed-immunity-duration: 5
+    bleed-damage-pierce-armor: true
+  bleed-plus:
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    #At what level can each tier be obtained? Tier 1 is the tier that the ability is unlocked at
+    tier-unlock-levels:
+      1: 50
+      2: 125
+      3: 250
+      4: 375
+      5: 500
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - bleed-plus-base-damage-increase: integer
+      # - bleed-plus-activation-chance: decimal from 0.0-100.0
+      # - bleed-plus-damage-boost: integer
+      all-tiers:
+        #How much should the damage of Bleed increase by before adding possible additional damage
+        bleed-plus-base-damage-increase: 1
+      tier-1:
+        #The chance of Bleed Plus activating bonus damage whenever Bleed is inflicted (on top of the base damage increase)
+        bleed-plus-activation-chance: 30.0
+        #How much should the damage of Bleed increase if Bleed Plus activates (on top of the base damage increase)
+        bleed-plus-damage-boost: 1
+      tier-2:
+        bleed-plus-activation-chance: 40.0
+        bleed-plus-damage-boost: 1

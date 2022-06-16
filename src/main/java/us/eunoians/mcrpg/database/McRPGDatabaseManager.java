@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.PlayerSettingsDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -28,7 +29,13 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
         DatabaseBuilder dbBuilder = new McRPGDatabaseBuilder(driver);
 
-        dbBuilder.setPath(plugin.getDataFolder().getAbsolutePath() + "/database/mcrpg");
+        File databaseFolder = new File(plugin.getDataFolder().getPath() + File.separator + "database");
+
+        if(!databaseFolder.exists()){
+            databaseFolder.mkdir();
+        }
+
+        dbBuilder.setPath(databaseFolder.getPath() + File.separator + "mcrpg");
 
         Optional<Database> initializedDatabase = Optional.empty();
 
@@ -39,6 +46,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
             e.printStackTrace();
         }
 
+        createTables();
         return initializedDatabase;
     };
 
@@ -52,8 +60,11 @@ public class McRPGDatabaseManager extends DatabaseManager {
             databaseDriver = Optional.of(DatabaseDriver.SQLITE);
         }
         this.driver = databaseDriver.get();
+
         populateCreateFunctions();
         populateUpdateFunctions();
+
+
     }
 
     /**

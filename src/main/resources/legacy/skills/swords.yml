@@ -20,7 +20,7 @@ MaterialBonus:
   NETHERITE_SWORD: 1.4
 #How much exp should be awarded per mob. This exp is multiplied by the damage dealt.
 #Ex) Spider gives 50 exp. Deal 3 damage, get 150 exp with a wood sword
-ExpAwardedPerMob:
+ ExpAwardedPerMob:
   OTHER: 5
   BAT: 5
   BLAZE: 30
@@ -28,7 +28,7 @@ ExpAwardedPerMob:
   SPIDER: 20
   CHICKEN: 10
   COW: 10
-  MUSROOM_COW: 15
+  MUSHROOM_COW: 15
   PIG: 10
   SHEEP: 10
   RABBIT: 10

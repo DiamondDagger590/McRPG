@@ -1,17 +1,15 @@
 package us.eunoians.mcrpg.database.table;
 
+import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
-import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.types.UnlockedAbilities;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -145,193 +143,191 @@ public class PlayerLoadoutDAO {
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            if (TableVersionHistoryDAO.isAcceptingQueries()) {
+            CompletableFuture<Void> loadoutTableFuture = new CompletableFuture<>();
 
-                CompletableFuture<Void> loadoutTableFuture = new CompletableFuture<>();
+            TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_TABLE_NAME)
+                //Update the mcrpg_loadout_info first
+                .thenAccept(lastStoredVersion -> {
 
-                TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_TABLE_NAME)
-                    //Update the mcrpg_loadout_info first
-                    .thenAccept(lastStoredVersion -> {
-
-                        if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                            loadoutTableFuture.complete(null);
-                            return;
-                        }
-
-                        isAcceptingQueries = false;
-
-                        //Adds table to our tracking
-                        if (lastStoredVersion == 0) {
-
-                            if (updateFromLegacy) {
-
-                                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_TABLE_NAME + " SELECT RANDOM_UUID() AS loadout_id, uuid AS player_uuid, 1 AS player_loadout_id  FROM " + LEGACY_LOADOUT_TABLE_NAME)) {
-                                    preparedStatement.executeUpdate();
-                                }
-                                catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_TABLE_NAME, 1);
-                            lastStoredVersion = 1;
-                        }
-
-                        isAcceptingQueries = true;
-
+                    if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
                         loadoutTableFuture.complete(null);
+                        return;
+                    }
 
-                    });
+                    isAcceptingQueries = false;
 
-                loadoutTableFuture.thenAccept(unused -> {
+                    //Adds table to our tracking
+                    if (lastStoredVersion == 0) {
 
-                    TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_SLOTS_TABLE_NAME).thenAccept(lastStoredSlotsVersion -> {
+                        if (updateFromLegacy) {
 
-                        if (lastStoredSlotsVersion >= CURRENT_TABLE_VERSION) {
-                            completableFuture.complete(null);
-                            return;
-                        }
-
-                        isAcceptingQueries = false;
-
-                        //Adds table to our tracking
-                        if (lastStoredSlotsVersion == 0) {
-
-                            if (updateFromLegacy) {
-
-                                try {
-
-                                    //Get the amount of slots in the legacy table
-                                    int slotAmount = 0;
-                                    try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'" + LEGACY_LOADOUT_TABLE_NAME.toUpperCase(Locale.ROOT) + "' ")) {
-
-                                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                                            //Check the last column to get the highest amount of slots
-                                            resultSet.last();
-
-                                            //Get the slot amount
-                                            slotAmount = Integer.parseInt(resultSet.getString("column_name").toLowerCase(Locale.ROOT).replace("slot", ""));
-                                        }
-                                    }
-
-                                    //Go through all legacy slot columns and convert them to new
-                                    for (int i = 1; i <= slotAmount; i++) {
-
-                                        try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + LOADOUT_SLOTS_TABLE_NAME + " SELECT loadout.loadout_id AS loadout_id, " + i + " AS slot_number, legacy.slot" + i + " AS ability_id FROM " + LOADOUT_TABLE_NAME + " AS loadout JOIN " + LEGACY_LOADOUT_TABLE_NAME + " AS legacy ON legacy.uuid = loadout.player_uuid WHERE legacy.slot" + i + " IS NOT NULL AND legacy.slot" + i + " <> 'null';")) {
-                                            preparedStatement.executeUpdate();
-                                        }
-                                    }
-                                }
-                                catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
+                            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_TABLE_NAME + " SELECT RANDOM_UUID() AS loadout_id, uuid AS player_uuid, 1 AS player_loadout_id  FROM " + LEGACY_LOADOUT_TABLE_NAME)) {
+                                preparedStatement.executeUpdate();
                             }
-
-                            TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_SLOTS_TABLE_NAME, 1);
-                            lastStoredSlotsVersion = 1;
+                            catch (SQLException e) {
+                                e.printStackTrace();
+                            }
                         }
 
-                        isAcceptingQueries = true;
+                        TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_TABLE_NAME, 1);
+                        lastStoredVersion = 1;
+                    }
 
-                        completableFuture.complete(null);
-                    });
+                    isAcceptingQueries = true;
+
+                    loadoutTableFuture.complete(null);
 
                 });
-            }
-        });
 
-        return completableFuture;
-    }
+            loadoutTableFuture.thenAccept(unused -> {
 
-    /**
-     * Gets a {@link List} of {@link UnlockedAbilities} that the provided player {@link UUID} has equipped.
-     * <p>
-     * This list is ordered by the slots that the player put them in, so this will persist order for player experience.
-     *
-     * @param connection The {@link Connection} that will be running the query
-     * @param playerUUID The {@link UUID} of the player to get the loadout for
-     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the
-     * provided player {@link UUID} has equipped.
-     */
-    @NotNull
-    public static CompletableFuture<List<UnlockedAbilities>> getPlayerLoadout(@NotNull Connection connection, @NotNull UUID playerUUID) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
+                TableVersionHistoryDAO.getLatestVersion(connection, LOADOUT_SLOTS_TABLE_NAME).thenAccept(lastStoredSlotsVersion -> {
 
-        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
-
-            //We are getting the first loadout since we only support single loadouts right now
-            getPlayerLoadoutUUID(connection, playerUUID).thenAccept(optional -> {
-
-                //If loadout exists, return it. Otherwise return an empty list
-                if (optional.isPresent()) {
-                    UUID loadoutUUID = optional.get();
-                    getLoadoutByUUID(connection, loadoutUUID).thenAccept(completableFuture::complete);
-                }
-                else {
-                    initializeNewPlayerLoadout(connection, playerUUID).thenAccept(unused -> completableFuture.complete(new ArrayList<>())).exceptionally(throwable -> {
-                        McRPG.getInstance().getLogger().log(Level.WARNING, "Player with UUID of " + playerUUID + " attempted to generate a new loadout but failed. Please report the following error to the McRPG developer.");
-                        throwable.printStackTrace();
-                        completableFuture.complete(new ArrayList<>());
-                        return null;
-                    }); //Create a new loadout for the player for the next time we query. Only complete once it's done so that way we can't make multiple calls and have weird edge cases
-                }
-            });
-        });
-
-        return completableFuture;
-    }
-
-    /**
-     * Gets a {@link List} of {@link UnlockedAbilities} that the provided loadout {@link UUID} has stored in it.
-     * <p>
-     * Keep in mind a player must have a loadout but a loadout doesn't always have a player. This method is private as
-     * we don't really want to expose the internals of how the loadout system works. So a developer should access {@link #getPlayerLoadout(Connection, UUID)}
-     * to get the loadout of a player. That method will use {@link #getPlayerLoadoutUUID(Connection, UUID)} to get the {@link UUID} for the loadout belonging
-     * to that player, then {@link #getLoadoutByUUID(Connection, UUID)} will be called using that loadout {@link UUID} in one seamless call for the developer.
-     *
-     * @param connection  The {@link Connection} that will be running the query
-     * @param loadoutUUID The {@link UUID} of the loadout
-     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the provided loadout {@link UUID} has stored in it.
-     */
-    @NotNull
-    private static CompletableFuture<List<UnlockedAbilities>> getLoadoutByUUID(@NotNull Connection connection, @NotNull UUID loadoutUUID) {
-
-        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
-
-            List<UnlockedAbilities> unlockedAbilities = new ArrayList<>();
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ABILITY_ID, SLOT_NUMBER FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE LOADOUT_ID = ? ORDER BY SLOT_NUMBER;")) {
-
-                preparedStatement.setString(1, loadoutUUID.toString());
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                    while (resultSet.next()) {
-
-                        UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(resultSet.getString("ability_id"));
-
-                        //Handle duplicates from any existing tables that didn't have constraints
-                        if(!unlockedAbilities.contains(unlockedAbility)) {
-                            unlockedAbilities.add(unlockedAbility);
-                        }
+                    if (lastStoredSlotsVersion >= CURRENT_TABLE_VERSION) {
+                        completableFuture.complete(null);
+                        return;
                     }
-                }
-            }
-            catch (SQLException e) {
-                completableFuture.completeExceptionally(e);
-            }
 
-            completableFuture.complete(unlockedAbilities);
+                    isAcceptingQueries = false;
+
+                    //Adds table to our tracking
+                    if (lastStoredSlotsVersion == 0) {
+
+                        if (updateFromLegacy) {
+
+                            try {
+
+                                //Get the amount of slots in the legacy table
+                                int slotAmount = 0;
+                                try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'" + LEGACY_LOADOUT_TABLE_NAME.toUpperCase(Locale.ROOT) + "' ")) {
+
+                                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                                        //Check the last column to get the highest amount of slots
+                                        resultSet.last();
+
+                                        //Get the slot amount
+                                        slotAmount = Integer.parseInt(resultSet.getString("column_name").toLowerCase(Locale.ROOT).replace("slot", ""));
+                                    }
+                                }
+
+                                //Go through all legacy slot columns and convert them to new
+                                for (int i = 1; i <= slotAmount; i++) {
+
+                                    try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + LOADOUT_SLOTS_TABLE_NAME + " SELECT loadout.loadout_id AS loadout_id, " + i + " AS slot_number, legacy.slot" + i + " AS ability_id FROM " + LOADOUT_TABLE_NAME + " AS loadout JOIN " + LEGACY_LOADOUT_TABLE_NAME + " AS legacy ON legacy.uuid = loadout.player_uuid WHERE legacy.slot" + i + " IS NOT NULL AND legacy.slot" + i + " <> 'null';")) {
+                                        preparedStatement.executeUpdate();
+                                    }
+                                }
+                            }
+                            catch (SQLException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_SLOTS_TABLE_NAME, 1);
+                        lastStoredSlotsVersion = 1;
+                    }
+
+                    isAcceptingQueries = true;
+
+                    completableFuture.complete(null);
+                });
+
+            });
+
         });
 
         return completableFuture;
     }
+
+//    /**
+//     * Gets a {@link List} of {@link UnlockedAbilities} that the provided player {@link UUID} has equipped.
+//     * <p>
+//     * This list is ordered by the slots that the player put them in, so this will persist order for player experience.
+//     *
+//     * @param connection The {@link Connection} that will be running the query
+//     * @param playerUUID The {@link UUID} of the player to get the loadout for
+//     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the
+//     * provided player {@link UUID} has equipped.
+//     */
+//    @NotNull
+//    public static CompletableFuture<List<UnlockedAbilities>> getPlayerLoadout(@NotNull Connection connection, @NotNull UUID playerUUID) { //TODO make this return multiple or make an overloaded method to take in an int for a specific loadout number
+//
+//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+//        CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
+//
+//        databaseManager.getDatabaseExecutorService().submit(() -> {
+//
+//            //We are getting the first loadout since we only support single loadouts right now
+//            getPlayerLoadoutUUID(connection, playerUUID).thenAccept(optional -> {
+//
+//                //If loadout exists, return it. Otherwise return an empty list
+//                if (optional.isPresent()) {
+//                    UUID loadoutUUID = optional.get();
+//                    getLoadoutByUUID(connection, loadoutUUID).thenAccept(completableFuture::complete);
+//                }
+//                else {
+//                    initializeNewPlayerLoadout(connection, playerUUID).thenAccept(unused -> completableFuture.complete(new ArrayList<>())).exceptionally(throwable -> {
+//                        McRPG.getInstance().getLogger().log(Level.WARNING, "Player with UUID of " + playerUUID + " attempted to generate a new loadout but failed. Please report the following error to the McRPG developer.");
+//                        throwable.printStackTrace();
+//                        completableFuture.complete(new ArrayList<>());
+//                        return null;
+//                    }); //Create a new loadout for the player for the next time we query. Only complete once it's done so that way we can't make multiple calls and have weird edge cases
+//                }
+//            });
+//        });
+//
+//        return completableFuture;
+//    }
+//
+//    /**
+//     * Gets a {@link List} of {@link UnlockedAbilities} that the provided loadout {@link UUID} has stored in it.
+//     * <p>
+//     * Keep in mind a player must have a loadout but a loadout doesn't always have a player. This method is private as
+//     * we don't really want to expose the internals of how the loadout system works. So a developer should access {@link #getPlayerLoadout(Connection, UUID)}
+//     * to get the loadout of a player. That method will use {@link #getPlayerLoadoutUUID(Connection, UUID)} to get the {@link UUID} for the loadout belonging
+//     * to that player, then {@link #getLoadoutByUUID(Connection, UUID)} will be called using that loadout {@link UUID} in one seamless call for the developer.
+//     *
+//     * @param connection  The {@link Connection} that will be running the query
+//     * @param loadoutUUID The {@link UUID} of the loadout
+//     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the provided loadout {@link UUID} has stored in it.
+//     */
+//    @NotNull
+//    private static CompletableFuture<List<UnlockedAbilities>> getLoadoutByUUID(@NotNull Connection connection, @NotNull UUID loadoutUUID) {
+//
+//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+//        CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
+//
+//        databaseManager.getDatabaseExecutorService().submit(() -> {
+//
+//            List<UnlockedAbilities> unlockedAbilities = new ArrayList<>();
+//
+//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ABILITY_ID, SLOT_NUMBER FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE LOADOUT_ID = ? ORDER BY SLOT_NUMBER;")) {
+//
+//                preparedStatement.setString(1, loadoutUUID.toString());
+//
+//                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+//
+//                    while (resultSet.next()) {
+//
+//                        UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(resultSet.getString("ability_id"));
+//
+//                        //Handle duplicates from any existing tables that didn't have constraints
+//                        if (!unlockedAbilities.contains(unlockedAbility)) {
+//                            unlockedAbilities.add(unlockedAbility);
+//                        }
+//                    }
+//                }
+//            }
+//            catch (SQLException e) {
+//                completableFuture.completeExceptionally(e);
+//            }
+//
+//            completableFuture.complete(unlockedAbilities);
+//        });
+//
+//        return completableFuture;
+//    }
 
     /**
      * Gets the loadout {@link UUID} that belongs to the provided player {@link UUID}
@@ -427,11 +423,11 @@ public class PlayerLoadoutDAO {
     @NotNull
     public static CompletableFuture<Void> savePlayerLoadout(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
 
-        UUID playerUUID = mcRPGPlayer.getUuid();
+        UUID playerUUID = mcRPGPlayer.getUUID();
         Logger logger = McRPG.getInstance().getLogger();
         McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-        List<UnlockedAbilities> abilityLoadout = new ArrayList<>(mcRPGPlayer.getAbilityLoadout()); //Make a copy because async stuffs and I don't want the ghost of Trigary to haunt me
+//        List<UnlockedAbilities> abilityLoadout = new ArrayList<>(mcRPGPlayer.getAbilityLoadout()); //Make a copy because async stuffs and I don't want the ghost of Trigary to haunt me
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
@@ -450,13 +446,13 @@ public class PlayerLoadoutDAO {
 
                             preparedStatement.setString(1, loadoutUUID.toString());
 
-                            for (int i = 0; i < abilityLoadout.size(); i++) {
-                                UnlockedAbilities abilityType = abilityLoadout.get(i);
-                                preparedStatement.setInt(2, i);
-                                preparedStatement.setString(3, abilityType.getName());
-
-                                preparedStatement.executeUpdate();
-                            }
+//                            for (int i = 0; i < abilityLoadout.size(); i++) {
+//                                UnlockedAbilities abilityType = abilityLoadout.get(i);
+//                                preparedStatement.setInt(2, i);
+//                                preparedStatement.setString(3, abilityType.getName());
+//
+//                                preparedStatement.executeUpdate();
+//                            }
                         }
                     }
                     catch (SQLException e) {

@@ -11,7 +11,7 @@ import java.io.File;
  * of files using {@link de.articdive.enum_to_yaml.interfaces.ConfigurationEnum} or standard .yml files.
  */
 @FunctionalInterface
-public interface FileBuildFunction {
+public interface FileBuildFunction { //TODO add support for https://github.com/tchristofferson/Config-Updater or https://github.com/Carleslc/Simple-YAML
 
     /**
      * The default YAML configuration build function that is used by most non-auto updating configs

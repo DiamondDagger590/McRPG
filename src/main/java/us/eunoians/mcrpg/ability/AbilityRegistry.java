@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.ability.check.AlliedAttackCheck;
 import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ import java.util.Optional;
  * The central ability registry for McRPG.
  * <p>
  * This is where abilities will be registered and unregistered, as well the central location for
- * the creation of {@link AbilityData} for {@link us.eunoians.mcrpg.entity.AbilityHolder ability holders}.
+ * the creation of {@link AbilityData} for {@link AbilityHolder ability holders}.
  */
 public class AbilityRegistry {
 
@@ -45,7 +46,7 @@ public class AbilityRegistry {
      * listener via {@link org.bukkit.plugin.PluginManager#registerEvents(Listener, Plugin)}.
      * <p>
      * Once registered, developers can create instances of {@link AbilityData} for the {@link Ability}
-     * that can then be used by {@link us.eunoians.mcrpg.entity.AbilityHolder ability holders}.
+     * that can then be used by {@link AbilityHolder ability holders}.
      * <p>
      * This method also calls a {@link AbilityRegisterEvent} after the ability has been registered.
      *
@@ -85,7 +86,7 @@ public class AbilityRegistry {
      * {@link NamespacedKey} from {@link Ability#getAbilityKey()}. This process includes removing it from local storage
      * and unregistering any listeners that the {@link Ability} contains, provided the {@link Ability} was registered already.
      * <p>
-     * Note that this does not remove {@link AbilityData} from existing {@link us.eunoians.mcrpg.entity.AbilityHolder ability holders},
+     * Note that this does not remove {@link AbilityData} from existing {@link AbilityHolder ability holders},
      * and will still allow the ability to be saved and exist in loadouts. This just prevents the ability from being loaded for future holders
      * and the ability will not be able to activate at all.
      * <p>
@@ -103,7 +104,7 @@ public class AbilityRegistry {
      * and unregistering any listeners that the {@link Ability} associated with this {@link NamespacedKey} contains,
      * provided the {@link Ability} was registered already.
      * <p>
-     * Note that this does not remove {@link AbilityData} from existing {@link us.eunoians.mcrpg.entity.AbilityHolder ability holders},
+     * Note that this does not remove {@link AbilityData} from existing {@link AbilityHolder ability holders},
      * and will still allow the ability to be saved and exist in loadouts. This just prevents the ability from being loaded for future holders
      * and the ability will not be able to activate at all.
      * <p>

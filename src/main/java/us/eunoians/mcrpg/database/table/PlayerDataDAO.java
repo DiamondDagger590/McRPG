@@ -1,11 +1,12 @@
 package us.eunoians.mcrpg.database.table;
 
+import com.diamonddagger590.mccore.database.builder.DatabaseDriver;
+import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
-import us.eunoians.mcrpg.database.builder.DatabaseDriver;
-import us.eunoians.mcrpg.players.McRPGPlayer;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -116,27 +117,23 @@ public class PlayerDataDAO {
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            if (TableVersionHistoryDAO.isAcceptingQueries()) {
+            TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME).thenAccept(lastStoredVersion -> {
 
-                TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME).thenAccept(lastStoredVersion -> {
+                if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+                    completableFuture.complete(null);
+                    return;
+                }
 
-                    if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                        completableFuture.complete(null);
-                        return;
-                    }
+                isAcceptingQueries = false;
 
-                    isAcceptingQueries = false;
+                //Adds table to our tracking
+                if (lastStoredVersion == 0) {
+                    TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+                    lastStoredVersion = 1;
+                }
 
-                    //Adds table to our tracking
-                    if (lastStoredVersion == 0) {
-                        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
-                        lastStoredVersion = 1;
-                    }
-
-                    isAcceptingQueries = true;
-                });
-
-            }
+                isAcceptingQueries = true;
+            });
 
             completableFuture.complete(null);
         });
@@ -242,19 +239,19 @@ public class PlayerDataDAO {
                                                                                                                          " (uuid, power_level, ability_points, redeemable_exp, redeemable_levels, " +
                                                                                                                          "divine_escape_exp_debuff, divine_escape_damage_debuff, divine_escape_exp_end_time, divine_escape_damage_end_time, " +
                                                                                                                          "replace_ability_cooldown_time, boosted_exp, party_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
-                preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
-                preparedStatement.setInt(2, mcRPGPlayer.getPowerLevel());
-                preparedStatement.setInt(3, mcRPGPlayer.getAbilityPoints());
-                preparedStatement.setInt(4, mcRPGPlayer.getRedeemableExp());
-                preparedStatement.setInt(5, mcRPGPlayer.getRedeemableLevels());
-                preparedStatement.setDouble(6, mcRPGPlayer.getDivineEscapeExpDebuff());
-                preparedStatement.setDouble(7, mcRPGPlayer.getDivineEscapeDamageDebuff());
-                preparedStatement.setLong(8, mcRPGPlayer.getDivineEscapeExpEnd());
-                preparedStatement.setLong(9, mcRPGPlayer.getDivineEscapeDamageEnd());
-                preparedStatement.setLong(10, mcRPGPlayer.getEndTimeForReplaceCooldown());
-                preparedStatement.setInt(11, mcRPGPlayer.getBoostedExp());
-                UUID partyID = mcRPGPlayer.getPartyID();
-                preparedStatement.setString(12, (partyID == null ? "nu" : partyID.toString()));
+                preparedStatement.setString(1, mcRPGPlayer.getUUID().toString());
+//                preparedStatement.setInt(2, mcRPGPlayer.getPowerLevel());
+//                preparedStatement.setInt(3, mcRPGPlayer.getAbilityPoints());
+//                preparedStatement.setInt(4, mcRPGPlayer.getRedeemableExp());
+//                preparedStatement.setInt(5, mcRPGPlayer.getRedeemableLevels());
+//                preparedStatement.setDouble(6, mcRPGPlayer.getDivineEscapeExpDebuff());
+//                preparedStatement.setDouble(7, mcRPGPlayer.getDivineEscapeDamageDebuff());
+//                preparedStatement.setLong(8, mcRPGPlayer.getDivineEscapeExpEnd());
+//                preparedStatement.setLong(9, mcRPGPlayer.getDivineEscapeDamageEnd());
+//                preparedStatement.setLong(10, mcRPGPlayer.getEndTimeForReplaceCooldown());
+//                preparedStatement.setInt(11, mcRPGPlayer.getBoostedExp());
+//                UUID partyID = mcRPGPlayer.getPartyID();
+//                preparedStatement.setString(12, (partyID == null ? "nu" : partyID.toString()));
 
                 preparedStatement.executeUpdate();
                 completableFuture.complete(null);
@@ -310,9 +307,9 @@ public class PlayerDataDAO {
         }
 
         /**
-         * Gets the {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party}
+         * Gets the {@link UUID} of the player's {@link}
          *
-         * @return The {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party} or {@code null} if the
+         * @return The {@link UUID} of the player's {@link} or {@code null} if the
          * player isn't in a party
          */
         @Nullable
@@ -321,9 +318,9 @@ public class PlayerDataDAO {
         }
 
         /**
-         * Sets the {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party} for this snapshot
+         * Sets the {@link UUID} of the player's {@link} for this snapshot
          *
-         * @param partyUUID The {@link UUID} of the player's {@link us.eunoians.mcrpg.party.Party} for this snapshot
+         * @param partyUUID The {@link UUID} of the player's {@link} for this snapshot
          *                  or {@code null} if the player isn't in a party
          */
         void setPartyUUID(@Nullable UUID partyUUID) {

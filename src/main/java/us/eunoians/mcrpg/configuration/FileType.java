@@ -14,9 +14,9 @@ import java.io.File;
 public enum FileType {
 
     //The main config.yml used by McRPG
-    MAIN_CONFIG(McRPG.getInstance().getDataFolder() + File.separator + "config.yml", (filePath) -> {
+    MAIN_CONFIG("config.yml", (filePath) -> {
 
-        File file = new File(filePath);
+        File file = new File(McRPG.getInstance().getDataFolder(), filePath);
         new EnumConfigurationBuilder(file, MainConfigurationFile.class)
             .setWidth(100000)
             .build();
@@ -24,14 +24,14 @@ public enum FileType {
         return file;
     }),
     //The exp_perms.yml
-    EXP_PERMISSIONS(McRPG.getInstance().getDataFolder() + File.separator + "exp_perms.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
+    EXP_PERMISSIONS("exp_perms.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
 
     /*
         Skills
      */
 
     //Swords
-    SWORDS_CONFIG(McRPG.getInstance().getDataFolder() + File.separator + "skill_configuration" + File.separator + "swords_configuration.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
+    SWORDS_CONFIG("skill_configuration" + File.separator + "swords_configuration.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
     ;
 
     private final String path;

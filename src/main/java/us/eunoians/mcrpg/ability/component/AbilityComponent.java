@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.ability.component;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.entity.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 public interface AbilityComponent {
 

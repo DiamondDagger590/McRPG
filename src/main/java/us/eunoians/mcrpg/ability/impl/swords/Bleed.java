@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.component.OnAttackAbility;
-import us.eunoians.mcrpg.entity.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 public class Bleed extends Ability implements OnAttackAbility {
 
@@ -40,8 +40,6 @@ public class Bleed extends Ability implements OnAttackAbility {
 
     @Override
     public boolean shouldActivateOnAttack(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent) {
-
-
         return OnAttackAbility.super.shouldActivateOnAttack(entityDamageByEntityEvent);
     }
 }

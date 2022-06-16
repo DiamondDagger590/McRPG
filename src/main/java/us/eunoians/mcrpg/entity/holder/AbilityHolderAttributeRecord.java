@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.entity;
+package us.eunoians.mcrpg.entity.holder;
 
 import org.bukkit.NamespacedKey;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;

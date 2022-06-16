@@ -1,12 +1,11 @@
 package us.eunoians.mcrpg.database.table;
 
+import com.diamonddagger590.mccore.database.builder.DatabaseDriver;
+import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
-import us.eunoians.mcrpg.database.builder.DatabaseDriver;
-import us.eunoians.mcrpg.players.McRPGPlayer;
-import us.eunoians.mcrpg.types.DisplayType;
-import us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -111,27 +110,23 @@ public class PlayerSettingsDAO {
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
-            if (TableVersionHistoryDAO.isAcceptingQueries()) {
+            TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME).thenAccept(lastStoredVersion -> {
 
-                TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME).thenAccept(lastStoredVersion -> {
+                if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+                    completableFuture.complete(null);
+                    return;
+                }
 
-                    if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                        completableFuture.complete(null);
-                        return;
-                    }
+                isAcceptingQueries = false;
 
-                    isAcceptingQueries = false;
+                //Adds table to our tracking
+                if (lastStoredVersion == 0) {
+                    TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+                    lastStoredVersion = 1;
+                }
 
-                    //Adds table to our tracking
-                    if (lastStoredVersion == 0) {
-                        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
-                        lastStoredVersion = 1;
-                    }
-
-                    isAcceptingQueries = true;
-                });
-
-            }
+                isAcceptingQueries = true;
+            });
 
             completableFuture.complete(null);
         });
@@ -170,8 +165,8 @@ public class PlayerSettingsDAO {
                         boolean ignoreTips = resultSet.getBoolean("ignore_tips");
                         boolean autoDenyNewAbilities = resultSet.getBoolean("auto_deny");
                         boolean requireEmptyOffhandToReady = resultSet.getBoolean("require_empty_offhand");
-                        DisplayType displayType = DisplayType.fromString(resultSet.getString("display_type"));
-                        MobHealthbarUtils.MobHealthbarType mobHealthbarType = MobHealthbarUtils.MobHealthbarType.fromString(resultSet.getString("health_type"));
+//                        DisplayType displayType = DisplayType.fromString(resultSet.getString("display_type"));
+//                        MobHealthbarUtils.MobHealthbarType mobHealthbarType = MobHealthbarUtils.MobHealthbarType.fromString(resultSet.getString("health_type"));
                         int unarmedIgnoreSlot = resultSet.getInt("unarmed_ignore_slot");
                         boolean autoAcceptPartyTeleports = resultSet.getBoolean("auto_accept_party_teleports");
 
@@ -179,8 +174,8 @@ public class PlayerSettingsDAO {
                         playerSettingsSnapshot.setIgnoreTips(ignoreTips);
                         playerSettingsSnapshot.setAutoDeny(autoDenyNewAbilities);
                         playerSettingsSnapshot.setRequireOffHand(requireEmptyOffhandToReady);
-                        playerSettingsSnapshot.setDisplayType(displayType);
-                        playerSettingsSnapshot.setHealthbarType(mobHealthbarType);
+//                        playerSettingsSnapshot.setDisplayType(displayType);
+//                        playerSettingsSnapshot.setHealthbarType(mobHealthbarType);
                         playerSettingsSnapshot.setUnarmedIgnoreSlot(unarmedIgnoreSlot);
                         playerSettingsSnapshot.setAutoAcceptPartyTeleports(autoAcceptPartyTeleports);
 
@@ -224,15 +219,15 @@ public class PlayerSettingsDAO {
                                                                                            : connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, keep_hand, ignore_tips, auto_deny, require_empty_offhand, display_type, health_type, unarmed_ignore_slot, auto_accept_party_teleports) " +
                                                                                                                          "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
 
-                preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
-                preparedStatement.setBoolean(2, mcRPGPlayer.isKeepHandEmpty());
-                preparedStatement.setBoolean(3, mcRPGPlayer.isIgnoreTips());
-                preparedStatement.setBoolean(4, mcRPGPlayer.isAutoDeny());
-                preparedStatement.setBoolean(5, mcRPGPlayer.isRequireEmptyOffHand());
-                preparedStatement.setString(6, mcRPGPlayer.getDisplayType().getName());
-                preparedStatement.setString(7, mcRPGPlayer.getHealthbarType().getName());
-                preparedStatement.setInt(8, mcRPGPlayer.getUnarmedIgnoreSlot());
-                preparedStatement.setBoolean(9, mcRPGPlayer.isAutoAcceptPartyInvites());
+//                preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
+//                preparedStatement.setBoolean(2, mcRPGPlayer.isKeepHandEmpty());
+//                preparedStatement.setBoolean(3, mcRPGPlayer.isIgnoreTips());
+//                preparedStatement.setBoolean(4, mcRPGPlayer.isAutoDeny());
+//                preparedStatement.setBoolean(5, mcRPGPlayer.isRequireEmptyOffHand());
+//                preparedStatement.setString(6, mcRPGPlayer.getDisplayType().getName());
+//                preparedStatement.setString(7, mcRPGPlayer.getHealthbarType().getName());
+//                preparedStatement.setInt(8, mcRPGPlayer.getUnarmedIgnoreSlot());
+//                preparedStatement.setBoolean(9, mcRPGPlayer.isAutoAcceptPartyInvites());
 
                 preparedStatement.executeUpdate();
 
@@ -267,15 +262,15 @@ public class PlayerSettingsDAO {
         private boolean ignoreTips;
         private boolean autoDeny;
         private boolean requireOffHand;
-        private DisplayType displayType;
-        private MobHealthbarUtils.MobHealthbarType healthbarType;
+//        private DisplayType displayType;
+//        private MobHealthbarUtils.MobHealthbarType healthbarType;
         private int unarmedIgnoreSlot;
         private boolean autoAcceptPartyTeleports;
 
         PlayerSettingsSnapshot(@NotNull UUID uuid) {
             this.uuid = uuid;
-            this.displayType = DisplayType.SCOREBOARD;
-            this.healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
+//            this.displayType = DisplayType.SCOREBOARD;
+//            this.healthbarType = MobHealthbarUtils.MobHealthbarType.BAR;
             this.unarmedIgnoreSlot = -1;
         }
 
@@ -361,43 +356,43 @@ public class PlayerSettingsDAO {
             this.requireOffHand = requireOffHand;
         }
 
-        /**
-         * Gets the snapshotted setting for the player's {@link DisplayType} preference
-         *
-         * @return The {@link DisplayType} of the player's desired display setting for this snapshot
-         */
-        @NotNull
-        public DisplayType getDisplayType() {
-            return displayType;
-        }
-
-        /**
-         * Sets the snapshotted value for the player's {@link DisplayType} preference
-         *
-         * @param displayType The snapshotted value for the player's {@link DisplayType} preference
-         */
-        void setDisplayType(@NotNull DisplayType displayType) {
-            this.displayType = displayType;
-        }
-
-        /**
-         * Gets the snapshotted setting for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
-         *
-         * @return The {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} of the player's desired display setting for this snapshot
-         */
-        @NotNull
-        public MobHealthbarUtils.MobHealthbarType getHealthbarType() {
-            return healthbarType;
-        }
-
-        /**
-         * Sets the snapshotted value for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
-         *
-         * @param healthbarType The snapshotted value for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
-         */
-        void setHealthbarType(@NotNull MobHealthbarUtils.MobHealthbarType healthbarType) {
-            this.healthbarType = healthbarType;
-        }
+//        /**
+//         * Gets the snapshotted setting for the player's {@link DisplayType} preference
+//         *
+//         * @return The {@link DisplayType} of the player's desired display setting for this snapshot
+//         */
+//        @NotNull
+//        public DisplayType getDisplayType() {
+//            return displayType;
+//        }
+//
+//        /**
+//         * Sets the snapshotted value for the player's {@link DisplayType} preference
+//         *
+//         * @param displayType The snapshotted value for the player's {@link DisplayType} preference
+//         */
+//        void setDisplayType(@NotNull DisplayType displayType) {
+//            this.displayType = displayType;
+//        }
+//
+//        /**
+//         * Gets the snapshotted setting for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
+//         *
+//         * @return The {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} of the player's desired display setting for this snapshot
+//         */
+//        @NotNull
+//        public MobHealthbarUtils.MobHealthbarType getHealthbarType() {
+//            return healthbarType;
+//        }
+//
+//        /**
+//         * Sets the snapshotted value for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
+//         *
+//         * @param healthbarType The snapshotted value for the player's {@link us.eunoians.mcrpg.util.mcmmo.MobHealthbarUtils.MobHealthbarType} preference
+//         */
+//        void setHealthbarType(@NotNull MobHealthbarUtils.MobHealthbarType healthbarType) {
+//            this.healthbarType = healthbarType;
+//        }
 
         /**
          * Gets the snapshotted setting for keeping a slot in the player's hotbar empty for unarmed
