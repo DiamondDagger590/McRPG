@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.util.mcmmo;
 
-import com.gmail.nossr50.util.StringUtils;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
@@ -34,7 +33,7 @@ public final class MobHealthbarUtils {
    */
   public static String fixDeathMessage(String deathMessage, Player player) {
     EntityDamageEvent lastDamageCause = player.getLastDamageCause();
-    String replaceString = lastDamageCause instanceof EntityDamageByEntityEvent ? StringUtils.getPrettyEntityTypeString(((EntityDamageByEntityEvent) lastDamageCause).getDamager().getType()) : "a mob";
+    String replaceString = lastDamageCause instanceof EntityDamageByEntityEvent ? getPrettyEntityTypeString(((EntityDamageByEntityEvent) lastDamageCause).getDamager().getType()) : "a mob";
 
     return deathMessage.replaceAll("(?:(\u00A7(?:[0-9A-FK-ORa-fk-or]))*(?:[\u2764\u25A0]{1,10})){1,2}", replaceString);
   }
