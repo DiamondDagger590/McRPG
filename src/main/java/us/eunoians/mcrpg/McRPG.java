@@ -66,6 +66,11 @@ public class McRPG extends CorePlugin {
         abilityAttributeManager = new AbilityAttributeManager(this);
     }
 
+    @Override
+    public void onDisable() {
+        super.onDisable();
+    }
+
     /**
      * {@inheritDoc}
      */

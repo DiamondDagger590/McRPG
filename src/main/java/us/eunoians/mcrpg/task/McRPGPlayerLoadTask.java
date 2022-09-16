@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class McRPGPlayerLoadTask extends PlayerLoadTask {
@@ -50,10 +51,10 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
     protected void onPlayerLoadFail() {
         getPlugin().getLogger().log(Level.SEVERE, ChatColor.RED + "There was an issue loading in the McRPG player data for player with UUID: " + getCorePlayer().getUUID());
 
-        Player player = getCorePlayer().getAsBukkitPlayer();
+        Optional<Player> player = getCorePlayer().getAsBukkitPlayer();
 
-        if(player != null && player.isOnline()) {
-            player.sendMessage(ChatColor.RED + "There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!");
+        if(player.isPresent() && player.get().isOnline()) {
+            player.get().sendMessage(ChatColor.RED + "There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!");
         }
     }
 

@@ -18,6 +18,7 @@ public class McRPGPlayer extends CorePlayer {
 
     public McRPGPlayer(@NotNull UUID uuid) {
         super(uuid);
+        skillHolder = new SkillHolder(getUUID());
     }
 
     public SkillHolder asSkillHolder(){

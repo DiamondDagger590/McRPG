@@ -46,13 +46,12 @@ public class McRPGDatabaseManager extends DatabaseManager {
             e.printStackTrace();
         }
 
-        createTables();
         return initializedDatabase;
     };
 
     public McRPGDatabaseManager(@NotNull McRPG plugin) {
         super(plugin);
-        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(McRPG.getInstance().getFileManager()
+        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager()
                                                                                    .getFileConfiguration(FileType.MAIN_CONFIG).getString(MainConfigurationFile.DATABASE_DRIVER.getPath(), (String) MainConfigurationFile.DATABASE_DRIVER.getDefaultValue()));
 
         if (databaseDriver.isEmpty()) {
@@ -63,8 +62,6 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
         populateCreateFunctions();
         populateUpdateFunctions();
-
-
     }
 
     /**
@@ -137,16 +134,8 @@ public class McRPGDatabaseManager extends DatabaseManager {
         return databaseInitializationFunction;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
-    public DatabaseDriver getDatabaseDriver() {
-        return driver;
-    }
-
-    @NotNull
     public DatabaseDriver getDriver() {
         return this.driver;
     }
