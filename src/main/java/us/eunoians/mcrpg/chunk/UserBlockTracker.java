@@ -3,13 +3,14 @@ package us.eunoians.mcrpg.chunk;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 
 /**
  * This code is not mine. It is copyright from the original mcMMO allowed for use by their license. Modified 2/16/22
  * It was released under the GPLv3 license
  *
  * Contains blockstore methods that are safe for external plugins to access.
- * An instance can be retrieved via {@link us.eunoians.mcrpg.McRPG#getPlaceStore()}
+ * An instance can be retrieved via {@link McRPG#getChunkStore()}
  */
 public interface UserBlockTracker {
 

@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
+import us.eunoians.mcrpg.chunk.ChunkStore;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
@@ -164,6 +165,16 @@ public class McRPG extends CorePlugin {
     @NotNull
     public AbilityRegistry getAbilityRegistry() {
         return abilityRegistry;
+    }
+
+    /**
+     * Gets the {@link ChunkStore} used by McRPG
+     *
+     * @return The {@link ChunkStore} used by McRPG
+     */
+    @NotNull
+    public ChunkStore getChunkStore() {
+        return getChunkStore();
     }
 
     @NotNull
