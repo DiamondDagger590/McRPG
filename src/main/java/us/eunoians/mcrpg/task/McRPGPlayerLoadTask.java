@@ -10,6 +10,10 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import java.util.Optional;
 import java.util.logging.Level;
 
+/**
+ * A {@link PlayerLoadTask} that loads McRPG player data
+ */
+//TODO javadoc
 public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
     public McRPGPlayerLoadTask(@NotNull McRPG plugin, @NotNull McRPGPlayer mcRPGPlayer) {
@@ -29,7 +33,10 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
     @Override
     protected boolean loadPlayer() {
+        //TODO actually load data lmfao
         getPlugin().getLogger().log(Level.INFO, "Player data loaded.");
+
+        //Add bleed for testing
         return true;
     }
 

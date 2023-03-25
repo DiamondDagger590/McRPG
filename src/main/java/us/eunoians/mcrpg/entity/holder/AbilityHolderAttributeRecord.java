@@ -8,6 +8,7 @@ import java.util.Map;
 /**
  *
  */
+//TODO javadoc
 public record AbilityHolderAttributeRecord(Map<NamespacedKey, AbilityAttribute<?>> abilityAttributesMap) {
 
 }

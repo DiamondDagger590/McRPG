@@ -17,6 +17,7 @@ public abstract class Ability implements Listener {
         this.abilityKey = abilityKey;
     }
 
+    //TODO javadoc
     @NotNull
     public NamespacedKey getAbilityKey() {
         return abilityKey;

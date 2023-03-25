@@ -146,6 +146,7 @@ public class AbilityRegistry {
      *
      * @param entity1 The first {@link Entity} to check
      * @param entity2 The second {@link Entity} to check
+     * @param namespacedKey The {@link NamespacedKey} of the allied function to check
      * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link EntityAlliedCheck EntityAlliedFunctions}.
      */
     public boolean areEntitiesAllied(@NotNull Entity entity1, @NotNull Entity entity2, @NotNull NamespacedKey namespacedKey) {

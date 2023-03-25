@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability.component;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 
+//TODO javadoc
 public interface TargetableEntityAbility extends AbilityComponent {
 
     /**

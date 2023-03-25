@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability.component;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
+//TODO javadoc
 public interface AbilityComponent {
 
     public void playActivationNoise();

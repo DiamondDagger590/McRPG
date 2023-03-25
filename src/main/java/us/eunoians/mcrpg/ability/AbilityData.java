@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+//TODO javadoc
 public class AbilityData {
 
     private final NamespacedKey abilityKey;

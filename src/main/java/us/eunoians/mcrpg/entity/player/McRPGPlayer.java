@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 
 import java.util.UUID;
 
+//TODO javadoc
 public class McRPGPlayer extends CorePlayer {
 
     private SkillHolder skillHolder;

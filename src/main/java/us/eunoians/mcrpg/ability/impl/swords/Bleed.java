@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -30,7 +31,7 @@ public class Bleed extends Ability implements OnAttackAbility {
 
     @Override
     public void activate(@NotNull AbilityHolder abilityHolder, Object... data) {
-
+        Bukkit.broadcastMessage("1");
     }
 
     @Override

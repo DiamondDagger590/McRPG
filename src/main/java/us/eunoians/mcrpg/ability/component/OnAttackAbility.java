@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.entity.AbilityHolderTracker;
  */
 public interface OnAttackAbility extends DamageableAbility {
 
+    //TODO javadoc
     public boolean affectsEntity(@NotNull Entity entity);
 
     public default boolean shouldActivateOnAttack(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent){

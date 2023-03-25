@@ -9,6 +9,9 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.task.McRPGPlayerLoadTask;
 
+/**
+ * Starts the {@link McRPGPlayerLoadTask} to load in the player
+ */
 public class PlayerJoinListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
