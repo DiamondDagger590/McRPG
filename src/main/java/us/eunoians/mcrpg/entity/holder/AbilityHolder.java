@@ -1,13 +1,10 @@
 package us.eunoians.mcrpg.entity.holder;
 
-import com.google.common.collect.ImmutableMap;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 
-import javax.print.attribute.standard.MediaSize;
 import java.util.*;
 
 /**
