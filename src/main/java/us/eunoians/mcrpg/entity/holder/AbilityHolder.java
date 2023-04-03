@@ -1,23 +1,38 @@
 package us.eunoians.mcrpg.entity.holder;
 
+import com.google.common.collect.ImmutableMap;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 
+import javax.print.attribute.standard.MediaSize;
 import java.util.*;
 
-//TODO javadoc
+/**
+ * A "holder" is a representation of an {@link org.bukkit.entity.Entity} for McRPG.
+ * <p>
+ * An AbilityHolder is the basic level of holders, where an entity that is this holder type
+ * can have {@link Ability abilities} associated with them. This is designed to allow for non-player
+ * entities to have abilities, which wasn't possible in the previous iteration of this plugin.
+ * <p>
+ * To take things further, there are the classes {@link LoadoutHolder} and {@link SkillHolder}. A {@link SkillHolder}
+ * is one that has a levelable skill which usually can unlock more abilities. There is also {@link LoadoutHolder}
+ * which restricts the abilities that an entity can use. By nature, an AbilityHolder can use any number of abilities
+ * that they have. If an ability holder is also a loadout holder, then they are restricted to using only the abilities in
+ * their loadout.
+ */
 public class AbilityHolder {
 
     private final UUID uuid;
     private final Set<NamespacedKey> availableAbilities;
-    private final Map<NamespacedKey, AbilityHolderAttributeRecord> abilityAttributeMap;
+    private final Map<NamespacedKey, AbilityData> abilityDataMap;
 
     public AbilityHolder(@NotNull UUID uuid) {
         this.uuid = uuid;
         this.availableAbilities = new HashSet<>();
-        this.abilityAttributeMap = new HashMap<>();
+        this.abilityDataMap = new HashMap<>();
     }
 
     /**
@@ -88,28 +103,82 @@ public class AbilityHolder {
         return availableAbilities.contains(abilityKey);
     }
 
+    /**
+     * Checks to see if this ability holder has {@link AbilityData} that matches
+     * the provided {@link Ability}
+     *
+     * @param ability The {@link Ability} to check for
+     * @return {@code true} if the provided {@link Ability} has {@link AbilityData}
+     * associated with it for this holder.
+     */
+    public boolean hasAbilityData(@NotNull Ability ability) {
+        return hasAbilityData(ability.getAbilityKey());
+    }
+
+    /**
+     * Checks to see if this ability holder has {@link AbilityData} that matches
+     * the provided {@link NamespacedKey}
+     *
+     * @param namespacedKey The {@link NamespacedKey} to check for
+     * @return {@code true} if the provided {@link NamespacedKey} has {@link AbilityData}
+     * associated with it for this holder.
+     */
+    public boolean hasAbilityData(@NotNull NamespacedKey namespacedKey) {
+        return abilityDataMap.containsKey(namespacedKey);
+    }
+
+    /**
+     * Gets the {@link AbilityData} associated with the provided {@link Ability}
+     *
+     * @param ability The {@link Ability} to get the associated {@link AbilityData} for
+     * @return An {@link Optional} that will be empty if no match is found, or will contain
+     * the {@link AbilityData} that is associated with the provided {@link Ability}
+     */
     @NotNull
-    public Optional<AbilityHolderAttributeRecord> getAbilityAttributes(@NotNull Ability ability) {
-        return getAbilityAttributes(ability.getAbilityKey());
+    public Optional<AbilityData> getAbilityData(@NotNull Ability ability) {
+        return getAbilityData(ability.getAbilityKey());
     }
 
+    /**
+     * Gets the {@link AbilityData} associated with the provided {@link NamespacedKey}
+     *
+     * @param namespacedKey The {@link NamespacedKey} to get the associated {@link AbilityData} for
+     * @return An {@link Optional} that will be empty if no match is found, or will contain
+     * the {@link AbilityData} that is associated with the provided {@link NamespacedKey}
+     */
     @NotNull
-    public Optional<AbilityHolderAttributeRecord> getAbilityAttributes(@NotNull NamespacedKey namespacedKey) {
-        return Optional.ofNullable(abilityAttributeMap.get(namespacedKey));
+    public Optional<AbilityData> getAbilityData(@NotNull NamespacedKey namespacedKey) {
+        return Optional.ofNullable(abilityDataMap.get(namespacedKey));
     }
 
-    public void updateAbilityAttribute(@NotNull Ability ability, @NotNull AbilityAttribute<?> abilityAttribute) {
-        updateAbilityAttribute(ability.getAbilityKey(), abilityAttribute);
+    /**
+     * Adds the provided {@link AbilityData} to this ability holder
+     *
+     * @param abilityData The {@link AbilityData} to add to this ability holder
+     */
+    public void addAbilityData(@NotNull AbilityData abilityData) {
+        abilityDataMap.put(abilityData.getAbilityKey(), abilityData);
     }
 
-    public void updateAbilityAttribute(@NotNull NamespacedKey abilityKey, @NotNull AbilityAttribute<?> abilityAttribute) {
-
-        AbilityHolderAttributeRecord abilityHolderAttributeRecord = abilityAttributeMap.containsKey(abilityKey)
-                ? abilityAttributeMap.get(abilityKey)
-                : new AbilityHolderAttributeRecord(new HashMap<>());
-
-        abilityHolderAttributeRecord.abilityAttributesMap().put(abilityAttribute.getNamespacedKey(), abilityAttribute);
-        abilityAttributeMap.put(abilityKey, abilityHolderAttributeRecord);
+    /**
+     * Removes the {@link AbilityData} for the associated {@link Ability} provided
+     * that there is any stored in this holder.
+     *
+     * @param ability The {@link Ability} to remove the associated {@link AbilityData}
+     *                for.
+     */
+    public void removeAbilityData(@NotNull Ability ability) {
+        removeAbilityData(ability.getAbilityKey());
     }
 
+    /**
+     * Removes the {@link AbilityData} for the associated {@link NamespacedKey} provided
+     * that there is any stored in this holder.
+     *
+     * @param namespacedKey The {@link NamespacedKey} to remove the associated {@link AbilityData}
+     *                      for.
+     */
+    public void removeAbilityData(@NotNull NamespacedKey namespacedKey) {
+        abilityDataMap.remove(namespacedKey);
+    }
 }
