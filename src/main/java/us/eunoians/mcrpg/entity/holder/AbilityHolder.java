@@ -2,10 +2,17 @@ package us.eunoians.mcrpg.entity.holder;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.exception.AbilityNotRegisteredException;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * A "holder" is a representation of an {@link org.bukkit.entity.Entity} for McRPG.
@@ -57,7 +64,9 @@ public class AbilityHolder {
      * @param abilityKey The {@link Ability} to add as an available ability for this holder to use.
      */
     public void addAvailableAbility(@NotNull NamespacedKey abilityKey) {
-        availableAbilities.add(abilityKey);
+        if (validateAbilityExists(abilityKey)) {
+            availableAbilities.add(abilityKey);
+        }
     }
 
     /**
@@ -77,7 +86,9 @@ public class AbilityHolder {
      *                   holder to use.
      */
     public void removeAvailableAbility(@NotNull NamespacedKey abilityKey) {
-        availableAbilities.remove(abilityKey);
+        if (validateAbilityExists(abilityKey)) {
+            availableAbilities.remove(abilityKey);
+        }
     }
 
     /**
@@ -97,7 +108,7 @@ public class AbilityHolder {
      * @return {@code true} if the provided {@link NamespacedKey} is available for this holder to use
      */
     public boolean isAbilityAvailable(@NotNull NamespacedKey abilityKey) {
-        return availableAbilities.contains(abilityKey);
+        return validateAbilityExists(abilityKey) && availableAbilities.contains(abilityKey);
     }
 
     /**
@@ -116,12 +127,12 @@ public class AbilityHolder {
      * Checks to see if this ability holder has {@link AbilityData} that matches
      * the provided {@link NamespacedKey}
      *
-     * @param namespacedKey The {@link NamespacedKey} to check for
+     * @param abilityKey The {@link NamespacedKey} to check for
      * @return {@code true} if the provided {@link NamespacedKey} has {@link AbilityData}
      * associated with it for this holder.
      */
-    public boolean hasAbilityData(@NotNull NamespacedKey namespacedKey) {
-        return abilityDataMap.containsKey(namespacedKey);
+    public boolean hasAbilityData(@NotNull NamespacedKey abilityKey) {
+        return validateAbilityExists(abilityKey) && abilityDataMap.containsKey(abilityKey);
     }
 
     /**
@@ -139,13 +150,17 @@ public class AbilityHolder {
     /**
      * Gets the {@link AbilityData} associated with the provided {@link NamespacedKey}
      *
-     * @param namespacedKey The {@link NamespacedKey} to get the associated {@link AbilityData} for
+     * @param abilityKey The {@link NamespacedKey} to get the associated {@link AbilityData} for
      * @return An {@link Optional} that will be empty if no match is found, or will contain
      * the {@link AbilityData} that is associated with the provided {@link NamespacedKey}
      */
     @NotNull
-    public Optional<AbilityData> getAbilityData(@NotNull NamespacedKey namespacedKey) {
-        return Optional.ofNullable(abilityDataMap.get(namespacedKey));
+    public Optional<AbilityData> getAbilityData(@NotNull NamespacedKey abilityKey) {
+        if (validateAbilityExists(abilityKey)) {
+            return Optional.ofNullable(abilityDataMap.get(abilityKey));
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -154,7 +169,9 @@ public class AbilityHolder {
      * @param abilityData The {@link AbilityData} to add to this ability holder
      */
     public void addAbilityData(@NotNull AbilityData abilityData) {
-        abilityDataMap.put(abilityData.getAbilityKey(), abilityData);
+        if (validateAbilityExists(abilityData.getAbilityKey())) {
+            abilityDataMap.put(abilityData.getAbilityKey(), abilityData);
+        }
     }
 
     /**
@@ -172,10 +189,20 @@ public class AbilityHolder {
      * Removes the {@link AbilityData} for the associated {@link NamespacedKey} provided
      * that there is any stored in this holder.
      *
-     * @param namespacedKey The {@link NamespacedKey} to remove the associated {@link AbilityData}
-     *                      for.
+     * @param abilityKey The {@link NamespacedKey} to remove the associated {@link AbilityData}
+     *                   for.
      */
-    public void removeAbilityData(@NotNull NamespacedKey namespacedKey) {
-        abilityDataMap.remove(namespacedKey);
+    public void removeAbilityData(@NotNull NamespacedKey abilityKey) {
+        if (validateAbilityExists(abilityKey)) {
+            abilityDataMap.remove(abilityKey);
+        }
+    }
+
+    private boolean validateAbilityExists(@NotNull NamespacedKey abilityKey) {
+        if (!McRPG.getInstance().getAbilityRegistry().isAbilityRegistered(abilityKey)) {
+            throw new AbilityNotRegisteredException(abilityKey);
+        } else {
+            return true;
+        }
     }
 }
