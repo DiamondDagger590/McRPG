@@ -9,12 +9,14 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.listener.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.PlayerJoinListener;
 
 /**
@@ -65,6 +67,9 @@ public class McRPG extends CorePlugin {
         registerListeners();
 
         abilityAttributeManager = new AbilityAttributeManager(this);
+
+        //TODO remove after testing
+        getAbilityRegistry().registerAbility(new Bleed());
     }
 
     @Override
@@ -124,6 +129,7 @@ public class McRPG extends CorePlugin {
 
     private void registerListeners() {
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
     }
 
     /**

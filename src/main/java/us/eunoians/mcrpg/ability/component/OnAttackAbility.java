@@ -25,7 +25,6 @@ public interface OnAttackAbility extends DamageableAbility {
             return false;
         }
 
-
-        return false;
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.entity.holder;
 
+import com.google.common.collect.ImmutableSet;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -67,6 +68,18 @@ public class AbilityHolder {
         if (validateAbilityExists(abilityKey)) {
             availableAbilities.add(abilityKey);
         }
+    }
+
+    /**
+     * Gets an {@link ImmutableSet} of all available abilities that this holder
+     * has access to.
+     *
+     * @return An {@link ImmutableSet} of all available abilities that this
+     * holder has access to.
+     */
+    @NotNull
+    public ImmutableSet<NamespacedKey> getAvailableAbilities() {
+        return ImmutableSet.copyOf(availableAbilities);
     }
 
     /**

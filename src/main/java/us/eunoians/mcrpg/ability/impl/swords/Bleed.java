@@ -1,15 +1,16 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.component.OnAttackAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.exception.AbilityActivatedWithWrongEventException;
 
 public class Bleed extends Ability implements OnAttackAbility {
 
@@ -30,8 +31,10 @@ public class Bleed extends Ability implements OnAttackAbility {
     }
 
     @Override
-    public void activate(@NotNull AbilityHolder abilityHolder, Object... data) {
-        Bukkit.broadcastMessage("1");
+    public void activate(@NotNull AbilityHolder abilityHolder, Event activatingEvent) {
+        if(!(activatingEvent instanceof EntityDamageByEntityEvent)) {
+            throw new AbilityActivatedWithWrongEventException(this);
+        }
     }
 
     @Override

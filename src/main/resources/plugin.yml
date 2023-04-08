@@ -3,34 +3,5 @@ version: ${version}
 author: Eunoians
 description: A RPG plugin for 1.13+
 main: us.eunoians.mcrpg.McRPG
-api-version: 1.16
+api-version: 1.19
 soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO]
-commands:
-  mcrpg:
-    description: Opens the main menu for McRPG
-    aliases: [mcrpg, mmo]
-  mcdisplay:
-    description: Allows for command based editing of display types
-    aliases: [mcmmodisplay, mdisplay, mcd]
-  mcadmin:
-    description: Allows for admin commands
-  mclink:
-    description: Links a chest to a players Remote Transfer
-  mcunlink:
-    description: Unlinks a chest from a players Remote Transfer
-  mcconvert:
-    description: Converts mcMMO to McRPG
-  mchelp:
-    description: Displays help info for commands
-  mcredeem:
-    description: Allows redeeming of exp
-  mcrank:
-    description: Shows a leaderboard
-  mcparty:
-    description: The stub command for all various party commands
-  mcexp:
-    description: Displays exp values
-  mcspy:
-    description: Toggles spying on party chat on and off
-  mcgui:
-    description: Allows for opening of custom GUIs

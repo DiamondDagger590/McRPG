@@ -2,9 +2,11 @@ package us.eunoians.mcrpg.task;
 
 import com.diamonddagger590.mccore.task.PlayerLoadTask;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.util.Optional;
@@ -37,6 +39,10 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         getPlugin().getLogger().log(Level.INFO, "Player data loaded.");
 
         //Add bleed for testing
+        getCorePlayer().asSkillHolder().addAvailableAbility(new Bleed());
+        getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
+                + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
+                .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
         return true;
     }
 
@@ -60,7 +66,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
         Optional<Player> player = getCorePlayer().getAsBukkitPlayer();
 
-        if(player.isPresent() && player.get().isOnline()) {
+        if (player.isPresent() && player.get().isOnline()) {
             player.get().sendMessage(ChatColor.RED + "There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!");
         }
     }
@@ -83,5 +89,9 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
     @Override
     public void onTaskExpire() {
+    }
+
+    @Override
+    protected void onCancel() {
     }
 }

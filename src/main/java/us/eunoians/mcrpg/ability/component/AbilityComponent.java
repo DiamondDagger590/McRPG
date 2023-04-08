@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.component;
 
+import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
@@ -10,5 +11,5 @@ public interface AbilityComponent {
 
     public void playActivationParticle();
 
-    public void activate(@NotNull AbilityHolder abilityHolder, Object... data);
+    public void activate(@NotNull AbilityHolder abilityHolder, Event activatingEvent);
 }

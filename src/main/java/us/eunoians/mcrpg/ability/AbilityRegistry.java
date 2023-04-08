@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.exception.AbilityNotRegisteredException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -123,6 +124,24 @@ public class AbilityRegistry {
     }
 
     /**
+     * Gets an {@link Ability} instance of the provided {@link NamespacedKey}.
+     * <p>
+     * This method will throw a {@link AbilityNotRegisteredException} if the {@link #isAbilityRegistered(NamespacedKey)}
+     * returns false for the provided {@link NamespacedKey}.
+     *
+     * @param abilityKey The {@link NamespacedKey} to get the {@link Ability} instance of
+     * @return The {@link Ability} instance of the provided {@link NamespacedKey}
+     */
+    @NotNull
+    public Ability getRegisteredAbility(@NotNull NamespacedKey abilityKey) {
+        if (!isAbilityRegistered(abilityKey)) {
+            throw new AbilityNotRegisteredException(abilityKey);
+        }
+
+        return abilities.get(abilityKey);
+    }
+
+    /**
      * Register the provided {@link EntityAlliedCheck} to be checked when {@link #areEntitiesAllied(Entity, Entity)} is called.
      * <p>
      * This also registers {@link AlliedAttackCheck#DEFAULT_ALLIED_ATTACK_CHECK_FUNCTION} as the default function to prevent allies
@@ -144,8 +163,8 @@ public class AbilityRegistry {
      * <p>
      * The order of the two entities should not matter as well.
      *
-     * @param entity1 The first {@link Entity} to check
-     * @param entity2 The second {@link Entity} to check
+     * @param entity1       The first {@link Entity} to check
+     * @param entity2       The second {@link Entity} to check
      * @param namespacedKey The {@link NamespacedKey} of the allied function to check
      * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link EntityAlliedCheck EntityAlliedFunctions}.
      */
