@@ -1,10 +1,10 @@
-package us.eunoians.mcrpg.ability.component;
+package us.eunoians.mcrpg.ability.component.activatable;
 
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 
 //TODO javadoc
-public interface TargetableEntityAbility extends AbilityComponent {
+public interface TargetablePlayerComponent extends EventActivatableComponent {
 
     /**
      * Checks whether the ability item should be able to affect allies

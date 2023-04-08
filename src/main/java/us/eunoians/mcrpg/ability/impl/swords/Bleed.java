@@ -1,49 +1,26 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.component.OnAttackAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.exception.AbilityActivatedWithWrongEventException;
 
-public class Bleed extends Ability implements OnAttackAbility {
+public class Bleed extends Ability {
 
     private static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "bleed");
 
     public Bleed() {
         super(BLEED_KEY);
+        addActivatableComponent(BleedComponents.BLEED_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 0);
+        addActivatableComponent(BleedComponents.BLEED_ON_TARGET_PLAYER_COMPONENT, EntityDamageByEntityEvent.class, 1);
     }
 
     @Override
-    public void playActivationNoise() {
-
-    }
-
-    @Override
-    public void playActivationParticle() {
-
-    }
-
-    @Override
-    public void activate(@NotNull AbilityHolder abilityHolder, Event activatingEvent) {
-        if(!(activatingEvent instanceof EntityDamageByEntityEvent)) {
-            throw new AbilityActivatedWithWrongEventException(this);
-        }
-    }
-
-    @Override
-    public boolean affectsEntity(@NotNull Entity entity) {
-        return entity instanceof LivingEntity;
-    }
-
-    @Override
-    public boolean shouldActivateOnAttack(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent) {
-        return OnAttackAbility.super.shouldActivateOnAttack(entityDamageByEntityEvent);
+    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        Bukkit.broadcastMessage("Activated");
     }
 }
