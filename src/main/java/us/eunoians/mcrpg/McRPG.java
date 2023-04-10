@@ -128,7 +128,6 @@ public class McRPG extends CorePlugin {
     }
 
     private void registerListeners() {
-
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
     }

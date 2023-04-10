@@ -25,20 +25,6 @@ public class OnAttackAbilityListener implements Listener {
         Entity damager = entityDamageByEntityEvent.getDamager();
         Entity damaged = entityDamageByEntityEvent.getEntity();
 
-        /*
-         * TODO
-         * Ability components need to be refactored. In this scenario, we also should be checking
-         * if they are targetable abilities. But this also breaks the idea of components being abstract.
-         *
-         * Ideally the workflow should be:
-         *
-         * Filter all abilities that can activate from a given event -> verify through all activation components
-         * that the ability can activate -> activate ability.
-         *
-         * This likely should also include a priority system, specifically for abilities that can cancel the event??
-         *
-         * Maybe a precheck for those but ugh
-         */
         abilityHolderTracker.getAbilityHolder(damager.getUniqueId()).ifPresent(damagerAbilityHolder -> {
 
             /*
