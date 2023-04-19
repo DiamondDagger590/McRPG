@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.ability;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
-import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponentAttribute;
@@ -22,7 +21,7 @@ import java.util.Optional;
  * An ability doesn't always belong to a skill, while a skill will always have abilities
  * tied to it.
  */
-public abstract class Ability implements Listener {
+public abstract class Ability {
 
     private final NamespacedKey abilityKey;
     private final List<EventCancellingComponentAttribute> cancellingComponents;
@@ -58,7 +57,7 @@ public abstract class Ability implements Listener {
     @NotNull
     public Optional<EventActivatableComponent> checkIfComponentFailsActivation(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
 
-        if(!canEventActivateAbility(event)) {
+        if (!canEventActivateAbility(event)) {
             throw new EventNotRegisteredForActivation(event, this);
         }
 
@@ -66,7 +65,7 @@ public abstract class Ability implements Listener {
         for (EventActivatableComponentAttribute eventActivatableComponentAttribute : getActivatingComponents(event.getClass())) {
             EventActivatableComponent eventActivatableComponent = eventActivatableComponentAttribute.abilityComponent();
 
-            if(!eventActivatableComponent.shouldActivate(abilityHolder, event)) {
+            if (!eventActivatableComponent.shouldActivate(abilityHolder, event)) {
                 returnComponent = eventActivatableComponent;
                 break;
             }
@@ -99,7 +98,7 @@ public abstract class Ability implements Listener {
     }
 
     private void sortActivatingComponents() {
-        for(Class<? extends Event> clazz : activatingAttributes.keySet()) {
+        for (Class<? extends Event> clazz : activatingAttributes.keySet()) {
             List<EventActivatableComponentAttribute> attributes = getActivatingComponents(clazz);
             attributes.sort(Comparator.comparingInt(EventActivatableComponentAttribute::priority));
         }

@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.pair.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -55,8 +54,6 @@ public class AbilityRegistry {
      */
     public void registerAbility(@NotNull Ability ability) {
         abilities.put(ability.getAbilityKey(), ability);
-        Bukkit.getPluginManager().registerEvents(ability, mcRPG);
-
         Bukkit.getPluginManager().callEvent(new AbilityRegisterEvent(ability));
     }
 
@@ -118,7 +115,6 @@ public class AbilityRegistry {
         Ability ability = abilities.remove(abilityKey);
 
         if (ability != null) {
-            HandlerList.unregisterAll(ability);
             Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
         }
     }
