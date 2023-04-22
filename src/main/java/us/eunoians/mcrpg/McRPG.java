@@ -17,7 +17,11 @@ import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
 import us.eunoians.mcrpg.listener.OnAttackAbilityListener;
+import us.eunoians.mcrpg.listener.OnAttackLevelListener;
+import us.eunoians.mcrpg.listener.OnPlayerLevelUpListener;
 import us.eunoians.mcrpg.listener.PlayerJoinListener;
+import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
@@ -35,6 +39,7 @@ public class McRPG extends CorePlugin {
     private FileManager fileManager;
 
     private AbilityRegistry abilityRegistry;
+    private SkillRegistry skillRegistry;
     private AbilityAttributeManager abilityAttributeManager;
 
     private AbilityHolderTracker entityManager;
@@ -60,6 +65,7 @@ public class McRPG extends CorePlugin {
         playerManager = new PlayerManager(this);
 
         abilityRegistry = new AbilityRegistry(this);
+        skillRegistry = new SkillRegistry(this);
 
         preloadNBTAPI();
         setupHooks();
@@ -70,6 +76,7 @@ public class McRPG extends CorePlugin {
 
         //TODO remove after testing
         getAbilityRegistry().registerAbility(new Bleed());
+        getSkillRegistry().registerSkill(new Swords());
     }
 
     @Override
@@ -130,6 +137,8 @@ public class McRPG extends CorePlugin {
     private void registerListeners() {
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnPlayerLevelUpListener(), this);
     }
 
     /**
@@ -171,6 +180,11 @@ public class McRPG extends CorePlugin {
     @NotNull
     public AbilityRegistry getAbilityRegistry() {
         return abilityRegistry;
+    }
+
+    @NotNull
+    public SkillRegistry getSkillRegistry() {
+        return skillRegistry;
     }
 
     /**

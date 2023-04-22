@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.component.activatable;
+package us.eunoians.mcrpg.skill.component;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
@@ -6,11 +6,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
-/**
- * This component will allow an ability to be activated whenever an
- * {@link AbilityHolder} attacks another {@link Entity}.
- */
-public interface OnAttackComponent extends EventActivatableComponent {
+public interface OnAttackLevelableComponent extends EventLevelableComponent {
 
     /**
      * Checks to see if this ability component can affect the provided
@@ -23,7 +19,7 @@ public interface OnAttackComponent extends EventActivatableComponent {
     public boolean affectsEntity(@NotNull Entity entity);
 
     @Override
-    default boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    default boolean shouldGiveExperience(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent) {
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();

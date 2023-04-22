@@ -14,7 +14,7 @@ import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.exception.AbilityNotRegisteredException;
+import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 
 import java.util.HashMap;
 import java.util.Map;

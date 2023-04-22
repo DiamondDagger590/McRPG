@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
-import us.eunoians.mcrpg.exception.AbilityNotRegisteredException;
+import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 
 import java.util.HashMap;
 import java.util.HashSet;

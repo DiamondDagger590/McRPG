@@ -1,14 +1,13 @@
-package us.eunoians.mcrpg.api.event.skill;
+package us.eunoians.mcrpg.exception.skill;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class SkillEvent extends Event {
+public class SkillNotRegisteredException extends RuntimeException{
 
     private final NamespacedKey skillKey;
 
-    public SkillEvent(@NotNull NamespacedKey skillKey) {
+    public SkillNotRegisteredException(@NotNull NamespacedKey skillKey) {
         this.skillKey = skillKey;
     }
 

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Optional;
 import java.util.logging.Level;
@@ -40,8 +41,12 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
         //Add bleed for testing
         getCorePlayer().asSkillHolder().addAvailableAbility(new Bleed());
+        getCorePlayer().asSkillHolder().addSkillHolderData(new Swords(), 0);
         getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
                 + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
+                .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
+        getPlugin().getLogger().log(Level.INFO, "Player skills are now: "
+                + getCorePlayer().asSkillHolder().getSkills().stream()
                 .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
         return true;
     }

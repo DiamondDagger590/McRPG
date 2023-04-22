@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.exception;
+package us.eunoians.mcrpg.exception.ability;
 
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
@@ -12,5 +12,15 @@ public class EventNotRegisteredForActivation extends RuntimeException {
     public EventNotRegisteredForActivation(@NotNull Event event, @NotNull Ability ability) {
         this.event = event;
         this.ability = ability;
+    }
+
+    @NotNull
+    public Event getFailedEvent() {
+        return event;
+    }
+
+    @NotNull
+    public Ability getAbility() {
+        return ability;
     }
 }

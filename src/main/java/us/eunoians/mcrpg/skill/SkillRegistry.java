@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.skill.SkillRegisterEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillUnregisterEvent;
+import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,14 @@ public class SkillRegistry {
     public void registerSkill(@NotNull Skill skill) {
         skills.put(skill.getSkillKey(), skill);
         Bukkit.getPluginManager().callEvent(new SkillRegisterEvent(skill));
+    }
+
+    public Skill getRegisteredSkill(@NotNull NamespacedKey skillKey) {
+        if (!isSkillRegistered(skillKey)) {
+            throw new SkillNotRegisteredException(skillKey);
+        }
+
+        return skills.get(skillKey);
     }
 
     public boolean isSkillRegistered(@NotNull Skill skill) {

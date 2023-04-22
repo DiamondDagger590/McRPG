@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.exception;
+package us.eunoians.mcrpg.exception.ability;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;

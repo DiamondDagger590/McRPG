@@ -8,7 +8,7 @@ import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponent;
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponentAttribute;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.exception.EventNotRegisteredForActivation;
+import us.eunoians.mcrpg.exception.ability.EventNotRegisteredForActivation;
 
 import java.util.ArrayList;
 import java.util.Comparator;
