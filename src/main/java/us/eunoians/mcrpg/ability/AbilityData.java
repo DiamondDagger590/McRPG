@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +27,16 @@ public class AbilityData {
     private final NamespacedKey abilityKey;
     private final Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes;
 
-    AbilityData(@NotNull NamespacedKey abilityKey, @NotNull AbilityAttribute<?>... abilityAttributes) {
+    public AbilityData(@NotNull NamespacedKey abilityKey, @NotNull AbilityAttribute<?>... abilityAttributes) {
+        this.abilityKey = abilityKey;
+        this.abilityAttributes = new HashMap<>();
+
+        for (AbilityAttribute<?> abilityAttribute : abilityAttributes) {
+            addAttribute(abilityAttribute);
+        }
+    }
+
+    public AbilityData(@NotNull NamespacedKey abilityKey, @NotNull Collection<AbilityAttribute<?>> abilityAttributes) {
         this.abilityKey = abilityKey;
         this.abilityAttributes = new HashMap<>();
 

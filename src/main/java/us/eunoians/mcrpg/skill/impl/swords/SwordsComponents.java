@@ -24,11 +24,11 @@ public class SwordsComponents {
             Entity damaged = entityDamageByEntityEvent.getEntity();
             double damage = entityDamageByEntityEvent.getFinalDamage();
 
-            if(damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
+            if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
                 ItemStack heldItem = livingDamager.getEquipment().getItemInMainHand();
 
                 double expToAward = damage * 75;
-                if(heldItem.getType().equals(Material.GOLDEN_SWORD)) {
+                if (heldItem.getType().equals(Material.GOLDEN_SWORD)) {
                     expToAward *= 1.5;
                 }
 
@@ -46,15 +46,15 @@ public class SwordsComponents {
         @Override
         public boolean shouldGiveExperience(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
 
-            if(OnAttackLevelableComponent.super.shouldGiveExperience(abilityHolder, event)) {
+            if (OnAttackLevelableComponent.super.shouldGiveExperience(abilityHolder, event)) {
                 EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast due to super call
                 Entity damager = entityDamageByEntityEvent.getDamager();
                 Entity damaged = entityDamageByEntityEvent.getEntity();
 
-                if(damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
+                if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
                     ItemStack heldItem = livingDamager.getEquipment().getItemInMainHand();
 
-                    if(heldItem.getType().name().contains("_SWORD")) {
+                    if (heldItem.getType().name().contains("_SWORD")) {
                         return true;
                     }
                 }

@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponentAttribute;
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponent;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * An ability doesn't always belong to a skill, while a skill will always have abilities
@@ -33,15 +35,72 @@ public abstract class Ability {
         this.activatingAttributes = new HashMap<>();
     }
 
-    //TODO javadoc
+    /**
+     * Gets the {@link NamespacedKey} of this ability.
+     *
+     * @return The {@link NamespacedKey} of this ability.
+     */
     @NotNull
     public NamespacedKey getAbilityKey() {
         return abilityKey;
     }
 
+    /**
+     * Gets a {@link Set} of all {@link us.eunoians.mcrpg.ability.attribute.AbilityAttribute AbilityAttributes} that
+     * this ability utilizes.
+     *
+     * @return A {@link Set} of all {@link us.eunoians.mcrpg.ability.attribute.AbilityAttribute AbilityAttributes} that
+     * this ability utilizes.
+     */
+    public Set<NamespacedKey> getApplicableAttributes() {
+        return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
+    }
+
+    /**
+     * Checks to see if this ability belongs to a {@link us.eunoians.mcrpg.skill.Skill}
+     *
+     * @return {@code true} if the ability belongs to a {@link us.eunoians.mcrpg.skill.Skill}
+     */
+    public boolean belongsToSkill() {
+        return getSkill().isPresent();
+    }
+
+    /**
+     * Gets an {@link Optional} that will be empty or contain the {@link NamespacedKey} of the
+     * {@link us.eunoians.mcrpg.skill.Skill} this ability belongs to.
+     *
+     * @return An {@link Optional} that will be empty or contain the {@link NamespacedKey} of the
+     * {@link us.eunoians.mcrpg.skill.Skill} this ability belongs to.
+     */
+    public abstract Optional<NamespacedKey> getSkill();
+
+    /**
+     * Gets an {@link Optional} that will be empty or contain the legacy name of this ability.
+     * <p>
+     * This is only used for abilities that existed before the recode in order to support
+     * legacy database table conversions.
+     *
+     * @return An {@link Optional} that will be empty or contain the legacy name of this ability.
+     */
+    public Optional<String> getLegacyName() {
+        return Optional.empty();
+    }
+
+    /**
+     * Gets an {@link Optional} containing the database name for an ability. This is an internal
+     * use only name that is used for database storage.
+     * <p>
+     * The {@link Optional} will be empty if this is a legacy ability since there is code to convert
+     * {@link #getLegacyName()} to its old form for this use.
+     *
+     * @return An {@link Optional} containing the database name for an ability. This is an internal
+     * use only name that is used for database storage.
+     */
+    public abstract Optional<String> getDatabaseName();
+
     public abstract void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event);
 
-    //TODO finish
+    // TODO finish
     public Optional<EventCancellingComponent> checkIfComponentCancels(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
 
         for (EventCancellingComponentAttribute eventCancellingComponentAttribute : cancellingComponents) {

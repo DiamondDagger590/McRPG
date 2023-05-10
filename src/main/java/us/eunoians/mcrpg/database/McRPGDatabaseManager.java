@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
+//TODO javadoc
 public class McRPGDatabaseManager extends DatabaseManager {
 
     private final DatabaseDriver driver;
@@ -85,7 +86,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
                 CompletableFuture.allOf(SkillDAO.attemptCreateTable(connection, this),
                         PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
-                        PlayerSettingsDAO.attemptCreateTable(connection, this))
+                        PlayerSettingsDAO.attemptCreateTable(connection, this), SkillDAO.attemptCreateTable(connection, this))
                     .thenAccept(tableCreationFuture::complete)
                     .exceptionally(throwable -> {
                         tableCreationFuture.completeExceptionally(throwable);
@@ -117,7 +118,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
             getDatabaseExecutorService().submit(() -> {
                 CompletableFuture.allOf(SkillDAO.updateTable(connection), PlayerLoadoutDAO.updateTable(connection),
-                        PlayerDataDAO.updateTable(connection), PlayerSettingsDAO.updateTable(connection))
+                        PlayerDataDAO.updateTable(connection), PlayerSettingsDAO.updateTable(connection), SkillDAO.updateTable(connection))
                     .thenAccept(tableUpdateFuture::complete);
             });
 

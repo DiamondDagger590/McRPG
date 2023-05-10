@@ -7,7 +7,7 @@ import us.eunoians.mcrpg.skill.Skill;
 
 public class Swords extends Skill {
 
-    private static final NamespacedKey SWORDS_KEY = new NamespacedKey(McRPG.getInstance(), "swords");
+    public static final NamespacedKey SWORDS_KEY = new NamespacedKey(McRPG.getInstance(), "swords");
 
     public Swords() {
         super(SWORDS_KEY);

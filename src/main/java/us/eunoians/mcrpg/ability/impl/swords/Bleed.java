@@ -14,8 +14,10 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,13 +35,28 @@ import java.util.UUID;
  */
 public class Bleed extends Ability {
 
-    private static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "bleed");
+    public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "bleed");
     private static final BleedManager BLEED_MANAGER = new BleedManager();
 
     public Bleed() {
         super(BLEED_KEY);
         addActivatableComponent(BleedComponents.BLEED_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 0);
         addActivatableComponent(BleedComponents.BLEED_ON_TARGET_PLAYER_COMPONENT, EntityDamageByEntityEvent.class, 1);
+    }
+
+    @Override
+    public Optional<NamespacedKey> getSkill() {
+        return Optional.of(Swords.SWORDS_KEY);
+    }
+
+    @Override
+    public Optional<String> getLegacyName() {
+        return Optional.of("Bleed");
+    }
+
+    @Override
+    public Optional<String> getDatabaseName() {
+        return Optional.empty();
     }
 
     @Override

@@ -182,9 +182,23 @@ public class McRPG extends CorePlugin {
         return abilityRegistry;
     }
 
+    /**
+     * Gets the {@link SkillRegistry} used by McRPG
+     *
+     * @return The {@link SkillRegistry} used by McRPG
+     */
     @NotNull
     public SkillRegistry getSkillRegistry() {
         return skillRegistry;
+    }
+
+    /**
+     * Gets the {@link AbilityAttributeManager} used by McRPG
+     *
+     * @return The {@link AbilityAttributeManager} used by McRPG
+     */
+    public AbilityAttributeManager getAbilityAttributeManager() {
+        return abilityAttributeManager;
     }
 
     /**

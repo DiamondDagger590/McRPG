@@ -1,21 +1,38 @@
 package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.exception.database.AbilityDatabaseNameException;
+import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
+import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.SkillRegistry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 /**
  * A DAO used to store data regarding a player's specific data that doesn't really belong in another table
  */
 public class SkillDAO {
+
+    private static final Logger LOGGER = McRPG.getInstance().getLogger();
 
     private static final String SKILL_DATA_TABLE_NAME = "mcrpg_skill_data";
     private static final String ABILITY_TOGGLED_OFF_TABLE_NAME = "mcrpg_toggled_off_abilities";
@@ -23,6 +40,7 @@ public class SkillDAO {
     private static final int CURRENT_TABLE_VERSION = 1;
 
     private static boolean isAcceptingQueries = true;
+    private static final Set<NamespacedKey> LEGACY_ABILITY_ATTRIBUTES = Set.of(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY, AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
 
     /**
      * Attempts to create a new table for this DAO provided that the table does not already exist.
@@ -67,21 +85,21 @@ public class SkillDAO {
                  ** The composite key is the `player_uuid` field and the `skill_id` field, as there should only be one unique combination of the two per player and skill
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + SKILL_DATA_TABLE_NAME + "`" +
-                                                                                   "(" +
-                                                                                   "`player_uuid` varchar(36) NOT NULL," +
-                                                                                   "`skill_id` varchar(32) NOT NULL," +
-                                                                                   "`current_level` int(11) NOT NULL DEFAULT 0," +
-                                                                                   "`current_exp` int(11) NOT NULL DEFAULT 0," +
-                                                                                   "PRIMARY KEY (`player_uuid`, `skill_id`)" +
-                                                                                   ");")) {
+                        "(" +
+                        "`player_uuid` varchar(36) NOT NULL," +
+                        "`skill_id` varchar(32) NOT NULL," +
+                        "`current_level` int(11) NOT NULL DEFAULT 0," +
+                        "`current_exp` int(11) NOT NULL DEFAULT 0," +
+                        "PRIMARY KEY (`player_uuid`, `skill_id`)" +
+                        ");")) {
                     statement.executeUpdate();
-                }
-                catch (SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                     completableFuture.completeExceptionally(e);
                 }
             }
 
+            //TODO remove this table
             if (!abilityToggledOffTableExists) {
 
                 /*****
@@ -96,14 +114,13 @@ public class SkillDAO {
                  ** The composite key is the `player_uuid` field and the `ability_id` field, as there should only be one unique combination of the two per player and ability
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + ABILITY_TOGGLED_OFF_TABLE_NAME + "`" +
-                                                                                   "(" +
-                                                                                   "`player_uuid` varchar(36) NOT NULL," +
-                                                                                   "`ability_id` varchar(32) NOT NULL," +
-                                                                                   "PRIMARY KEY (`player_uuid`, `ability_id`)" +
-                                                                                   ");")) {
+                        "(" +
+                        "`player_uuid` varchar(36) NOT NULL," +
+                        "`ability_id` varchar(32) NOT NULL," +
+                        "PRIMARY KEY (`player_uuid`, `ability_id`)" +
+                        ");")) {
                     statement.executeUpdate();
-                }
-                catch (SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                     completableFuture.completeExceptionally(e);
                 }
@@ -126,16 +143,15 @@ public class SkillDAO {
                  ** The composite key is the `player_uuid` field, `key` field and the `ability_id` field, as there should only be one unique combination of those three per each ability, since each ability will only have a single attribute once at most
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + ABILITY_ATTRIBUTE_TABLE_NAME + "`" +
-                                                                                   "(" +
-                                                                                   "`player_uuid` varchar(36) NOT NULL," +
-                                                                                   "`ability_id` varchar(32) NOT NULL," +
-                                                                                   "`key` varchar(32) NOT NULL," +
-                                                                                   "`value` varchar(4096) NOT NULL," +
-                                                                                   "PRIMARY KEY (`player_uuid`, `ability_id`, `key`)" +
-                                                                                   ");")) {
+                        "(" +
+                        "`player_uuid` varchar(36) NOT NULL," +
+                        "`ability_id` varchar(32) NOT NULL," +
+                        "`key` varchar(32) NOT NULL," +
+                        "`value` varchar(4096) NOT NULL," +
+                        "PRIMARY KEY (`player_uuid`, `ability_id`, `key`)" +
+                        ");")) {
                     statement.executeUpdate();
-                }
-                catch (SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                     completableFuture.completeExceptionally(e);
                 }
@@ -163,138 +179,264 @@ public class SkillDAO {
 
         McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
 
             //Update skill data table
             TableVersionHistoryDAO.getLatestVersion(connection, SKILL_DATA_TABLE_NAME).thenAccept(lastStoredVersion -> {
 
-                if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                    return;
-                }
-
-                isAcceptingQueries = false;
-
-                //Adds table to our tracking
-                if (lastStoredVersion == 0) {
-
-                    List<String> queries = new ArrayList<>();
-//                    for (Skills skillType : Skills.values()) {
-//
-//                        String skillDatabaseName = skillType.getName().toLowerCase(Locale.ROOT);
-//                        String legacyTableName = "mcrpg_" + skillDatabaseName + "_data";
-//
-//                        //Ensure legacy tables exist
-//                        if (databaseManager.getDatabase() != null && !databaseManager.getDatabase().tableExists(legacyTableName)) {
-//                            continue;
-//                        }
-//
-//                        //Skill data query
-//                        String skillInfoQuery = "MERGE INTO " + SKILL_DATA_TABLE_NAME + " SELECT uuid as player_uuid, '" + skillDatabaseName + "' as skill_id, current_level, current_exp FROM " + legacyTableName + ";";
-//                        queries.add(skillInfoQuery);
-//
-//                        //Ability toggled off queries
-//                        for (GenericAbility abilityType : skillType.getAllAbilities()) {
-//                            String abilityDatabaseName = abilityType.getDatabaseName();
-//                            String abilityToggledOffQuery = "MERGE INTO " + ABILITY_TOGGLED_OFF_TABLE_NAME + " SELECT uuid as player_uuid, '" + abilityType.getName() + "' as ability_id FROM " + legacyTableName + " WHERE is_" + abilityDatabaseName + "_toggled = 0";
-//
-//                            queries.add(abilityToggledOffQuery);
-//                        }
-//
-//                        String abilityAttributeQuery = "MERGE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " SELECT ";
-//                        boolean first = true; //Handle a column count mismatch issue for the union statements
-//
-//                        //Ability attribute queries
-//                        for (UnlockedAbilities abilityType : skillType.getUnlockedAbilities()) {
-//
-//                            String abilityDatabaseName = abilityType.getDatabaseName();
-//                            String abilityValueName = abilityType.getName();
-//
-//                            String tierColumnName = abilityDatabaseName + "_tier";
-//                            String pendingColumnName = "is_" + abilityDatabaseName + "_pending";
-//
-//                            abilityAttributeQuery += ((first ? "" : "(SELECT ") + "uuid as player_uuid, '" + abilityValueName + "' as ability_id, 'tier' as key, " + tierColumnName + " as value FROM " + legacyTableName + " WHERE " + tierColumnName + " > 0" + (first ? "" : ")") + " UNION ALL ");
-//                            abilityAttributeQuery += ("(SELECT uuid as player_uuid, '" + abilityValueName + "' as ability_id, 'pending_status' as key, " + pendingColumnName + " as value FROM " + legacyTableName + " WHERE " + pendingColumnName + " = 1) UNION ALL ");
-//
-//                            if (abilityType.isCooldown()) {
-//                                String cooldownColumnName = abilityDatabaseName + "_cooldown";
-//                                abilityAttributeQuery += ("(SELECT uuid as player_uuid, '" + abilityValueName + "' as ability_id, 'cooldown' as key, " + cooldownColumnName + " as value FROM " + legacyTableName + " WHERE " + cooldownColumnName + " > 0) UNION ALL ");
-//                            }
-//
-//                            if (first) {
-//                                first = false;
-//                            }
-//                        }
-//
-//                        abilityAttributeQuery = abilityAttributeQuery.trim();
-//                        abilityAttributeQuery = abilityAttributeQuery.substring(0, abilityAttributeQuery.length() - 9); //Trim the trailing UNION ALL
-//                        abilityAttributeQuery += ";";
-//
-//                        queries.add(abilityAttributeQuery);
-//                    }
-
-                    //Execute queries
-                    for (String query : queries) {
-
-                        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                            preparedStatement.executeUpdate();
-                        }
-                        catch (SQLException e) {
-                            e.printStackTrace();
-                            completableFuture.completeExceptionally(e);
+                        if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
                             return;
                         }
+
+                        isAcceptingQueries = false;
+
+                        //Adds table to our tracking
+                        if (lastStoredVersion == 0) {
+
+                            List<String> queries = new ArrayList<>();
+
+                            for (NamespacedKey skillKey : skillRegistry.getRegisteredSkills()) {
+                                Skill skill = skillRegistry.getRegisteredSkill(skillKey);
+
+                                String skillDatabaseName = skillKey.getKey().toLowerCase(Locale.ROOT);
+                                String legacyTableName = "mcrpg_" + skillDatabaseName + "_data";
+
+                                //Ensure legacy tables exist
+                                if (databaseManager.getDatabase() != null && !databaseManager.getDatabase().tableExists(legacyTableName)) {
+                                    continue;
+                                }
+
+                                //Skill data query
+                                String skillInfoQuery = "MERGE INTO " + SKILL_DATA_TABLE_NAME + " SELECT uuid as player_uuid, '" + skillDatabaseName + "' as skill_id, current_level, current_exp FROM " + legacyTableName + ";";
+                                queries.add(skillInfoQuery);
+
+                                String abilityAttributeQuery = "MERGE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " SELECT ";
+                                boolean first = true; //Handle a column count mismatch issue for the union statements
+
+                                //Ability toggled off queries
+                                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
+                                    Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
+
+                                    String abilityDatabaseName;
+                                    String abilityName;
+                                    if(ability.getDatabaseName().isPresent()) {
+                                        abilityDatabaseName = ability.getDatabaseName().get();
+                                        abilityName = abilityDatabaseName;
+                                    }
+                                    else if(ability.getLegacyName().isPresent()){
+                                        abilityName = ability.getLegacyName().get();
+                                        abilityDatabaseName = getLegacyDatabaseName(abilityName);
+                                    }
+                                    else {
+                                        throw new AbilityDatabaseNameException(ability);
+                                    }
+
+                                    if(ability.getApplicableAttributes().contains(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY)) {
+                                        String abilityToggledOffQuery = "MERGE INTO " + ABILITY_TOGGLED_OFF_TABLE_NAME + " SELECT uuid as player_uuid, '" + abilityName + "' as ability_id FROM " + legacyTableName + " WHERE is_" + abilityDatabaseName + "_toggled = 0";
+                                        queries.add(abilityToggledOffQuery);
+                                    }
+
+                                    if(ability.getApplicableAttributes().containsAll(LEGACY_ABILITY_ATTRIBUTES)) {
+                                        String tierColumnName = abilityDatabaseName + "_tier";
+                                        String pendingColumnName = "is_" + abilityDatabaseName + "_pending";
+
+                                        abilityAttributeQuery += ((first ? "" : "(SELECT ") + "uuid as player_uuid, '" + abilityName + "' as ability_id, 'tier' as key, " + tierColumnName + " as value FROM " + legacyTableName + " WHERE " + tierColumnName + " > 0" + (first ? "" : ")") + " UNION ALL ");
+                                        abilityAttributeQuery += ("(SELECT uuid as player_uuid, '" + abilityName + "' as ability_id, 'pending_status' as key, " + pendingColumnName + " as value FROM " + legacyTableName + " WHERE " + pendingColumnName + " = 1) UNION ALL ");
+
+                                        if (ability.getApplicableAttributes().contains(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY)) {
+                                            String cooldownColumnName = abilityDatabaseName + "_cooldown";
+                                            abilityAttributeQuery += ("(SELECT uuid as player_uuid, '" + abilityName + "' as ability_id, 'cooldown' as key, " + cooldownColumnName + " as value FROM " + legacyTableName + " WHERE " + cooldownColumnName + " > 0) UNION ALL ");
+                                        }
+
+                                        if (first) {
+                                            first = false;
+                                        }
+                                    }
+
+                                }
+
+                                abilityAttributeQuery = abilityAttributeQuery.trim();
+                                abilityAttributeQuery = abilityAttributeQuery.substring(0, abilityAttributeQuery.length() - 9); //Trim the trailing UNION ALL
+                                abilityAttributeQuery += ";";
+
+                                queries.add(abilityAttributeQuery);
+                            }
+
+                            //Execute queries
+                            for (String query : queries) {
+
+                                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                    completableFuture.completeExceptionally(e);
+                                    return;
+                                }
+                            }
+
+                            TableVersionHistoryDAO.setTableVersion(connection, SKILL_DATA_TABLE_NAME, 1);
+                            lastStoredVersion = 1;
+                        } else if (lastStoredVersion == 1) {
+                            //TODO update how ability toggles are handled
+                        }
+
+                        isAcceptingQueries = true;
+
+                    })
+                    .thenAccept(unused -> {
+
+                        //After both of those are done, we then attempt to update the ability attribute table
+                        TableVersionHistoryDAO.getLatestVersion(connection, ABILITY_ATTRIBUTE_TABLE_NAME).thenAccept(lastStoredVersion -> {
+
+                            if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+                                completableFuture.complete(null);
+                                return;
+                            }
+
+                            isAcceptingQueries = false;
+
+                            //Adds table to our tracking
+                            if (lastStoredVersion == 0) {
+                                TableVersionHistoryDAO.setTableVersion(connection, ABILITY_ATTRIBUTE_TABLE_NAME, 1);
+                                lastStoredVersion = 1;
+                            }
+
+                            isAcceptingQueries = true;
+
+                            completableFuture.complete(null);
+                        });
+                    })
+                    .thenAccept(unused -> {
+
+                        //Once skill data is finished, then we attempt to update the ability toggled off table
+                        TableVersionHistoryDAO.getLatestVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME).thenAccept(lastStoredVersion -> {
+
+                            if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+                                return;
+                            }
+
+                            isAcceptingQueries = false;
+
+                            //Adds table to our tracking
+                            if (lastStoredVersion == 0) {
+                                TableVersionHistoryDAO.setTableVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME, 1);
+                                lastStoredVersion = 1;
+                            }
+                            if (lastStoredVersion == 1) {
+                                try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " SELECT player_uuid, ability_id, " + AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY + " as key, false as value FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME)) {
+                                    preparedStatement.executeUpdate();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                    completableFuture.completeExceptionally(e);
+                                }
+                            }
+
+                            isAcceptingQueries = true;
+
+                        });
+                    });
+
+        });
+
+        return completableFuture;
+    }
+
+    /**
+     * Gets all information that can be provided through this DAO and returns one single {@link SkillDataSnapshot} containing all the information requested.
+     * <p>
+     * This should be where most developers get the skill or ability information, unless they desire specific information for which they can use the specific individual method for.
+     *
+     * @param connection The {@link Connection} to use to run the query
+     * @param uuid       The {@link UUID} of the player to get the data for
+     * @param skillKey   The {@link NamespacedKey} of the {@link us.eunoians.mcrpg.skill.Skill} to get all data for
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, with all the data this DAO can provide. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getAllPlayerSkillInformation(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
+
+        McRPG mcRPG = McRPG.getInstance();
+        SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
+
+        if (!skillRegistry.isSkillRegistered(skillKey)) {
+            throw new SkillNotRegisteredException(skillKey);
+        }
+
+        McRPGDatabaseManager databaseManager = mcRPG.getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            getPlayerSkillLevelingData(connection, uuid, skillKey)
+                    .thenCompose(updatedSnapshot -> getAbilityAttributes(connection, uuid, updatedSnapshot)
+                            .thenAccept(completableFuture::complete))
+                    .exceptionally(throwable -> {
+                        completableFuture.completeExceptionally(throwable);
+                        return null;
+                    });
+        });
+
+
+        return completableFuture;
+    }
+
+    /**
+     * Gets the player leveling information for a specific player's skill. This method calls {@link #getPlayerSkillLevelingData(Connection, UUID, SkillDataSnapshot)},
+     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link NamespacedKey}.
+     *
+     * @param connection The {@link Connection} to use to run the query
+     * @param uuid       The {@link UUID} of the player to get the data for
+     * @param skillKey   The {@link NamespacedKey} to get the skill leveling data for
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the exp and level of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
+        return getPlayerSkillLevelingData(connection, uuid, new SkillDataSnapshot(uuid, skillKey));
+    }
+
+    /**
+     * Gets the player leveling information for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
+     * {@link SkillDataSnapshot#setCurrentExp(int)} and {@link SkillDataSnapshot#setCurrentLevel(int)}.
+     * <p>
+     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillKey()} ()}.
+     *
+     * @param connection        The {@link Connection} to use to run the query
+     * @param uuid              The {@link UUID} of the player to get the data for
+     * @param skillDataSnapshot The {@link SkillDataSnapshot} to update
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the exp and level of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
+
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT current_level, current_exp FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?;")) {
+                preparedStatement.setString(1, uuid.toString());
+                preparedStatement.setString(2, skillDataSnapshot.getSkillKey().get().getKey().toLowerCase(Locale.ROOT));
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                    while (resultSet.next()) {
+                        int currentExp = resultSet.getInt("current_exp");
+                        int currentLevel = resultSet.getInt("current_level");
+
+                        skillDataSnapshot.setCurrentExp(currentExp);
+                        skillDataSnapshot.setCurrentLevel(currentLevel);
                     }
 
-                    TableVersionHistoryDAO.setTableVersion(connection, SKILL_DATA_TABLE_NAME, 1);
-                    lastStoredVersion = 1;
+                    completableFuture.complete(skillDataSnapshot);
                 }
-
-                isAcceptingQueries = true;
-
-            }).thenAccept(unused -> {
-
-                //Once skill data is finished, then we attampt to update the ability toggled off table
-                TableVersionHistoryDAO.getLatestVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME).thenAccept(lastStoredVersion -> {
-
-                    if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                        return;
-                    }
-
-                    isAcceptingQueries = false;
-
-                    //Adds table to our tracking
-                    if (lastStoredVersion == 0) {
-                        TableVersionHistoryDAO.setTableVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME, 1);
-                        lastStoredVersion = 1;
-                    }
-
-                    isAcceptingQueries = true;
-
-                });
-            }).thenAccept(unused -> {
-
-                //After both of those are done, we then attempt to update the ability attribute table
-                TableVersionHistoryDAO.getLatestVersion(connection, ABILITY_ATTRIBUTE_TABLE_NAME).thenAccept(lastStoredVersion -> {
-
-                    if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
-                        completableFuture.complete(null);
-                        return;
-                    }
-
-                    isAcceptingQueries = false;
-
-                    //Adds table to our tracking
-                    if (lastStoredVersion == 0) {
-                        TableVersionHistoryDAO.setTableVersion(connection, ABILITY_ATTRIBUTE_TABLE_NAME, 1);
-                        lastStoredVersion = 1;
-                    }
-
-                    isAcceptingQueries = true;
-
-                    completableFuture.complete(null);
-                });
-            });
+            } catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
 
         });
 
@@ -302,114 +444,20 @@ public class SkillDAO {
     }
 
 //    /**
-//     * Gets all information that can be provided through this DAO and returns one single {@link SkillDataSnapshot} containing all the information requested.
-//     * <p>
-//     * This should be where most developers get the skill or ability information, unless they desire specific information for which they can use the specific individual method for.
-//     *
-//     * @param connection The {@link Connection} to use to run the query
-//     * @param uuid       The {@link UUID} of the player to get the data for
-//     * @param skillType  The {@link Skills} to get all data for
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, with all the data this DAO can provide. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getAllPlayerSkillInformation(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            getPlayerSkillLevelingData(connection, uuid, skillType)
-//                .thenCompose(skillDataSnapshot -> getPlayerAbilityToggles(connection, uuid, skillDataSnapshot)
-//                                                      .thenCompose(updatedSnapshot -> getAbilityAttributes(connection, uuid, updatedSnapshot)
-//                                                                                          .thenAccept(completableFuture::complete)))
-//                .exceptionally(throwable -> {
-//                    completableFuture.completeExceptionally(throwable);
-//                    return null;
-//                });
-//        });
-//
-//
-//        return completableFuture;
-//    }
-
-//    /**
-//     * Gets the player leveling information for a specific player's skill. This method calls {@link #getPlayerSkillLevelingData(Connection, UUID, SkillDataSnapshot)},
-//     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link Skills}.
-//     *
-//     * @param connection The {@link Connection} to use to run the query
-//     * @param uuid       The {@link UUID} of the player to get the data for
-//     * @param skillType  The {@link Skills} to get the skill leveling data for
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the exp and level of the desired skill. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
-//        return getPlayerSkillLevelingData(connection, uuid, new SkillDataSnapshot(uuid, skillType));
-//    }
-
-//    /**
-//     * Gets the player leveling information for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
-//     * {@link SkillDataSnapshot#setCurrentExp(int)} and {@link SkillDataSnapshot#setCurrentLevel(int)}.
-//     * <p>
-//     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillType()}.
-//     *
-//     * @param connection        The {@link Connection} to use to run the query
-//     * @param uuid              The {@link UUID} of the player to get the data for
-//     * @param skillDataSnapshot The {@link SkillDataSnapshot} to update
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the exp and level of the desired skill. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT current_level, current_exp FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?;")) {
-//                preparedStatement.setString(1, uuid.toString());
-////                preparedStatement.setString(2, skillDataSnapshot.getSkillType().getName().toLowerCase(Locale.ROOT));
-//
-//                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//
-//                    while (resultSet.next()) {
-//                        int currentExp = resultSet.getInt("current_exp");
-//                        int currentLevel = resultSet.getInt("current_level");
-//
-//                        skillDataSnapshot.setCurrentExp(currentExp);
-//                        skillDataSnapshot.setCurrentLevel(currentLevel);
-//                    }
-//
-//                    completableFuture.complete(skillDataSnapshot);
-//                }
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//            }
-//
-//        });
-//
-//        return completableFuture;
-//    }
-
-//    /**
 //     * Gets the ability toggled statuses for a specific player's skill. This method calls {@link #getPlayerAbilityToggles(Connection, UUID, SkillDataSnapshot)},
-//     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link Skills}.
+//     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link NamespacedKey}.
 //     *
 //     * @param connection The {@link Connection} to use to run the query
 //     * @param uuid       The {@link UUID} of the player to get the data for
-//     * @param skillType  The {@link Skills} to get the ability toggle data for
+//     * @param skillType  The {@link NamespacedKey} to get the ability toggle data for
 //     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability toggle data of the desired skill. If
 //     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
 //     */
 //    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Skills skillType) {
-//        return getPlayerAbilityToggles(connection, uuid, new SkillDataSnapshot(uuid, skillType));
+//    public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
+//        return getPlayerAbilityToggles(connection, uuid, new SkillDataSnapshot(uuid, skillKey));
 //    }
-//
+
 //    /**
 //     * Gets the ability toggled statuses for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
 //     * {@link SkillDataSnapshot#addAbilityToggledData(GenericAbility, boolean)}.
@@ -469,130 +517,140 @@ public class SkillDAO {
 //        return completableFuture;
 //    }
 
-//    /**
-//     * Gets all stored {@link AbilityAttribute}s that belong to abilities for a specific player's skill. This method creates a new {@link SkillDataSnapshot} object
-//     * to populate.
-//     *
-//     * @param connection The {@link Connection} to use to run the query
-//     * @param uuid       The {@link UUID} of the player to get the data for
-//     * @param skillType  The {@link Skills} to get the ability attributes for
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability attributes of the desired skill. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, Skills skillType) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-//        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
-//
-//                SkillDataSnapshot skillDataSnapshot = new SkillDataSnapshot(uuid, skillType);
-//                preparedStatement.setString(1, uuid.toString());
-//
-//                //Get data for all abilities
-//                for (GenericAbility genericAbility : skillType.getAllAbilities()) {
-//
-//                    String databaseName = genericAbility.getName();
-//                    preparedStatement.setString(2, databaseName);
-//
-//                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//
-//                        //Iterate over all found values
-//                        while (resultSet.next()) {
-//
-//                            String attributeName = resultSet.getString("key");
-//                            String attributeValue = resultSet.getString("value");
-//
-//                            Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
-//                            AbilityAttribute<?> returnValue;
-//
-//                            if (attributeOptional.isPresent()) {
-//                                AbilityAttribute<?> abilityAttribute = attributeOptional.get();
-//                                returnValue = abilityAttribute.create(attributeValue);
-//                                skillDataSnapshot.addAttribute(genericAbility, returnValue);
-//                            }
-//
-//                        }
-//                    }
-//                }
-//
-//                completableFuture.complete(skillDataSnapshot);
-//
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//            }
-//        });
-//        return completableFuture;
-//    }
+    /**
+     * Gets all stored {@link us.eunoians.mcrpg.ability.attribute.AbilityAttribute AbilityAttributes} that belong to abilities for a specific player's skill.
+     * This method creates a new {@link SkillDataSnapshot} object to populate.
+     *
+     * @param connection The {@link Connection} to use to run the query
+     * @param uuid       The {@link UUID} of the player to get the data for
+     * @param skillKey   The {@link NamespacedKey} to get the ability attributes for
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability attributes of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
+
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
+
+                SkillDataSnapshot skillDataSnapshot = new SkillDataSnapshot(uuid, skillKey);
+
+                if (!abilityRegistry.doesSkillHaveAbilities(skillKey)) {
+                    completableFuture.complete(skillDataSnapshot);
+                    return;
+                }
+
+                preparedStatement.setString(1, uuid.toString());
+
+                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
+                    String databaseName = abilityKey.getKey();
+                    preparedStatement.setString(2, databaseName);
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                        //Iterate over all found values
+                        while (resultSet.next()) {
+
+                            String attributeName = resultSet.getString("key");
+                            String attributeValue = resultSet.getString("value");
+
+                            Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
+                            AbilityAttribute<?> returnValue;
+
+                            if (attributeOptional.isPresent()) {
+                                AbilityAttribute<?> abilityAttribute = attributeOptional.get();
+                                returnValue = abilityAttribute.create(attributeValue);
+                                skillDataSnapshot.addAttribute(abilityKey, returnValue);
+                            }
+
+                        }
+                    }
+                }
+
+                completableFuture.complete(skillDataSnapshot);
+
+            } catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
+
+    /**
+     * Gets all stored {@link us.eunoians.mcrpg.ability.attribute.AbilityAttribute}s that belong to abilities for a specific player's skill.
+     *
+     * @param connection        The {@link Connection} to use to run the query
+     * @param uuid              The {@link UUID} of the player to get the data for
+     * @param skillDataSnapshot The {@link SkillDataSnapshot} to populate with ability attributes
+     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability attributes of the desired skill. If
+     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
+     */
+    @NotNull
+    public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
+
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
+        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
+
+                if (skillDataSnapshot.getSkillKey().isEmpty() || !abilityRegistry.doesSkillHaveAbilities(skillDataSnapshot.getSkillKey().get())) {
+                    completableFuture.complete(skillDataSnapshot);
+                    return;
+                }
+
+                NamespacedKey skillKey = skillDataSnapshot.getSkillKey().get();
+
+                preparedStatement.setString(1, uuid.toString());
+
+                //Get data for all abilities
+                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
+
+                    String databaseName = abilityKey.getKey();
+                    preparedStatement.setString(2, databaseName);
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                        //Iterate over all found values
+                        while (resultSet.next()) {
+
+                            String attributeName = resultSet.getString("key");
+                            String attributeValue = resultSet.getString("value");
+
+                            Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
+                            AbilityAttribute<?> returnValue;
+
+                            if (attributeOptional.isPresent()) {
+                                AbilityAttribute<?> abilityAttribute = attributeOptional.get();
+                                returnValue = abilityAttribute.create(attributeValue);
+                                skillDataSnapshot.addAttribute(abilityKey, returnValue);
+                            }
+                        }
+                    }
+                }
+
+                completableFuture.complete(skillDataSnapshot);
+
+            } catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
 
 //    /**
-//     * Gets all stored {@link AbilityAttribute}s that belong to abilities for a specific player's skill.
-//     *
-//     * @param connection        The {@link Connection} to use to run the query
-//     * @param uuid              The {@link UUID} of the player to get the data for
-//     * @param skillDataSnapshot The {@link SkillDataSnapshot} to populate with ability attributes
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability attributes of the desired skill. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, SkillDataSnapshot skillDataSnapshot) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-//        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
-//        Skills skillType = skillDataSnapshot.getSkillType();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
-//
-//                preparedStatement.setString(1, uuid.toString());
-//
-//                //Get data for all abilities
-//                for (GenericAbility genericAbility : skillType.getAllAbilities()) {
-//
-//                    String databaseName = genericAbility.getName();
-//                    preparedStatement.setString(2, databaseName);
-//
-//                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//
-//                        //Iterate over all found values
-//                        while (resultSet.next()) {
-//
-//                            String attributeName = resultSet.getString("key");
-//                            String attributeValue = resultSet.getString("value");
-//
-//                            Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
-//                            AbilityAttribute<?> returnValue;
-//
-//                            if (attributeOptional.isPresent()) {
-//                                AbilityAttribute<?> abilityAttribute = attributeOptional.get();
-//                                returnValue = abilityAttribute.create(attributeValue);
-//                                skillDataSnapshot.addAttribute(genericAbility, returnValue);
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                completableFuture.complete(skillDataSnapshot);
-//
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//            }
-//        });
-//        return completableFuture;
-//    }
-
-//    /**
-//     * Saves all the player skill data for the provided {@link McRPGPlayer}.
+//     * Saves all the player skill data for the provided {@link us.eunoians.mcrpg.entity.player.McRPGPlayer}.
 //     * <p>
-//     * This method calls {@link #savePlayerSkillData(Connection, McRPGPlayer)}, {@link #savePlayerAbilityToggles(Connection, McRPGPlayer)} and {@link #savePlayerAbilityAttributes(Connection, McRPGPlayer)}
+//     * This method calls {@link #savePlayerSkillData(Connection, us.eunoians.mcrpg.entity.player.McRPGPlayer)}, {@link #savePlayerAbilityToggles(Connection, McRPGPlayer)} and {@link #savePlayerAbilityAttributes(Connection, McRPGPlayer)}
 //     * and should serve as a generic save all method.
 //     * <p>
 //     * To save specific information about a player and their skills, developers should call the specific methods that save the information they desire.
@@ -611,12 +669,12 @@ public class SkillDAO {
 //        databaseManager.getDatabaseExecutorService().submit(() -> {
 //
 //            CompletableFuture.allOf(savePlayerSkillData(connection, mcRPGPlayer),
-//                    savePlayerAbilityToggles(connection, mcRPGPlayer), savePlayerAbilityAttributes(connection, mcRPGPlayer))
-//                .thenAccept(completableFuture::complete)
-//                .exceptionally(throwable -> {
-//                    throwable.printStackTrace();
-//                    return null;
-//                });
+//                            savePlayerAbilityToggles(connection, mcRPGPlayer), savePlayerAbilityAttributes(connection, mcRPGPlayer))
+//                    .thenAccept(completableFuture::complete)
+//                    .exceptionally(throwable -> {
+//                        throwable.printStackTrace();
+//                        return null;
+//                    });
 //
 //        });
 //        return completableFuture;
@@ -703,15 +761,13 @@ public class SkillDAO {
 //                connection.setAutoCommit(true);
 //
 //                completableFuture.complete(null);
-//            }
-//            catch (SQLException e) {
+//            } catch (SQLException e) {
 //
 //                //If there is an error, attempt to rollback and set auto commit to true
 //                try {
 //                    connection.rollback();
 //                    connection.setAutoCommit(true);
-//                }
-//                catch (SQLException ex) {
+//                } catch (SQLException ex) {
 //                    ex.printStackTrace();
 //                    completableFuture.completeExceptionally(ex);
 //                }
@@ -832,7 +888,7 @@ public class SkillDAO {
 //        });
 //        return completableFuture;
 //    }
-//
+
 //    /**
 //     * Gets the player leaderboard rankings for the provided {@link Skills} skill type.
 //     *
@@ -879,7 +935,7 @@ public class SkillDAO {
 //
 //        return completableFuture;
 //    }
-//
+
 //    /**
 //     * Gets the player leaderboard power level rankings.
 //     *
@@ -925,4 +981,31 @@ public class SkillDAO {
 //        return completableFuture;
 //    }
 
+    private static String getLegacyDatabaseName(String legacyAbilityName) {
+
+        char[] chars = legacyAbilityName.toCharArray();
+        StringBuilder string = new StringBuilder();
+        boolean first = true;
+
+        for (char letter : chars) {
+
+            //On the first letter, we don't need to add a `_`, so we skip
+            if (!first) {
+                //Check here for uppercase except on the first letter
+                if (Character.isUpperCase(letter)) {
+                    string.append("_");
+                }
+            }
+            else {
+                first = false;
+            }
+
+            if(letter == ' '){ //Why have I done this to myself
+                continue;
+            }
+
+            string.append(letter == '+' ? "_plus" : letter);//Hardcode to handle Bleed+
+        }
+        return string.toString().toLowerCase(Locale.ROOT); //Lowercase it all
+    }
 }

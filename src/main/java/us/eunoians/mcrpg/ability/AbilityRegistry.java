@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability;
 
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
+import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -15,10 +16,13 @@ import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
+import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The central ability registry for McRPG.
@@ -30,6 +34,8 @@ public class AbilityRegistry {
 
     private final McRPG mcRPG;
     private final Map<NamespacedKey, Ability> abilities;
+    private final Map<NamespacedKey, Set<NamespacedKey>> abilitiesWithSkills;
+    private final Set<NamespacedKey> abilitiesWithoutSkills;
     //TODO find a new home for these two
     private final Map<NamespacedKey, EntityAlliedCheck> entityAlliedFunctions;
     private final Map<NamespacedKey, AlliedAttackCheck> alliedAttackCheckFunctions;
@@ -37,6 +43,8 @@ public class AbilityRegistry {
     public AbilityRegistry(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
         abilities = new HashMap<>();
+        abilitiesWithSkills = new HashMap<>();
+        abilitiesWithoutSkills = new HashSet<>();
         entityAlliedFunctions = new HashMap<>();
         alliedAttackCheckFunctions = new HashMap<>();
     }
@@ -53,7 +61,18 @@ public class AbilityRegistry {
      * @param ability The {@link Ability} to register
      */
     public void registerAbility(@NotNull Ability ability) {
-        abilities.put(ability.getAbilityKey(), ability);
+        NamespacedKey abilityKey = ability.getAbilityKey();
+        abilities.put(abilityKey, ability);
+
+        if (ability.belongsToSkill() && ability.getSkill().isPresent()) {
+            NamespacedKey skillKey = ability.getSkill().get();
+
+            Set<NamespacedKey> abilities = abilitiesWithSkills.getOrDefault(skillKey, new HashSet<>());
+            abilities.add(abilityKey);
+            abilitiesWithSkills.put(skillKey, abilities);
+        } else {
+            abilitiesWithoutSkills.add(abilityKey);
+        }
         Bukkit.getPluginManager().callEvent(new AbilityRegisterEvent(ability));
     }
 
@@ -114,9 +133,26 @@ public class AbilityRegistry {
     public void unregisterAbility(@NotNull NamespacedKey abilityKey) {
         Ability ability = abilities.remove(abilityKey);
 
-        if (ability != null) {
-            Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
+        if (ability == null) {
+            return;
         }
+
+        if (ability.belongsToSkill() && ability.getSkill().isPresent()) {
+            NamespacedKey skillKey = ability.getSkill().get();
+
+            if (abilitiesWithSkills.containsKey(skillKey)) {
+                Set<NamespacedKey> abilities = abilitiesWithSkills.get(skillKey);
+                abilities.remove(abilityKey);
+                if (abilities.isEmpty()) {
+                    abilitiesWithSkills.remove(skillKey);
+                }
+            }
+        } else {
+            abilitiesWithoutSkills.remove(abilityKey);
+        }
+
+        Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
+
     }
 
     /**
@@ -135,6 +171,65 @@ public class AbilityRegistry {
         }
 
         return abilities.get(abilityKey);
+    }
+
+    /**
+     * Checks to see if the provided {@link Skill} has any {@link Ability Abilities} associated with it.
+     *
+     * @param skill The {@link Skill} to check
+     * @return {@code true} if the provided {@link Skill} has any {@link Ability Abilities} associated with it.
+     */
+    public boolean doesSkillHaveAbilities(@NotNull Skill skill) {
+        return doesSkillHaveAbilities(skill.getSkillKey());
+    }
+
+    /**
+     * Checks to see if the {@link Skill} associated with the provided {@link NamespacedKey} has any
+     * {@link Ability Abilities} associated wit hit.
+     *
+     * @param skillKey The {@link NamespacedKey} to check
+     * @return {@code true} if the provided {@link NamespacedKey} has any {@link Ability Abilities} associated with it.
+     */
+    public boolean doesSkillHaveAbilities(@NotNull NamespacedKey skillKey) {
+        return abilitiesWithSkills.containsKey(skillKey);
+    }
+
+    /**
+     * Gets an {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * belonging to the provided {@link Skill}.
+     *
+     * @param skill The {@link Skill} to get the {@link Ability Abilities} for
+     * @return An {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * belonging to the provided {@link Skill}.
+     */
+    @NotNull
+    public Set<NamespacedKey> getAbilitiesBelongingToSkill(@NotNull Skill skill) {
+        return getAbilitiesBelongingToSkill(skill.getSkillKey());
+    }
+
+    /**
+     * Gets an {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * belonging to the {@link Skill} associated with the provided {@link NamespacedKey}.
+     *
+     * @param skillKey The {@link NamespacedKey} to get the {@link Ability Abilities} for
+     * @return An {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * belonging to the provided {@link NamespacedKey}.
+     */
+    @NotNull
+    public Set<NamespacedKey> getAbilitiesBelongingToSkill(@NotNull NamespacedKey skillKey) {
+        return abilitiesWithSkills.containsKey(skillKey) ? ImmutableSet.copyOf(abilitiesWithSkills.get(skillKey)) : ImmutableSet.of();
+    }
+
+    /**
+     * Gets an {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to {@link Ability Abilities} that don't
+     * have any skills associated with them.
+     *
+     * @return An {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to {@link Ability Abilities} that don't
+     * have any skills associated with them.
+     */
+    @NotNull
+    public Set<NamespacedKey> getAbilitiesWithoutSkills() {
+        return ImmutableSet.copyOf(abilitiesWithoutSkills);
     }
 
     /**

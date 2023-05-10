@@ -6,11 +6,19 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.swords.Bleed;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.database.table.SkillDAO;
+import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.SkillRegistry;
 
+import java.sql.Connection;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 /**
@@ -35,19 +43,47 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
     }
 
     @Override
-    protected boolean loadPlayer() {
+    protected boolean loadPlayer() { //TODO completable future?
         //TODO actually load data lmfao
-        getPlugin().getLogger().log(Level.INFO, "Player data loaded.");
-
         //Add bleed for testing
-        getCorePlayer().asSkillHolder().addAvailableAbility(new Bleed());
-        getCorePlayer().asSkillHolder().addSkillHolderData(new Swords(), 0);
-        getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
-                + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
-                .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
-        getPlugin().getLogger().log(Level.INFO, "Player skills are now: "
-                + getCorePlayer().asSkillHolder().getSkills().stream()
-                .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
+        SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        SkillHolder skillHolder = getCorePlayer().asSkillHolder();
+        CompletableFuture futures[] = new CompletableFuture[skillRegistry.getRegisteredSkills().size()];
+
+        Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
+        int i = 0;
+        for(NamespacedKey skillKey : skillRegistry.getRegisteredSkills()) {
+            Skill skill = skillRegistry.getRegisteredSkill(skillKey);
+
+            getPlugin().getLogger().log(Level.INFO, "Loading data for skill: " + skillKey.getKey());
+
+            CompletableFuture<SkillDataSnapshot> future = SkillDAO.getAllPlayerSkillInformation(connection, getCorePlayer().getUUID(), skillKey);
+            futures[i] = future;
+            future.thenAccept(skillDataSnapshot -> {
+
+                getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey());
+
+                skillHolder.addSkillHolderData(skill, skillDataSnapshot.getCurrentLevel(), skillDataSnapshot.getCurrentExp());
+
+                for(NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
+                    Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
+                    skillHolder.addAvailableAbility(abilityKey);
+                    skillHolder.addAbilityData(new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values()));
+                }
+
+                getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
+                        + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
+                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
+                getPlugin().getLogger().log(Level.INFO, "Player skills are now: "
+                        + getCorePlayer().asSkillHolder().getSkills().stream()
+                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
+            }).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+        }
+        CompletableFuture.allOf(futures);
         return true;
     }
 
