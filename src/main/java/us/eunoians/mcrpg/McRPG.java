@@ -10,16 +10,17 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
+import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
-import us.eunoians.mcrpg.listener.OnAttackAbilityListener;
-import us.eunoians.mcrpg.listener.OnAttackLevelListener;
-import us.eunoians.mcrpg.listener.OnPlayerLevelUpListener;
-import us.eunoians.mcrpg.listener.PlayerJoinListener;
+import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
+import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
+import us.eunoians.mcrpg.listener.player.OnPlayerLevelUpListener;
+import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
@@ -76,6 +77,7 @@ public class McRPG extends CorePlugin {
 
         //TODO remove after testing
         getAbilityRegistry().registerAbility(new Bleed());
+        getAbilityRegistry().registerAbility(new DeeperWound());
         getSkillRegistry().registerSkill(new Swords());
     }
 

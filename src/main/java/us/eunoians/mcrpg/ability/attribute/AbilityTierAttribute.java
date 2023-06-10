@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * This attribute stores the tier for an ability.
  */
-public class AbilityTierAttribute extends AbilityAttribute<Integer> {
+public class AbilityTierAttribute extends OptionalAbilityAttribute<Integer> {
 
     AbilityTierAttribute() {
         super("tier", AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
@@ -54,5 +54,10 @@ public class AbilityTierAttribute extends AbilityAttribute<Integer> {
     @Override
     public Integer getDefaultContent() {
         return 0;
+    }
+
+    @Override
+    public boolean shouldContentBeSaved(@NotNull Integer content) {
+        return content > 0;
     }
 }

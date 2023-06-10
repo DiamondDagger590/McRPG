@@ -21,7 +21,7 @@ public class AbilityAttributeManager {
     public static final NamespacedKey ABILITY_PENDING_ATTRIBUTE_KEY = new NamespacedKey(McRPG.getInstance(), "ability_pending_attribute");
     public static final NamespacedKey ABILITY_TIER_ATTRIBUTE_KEY = new NamespacedKey(McRPG.getInstance(), "ability_tier_attribute");
     public static final NamespacedKey ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY = new NamespacedKey(McRPG.getInstance(), "ability_toggled_off_attribute");
-
+    public static final NamespacedKey ABILITY_UNLOCKED_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "ability_unlocked_attribute");
     private final McRPG plugin;
     private final Map<String, NamespacedKey> abilityAttributeKeys;
     private final Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes;
@@ -39,6 +39,7 @@ public class AbilityAttributeManager {
         registerAttribute(new AbilityPendingAttribute());
         registerAttribute(new AbilityCooldownAttribute());
         registerAttribute(new AbilityToggledOffAttribute());
+        registerAttribute(new AbilityUnlockedAttribute());
     }
 
     /**

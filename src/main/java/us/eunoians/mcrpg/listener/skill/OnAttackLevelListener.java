@@ -1,6 +1,5 @@
-package us.eunoians.mcrpg.listener;
+package us.eunoians.mcrpg.listener.skill;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;

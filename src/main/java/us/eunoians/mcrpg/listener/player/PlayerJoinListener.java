@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener;
+package us.eunoians.mcrpg.listener.player;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

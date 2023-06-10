@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * This attribute stores the pending status for an ability, being {@code true} if the ability
  * is pending being accepted by the player.
  */
-public class AbilityPendingAttribute extends AbilityAttribute<Boolean> {
+public class AbilityPendingAttribute extends OptionalAbilityAttribute<Boolean> {
 
     AbilityPendingAttribute() {
         super("pending_status", AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
@@ -55,5 +55,10 @@ public class AbilityPendingAttribute extends AbilityAttribute<Boolean> {
     @Override
     public Boolean getDefaultContent() {
         return false;
+    }
+
+    @Override
+    public boolean shouldContentBeSaved(@NotNull Boolean content) {
+        return content;
     }
 }

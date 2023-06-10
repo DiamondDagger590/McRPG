@@ -11,12 +11,17 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -67,7 +72,13 @@ public class Bleed extends Ability {
         Entity entity = entityDamageByEntityEvent.getEntity();
 
         if (entity instanceof LivingEntity livingEntity && BLEED_MANAGER.canEntityStartBleeding(livingEntity)) {
-            BLEED_MANAGER.startBleeding(livingEntity);
+
+            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, 3);
+            Bukkit.getPluginManager().callEvent(bleedActivateEvent);
+
+            if(!bleedActivateEvent.isCancelled()) {
+                BLEED_MANAGER.startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles());
+            }
         }
     }
 
@@ -85,7 +96,7 @@ public class Bleed extends Ability {
      * This class is used to handle all the specific mechanics required for bleed to work.
      */
     private static class BleedManager {
-        private final Set<UUID> ENTITIES_BLEEDING = new HashSet<>();
+        private final Map<UUID, Optional<AbilityHolder>> ENTITIES_BLEEDING = new HashMap<>();
         private final Set<UUID> BLEED_IMMUNE_ENTITIES = new HashSet<>();
 
         /**
@@ -105,7 +116,7 @@ public class Bleed extends Ability {
          * @return {@code true} if the provided {@link UUID} is currently bleeding.
          */
         public boolean isEntityBleeding(@NotNull UUID uuid) {
-            return ENTITIES_BLEEDING.contains(uuid);
+            return ENTITIES_BLEEDING.containsKey(uuid);
         }
 
         /**
@@ -139,10 +150,21 @@ public class Bleed extends Ability {
          * @param entity The {@link LivingEntity} to start the bleeding process for
          */
         public void startBleeding(@NotNull LivingEntity entity) {
+            startBleeding(null, entity, 3);
+        }
 
+        public void startBleeding(@NotNull LivingEntity entity, int bleedCycles) {
+            startBleeding(null, entity, bleedCycles);
+        }
+
+        public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity) {
+            startBleeding(abilityHolder, entity, 3);
+        }
+
+        public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles) {
             if (canEntityStartBleeding(entity)) {
 
-                ENTITIES_BLEEDING.add(entity.getUniqueId());
+                ENTITIES_BLEEDING.put(entity.getUniqueId(), Optional.ofNullable(abilityHolder));
 
                 ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(McRPG.getInstance(), 0.5, 0.5, 3) {
                     @Override
@@ -173,11 +195,19 @@ public class Bleed extends Ability {
                             }
 
                             if (entity.getHealth() > 4) {
-                                FakeBleedDamageEvent fakeBleedDamageEvent = new FakeBleedDamageEvent(entity, EntityDamageEvent.DamageCause.CUSTOM, 2);
+
+                                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, 4, true);
+                                Bukkit.getPluginManager().callEvent(bleedDamageEvent);
+
+                                if(bleedDamageEvent.isCancelled()) { //If bleed damage is cancelled, skip this interval
+                                    return;
+                                }
+
+                                FakeBleedDamageEvent fakeBleedDamageEvent = new FakeBleedDamageEvent(entity, EntityDamageEvent.DamageCause.CUSTOM, bleedDamageEvent.getDamage()); //Call a fake event to check for region protections
                                 Bukkit.getPluginManager().callEvent(fakeBleedDamageEvent);
 
                                 if (!fakeBleedDamageEvent.isCancelled()) {
-                                    entity.setHealth(Math.max(4, entity.getHealth() - fakeBleedDamageEvent.getFinalDamage()));
+                                    entity.setHealth(Math.max(4, entity.getHealth() - fakeBleedDamageEvent.getFinalDamage())); //Respects damage modifiers since those are applied after the bleed event
                                     entity.damage(0.01); //for damage effect
                                 }
                             }
@@ -196,6 +226,7 @@ public class Bleed extends Ability {
                 };
                 expireableCoreTask.runTask();
             }
+
         }
 
         /**

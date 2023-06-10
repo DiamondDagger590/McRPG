@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener;
+package us.eunoians.mcrpg.listener.ability;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;

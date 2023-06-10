@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * This attribute stores the cooldown that an ability has left before it can be activated again
  */
-public class AbilityCooldownAttribute extends AbilityAttribute<Long> {
+public class AbilityCooldownAttribute extends OptionalAbilityAttribute<Long> {
 
     AbilityCooldownAttribute() {
         super("cooldown", AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
@@ -54,5 +54,10 @@ public class AbilityCooldownAttribute extends AbilityAttribute<Long> {
     @Override
     public Long getDefaultContent() {
         return 0L;
+    }
+
+    @Override
+    public boolean shouldContentBeSaved(@NotNull Long content) {
+        return content <= 0 || content < System.currentTimeMillis();
     }
 }

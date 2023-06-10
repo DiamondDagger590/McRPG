@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener;
+package us.eunoians.mcrpg.listener.player;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

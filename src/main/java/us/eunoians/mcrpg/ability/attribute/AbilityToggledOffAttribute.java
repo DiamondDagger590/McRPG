@@ -6,14 +6,14 @@ import org.jetbrains.annotations.NotNull;
  * This attribute stores if an ability is toggled off or not. So a value of
  * {@code true} would mean the ability is toggled off.
  */
-public class AbilityToggledOffAttribute extends AbilityAttribute<Boolean> {
+public class AbilityToggledOffAttribute extends OptionalAbilityAttribute<Boolean> {
 
     AbilityToggledOffAttribute() {
-        super("toggled", AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+        super("toggled", AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
     }
 
     public AbilityToggledOffAttribute(@NotNull Boolean content) {
-        super("tier", AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY, content);
+        super("toggled", AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY, content);
     }
 
     @NotNull
@@ -32,5 +32,10 @@ public class AbilityToggledOffAttribute extends AbilityAttribute<Boolean> {
     @Override
     public Boolean getDefaultContent() {
         return false;
+    }
+
+    @Override
+    public boolean shouldContentBeSaved(@NotNull Boolean content) {
+        return !content;
     }
 }
