@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg;
 
+import ch.jalu.configme.SettingsManager;
+import ch.jalu.configme.SettingsManagerBuilder;
 import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.player.PlayerManager;
 import de.tr7zw.changeme.nbtapi.NBTItem;
@@ -14,15 +16,20 @@ import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
+import us.eunoians.mcrpg.config.BaseMainConfig;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
-import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
+import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.player.OnPlayerLevelUpListener;
 import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
+import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
@@ -101,6 +108,24 @@ public class McRPG extends CorePlugin {
     private void initializeFiles() {
         fileManager = new FileManager(this);
         fileManager.initializeAndLoadFiles();
+
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+
+        File configFile = new File(getDataFolder().getPath() + File.separator + "config.yml");
+        if(!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        SettingsManager settingsManager = SettingsManagerBuilder
+                .withYamlFile(configFile)
+                .configurationData(BaseMainConfig.class)
+                .useDefaultMigrationService()
+                .create();
     }
 
     /**
@@ -141,6 +166,7 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnPlayerLevelUpListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
     }
 
     /**

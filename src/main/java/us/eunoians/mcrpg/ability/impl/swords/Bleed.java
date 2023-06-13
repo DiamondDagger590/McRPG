@@ -2,6 +2,9 @@ package us.eunoians.mcrpg.ability.impl.swords;
 
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -163,6 +166,14 @@ public class Bleed extends Ability {
 
         public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles) {
             if (canEntityStartBleeding(entity)) {
+
+                //TODO remove mini message test
+                if(entity instanceof Player player) {
+                    Audience audience = McRPG.getInstance().getAdventure().player(player);
+                    MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+                    Component parsed = miniMessage.deserialize("Hello <rainbow>world</rainbow>, isn't <underlined>MiniMessage</underlined> fun?");
+                    audience.sendMessage(parsed);
+                }
 
                 ENTITIES_BLEEDING.put(entity.getUniqueId(), Optional.ofNullable(abilityHolder));
 

@@ -60,7 +60,7 @@ dependencies {
     val spigotVersion = "1.19.4-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
 
-    val mccoreVersion = "1.0.0.3-SNAPSHOT"
+    val mccoreVersion = "1.0.0.5-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     // TODO Look into new spigot yaml comment api
@@ -84,6 +84,19 @@ dependencies {
     compileOnly(files("libs/SpartanAPI.jar"))
     compileOnly(files("libs/mcMMO.jar"))
     compileOnly(files("libs/NoCheatPlus.jar")) //3.16.0-RC-sMD5NET-b1134
+
+    //McCore deps
+    val adventureVersion = "4.14.0"
+    implementation("net.kyori:adventure-api:$adventureVersion")
+
+    val adventureBukkitVersion = "4.3.0"
+    implementation("net.kyori:adventure-platform-bukkit:$adventureBukkitVersion")
+
+    val adventureMiniMessageVersion = "4.14.0"
+    implementation("net.kyori:adventure-text-minimessage:$adventureMiniMessageVersion")
+
+    val configMeVersion = "1.3.0"
+    implementation("ch.jalu:configme:$configMeVersion")
 }
 
 tasks.withType<JavaCompile> {
@@ -115,7 +128,7 @@ tasks.jar {
 }
 
 tasks {
-    named<ShadowJar>("shadowJar") {
+    shadowJar {
 
         //My gheto solution to get the commit hash on the shadow'd jar
 
@@ -132,7 +145,9 @@ tasks {
 
         mergeServiceFiles()
         relocate("de.tr7zw.changeme.nbtapi", "us.eunoians.mcrpg.nbtapi")
-        relocate("org.bstats", "us.eunoians.mcrpg")
+        relocate("org.bstats", "com.diamonddagger590.mcrpg")
+        relocate("net.kyori", "com.diamonddagger590.mcrpb.adventure")
+        relocate("ch.jalu.configme", "com.diamonddagger590.mcrpg.configme")
         relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")
     }
 }

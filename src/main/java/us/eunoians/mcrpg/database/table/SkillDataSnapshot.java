@@ -164,7 +164,7 @@ public class SkillDataSnapshot {
      * Gets a map of {@link NamespacedKey}s mapped to {@link AbilityAttribute}s that are associated with the provided
      * {@link NamespacedKey}.
      *
-     * @param genericAbility The {@link javax.naming.Name} to get the attributes for
+     * @param abilityKey The {@link NamespacedKey} to get the attributes for
      * @return A {@link Map} of {@link NamespacedKey}s mapped to their {@link AbilityAttribute} for easy lookup of
      * what attributes an ability has.
      */
@@ -178,7 +178,7 @@ public class SkillDataSnapshot {
      * represented by this snapshot
      *
      * @return An unmodifiable copy of the snapshot's map of what abilities are toggled on and off for the skill represented by
-     * this snapshot. The key is the {@link NamespacedKey} for all abilities under the snapshot's {@link us.eunoians.mcrpg.skill.Skill} found under {@link #getSkillType()} with
+     * this snapshot. The key is the {@link NamespacedKey} for all abilities under the snapshot's {@link us.eunoians.mcrpg.skill.Skill} found under {@link #getSkillKey()} ()} with
      * the value being {@code true} if the ability is toggled on and {@code false} otherwise
      */
     @NotNull
