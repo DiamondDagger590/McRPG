@@ -1,11 +1,7 @@
-package us.eunoians.mcrpg.configuration.file;
+package us.eunoians.mcrpg.configuration.legacy;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
-
-import java.util.Optional;
 
 /**
  * An interface that can be extended by McRPG files in order to allow more structured file usage
@@ -43,14 +39,4 @@ public sealed interface McRPGConfigurationFile permits ExpPermissionsFile, MainC
      */
     @NotNull
     public FileType getFileType();
-
-    /**
-     * Gets an {@link Optional} that is either empty or contains the {@link FileConfiguration} associated with this file
-     *
-     * @return An {@link Optional} that is either empty or contains the {@link FileConfiguration} associated with this file
-     */
-    @NotNull
-    public default Optional<FileConfiguration> getFileConfiguration() {
-        return Optional.of(McRPG.getInstance().getFileManager().getFileConfiguration(getFileType()));
-    }
 }

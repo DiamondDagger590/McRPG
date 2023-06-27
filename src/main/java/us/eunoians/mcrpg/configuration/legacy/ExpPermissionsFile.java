@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.configuration.file;
+package us.eunoians.mcrpg.configuration.legacy;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -50,14 +50,9 @@ public enum ExpPermissionsFile implements McRPGConfigurationFile {
         return acceptsPlaceholders;
     }
 
-    /**
-     * Gets the {@link FileType} that represents this file
-     *
-     * @return The {@link FileType} that represents this file
-     */
     @NotNull
     @Override
     public FileType getFileType() {
-        return FileType.EXP_PERMISSIONS;
+        return null;
     }
 }

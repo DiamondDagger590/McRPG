@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.configuration.file;
+package us.eunoians.mcrpg.configuration.legacy;
 
 import de.articdive.enum_to_yaml.interfaces.ConfigurationEnum;
 import org.jetbrains.annotations.NotNull;

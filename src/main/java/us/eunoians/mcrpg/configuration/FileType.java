@@ -1,66 +1,44 @@
 package us.eunoians.mcrpg.configuration;
 
-import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
+import ch.jalu.configme.SettingsHolder;
+import ch.jalu.configme.SettingsManager;
+import ch.jalu.configme.SettingsManagerBuilder;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.file.MainConfigurationFile;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 
 import java.io.File;
+import java.io.IOException;
 
-/**
- * An enum that contains all files that McRPG uses. Some of these files will be auto updating by utilizing EnumToYAML
- * and others will just be normal configuration files.
- */
 public enum FileType {
 
-    //The main config.yml used by McRPG
-    MAIN_CONFIG("config.yml", (filePath) -> {
+    MAIN_CONFIG("config.yml", MainConfigFile.class);
 
-        File file = new File(McRPG.getInstance().getDataFolder(), filePath);
-        new EnumConfigurationBuilder(file, MainConfigurationFile.class)
-            .setWidth(100000)
-            .build();
+    private static final String FOLDER_PATH = McRPG.getInstance().getDataFolder().getPath();
 
-        return file;
-    }),
-    //The exp_perms.yml
-    EXP_PERMISSIONS("exp_perms.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
+    private final String filePath;
+    private final Class<? extends SettingsHolder> clazz;
 
-    /*
-        Skills
-     */
-
-    //Swords
-    SWORDS_CONFIG("skill_configuration" + File.separator + "swords_configuration.yml", FileBuildFunction.DEFAULT_YAML_BUILD_FUNCTION),
-    ;
-
-    private final String path;
-    private final FileBuildFunction fileBuildFunction;
-
-    FileType(@NotNull String path, @NotNull FileBuildFunction fileBuildFunction) {
-        this.path = path;
-        this.fileBuildFunction = fileBuildFunction;
+    FileType(@NotNull String filePath, @NotNull Class<? extends SettingsHolder> clazz) {
+        this.filePath = filePath;
+        this.clazz = clazz;
     }
 
-    /**
-     * Gets the path that the file will be located at
-     *
-     * @return The path that the file will be located at
-     */
     @NotNull
-    public String getPath() {
-        return path;
-    }
+    public SettingsManager initializeFile() {
+        File configFile = new File(FOLDER_PATH + File.separator + filePath);
+        if(!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-    /**
-     * Get the function used to build the configuration file.
-     * <p>
-     * This is package private, as the only class that should be utilizing the build function would be {@link FileManager}.
-     *
-     * @return A {@link FileBuildFunction} that can be used to build the configuration file.
-     */
-    @NotNull
-    FileBuildFunction getFileBuildFunction() {
-        return fileBuildFunction;
+        return SettingsManagerBuilder
+                .withYamlFile(configFile)
+                .configurationData(clazz)
+                .useDefaultMigrationService()
+                .create();
     }
 }

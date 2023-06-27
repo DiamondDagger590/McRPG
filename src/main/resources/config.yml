@@ -18,7 +18,7 @@ configuration:
   #What language file you want to use. Do not include the .yml
   language-file: en
   #If set to true, then players will not receive McRPG gameplay tips
-  disable-tips: true
+  disable-tips: false
   #Configure all admin features
   admin:
     #If enabled, admins with the permission node 'mcrpg.ability.spy' will be alerted when abilities are unlocked and upgraded

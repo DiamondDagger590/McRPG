@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.configuration.file;
+package us.eunoians.mcrpg.configuration.legacy;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -67,6 +67,6 @@ public enum SwordsConfigurationFile implements McRPGConfigurationFile {
     @NotNull
     @Override
     public FileType getFileType() {
-        return FileType.SWORDS_CONFIG;
+        return null;
     }
 }

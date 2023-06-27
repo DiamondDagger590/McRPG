@@ -9,7 +9,7 @@ import com.diamonddagger590.mccore.exception.CoreDatabaseInitializationException
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.MainConfigurationFile;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.PlayerDataDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.PlayerSettingsDAO;
@@ -52,8 +52,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
     public McRPGDatabaseManager(@NotNull McRPG plugin) {
         super(plugin);
-        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager()
-                                                                                   .getFileConfiguration(FileType.MAIN_CONFIG).getString(MainConfigurationFile.DATABASE_DRIVER.getPath(), (String) MainConfigurationFile.DATABASE_DRIVER.getDefaultValue()));
+        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager().getFile(FileType.MAIN_CONFIG).getProperty(MainConfigFile.DATABASE_DRIVER));
 
         if (databaseDriver.isEmpty()) {
             plugin.getLogger().log(Level.SEVERE, "The configured database driver in the config.yml is invalid and is being defaulted to SQLite.");
