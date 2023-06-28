@@ -13,6 +13,10 @@ import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 
 import java.util.Set;
 
+/**
+ * This listener handles activating any abilities that rly on {@link BleedActivateEvent}
+ * for activation
+ */
 public class OnBleedActivateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

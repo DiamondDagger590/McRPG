@@ -7,13 +7,13 @@ import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
- * The components that can activate {@link DeeperWound}
+ * The components that activate {@link BleedPlus}
  */
-public class DeeperWoundComponents {
+public class BleedPlusComponents {
 
-    public static final DeeperWoundActivateComponent DEEPER_WOUND_ACTIVATE_COMPONENT = new DeeperWoundActivateComponent();
+    public static final BleedPlusActivateComponent BLEED_PLUS_ACTIVATE_COMPONENT = new BleedPlusActivateComponent();
 
-    private static class DeeperWoundActivateComponent implements EventActivatableComponent {
+    private static class BleedPlusActivateComponent implements EventActivatableComponent {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             return event instanceof BleedActivateEvent bleedActivateEvent && !bleedActivateEvent.isCancelled();

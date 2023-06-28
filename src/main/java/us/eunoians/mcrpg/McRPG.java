@@ -10,7 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
+import us.eunoians.mcrpg.ability.impl.swords.BleedPlus;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
+import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
@@ -74,6 +76,8 @@ public class McRPG extends CorePlugin {
 
         getAbilityRegistry().registerAbility(new Bleed());
         getAbilityRegistry().registerAbility(new DeeperWound());
+        getAbilityRegistry().registerAbility(new Vampire());
+        getAbilityRegistry().registerAbility(new BleedPlus());
         getSkillRegistry().registerSkill(new Swords());
 
         preloadNBTAPI();

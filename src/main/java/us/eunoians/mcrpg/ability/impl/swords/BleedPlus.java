@@ -15,15 +15,15 @@ import java.util.Optional;
 
 /**
  * This ability is an unlockable ability for {@link Swords} that
- * can increase the duration of the {@link Bleed} ability
+ * can increase the damage per tick for the {@link Bleed} ability
  */
-public class DeeperWound extends Ability {
+public class BleedPlus extends Ability {
 
-    public static final NamespacedKey DEEPER_WOUND_KEY = new NamespacedKey(McRPG.getInstance(), "deeper_wound");
+    public static final NamespacedKey BLEED_PLUS_KEY = new NamespacedKey(McRPG.getInstance(), "bleed_plus");
 
-    public DeeperWound() {
-        super(DEEPER_WOUND_KEY);
-        addActivatableComponent(DeeperWoundComponents.DEEPER_WOUND_ACTIVATE_COMPONENT, BleedActivateEvent.class, 0);
+    public BleedPlus() {
+        super(BLEED_PLUS_KEY);
+        addActivatableComponent(VampireComponents.VAMPIRE_ACTIVATE_COMPONENT, BleedActivateEvent.class, 0);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class DeeperWound extends Ability {
 
     @Override
     public Optional<String> getLegacyName() {
-        return Optional.of("Deeper Wound");
+        return Optional.of("Bleed+");
     }
 
     @Override
@@ -43,7 +43,6 @@ public class DeeperWound extends Ability {
 
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
         BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) event;
 
         DeeperWoundActivateEvent deeperWoundActivateEvent = new DeeperWoundActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), 2);
@@ -53,4 +52,5 @@ public class DeeperWound extends Ability {
             bleedActivateEvent.setBleedCycles(bleedActivateEvent.getBleedCycles() + deeperWoundActivateEvent.getAdditionalBleedCycles());
         }
     }
+
 }
