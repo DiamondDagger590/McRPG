@@ -13,7 +13,7 @@ import java.util.Objects;
  * @param <L> the type of the "left" value
  * @param <R> the type of the "right" value
  */
-public sealed abstract class Pair<L, R> permits ImmutablePair, MutablePair {
+public abstract class Pair<L, R> {
 
     protected L left;
     protected R right;
