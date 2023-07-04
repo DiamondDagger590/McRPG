@@ -1,15 +1,11 @@
 package us.eunoians.mcrpg.api.util;
 
-import de.articdive.enum_to_yaml.EnumConfigurationBuilder;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.types.Skills;
 import us.eunoians.mcrpg.util.IOUtil;
-import us.eunoians.mcrpg.util.configuration.ConfigEnum;
-import us.eunoians.mcrpg.util.configuration.LangEnum;
-import us.eunoians.mcrpg.util.configuration.SoundEnum;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,16 +44,6 @@ public class FileManager {
    * @param plugin The plugin this is getting loading for.
    */
   public FileManager setup(Plugin plugin) {
-    //Auto gen some configs
-    EnumConfigurationBuilder config = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "config.yml"), ConfigEnum.class);
-    EnumConfigurationBuilder enConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder() + File.separator + "localization" + File.separator + "en.yml"), LangEnum.class);
-    EnumConfigurationBuilder soundConfig = new EnumConfigurationBuilder(new File(McRPG.getInstance().getDataFolder()  + File.separator + "sounds.yml"), SoundEnum.class);
-    config.setWidth(100000);
-    enConfig.setWidth(100000);
-    soundConfig.setWidth(100000);
-    config.build();
-    enConfig.build();
-    soundConfig.build();
     prefix = "[" + plugin.getName() + "] ";
     this.plugin = plugin;
     if (!plugin.getDataFolder().exists()) {
@@ -323,7 +309,7 @@ public class FileManager {
 
     }
   }
-  
+
   public enum Files{
     ABILITY_OVERRIDE_GUI("abilityoverridegui.yml", "guis/abilityoverridegui.yml"),
     ACCEPT_ABILITY_GUI("acceptabilitygui.yml", "guis/acceptabilitygui.yml"),
@@ -373,10 +359,10 @@ public class FileManager {
     WOODCUTTING_CONFIG("woodcutting.yml", "skills/woodcutting.yml"),
     WORLDGUARD_CONFIG("wg_support.yml", "wg_support.yml"),
     WORLD_MODIFIER("world_modifier.yml", "world_modifier.yml");
-    
+
     private String fileName;
     private String fileLocation;
-    
+
     /**
      * The files that the server will try and load.
      *
@@ -387,7 +373,7 @@ public class FileManager {
       this.fileName = fileName;
       this.fileLocation = fileLocation;
     }
-    
+
     /**
      * Get the name of the file.
      *
@@ -396,7 +382,7 @@ public class FileManager {
     public String getFileName(){
       return fileName;
     }
-    
+
     /**
      * The location the jar it is at.
      *
@@ -405,7 +391,7 @@ public class FileManager {
     public String getFileLocation(){
       return fileLocation;
     }
-    
+
     /**
      * Gets the file from the system.
      *
@@ -414,7 +400,7 @@ public class FileManager {
     public FileConfiguration getFile(){
       return getInstance().getFile(this);
     }
-    
+
     public static Files fromString(String file){
       for(Files f : Files.values()){
         if(f.getFileName().replaceAll(".yml", "").equalsIgnoreCase(file)){
@@ -423,27 +409,27 @@ public class FileManager {
       }
       return null;
     }
-    
+
     /**
      * Saves the file from the loaded state to the file system.
      */
     public void saveFile(){
       getInstance().saveFile(this);
     }
-    
+
     /**
      * Overrides the loaded state file and loads the file systems file.
      */
     public void reloadFile(){
       getInstance().reloadFile(this);
     }
-    
+
     public static Files getSkillFile(Skills skill){
       return fromString(skill.getName());
     }
-    
+
   }
-  
+
   public class CustomFile {
 
     private String name;
