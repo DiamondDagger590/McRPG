@@ -1,0 +1,67 @@
+guis:
+  home-gui:
+    size: 45
+    title: '&4Main McRPG Menu'
+    Events:
+      #Slot
+      13:
+        #Events bound to slot
+        - 'OpenNative:SettingsGUI'
+      29:
+        - 'OpenFile:skillsgui.yml:SkillGUI'
+      31:
+        - 'OpenNative:UpgradeAbilityGUI'
+      33:
+        - 'OpenNative:EditLoadoutSelectGUI'
+    gui-items:
+      #This it an identifier and can be anything
+      player-skull:
+        #Display name
+        display-name: '&c&nYour Profile'
+        #Material
+        material: PLAYER_HEAD
+        #Only used for player heads
+        player-skull-owner: '%Player%'
+        #Lore of the item
+        lore:
+          - '&6Click &3this to change your personal settings'
+          - ' '
+          - '&3Power Level: &6%Power_Level%'
+          - '&3Swords: &6%Swords_Level%'
+          - '&3Mining: &6%Mining_Level%'
+          - '&3Unarmed: &6%Unarmed_Level%'
+          - '&3Herbalism: &6%Herbalism_Level%'
+          - '&3Archery: &6%Archery_Level%'
+          - '&3Woodcutting: &6%Woodcutting_Level%'
+          - '&3Fitness: &6%Fitness_Level%'
+          - '&3Excavation: &6%Excavation_Level%'
+          - '&3Axes: &6%Axes_Level%'
+          - '&3Fishing: &6%Fishing_Level%'
+          - '&3Sorcery: &6%Sorcery_Level%'
+          - '&3Taming: &6%Taming_Level%'
+        #Slot its found at
+        slot: 13
+      open-skill-gui:
+        display-name: '&c&nSkill Menu'
+        material: DIAMOND_SWORD
+        lore:
+          - '&6Click &3this to view information '
+          - '&3about all of your skills'
+        slot: 29
+      open-upgrade-abilities-gui:
+        display-name: '&c&nUpgrade Abilities'
+        material: NETHER_STAR
+        lore:
+          - '&6Click &3this to upgrade your abilities'
+          - '&3You have &6%Ability_Points% &3points to spend'
+        slot: 31
+      open-ability-loadout-gui:
+        display-name: '&c&nEdit Ability Loadout'
+        material: COMPASS
+        lore:
+          - '&6Click &3this to edit your ability loadout'
+        slot: 33
+    #Fills in every empty slot with this
+    filler-item:
+      material: GRAY_STAINED_GLASS_PANE
+      display-name: ' '

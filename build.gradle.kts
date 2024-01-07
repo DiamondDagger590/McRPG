@@ -42,6 +42,7 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://repo.aikar.co/content/groups/aikar/")
+    maven("https://repo.mattstudios.me/artifactory/public/") //triumph-gui
 
     //Spigot
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -54,20 +55,10 @@ repositories {
 
 dependencies {
 
-    val intellijAnnotationVersion = "12.0"
-    implementation("com.intellij:annotations:$intellijAnnotationVersion")
-
-    val spigotVersion = "1.19.4-R0.1-SNAPSHOT"
-    compileOnly("org.spigotmc:spigot-api:$spigotVersion")
-
-    val mccoreVersion = "1.0.0.5-SNAPSHOT"
+    val mccoreVersion = "1.0.0.6-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
-    // TODO Look into new spigot yaml comment api
-    val enumToYamlVersion = "1.0"
-    implementation("com.github.DiamondDagger590:EnumToYaml:$enumToYamlVersion")
-
-    val nbtAPIVersion = "2.11.2-SNAPSHOT"
+    val nbtAPIVersion = "2.11.3"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val bstatsVersion = "2.2.1"
@@ -84,19 +75,6 @@ dependencies {
     compileOnly(files("libs/SpartanAPI.jar"))
     compileOnly(files("libs/mcMMO.jar"))
     compileOnly(files("libs/NoCheatPlus.jar")) //3.16.0-RC-sMD5NET-b1134
-
-    //McCore deps
-    val adventureVersion = "4.14.0"
-    implementation("net.kyori:adventure-api:$adventureVersion")
-
-    val adventureBukkitVersion = "4.3.0"
-    implementation("net.kyori:adventure-platform-bukkit:$adventureBukkitVersion")
-
-    val adventureMiniMessageVersion = "4.14.0"
-    implementation("net.kyori:adventure-text-minimessage:$adventureMiniMessageVersion")
-
-    val configMeVersion = "1.3.0"
-    implementation("ch.jalu:configme:$configMeVersion")
 }
 
 tasks.withType<JavaCompile> {

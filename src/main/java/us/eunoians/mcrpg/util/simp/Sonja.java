@@ -1,3 +1,5 @@
+package us.eunoians.mcrpg.util.simp;
+
 public class Sonja {
     private String uwu;
 
