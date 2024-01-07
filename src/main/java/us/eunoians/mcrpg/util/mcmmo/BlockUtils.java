@@ -184,7 +184,7 @@ public final class BlockUtils{
     public static boolean canActivateHerbalism(BlockState blockState){
         switch(blockState.getType()){
             case DIRT:
-            case GRASS:
+            case GRASS_BLOCK:
             case DIRT_PATH:
             case FARMLAND:
                 return false;
