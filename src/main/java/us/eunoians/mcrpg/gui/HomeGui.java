@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.gui;
 
 import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.GuiClickFunction;
+import com.diamonddagger590.mccore.gui.GuiItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,6 +20,10 @@ public class HomeGui extends Gui {
         Bukkit.broadcastMessage("Settings clicked");
     });
     private static final ItemStack SKILLS_MENU_BUTTON_ITEM = new ItemStack(Material.REDSTONE);
+    private static final GuiClickFunction ON_SKILLS_CLICK = ((corePlayer, gui, slot) -> {
+        Bukkit.broadcastMessage("Skills clicked");
+    });
+
     static {
         ItemMeta meta = FILLER_GLASS.getItemMeta();
         meta.setDisplayName("");
@@ -43,9 +48,12 @@ public class HomeGui extends Gui {
                 }
             }
         });
+        setupItems();
     }
 
     private void setupItems() {
-
+        addGuiItem(10, new GuiItem(SETTINGS_BUTTON_ITEM, ON_SETTINGS_CLICK), true);
+        addGuiItem(13, new GuiItem(SKILLS_MENU_BUTTON_ITEM, ON_SKILLS_CLICK), true);
+        executeFillerFunction();
     }
 }

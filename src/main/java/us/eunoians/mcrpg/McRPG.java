@@ -16,6 +16,7 @@ import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
+import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
@@ -108,6 +109,22 @@ public class McRPG extends CorePlugin {
         fileManager = new FileManager(this);
     }
 
+    @Override
+    public void constructCommands() {
+        super.constructCommands();
+        TestGuiCommand.registerCommand();
+    }
+
+    @Override
+    public void registerListeners() {
+        super.registerListeners();
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnPlayerLevelUpListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
+    }
+
     /**
      * Setup 3rd party plugin hooks that are natively supported by McRPG
      */
@@ -139,14 +156,6 @@ public class McRPG extends CorePlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             worldGuardEnabled = true;
         }
-    }
-
-    private void registerListeners() {
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
-        Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
-        Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
-        Bukkit.getPluginManager().registerEvents(new OnPlayerLevelUpListener(), this);
-        Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
     }
 
     /**
