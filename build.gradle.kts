@@ -23,7 +23,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.3.1-SNAPSHOT"
+version = "1.5.3.2-SNAPSHOT"
 group = "us.eunoians"
 
 java {

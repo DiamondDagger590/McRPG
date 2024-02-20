@@ -23,6 +23,11 @@ public class McRPGPlaceHolders extends PlaceholderExpansion {
   }
 
   @Override
+  public boolean persist() {
+    return true;
+  }
+
+  @Override
   public String getPlugin() {
     return McRPG.getInstance().getName();
   }
