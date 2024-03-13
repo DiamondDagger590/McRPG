@@ -293,9 +293,10 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
 
     private enum AbilityGuiSortType {
         ALPHABETICAL(Material.BAMBOO_HANGING_SIGN, "Alphabetical Sort", Comparator.comparing(Ability::getDisplayName)),
-        DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", new ChainComparator<>(ALPHABETICAL.getAbilityComparator(), Comparator.comparing(ability -> !(ability instanceof UnlockableAbility)))),
-        SKILL(Material.DIAMOND_SWORD, "Sort by Skill", new ChainComparator<>(Comparator.comparing(ability -> ability.getSkill().isPresent()),
-                DEFAULT_ABILITIES.getAbilityComparator(),
+        DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", new ChainComparator<>(
+                Comparator.comparing(ability -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator())),
+        SKILL(Material.DIAMOND_SWORD, "Sort by Skill", new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
+                Comparator.comparing(ability -> ability.getSkill().isPresent()),
                 // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
                 (ability, ability1) -> {
                     SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
@@ -314,18 +315,38 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                     // Otherwise, they both don't have skills then say they're equal
                     return 0;
                 },
-                // Sort the abilities in alphabetical order
-                ALPHABETICAL.getAbilityComparator())),
-        UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", new ChainComparator<>(SKILL.getAbilityComparator(), Comparator.comparing(ability -> ability instanceof UnlockableAbility), (ability, ability1) -> {
-            if (ability instanceof UnlockableAbility != ability1 instanceof UnlockableAbility) {
-                return ability instanceof UnlockableAbility ? 1 : -1;
-            }
+                DEFAULT_ABILITIES.getAbilityComparator())),
+        UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", new ChainComparator<>(
+                Comparator.comparing(ability -> !(ability instanceof UnlockableAbility)),
+                Comparator.comparing(ability -> ability.getSkill().isPresent()),
+                // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
+                (ability, ability1) -> {
+                    SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+                    Optional<Skill> skillOptional = Optional.ofNullable(ability.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability.getSkill().get()) : null);
+                    Optional<Skill> skillOptional1 = Optional.ofNullable(ability1.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability1.getSkill().get()) : null);
+                    // If one of these has a skill but the other doesn't, then we want to prioritize the one that has the skill first
+                    if (skillOptional.isPresent() != skillOptional1.isPresent()) {
+                        return skillOptional.isEmpty() ? -1 : 1;
+                    }
+                    // Sort by skill display names if both have skills
+                    if (skillOptional.isPresent() && skillOptional1.isPresent()) {
+                        Skill skill = skillOptional.get();
+                        Skill skill1 = skillOptional1.get();
+                        return skill.getDisplayName().compareTo(skill1.getDisplayName());
+                    }
+                    // Otherwise, they both don't have skills then say they're equal
+                    return 0;
+                },
+                (ability, ability1) -> {
+                    if (ability instanceof UnlockableAbility != ability1 instanceof UnlockableAbility) {
+                        return ability instanceof UnlockableAbility ? 1 : -1;
+                    }
 
-            if (ability instanceof UnlockableAbility unlockableAbility && ability1 instanceof UnlockableAbility unlockableAbility1) {
-                return Integer.compare(unlockableAbility.getUnlockLevel(), unlockableAbility1.getUnlockLevel());
-            }
-            return 0;
-        }, ALPHABETICAL.getAbilityComparator())),
+                    if (ability instanceof UnlockableAbility unlockableAbility && ability1 instanceof UnlockableAbility unlockableAbility1) {
+                        return Integer.compare(unlockableAbility.getUnlockLevel(), unlockableAbility1.getUnlockLevel());
+                    }
+                    return 0;
+                })),
         ;
 
         private final static LinkedNode<AbilityGuiSortType> FIRST_SORT_TYPE = new LinkedNode<>(values()[0]);

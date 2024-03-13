@@ -11,6 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
+import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
+import us.eunoians.mcrpg.ability.impl.mining.RicherOre;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
@@ -31,6 +34,7 @@ import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.sql.Connection;
@@ -87,7 +91,13 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new DeeperWound());
         getAbilityRegistry().registerAbility(new Vampire());
         getAbilityRegistry().registerAbility(new PoisonedBleed());
+
+        getAbilityRegistry().registerAbility(new ExtraOre());
+        getAbilityRegistry().registerAbility(new RicherOre());
+        getAbilityRegistry().registerAbility(new ItsATriple());
+
         getSkillRegistry().registerSkill(new Swords());
+        getSkillRegistry().registerSkill(new Mining());
 
         preloadNBTAPI();
         setupHooks();

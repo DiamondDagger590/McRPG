@@ -45,8 +45,6 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
     @Override
     protected boolean loadPlayer() { //TODO completable future?
-        //TODO actually load data lmfao
-        //Add bleed for testing
         SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
         AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
         AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
@@ -62,6 +60,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
             CompletableFuture<SkillDataSnapshot> future = SkillDAO.getAllPlayerSkillInformation(connection, getCorePlayer().getUUID(), skillKey);
             futures[i] = future;
+            i++;
             future.thenAccept(skillDataSnapshot -> {
 
                 getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey() + " Skill level: " + skillDataSnapshot.getCurrentLevel() + " Skill exp: " + skillDataSnapshot.getCurrentExp());
@@ -81,16 +80,19 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
                 getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
                         + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
-                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
+                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " " + s2).get());
                 getPlugin().getLogger().log(Level.INFO, "Player skills are now: "
                         + getCorePlayer().asSkillHolder().getSkills().stream()
-                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " ").get());
+                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " " + s2).get());
             }).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 return null;
             });
         }
-        CompletableFuture.allOf(futures);
+        CompletableFuture.allOf(futures).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
+        });
         return true;
     }
 
