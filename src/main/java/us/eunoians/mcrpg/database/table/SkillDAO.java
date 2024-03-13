@@ -5,10 +5,13 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.OptionalAbilityAttribute;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.exception.database.AbilityDatabaseNameException;
 import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
 import us.eunoians.mcrpg.skill.Skill;
@@ -91,33 +94,6 @@ public class SkillDAO {
                         "`current_level` int(11) NOT NULL DEFAULT 0," +
                         "`current_exp` int(11) NOT NULL DEFAULT 0," +
                         "PRIMARY KEY (`player_uuid`, `skill_id`)" +
-                        ");")) {
-                    statement.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    completableFuture.completeExceptionally(e);
-                }
-            }
-
-            //TODO remove this table
-            if (!abilityToggledOffTableExists) {
-
-                /*****
-                 ** Table Description:
-                 ** Contains all abilities that are toggled off
-                 *
-                 *
-                 * player_uuid is the {@link java.util.UUID} of the player being stored
-                 * ability_id is the id of the {@link us.eunoians.mcrpg.types.GenericAbility} that is being stored. (Note abilities in here could either be {@link us.eunoians.mcrpg.types.DefaultAbilities} or {@link us.eunoians.mcrpg.types.UnlockedAbilities}
-                 **
-                 ** Reasoning for structure:
-                 ** The composite key is the `player_uuid` field and the `ability_id` field, as there should only be one unique combination of the two per player and ability
-                 *****/
-                try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + ABILITY_TOGGLED_OFF_TABLE_NAME + "`" +
-                        "(" +
-                        "`player_uuid` varchar(36) NOT NULL," +
-                        "`ability_id` varchar(32) NOT NULL," +
-                        "PRIMARY KEY (`player_uuid`, `ability_id`)" +
                         ");")) {
                     statement.executeUpdate();
                 } catch (SQLException e) {
@@ -222,24 +198,22 @@ public class SkillDAO {
 
                                     String abilityDatabaseName;
                                     String abilityName;
-                                    if(ability.getDatabaseName().isPresent()) {
+                                    if (ability.getDatabaseName().isPresent()) {
                                         abilityDatabaseName = ability.getDatabaseName().get();
                                         abilityName = abilityDatabaseName;
-                                    }
-                                    else if(ability.getLegacyName().isPresent()){
+                                    } else if (ability.getLegacyName().isPresent()) {
                                         abilityName = ability.getLegacyName().get();
                                         abilityDatabaseName = getLegacyDatabaseName(abilityName);
-                                    }
-                                    else {
+                                    } else {
                                         throw new AbilityDatabaseNameException(ability);
                                     }
 
-                                    if(ability.getApplicableAttributes().contains(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY)) {
+                                    if (ability.getApplicableAttributes().contains(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY)) {
                                         String abilityToggledOffQuery = "MERGE INTO " + ABILITY_TOGGLED_OFF_TABLE_NAME + " SELECT uuid as player_uuid, '" + abilityName + "' as ability_id FROM " + legacyTableName + " WHERE is_" + abilityDatabaseName + "_toggled = 0";
                                         queries.add(abilityToggledOffQuery);
                                     }
 
-                                    if(ability.getApplicableAttributes().containsAll(LEGACY_ABILITY_ATTRIBUTES)) {
+                                    if (ability.getApplicableAttributes().containsAll(LEGACY_ABILITY_ATTRIBUTES)) {
                                         String tierColumnName = abilityDatabaseName + "_tier";
                                         String pendingColumnName = "is_" + abilityDatabaseName + "_pending";
 
@@ -255,7 +229,6 @@ public class SkillDAO {
                                             first = false;
                                         }
                                     }
-
                                 }
 
                                 abilityAttributeQuery = abilityAttributeQuery.trim();
@@ -267,7 +240,6 @@ public class SkillDAO {
 
                             //Execute queries
                             for (String query : queries) {
-
                                 try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                                     preparedStatement.executeUpdate();
                                 } catch (SQLException e) {
@@ -310,7 +282,6 @@ public class SkillDAO {
                         });
                     })
                     .thenAccept(unused -> {
-
                         //Once skill data is finished, then we attempt to update the ability toggled off table
                         TableVersionHistoryDAO.getLatestVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME).thenAccept(lastStoredVersion -> {
 
@@ -320,18 +291,18 @@ public class SkillDAO {
 
                             isAcceptingQueries = false;
 
-                            //Adds table to our tracking
-                            if (lastStoredVersion == 0) {
-                                TableVersionHistoryDAO.setTableVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME, 1);
-                                lastStoredVersion = 1;
-                            }
-                            if (lastStoredVersion == 1) {
-                                try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " SELECT player_uuid, ability_id, " + AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY + " as key, false as value FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME)) {
-                                    preparedStatement.executeUpdate();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                    completableFuture.completeExceptionally(e);
+                            if (lastStoredVersion == 0 || lastStoredVersion == 1) {
+                                // TODO remove after Verdux upgrades
+                                if (databaseManager.getDatabase() != null && databaseManager.getDatabase().tableExists("ABILITY_TOGGLED_OFF_TABLE_NAME")) {
+                                    try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " SELECT player_uuid, ability_id, " + AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY + " as key, false as value FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME)) {
+                                        preparedStatement.executeUpdate();
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                        completableFuture.completeExceptionally(e);
+                                    }
                                 }
+                                TableVersionHistoryDAO.setTableVersion(connection, ABILITY_TOGGLED_OFF_TABLE_NAME, 2);
+                                lastStoredVersion = 2;
                             }
 
                             isAcceptingQueries = true;
@@ -442,80 +413,6 @@ public class SkillDAO {
 
         return completableFuture;
     }
-
-//    /**
-//     * Gets the ability toggled statuses for a specific player's skill. This method calls {@link #getPlayerAbilityToggles(Connection, UUID, SkillDataSnapshot)},
-//     * providing an empty {@link SkillDataSnapshot} with only the provided {@link UUID} and {@link NamespacedKey}.
-//     *
-//     * @param connection The {@link Connection} to use to run the query
-//     * @param uuid       The {@link UUID} of the player to get the data for
-//     * @param skillType  The {@link NamespacedKey} to get the ability toggle data for
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the ability toggle data of the desired skill. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
-//        return getPlayerAbilityToggles(connection, uuid, new SkillDataSnapshot(uuid, skillKey));
-//    }
-
-//    /**
-//     * Gets the ability toggled statuses for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
-//     * {@link SkillDataSnapshot#addAbilityToggledData(GenericAbility, boolean)}.
-//     * <p>
-//     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillType()}.
-//     *
-//     * @param connection        The {@link Connection} to use to run the query
-//     * @param uuid              The {@link UUID} of the player to get the data for
-//     * @param skillDataSnapshot The {@link SkillDataSnapshot} to update
-//     * @return A {@link CompletableFuture} that contains the provided {@link SkillDataSnapshot}, updated with the toggled statuses for all abilities in the specified skill. If
-//     * there is an error, the {@link CompletableFuture} will instead complete with the {@link SQLException}.
-//     */
-//    @NotNull
-//    public static CompletableFuture<SkillDataSnapshot> getPlayerAbilityToggles(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ability_id FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME + " WHERE player_uuid = ?")) {
-//
-//                preparedStatement.setString(1, uuid.toString());
-//
-//                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//
-//                    while (resultSet.next()) {
-//
-//                        String abilityID = resultSet.getString("ability_id");
-//
-//                        UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(abilityID);
-//                        GenericAbility genericAbility = unlockedAbility != null ? unlockedAbility : DefaultAbilities.getFromID(abilityID);
-//
-//                        if (genericAbility != null) {
-//                            skillDataSnapshot.addAbilityToggledData(genericAbility, false);
-//                        }
-//                    }
-//
-//                    //Populate toggled on abilities
-//                    Skills skillType = skillDataSnapshot.getSkillType();
-//                    Map<GenericAbility, Boolean> savedToggledOffAbilities = skillDataSnapshot.getAbilityToggledMap();
-//
-//                    for (GenericAbility genericAbility : skillType.getAllAbilities()) {
-//                        if (!savedToggledOffAbilities.containsKey(genericAbility)) {
-//                            skillDataSnapshot.addAbilityToggledData(genericAbility, true);
-//                        }
-//                    }
-//
-//                    completableFuture.complete(skillDataSnapshot);
-//                }
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//            }
-//        });
-//
-//        return completableFuture;
-//    }
 
     /**
      * Gets all stored {@link us.eunoians.mcrpg.ability.attribute.AbilityAttribute AbilityAttributes} that belong to abilities for a specific player's skill.
@@ -647,247 +544,151 @@ public class SkillDAO {
         return completableFuture;
     }
 
-//    /**
-//     * Saves all the player skill data for the provided {@link us.eunoians.mcrpg.entity.player.McRPGPlayer}.
-//     * <p>
-//     * This method calls {@link #savePlayerSkillData(Connection, us.eunoians.mcrpg.entity.player.McRPGPlayer)}, {@link #savePlayerAbilityToggles(Connection, McRPGPlayer)} and {@link #savePlayerAbilityAttributes(Connection, McRPGPlayer)}
-//     * and should serve as a generic save all method.
-//     * <p>
-//     * To save specific information about a player and their skills, developers should call the specific methods that save the information they desire.
-//     *
-//     * @param connection  The {@link Connection} to use to save the player skill data
-//     * @param mcRPGPlayer The {@link McRPGPlayer} whose skill data are being saved
-//     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
-//     * is an error with saving
-//     */
-//    @NotNull
-//    public static CompletableFuture<Void> saveAllPlayerSkillInformation(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            CompletableFuture.allOf(savePlayerSkillData(connection, mcRPGPlayer),
-//                            savePlayerAbilityToggles(connection, mcRPGPlayer), savePlayerAbilityAttributes(connection, mcRPGPlayer))
-//                    .thenAccept(completableFuture::complete)
-//                    .exceptionally(throwable -> {
-//                        throwable.printStackTrace();
-//                        return null;
-//                    });
-//
-//        });
-//        return completableFuture;
-//    }
+    /**
+     * Saves all the player skill data for the provided {@link SkillHolder}.
+     * <p>
+     * This method calls {@link #savePlayerSkillData(Connection, SkillHolder)} and {@link #savePlayerAbilityAttributes(Connection, SkillHolder)}
+     * and should serve as a generic save all method.
+     * <p>
+     * To save specific information about a player and their skills, developers should call the specific methods that save the information they desire.
+     *
+     * @param connection  The {@link Connection} to use to save the player skill data
+     * @param skillHolder The {@link SkillHolder} whose skill data are being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> saveAllSkillHolderInformation(@NotNull Connection connection, @NotNull SkillHolder skillHolder) {
 
-//    /**
-//     * Saves the various {@link AbilityAttribute}s related to all abilities for the provided {@link McRPGPlayer}.
-//     *
-//     * @param connection  The {@link Connection} to use to save the {@link AbilityAttribute} information
-//     * @param mcRPGPlayer The {@link McRPGPlayer} whose {@link AbilityAttribute}s are being saved
-//     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
-//     * is an error with saving
-//     */
-//    @NotNull
-//    public static CompletableFuture<Void> savePlayerAbilityAttributes(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-//        UUID playerUUID = mcRPGPlayer.getUUID();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try {
-//
-//                connection.setAutoCommit(false);
-//
-//                try (PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ?;")) {
-//
-//                    deleteStatement.setString(1, playerUUID.toString());
-//                    deleteStatement.executeUpdate();
-//                }
-//
-//                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " (player_uuid, ability_id, key, value) VALUES(?, ?, ?, ?);")) {
-//
-//                    preparedStatement.setString(1, playerUUID.toString());
-//
-//                    for (Skills skillType : Skills.values()) {
-//
-//                        for (UnlockedAbilities abilityType : skillType.getUnlockedAbilities()) {
-//                            BaseAbility baseAbility = mcRPGPlayer.getBaseAbility(abilityType);
-//                            preparedStatement.setString(2, abilityType.getName());
-//
-//                            //TODO this is a sloppy hard coded solution. The recode will have attributes inside of ability classes in which we can store/pull values
-//                            if (baseAbility.getCurrentTier() > 0) {
-//                                Optional<AbilityAttribute<?>> attributeOptional = McRPG.getInstance().getAbilityAttributeManager().getAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
-//
-//                                if (attributeOptional.isPresent()) {
-//                                    AbilityAttribute<?> abilityAttribute = attributeOptional.get();
-//                                    preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
-//                                    preparedStatement.setString(4, Integer.toString(baseAbility.getCurrentTier()));
-//
-//                                    preparedStatement.executeUpdate();
-//                                }
-//                            }
-//
-//                            if (mcRPGPlayer.getCooldown(abilityType) > 0) {
-//                                Optional<AbilityAttribute<?>> attributeOptional = McRPG.getInstance().getAbilityAttributeManager().getAttribute(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
-//
-//                                if (attributeOptional.isPresent()) {
-//                                    AbilityAttribute<?> abilityAttribute = attributeOptional.get();
-//                                    preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
-//                                    preparedStatement.setString(4, Long.toString(mcRPGPlayer.getCooldown(abilityType)));
-//
-//                                    preparedStatement.executeUpdate();
-//                                }
-//                            }
-//
-//                            if (mcRPGPlayer.getPendingUnlockAbilities().contains(abilityType)) {
-//                                Optional<AbilityAttribute<?>> attributeOptional = McRPG.getInstance().getAbilityAttributeManager().getAttribute(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
-//
-//                                if (attributeOptional.isPresent()) {
-//                                    AbilityAttribute<?> abilityAttribute = attributeOptional.get();
-//                                    preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
-//                                    preparedStatement.setString(4, Boolean.toString(true));
-//
-//                                    preparedStatement.executeUpdate();
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                connection.commit();
-//                connection.setAutoCommit(true);
-//
-//                completableFuture.complete(null);
-//            } catch (SQLException e) {
-//
-//                //If there is an error, attempt to rollback and set auto commit to true
-//                try {
-//                    connection.rollback();
-//                    connection.setAutoCommit(true);
-//                } catch (SQLException ex) {
-//                    ex.printStackTrace();
-//                    completableFuture.completeExceptionally(ex);
-//                }
-//
-//                completableFuture.completeExceptionally(e);
-//            }
-//        });
-//
-//        return completableFuture;
-//    }
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 
-//    /**
-//     * Saves the toggled off state of all abilities for the provided {@link McRPGPlayer}. Any abilities that are toggled on will not be saved here,
-//     * as an absence from the database indicates a toggled on state. This design choice is simply because most players will rarely if ever toggle off abilities,
-//     * so this helps better manage the size of the database by keeping out needless information.
-//     *
-//     * @param connection  The {@link Connection} to use to save the ability toggles
-//     * @param mcRPGPlayer The {@link McRPGPlayer} whose ability toggles are being saved
-//     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
-//     * is an error with saving
-//     */
-//    @NotNull
-//    public static CompletableFuture<Void> savePlayerAbilityToggles(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try {
-//
-//                connection.setAutoCommit(false);
-//
-//                //Remove existing values
-//                try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM " + ABILITY_TOGGLED_OFF_TABLE_NAME + " WHERE player_uuid = ?;")) {
-//                    preparedStatement.setString(1, mcRPGPlayer.getUuid().toString());
-//                    preparedStatement.executeUpdate();
-//                }
-//
-//                try (PreparedStatement abilityToggledOffStatement = connection.prepareStatement("INSERT INTO " + ABILITY_TOGGLED_OFF_TABLE_NAME + " (player_uuid, ability_id) VALUES(?, ?)")) {
-//
-//                    abilityToggledOffStatement.setString(1, mcRPGPlayer.getUuid().toString());
-//
-//                    for (Skills skillType : Skills.values()) {
-//                        for (GenericAbility genericAbility : skillType.getAllAbilities()) {
-//                            if (!mcRPGPlayer.getBaseAbility(genericAbility).isToggled()) {
-//                                abilityToggledOffStatement.setString(2, genericAbility.getName());
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                connection.commit();
-//                connection.setAutoCommit(true);
-//
-//                completableFuture.complete(null);
-//            }
-//            catch (SQLException e) {
-//
-//                try {
-//                    connection.rollback();
-//                    connection.setAutoCommit(true);
-//                }
-//                catch (SQLException ex) {
-//                    ex.printStackTrace();
-//                    completableFuture.completeExceptionally(ex);
-//                }
-//
-//                completableFuture.completeExceptionally(e);
-//            }
-//
-//        });
-//
-//        return completableFuture;
-//    }
+        databaseManager.getDatabaseExecutorService().submit(() -> {
 
-//    /**
-//     * Saves skill specific information such as exp for the provided {@link McRPGPlayer}.
-//     *
-//     * @param connection  The {@link Connection} to use to save the skill information
-//     * @param mcRPGPlayer The {@link McRPGPlayer} whose skill information is being saved
-//     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
-//     * is an error with saving
-//     */
-//    @NotNull
-//    public static CompletableFuture<Void> savePlayerSkillData(@NotNull Connection connection, @NotNull McRPGPlayer mcRPGPlayer) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        DatabaseDriver databaseDriver = databaseManager.getDriver();
-//        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            try (PreparedStatement skillDataStatement = databaseDriver == DatabaseDriver.H2 ? connection.prepareStatement("INSERT INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-//                                                                                                                              "current_level=VALUES(current_level), current_exp=VALUES(current_exp);")
-//                                                            : connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
-//
-//                skillDataStatement.setString(1, mcRPGPlayer.getUuid().toString());
-//
-//                for (Skills skillType : Skills.values()) {
-//
-//                    Skill skill = mcRPGPlayer.getSkill(skillType);
-//                    int currentExp = skill.getCurrentExp();
-//                    int currentLevel = skill.getCurrentLevel();
-//
-//                    skillDataStatement.setString(2, skill.getName().toLowerCase(Locale.ROOT));
-//                    skillDataStatement.setInt(3, currentLevel);
-//                    skillDataStatement.setInt(4, currentExp);
-//
-//                    skillDataStatement.executeUpdate();
-//                }
-//
-//                completableFuture.complete(null);
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//            }
-//        });
-//        return completableFuture;
-//    }
+            CompletableFuture.allOf(savePlayerSkillData(connection, skillHolder),
+                            savePlayerAbilityAttributes(connection, skillHolder))
+                    .thenAccept(completableFuture::complete)
+                    .exceptionally(throwable -> {
+                        throwable.printStackTrace();
+                        return null;
+                    });
+
+        });
+        return completableFuture;
+    }
+
+    /**
+     * Saves the various {@link AbilityAttribute}s related to all abilities for the provided {@link SkillHolder}.
+     *
+     * @param connection  The {@link Connection} to use to save the {@link AbilityAttribute} information
+     * @param skillHolder The {@link SkillHolder} whose {@link AbilityAttribute}s are being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerAbilityAttributes(@NotNull Connection connection, @NotNull SkillHolder skillHolder) {
+
+        McRPG mcRPG = McRPG.getInstance();
+        McRPGDatabaseManager databaseManager = mcRPG.getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        UUID playerUUID = skillHolder.getUUID();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+            try {
+                connection.setAutoCommit(false);
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " (player_uuid, ability_id, key, value) VALUES(?, ?, ?, ?);")) {
+                    preparedStatement.setString(1, playerUUID.toString());
+
+                    AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
+                    AbilityAttributeManager abilityAttributeManager = mcRPG.getAbilityAttributeManager();
+                    PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ? AND key = ?;");
+                    deleteStatement.setString(1, playerUUID.toString());
+
+                    // Go through all registered abilities
+                    for (NamespacedKey abilityKey : abilityRegistry.getAllAbilities()) {
+                        Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(abilityKey);
+                        // If the ability is stored inside the skill holder
+                        if (abilityDataOptional.isPresent()) {
+                            AbilityData abilityData = abilityDataOptional.get();
+                            // Go through all attribute keys for this ability
+                            for (NamespacedKey abilityAttributeKey : abilityData.getAllAttributeKeys()) {
+                                Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(abilityAttributeKey);
+                                // If the attribute is registered
+                                if (abilityAttributeOptional.isPresent()) {
+                                    AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
+                                    // If the ability attribute is an optional type, then that means we need to check if the data needs to be saved or deleted
+                                    if (abilityAttribute instanceof OptionalAbilityAttribute<?> optionalAbilityAttribute && !optionalAbilityAttribute.shouldContentBeSaved()) {
+                                        deleteStatement.setString(2, abilityData.getAbilityKey().value());
+                                        deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
+                                        deleteStatement.execute();
+                                    }
+                                    else {
+                                        preparedStatement.setString(2, abilityData.getAbilityKey().value());
+                                        preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
+                                        preparedStatement.setString(4, abilityAttribute.getContent().toString());
+                                        preparedStatement.executeUpdate();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                connection.commit();
+                connection.setAutoCommit(true);
+                completableFuture.complete(null);
+            } catch (SQLException e) {
+                //If there is an error, attempt to rollback and set auto commit to true
+                try {
+                    connection.rollback();
+                    connection.setAutoCommit(true);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    completableFuture.completeExceptionally(ex);
+                }
+
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
+
+    /**
+     * Saves skill specific information such as exp for the provided {@link SkillHolder}.
+     *
+     * @param connection  The {@link Connection} to use to save the skill information
+     * @param skillHolder The {@link SkillHolder} whose skill information is being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerSkillData(@NotNull Connection connection, @NotNull SkillHolder skillHolder) {
+
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+            try (PreparedStatement skillDataStatement = connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
+                skillDataStatement.setString(1, skillHolder.getUUID().toString());
+                SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+
+                for (NamespacedKey skillKey : skillRegistry.getRegisteredSkills()) {
+                    Optional<SkillHolder.SkillHolderData> skillHolderDataOptional= skillHolder.getSkillHolderData(skillKey);
+                    if (skillHolderDataOptional.isPresent()) {
+                        SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
+                        skillDataStatement.setString(2, skillKey.value());
+                        skillDataStatement.setInt(3, skillHolderData.getCurrentLevel());
+                        skillDataStatement.setInt(4, skillHolderData.getCurrentExperience());
+                        skillDataStatement.executeUpdate();
+                    }
+                }
+                completableFuture.complete(null);
+            } catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
 
 //    /**
 //     * Gets the player leaderboard rankings for the provided {@link Skills} skill type.
@@ -995,12 +796,11 @@ public class SkillDAO {
                 if (Character.isUpperCase(letter)) {
                     string.append("_");
                 }
-            }
-            else {
+            } else {
                 first = false;
             }
 
-            if(letter == ' '){ //Why have I done this to myself
+            if (letter == ' ') { //Why have I done this to myself
                 continue;
             }
 

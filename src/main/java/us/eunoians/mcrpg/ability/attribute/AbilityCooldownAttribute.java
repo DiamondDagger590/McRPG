@@ -57,7 +57,7 @@ public class AbilityCooldownAttribute extends OptionalAbilityAttribute<Long> {
     }
 
     @Override
-    public boolean shouldContentBeSaved(@NotNull Long content) {
-        return content <= 0 || content < System.currentTimeMillis();
+    public boolean shouldContentBeSaved() {
+        return getContent() <= 0 || getContent() < System.currentTimeMillis();
     }
 }

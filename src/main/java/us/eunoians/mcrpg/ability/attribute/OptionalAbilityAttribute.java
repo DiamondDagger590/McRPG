@@ -25,10 +25,9 @@ public abstract class OptionalAbilityAttribute<T> extends AbilityAttribute<T> {
     }
 
     /**
-     * Checks to see if the provided content should be saved to the database
+     * Checks to see if the content inside this attribute should be saved to the database
      *
-     * @param content The content to check
-     * @return {@code true} if the provided content should be saved to the database.
+     * @return {@code true} if the content inside this attribute should be saved to the database.
      */
-    public abstract boolean shouldContentBeSaved(@NotNull T content);
+    public abstract boolean shouldContentBeSaved();
 }

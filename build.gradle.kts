@@ -4,7 +4,6 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("io.freefair.lombok") version "6.3.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
@@ -55,10 +54,10 @@ repositories {
 
 dependencies {
 
-    val mccoreVersion = "1.0.0.6-SNAPSHOT"
+    val mccoreVersion = "1.0.0.7-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
-    val nbtAPIVersion = "2.11.3"
+    val nbtAPIVersion = "2.12.2"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val bstatsVersion = "2.2.1"
@@ -124,7 +123,6 @@ tasks {
         mergeServiceFiles()
         relocate("de.tr7zw.changeme.nbtapi", "us.eunoians.mcrpg.nbtapi")
         relocate("org.bstats", "com.diamonddagger590.mcrpg")
-        relocate("net.kyori", "com.diamonddagger590.mcrpb.adventure")
         relocate("ch.jalu.configme", "com.diamonddagger590.mcrpg.configme")
         relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")
     }

@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.worldguard;
 
-import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
@@ -9,19 +8,12 @@ import java.util.List;
 
 public class WGRegion {
 
-    @Getter
     boolean failedLoad = false;
-    @Getter
     private HashMap<Material, List<String>> breakExpressions = new HashMap<>();
-    @Getter
     private HashMap<EntityType, List<String>> attackExpressions = new HashMap<>();
-    @Getter
     private HashMap<String, List<String>> expGainExpressions = new HashMap<>();
-    @Getter
     private HashMap<String, List<String>> abilityExpressions = new HashMap<>();
-    @Getter
     private List<String> enterExpressions;
-    @Getter
     private double expMultiplier;
 //
 //    public WGRegion(String key) {

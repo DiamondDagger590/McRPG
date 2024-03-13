@@ -1,11 +1,14 @@
 package us.eunoians.mcrpg.entity.holder;
 
 import com.google.common.collect.ImmutableSet;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 
 import java.util.HashMap;
@@ -170,7 +173,22 @@ public class AbilityHolder {
     @NotNull
     public Optional<AbilityData> getAbilityData(@NotNull NamespacedKey abilityKey) {
         if (validateAbilityExists(abilityKey)) {
-            return Optional.ofNullable(abilityDataMap.get(abilityKey));
+            if (abilityDataMap.containsKey(abilityKey)) {
+                return Optional.of(abilityDataMap.get(abilityKey));
+            }
+            else {
+                Set<NamespacedKey> abilityAttributes = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(abilityKey).getApplicableAttributes();
+                AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+                AbilityData abilityData = new AbilityData(abilityKey);
+                for (NamespacedKey abilityAttributeKey : abilityAttributes) {
+                    Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityAttributeManager.getAttribute(abilityAttributeKey);
+                    if (abilityAttributeOptional.isPresent()) {
+                        AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
+                        abilityData.addAttribute(abilityAttribute);
+                    }
+                }
+                return Optional.of(abilityData);
+            }
         } else {
             return Optional.empty();
         }

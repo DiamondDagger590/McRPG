@@ -32,6 +32,9 @@ public abstract class Skill {
     }
 
     @NotNull
+    public abstract String getDisplayName();
+
+    @NotNull
     public List<EventLevelableComponentAttribute> getLevelableComponents(@NotNull Class<? extends Event> clazz) {
         return levelingAttributes.getOrDefault(clazz, new ArrayList<>());
     }

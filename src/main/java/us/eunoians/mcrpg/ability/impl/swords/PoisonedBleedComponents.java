@@ -7,9 +7,9 @@ import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
- * The components that activate {@link BleedPlus}
+ * The components that activate {@link PoisonedBleed}
  */
-public class BleedPlusComponents {
+public class PoisonedBleedComponents {
 
     public static final BleedPlusActivateComponent BLEED_PLUS_ACTIVATE_COMPONENT = new BleedPlusActivateComponent();
 

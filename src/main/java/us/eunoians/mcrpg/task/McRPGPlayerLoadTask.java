@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -48,6 +49,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         //Add bleed for testing
         SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
         AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
         SkillHolder skillHolder = getCorePlayer().asSkillHolder();
         CompletableFuture futures[] = new CompletableFuture[skillRegistry.getRegisteredSkills().size()];
 
@@ -62,14 +64,19 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
             futures[i] = future;
             future.thenAccept(skillDataSnapshot -> {
 
-                getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey());
-
+                getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey() + " Skill level: " + skillDataSnapshot.getCurrentLevel() + " Skill exp: " + skillDataSnapshot.getCurrentExp());
                 skillHolder.addSkillHolderData(skill, skillDataSnapshot.getCurrentLevel(), skillDataSnapshot.getCurrentExp());
 
                 for(NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
                     Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
                     skillHolder.addAvailableAbility(abilityKey);
-                    skillHolder.addAbilityData(new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values()));
+                    AbilityData abilityData = new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values());
+                    for (NamespacedKey attributeKey : ability.getApplicableAttributes()) {
+                        if (!abilityData.hasAttribute(attributeKey)) {
+                            abilityAttributeManager.getAttribute(attributeKey).ifPresent(abilityData::addAttribute);
+                        }
+                    }
+                    skillHolder.addAbilityData(abilityData);
                 }
 
                 getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
@@ -98,7 +105,6 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         //Begin tracking player
         getPlugin().getPlayerManager().addPlayer(getCorePlayer());
         getPlugin().getEntityManager().trackAbilityHolder(getCorePlayer().asSkillHolder());
-
     }
 
     @Override

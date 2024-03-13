@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability;
 
+import com.google.common.collect.ImmutableSet;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * This class stores all information about {@link Ability Abilities}. Instances of this
@@ -90,6 +92,40 @@ public class AbilityData {
     @NotNull
     public Optional<AbilityAttribute<?>> getAbilityAttribute(@NotNull NamespacedKey namespacedKey) {
         return Optional.ofNullable(abilityAttributes.get(namespacedKey));
+    }
+
+    /**
+     * Gets an {@link ImmutableSet} that contains all {@link NamespacedKey NamespacedKeys} that represent {@link AbilityAttribute AbilityAttributes} that
+     * are stored inside of this data.
+     *
+     * @return An {@link ImmutableSet} that contains all {@link NamespacedKey NamespacedKeys} that represents {@link AbilityAttribute AbilityAttributes} that
+     * are stored inside of this data.
+     */
+    @NotNull
+    public Set<NamespacedKey> getAllAttributeKeys() {
+        return ImmutableSet.copyOf(abilityAttributes.keySet());
+    }
+
+    /**
+     * Gets an {@link ImmutableSet} that contains all {@link AbilityAttribute AbilityAttributes} that are stored
+     * inside of this data.
+     *
+     * @return An {@link ImmutableSet} that contains all {@link AbilityAttribute AbilityAttributes} that are stored inside of this data.
+     */
+    public Set<AbilityAttribute<?>> getAllAttributes() {
+        return ImmutableSet.copyOf(abilityAttributes.values());
+    }
+
+    /**
+     * Checks to see if this data has the provided {@link NamespacedKey} as an {@link AbilityAttribute} inside
+     * of this data.
+     *
+     * @param attributeKey The {@link NamespacedKey} to check
+     * @return {@code true} if the provided {@link NamespacedKey} is stored as an {@link AbilityAttribute} inside
+     * of this data.
+     */
+    public boolean hasAttribute(@NotNull NamespacedKey attributeKey) {
+        return abilityAttributes.containsKey(attributeKey);
     }
 
     /**

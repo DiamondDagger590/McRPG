@@ -1,14 +1,11 @@
 package us.eunoians.mcrpg.worldguard;
 
-import lombok.Getter;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 public class ActionLimiterParser extends McRPGParser {
 
-    @Getter
     private String equation;
 
-    @Getter
     private McRPGPlayer[] players;
 
     /**

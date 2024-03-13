@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
@@ -97,6 +98,10 @@ public abstract class Ability {
      * use only name that is used for database storage.
      */
     public abstract Optional<String> getDatabaseName();
+
+    public abstract String getDisplayName();
+
+    public abstract ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder);
 
     public abstract void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event);
 

@@ -18,7 +18,6 @@ public class SwordsComponents {
 
         @Override
         public int calculateExperienceToGive(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
             EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast since can only be called after checks are done
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
@@ -53,13 +52,11 @@ public class SwordsComponents {
 
                 if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
                     ItemStack heldItem = livingDamager.getEquipment().getItemInMainHand();
-
                     if (heldItem.getType().name().contains("_SWORD")) {
                         return true;
                     }
                 }
             }
-
             return false;
         }
     }

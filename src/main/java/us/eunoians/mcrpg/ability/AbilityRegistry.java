@@ -233,6 +233,16 @@ public class AbilityRegistry {
     }
 
     /**
+     * Gets an {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to all registered {@link Ability Abilities}.
+     *
+     * @return An {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to all registered {@link Ability Abilities}.
+     */
+    @NotNull
+    public Set<NamespacedKey> getAllAbilities() {
+        return ImmutableSet.copyOf(abilities.keySet());
+    }
+
+    /**
      * Register the provided {@link EntityAlliedCheck} to be checked when {@link #areEntitiesAllied(Entity, Entity)} is called.
      * <p>
      * This also registers {@link AlliedAttackCheck#DEFAULT_ALLIED_ATTACK_CHECK_FUNCTION} as the default function to prevent allies

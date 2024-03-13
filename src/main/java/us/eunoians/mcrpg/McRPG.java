@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
+import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
@@ -10,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
-import us.eunoians.mcrpg.ability.impl.swords.BleedPlus;
+import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
@@ -19,14 +21,20 @@ import us.eunoians.mcrpg.chunk.ChunkStore;
 import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.player.OnPlayerLevelUpListener;
 import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
+import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+
+import java.sql.Connection;
+import java.util.concurrent.ExecutionException;
 
 /**
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
@@ -78,18 +86,38 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new Bleed());
         getAbilityRegistry().registerAbility(new DeeperWound());
         getAbilityRegistry().registerAbility(new Vampire());
-        getAbilityRegistry().registerAbility(new BleedPlus());
+        getAbilityRegistry().registerAbility(new PoisonedBleed());
         getSkillRegistry().registerSkill(new Swords());
 
         preloadNBTAPI();
         setupHooks();
         initializeDatabase();
         registerListeners();
-
+        constructCommands();
     }
 
     @Override
     public void onDisable() {
+        Connection connection = databaseManager.getDatabase().getConnection();
+        if (connection == null) {
+            throw new RuntimeException("Database was not available on shutdown... there is likely lost McRPG data as a result.");
+        }
+        else {
+            for (CorePlayer corePlayer : playerManager.getAllPlayers()) {
+                if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
+                    try {
+                        SkillDAO.savePlayerSkillData(connection, mcRPGPlayer.asSkillHolder()).get();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (mcRPGPlayer.useMutex()) {
+                        MutexDAO.updateUserMutex(connection, mcRPGPlayer.getUUID(), false);
+                    }
+                }
+            }
+        }
         super.onDisable();
     }
 
@@ -119,6 +147,7 @@ public class McRPG extends CorePlugin {
     public void registerListeners() {
         super.registerListeners();
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnPlayerLevelUpListener(), this);

@@ -4,11 +4,7 @@
 
 configuration:
   database:
-    #Sets the type of the database driver. The existing options are: 'SQLite' and 'H2' as of version 2.0.0.0. Please check the latest version for any new options.
-    #
-    #If you wish to use H2, you must download the H2 driver from the following website: https://h2database.com/h2-2019-02-22.zip"
-    #Download and unzip this. You then will need to create a new folder called 'libs' under McRPG's plugin folder and upload the jar there
-    #Once done, rename the jar to 'h2.jar' and McRPG will use that as the database driver.
+    #Sets the type of the database driver. The existing options are: 'SQLite'
     driver: SQLite
   #What worlds should McRPG be disabled in
   disabled-worlds:

@@ -22,6 +22,11 @@ public class McRPGPlayer extends CorePlayer {
         skillHolder = new SkillHolder(getUUID());
     }
 
+    @Override
+    public boolean useMutex() {
+        return false;
+    }
+
     public SkillHolder asSkillHolder(){
         return skillHolder;
     }

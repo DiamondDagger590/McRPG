@@ -6,6 +6,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -13,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
@@ -65,6 +67,17 @@ public class Bleed extends Ability {
     @Override
     public Optional<String> getDatabaseName() {
         return Optional.empty();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Bleed";
+    }
+
+    @Override
+    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
+        ItemStack guiItem = new ItemStack(Material.REDSTONE);
+        return guiItem;
     }
 
     @Override

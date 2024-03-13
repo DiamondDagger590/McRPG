@@ -32,7 +32,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
         File databaseFolder = new File(plugin.getDataFolder().getPath() + File.separator + "database");
 
-        if(!databaseFolder.exists()){
+        if (!databaseFolder.exists()) {
             databaseFolder.mkdir();
         }
 
@@ -42,8 +42,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
         try {
             initializedDatabase = Optional.of(dbBuilder.build());
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -84,13 +83,13 @@ public class McRPGDatabaseManager extends DatabaseManager {
             getDatabaseExecutorService().submit(() -> {
 
                 CompletableFuture.allOf(SkillDAO.attemptCreateTable(connection, this),
-                        PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
-                        PlayerSettingsDAO.attemptCreateTable(connection, this), SkillDAO.attemptCreateTable(connection, this))
-                    .thenAccept(tableCreationFuture::complete)
-                    .exceptionally(throwable -> {
-                        tableCreationFuture.completeExceptionally(throwable);
-                        return null;
-                    });
+                                PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
+                                PlayerSettingsDAO.attemptCreateTable(connection, this))
+                        .thenAccept(tableCreationFuture::complete)
+                        .exceptionally(throwable -> {
+                            tableCreationFuture.completeExceptionally(throwable);
+                            return null;
+                        });
 
             });
 
@@ -117,7 +116,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
             getDatabaseExecutorService().submit(() -> {
                 CompletableFuture.allOf(SkillDAO.updateTable(connection), PlayerLoadoutDAO.updateTable(connection),
-                        PlayerDataDAO.updateTable(connection), PlayerSettingsDAO.updateTable(connection), SkillDAO.updateTable(connection))
+                        PlayerDataDAO.updateTable(connection), PlayerSettingsDAO.updateTable(connection))
                     .thenAccept(tableUpdateFuture::complete);
             });
 

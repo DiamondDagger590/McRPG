@@ -6,17 +6,17 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.impl.swords.BleedPlus;
+import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
 import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
- * This event is called whenever {@link BleedPlus} activates
+ * This event is called whenever {@link PoisonedBleed} activates
  */
 public class BleedPlusActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability BLEED_PLUS = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(BleedPlus.BLEED_PLUS_KEY);
+    private static final Ability BLEED_PLUS = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(PoisonedBleed.BLEED_PLUS_KEY);
 
     private final LivingEntity entity;
     private double additionalBleedDamage;
@@ -30,8 +30,8 @@ public class BleedPlusActivateEvent extends AbilityActivateEvent implements Canc
 
     @Override
     @NotNull
-    public BleedPlus getAbility() {
-        return (BleedPlus) super.getAbility();
+    public PoisonedBleed getAbility() {
+        return (PoisonedBleed) super.getAbility();
     }
 
     /**

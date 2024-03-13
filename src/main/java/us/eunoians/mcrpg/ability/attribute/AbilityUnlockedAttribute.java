@@ -34,7 +34,7 @@ public class AbilityUnlockedAttribute extends OptionalAbilityAttribute<Boolean> 
     }
 
     @Override
-    public boolean shouldContentBeSaved(@NotNull Boolean content) {
-        return content;
+    public boolean shouldContentBeSaved() {
+        return getContent();
     }
 }
