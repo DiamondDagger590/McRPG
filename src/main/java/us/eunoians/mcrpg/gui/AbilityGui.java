@@ -349,7 +349,7 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                 })),
         ;
 
-        private final static LinkedNode<AbilityGuiSortType> FIRST_SORT_TYPE = new LinkedNode<>(values()[0]);
+        private final static LinkedNode<AbilityGuiSortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilityGuiSortType.SKILL);
 
         static {
             LinkedNode<AbilityGuiSortType> prev = FIRST_SORT_TYPE;
