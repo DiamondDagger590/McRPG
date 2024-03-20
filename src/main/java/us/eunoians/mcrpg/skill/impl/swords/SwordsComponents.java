@@ -7,17 +7,21 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.component.OnAttackLevelableComponent;
 
+/**
+ * A collection of all {@link us.eunoians.mcrpg.skill.component.EventLevelableComponent}s used for the
+ * {@link Swords} skill.
+ */
 public class SwordsComponents {
 
     public static final SwordsLevelOnAttackComponent SWORDS_LEVEL_ON_ATTACK_COMPONENT = new SwordsLevelOnAttackComponent();
 
-    private static class SwordsLevelOnAttackComponent implements OnAttackLevelableComponent {
+    public static class SwordsLevelOnAttackComponent implements OnAttackLevelableComponent {
 
         @Override
-        public int calculateExperienceToGive(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
             EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast since can only be called after checks are done
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
@@ -43,9 +47,9 @@ public class SwordsComponents {
         }
 
         @Override
-        public boolean shouldGiveExperience(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        public boolean shouldGiveExperience(@NotNull SkillHolder skillHolder, @NotNull Event event) {
 
-            if (OnAttackLevelableComponent.super.shouldGiveExperience(abilityHolder, event)) {
+            if (OnAttackLevelableComponent.super.shouldGiveExperience(skillHolder, event)) {
                 EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast due to super call
                 Entity damager = entityDamageByEntityEvent.getDamager();
                 Entity damaged = entityDamageByEntityEvent.getEntity();

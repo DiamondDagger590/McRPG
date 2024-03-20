@@ -6,6 +6,12 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.skill.Skill;
 
+/**
+ * A {@link Skill} that focuses on the usage of Minecraft Swords.
+ *
+ * Players will gain experience by attacking mobs with swords and unlock abilities focused
+ * on the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} mechanic.
+ */
 public class Swords extends Skill {
 
     public static final NamespacedKey SWORDS_KEY = new NamespacedKey(McRPG.getInstance(), "swords");
