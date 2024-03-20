@@ -264,7 +264,7 @@ public class BreakEvent implements Listener {
                                     }
                                     LargerSpadeTestEvent largerSpadeTestEvent = new LargerSpadeTestEvent(p, b);
                                     Bukkit.getPluginManager().callEvent(largerSpadeTestEvent);
-                                    if (!largerSpadeTestEvent.isCancelled()) {
+                                    if (largerSpadeTestEvent.hasPassedChecks()) {
                                         b.breakNaturally(p.getItemInHand());
                                     }
                                 }
@@ -529,7 +529,7 @@ public class BreakEvent implements Listener {
                                 for (Block b : blocks) {
                                     HeavySwingTestEvent heavySwingTestEvent = new HeavySwingTestEvent(p, b);
                                     Bukkit.getPluginManager().callEvent(heavySwingTestEvent);
-                                    if (!heavySwingTestEvent.isCancelled()) {
+                                    if (heavySwingTestEvent.hasPassedChecks()) {
                                         b.breakNaturally(p.getItemInHand());
                                     }
                                 }

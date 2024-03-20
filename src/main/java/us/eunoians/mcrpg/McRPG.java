@@ -80,6 +80,7 @@ import us.eunoians.mcrpg.events.vanilla.DropItemEvent;
 import us.eunoians.mcrpg.events.vanilla.EnchantingEvent;
 import us.eunoians.mcrpg.events.vanilla.EntityDeathListener;
 import us.eunoians.mcrpg.events.vanilla.EntityTameListener;
+import us.eunoians.mcrpg.events.vanilla.FakeBlockListener;
 import us.eunoians.mcrpg.events.vanilla.FishCatchEvent;
 import us.eunoians.mcrpg.events.vanilla.InteractHandler;
 import us.eunoians.mcrpg.events.vanilla.InvClickEvent;
@@ -332,6 +333,7 @@ public class McRPG extends JavaPlugin {//implements //Initializable {
         getServer().getPluginManager().registerEvents(new EntityTameListener(), this);
         getServer().getPluginManager().registerEvents(new WolfValidator(), this);
         getServer().getPluginManager().registerEvents(new CallOfWildListener(), this);
+        getServer().getPluginManager().registerEvents(new FakeBlockListener(), this);
 
         if (sickleEnabled) {
             getServer().getPluginManager().registerEvents(new Sickle(), this);
