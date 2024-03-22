@@ -15,8 +15,8 @@ import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.ability.impl.mining.RicherOre;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
-import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
+import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
@@ -29,10 +29,10 @@ import us.eunoians.mcrpg.entity.AbilityHolderTracker;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
-import us.eunoians.mcrpg.listener.player.OnPlayerLevelUpListener;
 import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
+import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -160,8 +160,8 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
-        Bukkit.getPluginManager().registerEvents(new OnPlayerLevelUpListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);
     }
 
     /**

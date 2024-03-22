@@ -30,7 +30,7 @@ public class SwordsComponents {
             if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
                 ItemStack heldItem = livingDamager.getEquipment().getItemInMainHand();
 
-                double expToAward = damage * 75;
+                double expToAward = damage * 1000;
                 if (heldItem.getType().equals(Material.GOLDEN_SWORD)) {
                     expToAward *= 1.5;
                 }

@@ -7,7 +7,12 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 
 import java.util.UUID;
 
-//TODO javadoc
+/**
+ * The main "player" object for any player who will be playing McRPG.
+ * <p>
+ * This is also the main access point to a player's skill data through
+ * {@link #asSkillHolder()}
+ */
 public class McRPGPlayer extends CorePlayer {
 
     private SkillHolder skillHolder;
@@ -27,7 +32,13 @@ public class McRPGPlayer extends CorePlayer {
         return false;
     }
 
-    public SkillHolder asSkillHolder(){
+    /**
+     * Gets the {@link SkillHolder} representation of this player, allowing access to McRPG
+     * skill functionality.
+     *
+     * @return The {@link SkillHolder} representation of this player.
+     */
+    public SkillHolder asSkillHolder() {
         return skillHolder;
     }
 }
