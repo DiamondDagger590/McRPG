@@ -64,12 +64,22 @@ public class SkillRegistry {
     }
 
     /**
+     * Gets an immutable copy of all registered skill keys.
+     *
+     * @return An immutable copy of all registered skill keys.
+     */
+    public Set<NamespacedKey> getRegisteredSkillKeys() {
+        return ImmutableSet.copyOf(skills.keySet());
+    }
+
+
+    /**
      * Gets an immutable copy of all registered skills.
      *
      * @return An immutable copy of all registered skills.
      */
-    public Set<NamespacedKey> getRegisteredSkills() {
-        return ImmutableSet.copyOf(skills.keySet());
+    public Set<Skill> getRegisteredSkills() {
+        return ImmutableSet.copyOf(skills.values());
     }
 
     /**

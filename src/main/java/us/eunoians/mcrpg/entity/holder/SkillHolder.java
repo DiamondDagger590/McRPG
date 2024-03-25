@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.entity.holder;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.skill.Skill;
@@ -214,9 +215,9 @@ public class SkillHolder extends LoadoutHolder {
             if (skillGainExpEvent.isCancelled()) {
                 return;
             }
-
             currentExperience += skillGainExpEvent.getExperience();
             checkForLevelups();
+            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, skillKey));
         }
 
         /**
@@ -228,6 +229,7 @@ public class SkillHolder extends LoadoutHolder {
         public void setCurrentExperience(int experience) {
             currentExperience = Math.max(0, experience);
             checkForLevelups();
+            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, skillKey));
         }
 
         /**
@@ -269,8 +271,8 @@ public class SkillHolder extends LoadoutHolder {
         private void checkForLevelups() {
             //do level ups
             while (currentExperience >= experienceForNextLevel) {
-                addLevel(1);
                 currentExperience -= experienceForNextLevel;
+                addLevel(1);
                 updateExperienceForNextLevel();
             }
         }

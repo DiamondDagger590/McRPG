@@ -174,7 +174,7 @@ public class SkillDAO {
 
                             List<String> queries = new ArrayList<>();
 
-                            for (NamespacedKey skillKey : skillRegistry.getRegisteredSkills()) {
+                            for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
                                 Skill skill = skillRegistry.getRegisteredSkill(skillKey);
 
                                 String skillDatabaseName = skillKey.getKey().toLowerCase(Locale.ROOT);
@@ -672,7 +672,7 @@ public class SkillDAO {
                 skillDataStatement.setString(1, skillHolder.getUUID().toString());
                 SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
 
-                for (NamespacedKey skillKey : skillRegistry.getRegisteredSkills()) {
+                for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
                     Optional<SkillHolder.SkillHolderData> skillHolderDataOptional= skillHolder.getSkillHolderData(skillKey);
                     if (skillHolderDataOptional.isPresent()) {
                         SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();

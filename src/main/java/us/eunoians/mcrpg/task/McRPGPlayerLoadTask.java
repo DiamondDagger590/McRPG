@@ -49,11 +49,11 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
         AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
         SkillHolder skillHolder = getCorePlayer().asSkillHolder();
-        CompletableFuture futures[] = new CompletableFuture[skillRegistry.getRegisteredSkills().size()];
+        CompletableFuture futures[] = new CompletableFuture[skillRegistry.getRegisteredSkillKeys().size()];
 
         Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
         int i = 0;
-        for(NamespacedKey skillKey : skillRegistry.getRegisteredSkills()) {
+        for(NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
             Skill skill = skillRegistry.getRegisteredSkill(skillKey);
 
             getPlugin().getLogger().log(Level.INFO, "Loading data for skill: " + skillKey.getKey());

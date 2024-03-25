@@ -25,6 +25,7 @@ import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.database.table.SkillDAO;
+import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.AbilityHolderTracker;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
@@ -61,6 +62,8 @@ public class McRPG extends CorePlugin {
 
     private AbilityHolderTracker entityManager;
 
+    private DisplayManager displayManager;
+
     private boolean healthBarPluginEnabled = false;
     private boolean mvdwEnabled = false;
     private boolean papiEnabled = false;
@@ -86,6 +89,8 @@ public class McRPG extends CorePlugin {
 
         //TODO remove after testing
         abilityAttributeManager = new AbilityAttributeManager(this);
+
+        displayManager = new DisplayManager();
 
         getAbilityRegistry().registerAbility(new Bleed());
         getAbilityRegistry().registerAbility(new DeeperWound());
@@ -255,6 +260,10 @@ public class McRPG extends CorePlugin {
      */
     public AbilityAttributeManager getAbilityAttributeManager() {
         return abilityAttributeManager;
+    }
+
+    public DisplayManager getDisplayManager() {
+        return displayManager;
     }
 
     /**
