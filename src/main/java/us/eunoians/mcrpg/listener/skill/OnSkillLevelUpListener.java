@@ -2,14 +2,12 @@ package us.eunoians.mcrpg.listener.skill;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
-import us.eunoians.mcrpg.api.event.skill.SkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.Skill;
@@ -35,20 +33,6 @@ public class OnSkillLevelUpListener implements Listener {
         if (player != null && player.isOnline()) {
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             player.sendMessage(miniMessage.deserialize(String.format("<green>You have gone up <gold>%d levels<green> in <gold>%s<green>.", levels, skill.getDisplayName())));
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void handleExpGain(SkillGainExpEvent skillGainExpEvent) {
-        SkillHolder skillHolder = skillGainExpEvent.getSkillHolder();
-        Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(skillGainExpEvent.getSkillKey());
-        int experience = skillGainExpEvent.getExperience();
-        UUID uuid = skillHolder.getUUID();
-        Entity entity = Bukkit.getEntity(uuid);
-
-        if(entity instanceof Player player && player.isOnline()) {
-            MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-            player.sendMessage(miniMessage.deserialize(String.format("<green>You have gained <gold>%d experience<green> in <gold>%s<green>.", experience, skill.getDisplayName())));
         }
     }
 
