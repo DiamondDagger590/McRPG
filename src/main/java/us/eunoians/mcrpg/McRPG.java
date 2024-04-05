@@ -21,6 +21,8 @@ import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
+import us.eunoians.mcrpg.command.admin.DebugCommand;
+import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
@@ -157,8 +159,15 @@ public class McRPG extends CorePlugin {
     public void constructCommands() {
         super.constructCommands();
 //        TestGuiCommand.registerCommand();
+        // Give Commands
         GiveLevelsCommand.registerCommand();
         GiveExperienceCommand.registerCommand();
+
+        // Reset commands
+        ResetSkillCommand.registerCommand();
+
+        // Debug Command
+        DebugCommand.registerCommand();
     }
 
     @Override

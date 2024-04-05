@@ -622,8 +622,7 @@ public class SkillDAO {
                                         deleteStatement.setString(2, abilityData.getAbilityKey().value());
                                         deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
                                         deleteStatement.execute();
-                                    }
-                                    else {
+                                    } else {
                                         preparedStatement.setString(2, abilityData.getAbilityKey().value());
                                         preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
                                         preparedStatement.setString(4, abilityAttribute.getContent().toString());
@@ -654,7 +653,7 @@ public class SkillDAO {
     }
 
     /**
-     * Saves skill specific information such as exp for the provided {@link SkillHolder}.
+     * Saves {@link Skill} specific information such as exp for the provided {@link SkillHolder} for all skills.
      *
      * @param connection  The {@link Connection} to use to save the skill information
      * @param skillHolder The {@link SkillHolder} whose skill information is being saved
@@ -670,12 +669,63 @@ public class SkillDAO {
         databaseManager.getDatabaseExecutorService().submit(() -> {
             try (PreparedStatement skillDataStatement = connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
                 skillDataStatement.setString(1, skillHolder.getUUID().toString());
+                PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?");
+                deleteStatement.setString(1, skillHolder.getUUID().toString());
                 SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
 
                 for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
-                    Optional<SkillHolder.SkillHolderData> skillHolderDataOptional= skillHolder.getSkillHolderData(skillKey);
+                    Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skillKey);
                     if (skillHolderDataOptional.isPresent()) {
                         SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
+                        // If there isnt anything to store in the db... clean it
+                        if (skillHolderData.getCurrentExperience() == 0 && skillHolderData.getCurrentLevel() == 0) {
+                            deleteStatement.setString(2, skillKey.value());
+                            deleteStatement.executeUpdate();
+                        } else {
+                            skillDataStatement.setString(2, skillKey.value());
+                            skillDataStatement.setInt(3, skillHolderData.getCurrentLevel());
+                            skillDataStatement.setInt(4, skillHolderData.getCurrentExperience());
+                            skillDataStatement.executeUpdate();
+                        }
+                    }
+                }
+                completableFuture.complete(null);
+            } catch (SQLException e) {
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
+
+    /**
+     * Saves skill specific information such as exp for the provided {@link SkillHolder} for the {@link Skill} associated with the provided {@link NamespacedKey}.
+     *
+     * @param connection  The {@link Connection} to use to save the skill information
+     * @param skillHolder The {@link SkillHolder} whose skill information is being saved
+     * @param skillKey    The {@link NamespacedKey} for the skill to save
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerSkillData(@NotNull Connection connection, @NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey) {
+
+        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+            try (PreparedStatement skillDataStatement = connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);")) {
+                skillDataStatement.setString(1, skillHolder.getUUID().toString());
+                PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?");
+                deleteStatement.setString(1, skillHolder.getUUID().toString());
+                SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+                Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skillKey);
+                if (skillHolderDataOptional.isPresent()) {
+                    SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
+                    // If there isnt anything to store in the db... clean it
+                    if (skillHolderData.getCurrentExperience() == 0 && skillHolderData.getCurrentLevel() == 0) {
+                        deleteStatement.setString(2, skillKey.value());
+                        deleteStatement.executeUpdate();
+                    } else {
                         skillDataStatement.setString(2, skillKey.value());
                         skillDataStatement.setInt(3, skillHolderData.getCurrentLevel());
                         skillDataStatement.setInt(4, skillHolderData.getCurrentExperience());

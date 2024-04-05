@@ -6,12 +6,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.bukkit.parser.PlayerParser;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.command.parser.PlayerParser;
 import us.eunoians.mcrpg.command.parser.SkillParser;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -19,6 +19,9 @@ import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.Optional;
 
+/**
+ * Command used to give a player levels in one of their skills
+ */
 public class GiveLevelsCommand extends GiveCommandBase {
 
     private static final Permission GIVE_LEVELS_PERMISSION = Permission.of("mcrpg.give.level");

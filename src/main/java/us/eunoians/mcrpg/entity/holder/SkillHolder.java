@@ -264,6 +264,12 @@ public class SkillHolder extends LoadoutHolder {
             checkForLevelups();
         }
 
+        public void resetSkill() {
+            currentExperience = 0;
+            currentLevel = 0;
+            updateExperienceForNextLevel();
+        }
+
         /**
          * Checks to see if there is enough experience to level up. If so, it will continue trying to
          * level up the skill until there isn't enough experience to level up.
