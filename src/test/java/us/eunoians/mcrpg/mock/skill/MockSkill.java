@@ -21,7 +21,7 @@ public class MockSkill extends Skill {
     @NotNull
     @Override
     public String getDisplayName() {
-        return "";
+        return "Mocked Skill";
     }
 
     @Override

@@ -64,7 +64,7 @@ public class AbilityRegistry {
         NamespacedKey abilityKey = ability.getAbilityKey();
         abilities.put(abilityKey, ability);
 
-        if (ability.belongsToSkill() && ability.getSkill().isPresent()) {
+        if (ability.belongsToSkill()) {
             NamespacedKey skillKey = ability.getSkill().get();
 
             Set<NamespacedKey> abilities = abilitiesWithSkills.getOrDefault(skillKey, new HashSet<>());

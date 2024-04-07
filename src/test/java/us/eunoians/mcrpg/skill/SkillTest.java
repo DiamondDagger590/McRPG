@@ -84,4 +84,24 @@ public class SkillTest {
         assertEquals(skillHolderData.getCurrentExperience(), 500);
         assertEquals(skillHolderData.getCurrentLevel(), 6);
     }
+
+    @Test
+    public void testMaxSkillLevelEnforced() {
+        SkillHolder skillHolder = new SkillHolder(UUID.randomUUID());
+        skillHolder.addSkillHolderData(mockedSkill);
+        var skillHolderData = skillHolder.getSkillHolderData(mockedSkill).get();
+        skillHolderData.addLevel(mockedSkill.getMaxLevel() + 1);
+        assertEquals(skillHolderData.getCurrentLevel(), mockedSkill.getMaxLevel());
+    }
+
+    @Test
+    public void testMaxSkillLevelEnforcedAfterExperienceGain() {
+        SkillHolder skillHolder = new SkillHolder(UUID.randomUUID());
+        skillHolder.addSkillHolderData(mockedSkill);
+        var skillHolderData = skillHolder.getSkillHolderData(mockedSkill).get();
+        skillHolderData.addLevel(mockedSkill.getMaxLevel() - (skillHolderData.getCurrentLevel() + 1));
+        assertEquals(skillHolderData.getCurrentLevel(), mockedSkill.getMaxLevel() - 1);
+        skillHolderData.addExperience(skillHolderData.getExperienceForNextLevel());
+        assertEquals(skillHolderData.getCurrentLevel(), mockedSkill.getMaxLevel());
+    }
 }
