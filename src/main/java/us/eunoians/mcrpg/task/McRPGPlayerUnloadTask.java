@@ -36,19 +36,20 @@ public class McRPGPlayerUnloadTask extends PlayerUnloadTask {
 
     @Override
     protected boolean unloadPlayer() {
+        getPlugin().getEntityManager().removeAbilityHolder(getCorePlayer().getUUID());
         PlayerManager playerManager = getPlugin().getPlayerManager();
         Optional<CorePlayer> corePlayerOptional = playerManager.removePlayer(getCorePlayer().getUUID());
 
         if (corePlayerOptional.isPresent() && corePlayerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
             SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
-            Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
+            Connection connection = getPlugin().getDatabaseManager().getDatabase().getConnection();
 
             CompletableFuture<Void> completableFuture = SkillDAO.saveAllSkillHolderInformation(connection, skillHolder);
             completableFuture.thenAccept(unused -> {
                 // If the player's mutex is locked
                 if (mcRPGPlayer.useMutex()) {
                     MutexDAO.updateUserMutex(connection, mcRPGPlayer.getUUID(), false)
-                            .thenAccept(unused1 -> playerManager.removePlayer(mcRPGPlayer.getUUID()))
+                            .thenAccept(unused1 -> playerManager.removePlayer(mcRPGPlayer.getUUID())) // TODO this is gonna fuckin break since i already remove player but i cba rn
                             .exceptionally(throwable -> {
                                 throwable.printStackTrace();
                                 return null;

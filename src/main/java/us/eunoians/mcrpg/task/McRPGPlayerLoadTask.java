@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
@@ -43,15 +44,16 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         return (McRPG) super.getPlugin();
     }
 
+    @VisibleForTesting
     @Override
     protected boolean loadPlayer() { //TODO completable future?
-        SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
-        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        SkillRegistry skillRegistry = getPlugin().getSkillRegistry();
+        AbilityRegistry abilityRegistry = getPlugin().getAbilityRegistry();
+        AbilityAttributeManager abilityAttributeManager = getPlugin().getAbilityAttributeManager();
         SkillHolder skillHolder = getCorePlayer().asSkillHolder();
         CompletableFuture futures[] = new CompletableFuture[skillRegistry.getRegisteredSkillKeys().size()];
 
-        Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
+        Connection connection = getPlugin().getDatabaseManager().getDatabase().getConnection();
         int i = 0;
         for(NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
             Skill skill = skillRegistry.getRegisteredSkill(skillKey);
@@ -96,6 +98,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         return true;
     }
 
+    @VisibleForTesting
     @Override
     protected void onPlayerLoadSuccessfully() {
 
@@ -109,6 +112,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         getPlugin().getEntityManager().trackAbilityHolder(getCorePlayer().asSkillHolder());
     }
 
+    @VisibleForTesting
     @Override
     protected void onPlayerLoadFail() {
         getPlugin().getLogger().log(Level.SEVERE, ChatColor.RED + "There was an issue loading in the McRPG player data for player with UUID: " + getCorePlayer().getUUID());

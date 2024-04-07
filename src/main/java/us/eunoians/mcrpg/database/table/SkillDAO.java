@@ -391,7 +391,7 @@ public class SkillDAO {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT current_level, current_exp FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?;")) {
                 preparedStatement.setString(1, uuid.toString());
-                preparedStatement.setString(2, skillDataSnapshot.getSkillKey().get().getKey().toLowerCase(Locale.ROOT));
+                preparedStatement.setString(2, skillDataSnapshot.getSkillKey().getKey().toLowerCase(Locale.ROOT));
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
@@ -500,12 +500,12 @@ public class SkillDAO {
 
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
 
-                if (skillDataSnapshot.getSkillKey().isEmpty() || !abilityRegistry.doesSkillHaveAbilities(skillDataSnapshot.getSkillKey().get())) {
+                if (!abilityRegistry.doesSkillHaveAbilities(skillDataSnapshot.getSkillKey())) {
                     completableFuture.complete(skillDataSnapshot);
                     return;
                 }
 
-                NamespacedKey skillKey = skillDataSnapshot.getSkillKey().get();
+                NamespacedKey skillKey = skillDataSnapshot.getSkillKey();
 
                 preparedStatement.setString(1, uuid.toString());
 

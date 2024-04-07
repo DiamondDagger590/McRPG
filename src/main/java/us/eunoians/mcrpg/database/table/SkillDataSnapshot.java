@@ -8,7 +8,6 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -22,7 +21,7 @@ import java.util.UUID;
 public class SkillDataSnapshot {
 
     private final UUID uuid;
-    private final Optional<NamespacedKey> skillKey;
+    private final NamespacedKey skillKey;
     private int currentExp;
     private int currentLevel;
     private final Map<NamespacedKey, Map<NamespacedKey, AbilityAttribute<?>>> abilityAttributes;
@@ -35,9 +34,9 @@ public class SkillDataSnapshot {
      * @param uuid     The {@link UUID} of the player this snapshot is for
      * @param skillKey The {@link NamespacedKey} which represents the {@link us.eunoians.mcrpg.skill.Skill} this snapshot has data for
      */
-    SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
+    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
         this.uuid = uuid;
-        this.skillKey = Optional.of(skillKey);
+        this.skillKey = skillKey;
         this.currentExp = 0;
         this.currentLevel = 0;
         this.abilityAttributes = new HashMap<>();
@@ -50,38 +49,9 @@ public class SkillDataSnapshot {
      * @param currentExp   The amount of exp the skill currently has
      * @param currentLevel The current level of the skill
      */
-    SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey, int currentExp, int currentLevel) {
+    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey, int currentExp, int currentLevel) {
         this.uuid = uuid;
-        this.skillKey = Optional.of(skillKey);
-        this.currentExp = currentExp;
-        this.currentLevel = currentLevel;
-        this.abilityAttributes = new HashMap<>();
-        this.abilityToggledMap = new HashMap<>();
-    }
-
-    /**
-     * Constructs a new {@link SkillDataSnapshot} with the values for {@link #getCurrentExp()} and {@link #getCurrentLevel()}
-     * both being 0.
-     *
-     * @param uuid     The {@link UUID} of the player this snapshot is for
-     */
-    SkillDataSnapshot(@NotNull UUID uuid) {
-        this.uuid = uuid;
-        this.skillKey = Optional.empty();
-        this.currentExp = 0;
-        this.currentLevel = 0;
-        this.abilityAttributes = new HashMap<>();
-        this.abilityToggledMap = new HashMap<>();
-    }
-
-    /**
-     * @param uuid         The {@link UUID} of the player this snapshot is for
-     * @param currentExp   The amount of exp the skill currently has
-     * @param currentLevel The current level of the skill
-     */
-    SkillDataSnapshot(@NotNull UUID uuid, int currentExp, int currentLevel) {
-        this.uuid = uuid;
-        this.skillKey = Optional.empty();
+        this.skillKey = skillKey;
         this.currentExp = currentExp;
         this.currentLevel = currentLevel;
         this.abilityAttributes = new HashMap<>();
@@ -106,7 +76,7 @@ public class SkillDataSnapshot {
      * snapshot has data for
      */
     @NotNull
-    public Optional<NamespacedKey> getSkillKey() {
+    public NamespacedKey getSkillKey() {
         return skillKey;
     }
 

@@ -26,4 +26,9 @@ public class Swords extends Skill {
     public String getDisplayName() {
         return "Swords";
     }
+
+    @Override
+    public int getMaxLevel() {
+        return 1000;
+    }
 }

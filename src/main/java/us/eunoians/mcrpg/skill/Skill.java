@@ -47,6 +47,13 @@ public abstract class Skill {
     public abstract String getDisplayName();
 
     /**
+     * Gets the maximum level that this skill can be leveled to.
+     *
+     * @return The maximum level that this skill can be leveled to.
+     */
+    public abstract int getMaxLevel();
+
+    /**
      * Gets a {@link List} of all {@link EventLevelableComponentAttribute}s used by this skill that trigger based on the
      * {@link Event} passed in.
      *
@@ -131,8 +138,8 @@ public abstract class Skill {
      * Since all other components that award swords experience should be encompassed by this same criteria, priority 0 makes sense for this check.
      *
      * @param eventLevelableComponent The {@link EventLevelableComponent} to add as an option
-     * @param clazz The {@link Event} class that the component is being registered against
-     * @param priority The priority of this component (starts at 0 and goes up from there).
+     * @param clazz                   The {@link Event} class that the component is being registered against
+     * @param priority                The priority of this component (starts at 0 and goes up from there).
      */
     public void addLevelableComponent(@NotNull EventLevelableComponent eventLevelableComponent, @NotNull Class<? extends Event> clazz,
                                       int priority) {

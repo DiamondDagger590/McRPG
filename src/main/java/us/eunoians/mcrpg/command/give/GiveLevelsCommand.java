@@ -13,11 +13,8 @@ import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.parser.SkillParser;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.Skill;
-
-import java.util.Optional;
 
 /**
  * Command used to give a player levels in one of their skills
@@ -44,19 +41,25 @@ public class GiveLevelsCommand extends GiveCommandBase {
                             Skill skill = commandContext.get(skillKey);
                             CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                             Player player = commandContext.get(playerKey);
-                            CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
-                            int levelAmount = commandContext.get(amountKey);
+
                             boolean resetExperience = commandContext.flags().isPresent("reset_experience");
 
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
                             Audience senderAudience = adventure.sender(commandContext.sender());
                             Audience receiverAudience = adventure.player(player);
 
-                            Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());
+                            var abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
-                                Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
+                                var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
                                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
+                                    CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
+                                    /*
+                                     We can't give them a level amount that would put them over the max level, so we only give the difference between the max and current level if that amount is smaller than the provided amount.
+                                     While there is a sanity check inside the add levels method, we want to ensure
+                                     */
+                                    int levelAmount = Math.min(commandContext.get(amountKey), skill.getMaxLevel() - skillHolderData.getCurrentLevel());
+
                                     skillHolderData.addLevel(levelAmount, resetExperience); // No need to send a message ourselves as this sends one
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())){

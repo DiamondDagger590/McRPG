@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.entity.holder;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainLevelEvent;
@@ -48,7 +49,7 @@ public class SkillHolder extends LoadoutHolder {
      * @param skill The {@link Skill} to create and store data for.
      */
     public void addSkillHolderData(@NotNull Skill skill) {
-        addSkillHolderData(skill, 0, 0);
+        addSkillHolderData(skill, 1, 0);
     }
 
     /**
@@ -200,6 +201,7 @@ public class SkillHolder extends LoadoutHolder {
         }
 
         // TODO refactor to SkillHolder?? should the data be responsible for updating itself? probs not lol
+
         /**
          * Adds the provided amount of experience to the {@link Skill}.
          * <p>
@@ -234,34 +236,44 @@ public class SkillHolder extends LoadoutHolder {
 
         /**
          * Adds the provided amount of levels to the skill.
+         * <p>
+         * This method will not add levels past the max level for a given skill.
          *
          * @param level The amount of levels to add.
          */
-        public void addLevel(int level) {
-            addLevel(level, false);
+        public int addLevel(int level) {
+            return addLevel(level, false);
         }
 
         /**
          * Adds the provided amount of levels to the skill. This method can also reset the current experience for a skill
          * after a level up. This prevents any roll over of experience for whatever reason.
          * <p>
+         * This method will not add levels past the max level for a given skill.
+         * <p>
          * This method will also call a {@link SkillGainLevelEvent} and then also call {@link #checkForLevelups()} as well.
          *
          * @param level             The amount of levels to add.
          * @param resetExpOnLevelUp If the current experience should be reset on level up or not.
+         * @return The amount of levels that were actually added (Amount may differ based on event results/max level)
          */
-        public void addLevel(int level, boolean resetExpOnLevelUp) {
-            // TODO add a max level check lmfao
+        public int addLevel(int level, boolean resetExpOnLevelUp) {
+            int amountOfLevelups = 0;
+            Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(getSkillKey());
+            level = Math.min(level, skill.getMaxLevel() - getCurrentLevel());
             SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), skillKey, level);
             Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
-            currentLevel += skillGainLevelEvent.getLevels();
+            level = Math.min(skillGainLevelEvent.getLevels(), skill.getMaxLevel() - getCurrentLevel());
+            currentLevel += level;
+            amountOfLevelups += level;
+            // Update the amount of experience needed for the next level and check if there is enough experience to do a level up
             updateExperienceForNextLevel();
-
+            amountOfLevelups += checkForLevelups();
+            // If we are resetting experience, reset it
             if (resetExpOnLevelUp) {
                 currentExperience = 0;
             }
-
-            checkForLevelups();
+            return amountOfLevelups;
         }
 
         public void resetSkill() {
@@ -273,14 +285,19 @@ public class SkillHolder extends LoadoutHolder {
         /**
          * Checks to see if there is enough experience to level up. If so, it will continue trying to
          * level up the skill until there isn't enough experience to level up.
+         *
+         * @return The amount of levels the holder has gone up by
          */
-        private void checkForLevelups() {
+        private int checkForLevelups() {
+            int amountOfLevelups = 0;
             //do level ups
             while (currentExperience >= experienceForNextLevel) {
                 currentExperience -= experienceForNextLevel;
                 addLevel(1);
+                amountOfLevelups++;
                 updateExperienceForNextLevel();
             }
+            return amountOfLevelups;
         }
     }
 }

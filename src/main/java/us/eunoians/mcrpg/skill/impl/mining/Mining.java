@@ -18,4 +18,9 @@ public class Mining extends Skill {
     public String getDisplayName() {
         return "Mining";
     }
+
+    @Override
+    public int getMaxLevel() {
+        return 1000;
+    }
 }

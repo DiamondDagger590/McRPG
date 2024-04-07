@@ -57,9 +57,6 @@ dependencies {
     val mccoreVersion = "1.0.0.7-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
-    val nbtAPIVersion = "2.12.2"
-    implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
-
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
@@ -68,6 +65,15 @@ dependencies {
 
     val worldGuardVersion = "7.0.7"
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:$worldGuardVersion")
+
+    // Test deps
+    val mockBukkitVersion = "3.80.0"
+    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:$mockBukkitVersion")
+    val junitVersion = "5.8.2";
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    val mockitoVersion = "3.12.2";
+    testImplementation("org.mockito:mockito-inline:$mockitoVersion")
 
     //Jar deps
     compileOnly(files("libs/Sickle.jar"))
@@ -84,6 +90,10 @@ tasks.withType<ProcessResources> {
     filesMatching("**/*.yml") {
         expand(project.properties)
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.jar {
@@ -121,7 +131,6 @@ tasks {
         archiveFileName.set("${archiveBaseName.get()}-${archiveVersion.get()}-${archiveAppendix.get()}${if (classifier.isEmpty()) "" else "-$classifier"}.${archiveExtension.get()}")
 
         mergeServiceFiles()
-        relocate("de.tr7zw.changeme.nbtapi", "us.eunoians.mcrpg.nbtapi")
         relocate("org.bstats", "com.diamonddagger590.mcrpg")
         relocate("ch.jalu.configme", "com.diamonddagger590.mcrpg.configme")
         relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")

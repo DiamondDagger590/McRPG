@@ -4,7 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This type of {@link AbilityAttribute} only saves if {@link #shouldContentBeSaved(Object)}
+ * This type of {@link AbilityAttribute} only saves if {@link #shouldContentBeSaved}
  * returns {@code true}. This allows better optimization of database storage by not saving trivial data,
  * such as not needing to save an ability's tier if it isn't unlocked yet, since that tier would be 0.
  *

@@ -4,10 +4,7 @@ import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
-import de.tr7zw.changeme.nbtapi.NBTItem;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
@@ -82,7 +79,9 @@ public class McRPG extends CorePlugin {
 
         placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
 
-        initializeFiles();
+        if (!isUnitTest()) {
+            initializeFiles();
+        }
 
         entityManager = new AbilityHolderTracker(this);
         playerManager = new PlayerManager(this);
@@ -107,31 +106,33 @@ public class McRPG extends CorePlugin {
         getSkillRegistry().registerSkill(new Swords());
         getSkillRegistry().registerSkill(new Mining());
 
-        preloadNBTAPI();
         setupHooks();
-        initializeDatabase();
-        registerListeners();
-        constructCommands();
+        if (!isUnitTest()) {
+            initializeDatabase();
+            registerListeners();
+            constructCommands();
+        }
     }
 
     @Override
     public void onDisable() {
-        Connection connection = databaseManager.getDatabase().getConnection();
-        if (connection == null) {
-            throw new RuntimeException("Database was not available on shutdown... there is likely lost McRPG data as a result.");
-        }
-        else {
-            for (CorePlayer corePlayer : playerManager.getAllPlayers()) {
-                if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
-                    try {
-                        SkillDAO.savePlayerSkillData(connection, mcRPGPlayer.asSkillHolder()).get();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                    if (mcRPGPlayer.useMutex()) {
-                        MutexDAO.updateUserMutex(connection, mcRPGPlayer.getUUID(), false);
+        if (!isUnitTest()) {
+            Connection connection = databaseManager.getDatabase().getConnection();
+            if (connection == null) {
+                throw new RuntimeException("Database was not available on shutdown... there is likely lost McRPG data as a result.");
+            } else {
+                for (CorePlayer corePlayer : playerManager.getAllPlayers()) {
+                    if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
+                        try {
+                            SkillDAO.savePlayerSkillData(connection, mcRPGPlayer.asSkillHolder()).get();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        } catch (ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (mcRPGPlayer.useMutex()) {
+                            MutexDAO.updateUserMutex(connection, mcRPGPlayer.getUUID(), false);
+                        }
                     }
                 }
             }
@@ -212,16 +213,6 @@ public class McRPG extends CorePlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             worldGuardEnabled = true;
         }
-    }
-
-    /**
-     * Preloads the NBTItem classes, as this can cause lag on the first call for some reason
-     */
-    private void preloadNBTAPI() {
-        //Preload nbt class
-        ItemStack itemStack = new ItemStack(Material.DIAMOND);
-        NBTItem item = new NBTItem(itemStack);
-        item.setString("temp", "temp");
     }
 
     /**
