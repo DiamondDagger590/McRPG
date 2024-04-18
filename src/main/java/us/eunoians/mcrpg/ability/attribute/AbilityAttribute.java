@@ -19,7 +19,7 @@ import java.util.Optional;
  * An example of this would be as follows:
  * <ul>
  * <li> I want to create a {@link AbilityTierAttribute} using only an abstracted {@link NamespacedKey}.
- * <li> To do so, I would get a {@link AbilityAttribute} from {@link AbilityAttributeManager#getAttribute(NamespacedKey)} using my provided {@link NamespacedKey}.
+ * <li> To do so, I would get an {@link AbilityAttribute} from {@link AbilityAttributeManager#getAttribute(NamespacedKey)} using my provided {@link NamespacedKey}.
  * <li> This found value will be "default" and populated only with the value from {@link AbilityTierAttribute}.
  * <li> To now create a new instance with a new value, I would do {@link AbilityAttribute#create(Object)}.
  * <li> The returned {@link AbilityAttribute} will be different than the one initially obtained, as it is a newly created one and populated with the provided value

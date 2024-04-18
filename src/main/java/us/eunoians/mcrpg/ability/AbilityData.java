@@ -155,4 +155,15 @@ public class AbilityData {
     public void removeAttribute(@NotNull NamespacedKey namespacedKey) {
         abilityAttributes.remove(namespacedKey);
     }
+
+    /**
+     * Replaces the existing ability attribute with a new one containing the provided content
+     *
+     * @param abilityAttribute The ability attribute to update
+     * @param content          The content to store inside the ability attribute
+     * @param <T>              The type of content stored inside the attribute
+     */
+    public <T> void updateAttribute(@NotNull AbilityAttribute<T> abilityAttribute, T content) {
+        addAttribute(abilityAttribute.create(content));
+    }
 }

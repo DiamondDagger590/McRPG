@@ -265,6 +265,7 @@ public class SkillHolder extends LoadoutHolder {
             Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
             level = Math.min(skillGainLevelEvent.getLevels(), skill.getMaxLevel() - getCurrentLevel());
             currentLevel += level;
+
             amountOfLevelups += level;
             // Update the amount of experience needed for the next level and check if there is enough experience to do a level up
             updateExperienceForNextLevel();

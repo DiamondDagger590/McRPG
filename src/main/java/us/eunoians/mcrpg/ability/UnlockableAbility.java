@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.ability;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.Set;
 
@@ -24,6 +26,21 @@ public abstract class UnlockableAbility extends Ability {
      * @return The level that this ability can be unlocked at.
      */
     public abstract int getUnlockLevel();
+
+    /**
+     *
+     * @param skillHolder
+     * @param skill
+     * @return
+     */
+    public boolean checkIfAbilityCanBeUnlocked(@NotNull SkillHolder skillHolder, @NotNull Skill skill) {
+        var skillDataOptional = skillHolder.getSkillHolderData(skill);
+        if (skillDataOptional.isPresent()) {
+            var skillData = skillDataOptional.get();
+            return skillData.getCurrentLevel() >= getUnlockLevel();
+        }
+        return false;
+    }
 
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
