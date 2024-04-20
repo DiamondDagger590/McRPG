@@ -34,6 +34,7 @@ import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
+import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -64,6 +65,8 @@ public class McRPG extends CorePlugin {
 
     private DisplayManager displayManager;
 
+    private QuestManager questManager;
+
     private boolean healthBarPluginEnabled = false;
     private boolean mvdwEnabled = false;
     private boolean papiEnabled = false;
@@ -93,6 +96,8 @@ public class McRPG extends CorePlugin {
         abilityAttributeManager = new AbilityAttributeManager(this);
 
         displayManager = new DisplayManager();
+
+        questManager = new QuestManager();
 
         getAbilityRegistry().registerAbility(new Bleed());
         getAbilityRegistry().registerAbility(new DeeperWound());
@@ -261,12 +266,29 @@ public class McRPG extends CorePlugin {
      *
      * @return The {@link AbilityAttributeManager} used by McRPG
      */
+    @NotNull
     public AbilityAttributeManager getAbilityAttributeManager() {
         return abilityAttributeManager;
     }
 
+    /**
+     * Gets the {@link DisplayManager} used by McRPG
+     *
+     * @return The {@link DisplayManager} used by McRPG
+     */
+    @NotNull
     public DisplayManager getDisplayManager() {
         return displayManager;
+    }
+
+    /**
+     * Gets the {@link QuestManager} used by McRPG
+     *
+     * @return The {@link QuestManager} used by McRPG
+     */
+    @NotNull
+    public QuestManager getQuestManager() {
+        return questManager;
     }
 
     /**

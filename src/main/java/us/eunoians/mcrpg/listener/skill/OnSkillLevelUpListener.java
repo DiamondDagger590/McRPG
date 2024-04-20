@@ -67,7 +67,7 @@ public class OnSkillLevelUpListener implements Listener {
                                 Bukkit.getPluginManager().callEvent(abilityUnlockEvent);
                                 abilityData.updateAttribute(attribute, true);
                                 //Save the updated attribute
-                                SkillDAO.savePlayerAbilityAttributes(McRPG.getInstance().getDatabaseManager().getDatabase().getConnection(), skillHolder).exceptionally(throwable -> {
+                                SkillDAO.savePlayerSkillData(McRPG.getInstance().getDatabaseManager().getDatabase().getConnection(), skillHolder).exceptionally(throwable -> {
                                     throwable.printStackTrace();
                                     return null;
                                 });
