@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 
 import java.util.Set;
@@ -19,13 +19,13 @@ public class OnAttackAbilityListener implements Listener {
     public void handleOnAttackAbilities(EntityDamageByEntityEvent entityDamageByEntityEvent) {
 
         McRPG mcRPG = McRPG.getInstance();
-        AbilityHolderTracker abilityHolderTracker = mcRPG.getEntityManager();
+        EntityManager entityManager = mcRPG.getEntityManager();
         AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
 
         Entity damager = entityDamageByEntityEvent.getDamager();
         Entity damaged = entityDamageByEntityEvent.getEntity();
 
-        abilityHolderTracker.getAbilityHolder(damager.getUniqueId()).ifPresent(damagerAbilityHolder -> {
+        entityManager.getAbilityHolder(damager.getUniqueId()).ifPresent(damagerAbilityHolder -> {
 
             /*
              * We can do this without too much of an impact on performance due to two assumptions.

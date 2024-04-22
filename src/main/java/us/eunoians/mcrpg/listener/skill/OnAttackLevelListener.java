@@ -7,7 +7,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
@@ -19,13 +19,13 @@ public class OnAttackLevelListener implements Listener {
     public void handleOnAttackAbilities(EntityDamageByEntityEvent entityDamageByEntityEvent) {
 
         McRPG mcRPG = McRPG.getInstance();
-        AbilityHolderTracker abilityHolderTracker = mcRPG.getEntityManager();
+        EntityManager entityManager = mcRPG.getEntityManager();
         SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
 
         Entity damager = entityDamageByEntityEvent.getDamager();
         Entity damaged = entityDamageByEntityEvent.getEntity();
 
-        abilityHolderTracker.getAbilityHolder(damager.getUniqueId()).ifPresent(damagerAbilityHolder -> {
+        entityManager.getAbilityHolder(damager.getUniqueId()).ifPresent(damagerAbilityHolder -> {
 
             if (damagerAbilityHolder instanceof SkillHolder damagerSkillHolder) {
                 Set<NamespacedKey> allSkills = damagerSkillHolder.getSkills();

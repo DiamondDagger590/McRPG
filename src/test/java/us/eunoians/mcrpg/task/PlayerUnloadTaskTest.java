@@ -16,7 +16,7 @@ import org.mockito.Mockito;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
-import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
@@ -85,7 +85,7 @@ public class PlayerUnloadTaskTest {
         // Setup the player as being loaded (tested elsewhere)
         PlayerMock playerMock = serverMock.addPlayer();
         PlayerManager playerManager = spy.getPlayerManager();
-        AbilityHolderTracker tracker = spy.getEntityManager();
+        EntityManager tracker = spy.getEntityManager();
         McRPGPlayer player = new McRPGPlayer(playerMock);
         playerManager.addPlayer(player);
         tracker.trackAbilityHolder(player.asSkillHolder());

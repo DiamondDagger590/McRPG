@@ -7,7 +7,7 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 
@@ -23,7 +23,7 @@ public class OnBleedActivateListener implements Listener {
     public void handleBleedActivate(BleedActivateEvent bleedActivateEvent) {
 
         McRPG mcRPG = McRPG.getInstance();
-        AbilityHolderTracker abilityHolderTracker = mcRPG.getEntityManager();
+        EntityManager entityManager = mcRPG.getEntityManager();
         AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
 
         AbilityHolder abilityHolder = bleedActivateEvent.getAbilityHolder();

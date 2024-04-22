@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.entity;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.QuestHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,20 +11,23 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Tracks all entities that are ability holders for the server.
+ * Tracks all entities that are different kinds of holders
  * <p>
  * {@link AbilityHolder AbilityHolders} stored in this tracker may be more
  * than just an {@link AbilityHolder}, such as an {@link us.eunoians.mcrpg.entity.holder.SkillHolder} in the
  * instance of a tracked {@link us.eunoians.mcrpg.entity.player.McRPGPlayer}.
  */
-public class AbilityHolderTracker {
+public class EntityManager {
 
     private final McRPG mcRPG;
 
-    private final Map<UUID, AbilityHolder> entityMap = new HashMap<>();
+    private final Map<UUID, AbilityHolder> abilityHolderMap;
+    private final Map<UUID, QuestHolder> questHolderMap;
 
-    public AbilityHolderTracker(@NotNull McRPG mcRPG) {
+    public EntityManager(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
+        this.abilityHolderMap = new HashMap<>();
+        this.questHolderMap = new HashMap<>();
     }
 
     /**
@@ -36,7 +40,7 @@ public class AbilityHolderTracker {
      */
     @NotNull
     public Optional<AbilityHolder> getAbilityHolder(@NotNull UUID uuid) {
-        return Optional.ofNullable(entityMap.get(uuid));
+        return Optional.ofNullable(abilityHolderMap.get(uuid));
     }
 
     /**
@@ -45,7 +49,7 @@ public class AbilityHolderTracker {
      * @param abilityHolder The {@link AbilityHolder} to track.
      */
     public void trackAbilityHolder(@NotNull AbilityHolder abilityHolder) {
-        entityMap.put(abilityHolder.getUUID(), abilityHolder);
+        abilityHolderMap.put(abilityHolder.getUUID(), abilityHolder);
     }
 
     /**
@@ -67,7 +71,7 @@ public class AbilityHolderTracker {
      * that is currently tracked.
      */
     public boolean isAbilityHolderTracked(@NotNull UUID uuid) {
-        return entityMap.containsKey(uuid);
+        return abilityHolderMap.containsKey(uuid);
     }
 
     /**
@@ -80,7 +84,28 @@ public class AbilityHolderTracker {
      */
     @NotNull
     public Optional<AbilityHolder> removeAbilityHolder(@NotNull UUID uuid) {
-        return Optional.ofNullable(entityMap.remove(uuid));
+        return Optional.ofNullable(abilityHolderMap.remove(uuid));
     }
 
+    @NotNull
+    public Optional<QuestHolder> getQuestHolder(@NotNull UUID uuid) {
+        return Optional.ofNullable(questHolderMap.get(uuid));
+    }
+
+    public void trackQuestHolder(@NotNull QuestHolder questHolder) {
+        questHolderMap.put(questHolder.getUUID(), questHolder);
+    }
+
+    public boolean isQuestHolderTracked(@NotNull QuestHolder questHolder) {
+        return isQuestHolderTracked(questHolder.getUUID());
+    }
+
+    public boolean isQuestHolderTracked(@NotNull UUID uuid) {
+        return questHolderMap.containsKey(uuid);
+    }
+
+    @NotNull
+    public Optional<QuestHolder> removeQuestHolder(@NotNull UUID uuid) {
+        return Optional.ofNullable(questHolderMap.remove(uuid));
+    }
 }

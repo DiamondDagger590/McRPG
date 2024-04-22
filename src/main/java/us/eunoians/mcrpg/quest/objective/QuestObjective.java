@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.quest.objective;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
+import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.api.event.quest.QuestObjectiveCompleteEvent;
 import us.eunoians.mcrpg.api.event.quest.QuestObjectiveProgressEvent;
@@ -9,7 +11,9 @@ import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.exception.quest.QuestObjectiveCompleteException;
 import us.eunoians.mcrpg.quest.Quest;
 
-public abstract class QuestObjective {
+import java.util.List;
+
+public abstract class QuestObjective implements Listener {
 
     private final Quest quest;
     private final int requiredProgression;
@@ -43,7 +47,7 @@ public abstract class QuestObjective {
 
     public void progressObjective(int progress) {
         if (isObjectiveCompleted()) {
-            throw new QuestObjectiveCompleteException(this);
+            throw new QuestObjectiveCompleteException(this, String.format("Quest objective for quest %s tried to have additional progress but is already completed.", quest.getUUID()));
         }
         QuestObjectiveProgressEvent questObjectiveProgressEvent = new QuestObjectiveProgressEvent(getQuest(), this, Math.min(progress, requiredProgression - currentProgression));
         Bukkit.getPluginManager().callEvent(questObjectiveProgressEvent);
@@ -69,5 +73,14 @@ public abstract class QuestObjective {
     protected void onComplete() {
         QuestObjectiveCompleteEvent questObjectiveCompleteEvent = new QuestObjectiveCompleteEvent(getQuest(), this);
         Bukkit.getPluginManager().callEvent(questObjectiveCompleteEvent);
+        quest.onObjectiveComplete(this);
     }
+
+    public abstract void startListeningForProgression();
+
+    public abstract void stopListeningForProgression();
+
+    public abstract Component getObjectiveTitle();
+
+    public abstract List<Component> getObjectiveInfoText();
 }

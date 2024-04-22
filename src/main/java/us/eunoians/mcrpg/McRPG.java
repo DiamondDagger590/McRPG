@@ -22,11 +22,12 @@ import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
+import us.eunoians.mcrpg.command.quest.TestQuestStartCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.display.DisplayManager;
-import us.eunoians.mcrpg.entity.AbilityHolderTracker;
+import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
@@ -61,7 +62,7 @@ public class McRPG extends CorePlugin {
     private SkillRegistry skillRegistry;
     private AbilityAttributeManager abilityAttributeManager;
 
-    private AbilityHolderTracker entityManager;
+    private EntityManager entityManager;
 
     private DisplayManager displayManager;
 
@@ -86,7 +87,7 @@ public class McRPG extends CorePlugin {
             initializeFiles();
         }
 
-        entityManager = new AbilityHolderTracker(this);
+        entityManager = new EntityManager(this);
         playerManager = new PlayerManager(this);
 
         abilityRegistry = new AbilityRegistry(this);
@@ -174,6 +175,9 @@ public class McRPG extends CorePlugin {
 
         // Debug Command
         DebugCommand.registerCommand();
+
+        // Quest Command
+        TestQuestStartCommand.registerCommand();
     }
 
     @Override
@@ -231,7 +235,7 @@ public class McRPG extends CorePlugin {
     }
 
     @NotNull
-    public AbilityHolderTracker getEntityManager() {
+    public EntityManager getEntityManager() {
         return entityManager;
     }
 
