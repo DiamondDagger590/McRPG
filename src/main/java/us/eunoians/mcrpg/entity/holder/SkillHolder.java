@@ -5,6 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
+import us.eunoians.mcrpg.api.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.skill.Skill;
@@ -273,6 +274,9 @@ public class SkillHolder extends LoadoutHolder {
             // If we are resetting experience, reset it
             if (resetExpOnLevelUp) {
                 currentExperience = 0;
+            }
+            if (level >= 0) {
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, skillKey, getCurrentLevel() - level, getCurrentLevel()));
             }
             return amountOfLevelups;
         }

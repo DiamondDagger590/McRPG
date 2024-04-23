@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.entity.holder;
 
 import com.google.common.collect.ImmutableSet;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -36,6 +35,7 @@ public class AbilityHolder {
     private final UUID uuid;
     private final Set<NamespacedKey> availableAbilities;
     private final Map<NamespacedKey, AbilityData> abilityDataMap;
+    private int upgradePoints;
 
     public AbilityHolder(@NotNull UUID uuid) {
         this.uuid = uuid;
@@ -227,6 +227,22 @@ public class AbilityHolder {
         if (validateAbilityExists(abilityKey)) {
             abilityDataMap.remove(abilityKey);
         }
+    }
+
+    public int getUpgradePoints() {
+        return upgradePoints;
+    }
+
+    public void giveUpgradePoints(int upgradePoints) {
+        this.upgradePoints += upgradePoints;
+    }
+
+    public void removeUpgradePoints(int upgradePoints) {
+        this.upgradePoints -= upgradePoints;
+    }
+
+    public void setUpgradePoints(int upgradePoints) {
+        this.upgradePoints = upgradePoints;
     }
 
     private boolean validateAbilityExists(@NotNull NamespacedKey abilityKey) {

@@ -54,7 +54,7 @@ repositories {
 
 dependencies {
 
-    val mccoreVersion = "1.0.0.7-SNAPSHOT"
+    val mccoreVersion = "1.0.0.8-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     val bstatsVersion = "2.2.1"
@@ -116,9 +116,6 @@ tasks.jar {
 
 tasks {
     shadowJar {
-
-        //My gheto solution to get the commit hash on the shadow'd jar
-
         // Open git
         val git = org.ajoberstar.grgit.Grgit.open(file("."))
         // Use abbreviated id from git head
@@ -131,8 +128,8 @@ tasks {
         archiveFileName.set("${archiveBaseName.get()}-${archiveVersion.get()}-${archiveAppendix.get()}${if (classifier.isEmpty()) "" else "-$classifier"}.${archiveExtension.get()}")
 
         mergeServiceFiles()
-        relocate("org.bstats", "com.diamonddagger590.mcrpg")
-        relocate("ch.jalu.configme", "com.diamonddagger590.mcrpg.configme")
+        relocate("org.bstats", "us.eunoians.mcrpg")
+        relocate("ch.jalu.configme", "us.eunoians.mcrpg.configme")
         relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")
     }
 }

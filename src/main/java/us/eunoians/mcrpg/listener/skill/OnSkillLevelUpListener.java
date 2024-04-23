@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnlockEvent;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
+import us.eunoians.mcrpg.api.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -28,6 +29,8 @@ import java.util.UUID;
  * This listener is in charge of handling ability unlocks and ability point distributions
  */
 public class OnSkillLevelUpListener implements Listener {
+
+    private static final int UPGRADE_POINT_AWARD_THRESHOLD = 5;
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void handleLevelUp(SkillGainLevelEvent skillGainLevelEvent) {
@@ -41,13 +44,19 @@ public class OnSkillLevelUpListener implements Listener {
     }
 
     @EventHandler
-    public void handleLevelUp(PostSkillGainExpEvent postSkillGainExpEvent) {
-        SkillHolder skillHolder = postSkillGainExpEvent.getSkillHolder();
+    public void handlePostLevelEvent(PostSkillGainLevelEvent postSkillGainLevelEvent) {
+        SkillHolder skillHolder = postSkillGainLevelEvent.getSkillHolder();
         UUID uuid = skillHolder.getUUID();
-        Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(postSkillGainExpEvent.getSkillKey());
+        Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
         var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
         // Check to see if we need to unlock any abilities
         if (skillHolderDataOptional.isPresent()) {
+
+            // Award skill points if needed
+            if (postSkillGainLevelEvent.getBeforeLevel()/UPGRADE_POINT_AWARD_THRESHOLD != postSkillGainLevelEvent.getAfterLevel()/UPGRADE_POINT_AWARD_THRESHOLD) {
+                skillHolder.giveUpgradePoints(1);
+            }
+
             var skillHolderData = skillHolderDataOptional.get();
             AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
             // Check all abilities for the skill

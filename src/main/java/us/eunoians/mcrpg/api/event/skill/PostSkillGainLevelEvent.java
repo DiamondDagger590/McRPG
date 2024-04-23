@@ -9,15 +9,18 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
  * This event is called after a player has gained levels in the {@link us.eunoians.mcrpg.skill.Skill}
  * associated with a given {@link NamespacedKey}
  */
-public class PostSkillGainLevelEvent extends SkillEvent{
+public class PostSkillGainLevelEvent extends SkillEvent {
 
     private static final HandlerList handlers = new HandlerList();
 
     private final SkillHolder skillHolder;
+    private final int beforeLevel, afterLevel;
 
-    public PostSkillGainLevelEvent(@NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey) {
+    public PostSkillGainLevelEvent(@NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey, int beforeLevel, int afterLevel) {
         super(skillKey);
         this.skillHolder = skillHolder;
+        this.beforeLevel = beforeLevel;
+        this.afterLevel = afterLevel;
     }
 
     /**
@@ -28,6 +31,14 @@ public class PostSkillGainLevelEvent extends SkillEvent{
     @NotNull
     public SkillHolder getSkillHolder() {
         return skillHolder;
+    }
+
+    public int getBeforeLevel() {
+        return beforeLevel;
+    }
+
+    public int getAfterLevel() {
+        return afterLevel;
     }
 
     @Override

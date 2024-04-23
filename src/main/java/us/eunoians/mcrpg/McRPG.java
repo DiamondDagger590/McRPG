@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
+import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
@@ -78,7 +79,6 @@ public class McRPG extends CorePlugin {
 
     @Override
     public void onEnable() {
-
         super.onEnable();
 
         placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
@@ -165,7 +165,7 @@ public class McRPG extends CorePlugin {
     @Override
     public void constructCommands() {
         super.constructCommands();
-//        TestGuiCommand.registerCommand();
+        TestGuiCommand.registerCommand();
         // Give Commands
         GiveLevelsCommand.registerCommand();
         GiveExperienceCommand.registerCommand();
@@ -234,6 +234,11 @@ public class McRPG extends CorePlugin {
         return fileManager;
     }
 
+    /**
+     * Get the {@link EntityManager} used by McRPG
+     *
+     * @return The {@link EntityManager} used by McRPG
+     */
     @NotNull
     public EntityManager getEntityManager() {
         return entityManager;
