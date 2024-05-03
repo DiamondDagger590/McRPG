@@ -54,17 +54,7 @@ public class PlayerDataDAO {
              *
              *
              * uuid is the {@link java.util.UUID} of the player being stored
-             * party_uuid is the uuid string of the player's current party. The absence of a party means that the value "nu" will be present
-             * power_level is the last calculated power level for that player. This is a sum of the current_level field from all skill tables for the player
              * ability_points is the amount of ability points the player has left to spend
-             * replace_ability_cooldown_time is the amount of time that the player has before they can replace an ability into their loadout again
-             * redeemable_exp is the amount of redeemable exp that the player has
-             * redeemable_levels is the amount of redeemable levels that the player has
-             * boosted_exp is the amount of exp from McMMO level conversion the player has
-             * divine_escape_exp_debuff is the percentage by which the player will gain less exp while debuffed
-             * divine_escape_damage_debuff is the percentage by which the player will deal less damage while debuffed
-             * divine_escape_exp_end_time is the time in millis that the player's exp debuff will end
-             * divine_escape_damage_end_time is the time in millis that the player's damage debuff will end
              **
              ** Reasoning for structure:
              ** PK is the `uuid` field, as each player only has one uuid
@@ -72,17 +62,7 @@ public class PlayerDataDAO {
             try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                                                                            "(" +
                                                                            "`uuid` varchar(36) NOT NULL," +
-                                                                           "`party_uuid` varchar(32) NOT NULL DEFAULT 'nu'," +
-                                                                           "`power_level` int(11) NOT NULL DEFAULT 0," +
                                                                            "`ability_points` int(11) NOT NULL DEFAULT 1," +
-                                                                           "`replace_ability_cooldown_time` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`redeemable_exp` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`redeemable_levels` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`boosted_exp` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`divine_escape_exp_debuff` double(11) NOT NULL DEFAULT 0," +
-                                                                           "`divine_escape_damage_debuff` double(11) NOT NULL DEFAULT 0," +
-                                                                           "`divine_escape_exp_end_time` int(11) NOT NULL DEFAULT 0," +
-                                                                           "`divine_escape_damage_end_time` int(11) NOT NULL DEFAULT 0," +
                                                                            "PRIMARY KEY (`uuid`)" +
                                                                            ");")) {
                 statement.executeUpdate();
@@ -240,6 +220,7 @@ public class PlayerDataDAO {
                                                                                                                          "divine_escape_exp_debuff, divine_escape_damage_debuff, divine_escape_exp_end_time, divine_escape_damage_end_time, " +
                                                                                                                          "replace_ability_cooldown_time, boosted_exp, party_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {
                 preparedStatement.setString(1, mcRPGPlayer.getUUID().toString());
+
 //                preparedStatement.setInt(2, mcRPGPlayer.getPowerLevel());
 //                preparedStatement.setInt(3, mcRPGPlayer.getAbilityPoints());
 //                preparedStatement.setInt(4, mcRPGPlayer.getRedeemableExp());

@@ -32,6 +32,7 @@ public class Quest {
     private boolean started = false;
     private boolean abandoned = false;
     private boolean completed = false;
+    private QuestReward questReward;
 
     public Quest(@NotNull String configKey) {
         this.uuid = UUID.randomUUID();
@@ -184,6 +185,13 @@ public class Quest {
         Bukkit.getPluginManager().callEvent(questCompleteEvent);
         stopListeningForProgression();
         completed = true;
+        if (questReward != null) {
+            questHolders.forEach(uuid -> questReward.giveReward(uuid, this));
+        }
+    }
+
+    public void addQuestReward(@NotNull QuestReward questReward) {
+        this.questReward = questReward;
     }
 
     public void startListeningForProgression() {

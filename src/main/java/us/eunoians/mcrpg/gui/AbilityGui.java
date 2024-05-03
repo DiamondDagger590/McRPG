@@ -6,6 +6,8 @@ import com.diamonddagger590.mccore.gui.component.GuiPage;
 import com.diamonddagger590.mccore.gui.component.PaginatedGui;
 import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
+import com.diamonddagger590.mccore.util.Methods;
+import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -20,19 +22,29 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
+import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.Quest;
+import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.util.filter.AbilityUpgradeFilter;
+import us.eunoians.mcrpg.util.filter.DefaultAbilityFilter;
+import us.eunoians.mcrpg.util.filter.UnlockableAbilityFilter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -85,6 +97,11 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                 List<Ability> abilities = cachedSorts.get(sortTypeNode.getNodeValue());
                 if (abilities.size() > abilitySlot) {
                     Ability ability = abilities.get(abilitySlot);
+                    if (ability instanceof TierableAbility tierableAbility && canPlayerStartUpgradeQuest(tierableAbility, mcRPGPlayer)) {
+                        startUpgradeQuest(tierableAbility, mcRPGPlayer);
+                        paintGuiPage();
+                        return;
+                    }
                     SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
                     skillHolder.getAbilityData(ability).ifPresent(abilityData -> {
                         Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
@@ -158,6 +175,8 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
 
     @Override
     public void paintGuiPage() {
+        // TODO fix caching
+        getInventory().clear();
         paintNavigationBar();
         paintAbilities();
     }
@@ -200,9 +219,13 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
             abilities = mcRPGPlayer.asSkillHolder()
                     .getAvailableAbilities()
                     .stream()
-                    .map(namespacedKey -> McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey))
+                    .map(namespacedKey -> McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey)).toList();
+            abilities = sortType.filter(mcRPGPlayer, abilities);
+            abilities = abilities
+                    .stream()
                     .sorted(sortType.getAbilityComparator())
                     .toList();
+            // abilities = sortType.filter(mcRPGPlayer, abilities);
             cachedSorts.put(sortType, abilities);
         }
 
@@ -248,7 +271,7 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                     abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE).ifPresent(abilityAttribute -> {
                         if (abilityAttribute instanceof AbilityUnlockedAttribute unlockedAttribute) {
                             if (unlockedAttribute.getContent()) {
-                                lore.add(miniMessage.deserialize("<gray>You have unlocked this ability,"));
+                                lore.add(miniMessage.deserialize("<gray>You have unlocked this ability."));
                             } else {
                                 lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
                                         skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName() + " <gray>skill"));
@@ -256,6 +279,71 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                             }
                         }
                     });
+                }
+
+                // If it's a tierable ability and also is unlocked if it's an unlocked ability
+                if (ability instanceof TierableAbility tierableAbility && abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE)
+                        .map(value -> value instanceof AbilityUnlockedAttribute attribute && attribute.getContent()).orElse(true)) {
+                    var abilityQuestOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+                    // If there is an active quest
+                    if (abilityQuestOptional.isPresent() && abilityQuestOptional.get() instanceof AbilityUpgradeQuestAttribute questAttribute && questAttribute.shouldContentBeSaved()) {
+                        QuestManager questManager = McRPG.getInstance().getQuestManager();
+                        var questOptional = questManager.getActiveQuest(questAttribute.getContent());
+                        if (questOptional.isPresent()) {
+                            lore.add(miniMessage.deserialize("<gray>Upgrade Quest Progress: ").append(Methods.getProgressBar(questOptional.get().getQuestProgress(), 20)));
+                        } else {
+                            throw new IllegalArgumentException("The ability quest for ability " + ability.getDisplayName() + " was not found.");
+                        }
+                    }
+                    // If there isn't a quest, check to see if they can upgrade
+                    else {
+                        abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).ifPresent(abilityAttribute -> {
+                            if (abilityAttribute instanceof AbilityTierAttribute abilityTierAttribute) {
+                                int tier = abilityTierAttribute.getContent();
+                                int nextTier = tier + 1;
+                                int upgradeCost = tierableAbility.getUpgradeCostForTier(nextTier);
+                                // If the ability isn't the max tier
+                                if (tierableAbility.getMaxTier() > tier) {
+                                    // If the ability has a skill it belongs to
+                                    if (tierableAbility.getSkill().isPresent()) {
+                                        var skillDataOptional = skillHolder.getSkillHolderData(tierableAbility.getSkill().get());
+                                        if (skillDataOptional.isPresent()) {
+                                            Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
+                                            int currentLevel = skillDataOptional.get().getCurrentLevel();
+                                            // If the current skill level is above the unlock level
+                                            if (currentLevel >= tierableAbility.getUnlockLevelForTier(nextTier)) {
+                                                // If they have enough upgrade points, tell them they can click
+                                                if (skillHolder.getUpgradePoints() >= upgradeCost) {
+                                                    lore.add(miniMessage.deserialize(String.format("<green>Click to spend <gold>%s upgrade points<green> to start upgrade quest.", upgradeCost)));
+                                                }
+                                                // If they don't have enough, tell them how many they need
+                                                else {
+                                                    lore.add(miniMessage.deserialize(String.format("<gray>You need <gold>%s upgrade points<gray> to start the upgrade quest.", upgradeCost)));
+                                                }
+                                            }
+                                            // Otherwise tell the player the level they need to reach
+                                            else {
+                                                lore.add(miniMessage.deserialize(
+                                                        String.format("<gray>You can upgrade this ability once you reach <gold>Lv %d<gray> in <gold>%s<gray>.",
+                                                                tierableAbility.getUnlockLevelForTier(nextTier), skill.getDisplayName())));
+                                            }
+                                        }
+                                    }
+                                    // If the ability doesn't have a skill, we only care about upgrade cost
+                                    else {
+                                        // If they have enough upgrade points, tell them they can click
+                                        if (skillHolder.getUpgradePoints() >= upgradeCost) {
+                                            lore.add(miniMessage.deserialize(String.format("<green>Click to spend <gold>%s upgrade points<green> to start upgrade quest.", upgradeCost)));
+                                        }
+                                        // If they don't have enough, tell them how many they need
+                                        else {
+                                            lore.add(miniMessage.deserialize(String.format("<gray>You need <gold>%s upgrade points<gray> to start the upgrade quest.", upgradeCost)));
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
                 }
 
                 // Custom handling of toggled since we enchant toggled on items
@@ -276,6 +364,58 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
         }
     }
 
+    private boolean canPlayerStartUpgradeQuest(@NotNull TierableAbility tierableAbility, @NotNull McRPGPlayer mcRPGPlayer) {
+        SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
+        var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
+        if (abilityDataOptional.isPresent() ) {
+            var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+            var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+            // Validate they don't have an ongoing upgrade quest
+            if (skillHolder.hasUpgradeQuest(tierableAbility.getAbilityKey())) {
+                return false;
+            }
+            if (tierAttributeOptional.isPresent() && tierAttributeOptional.get() instanceof AbilityTierAttribute attribute) {
+                int currentTier = attribute.getContent();
+                int nextTier = currentTier + 1;
+                int upgradeCost = tierableAbility.getUpgradeCostForTier(nextTier);
+                // If the next tier is below or at the tier cap
+                if (tierableAbility.getMaxTier() >= nextTier) {
+                    // If the ability has a skill tied to it
+                    if (tierableAbility.getSkill().isPresent()) {
+                        var skillData = skillHolder.getSkillHolderData(tierableAbility.getSkill().get());
+                        // Check if the current skill level is enough to unlock and ensure player has enough upgrade points
+                        return skillData.isPresent() && skillData.get().getCurrentLevel() >= tierableAbility.getUnlockLevelForTier(nextTier) && skillHolder.getUpgradePoints() >= upgradeCost;
+                    }
+                    // If the ability doesn't have a skill, then check if they have enough upgrade points
+                    else {
+                        return skillHolder.getUpgradePoints() >= upgradeCost;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void startUpgradeQuest(@NotNull TierableAbility tierableAbility, @NotNull McRPGPlayer player) {
+        QuestHolder questHolder = mcRPGPlayer.asQuestHolder();
+        SkillHolder skillHolder = player.asSkillHolder();
+
+        var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
+
+        if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE).isEmpty()
+                || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
+            throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName());
+        }
+        int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
+        Quest quest = tierableAbility.getUpgradeQuestForTier(tier);
+        abilityDataOptional.get().addAttribute(new AbilityUpgradeQuestAttribute(quest.getUUID()));
+        QuestManager questManager = McRPG.getInstance().getQuestManager();
+        skillHolder.setUpgradePoints(skillHolder.getUpgradePoints() - tierableAbility.getUpgradeCostForTier(tier));
+        questManager.addActiveQuest(quest);
+        questManager.trackQuestForHolder(questHolder, quest);
+        quest.startQuest();
+    }
+
     // TODO fix some sort of caching or smth
     private static class AbilityGuiPage extends GuiPage {
         private final AbilityGuiSortType sortType;
@@ -292,10 +432,10 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
     }
 
     private enum AbilityGuiSortType {
-        ALPHABETICAL(Material.BAMBOO_HANGING_SIGN, "Alphabetical Sort", Comparator.comparing(Ability::getDisplayName)),
-        DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", new ChainComparator<>(
+        ALPHABETICAL(Material.BAMBOO_HANGING_SIGN, "Alphabetical Sort", null, Comparator.comparing(Ability::getDisplayName)),
+        DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", new DefaultAbilityFilter(), new ChainComparator<>(
                 Comparator.comparing(ability -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator())),
-        SKILL(Material.DIAMOND_SWORD, "Sort by Skill", new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
+        SKILL(Material.DIAMOND_SWORD, "Sort by Skill", null, new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
                 Comparator.comparing(ability -> ability.getSkill().isPresent()),
                 // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
                 (ability, ability1) -> {
@@ -316,7 +456,7 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                     return 0;
                 },
                 DEFAULT_ABILITIES.getAbilityComparator())),
-        UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", new ChainComparator<>(
+        UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", new UnlockableAbilityFilter(), new ChainComparator<>(
                 Comparator.comparing(ability -> !(ability instanceof UnlockableAbility)),
                 Comparator.comparing(ability -> ability.getSkill().isPresent()),
                 // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
@@ -347,7 +487,8 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
                     }
                     return 0;
                 })),
-        ;
+        UPGRADEABLE_ABILITIES(Material.GOLD_INGOT, "Sort by abilities you can upgrade", new AbilityUpgradeFilter(),
+                SKILL.getAbilityComparator());;
 
         private final static LinkedNode<AbilityGuiSortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilityGuiSortType.SKILL);
 
@@ -368,11 +509,13 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
 
         private final Material displayMaterial;
         private final String displayName;
+        private final PlayerContextFilter<Ability> filter;
         private final Comparator<Ability> abilityComparator;
 
-        AbilityGuiSortType(@NotNull Material displayMaterial, @NotNull String displayName, @NotNull Comparator<Ability> abilityComparator) {
+        AbilityGuiSortType(@NotNull Material displayMaterial, @NotNull String displayName, @Nullable PlayerContextFilter<Ability> filter, @NotNull Comparator<Ability> abilityComparator) {
             this.displayMaterial = displayMaterial;
             this.displayName = displayName;
+            this.filter = filter;
             this.abilityComparator = abilityComparator;
         }
 
@@ -404,6 +547,17 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
         @NotNull
         public Comparator<Ability> getAbilityComparator() {
             return this.abilityComparator;
+        }
+
+        /**
+         * Gets the filtered collection to display based on
+         *
+         * @param abilities
+         * @return
+         */
+        @NotNull
+        public List<Ability> filter(@NotNull McRPGPlayer mcRPGPlayer, @NotNull List<Ability> abilities) {
+            return filter == null ? abilities : List.copyOf(filter.filter(mcRPGPlayer, abilities));
         }
 
         /**

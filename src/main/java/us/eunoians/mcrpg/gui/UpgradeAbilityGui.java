@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.gui.component.GuiPage;
 import com.diamonddagger590.mccore.gui.component.PaginatedGui;
 import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
+import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -20,19 +21,26 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.ability.UnlockableAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
+import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.Quest;
+import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.util.filter.AbilityUpgradeFilter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -83,11 +91,23 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
                 if (abilities.size() > abilitySlot) {
                     Ability ability = abilities.get(abilitySlot);
                     SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
+                    QuestHolder questHolder = mcRPGPlayer.asQuestHolder();
                     skillHolder.getAbilityData(ability).ifPresent(abilityData -> {
-                        Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
-                        if (abilityAttributeOptional.isPresent() && abilityAttributeOptional.get() instanceof AbilityToggledOffAttribute toggledOffAttribute) {
-                            AbilityToggledOffAttribute abilityToggledOffAttribute = new AbilityToggledOffAttribute(!toggledOffAttribute.getContent());
-                            abilityData.addAttribute(abilityToggledOffAttribute);
+                        Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+                        if (abilityAttributeOptional.isPresent() && abilityAttributeOptional.get() instanceof AbilityTierAttribute tierAttribute && ability instanceof TierableAbility tierableAbility) {
+                            int upgradePoints = skillHolder.getUpgradePoints();
+                            int currentTier = tierAttribute.getContent();
+                            int nextTier = currentTier + 1;
+                            if (nextTier > tierableAbility.getMaxTier() && tierableAbility.getUpgradeCostForTier(nextTier) <= upgradePoints) {
+                                if (ability.getSkill().isPresent()) {
+                                    var skillDataOptional = skillHolder.getSkillHolderData(ability.getSkill().get());
+                                    if (skillDataOptional.isPresent() && tierableAbility.getUnlockLevelForTier(nextTier) <= skillDataOptional.get().getCurrentLevel()) {
+                                        startUpgradeQuest(tierableAbility, mcRPGPlayer, nextTier);
+                                    }
+                                } else {
+                                    startUpgradeQuest(tierableAbility, mcRPGPlayer, nextTier);
+                                }
+                            }
                             paintGuiPage();
                         }
                     });
@@ -98,6 +118,17 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
                 nextAbilitySortType();
             }
         }
+    }
+
+    private void startUpgradeQuest(@NotNull TierableAbility tierableAbility, @NotNull McRPGPlayer player, int tier) {
+        Quest quest = tierableAbility.getUpgradeQuestForTier(tier);
+        QuestHolder questHolder = mcRPGPlayer.asQuestHolder();
+        SkillHolder skillHolder = player.asSkillHolder();
+        QuestManager questManager = McRPG.getInstance().getQuestManager();
+        skillHolder.setUpgradePoints(skillHolder.getUpgradePoints() - tierableAbility.getUpgradeCostForTier(tier));
+        questManager.addActiveQuest(quest);
+        questManager.trackQuestForHolder(questHolder, quest);
+        quest.startQuest();
     }
 
     @Override
@@ -200,6 +231,10 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
                     .stream()
                     .map(namespacedKey -> McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey))
                     .filter(ability -> ability instanceof UnlockableAbility unlockableAbility)
+                    .toList();
+            abilities = sortType.filter(mcRPGPlayer, abilities);
+            abilities = abilities
+                    .stream()
                     .filter(ability -> {
                         var dataOptional = skillHolder.getAbilityData(ability);
                         if (dataOptional.isPresent()) {
@@ -295,10 +330,10 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
     }
 
     private enum AbilityGuiSortType {
-        ALPHABETICAL(Material.BAMBOO_HANGING_SIGN, "Alphabetical Sort", Comparator.comparing(Ability::getDisplayName)),
-        DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", new ChainComparator<>(
+        ALPHABETICAL(Material.BAMBOO_HANGING_SIGN, "Alphabetical Sort", null, Comparator.comparing(Ability::getDisplayName)),
+        DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", null, new ChainComparator<>(
                 Comparator.comparing(ability -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator())),
-        SKILL(Material.DIAMOND_SWORD, "Sort by Skill", new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
+        SKILL(Material.DIAMOND_SWORD, "Sort by Skill", null, new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
                 Comparator.comparing(ability -> ability.getSkill().isPresent()),
                 // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
                 (ability, ability1) -> {
@@ -319,7 +354,7 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
                     return 0;
                 },
                 DEFAULT_ABILITIES.getAbilityComparator())),
-        UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", new ChainComparator<>(
+        UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", null, new ChainComparator<>(
                 Comparator.comparing(ability -> !(ability instanceof UnlockableAbility)),
                 Comparator.comparing(ability -> ability.getSkill().isPresent()),
                 // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
@@ -350,7 +385,8 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
                     }
                     return 0;
                 })),
-        ;
+        UPGRADEABLE_ABILITIES(Material.GOLD_INGOT, "Sort by abilities you can upgrade", new AbilityUpgradeFilter(),
+                SKILL.getAbilityComparator());
 
         private final static LinkedNode<AbilityGuiSortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilityGuiSortType.SKILL);
 
@@ -371,11 +407,13 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
 
         private final Material displayMaterial;
         private final String displayName;
+        private final PlayerContextFilter<Ability> abilityFilter;
         private final Comparator<Ability> abilityComparator;
 
-        AbilityGuiSortType(@NotNull Material displayMaterial, @NotNull String displayName, @NotNull Comparator<Ability> abilityComparator) {
+        AbilityGuiSortType(@NotNull Material displayMaterial, @NotNull String displayName, @Nullable PlayerContextFilter<Ability> abilityFilter, @NotNull Comparator<Ability> abilityComparator) {
             this.displayMaterial = displayMaterial;
             this.displayName = displayName;
+            this.abilityFilter = abilityFilter;
             this.abilityComparator = abilityComparator;
         }
 
@@ -397,6 +435,17 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
         @NotNull
         public String getDisplayName() {
             return this.displayName;
+        }
+
+        /**
+         * Gets the filtered collection to display based on
+         *
+         * @param abilities
+         * @return
+         */
+        @NotNull
+        public List<Ability> filter(@NotNull McRPGPlayer mcRPGPlayer, @NotNull List<Ability> abilities) {
+            return abilityFilter == null ? abilities : List.copyOf(abilityFilter.filter(mcRPGPlayer, abilities));
         }
 
         /**

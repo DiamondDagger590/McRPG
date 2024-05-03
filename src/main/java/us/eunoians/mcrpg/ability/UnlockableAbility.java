@@ -45,7 +45,6 @@ public abstract class UnlockableAbility extends Ability {
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
-                AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE,
-                AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY);
+                AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
     }
 }

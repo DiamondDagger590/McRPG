@@ -176,4 +176,11 @@ public abstract class AbilityAttribute<T> {
         hash = 31 * hash + getDatabaseKeyName().hashCode();
         return hash;
     }
+
+    @Override
+    public String toString() {
+        return "Ability Type: " + (abilityType.isPresent() ? abilityType.get() : "null")
+                + " Namespaced Key: " + getNamespacedKey() + " Content: " + getContent()
+                + " Database Key: " + getDatabaseKeyName();
+    }
 }

@@ -16,7 +16,7 @@ public class AbilityTierAttribute extends OptionalAbilityAttribute<Integer> impl
     }
 
     /**
-     * Creates a new instance of this {@link AbilityPendingAttribute} class, containing the provided {@link Integer} content as the value
+     * Creates a new instance of this {@link AbilityTierAttribute} class, containing the provided {@link Integer} content as the value
      *
      * @param tier The {@link Integer} content to be used as the value in the returned {@link AbilityTierAttribute}
      * @return A new instance of this {@link AbilityTierAttribute} class, containing the provided {@link Integer} content as the value
@@ -53,12 +53,12 @@ public class AbilityTierAttribute extends OptionalAbilityAttribute<Integer> impl
     @NotNull
     @Override
     public Integer getDefaultContent() {
-        return 0;
+        return 1;
     }
 
     @Override
     public boolean shouldContentBeSaved() {
-        return getContent() > 0;
+        return getContent() > 1;
     }
 
     @NotNull

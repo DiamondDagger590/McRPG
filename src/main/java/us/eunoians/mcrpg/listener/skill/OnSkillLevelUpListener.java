@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 public class OnSkillLevelUpListener implements Listener {
 
-    private static final int UPGRADE_POINT_AWARD_THRESHOLD = 5;
+    private static final int UPGRADE_POINT_AWARD_THRESHOLD = 1;
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void handleLevelUp(SkillGainLevelEvent skillGainLevelEvent) {

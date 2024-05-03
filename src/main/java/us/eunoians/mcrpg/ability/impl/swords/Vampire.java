@@ -13,6 +13,9 @@ import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.VampireActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.quest.Quest;
+import us.eunoians.mcrpg.quest.UpgradeQuestReward;
+import us.eunoians.mcrpg.quest.objective.EntitySlayQuestObjective;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Objects;
@@ -85,6 +88,15 @@ public class Vampire extends TierableAbility {
     @Override
     public int getUpgradeCostForTier(int tier) {
         return 1;
+    }
+
+    @Override
+    public Quest getUpgradeQuestForTier(int tier) {
+        Quest quest = new Quest(getAbilityKey().getKey());
+        quest.addQuestReward(new UpgradeQuestReward());
+        EntitySlayQuestObjective objective = new EntitySlayQuestObjective(quest, 10 * tier);
+        quest.addQuestObjective(objective);
+        return quest;
     }
 
     @Override

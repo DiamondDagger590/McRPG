@@ -43,7 +43,7 @@ public class SkillDAO {
     private static final int CURRENT_TABLE_VERSION = 1;
 
     private static boolean isAcceptingQueries = true;
-    private static final Set<NamespacedKey> LEGACY_ABILITY_ATTRIBUTES = Set.of(AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY, AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+    private static final Set<NamespacedKey> LEGACY_ABILITY_ATTRIBUTES = Set.of(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
 
     /**
      * Attempts to create a new table for this DAO provided that the table does not already exist.
@@ -426,57 +426,7 @@ public class SkillDAO {
      */
     @NotNull
     public static CompletableFuture<SkillDataSnapshot> getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
-
-        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-        CompletableFuture<SkillDataSnapshot> completableFuture = new CompletableFuture<>();
-        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
-
-        databaseManager.getDatabaseExecutorService().submit(() -> {
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
-
-                SkillDataSnapshot skillDataSnapshot = new SkillDataSnapshot(uuid, skillKey);
-
-                if (!abilityRegistry.doesSkillHaveAbilities(skillKey)) {
-                    completableFuture.complete(skillDataSnapshot);
-                    return;
-                }
-
-                preparedStatement.setString(1, uuid.toString());
-
-                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
-                    String databaseName = abilityKey.getKey();
-                    preparedStatement.setString(2, databaseName);
-
-                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
-                        //Iterate over all found values
-                        while (resultSet.next()) {
-
-                            String attributeName = resultSet.getString("key");
-                            String attributeValue = resultSet.getString("value");
-
-                            Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
-                            AbilityAttribute<?> returnValue;
-
-                            if (attributeOptional.isPresent()) {
-                                AbilityAttribute<?> abilityAttribute = attributeOptional.get();
-                                returnValue = abilityAttribute.create(attributeValue);
-                                skillDataSnapshot.addAttribute(abilityKey, returnValue);
-                            }
-
-                        }
-                    }
-                }
-
-                completableFuture.complete(skillDataSnapshot);
-
-            } catch (SQLException e) {
-                completableFuture.completeExceptionally(e);
-            }
-        });
-        return completableFuture;
+        return getAbilityAttributes(connection, uuid, new SkillDataSnapshot(uuid, skillKey));
     }
 
     /**
@@ -511,6 +461,8 @@ public class SkillDAO {
 
                 //Get data for all abilities
                 for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
+                    // Add default attributes in case new attributes have been added
+                    skillDataSnapshot.addDefaultAttributes(abilityRegistry.getRegisteredAbility(abilityKey));
 
                     String databaseName = abilityKey.getKey();
                     preparedStatement.setString(2, databaseName);
@@ -597,7 +549,7 @@ public class SkillDAO {
             try {
                 connection.setAutoCommit(false);
 
-                try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " (player_uuid, ability_id, key, value) VALUES(?, ?, ?, ?);")) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " (player_uuid, ability_id, key, value) VALUES(?, ?, ?, ?);")) {
                     preparedStatement.setString(1, playerUUID.toString());
 
                     AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();

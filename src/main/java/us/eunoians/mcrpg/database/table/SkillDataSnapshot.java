@@ -2,10 +2,12 @@ package us.eunoians.mcrpg.database.table;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -25,7 +27,6 @@ public class SkillDataSnapshot {
     private int currentExp;
     private int currentLevel;
     private final Map<NamespacedKey, Map<NamespacedKey, AbilityAttribute<?>>> abilityAttributes;
-    private final Map<NamespacedKey, Boolean> abilityToggledMap;
 
     /**
      * Constructs a new {@link SkillDataSnapshot} with the values for {@link #getCurrentExp()} and {@link #getCurrentLevel()}
@@ -40,7 +41,6 @@ public class SkillDataSnapshot {
         this.currentExp = 0;
         this.currentLevel = 0;
         this.abilityAttributes = new HashMap<>();
-        this.abilityToggledMap = new HashMap<>();
     }
 
     /**
@@ -55,7 +55,6 @@ public class SkillDataSnapshot {
         this.currentExp = currentExp;
         this.currentLevel = currentLevel;
         this.abilityAttributes = new HashMap<>();
-        this.abilityToggledMap = new HashMap<>();
     }
 
     /**
@@ -124,10 +123,19 @@ public class SkillDataSnapshot {
      * @param abilityKey       The {@link NamespacedKey} to add the attribute for
      * @param abilityAttribute The {@link AbilityAttribute} to associate with the provided generic ability
      */
-    public void addAttribute(NamespacedKey abilityKey, AbilityAttribute<?> abilityAttribute) {
+    public void addAttribute(@NotNull NamespacedKey abilityKey, @NotNull AbilityAttribute<?> abilityAttribute) {
         Map<NamespacedKey, AbilityAttribute<?>> abilityAttributeList = getAbilityAttributes(abilityKey);
         abilityAttributeList.put(abilityAttribute.getNamespacedKey(), abilityAttribute);
         abilityAttributes.put(abilityKey, abilityAttributeList);
+    }
+
+    public void addDefaultAttributes(@NotNull Ability ability) {
+        Map<NamespacedKey, AbilityAttribute<?>> abilityAttributeList = getAbilityAttributes(ability.getAbilityKey());
+        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        for (NamespacedKey attributeKey : ability.getApplicableAttributes()) {
+            abilityAttributeManager.getAttribute(attributeKey).ifPresent(abilityAttribute -> abilityAttributeList.put(attributeKey, abilityAttribute));
+        }
+        abilityAttributes.put(ability.getAbilityKey(), abilityAttributeList);
     }
 
     /**
@@ -139,32 +147,10 @@ public class SkillDataSnapshot {
      * what attributes an ability has.
      */
     @NotNull
-    public Map<NamespacedKey, AbilityAttribute<?>> getAbilityAttributes(NamespacedKey abilityKey) {
+    public Map<NamespacedKey, AbilityAttribute<?>> getAbilityAttributes(@NotNull NamespacedKey abilityKey) {
         return abilityAttributes.getOrDefault(abilityKey, new HashMap<>());
     }
 
-    /**
-     * Returns an unmodifiable copy of the snapshot's map of what abilities are toggled on and off for the skill
-     * represented by this snapshot
-     *
-     * @return An unmodifiable copy of the snapshot's map of what abilities are toggled on and off for the skill represented by
-     * this snapshot. The key is the {@link NamespacedKey} for all abilities under the snapshot's {@link us.eunoians.mcrpg.skill.Skill} found under {@link #getSkillKey()} ()} with
-     * the value being {@code true} if the ability is toggled on and {@code false} otherwise
-     */
-    @NotNull
-    public Map<NamespacedKey, Boolean> getAbilityToggledMap() {
-        return Collections.unmodifiableMap(abilityToggledMap);
-    }
-
-    /**
-     * Adds the provided data to the snapshot's stored map of what abilities are toggled on and off
-     *
-     * @param abilityKey The {@link NamespacedKey} to store data for
-     * @param toggled The toggled state of the provided ability
-     */
-    void addAbilityToggledData(@NotNull NamespacedKey abilityKey, boolean toggled) {
-        abilityToggledMap.put(abilityKey, toggled);
-    }
 
     //TODO Put this here and maybe a #snapshot() method into Skill?
     public static SkillDataSnapshot fromSkill(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {

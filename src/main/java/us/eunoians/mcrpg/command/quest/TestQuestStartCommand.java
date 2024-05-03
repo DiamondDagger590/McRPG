@@ -54,13 +54,13 @@ public class TestQuestStartCommand {
                     Quest quest = questManager.getActiveQuest(questUUID).get();
                     audience.sendMessage(miniMessage.deserialize("<gray>  Quest " + quest.getUUID() + " Info</gray>"));
                     audience.sendMessage(miniMessage.deserialize("<gray>  Completed: " + (quest.isCompleted() ? "<green>true<green>" : "<red>false</red>") + "</gray>"));
-                    audience.sendMessage(miniMessage.deserialize("<gray>  Current Progression - ").append(Methods.getProgressBar(quest.getQuestProgress(), 2)));
+                    audience.sendMessage(miniMessage.deserialize("<gray>  Current Progression - ").append(Methods.getProgressBar(quest.getQuestProgress(), 20)));
                     int objectiveCounter = 1;
                     for (QuestObjective objective : quest.getQuestObjectives()) {
                         audience.sendMessage(newline);
                         Component spacing = miniMessage.deserialize("    ");
                         audience.sendMessage(spacing.append(miniMessage.deserialize("<gray>Objective " + objectiveCounter + ": </gray>")).append(objective.getObjectiveTitle()));
-                        audience.sendMessage(spacing.append(miniMessage.deserialize("<gray>Progress (<gold>" + objective.getCurrentProgression() + "<gray>/</gray>" + objective.getRequiredProgression() + "</gold>) ").append(Methods.getProgressBar(objective.getObjectiveProgress(), 3))));
+                        audience.sendMessage(spacing.append(miniMessage.deserialize("<gray>Progress (<gold>" + objective.getCurrentProgression() + "<gray>/</gray>" + objective.getRequiredProgression() + "</gold>) ").append(Methods.getProgressBar(objective.getObjectiveProgress(), 30))));
                         objective.getObjectiveInfoText().forEach(component -> audience.sendMessage(spacing.append(component)));
                         objectiveCounter++;
                     }

@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.quest.Quest;
+import us.eunoians.mcrpg.quest.objective.BlockBreakQuestObjective;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.Optional;
@@ -52,12 +54,20 @@ public class ItsATriple extends TierableAbility {
 
     @Override
     public int getUnlockLevelForTier(int tier) {
-        return 10;
+        return 10 * tier;
     }
 
     @Override
     public int getUpgradeCostForTier(int tier) {
         return 1;
+    }
+
+    @Override
+    public Quest getUpgradeQuestForTier(int tier) {
+        Quest quest = new Quest("configpath");
+        BlockBreakQuestObjective objective = new BlockBreakQuestObjective(quest, 10 * tier);
+        quest.addQuestObjective(objective);
+        return quest;
     }
 
     @Override

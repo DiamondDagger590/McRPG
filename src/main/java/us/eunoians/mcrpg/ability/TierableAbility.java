@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.quest.Quest;
 
 import java.util.Set;
 
@@ -40,11 +41,13 @@ public abstract class TierableAbility extends UnlockableAbility {
      */
     public abstract int getUpgradeCostForTier(int tier);
 
+    public abstract Quest getUpgradeQuestForTier(int tier);
+
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
                 AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE,
-                AbilityAttributeManager.ABILITY_PENDING_ATTRIBUTE_KEY,
-                AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+                AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY,
+                AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
     }
 }
