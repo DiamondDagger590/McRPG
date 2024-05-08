@@ -2,9 +2,6 @@ package us.eunoians.mcrpg.ability.impl.swords;
 
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -89,11 +86,11 @@ public class Bleed extends Ability {
 
         if (entity instanceof LivingEntity livingEntity && BLEED_MANAGER.canEntityStartBleeding(livingEntity)) {
 
-            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, 3);
+            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, 3, 4);
             Bukkit.getPluginManager().callEvent(bleedActivateEvent);
 
             if(!bleedActivateEvent.isCancelled()) {
-                BLEED_MANAGER.startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles());
+                BLEED_MANAGER.startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
             }
         }
     }
@@ -166,31 +163,23 @@ public class Bleed extends Ability {
          * @param entity The {@link LivingEntity} to start the bleeding process for
          */
         public void startBleeding(@NotNull LivingEntity entity) {
-            startBleeding(null, entity, 3);
+            startBleeding(null, entity, 3, 4);
         }
 
-        public void startBleeding(@NotNull LivingEntity entity, int bleedCycles) {
-            startBleeding(null, entity, bleedCycles);
+        public void startBleeding(@NotNull LivingEntity entity, int bleedCycles, double bleedDamage) {
+            startBleeding(null, entity, bleedCycles, bleedDamage);
         }
 
         public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity) {
-            startBleeding(abilityHolder, entity, 3);
+            startBleeding(abilityHolder, entity, 3, 4);
         }
 
-        public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles) {
+        public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles, double bleedDamage) {
             if (canEntityStartBleeding(entity)) {
-
-                //TODO remove mini message test
-                if(entity instanceof Player player) {
-                    Audience audience = McRPG.getInstance().getAdventure().player(player);
-                    MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-                    Component parsed = miniMessage.deserialize("Hello <rainbow>world</rainbow>, isn't <underlined>MiniMessage</underlined> fun?");
-                    audience.sendMessage(parsed);
-                }
 
                 ENTITIES_BLEEDING.put(entity.getUniqueId(), Optional.ofNullable(abilityHolder));
 
-                ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(McRPG.getInstance(), 0.5, 0.5, 3) {
+                ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(McRPG.getInstance(), 0.5, 0.5, bleedCycles) {
                     @Override
                     protected void onTaskExpire() {
                         stopEntityBleeding(entity);
@@ -220,7 +209,7 @@ public class Bleed extends Ability {
 
                             if (entity.getHealth() > 4) {
 
-                                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, 4, true);
+                                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, bleedDamage, true);
                                 Bukkit.getPluginManager().callEvent(bleedDamageEvent);
 
                                 if(bleedDamageEvent.isCancelled()) { //If bleed damage is cancelled, skip this interval

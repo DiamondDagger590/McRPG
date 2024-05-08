@@ -6,32 +6,32 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
+import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
- * This event is called whenever {@link PoisonedBleed} activates
+ * This event is called whenever {@link EnhancedBleed} activates
  */
-public class BleedPlusActivateEvent extends AbilityActivateEvent implements Cancellable {
+public class EnhancedBleedActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability BLEED_PLUS = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(PoisonedBleed.BLEED_PLUS_KEY);
+    private static final Ability ENHANCED_BLEED = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(EnhancedBleed.ENHANCED_BLEED_KEY);
 
     private final LivingEntity entity;
     private double additionalBleedDamage;
     private boolean cancelled = false;
 
-    public BleedPlusActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity entity, double additionalBleedDamage) {
-        super(abilityHolder, BLEED_PLUS);
+    public EnhancedBleedActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity entity, double additionalBleedDamage) {
+        super(abilityHolder, ENHANCED_BLEED);
         this.entity = entity;
         this.additionalBleedDamage = Math.max(0, additionalBleedDamage);
     }
 
     @Override
     @NotNull
-    public PoisonedBleed getAbility() {
-        return (PoisonedBleed) super.getAbility();
+    public EnhancedBleed getAbility() {
+        return (EnhancedBleed) super.getAbility();
     }
 
     /**

@@ -412,7 +412,7 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
         QuestManager questManager = McRPG.getInstance().getQuestManager();
         skillHolder.setUpgradePoints(skillHolder.getUpgradePoints() - tierableAbility.getUpgradeCostForTier(tier));
         questManager.addActiveQuest(quest);
-        questManager.trackQuestForHolder(questHolder, quest);
+        questManager.addHolderToQuest(questHolder, quest);
         quest.startQuest();
     }
 

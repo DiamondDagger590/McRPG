@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.TierableAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.api.event.ability.swords.DeeperWoundActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.swords.EnhancedBleedActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.UpgradeQuestReward;
@@ -22,13 +22,13 @@ import java.util.Optional;
  * This ability is an unlockable ability for {@link Swords} that
  * can increase the damage per tick for the {@link Bleed} ability
  */
-public class PoisonedBleed extends TierableAbility {
+public class EnhancedBleed extends TierableAbility {
 
-    public static final NamespacedKey BLEED_PLUS_KEY = new NamespacedKey(McRPG.getInstance(), "poisoned_bleed");
+    public static final NamespacedKey ENHANCED_BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "enhanced_bleed");
 
-    public PoisonedBleed() {
-        super(BLEED_PLUS_KEY);
-        addActivatableComponent(VampireComponents.VAMPIRE_ACTIVATE_COMPONENT, BleedActivateEvent.class, 0);
+    public EnhancedBleed() {
+        super(ENHANCED_BLEED_KEY);
+        addActivatableComponent(EnhancedBleedComponents.ENHANCED_BLEED_ACTIVATE_COMPONENT, BleedActivateEvent.class, 0);
     }
 
     @Override
@@ -60,11 +60,11 @@ public class PoisonedBleed extends TierableAbility {
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) event;
 
-        DeeperWoundActivateEvent deeperWoundActivateEvent = new DeeperWoundActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), 2);
-        Bukkit.getPluginManager().callEvent(deeperWoundActivateEvent);
+        EnhancedBleedActivateEvent enhancedBleedActivateEvent = new EnhancedBleedActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), 2);
+        Bukkit.getPluginManager().callEvent(enhancedBleedActivateEvent);
 
-        if(!deeperWoundActivateEvent.isCancelled()) {
-            bleedActivateEvent.setBleedCycles(bleedActivateEvent.getBleedCycles() + deeperWoundActivateEvent.getAdditionalBleedCycles());
+        if(!enhancedBleedActivateEvent.isCancelled()) {
+            bleedActivateEvent.setBleedDamage(bleedActivateEvent.getBleedDamage() + enhancedBleedActivateEvent.getAdditionalBleedDamage());
         }
     }
 

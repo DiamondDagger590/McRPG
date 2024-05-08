@@ -20,12 +20,14 @@ public class BleedActivateEvent extends AbilityActivateEvent implements Cancella
 
     private final LivingEntity entity;
     private int bleedCycles;
+    private double bleedDamage;
     private boolean cancelled = false;
 
-    public BleedActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles) {
+    public BleedActivateEvent(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles, double bleedDamage) {
         super(abilityHolder, BLEED);
         this.entity = entity;
         this.bleedCycles = Math.max(1, bleedCycles);
+        this.bleedDamage = Math.max(1, bleedDamage);
     }
 
     @Override
@@ -60,6 +62,14 @@ public class BleedActivateEvent extends AbilityActivateEvent implements Cancella
      */
     public void setBleedCycles(int bleedCycles) {
         this.bleedCycles = Math.max(1, bleedCycles);
+    }
+
+    public double getBleedDamage() {
+        return bleedDamage;
+    }
+
+    public void setBleedDamage(double bleedDamage) {
+        this.bleedDamage = Math.max(1, bleedDamage);
     }
 
     @Override

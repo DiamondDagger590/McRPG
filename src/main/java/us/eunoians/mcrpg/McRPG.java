@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.ability.impl.mining.RicherOre;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
-import us.eunoians.mcrpg.ability.impl.swords.PoisonedBleed;
+import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
@@ -103,7 +103,7 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new Bleed());
         getAbilityRegistry().registerAbility(new DeeperWound());
         getAbilityRegistry().registerAbility(new Vampire());
-        getAbilityRegistry().registerAbility(new PoisonedBleed());
+        getAbilityRegistry().registerAbility(new EnhancedBleed());
 
         getAbilityRegistry().registerAbility(new ExtraOre());
         getAbilityRegistry().registerAbility(new RicherOre());

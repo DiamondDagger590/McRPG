@@ -1,24 +1,25 @@
 package us.eunoians.mcrpg.exception.quest;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.quest.Quest;
+
+import java.util.UUID;
 
 public class QuestNotActiveException extends RuntimeException {
 
-    private final Quest quest;
+    private final UUID questUUID;
 
-    public QuestNotActiveException(@NotNull Quest quest) {
-        this.quest = quest;
+    public QuestNotActiveException(@NotNull UUID questUUID) {
+        this.questUUID = questUUID;
     }
 
-    public QuestNotActiveException(@NotNull Quest quest, @NotNull String message) {
+    public QuestNotActiveException(@NotNull UUID questUUID, @NotNull String message) {
         super(message);
-        this.quest = quest;
+        this.questUUID = questUUID;
     }
 
     @NotNull
-    public Quest getQuest() {
-        return quest;
+    public UUID getQuest() {
+        return questUUID;
     }
 
 }

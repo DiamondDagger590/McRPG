@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.quest;
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.api.event.quest.QuestStartEvent;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
@@ -28,7 +29,6 @@ public class Quest {
     private final UUID uuid;
     private final String configKey;
     private final Set<QuestObjective> questObjectives;
-    private final Set<UUID> questHolders;
     private boolean started = false;
     private boolean abandoned = false;
     private boolean completed = false;
@@ -38,14 +38,12 @@ public class Quest {
         this.uuid = UUID.randomUUID();
         this.configKey = configKey;
         this.questObjectives = new HashSet<>();
-        this.questHolders = new HashSet<>();
     }
 
-    public Quest(@NotNull UUID uuid, @NotNull String configKey, @NotNull Set<QuestObjective> questObjectives, @NotNull Set<UUID> questHolders) {
+    public Quest(@NotNull UUID uuid, @NotNull String configKey, @NotNull Set<QuestObjective> questObjectives) {
         this.uuid = uuid;
         this.configKey = configKey;
         this.questObjectives = questObjectives;
-        this.questHolders = questHolders;
     }
 
     /**
@@ -103,7 +101,7 @@ public class Quest {
      * @param uuid The {@link UUID} to add.
      */
     public void addQuestHolder(@NotNull UUID uuid) {
-        questHolders.add(uuid);
+        McRPG.getInstance().getQuestManager().addHolderToQuest(uuid, getUUID());
     }
 
     /**
@@ -123,12 +121,12 @@ public class Quest {
      * @return {@code true} if the provided {@link UUID} is someone working on this quest.
      */
     public boolean doesQuestHaveHolder(@NotNull UUID uuid) {
-        return questHolders.contains(uuid);
+        return McRPG.getInstance().getQuestManager().doesQuestHaveHolder(uuid, getUUID());
     }
 
     @NotNull
     public Set<UUID> getQuestHolders() {
-        return ImmutableSet.copyOf(questHolders);
+        return McRPG.getInstance().getQuestManager().getQuestHoldersForQuest(this);
     }
 
     public void removeQuestHolder(@NotNull QuestHolder questHolder) {
@@ -136,7 +134,7 @@ public class Quest {
     }
 
     public void removeQuestHolder(@NotNull UUID uuid) {
-        questHolders.remove(uuid);
+        McRPG.getInstance().getQuestManager().removeHolderFromQuest(uuid, getUUID());
     }
 
     public double getQuestProgress() {
@@ -186,7 +184,7 @@ public class Quest {
         stopListeningForProgression();
         completed = true;
         if (questReward != null) {
-            questHolders.forEach(uuid -> questReward.giveReward(uuid, this));
+            getQuestHolders().forEach(uuid -> questReward.giveReward(uuid, this));
         }
     }
 

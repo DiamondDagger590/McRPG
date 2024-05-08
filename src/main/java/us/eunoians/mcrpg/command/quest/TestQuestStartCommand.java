@@ -34,7 +34,7 @@ public class TestQuestStartCommand {
             quest.addQuestObjective(objective1, objective2);
 
             questManager.addActiveQuest(quest);
-            questManager.trackQuestForHolder(questHolder.get(), quest);
+            questManager.addHolderToQuest(questHolder.get(), quest);
             quest.startQuest();
         }));
 

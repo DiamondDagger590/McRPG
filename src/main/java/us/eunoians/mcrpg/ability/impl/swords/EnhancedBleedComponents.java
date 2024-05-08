@@ -7,13 +7,13 @@ import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
- * The components that activate {@link PoisonedBleed}
+ * The components that activate {@link EnhancedBleed}
  */
-public class PoisonedBleedComponents {
+public class EnhancedBleedComponents {
 
-    public static final BleedPlusActivateComponent BLEED_PLUS_ACTIVATE_COMPONENT = new BleedPlusActivateComponent();
+    public static final EnhancedBleedComponent ENHANCED_BLEED_ACTIVATE_COMPONENT = new EnhancedBleedComponent();
 
-    private static class BleedPlusActivateComponent implements EventActivatableComponent {
+    private static class EnhancedBleedComponent implements EventActivatableComponent {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             return event instanceof BleedActivateEvent bleedActivateEvent && !bleedActivateEvent.isCancelled();

@@ -24,7 +24,7 @@ ability-configuration:
     grant-bleed-immunity-after-expire: true
     bleed-immunity-duration: 5
     bleed-damage-pierce-armor: true
-  bleed-plus:
+  poisoned-bleed:
     #How many tiers does this ability have
     amount-of-tiers: 5
     #At what level can each tier be obtained? Tier 1 is the tier that the ability is unlocked at
@@ -43,7 +43,7 @@ ability-configuration:
       # - bleed-plus-damage-boost: integer
       all-tiers:
         #How much should the damage of Bleed increase by before adding possible additional damage
-        bleed-plus-base-damage-increase: 1
+        enhanced-bleed-base-damage-increase: 1
       tier-1:
         #The chance of Bleed Plus activating bonus damage whenever Bleed is inflicted (on top of the base damage increase)
         bleed-plus-activation-chance: 30.0
