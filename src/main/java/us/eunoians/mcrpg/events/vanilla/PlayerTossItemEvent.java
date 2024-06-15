@@ -75,7 +75,7 @@ public class PlayerTossItemEvent implements Listener {
                   if(item.getItemStack().getAmount() == 0) {
                     item.remove();
                   }
-                  loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
+                  loc.getWorld().spawnParticle(Particle.FIREWORK, loc, 5);
                   FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                   loc.getWorld().playSound(loc, Sound.valueOf(soundFile.getString("Sounds.Woodcutting.DemetersShrine.Sound")),
                     Float.parseFloat(soundFile.getString("Sounds.Woodcutting.DemetersShrine.Volume")), Float.parseFloat(soundFile.getString("Sounds.Woodcutting.DemetersShrine.Pitch")));
@@ -129,7 +129,7 @@ public class PlayerTossItemEvent implements Listener {
                     if(item.getItemStack().getAmount() == 0) {
                       item.remove();
                     }
-                    loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
+                    loc.getWorld().spawnParticle(Particle.FIREWORK, loc, 5);
                     FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                     loc.getWorld().playSound(loc, Sound.valueOf(soundFile.getString("Sounds.Excavation.PansShrine.Sound")),
                       Float.parseFloat(soundFile.getString("Sounds.Excavation.PansShrine.Volume")), Float.parseFloat(soundFile.getString("Sounds.Excavation.PansShrine.Pitch")));
@@ -192,7 +192,7 @@ public class PlayerTossItemEvent implements Listener {
                   if(item.getItemStack().getAmount() == 0) {
                     item.remove();
                   }
-                  loc.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, loc, 5);
+                  loc.getWorld().spawnParticle(Particle.FIREWORK, loc, 5);
                   FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
                   loc.getWorld().playSound(loc, Sound.valueOf(soundFile.getString("Sounds.Brewing.CircesShrine.Sound")),
                     Float.parseFloat(soundFile.getString("Sounds.Brewing.CircesShrine.Volume")), Float.parseFloat(soundFile.getString("Sounds.Brewing.CircesShrine.Pitch")));

@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.abilities.sorcery.PotionAffinity;
 import us.eunoians.mcrpg.api.events.mcrpg.sorcery.PotionAffinityEvent;
@@ -60,7 +59,7 @@ public class PotionDrinkEvent implements Listener{
             multiplier /= 100;
             multiplier += 1;
             ItemStack itemStack = e.getItem();
-            if(potionMeta.getBasePotionData().getType() != PotionType.UNCRAFTABLE){
+            if(potionMeta.getBasePotionType() != null){
               BasePotion basePotion = PotionFactory.convertItemStackToBasePotion(e.getItem());
               itemStack = basePotion.getAsItem();
             }

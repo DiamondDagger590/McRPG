@@ -122,7 +122,7 @@ public class EditLoadoutGUI extends GUI {
                     }
                     abilityMeta.setLore(newLore);
                     abilityItem.setItemMeta(abilityMeta);
-                    abilityItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+                    abilityItem.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
 
                 }
                 else {
@@ -195,7 +195,7 @@ public class EditLoadoutGUI extends GUI {
                 abilityMeta.setLore(newLore);
                 abilityItem.setItemMeta(abilityMeta);
                 if (ability.isToggled()) {
-                    abilityItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+                    abilityItem.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
                 }
                 items.add(new GUIItem(abilityItem, i));
             }

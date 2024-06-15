@@ -51,7 +51,7 @@ public class BloodFactory{
       List<String> newLore = new ArrayList<>();
       
       if(bloodFile.getBoolean(key + "IsGlowing", true)){
-        itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+        itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
       }
       blood.setItemMeta(itemMeta);

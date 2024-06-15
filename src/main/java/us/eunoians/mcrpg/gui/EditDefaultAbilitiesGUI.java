@@ -58,7 +58,7 @@ public class EditDefaultAbilitiesGUI extends GUI {
           lore.add(Methods.color(player.getPlayer(), guiConfig.getString("AbilityItems.ToggledOn")));
           abilityMeta.setLore(lore);
           abilityItem.setItemMeta(abilityMeta);
-          abilityItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+          abilityItem.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
 
         }
         else {

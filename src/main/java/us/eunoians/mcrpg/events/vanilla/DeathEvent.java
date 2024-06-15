@@ -189,15 +189,15 @@ public class DeathEvent implements Listener {
             Bukkit.getPluginManager().callEvent(bloodFrenzyEvent);
             if(!bloodFrenzyEvent.isCancelled()){
               Player p = attacker.getPlayer();
-              if(p.hasPotionEffect(PotionEffectType.FAST_DIGGING)){
-                PotionEffect effect = p.getPotionEffect(PotionEffectType.FAST_DIGGING);
+              if(p.hasPotionEffect(PotionEffectType.HASTE)){
+                PotionEffect effect = p.getPotionEffect(PotionEffectType.HASTE);
                 if(effect.getDuration() < bloodFrenzyEvent.getHasteDuration() * 20 && effect.getAmplifier() <= bloodFrenzyEvent.getHasteLevel()){
-                  p.removePotionEffect(PotionEffectType.FAST_DIGGING);
-                  p.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, bloodFrenzyEvent.getHasteDuration() * 20, bloodFrenzyEvent.getHasteLevel()));
+                  p.removePotionEffect(PotionEffectType.HASTE);
+                  p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, bloodFrenzyEvent.getHasteDuration() * 20, bloodFrenzyEvent.getHasteLevel()));
                 }
               }
               else{
-                p.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, bloodFrenzyEvent.getHasteDuration() * 20, bloodFrenzyEvent.getHasteLevel()));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, bloodFrenzyEvent.getHasteDuration() * 20, bloodFrenzyEvent.getHasteLevel()));
               }
               if(p.hasPotionEffect(PotionEffectType.REGENERATION)){
                 PotionEffect effect = p.getPotionEffect(PotionEffectType.REGENERATION);

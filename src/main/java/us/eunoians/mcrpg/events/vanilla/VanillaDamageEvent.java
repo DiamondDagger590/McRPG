@@ -376,7 +376,7 @@ public class VanillaDamageEvent implements Listener{
           }
           
           int featherFallingLevel = player.getEquipment().getBoots() != null
-                                      && player.getEquipment().getBoots().containsEnchantment(Enchantment.PROTECTION_FALL) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.PROTECTION_FALL) : 1;
+                                      && player.getEquipment().getBoots().containsEnchantment(Enchantment.FEATHER_FALLING) ? player.getEquipment().getBoots().getEnchantmentLevel(Enchantment.FEATHER_FALLING) : 1;
           int expAwarded;
           boolean afk = false;
           if(e.getCause() == EntityDamageEvent.DamageCause.FALL){
@@ -1145,8 +1145,8 @@ public class VanillaDamageEvent implements Listener{
                 Player p = mp.getPlayer();
                 p.sendMessage(Methods.color(McRPG.getInstance().getPluginPrefix() +
                                               McRPG.getInstance().getLangFile().getString("Messages.Abilities.TaintedBlade.Activated")));
-                PotionEffect strength = new PotionEffect(PotionEffectType.INCREASE_DAMAGE, event.getStrengthDuration() * 20, 1);
-                PotionEffect resistance = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, event.getResistanceDuration() * 20, 1);
+                PotionEffect strength = new PotionEffect(PotionEffectType.STRENGTH, event.getStrengthDuration() * 20, 1);
+                PotionEffect resistance = new PotionEffect(PotionEffectType.RESISTANCE, event.getResistanceDuration() * 20, 1);
                 PotionEffect hunger = new PotionEffect(PotionEffectType.HUNGER, event.getHungerDuration() * 20, 3);
                 p.addPotionEffect(strength);
                 p.addPotionEffect(resistance);
@@ -1306,13 +1306,13 @@ public class VanillaDamageEvent implements Listener{
                 mp.setReadyingAbilityBit(null);
                 mp.setReadying(false);
                 mp.getActiveAbilities().add(UnlockedAbilities.ARES_BLESSING);
-                damager.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, aresBlessingEvent.getStrengthDuration() * 20, aresBlessingEvent.getStrengthLevel()));
-                damager.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, aresBlessingEvent.getResistanceDuration() * 20, aresBlessingEvent.getResistanceLevel()));
+                damager.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, aresBlessingEvent.getStrengthDuration() * 20, aresBlessingEvent.getStrengthLevel()));
+                damager.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, aresBlessingEvent.getResistanceDuration() * 20, aresBlessingEvent.getResistanceLevel()));
                 damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Activated")));
                 new BukkitRunnable(){
                   @Override
                   public void run(){
-                    damager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, aresBlessingEvent.getMiningFatigueDuration() * 20, aresBlessingEvent.getMiningFatigueLevel()));
+                    damager.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, aresBlessingEvent.getMiningFatigueDuration() * 20, aresBlessingEvent.getMiningFatigueLevel()));
                     damager.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, aresBlessingEvent.getWeaknessDuration() * 20, aresBlessingEvent.getWeaknessDuration()));
                     damager.sendMessage(Methods.color(damager, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.AresBlessing.Deactivated")));
                     mp.getActiveAbilities().remove(UnlockedAbilities.ARES_BLESSING);
@@ -1328,8 +1328,8 @@ public class VanillaDamageEvent implements Listener{
             if(e.getEntity() instanceof Player){
               if(mp.getCripplingBlowData() != null){
                 Player target = (Player) e.getEntity();
-                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, mp.getCripplingBlowData().getSlownessDuration() * 20, mp.getCripplingBlowData().getSlownessLevel()));
-                target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, mp.getCripplingBlowData().getNauseaDuration() * 20, 0));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, mp.getCripplingBlowData().getSlownessDuration() * 20, mp.getCripplingBlowData().getSlownessLevel()));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, mp.getCripplingBlowData().getNauseaDuration() * 20, 0));
                 target.sendMessage(Methods.color(mp.getPlayer(), McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.CripplingBlow.Hit")));
               }
               else{
@@ -1555,10 +1555,10 @@ public class VanillaDamageEvent implements Listener{
               target.sendMessage(Methods.color((Player) target, McRPG.getInstance().getPluginPrefix() +
                                                                   McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfApollo.Hit")));
             }
-            target.removePotionEffect(PotionEffectType.INCREASE_DAMAGE);
+            target.removePotionEffect(PotionEffectType.STRENGTH);
             target.removePotionEffect(PotionEffectType.REGENERATION);
-            target.removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-            target.removePotionEffect(PotionEffectType.FAST_DIGGING);
+            target.removePotionEffect(PotionEffectType.RESISTANCE);
+            target.removePotionEffect(PotionEffectType.HASTE);
             target.removePotionEffect(PotionEffectType.SPEED);
             target.removePotionEffect(PotionEffectType.REGENERATION);
             target.removePotionEffect(PotionEffectType.ABSORPTION);
@@ -1573,7 +1573,7 @@ public class VanillaDamageEvent implements Listener{
             int slownessLevel = arrow.getMetadata("Hades4").get(0).asInt();
             int blindnessDuration = arrow.getMetadata("Hades5").get(0).asInt();
             target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, witherDuration * 20, witherLevel - 1));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, slownessDuration * 20, slownessLevel - 1));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, slownessDuration * 20, slownessLevel - 1));
             target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, blindnessDuration * 20, 0));
             
             if(target instanceof Player){
@@ -1675,7 +1675,7 @@ public class VanillaDamageEvent implements Listener{
             int blindnessDuration = arrow.getMetadata("DazeB").get(0).asInt();
             boolean forcePlayerLookup = arrow.getMetadata("DazeF").get(0).asBoolean();
             target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, blindnessDuration * 20, 0));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, nauseaDuration * 20, 0));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, nauseaDuration * 20, 0));
             if(forcePlayerLookup){
               Location l = target.getLocation();
               Random rand = new Random();
@@ -1699,8 +1699,8 @@ public class VanillaDamageEvent implements Listener{
   private enum Debuffs{
     BLINDNESS(PotionEffectType.BLINDNESS),
     WEAKNESS(PotionEffectType.WEAKNESS),
-    SLOWNESS(PotionEffectType.SLOW),
-    MINING_FATIGUE(PotionEffectType.SLOW_DIGGING),
+    SLOWNESS(PotionEffectType.SLOWNESS),
+    MINING_FATIGUE(PotionEffectType.MINING_FATIGUE),
     HUNGER(PotionEffectType.HUNGER),
     WITHER(PotionEffectType.WITHER),
     POISON(PotionEffectType.POISON);

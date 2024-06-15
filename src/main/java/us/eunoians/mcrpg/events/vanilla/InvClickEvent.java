@@ -921,7 +921,7 @@ public class InvClickEvent implements Listener{
             ab.setToggled(!ab.isToggled());
             if(!ab.isToggled()){
               ItemStack current = e.getCurrentItem();
-              current.removeEnchantment(Enchantment.DURABILITY);
+              current.removeEnchantment(Enchantment.UNBREAKING);
               ItemMeta meta = current.getItemMeta();
               List<String> lore = meta.getLore();
               lore.remove(meta.getLore().size() - 1);
@@ -939,20 +939,20 @@ public class InvClickEvent implements Listener{
               lore.add(Methods.color(p, guiConfig.getString("ToggledOn")));
               meta.setLore(lore);
               current.setItemMeta(meta);
-              e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+              e.getCurrentItem().addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
               e.getInventory().setItem(e.getSlot(), current);
               ((Player) e.getWhoClicked()).updateInventory();
             }
             return;
           }
           else{
-            if(e.getCurrentItem().containsEnchantment(Enchantment.DURABILITY)){
+            if(e.getCurrentItem().containsEnchantment(Enchantment.UNBREAKING)){
               ab.getItemsToSync().put(e.getCurrentItem().getType(), false);
-              e.getCurrentItem().removeEnchantment(Enchantment.DURABILITY);
+              e.getCurrentItem().removeEnchantment(Enchantment.UNBREAKING);
               return;
             }
             else{
-              e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+              e.getCurrentItem().addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
               ab.getItemsToSync().put(e.getCurrentItem().getType(), true);
               return;
             }
@@ -977,7 +977,7 @@ public class InvClickEvent implements Listener{
         abilityToChange.setToggled(!abilityToChange.isToggled());
         if(!abilityToChange.isToggled()){
           ItemStack current = e.getCurrentItem();
-          current.removeEnchantment(Enchantment.DURABILITY);
+          current.removeEnchantment(Enchantment.UNBREAKING);
           ItemMeta meta = current.getItemMeta();
           List<String> lore = meta.getLore();
           lore.remove(meta.getLore().size() - 1);
@@ -994,7 +994,7 @@ public class InvClickEvent implements Listener{
           lore.add(Methods.color(guiConfig.getString("AbilityItems.ToggledOn")));
           meta.setLore(lore);
           current.setItemMeta(meta);
-          e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+          e.getCurrentItem().addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
           ((Player) e.getWhoClicked()).updateInventory();
         }
         return;
@@ -1019,7 +1019,7 @@ public class InvClickEvent implements Listener{
           abilityToChange.setToggled(!abilityToChange.isToggled());
           if(!abilityToChange.isToggled()){
             ItemStack current = e.getCurrentItem();
-            current.removeEnchantment(Enchantment.DURABILITY);
+            current.removeEnchantment(Enchantment.UNBREAKING);
             ItemMeta meta = current.getItemMeta();
             List<String> lore = meta.getLore();
             lore.remove(meta.getLore().size() - 1);
@@ -1036,7 +1036,7 @@ public class InvClickEvent implements Listener{
             lore.add(Methods.color(guiConfig.getStringList("AbilityItem.ToggledOnLore").get(0)));
             meta.setLore(lore);
             current.setItemMeta(meta);
-            e.getCurrentItem().addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            e.getCurrentItem().addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
             ((Player) e.getWhoClicked()).updateInventory();
           }
         }

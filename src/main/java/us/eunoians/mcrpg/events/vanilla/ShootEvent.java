@@ -88,8 +88,8 @@ public class ShootEvent implements Listener {
               FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
               p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Sound")),
                 Float.parseFloat(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Volume")), Float.parseFloat(soundFile.getString("Sounds.Archery.BlessingOfArtemis.Pitch")));
-              p.getLocation().getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getEyeLocation(), 1);
-              trackArrowParticles(arrow, Particle.SMOKE_NORMAL);
+              p.getLocation().getWorld().spawnParticle(Particle.LARGE_SMOKE, p.getEyeLocation(), 1);
+              trackArrowParticles(arrow, Particle.SMOKE);
               p.sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() + McRPG.getInstance().getLangFile().getString("Messages.Abilities.BlessingOfArtemis.Activated")));
             }
           }

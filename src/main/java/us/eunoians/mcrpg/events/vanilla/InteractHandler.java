@@ -178,7 +178,7 @@ public class InteractHandler implements Listener {
             if(heldItem.getAmount() <= 0) {
               heldItem.setType(Material.AIR);
             }
-            p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, p.getLocation(), 30);
+            p.getLocation().getWorld().spawnParticle(Particle.EXPLOSION, p.getLocation(), 30);
             FileConfiguration soundFile = McRPG.getInstance().getFileManager().getFile(FileManager.Files.SOUNDS_FILE);
             p.getLocation().getWorld().playSound(p.getLocation(), Sound.valueOf(soundFile.getString("Sounds.Mining.BlastMining.Sound")),
               Float.parseFloat(soundFile.getString("Sounds.Mining.BlastMining.Volume")), Float.parseFloat(soundFile.getString("Sounds.Mining.BlastMining.Pitch")));
@@ -235,7 +235,7 @@ public class InteractHandler implements Listener {
         mp.setReadying(false);
         DoubleDrop doubleDrop = (DoubleDrop) mp.getBaseAbility(DefaultAbilities.DOUBLE_DROP);
         doubleDrop.setBonusChance(doubleDrop.getBonusChance() + superBreakerEvent.getBoost());
-        PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, superBreakerEvent.getHasteDuration() * 20, 20);
+        PotionEffect effect = new PotionEffect(PotionEffectType.HASTE, superBreakerEvent.getHasteDuration() * 20, 20);
         p.addPotionEffect(effect);
         mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Abilities.SuperBreaker.Activated")));
@@ -278,7 +278,7 @@ public class InteractHandler implements Listener {
         mp.setReadying(false);
         Extraction extraction = (Extraction) mp.getBaseAbility(DefaultAbilities.EXTRACTION);
         extraction.setBonusChance(extraction.getBonusChance() + frenzyDigEvent.getExtractionBuff());
-        PotionEffect effect = new PotionEffect(PotionEffectType.FAST_DIGGING, frenzyDigEvent.getHasteDuration() * 20, 20);
+        PotionEffect effect = new PotionEffect(PotionEffectType.HASTE, frenzyDigEvent.getHasteDuration() * 20, 20);
         p.addPotionEffect(effect);
         mp.getPlayer().sendMessage(Methods.color(p, McRPG.getInstance().getPluginPrefix() +
                 McRPG.getInstance().getLangFile().getString("Messages.Abilities.FrenzyDig.Activated")));
@@ -512,7 +512,7 @@ public class InteractHandler implements Listener {
                     BlockGrowEvent growEvent = new BlockGrowEvent(test, test.getState());
                     if(!growEvent.isCancelled()) {
                       test.setBlockData(ageable);
-                      test.getLocation().getWorld().spawnParticle(Particle.VILLAGER_HAPPY, test.getLocation(), 5);
+                      test.getLocation().getWorld().spawnParticle(Particle.HAPPY_VILLAGER, test.getLocation(), 5);
                     }
                   }
                 }

@@ -117,17 +117,17 @@ public class FishCatchEvent implements Listener {
               equation.setVariable("fishing_level", fishing.getCurrentLevel());
               c += equation.getValue();
             }
-            if(fishingRod.getEnchantments().containsKey(Enchantment.LUCK)){
+            if(fishingRod.getEnchantments().containsKey(Enchantment.LUCK_OF_THE_SEA)){
               if(category.equalsIgnoreCase("Treasure")){
                 Parser parser = new Parser(fishingConfig.getString("LuckOfSeaModifiers.TreasureModifier"));
-                parser.setVariable("level", fishingRod.getEnchantmentLevel(Enchantment.LUCK));
+                parser.setVariable("level", fishingRod.getEnchantmentLevel(Enchantment.LUCK_OF_THE_SEA));
                 c += parser.getValue();
               }
             }
           }
-          else if(category.equalsIgnoreCase("Junk") && fishingRod.getEnchantments().containsKey(Enchantment.LUCK)){
+          else if(category.equalsIgnoreCase("Junk") && fishingRod.getEnchantments().containsKey(Enchantment.LUCK_OF_THE_SEA)){
             Parser parser = new Parser(fishingConfig.getString("LuckOfSeaModifiers.JunkModifier"));
-            parser.setVariable("level", fishingRod.getEnchantmentLevel(Enchantment.LUCK));
+            parser.setVariable("level", fishingRod.getEnchantmentLevel(Enchantment.LUCK_OF_THE_SEA));
             c -= parser.getValue();
           }
           int chance = (int) (c * 1000);

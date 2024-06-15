@@ -8,7 +8,6 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 import us.eunoians.mcrpg.McRPG;
@@ -44,17 +43,18 @@ public class BasePotion {
 
   BasePotion(ItemStack potion){
     PotionMeta meta = (PotionMeta) potion.getItemMeta();
-    PotionData data = meta.getBasePotionData();
-    PotionType potionType = data.getType();
+    PotionType potionType = meta.getBasePotionType();
+    boolean extended = potionType.getKey().getKey().contains("long");
+    boolean amplified = potionType.getKey().getKey().contains("strong");
     potionItem = potion;
-    if(potionType != PotionType.AWKWARD && potionType != PotionType.WATER && potionType != PotionType.UNCRAFTABLE){
-      meta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE));
-      int duration = data.isExtended() ? 480 : data.isUpgraded() ? 90 : potionType.isInstant() ? 0 : 180;
+    if(potionType != PotionType.AWKWARD && potionType != PotionType.WATER && potionType != null){
+      meta.setBasePotionType(null);
+      int duration = extended ? 480 : amplified ? 90 : potionType.isInstant() ? 0 : 180;
       if(potion.getType() == Material.LINGERING_POTION){
         duration = duration/4;
       }
-      int amplifier = data.isUpgraded() ? 1 : 0;
-      meta.addCustomEffect(new PotionEffect(data.getType().getEffectType(), duration * 20, amplifier), true);
+      int amplifier = amplified ? 1 : 0;
+      meta.addCustomEffect(new PotionEffect(potionType.getEffectType(), duration * 20, amplifier), true);
       potion.setItemMeta(meta);
     }
     this.basePotionType = getBasePotionTypeFromItemStack(potion);
@@ -129,10 +129,10 @@ public class BasePotion {
     //Set the new base potion data in order to override with the actual potion info
     //This is needed since we can not modify the base potion data's duration but we use it in other parts of the code
     if(basePotionType == BasePotionType.AWKWARD){
-      potionMeta.setBasePotionData(new PotionData(PotionType.AWKWARD));
+      potionMeta.setBasePotionType(PotionType.AWKWARD);
     }
     else{
-      potionMeta.setBasePotionData(new PotionData(PotionType.UNCRAFTABLE));
+      potionMeta.setBasePotionType(null);
     }
     if(basePotionType != BasePotionType.AWKWARD && basePotionType != BasePotionType.WATER){
       PotionEffect newPotionEffect = new PotionEffect(basePotionType.getEffectType(),

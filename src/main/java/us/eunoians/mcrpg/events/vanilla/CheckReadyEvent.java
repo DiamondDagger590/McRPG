@@ -331,11 +331,11 @@ public class CheckReadyEvent implements Listener{
             if(p.getFoodLevel() - hungerLost >= hungerLimit){
               int modifier = herbalism.getInt(key + "Modifier");
               int duration = herbalism.getInt(key + "Duration");
-              PotionEffectType effectType = PotionEffectType.INCREASE_DAMAGE;
+              PotionEffectType effectType = PotionEffectType.STRENGTH;
               NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
               Bukkit.getPluginManager().callEvent(naturesWrathEvent);
               if(!naturesWrathEvent.isCancelled()){
-                p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.POPPY));
+                p.getLocation().getWorld().spawnParticle(Particle.ITEM, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.POPPY));
                 p.getLocation().getWorld().playSound(p.getLocation(), eatSound, volume, pitch);
                 if(isOffHand){
                   p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
@@ -355,11 +355,11 @@ public class CheckReadyEvent implements Listener{
             if(p.getFoodLevel() - hungerLost >= hungerLimit){
               int modifier = herbalism.getInt(key + "Modifier");
               int duration = herbalism.getInt(key + "Duration");
-              PotionEffectType effectType = PotionEffectType.FAST_DIGGING;
+              PotionEffectType effectType = PotionEffectType.HASTE;
               NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
               Bukkit.getPluginManager().callEvent(naturesWrathEvent);
               if(!naturesWrathEvent.isCancelled()){
-                p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.DANDELION));
+                p.getLocation().getWorld().spawnParticle(Particle.ITEM, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.DANDELION));
                 p.getLocation().getWorld().playSound(p.getLocation(), eatSound, volume, pitch);
                 if(isOffHand){
                   p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
@@ -383,7 +383,7 @@ public class CheckReadyEvent implements Listener{
               NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
               Bukkit.getPluginManager().callEvent(naturesWrathEvent);
               if(!naturesWrathEvent.isCancelled()){
-                p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.BLUE_ORCHID));
+                p.getLocation().getWorld().spawnParticle(Particle.ITEM, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.BLUE_ORCHID));
                 p.getLocation().getWorld().playSound(p.getLocation(), eatSound, volume, pitch);
                 if(isOffHand){
                   p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);
@@ -403,11 +403,11 @@ public class CheckReadyEvent implements Listener{
             if(p.getFoodLevel() - hungerLost >= hungerLimit){
               int modifier = herbalism.getInt(key + "Modifier");
               int duration = herbalism.getInt(key + "Duration");
-              PotionEffectType effectType = PotionEffectType.DAMAGE_RESISTANCE;
+              PotionEffectType effectType = PotionEffectType.RESISTANCE;
               NaturesWrathEvent naturesWrathEvent = new NaturesWrathEvent(mp, naturesWrath, hungerLost, modifier, effectType, duration);
               Bukkit.getPluginManager().callEvent(naturesWrathEvent);
               if(!naturesWrathEvent.isCancelled()){
-                p.getLocation().getWorld().spawnParticle(Particle.ITEM_CRACK, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.LILAC));
+                p.getLocation().getWorld().spawnParticle(Particle.ITEM, p.getEyeLocation(), 1, 0, 0, 0, new ItemStack(Material.LILAC));
                 p.getLocation().getWorld().playSound(p.getLocation(), eatSound, volume, pitch);
                 if(isOffHand){
                   p.getInventory().getItemInOffHand().setAmount(p.getInventory().getItemInOffHand().getAmount() - 1);

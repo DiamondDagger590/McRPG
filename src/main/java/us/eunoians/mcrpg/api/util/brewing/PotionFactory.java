@@ -2,11 +2,11 @@ package us.eunoians.mcrpg.api.util.brewing;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import us.eunoians.mcrpg.types.BasePotionType;
 
+@SuppressWarnings("deprecation")
 public class PotionFactory {
 
   public static BasePotion convertItemStackToBasePotion(ItemStack potion){
@@ -19,16 +19,15 @@ public class PotionFactory {
     }
     else{
       PotionMeta meta = (PotionMeta) potion.getItemMeta();
-      if(meta.getBasePotionData().getType() == PotionType.WATER){
+      if(meta.getBasePotionType() == PotionType.WATER){
         return BasePotionType.WATER;
       }
-      else if(meta.getBasePotionData().getType() == PotionType.AWKWARD){
+      else if(meta.getBasePotionType() == PotionType.AWKWARD){
         return BasePotionType.AWKWARD;
       }
       else{
-        PotionData basePotionData = meta.getBasePotionData();
-        PotionEffectType potionEffectType = basePotionData.getType().getEffectType();
-        if(basePotionData.getType() == PotionType.UNCRAFTABLE){
+        PotionEffectType potionEffectType = meta.getBasePotionType().getEffectType();
+        if(meta.getBasePotionType() == null){
           if(meta.hasCustomEffects()){
             potionEffectType = meta.getCustomEffects().get(0).getType();
           }

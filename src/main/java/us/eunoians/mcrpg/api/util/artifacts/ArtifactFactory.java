@@ -51,7 +51,7 @@ public class ArtifactFactory{
       }
       List<String> newLore = new ArrayList<>();
       if(artifactFile.getBoolean(key + "IsGlowing", true)){
-        itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+        itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
       }
       artifact.setItemMeta(itemMeta);
@@ -233,7 +233,7 @@ public class ArtifactFactory{
       }
       List<String> newLore = new ArrayList<>();
       if(artifactFile.getBoolean(key + "IsGlowing", true)){
-        itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+        itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
       }
       artifact.setItemMeta(itemMeta);

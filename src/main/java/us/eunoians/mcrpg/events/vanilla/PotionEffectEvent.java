@@ -25,8 +25,8 @@ import java.util.Set;
 
 public class PotionEffectEvent implements Listener{
   
-  private static Set<PotionEffectType> debuffs= new HashSet<>(Arrays.asList(PotionEffectType.WITHER, PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HARM, PotionEffectType.HUNGER,
-    PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.UNLUCK, PotionEffectType.WEAKNESS));
+  private static Set<PotionEffectType> debuffs= new HashSet<>(Arrays.asList(PotionEffectType.WITHER, PotionEffectType.BLINDNESS, PotionEffectType.NAUSEA, PotionEffectType.INSTANT_DAMAGE, PotionEffectType.HUNGER,
+    PotionEffectType.POISON, PotionEffectType.SLOWNESS, PotionEffectType.MINING_FATIGUE, PotionEffectType.UNLUCK, PotionEffectType.WEAKNESS));
   
   @EventHandler
   public void potionEffectEvent(EntityPotionEffectEvent e){

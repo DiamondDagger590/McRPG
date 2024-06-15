@@ -54,7 +54,7 @@ public class RemoteTransferGUI extends GUI {
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             displayItem.setItemMeta(meta);
             if(itemsToSync.get(mat)) {
-              displayItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+              displayItem.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
             }
             items.add(new GUIItem(displayItem, counter));
           }
@@ -65,7 +65,7 @@ public class RemoteTransferGUI extends GUI {
             meta.setLore(Methods.colorLore(guiConfig.getStringList("ToggleLore")));
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             displayItem.setItemMeta(meta);
-            displayItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            displayItem.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
             items.add(new GUIItem(displayItem, counter));
           }
           counter++;
@@ -83,7 +83,7 @@ public class RemoteTransferGUI extends GUI {
       abilityMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
       abilityItem.setItemMeta(abilityMeta);
       if(remoteTransfer.isToggled()) {
-        abilityItem.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        abilityItem.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
       }
 
       items.add(new GUIItem(abilityItem, inv.getSize() - 1));
