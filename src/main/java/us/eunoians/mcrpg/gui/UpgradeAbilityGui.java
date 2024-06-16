@@ -300,7 +300,7 @@ public class UpgradeAbilityGui extends CoreGui implements PaginatedGui {
                 Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
                 if (abilityAttributeOptional.isPresent() && abilityAttributeOptional.get() instanceof AbilityToggledOffAttribute toggledOffAttribute) {
                     if (!toggledOffAttribute.getContent()) {
-                        itemMeta.addEnchant(Enchantment.ARROW_DAMAGE, 1, true);
+                        itemMeta.addEnchant(Enchantment.POWER, 1, true);
                         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                     }
                     lore.add(blankLine);

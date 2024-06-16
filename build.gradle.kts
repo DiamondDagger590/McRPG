@@ -4,7 +4,7 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("io.github.goooler.shadow") version "8.1.7"
 }
 
 buildscript {
@@ -26,6 +26,7 @@ version = "2.0.0.0-SNAPSHOT"
 group = "us.eunoians"
 
 java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
     withJavadocJar()
     withSourcesJar()
 }
@@ -54,7 +55,7 @@ repositories {
 
 dependencies {
 
-    val mccoreVersion = "1.0.0.8-SNAPSHOT"
+    val mccoreVersion = "1.0.0.10-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     val bstatsVersion = "2.2.1"

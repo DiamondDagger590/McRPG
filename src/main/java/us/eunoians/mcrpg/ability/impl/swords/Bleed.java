@@ -5,6 +5,8 @@ import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -351,7 +353,7 @@ public class Bleed extends Ability {
     private static class FakeBleedDamageEvent extends EntityDamageEvent {
 
         public FakeBleedDamageEvent(@NotNull Entity damagee, @NotNull DamageCause cause, double damage) {
-            super(damagee, cause, damage);
+            super(damagee, cause, DamageSource.builder(DamageType.GENERIC).build(), damage);
 
             if (getDamage(DamageModifier.ARMOR) > 0) { //Will throw a fit for things like zombies if not ><
                 setDamage(DamageModifier.ARMOR, 0);
