@@ -13,7 +13,7 @@ import java.io.IOException;
 public enum FileType {
 
     MAIN_CONFIG("config.yml", new MainConfigFile()),
-    SWORDS_CONFIG("skill_configuration" + File.separator + "swords_configuration.yml", new SwordsConfigFile()),;
+    SWORDS_CONFIG("skill_configuration.yml" + File.separator + "swords_configuration.yml", new SwordsConfigFile()),;
 
     private final String filePath;
     private final ConfigFile configFile;

@@ -37,7 +37,7 @@ public class SwordsConfigFile extends ConfigFile {
     private static final Route BLEED_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "bleed");
     public static final Route BLEED_ACTIVATION_EQUATION = Route.addTo(BLEED_HEADER, "activation-equation");
     public static final Route BLEED_MINIMUM_HEALTH_ALLOWED = Route.addTo(BLEED_HEADER, "minimum-health-allowed");
-    public static final Route BLEED_BASE_DURATION = Route.addTo(BLEED_HEADER, "bleed-base-duration");
+    public static final Route BLEED_BASE_CYCLES = Route.addTo(BLEED_HEADER, "bleed-base-cycles");
     public static final Route BLEED_BASE_FREQUENCY = Route.addTo(BLEED_HEADER, "bleed-base-frequency");
     public static final Route BLEED_BASE_DAMAGE = Route.addTo(BLEED_HEADER, "bleed-base-damage");
     public static final Route BLEED_GRANT_IMMUNITY_AFTER_EXPIRE = Route.addTo(BLEED_HEADER, "grant-bleed-immunity-after-expire");

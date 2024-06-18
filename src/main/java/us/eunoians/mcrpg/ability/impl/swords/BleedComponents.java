@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -8,10 +9,16 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnAttackComponent;
 import us.eunoians.mcrpg.ability.component.activatable.TargetablePlayerComponent;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -20,6 +27,7 @@ import java.util.Set;
  */
 public class BleedComponents {
 
+    private static final Random RANDOM = new Random();
     public static final BleedOnAttackComponent BLEED_ON_ATTACK_COMPONENT = new BleedOnAttackComponent();
     public static final BleedOnTargetPlayerComponent BLEED_ON_TARGET_PLAYER_COMPONENT = new BleedOnTargetPlayerComponent();
 
@@ -45,9 +53,25 @@ public class BleedComponents {
 
             if(damager instanceof LivingEntity livingEntity) {
                 EntityEquipment entityEquipment = livingEntity.getEquipment();
-
+                // If the entity isnt holding anything
                 if(entityEquipment == null) {
                     return false;
+                }
+                // If they are actually holding a sword
+                if (SWORDS.contains(entityEquipment.getItemInMainHand().getType())) {
+                    // Check if they're a skill holder, if so then check the activation equation. Otherwise activate it ig (needs custom handling in the future for bosses n stuff)
+                    if (abilityHolder instanceof SkillHolder skillHolder) {
+                        var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
+                        if (skillHolderDataOptional.isPresent()) {
+                            Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
+                            parser.setVariable("swords_level", skillHolderDataOptional.get().getCurrentLevel());
+                            return parser.getValue() * 1000 > RANDOM.nextInt(100000);
+                        }
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
                 }
                 return SWORDS.contains(entityEquipment.getItemInMainHand().getType());
             }

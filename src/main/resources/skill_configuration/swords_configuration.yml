@@ -18,9 +18,9 @@ experience:
 ability-configuration:
   bleed:
     activation-equation: (swords_level)*.033
-    minimum-health-allowed: 1
-    bleed-base-duration: 6
-    bleed-base-frequency: 2
+    minimum-health-allowed: 4
+    bleed-base-cycles: 6
+    bleed-base-frequency: 0.5
     bleed-base-damage: 1
     grant-bleed-immunity-after-expire: true
     bleed-immunity-duration: 5

@@ -19,7 +19,8 @@ public class MainConfigFile extends ConfigFile {
     private static final Route MOB_HEALTH_BAR_CONFIGURATION_HEADER = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "mob-health-bar");
     private static final Route MCMMO_CONFIGURATION_HEADER = Route.addTo(CONFIGURATION_HEADER, "mcmmo");
 
-    public static final Route DATABASE_DRIVER = Route.addTo(CONFIGURATION_HEADER, "database.driver");
+    private static final Route DATABASE_HEADER = Route.addTo(CONFIGURATION_HEADER, "database");
+    public static final Route DATABASE_DRIVER = Route.addTo(DATABASE_HEADER, "driver");
     public static final Route DISABLED_WORLDS = Route.addTo(CONFIGURATION_HEADER, "disabled-worlds");
     public static final Route SAVE_INTERVAL = Route.addTo(CONFIGURATION_HEADER, "save-interval");
     public static final Route LANGUAGE_FILE = Route.addTo(CONFIGURATION_HEADER, "language-file");

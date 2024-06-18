@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability.impl.swords;
 
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -20,6 +21,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
@@ -87,8 +90,8 @@ public class Bleed extends Ability {
         Entity entity = entityDamageByEntityEvent.getEntity();
 
         if (entity instanceof LivingEntity livingEntity && BLEED_MANAGER.canEntityStartBleeding(livingEntity)) {
-
-            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, 3, 4);
+            YamlDocument swordsConfig = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
             Bukkit.getPluginManager().callEvent(bleedActivateEvent);
 
             if(!bleedActivateEvent.isCancelled()) {
@@ -165,7 +168,8 @@ public class Bleed extends Ability {
          * @param entity The {@link LivingEntity} to start the bleeding process for
          */
         public void startBleeding(@NotNull LivingEntity entity) {
-            startBleeding(null, entity, 3, 4);
+            YamlDocument swordsConfig = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            startBleeding(null, entity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
         }
 
         public void startBleeding(@NotNull LivingEntity entity, int bleedCycles, double bleedDamage) {
@@ -173,7 +177,8 @@ public class Bleed extends Ability {
         }
 
         public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity) {
-            startBleeding(abilityHolder, entity, 3, 4);
+            YamlDocument swordsConfig = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            startBleeding(abilityHolder, entity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
         }
 
         public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity, int bleedCycles, double bleedDamage) {
@@ -181,17 +186,21 @@ public class Bleed extends Ability {
 
                 ENTITIES_BLEEDING.put(entity.getUniqueId(), Optional.ofNullable(abilityHolder));
 
-                ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(McRPG.getInstance(), 0.5, 0.5, bleedCycles) {
+                ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(McRPG.getInstance(), 0.5, McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getDouble(SwordsConfigFile.BLEED_BASE_FREQUENCY), bleedCycles) {
                     @Override
                     protected void onTaskExpire() {
                         stopEntityBleeding(entity);
-                        startBleedImmunity(entity);
+                        if (McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_GRANT_IMMUNITY_AFTER_EXPIRE)) {
+                            startBleedImmunity(entity);
+                        }
                     }
 
                     @Override
                     protected void onCancel() {
                         stopEntityBleeding(entity);
-                        startBleedImmunity(entity);
+                        if (McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_GRANT_IMMUNITY_AFTER_EXPIRE)) {
+                            startBleedImmunity(entity);
+                        }
                     }
 
                     @Override
@@ -209,9 +218,10 @@ public class Bleed extends Ability {
                                 return;
                             }
 
-                            if (entity.getHealth() > 4) {
+                            int minimumHealthAllowed = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getInt(SwordsConfigFile.BLEED_MINIMUM_HEALTH_ALLOWED);
+                            if (entity.getHealth() > minimumHealthAllowed) {
 
-                                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, bleedDamage, true);
+                                BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, bleedDamage, McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_DAMAGE_PIERCE_ARMOR));
                                 Bukkit.getPluginManager().callEvent(bleedDamageEvent);
 
                                 if(bleedDamageEvent.isCancelled()) { //If bleed damage is cancelled, skip this interval
@@ -222,8 +232,13 @@ public class Bleed extends Ability {
                                 Bukkit.getPluginManager().callEvent(fakeBleedDamageEvent);
 
                                 if (!fakeBleedDamageEvent.isCancelled()) {
-                                    entity.setHealth(Math.max(4, entity.getHealth() - fakeBleedDamageEvent.getFinalDamage())); //Respects damage modifiers since those are applied after the bleed event
-                                    entity.damage(0.01); //for damage effect
+                                    if  (bleedDamageEvent.isDamageIgnoringArmor()) {
+                                        entity.setHealth(Math.max(minimumHealthAllowed, entity.getHealth() - fakeBleedDamageEvent.getFinalDamage())); //Respects damage modifiers since those are applied after the bleed event
+                                        entity.damage(0.01); //for damage effect
+                                    }
+                                    else {
+                                        entity.damage(fakeBleedDamageEvent.getFinalDamage());
+                                    }
                                 }
                             }
                         } else {
@@ -338,7 +353,7 @@ public class Bleed extends Ability {
          */
         public void startBleedImmunity(@NotNull UUID uuid) {
             BLEED_IMMUNE_ENTITIES.add(uuid);
-            new DelayableCoreTask(McRPG.getInstance(), 5) {
+            new DelayableCoreTask(McRPG.getInstance(), McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getInt(SwordsConfigFile.BLEED_IMMUNITY_DURATION)) {
                 @Override
                 public void run() {
                     BLEED_IMMUNE_ENTITIES.remove(uuid);
