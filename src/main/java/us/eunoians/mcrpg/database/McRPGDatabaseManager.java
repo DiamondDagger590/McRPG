@@ -51,7 +51,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
     public McRPGDatabaseManager(@NotNull McRPG plugin) {
         super(plugin);
-        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager().getFile(FileType.MAIN_CONFIG).getProperty(MainConfigFile.DATABASE_DRIVER));
+        Optional<DatabaseDriver> databaseDriver = DatabaseDriver.getFromString(plugin.getFileManager().getFile(FileType.MAIN_CONFIG).getString(MainConfigFile.DATABASE_DRIVER));
 
         if (databaseDriver.isEmpty()) {
             plugin.getLogger().log(Level.SEVERE, "The configured database driver in the config.yml is invalid and is being defaulted to SQLite.");

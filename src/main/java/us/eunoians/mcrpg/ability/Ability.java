@@ -156,7 +156,6 @@ public abstract class Ability {
         return activatingAttributes.getOrDefault(clazz, new ArrayList<>());
     }
 
-
     private void sortCancellingComponents() {
         cancellingComponents.sort(Comparator.comparingInt(EventCancellingComponentAttribute::priority));
     }

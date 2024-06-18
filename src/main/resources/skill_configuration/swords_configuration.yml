@@ -1,3 +1,4 @@
+config-version: 1
 skill-enabled: true
 permissions:
   restrict-skill-to-permission: false

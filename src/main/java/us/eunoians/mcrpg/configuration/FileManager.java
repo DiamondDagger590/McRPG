@@ -1,16 +1,17 @@
 package us.eunoians.mcrpg.configuration;
 
-import ch.jalu.configme.SettingsManager;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class FileManager {
 
     private final McRPG mcRPG;
-    private final Map<FileType, SettingsManager> loadedFiles;
+    private final Map<FileType, YamlDocument> loadedFiles;
 
     public FileManager(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
@@ -30,13 +31,17 @@ public class FileManager {
     }
 
     public void reloadFiles() {
-        for (SettingsManager settingsManager : loadedFiles.values()) {
-            settingsManager.reload();
+        for (YamlDocument yamlDocument : loadedFiles.values()) {
+            try {
+                yamlDocument.reload();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @NotNull
-    public SettingsManager getFile(@NotNull FileType fileType) {
+    public YamlDocument getFile(@NotNull FileType fileType) {
         return loadedFiles.get(fileType);
     }
 }

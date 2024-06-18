@@ -42,6 +42,7 @@ public class AbilityHolder {
         this.uuid = uuid;
         this.availableAbilities = new HashSet<>();
         this.abilityDataMap = new HashMap<>();
+        this.upgradePoints = 0;
     }
 
     /**
