@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.check.AlliedAttackCheck;
 import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
+import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.impl.Ability;
 
 import java.util.Collection;
 import java.util.HashMap;

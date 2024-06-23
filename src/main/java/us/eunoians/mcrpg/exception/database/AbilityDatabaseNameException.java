@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.exception.database;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.Ability;
 
 /**
  * This exception is thrown whenever an {@link Ability} returns an empty {@link java.util.Optional}

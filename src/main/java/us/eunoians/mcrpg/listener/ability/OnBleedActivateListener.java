@@ -6,6 +6,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -33,6 +34,7 @@ public class OnBleedActivateListener implements Listener {
 
         //We can do this safely because we assume that the only abilities in the loadout are registered ones.
         allAbilities.stream().map(abilityRegistry::getRegisteredAbility)
+                .map(ability -> (BaseAbility) ability)
                 .filter(ability -> ability.canEventActivateAbility(bleedActivateEvent))
                 .filter(ability -> ability.checkIfComponentFailsActivation(abilityHolder, bleedActivateEvent).isEmpty())
                 .forEach(ability -> ability.activateAbility(abilityHolder, bleedActivateEvent));

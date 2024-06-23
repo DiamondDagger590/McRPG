@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.api.event.ability;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.Ability;
 
 /**
  * This event is called whenever an {@link Ability} is unregistered from McRPG by using

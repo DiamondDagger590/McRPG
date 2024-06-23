@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 import us.eunoians.mcrpg.mock.ability.MockAbility;
 import us.eunoians.mcrpg.mock.skill.MockSkill;
@@ -53,20 +55,20 @@ public class AbilityRegistryTest {
 
     @Test
     public void testIsAbilityRegistered() {
-        Ability ability = new MockAbility(abilityKey);
+        BaseAbility ability = new MockAbility(abilityKey);
         abilityRegistry.registerAbility(ability);
         assertTrue(abilityRegistry.isAbilityRegistered(ability));
     }
 
     @Test
     public void testIsAbilityNotRegistered() {
-        Ability ability = new MockAbility(abilityKey);
+        BaseAbility ability = new MockAbility(abilityKey);
         assertFalse(abilityRegistry.isAbilityRegistered(ability));
     }
 
     @Test
     public void testUnregisterAbility() {
-        Ability ability = new MockAbility(abilityKey);
+        BaseAbility ability = new MockAbility(abilityKey);
         abilityRegistry.registerAbility(ability);
         assertTrue(abilityRegistry.isAbilityRegistered(ability));
         abilityRegistry.unregisterAbility(abilityKey);
@@ -75,7 +77,7 @@ public class AbilityRegistryTest {
 
     @Test
     public void testUnregisterAbilityWithSkill() {
-        Ability ability = new MockAbility(abilityKey, skillKey);
+        BaseAbility ability = new MockAbility(abilityKey, skillKey);
         abilityRegistry.registerAbility(ability);
         assertTrue(abilityRegistry.isAbilityRegistered(ability));
         abilityRegistry.unregisterAbility(abilityKey);
@@ -85,7 +87,7 @@ public class AbilityRegistryTest {
     @Test
     public void testDoesSkillHaveAbilities() {
         Skill skill = new MockSkill(skillKey);
-        Ability ability = new MockAbility(abilityKey, skillKey);
+        BaseAbility ability = new MockAbility(abilityKey, skillKey);
         abilityRegistry.registerAbility(ability);
         assertTrue(abilityRegistry.doesSkillHaveAbilities(skill));
     }
@@ -93,7 +95,7 @@ public class AbilityRegistryTest {
     @Test
     public void testGetAbilitiesBelongingToSkill() {
         Skill skill = new MockSkill(skillKey);
-        Ability ability = new MockAbility(abilityKey, skillKey);
+        BaseAbility ability = new MockAbility(abilityKey, skillKey);
         abilityRegistry.registerAbility(ability);
         Set<NamespacedKey> abilities = abilityRegistry.getAbilitiesBelongingToSkill(skill);
         assertEquals(abilities.size(), 1);
@@ -103,8 +105,8 @@ public class AbilityRegistryTest {
     @Test
     public void testGetAbilitiesWithoutSkills() {
         Skill skill = new MockSkill(skillKey);
-        Ability skillAbility = new MockAbility(abilityKey, skillKey);
-        Ability noSkillAbility = new MockAbility(new NamespacedKey(plugin, "no-skill-ability"));
+        BaseAbility skillAbility = new MockAbility(abilityKey, skillKey);
+        BaseAbility noSkillAbility = new MockAbility(new NamespacedKey(plugin, "no-skill-ability"));
         abilityRegistry.registerAbility(skillAbility);
         abilityRegistry.registerAbility(noSkillAbility);
         Set<NamespacedKey> abilities = abilityRegistry.getAbilitiesBelongingToSkill(skill);
@@ -118,8 +120,8 @@ public class AbilityRegistryTest {
     @Test
     public void testGetAllAbilities() {
         Skill skill = new MockSkill(skillKey);
-        Ability skillAbility = new MockAbility(abilityKey, skillKey);
-        Ability noSkillAbility = new MockAbility(new NamespacedKey(plugin, "no-skill-ability"));
+        BaseAbility skillAbility = new MockAbility(abilityKey, skillKey);
+        BaseAbility noSkillAbility = new MockAbility(new NamespacedKey(plugin, "no-skill-ability"));
         abilityRegistry.registerAbility(skillAbility);
         abilityRegistry.registerAbility(noSkillAbility);
         Set<NamespacedKey> abilities = abilityRegistry.getAllAbilities();
@@ -130,7 +132,7 @@ public class AbilityRegistryTest {
 
     @Test
     public void testGetAbility() {
-        Ability ability = new MockAbility(abilityKey);
+        BaseAbility ability = new MockAbility(abilityKey);
         abilityRegistry.registerAbility(ability);
         Ability foundAbility = abilityRegistry.getRegisteredAbility(ability.getAbilityKey());
         assertEquals(ability, foundAbility);

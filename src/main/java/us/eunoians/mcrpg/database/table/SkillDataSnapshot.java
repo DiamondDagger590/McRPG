@@ -3,9 +3,9 @@ package us.eunoians.mcrpg.database.table;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.util.HashMap;

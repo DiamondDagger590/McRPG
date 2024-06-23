@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.exception.ability;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.Ability;
 
 /**
  * An exception that is thrown whenever an {@link Ability} is referenced without

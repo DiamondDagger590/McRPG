@@ -6,7 +6,8 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.TierableAbility;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.objective.BlockBreakQuestObjective;
@@ -14,7 +15,7 @@ import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.Optional;
 
-public class RicherOre extends TierableAbility {
+public class RicherOre extends BaseAbility implements TierableAbility {
 
     public static final NamespacedKey RICHER_ORE_KEY = new NamespacedKey(McRPG.getInstance(), "richer_ore");
 
@@ -22,21 +23,25 @@ public class RicherOre extends TierableAbility {
         super(RICHER_ORE_KEY);
     }
 
+    @NotNull
     @Override
     public Optional<NamespacedKey> getSkill() {
         return Optional.of(Mining.MINING_KEY);
     }
 
+    @NotNull
     @Override
     public Optional<String> getDatabaseName() {
         return Optional.empty();
     }
 
+    @NotNull
     @Override
     public String getDisplayName() {
         return "Richer Ore";
     }
 
+    @NotNull
     @Override
     public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
         return new ItemStack(Material.DIAMOND_ORE);
@@ -45,6 +50,16 @@ public class RicherOre extends TierableAbility {
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
 
+    }
+
+    @Override
+    public boolean isAbilityEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isActivePassive() {
+        return false;
     }
 
     @Override
@@ -62,6 +77,7 @@ public class RicherOre extends TierableAbility {
         return 1;
     }
 
+    @NotNull
     @Override
     public Quest getUpgradeQuestForTier(int tier) {
         Quest quest = new Quest("configpath");

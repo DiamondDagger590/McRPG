@@ -2,7 +2,8 @@ package us.eunoians.mcrpg.exception.ability;
 
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
 
 public class EventNotRegisteredForActivation extends RuntimeException {
 

@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.api.event.ability;
 
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.UnlockableAbility;
+import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 
 /**
  * This event is called whenever an ability holder unlocks a new ability

@@ -18,7 +18,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
+import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -45,7 +47,7 @@ import java.util.UUID;
  * allow them a chance to regenerate health since constantly bleeding would cause fights to
  * easily swing in one direction.
  */
-public class Bleed extends Ability {
+public final class Bleed extends BaseAbility implements PassiveAbility, ConfigurableAbility {
 
     public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "bleed");
     private static final BleedManager BLEED_MANAGER = new BleedManager();
@@ -56,26 +58,31 @@ public class Bleed extends Ability {
         addActivatableComponent(BleedComponents.BLEED_ON_TARGET_PLAYER_COMPONENT, EntityDamageByEntityEvent.class, 1);
     }
 
+    @NotNull
     @Override
     public Optional<NamespacedKey> getSkill() {
         return Optional.of(Swords.SWORDS_KEY);
     }
 
+    @NotNull
     @Override
     public Optional<String> getLegacyName() {
         return Optional.of("Bleed");
     }
 
+    @NotNull
     @Override
     public Optional<String> getDatabaseName() {
         return Optional.empty();
     }
 
+    @NotNull
     @Override
     public String getDisplayName() {
         return "Bleed";
     }
 
+    @NotNull
     @Override
     public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
         ItemStack guiItem = new ItemStack(Material.REDSTONE);
@@ -90,7 +97,7 @@ public class Bleed extends Ability {
         Entity entity = entityDamageByEntityEvent.getEntity();
 
         if (entity instanceof LivingEntity livingEntity && BLEED_MANAGER.canEntityStartBleeding(livingEntity)) {
-            YamlDocument swordsConfig = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            YamlDocument swordsConfig = getYamlDocument();
             BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
             Bukkit.getPluginManager().callEvent(bleedActivateEvent);
 
@@ -98,6 +105,17 @@ public class Bleed extends Ability {
                 BLEED_MANAGER.startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
             }
         }
+    }
+
+    @Override
+    public boolean isAbilityEnabled() {
+        return getYamlDocument().getBoolean(SwordsConfigFile.BLEED_ENABLED);
+    }
+
+    @NotNull
+    @Override
+    public YamlDocument getYamlDocument() {
+        return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
     /**

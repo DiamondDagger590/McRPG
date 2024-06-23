@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableSet;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
+import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 
 import java.util.HashMap;

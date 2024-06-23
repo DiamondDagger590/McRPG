@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
 import us.eunoians.mcrpg.mock.ability.MockAbility;
@@ -43,7 +43,7 @@ public class AbilityEventTests {
 
     @Test
     public void testAbilityRegisterEvent() {
-        Ability ability = new MockAbility(new NamespacedKey(plugin, "test"));
+        BaseAbility ability = new MockAbility(new NamespacedKey(plugin, "test"));
         plugin.getAbilityRegistry().registerAbility(ability);
         serverMock.getPluginManager().assertEventFired(AbilityRegisterEvent.class, abilityRegisterEvent -> {
             assertEquals(abilityRegisterEvent.getAbility(), ability);
@@ -53,7 +53,7 @@ public class AbilityEventTests {
 
     @Test
     public void testAbilityUnregisterEvent() {
-        Ability ability = new MockAbility(new NamespacedKey(plugin, "test"));
+        BaseAbility ability = new MockAbility(new NamespacedKey(plugin, "test"));
         plugin.getAbilityRegistry().registerAbility(ability);
         plugin.getAbilityRegistry().unregisterAbility(ability);
         serverMock.getPluginManager().assertEventFired(AbilityUnregisterEvent.class, abilityUnregisterEvent -> {

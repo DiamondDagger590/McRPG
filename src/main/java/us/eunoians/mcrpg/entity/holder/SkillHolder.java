@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.api.event.skill.SkillGainExpEvent;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 /**
  * A skill holder is a more specific type of {@link LoadoutHolder} that possesses {@link Skill}s
- * which can be leveled up, unlocking more {@link us.eunoians.mcrpg.ability.Ability Abilities} in the process.
+ * which can be leveled up, unlocking more {@link Ability Abilities} in the process.
  * <p>
  * Being a skill holder also comes with the requirement of being a {@link LoadoutHolder}.
  * <p>

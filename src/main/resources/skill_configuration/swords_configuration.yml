@@ -17,6 +17,7 @@ experience:
     NETHERITE_SWORD: 1.25
 ability-configuration:
   bleed:
+    enabled: true
     activation-equation: (swords_level)*.033
     minimum-health-allowed: 4
     bleed-base-cycles: 6
@@ -25,31 +26,147 @@ ability-configuration:
     grant-bleed-immunity-after-expire: true
     bleed-immunity-duration: 5
     bleed-damage-pierce-armor: true
-  poisoned-bleed:
+  enhanced-bleed:
+    # If this ability should be enabled
+    enabled: true
     #How many tiers does this ability have
     amount-of-tiers: 5
-    #At what level can each tier be obtained? Tier 1 is the tier that the ability is unlocked at
-    tier-unlock-levels:
-      1: 50
-      2: 125
-      3: 250
-      4: 375
-      5: 500
     #Configure the values for each tier
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - bleed-plus-base-damage-increase: integer
-      # - bleed-plus-activation-chance: decimal from 0.0-100.0
-      # - bleed-plus-damage-boost: integer
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      # - enhanced-bleed-base-damage-increase: integer
+      # - enhanced-bleed-activation-chance: decimal from 0.0-100.0
+      # - enhanced-bleed-damage-boost: integer
       all-tiers:
         #How much should the damage of Bleed increase by before adding possible additional damage
         enhanced-bleed-base-damage-increase: 1
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
       tier-1:
-        #The chance of Bleed Plus activating bonus damage whenever Bleed is inflicted (on top of the base damage increase)
-        bleed-plus-activation-chance: 30.0
-        #How much should the damage of Bleed increase if Bleed Plus activates (on top of the base damage increase)
-        bleed-plus-damage-boost: 1
+        unlock-level: 50
+        # The chance of Enhanced Bleed activating bonus damage whenever Bleed is inflicted (on top of the base damage increase)
+        enhanced-bleed-activation-chance: 20.0
+        # How much should the damage of Bleed increase if Enhanced Bleed activates (on top of the base damage increase)
+        enhanced-bleed-damage-boost: 1
       tier-2:
-        bleed-plus-activation-chance: 40.0
-        bleed-plus-damage-boost: 1
+        unlock-level: 125
+        enhanced-bleed-activation-chance: 30.0
+        enhanced-bleed-damage-boost: 1
+      tier-3:
+        unlock-level: 250
+        enhanced-bleed-activation-chance: 35.0
+        enhanced-bleed-damage-boost: 2
+      tier-4:
+        upgrade-point-cost: 2
+        unlock-level: 375
+        enhanced-bleed-activation-chance: 55.0
+        enhanced-bleed-damage-boost: 2
+      tier-5:
+        upgrade-point-cost: 2
+        unlock-level: 500
+        enhanced-bleed-base-damage-increase: 2
+        enhanced-bleed-activation-chance: 70.0
+        enhanced-bleed-damage-boost: 2
+  deeper-wound:
+    enabled: true
+    amount-of-tiers: 5
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      # - deeper-wound-activation-chance: decimal from 0.0-100.0
+      # - deeper-wound-cycle-increase: integer
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SKELETON
+      tier-1:
+        unlock-level: 150
+        # The chance of Deeper Wound activating bonus duration whenever Bleed is inflicted
+        deeper-wound-activation-chance: 20.0
+        # How many more cycles should Bleed have if Deeper Wound activates
+        deeper-wound-cycle-increase: 2
+      tier-2:
+        unlock-level: 275
+        deeper-wound-activation-chance: 30.0
+        deeper-wound-cycle-increase: 2
+      tier-3:
+        unlock-level: 425
+        deeper-wound-activation-chance: 40.0
+        deeper-wound-cycle-increase: 3
+      tier-4:
+        upgrade-point-cost: 2
+        unlock-level: 575
+        deeper-wound-activation-chance: 50.0
+        deeper-wound-cycle-increase: 6
+      tier-5:
+        upgrade-point-cost: 2
+        unlock-level: 700
+        deeper-wound-activation-chance: 60.0
+        deeper-wound-cycle-increase: 8
+  vampire:
+    enabled: true
+    amount-of-tiers: 5
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      # - vampire-activation-chance: decimal from 0.0-100.0
+      # - amount-to-heal: integer
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - ZOMBIE
+              - DROWNED
+      tier-1:
+        unlock-level: 250
+        # The chance of Vampire activating whenever bleed is inflicted
+        vampire-activation-chance: 20.0
+        # The amount of health to heal per bleed cycle
+        amount-to-heal: 1
+      tier-2:
+        unlock-level: 400
+        vampire-activation-chance: 30.0
+        amount-to-heal: 1
+      tier-3:
+        unlock-level: 550
+        vampire-activation-chance: 50.0
+        amount-to-heal: 1
+      tier-4:
+        upgrade-point-cost: 2
+        unlock-level: 700
+        vampire-activation-chance: 80.0
+        amount-to-heal: 1
+      tier-5:
+        upgrade-point-cost: 2
+        unlock-level: 850
+        vampire-activation-chance: 100.0
+        amount-to-heal: 1

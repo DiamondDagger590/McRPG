@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability;
+package us.eunoians.mcrpg.ability.impl;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -14,26 +14,23 @@ import java.util.Set;
  * It provides a default set of applicable attributes that all unlockable abilities should
  * use.
  */
-public abstract class UnlockableAbility extends Ability {
-
-    public UnlockableAbility(@NotNull NamespacedKey abilityKey) {
-        super(abilityKey);
-    }
+public interface UnlockableAbility extends Ability {
 
     /**
      * Gets the level that this ability can be unlocked at.
      *
      * @return The level that this ability can be unlocked at.
      */
-    public abstract int getUnlockLevel();
+    int getUnlockLevel();
 
     /**
-     *
-     * @param skillHolder
-     * @param skill
-     * @return
+     * Checks to see if this ability can currently be unlocked for the given {@link SkillHolder} with their given
+     * {@link Skill}.
+     * @param skillHolder The {@link SkillHolder} to check against
+     * @param skill The {@link Skill} to use to check if this ability can be unlocked.
+     * @return {@code true} if this ability can currently be unlocked.
      */
-    public boolean checkIfAbilityCanBeUnlocked(@NotNull SkillHolder skillHolder, @NotNull Skill skill) {
+    default boolean checkIfAbilityCanBeUnlocked(@NotNull SkillHolder skillHolder, @NotNull Skill skill) {
         var skillDataOptional = skillHolder.getSkillHolderData(skill);
         if (skillDataOptional.isPresent()) {
             var skillData = skillDataOptional.get();
@@ -42,8 +39,9 @@ public abstract class UnlockableAbility extends Ability {
         return false;
     }
 
+    @NotNull
     @Override
-    public Set<NamespacedKey> getApplicableAttributes() {
+    default Set<NamespacedKey> getApplicableAttributes() {
         return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
                 AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
     }

@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 
@@ -39,6 +40,7 @@ public class OnAttackAbilityListener implements Listener {
 
             //We can do this safely because we assume that the only abilities in the loadout are registered ones.
             allAbilities.stream().map(abilityRegistry::getRegisteredAbility)
+                    .map(ability -> (BaseAbility) ability)
                     .filter(ability -> ability.canEventActivateAbility(entityDamageByEntityEvent))
                     .filter(ability -> ability.checkIfComponentFailsActivation(damagerAbilityHolder, entityDamageByEntityEvent).isEmpty())
                     .forEach(ability -> ability.activateAbility(damagerAbilityHolder, entityDamageByEntityEvent));
