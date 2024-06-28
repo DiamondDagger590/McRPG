@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.DeeperWoundActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.SwordsConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 

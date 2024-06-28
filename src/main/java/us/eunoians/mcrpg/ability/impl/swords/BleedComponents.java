@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnAttackComponent;
 import us.eunoians.mcrpg.ability.component.activatable.TargetablePlayerComponent;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.SwordsConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;

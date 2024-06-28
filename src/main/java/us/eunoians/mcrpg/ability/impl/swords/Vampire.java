@@ -17,7 +17,7 @@ import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.api.event.ability.swords.VampireActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.SwordsConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
@@ -29,7 +29,7 @@ import java.util.Optional;
  * can heal the user of the {@link Bleed} ability each time a bleeding
  * entity takes a tick of bleed damage
  */
-public class Vampire extends BaseAbility implements ConfigurableTierableAbility, PassiveAbility {
+public final class Vampire extends BaseAbility implements ConfigurableTierableAbility, PassiveAbility {
 
     public static final NamespacedKey VAMPIRE_KEY = new NamespacedKey(McRPG.getInstance(), "vampire");
 

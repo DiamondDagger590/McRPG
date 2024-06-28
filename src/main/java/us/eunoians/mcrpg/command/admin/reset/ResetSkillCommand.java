@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.command.admin.reset;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -28,7 +28,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
     private static final Permission RESET_SKILL_PERMISSION = Permission.of("mcrpg.admin.reset.skill");
 
     public static void registerCommand() {
-        CommandManager<CommandSender> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -38,7 +38,6 @@ public class ResetSkillCommand extends ResetBaseCommand {
                 .literal("skill")
                 .required("reset_skill", SkillParser.skillParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The skill to reset")))
                 .permission(Permission.anyOf(ROOT_PERMISSION, ADMIN_BASE_PERMISSION, RESET_COMMAND_BASE_PERMISSION, RESET_SKILL_PERMISSION))
-                .senderType(CommandSender.class)
                 .handler(commandContext -> {
                             CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                             Player player = commandContext.get(playerKey);
@@ -46,7 +45,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             Skill skill = commandContext.get(skillKey);
 
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(commandContext.sender());
+                            Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
                             Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());

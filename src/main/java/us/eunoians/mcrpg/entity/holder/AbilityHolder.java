@@ -1,6 +1,9 @@
 package us.eunoians.mcrpg.entity.holder;
 
+import com.diamonddagger590.mccore.task.core.CoreTask;
+import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import com.google.common.collect.ImmutableSet;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -9,6 +12,8 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.api.event.ability.AbilityReadyEvent;
+import us.eunoians.mcrpg.api.event.ability.AbilityUnreadyEvent;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 
 import java.util.HashMap;
@@ -37,12 +42,15 @@ public class AbilityHolder {
     private final Set<NamespacedKey> availableAbilities;
     private final Map<NamespacedKey, AbilityData> abilityDataMap;
     private int upgradePoints;
+    private Optional<Ability> readiedAbility;
+    private int readiedAbilityExpireTaskId;
 
     public AbilityHolder(@NotNull UUID uuid) {
         this.uuid = uuid;
         this.availableAbilities = new HashSet<>();
         this.abilityDataMap = new HashMap<>();
         this.upgradePoints = 0;
+        this.readiedAbility = Optional.empty();
     }
 
     /**
@@ -246,6 +254,42 @@ public class AbilityHolder {
 
     public void setUpgradePoints(int upgradePoints) {
         this.upgradePoints = upgradePoints;
+    }
+
+    @NotNull
+    public Optional<Ability> getReadiedAbility() {
+        return readiedAbility;
+    }
+
+    public void unreadyAbility() {
+        unreadyAbility(false);
+    }
+
+    private void unreadyAbility(boolean autoExpired) {
+        if (readiedAbility.isPresent()) {
+            AbilityUnreadyEvent abilityUnreadyEvent = new AbilityUnreadyEvent(this, readiedAbility.get(), autoExpired);
+            Bukkit.getPluginManager().callEvent(abilityUnreadyEvent);
+            readiedAbility = Optional.empty();
+            Bukkit.getServer().getScheduler().cancelTask(readiedAbilityExpireTaskId);
+            readiedAbilityExpireTaskId = -1;
+        }
+    }
+
+    public void readyAbility(@NotNull Ability ability) {
+        AbilityReadyEvent abilityReadyEvent = new AbilityReadyEvent(this, ability);
+        Bukkit.getPluginManager().callEvent(abilityReadyEvent);
+        readiedAbility = Optional.of(ability);
+        CoreTask autoExpireTask = new DelayableCoreTask(McRPG.getInstance(), 2) {
+            @Override
+            public void run() {
+                // If the ability isn't already unreadied
+                if (readiedAbility.isPresent()) {
+                    unreadyAbility(true);
+                }
+            }
+        };
+        autoExpireTask.runTask();
+        readiedAbilityExpireTaskId = autoExpireTask.getBukkitTaskId();
     }
 
     public boolean hasUpgradeQuest(@NotNull NamespacedKey abilityKey) {

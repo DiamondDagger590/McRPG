@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
-import us.eunoians.mcrpg.configuration.file.SwordsConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 
 import java.io.File;
 import java.io.IOException;

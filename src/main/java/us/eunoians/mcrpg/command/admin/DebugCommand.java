@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.command.admin;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -23,20 +24,20 @@ import java.util.Optional;
 public class DebugCommand {
 
     public static void registerCommand() {
-        CommandManager<CommandSender> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("debug")
                 .optional("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to reset something for")))
                 .permission(Permission.of("mcrpg.debug"))
-                .senderType(Player.class)
                 .handler(commandContext -> {
                             CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
-                            Player player = commandContext.getOrDefault(playerKey, commandContext.sender());
+                            CommandSender sender = commandContext.sender().getSender();
+                            Player player = commandContext.getOrDefault(playerKey, (Player) sender);
 
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(commandContext.sender());
+                            Audience senderAudience = adventure.sender(player);
 
                             Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {

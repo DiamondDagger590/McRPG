@@ -32,6 +32,7 @@ import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
+import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
 import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
@@ -188,6 +189,7 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnInteractAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);
     }
 

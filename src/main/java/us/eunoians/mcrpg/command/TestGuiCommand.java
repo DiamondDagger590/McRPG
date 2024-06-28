@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.command;
 
 import com.diamonddagger590.mccore.player.PlayerManager;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
@@ -13,9 +14,9 @@ import us.eunoians.mcrpg.gui.UpgradeAbilityGui;
 public class TestGuiCommand {
 
     public static void registerCommand() {
-        CommandManager<CommandSender> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
         commandManager.command(commandManager.commandBuilder("test").handler(commandContext -> {
-            CommandSender commandSender = commandContext.sender();
+            CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
                 PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
                 playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
@@ -29,7 +30,7 @@ public class TestGuiCommand {
         }));
 
         commandManager.command(commandManager.commandBuilder("skill").handler(commandContext -> {
-            CommandSender commandSender = commandContext.sender();
+            CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
                 PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
                 playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
@@ -43,7 +44,7 @@ public class TestGuiCommand {
         }));
 
         commandManager.command(commandManager.commandBuilder("upgrade").handler(commandContext -> {
-            CommandSender commandSender = commandContext.sender();
+            CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
                 PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
                 playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {

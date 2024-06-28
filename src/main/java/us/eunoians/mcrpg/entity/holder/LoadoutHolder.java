@@ -2,11 +2,13 @@ package us.eunoians.mcrpg.entity.holder;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * A loadout holder is a more specific type of {@link AbilityHolder}. A loadout
@@ -49,5 +51,9 @@ public class LoadoutHolder extends AbilityHolder {
     public Set<NamespacedKey> getAvailableAbilitiesToUse() {
         //TODO properly implement
         return getAvailableAbilities();
+    }
+
+    public Set<NamespacedKey> getAvailableActiveAbilities() {
+        return getAvailableAbilities().stream().filter(namespacedKey -> !McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey).isActivePassive()).collect(Collectors.toSet());
     }
 }

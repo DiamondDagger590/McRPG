@@ -170,3 +170,35 @@ ability-configuration:
         unlock-level: 850
         vampire-activation-chance: 100.0
         amount-to-heal: 1
+  rage_spike:
+    enabled: true
+    amount-of-tiers: 5
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - ZOMBIE
+              - DROWNED
+      tier-1:
+        unlock-level: 1
+      tier-2:
+        unlock-level: 2
+      tier-3:
+        unlock-level: 3
+      tier-4:
+        upgrade-point-cost: 2
+        unlock-level: 700
+      tier-5:
+        upgrade-point-cost: 2
+        unlock-level: 850

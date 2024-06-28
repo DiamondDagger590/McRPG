@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.command.give;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -24,7 +24,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
     private static final Permission GIVE_LEVELS_PERMISSION = Permission.of("mcrpg.give.level");
 
     public static void registerCommand() {
-        CommandManager<CommandSender> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -35,7 +35,6 @@ public class GiveLevelsCommand extends GiveCommandBase {
                 .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of levels to give")))
                 .flag(commandManager.flagBuilder("reset_experience").withAliases("r")).commandDescription(RichDescription.richDescription(miniMessage.deserialize("<gray>If the player's current experience should be reset to 0 after levels are given.")))
                 .permission(Permission.anyOf(ROOT_PERMISSION, GIVE_COMMAND_ROOT_PERMISSION, GIVE_LEVELS_PERMISSION))
-                .senderType(CommandSender.class)
                 .handler(commandContext -> {
                             CloudKey<Skill> skillKey = CloudKey.of("skill", Skill.class);
                             Skill skill = commandContext.get(skillKey);
@@ -45,7 +44,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
                             boolean resetExperience = commandContext.flags().isPresent("reset_experience");
 
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(commandContext.sender());
+                            Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
                             var abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());

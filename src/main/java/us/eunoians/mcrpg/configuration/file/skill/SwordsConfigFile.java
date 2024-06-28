@@ -1,8 +1,9 @@
-package us.eunoians.mcrpg.configuration.file;
+package us.eunoians.mcrpg.configuration.file.skill;
 
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.route.Route;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
+import us.eunoians.mcrpg.configuration.file.ConfigFile;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +63,13 @@ public class SwordsConfigFile extends ConfigFile {
     public static final Route VAMPIRE_ENABLED = Route.addTo(VAMPIRE_HEADER, "enabled");
     public static final Route VAMPIRE_AMOUNT_OF_TIERS = Route.addTo(VAMPIRE_HEADER, "amount-of-tiers");
     public static final Route VAMPIRE_TIER_CONFIGURATION_HEADER = Route.addTo(VAMPIRE_HEADER, "tier-configuration");
+
+    // Rage Spike
+    private static final Route RAGE_SPIKE_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "rage_spike");
+    public static final Route RAGE_SPIKE_ENABLED = Route.addTo(RAGE_SPIKE_HEADER, "enabled");
+    public static final Route RAGE_SPIKE_AMOUNT_OF_TIERS = Route.addTo(RAGE_SPIKE_HEADER, "amount-of-tiers");
+    public static final Route RAGE_SPIKE_CONFIGURATION_HEADER = Route.addTo(RAGE_SPIKE_HEADER, "tier-configuration");
+
 
     @Override
     public UpdaterSettings getUpdaterSettings() {

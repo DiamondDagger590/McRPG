@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.command.quest;
 
 import com.diamonddagger590.mccore.util.Methods;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,9 +21,9 @@ import java.util.UUID;
 public class TestQuestStartCommand {
 
         public static void registerCommand() {
-        CommandManager<CommandSender> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
         commandManager.command(commandManager.commandBuilder("quest").literal("start").handler(commandContext -> {
-            CommandSender commandSender = commandContext.sender();
+            CommandSender commandSender = commandContext.sender().getSender();
             Player player = (Player) commandSender;
             QuestManager questManager = McRPG.getInstance().getQuestManager();
             var questHolder = McRPG.getInstance().getEntityManager().getQuestHolder(player.getUniqueId());
@@ -39,7 +40,7 @@ public class TestQuestStartCommand {
         }));
 
         commandManager.command(commandManager.commandBuilder("quest").literal("info").handler(commandContext -> {
-            CommandSender commandSender = commandContext.sender();
+            CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
                 Audience audience = McRPG.getInstance().getAdventure().player(player);
                 MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
