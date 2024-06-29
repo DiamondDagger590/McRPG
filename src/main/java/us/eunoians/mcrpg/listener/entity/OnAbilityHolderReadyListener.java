@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.ability;
+package us.eunoians.mcrpg.listener.entity;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -8,13 +8,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.ability.AbilityReadyEvent;
+import us.eunoians.mcrpg.api.event.entity.AbilityHolderReadyEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
-public class OnAbilityReadyListener implements Listener {
+/**
+ * This listener notifies players whenever they ready for an ability.
+ */
+public class OnAbilityHolderReadyListener implements Listener {
 
     @EventHandler
-    public void onAbilityReady(AbilityReadyEvent event) {
+    public void onAbilityReady(AbilityHolderReadyEvent event) {
         AbilityHolder abilityHolder = event.getAbilityHolder();
         Player player = Bukkit.getPlayer(abilityHolder.getUUID());
         if (player != null) {

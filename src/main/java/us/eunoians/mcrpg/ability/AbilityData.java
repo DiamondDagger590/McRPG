@@ -3,7 +3,9 @@ package us.eunoians.mcrpg.ability;
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.Ability;
 
 import java.util.Collection;
@@ -166,5 +168,17 @@ public class AbilityData {
      */
     public <T> void updateAttribute(@NotNull AbilityAttribute<T> abilityAttribute, T content) {
         addAttribute(abilityAttribute.create(content));
+    }
+
+    /**
+     * Resets this ability to all of its defaults
+     */
+    public void resetAbility() {
+        ImmutableSet<NamespacedKey> attributeKeys = ImmutableSet.copyOf(abilityAttributes.keySet());
+        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        for (NamespacedKey namespacedKey : attributeKeys) {
+            // Override the existing attribute with the default attribute
+            abilityAttributeManager.getAttribute(namespacedKey).ifPresent(this::addAttribute);
+        }
     }
 }

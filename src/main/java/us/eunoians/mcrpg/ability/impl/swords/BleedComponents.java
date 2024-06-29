@@ -7,7 +7,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.inventory.EntityEquipment;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnAttackComponent;
@@ -32,10 +31,6 @@ public class BleedComponents {
     public static final BleedOnTargetPlayerComponent BLEED_ON_TARGET_PLAYER_COMPONENT = new BleedOnTargetPlayerComponent();
 
     private static class BleedOnAttackComponent implements OnAttackComponent {
-
-        private static final Set<Material> SWORDS = Set.of(Material.WOODEN_SWORD, Material.GOLDEN_SWORD,
-                Material.IRON_SWORD, Material.DIAMOND_SWORD, Material.NETHERITE_SWORD);
-
         @Override
         public boolean affectsEntity(@NotNull Entity entity) {
             return entity instanceof LivingEntity;
@@ -43,41 +38,23 @@ public class BleedComponents {
 
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
-            if (!OnAttackComponent.super.shouldActivate(abilityHolder, event)) {
-                return false;
+            // Get the activation boost from serrated strikes
+            double activationBoost = 0;
+            if (abilityHolder.isAbilityActive(SerratedStrikes.SERRATED_STRIKES_KEY)) {
+                SerratedStrikes serratedStrikes = (SerratedStrikes) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(SerratedStrikes.SERRATED_STRIKES_KEY);
+                activationBoost = serratedStrikes.getBoostToBleedActivation(serratedStrikes.getCurrentAbilityTier(abilityHolder));
             }
+            // Check if they're a skill holder, if so then check the activation equation. Otherwise activate it ig (needs custom handling in the future for bosses n stuff)
 
-            EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //safe to assume after super call
-            Entity damager = entityDamageByEntityEvent.getDamager();
-
-            if(damager instanceof LivingEntity livingEntity) {
-                EntityEquipment entityEquipment = livingEntity.getEquipment();
-                // If the entity isnt holding anything
-                if(entityEquipment == null) {
-                    return false;
+            if (abilityHolder instanceof SkillHolder skillHolder) {
+                var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
+                if (skillHolderDataOptional.isPresent()) {
+                    Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
+                    parser.setVariable("swords_level", skillHolderDataOptional.get().getCurrentLevel());
+                    return (parser.getValue() + activationBoost) * 1000 > RANDOM.nextInt(100000);
                 }
-                // If they are actually holding a sword
-                if (SWORDS.contains(entityEquipment.getItemInMainHand().getType())) {
-                    // Check if they're a skill holder, if so then check the activation equation. Otherwise activate it ig (needs custom handling in the future for bosses n stuff)
-                    if (abilityHolder instanceof SkillHolder skillHolder) {
-                        var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
-                        if (skillHolderDataOptional.isPresent()) {
-                            Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
-                            parser.setVariable("swords_level", skillHolderDataOptional.get().getCurrentLevel());
-                            return parser.getValue() * 1000 > RANDOM.nextInt(100000);
-                        }
-                        return false;
-                    }
-                    else {
-                        return true;
-                    }
-                }
-                return SWORDS.contains(entityEquipment.getItemInMainHand().getType());
             }
-            else {
-                return false;
-            }
+            return false;
         }
     }
 

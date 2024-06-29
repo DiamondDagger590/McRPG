@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.Optional;
@@ -12,7 +13,7 @@ import java.util.Set;
 /**
  * The base interface for all abilities, providing basic behavior outlines that gain some definition
  * in {@link BaseAbility}.
- *
+ * <p>
  * Further ability behavior is provided in child interfaces which can be implemented alongside
  * extending {@link BaseAbility} in order to provide more out-of-the-box behavior.
  */
@@ -121,4 +122,17 @@ public interface Ability {
      * @return {@code true} if this ability is passive.
      */
     boolean isActivePassive();
+
+    /**
+     * Gets the {@link ReadyData} that is used whenever this ability enters a "ready" state for
+     * an {@link AbilityHolder}.
+     * <p>
+     * This should return an empty {@link Optional} whenever this ability doesn't actually ready.
+     *
+     * @return An {@link Optional} containing the {@link ReadyData} that is used whenever this ability
+     * enters a "ready" state, or an empty {@link Optional} if this ability isn't one that supports the ready
+     * mechanic.
+     */
+    @NotNull
+    Optional<ReadyData> getReadyData();
 }

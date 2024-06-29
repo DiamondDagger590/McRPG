@@ -4,8 +4,10 @@ import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
 import com.diamonddagger590.mccore.task.PlayerUnloadTask;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.api.event.entity.player.McRPGPlayerUnloadEvent;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -36,6 +38,9 @@ public class McRPGPlayerUnloadTask extends PlayerUnloadTask {
 
     @Override
     protected boolean unloadPlayer() {
+        Bukkit.getPluginManager().callEvent(new McRPGPlayerUnloadEvent(getCorePlayer()));
+        // Cleanup timers
+        getCorePlayer().asSkillHolder().cleanupHolder();
         getPlugin().getEntityManager().removeAbilityHolder(getCorePlayer().getUUID());
         PlayerManager playerManager = getPlugin().getPlayerManager();
         Optional<CorePlayer> corePlayerOptional = playerManager.removePlayer(getCorePlayer().getUUID());

@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Contains all the {@link Route}s used for the swords_configuration.yml
+ */
 public class SwordsConfigFile extends ConfigFile {
 
     private static final int CURRENT_VERSION = 1;
@@ -63,6 +66,12 @@ public class SwordsConfigFile extends ConfigFile {
     public static final Route VAMPIRE_ENABLED = Route.addTo(VAMPIRE_HEADER, "enabled");
     public static final Route VAMPIRE_AMOUNT_OF_TIERS = Route.addTo(VAMPIRE_HEADER, "amount-of-tiers");
     public static final Route VAMPIRE_TIER_CONFIGURATION_HEADER = Route.addTo(VAMPIRE_HEADER, "tier-configuration");
+
+    // Rage Spike
+    private static final Route SERRATED_STRIKES_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "serrated_strikes");
+    public static final Route SERRATED_STRIKES_ENABLED = Route.addTo(SERRATED_STRIKES_HEADER, "enabled");
+    public static final Route SERRATED_STRIKES_AMOUNT_OF_TIERS = Route.addTo(SERRATED_STRIKES_HEADER, "amount-of-tiers");
+    public static final Route SERRATED_STRIKES_CONFIGURATION_HEADER = Route.addTo(SERRATED_STRIKES_HEADER, "tier-configuration");
 
     // Rage Spike
     private static final Route RAGE_SPIKE_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "rage_spike");

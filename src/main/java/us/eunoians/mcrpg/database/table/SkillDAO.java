@@ -4,13 +4,12 @@ import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.OptionalAbilityAttribute;
+import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.exception.database.AbilityDatabaseNameException;
@@ -560,6 +559,81 @@ public class SkillDAO {
 
                     // Go through all registered abilities
                     for (NamespacedKey abilityKey : abilityRegistry.getAllAbilities()) {
+                        Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(abilityKey);
+                        // If the ability is stored inside the skill holder
+                        if (abilityDataOptional.isPresent()) {
+                            AbilityData abilityData = abilityDataOptional.get();
+                            // Go through all attribute keys for this ability
+                            for (NamespacedKey abilityAttributeKey : abilityData.getAllAttributeKeys()) {
+                                Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(abilityAttributeKey);
+                                // If the attribute is registered
+                                if (abilityAttributeOptional.isPresent()) {
+                                    AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
+                                    // If the ability attribute is an optional type, then that means we need to check if the data needs to be saved or deleted
+                                    if (abilityAttribute instanceof OptionalAbilityAttribute<?> optionalAbilityAttribute && !optionalAbilityAttribute.shouldContentBeSaved()) {
+                                        deleteStatement.setString(2, abilityData.getAbilityKey().value());
+                                        deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
+                                        deleteStatement.execute();
+                                    } else {
+                                        preparedStatement.setString(2, abilityData.getAbilityKey().value());
+                                        preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
+                                        preparedStatement.setString(4, abilityAttribute.getContent().toString());
+                                        preparedStatement.executeUpdate();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                connection.commit();
+                connection.setAutoCommit(true);
+                completableFuture.complete(null);
+            } catch (SQLException e) {
+                //If there is an error, attempt to rollback and set auto commit to true
+                try {
+                    connection.rollback();
+                    connection.setAutoCommit(true);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    completableFuture.completeExceptionally(ex);
+                }
+
+                completableFuture.completeExceptionally(e);
+            }
+        });
+        return completableFuture;
+    }
+
+    /**
+     * Saves the various {@link AbilityAttribute}s related to all abilities for the provided {@link SkillHolder}.
+     *
+     * @param connection  The {@link Connection} to use to save the {@link AbilityAttribute} information
+     * @param skillHolder The {@link SkillHolder} whose {@link AbilityAttribute}s are being saved
+     * @return A {@link CompletableFuture} that completes whenever the save has finished or completes with an {@link SQLException} if there
+     * is an error with saving
+     */
+    @NotNull
+    public static CompletableFuture<Void> savePlayerAbilityAttributes(@NotNull Connection connection, @NotNull SkillHolder skillHolder, Set<NamespacedKey> abilityKeys) {
+
+        McRPG mcRPG = McRPG.getInstance();
+        McRPGDatabaseManager databaseManager = mcRPG.getDatabaseManager();
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        UUID playerUUID = skillHolder.getUUID();
+
+        databaseManager.getDatabaseExecutorService().submit(() -> {
+            try {
+                connection.setAutoCommit(false);
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + ABILITY_ATTRIBUTE_TABLE_NAME + " (player_uuid, ability_id, key, value) VALUES(?, ?, ?, ?);")) {
+                    preparedStatement.setString(1, playerUUID.toString());
+
+                    AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
+                    AbilityAttributeManager abilityAttributeManager = mcRPG.getAbilityAttributeManager();
+                    PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ? AND key = ?;");
+                    deleteStatement.setString(1, playerUUID.toString());
+
+                    // Go through all registered abilities
+                    for (NamespacedKey abilityKey : abilityKeys) {
                         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(abilityKey);
                         // If the ability is stored inside the skill holder
                         if (abilityDataOptional.isPresent()) {

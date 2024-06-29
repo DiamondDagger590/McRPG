@@ -30,6 +30,7 @@ public class VampireComponents {
                 double activationChance = vampire.getActivationChance(vampire.getCurrentAbilityTier(abilityHolder));
                 return activationChance * 1000 > RANDOM.nextInt(100000);
             }
+
             return false;
         }
     }

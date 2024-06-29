@@ -102,7 +102,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
     @Override
     protected void onPlayerLoadSuccessfully() {
 
-        //Fire event
+        // Fire event
         super.onPlayerLoadSuccessfully();
 
         getPlugin().getLogger().log(Level.INFO, "Player data has been loaded for player: " + getCorePlayer().getUUID());

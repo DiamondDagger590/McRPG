@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * This ability is an unlockable ability for {@link Swords} that
@@ -75,7 +76,7 @@ public final class Vampire extends BaseAbility implements ConfigurableTierableAb
         VampireActivateEvent vampireActivateEvent = new VampireActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), getAmountToHeal(getCurrentAbilityTier(abilityHolder)));
         Bukkit.getPluginManager().callEvent(vampireActivateEvent);
 
-        if(!vampireActivateEvent.isCancelled()) {
+        if (!vampireActivateEvent.isCancelled()) {
             LivingEntity livingEntity = (LivingEntity) Bukkit.getEntity(abilityHolder.getUUID()); //We assert this in the vampire components
             assert livingEntity != null;
             livingEntity.setHealth(Math.min(Objects.requireNonNull(livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue(),
@@ -105,27 +106,43 @@ public final class Vampire extends BaseAbility implements ConfigurableTierableAb
         return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
+    /**
+     * Gets the activation chance of this ability for the given tier.
+     *
+     * @param tier The tier to get the activation chance for.
+     * @return The activation chance of this ability.
+     */
     public double getActivationChance(int tier) {
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "vampire-activation-chance");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "vampire-activation-chance");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getDouble(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getDouble(allTiersRoute);
         }
     }
 
+    /**
+     * Gets the amount to heal when this ability triggers for the given tier.
+     *
+     * @param tier The tier to get the healing for.
+     * @return The amount of health to heal
+     */
     public int getAmountToHeal(int tier) {
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "amount-to-heal");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "amount-to-heal");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getInt(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getInt(allTiersRoute);
         }
+    }
+
+    @NotNull
+    @Override
+    public Set<NamespacedKey> getApplicableAttributes() {
+        return ConfigurableTierableAbility.super.getApplicableAttributes();
     }
 }

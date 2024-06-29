@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
@@ -372,7 +371,7 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
             var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
             var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
             // Validate they don't have an ongoing upgrade quest
-            if (skillHolder.hasUpgradeQuest(tierableAbility.getAbilityKey())) {
+            if (skillHolder.hasActiveUpgradeQuest(tierableAbility.getAbilityKey())) {
                 return false;
             }
             if (tierAttributeOptional.isPresent() && tierAttributeOptional.get() instanceof AbilityTierAttribute attribute) {

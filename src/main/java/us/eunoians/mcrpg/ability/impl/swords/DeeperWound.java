@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * This ability is an unlockable ability for {@link Swords} that
@@ -66,7 +67,6 @@ public final class DeeperWound extends BaseAbility implements ConfigurableTierab
 
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
         BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) event;
         DeeperWoundActivateEvent deeperWoundActivateEvent = new DeeperWoundActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), getAdditionalBleedCycles(getCurrentAbilityTier(abilityHolder)));
         Bukkit.getPluginManager().callEvent(deeperWoundActivateEvent);
@@ -98,27 +98,43 @@ public final class DeeperWound extends BaseAbility implements ConfigurableTierab
         return getYamlDocument().getBoolean(SwordsConfigFile.DEEPER_WOUND_ENABLED);
     }
 
+    /**
+     * Gets the chance of activating this ability for the given tier.
+     *
+     * @param tier The tier to get the activation chance for
+     * @return The activation chance for this ability.
+     */
     public double getActivationChance(int tier) {
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "deeper-wound-activation-chance");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "deeper-wound-activation-chance");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getDouble(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getDouble(allTiersRoute);
         }
     }
 
+    /**
+     * Gets how many extra bleed cycles should be added if this ability activates.
+     *
+     * @param tier The tier to get the extra cycles for
+     * @return The amount of extra bleed cycles
+     */
     public int getAdditionalBleedCycles(int tier) {
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "deeper-wound-cycle-increase");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "deeper-wound-cycle-increase");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getInt(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getInt(allTiersRoute);
         }
+    }
+
+    @NotNull
+    @Override
+    public Set<NamespacedKey> getApplicableAttributes() {
+        return ConfigurableTierableAbility.super.getApplicableAttributes();
     }
 }

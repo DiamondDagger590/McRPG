@@ -11,6 +11,7 @@ import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.command.parser.SkillParser;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -52,8 +53,9 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
                                 Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
-                                    SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
+                                    var skillHolderData = skillHolderDataOptional.get();
                                     skillHolderData.resetSkill();
+                                    skillHolder.getAllAbilityDataForSkill(skill).forEach(AbilityData::resetAbility);
                                     receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have has your <gold>%s skill <green>reset.", skill.getDisplayName())));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
@@ -61,6 +63,11 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                     }
                                     Connection connection = McRPG.getInstance().getDatabaseManager().getDatabase().getConnection();
                                     SkillDAO.savePlayerSkillData(connection, skillHolder, skillHolderData.getSkillKey()).exceptionally(throwable -> {
+                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<red>There was an error trying to save data for %s after resetting their skill. Please have an admin check console.", player.getDisplayName())));
+                                        throwable.printStackTrace();
+                                        return null;
+                                    });
+                                    SkillDAO.savePlayerAbilityAttributes(connection, skillHolder, McRPG.getInstance().getAbilityRegistry().getAbilitiesBelongingToSkill(skill)).exceptionally(throwable -> {
                                         senderAudience.sendMessage(miniMessage.deserialize(String.format("<red>There was an error trying to save data for %s after resetting their skill. Please have an admin check console.", player.getDisplayName())));
                                         throwable.printStackTrace();
                                         return null;

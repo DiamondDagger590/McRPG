@@ -14,12 +14,16 @@ import us.eunoians.mcrpg.ability.impl.mining.RicherOre;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
+import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
+import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.chunk.ChunkManager;
 import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
 import us.eunoians.mcrpg.chunk.ChunkStore;
 import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
+import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
+import us.eunoians.mcrpg.command.admin.reset.ResetPlayerCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
@@ -30,11 +34,18 @@ import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
-import us.eunoians.mcrpg.listener.player.PlayerJoinListener;
-import us.eunoians.mcrpg.listener.player.PlayerLeaveListener;
+import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
+import us.eunoians.mcrpg.listener.entity.OnAbilityHolderReadyListener;
+import us.eunoians.mcrpg.listener.entity.OnAbilityHolderUnreadyListener;
+import us.eunoians.mcrpg.listener.entity.player.CorePlayerLoadListener;
+import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
+import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
+import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
 import us.eunoians.mcrpg.quest.QuestManager;
@@ -105,6 +116,8 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new DeeperWound());
         getAbilityRegistry().registerAbility(new Vampire());
         getAbilityRegistry().registerAbility(new EnhancedBleed());
+        getAbilityRegistry().registerAbility(new RageSpike());
+        getAbilityRegistry().registerAbility(new SerratedStrikes());
 
         getAbilityRegistry().registerAbility(new ExtraOre());
         getAbilityRegistry().registerAbility(new RicherOre());
@@ -173,24 +186,48 @@ public class McRPG extends CorePlugin {
 
         // Reset commands
         ResetSkillCommand.registerCommand();
+        ResetPlayerCommand.registerCommand();
 
         // Debug Command
         DebugCommand.registerCommand();
 
         // Quest Command
         TestQuestStartCommand.registerCommand();
+
+        // Reload command
+        ReloadPluginCommand.registerCommand();
     }
 
     @Override
     public void registerListeners() {
+        // Register core listeners
         super.registerListeners();
+
+        // Player load/save
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), this);
+        Bukkit.getPluginManager().registerEvents(new CorePlayerLoadListener(), this);
+
+        // Ability activation/ready listeners
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnInteractAbilityListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnSneakAbilityListener(), this);
+
+        // Skill listeners
         Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);
+
+        // Ability listeners
+        Bukkit.getPluginManager().registerEvents(new OnAbilityHolderReadyListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAbilityHolderUnreadyListener(), this);
+
+        // Quest Listeners
+        Bukkit.getPluginManager().registerEvents(new QuestCompleteListener(), this);
+        Bukkit.getPluginManager().registerEvents(new QuestObjectiveCompleteListener(), this);
+
+        // Debug Listener
+        Bukkit.getPluginManager().registerEvents(new OnAbilityActivateListener(), this);
     }
 
     /**

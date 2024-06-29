@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.ability;
+package us.eunoians.mcrpg.listener.entity;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -8,16 +8,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.ability.AbilityUnreadyEvent;
+import us.eunoians.mcrpg.api.event.entity.AbilityHolderUnreadyEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
-public class OnAbilityUnreadyListener implements Listener {
+/**
+ * This listener handles notifying players that they are no longer ready for ability activation.
+ */
+public class OnAbilityHolderUnreadyListener implements Listener {
 
     @EventHandler
-    public void onAbilityUnready(AbilityUnreadyEvent event) {
+    public void onAbilityUnready(AbilityHolderUnreadyEvent event) {
         AbilityHolder abilityHolder = event.getAbilityHolder();
         Player player = Bukkit.getPlayer(abilityHolder.getUUID());
-        if (player != null) {
+        if (player != null && event.didReadyAutoExpire()) {
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
             Audience audience = adventure.player(player);

@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.player;
+package us.eunoians.mcrpg.listener.entity.player;
 
 import com.diamonddagger590.mccore.player.PlayerManager;
 import org.bukkit.entity.Player;

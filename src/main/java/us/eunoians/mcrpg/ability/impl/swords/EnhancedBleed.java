@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * This ability is an unlockable ability for {@link Swords} that
@@ -78,7 +79,7 @@ public final class EnhancedBleed extends BaseAbility implements ConfigurableTier
         EnhancedBleedActivateEvent enhancedBleedActivateEvent = new EnhancedBleedActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), totalDamage);
         Bukkit.getPluginManager().callEvent(enhancedBleedActivateEvent);
 
-        if(!enhancedBleedActivateEvent.isCancelled()) {
+        if (!enhancedBleedActivateEvent.isCancelled()) {
             bleedActivateEvent.setBleedDamage(bleedActivateEvent.getBleedDamage() + enhancedBleedActivateEvent.getAdditionalBleedDamage());
         }
     }
@@ -111,33 +112,48 @@ public final class EnhancedBleed extends BaseAbility implements ConfigurableTier
         Route tierRoute = Route.addTo(getRouteForTier(tier), "enhanced-bleed-base-damage-increase");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getInt(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getInt(allTiersRoute);
         }
     }
 
+    /**
+     * Gets the chance of activating this ability for the given tier.
+     *
+     * @param tier The tier to get the activation chance for
+     * @return The activation chance for this ability.
+     */
     public double getActivationChance(int tier) {
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "enhanced-bleed-activation-chance");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "enhanced-bleed-activation-chance");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getDouble(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getDouble(allTiersRoute);
         }
     }
 
+    /**
+     * Gets the additional amount of damage bleed should do if this ability activates.
+     *
+     * @param tier The tier to get the additional damage for.
+     * @return The amount of additional damage to add to bleed.
+     */
     public int getAdditionalBleedDamageBoost(int tier) {
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "enhanced-bleed-damage-boost");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "enhanced-bleed-damage-boost");
         if (swordsConfig.contains(tierRoute)) {
             return swordsConfig.getInt(tierRoute);
-        }
-        else {
+        } else {
             return swordsConfig.getInt(allTiersRoute);
         }
+    }
+
+    @NotNull
+    @Override
+    public Set<NamespacedKey> getApplicableAttributes() {
+        return ConfigurableTierableAbility.super.getApplicableAttributes();
     }
 }

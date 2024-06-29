@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.player;
+package us.eunoians.mcrpg.listener.entity.player;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.task.McRPGPlayerLoadTask;
 public class PlayerJoinListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
-    public void handleJoin(@NotNull PlayerJoinEvent playerJoinEvent){
+    public void handleJoin(@NotNull PlayerJoinEvent playerJoinEvent) {
 
         McRPG mcRPG = McRPG.getInstance();
         Player player = playerJoinEvent.getPlayer();
