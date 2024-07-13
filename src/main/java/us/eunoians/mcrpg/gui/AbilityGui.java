@@ -189,7 +189,7 @@ public class AbilityGui extends CoreGui implements PaginatedGui {
 
         ItemStack FILLER_GLASS = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = FILLER_GLASS.getItemMeta();
-        meta.setDisplayName("");
+        meta.setDisplayName(" ");
         FILLER_GLASS.setItemMeta(meta);
 
         ItemStack SORT_BUTTON = new ItemStack(sortTypeNode.getNodeValue().getDisplayMaterial());

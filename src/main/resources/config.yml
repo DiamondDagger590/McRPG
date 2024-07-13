@@ -4,80 +4,81 @@ config-version: 1
 ##################################
 configuration:
   database:
-    #Sets the type of the database driver. The existing options are: 'SQLite'
+    # Sets the type of the database driver. The existing options are: 'SQLite'
     driver: SQLite
-  #What worlds should McRPG be disabled in
+  # What worlds should McRPG be disabled in
   disabled-worlds:
     - 'test'
-  #This is how often the plugin saves player data (async) in minutes
+  # This is how often the plugin saves player data (async) in minutes
   save-interval: 1
-  #What language file you want to use. Do not include the .yml
+  # What language file you want to use. Do not include the .yml
   language-file: en
-  #If set to true, then players will not receive McRPG gameplay tips
+  # If set to true, then players will not receive McRPG gameplay tips
   disable-tips: false
-  #Configure all admin features
+  # Configure all admin features
   admin:
-    #If enabled, admins with the permission node 'mcrpg.ability.spy' will be alerted when abilities are unlocked and upgraded
+    # If enabled, admins with the permission node 'mcrpg.ability.spy' will be alerted when abilities are unlocked and upgraded
     enable-ability-spy: false
-  #Modify various features for skill experience
+  # Modify various features for skill experience
   experience:
-    #The maximum amount of damage allowed for giving experience. Any damage above this threshold will be ignored when calculating exp to award.
+    # The maximum amount of damage allowed for giving experience. Any damage above this threshold will be ignored when calculating exp to award.
     max-damage-cap-to-award-exp: 1000000
-    #The maximum amount of exp multiplier that a player should be able to get from various exp modifiers when combined.
+    # The maximum amount of exp multiplier that a player should be able to get from various exp modifiers when combined.
     exp-multiplier-limit: 3.0
-    #How much the experience gain should be modified if the target is blocking with a shield.
+    # How much the experience gain should be modified if the target is blocking with a shield.
     shield-blocking-modifier: 0.5
-    #Allows disabling of experience gain when taking damage from ender pearls.
+    # Allows disabling of experience gain when taking damage from ender pearls.
     disable-experience-from-ender-pearls: true
-    #Configure boosted experience from McMMO conversion
+    # Configure boosted experience from McMMO conversion
     boosted-experience:
-      #When a player gains exp, this equation is factored in and if there is remaining boosted exp,
-      #then it will add this equation value to the gained amount
+      # When a player gains exp, this equation is factored in and if there is remaining boosted exp,
+      # then it will add this equation value to the gained amount
       usage-rate: '((gained_exp)*2.25)'
-    #Modify the exp worth of mobs from spawners and eggs
+    # Modify the exp worth of mobs from spawners and eggs
     modify-mob-spawn-experience:
-      #The multiplier to apply whenever a mob from spawners gives experience
+      # The multiplier to apply whenever a mob from spawners gives experience
       spawner: 0.5
-      #The multiplier to apply whenever a mob from spawn eggs gives experience
+      # The multiplier to apply whenever a mob from spawn eggs gives experience
       spawn-eggs: 0.5
-    #If when players redeem levels, should this reset the amount of exp needed to level up.
-    #Ex) Player has gained 5,000 experience in Swords and uses a redeemable level. If this is enabled,
-    #then the experience gained will be reset to 0 whenever the level is added. Otherwise, the 5,000 is kept.
+    # If when players redeem levels, should this reset the amount of exp needed to level up.
+    # Ex) Player has gained 5,000 experience in Swords and uses a redeemable level. If this is enabled,
+    # then the experience gained will be reset to 0 whenever the level is added. Otherwise, the 5,000 is kept.
     reset-exp-upon-redeemed-levels: true
-  #Configure skill books
+  # Configure skill books
   skill-books:
-    #If set to true, then skill books will be unable to drop in the end
+    # If set to true, then skill books will be unable to drop in the end
     disable-books-in-end: true
-  #Configure various displays (scoreboard, actionbar, and bossbar) for McRPG
+  # Configure various displays (scoreboard, actionbar, and bossbar) for McRPG
   display:
-    #Configure displays for whenever experience is gained
+    # Configure displays for whenever experience is gained
     exp-updates:
-      #If set to true, players will get a visual update whenever experience is gained (unless their setting disables this)
+      # If set to true, players will get a visual update whenever experience is gained (unless their setting disables this)
       enabled: true
-      #What type should the display be. Accepted values are: BOSSBAR, SCOREBOARD, or ACTIONBAR
+      # What type should the display be. Accepted values are: BOSSBAR, SCOREBOARD, or ACTIONBAR
       display-type: BOSSBAR
-      #Duration of the reminder in seconds. Only used for scoreboard and bossbar
+      # Duration of the reminder in seconds. Only used for scoreboard and bossbar
       display-duration: 3
-  #Configure various gameplay mechanics
+  # Configure various gameplay mechanics
   gameplay:
-    #How long the cooldown for replacing an ability should be in minutes
-    replace-ability-cooldown: 1440
-    #If enabled, players will be required to have an empty off hand in order to ready their abilities
+    loadout:
+      max-loadout-amount: 3
+      max-loadout-size: 15
+    # If enabled, players will be required to have an empty off hand in order to ready their abilities
     require-empty-off-hand-to-ready: false
-    #If enabled, then a player will not be able to gain experience past a certain level.
-    #An example is if we set a player to have the permission 'mcrpg.swords.500'. This player would gain no exp past level 500 in swords
-    #Use mcrpg.%skill%.%level% as the perm
+    # If enabled, then a player will not be able to gain experience past a certain level.
+    # An example is if we set a player to have the permission 'mcrpg.swords.500'. This player would gain no exp past level 500 in swords
+    # Use mcrpg.%skill%.%level% as the perm
     enable-level-up-permissions: false
-    #Configure the health bars that appear above mobs when they are attacked
+    # Configure the health bars that appear above mobs when they are attacked
     mob-health-bar:
-      #If set to true, mobs will have a healthbar displaying their current health over their heads
-      #The type of display is configured per player in their player settings
+      # If set to true, mobs will have a healthbar displaying their current health over their heads
+      # The type of display is configured per player in their player settings
       enabled: true
-      #How long should the health bars be displayed for in seconds
+      # How long should the health bars be displayed for in seconds
       health-bar-display-duration: 5
 
-#Configure McMMO integration
+# Configure McMMO integration
 mcmmo:
-  #Converts a players level to exp and then convert that into 'boosted experience' using the equation below
-  #To configure how boosted exp works, please look at the 'boosted-exp' section
+  # Converts a players level to exp and then convert that into 'boosted experience' using the equation below
+  # To configure how boosted exp works, please look at the 'boosted-exp' section
   conversion_equation: '((skill_exp)*0.5)'

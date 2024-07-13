@@ -57,7 +57,7 @@ public class MockAbility extends BaseAbility {
     }
 
     @Override
-    public boolean isActivePassive() {
+    public boolean isPassive() {
         return false;
     }
 }

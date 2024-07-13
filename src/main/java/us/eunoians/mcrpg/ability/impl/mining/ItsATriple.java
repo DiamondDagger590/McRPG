@@ -26,7 +26,7 @@ public class ItsATriple extends BaseAbility implements TierableAbility {
     @NotNull
     @Override
     public NamespacedKey getAbilityKey() {
-        return null;
+        return ITS_A_TRIPLE_KEY;
     }
 
     @NotNull
@@ -38,7 +38,7 @@ public class ItsATriple extends BaseAbility implements TierableAbility {
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("its_a_triple");
     }
 
     @NotNull
@@ -64,7 +64,7 @@ public class ItsATriple extends BaseAbility implements TierableAbility {
     }
 
     @Override
-    public boolean isActivePassive() {
+    public boolean isPassive() {
         return false;
     }
 

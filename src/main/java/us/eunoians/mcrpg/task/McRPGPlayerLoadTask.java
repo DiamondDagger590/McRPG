@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.task;
 
 import com.diamonddagger590.mccore.task.PlayerLoadTask;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -11,15 +12,20 @@ import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
 import java.sql.Connection;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -51,11 +57,12 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         AbilityRegistry abilityRegistry = getPlugin().getAbilityRegistry();
         AbilityAttributeManager abilityAttributeManager = getPlugin().getAbilityAttributeManager();
         SkillHolder skillHolder = getCorePlayer().asSkillHolder();
+        UUID uuid = getCorePlayer().getUUID();
         CompletableFuture futures[] = new CompletableFuture[skillRegistry.getRegisteredSkillKeys().size()];
 
         Connection connection = getPlugin().getDatabaseManager().getDatabase().getConnection();
         int i = 0;
-        for(NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
+        for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
             Skill skill = skillRegistry.getRegisteredSkill(skillKey);
 
             getPlugin().getLogger().log(Level.INFO, "Loading data for skill: " + skillKey.getKey());
@@ -68,7 +75,7 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
                 getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey() + " Skill level: " + skillDataSnapshot.getCurrentLevel() + " Skill exp: " + skillDataSnapshot.getCurrentExp());
                 skillHolder.addSkillHolderData(skill, skillDataSnapshot.getCurrentLevel(), skillDataSnapshot.getCurrentExp());
 
-                for(NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
+                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
                     Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
                     skillHolder.addAvailableAbility(abilityKey);
                     AbilityData abilityData = new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values());
@@ -91,7 +98,20 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
                 return null;
             });
         }
-        CompletableFuture.allOf(futures).exceptionally(throwable -> {
+
+        int loadoutAmount = McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
+        CompletableFuture[] loadoutFutures = new CompletableFuture[loadoutAmount];
+        for (int x = 1; x <= loadoutAmount; x++) {
+            CompletableFuture<Loadout> future = PlayerLoadoutDAO.getPlayerLoadout(connection, uuid, x);
+            loadoutFutures[x - 1] = future;
+            future.thenAccept(skillHolder::setLoadout)
+                    .exceptionally(throwable -> {
+                        throwable.printStackTrace();
+                        return null;
+                    });
+        }
+
+        CompletableFuture.allOf(ArrayUtils.addAll(futures, loadoutFutures)).exceptionally(throwable -> {
             throwable.printStackTrace();
             return null;
         });

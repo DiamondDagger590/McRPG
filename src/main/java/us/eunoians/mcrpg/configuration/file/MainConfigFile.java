@@ -16,6 +16,7 @@ public class MainConfigFile extends ConfigFile {
     private static final Route DISPLAY_CONFIGURATION_HEADER = Route.addTo(CONFIGURATION_HEADER, "display");
     private static final Route DISPLAY_EXPERIENCE_CONFIGURATION_HEADER = Route.addTo(DISPLAY_CONFIGURATION_HEADER, "exp-updates");
     private static final Route GAMEPLAY_CONFIGURATION_HEADER = Route.addTo(CONFIGURATION_HEADER, "gameplay");
+    private static final Route LOADOUT_CONFIGURATION_HEADER = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "loadout");
     private static final Route MOB_HEALTH_BAR_CONFIGURATION_HEADER = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "mob-health-bar");
     private static final Route MCMMO_CONFIGURATION_HEADER = Route.addTo(CONFIGURATION_HEADER, "mcmmo");
 
@@ -38,7 +39,8 @@ public class MainConfigFile extends ConfigFile {
     public static final Route EXPERIENCE_UPDATES_ENABLED = Route.addTo(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "enabled");
     public static final Route EXPERIENCE_UPDATE_DISPLAY_TYPE = Route.addTo(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-type");
     public static final Route EXPERIENCE_UPDATE_DISPLAY_DURATION = Route.addTo(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-duration");
-    public static final Route REPLACE_ABILITY_COOLDOWN_TIME = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "replace-ability-cooldown-time");
+    public static final Route MAX_LOADOUT_AMOUNT = Route.addTo(LOADOUT_CONFIGURATION_HEADER, "max-loadout-amount");
+    public static final Route MAX_LOADOUT_SIZE = Route.addTo(LOADOUT_CONFIGURATION_HEADER, "max-loadout-size");
     public static final Route REQUIRE_EMPTY_OFF_HAND_TO_READY = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "require-empty-off-hand-to-ready");
     public static final Route ENABLE_LEVEL_UP_PERMISSIONS = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "enable-level-up-permissions");
     public static final Route MOB_HEALTH_BAR_ENABLED = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "mob-health-bar");

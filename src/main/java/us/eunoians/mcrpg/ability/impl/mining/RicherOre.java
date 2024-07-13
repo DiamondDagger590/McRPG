@@ -32,7 +32,7 @@ public class RicherOre extends BaseAbility implements TierableAbility {
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("richer_ore");
     }
 
     @NotNull
@@ -58,7 +58,7 @@ public class RicherOre extends BaseAbility implements TierableAbility {
     }
 
     @Override
-    public boolean isActivePassive() {
+    public boolean isPassive() {
         return false;
     }
 

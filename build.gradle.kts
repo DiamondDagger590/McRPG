@@ -5,6 +5,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("io.github.goooler.shadow") version "8.1.7"
+    kotlin("jvm")
 }
 
 buildscript {
@@ -81,6 +82,7 @@ dependencies {
     compileOnly(files("libs/SpartanAPI.jar"))
     compileOnly(files("libs/mcMMO.jar"))
     compileOnly(files("libs/NoCheatPlus.jar")) //3.16.0-RC-sMD5NET-b1134
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<JavaCompile> {

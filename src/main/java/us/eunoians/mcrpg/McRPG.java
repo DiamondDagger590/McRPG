@@ -27,14 +27,19 @@ import us.eunoians.mcrpg.command.admin.reset.ResetPlayerCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
+import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
+import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
+import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
 import us.eunoians.mcrpg.command.quest.TestQuestStartCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
+import us.eunoians.mcrpg.listener.ability.OnAbilityUnlockListener;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
@@ -144,10 +149,10 @@ public class McRPG extends CorePlugin {
                 for (CorePlayer corePlayer : playerManager.getAllPlayers()) {
                     if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
                         try {
+                            // TODO make this one thing so it isnt in two spots
                             SkillDAO.savePlayerSkillData(connection, mcRPGPlayer.asSkillHolder()).get();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        } catch (ExecutionException e) {
+                            PlayerLoadoutDAO.saveAllPlayerLoadouts(connection, mcRPGPlayer.asSkillHolder()).get();
+                        } catch (InterruptedException | ExecutionException e) {
                             throw new RuntimeException(e);
                         }
                         if (mcRPGPlayer.useMutex()) {
@@ -180,6 +185,11 @@ public class McRPG extends CorePlugin {
     public void constructCommands() {
         super.constructCommands();
         TestGuiCommand.registerCommand();
+
+        LoadoutCommand.registerCommand();
+        LoadoutEditCommand.registerCommand();
+        LoadoutSetCommand.registerCommand();
+
         // Give Commands
         GiveLevelsCommand.registerCommand();
         GiveExperienceCommand.registerCommand();
@@ -221,6 +231,7 @@ public class McRPG extends CorePlugin {
         // Ability listeners
         Bukkit.getPluginManager().registerEvents(new OnAbilityHolderReadyListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAbilityHolderUnreadyListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAbilityUnlockListener(), this);
 
         // Quest Listeners
         Bukkit.getPluginManager().registerEvents(new QuestCompleteListener(), this);

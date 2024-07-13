@@ -121,7 +121,7 @@ public interface Ability {
      *
      * @return {@code true} if this ability is passive.
      */
-    boolean isActivePassive();
+    boolean isPassive();
 
     /**
      * Gets the {@link ReadyData} that is used whenever this ability enters a "ready" state for

@@ -50,7 +50,7 @@ public final class DeeperWound extends BaseAbility implements ConfigurableTierab
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("deeper_wound");
     }
 
     @NotNull

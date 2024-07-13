@@ -54,7 +54,7 @@ public final class Vampire extends BaseAbility implements ConfigurableTierableAb
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("vampire");
     }
 
     @NotNull

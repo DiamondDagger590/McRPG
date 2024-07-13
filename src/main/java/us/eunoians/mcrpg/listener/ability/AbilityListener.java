@@ -50,8 +50,8 @@ public interface AbilityListener extends Listener {
                     loadoutHolder.getAvailableAbilitiesToUse() : abilityHolder.getAvailableAbilities();
 
             //We can do this safely because we assume that the only abilities in the loadout are registered ones.
-            allAbilities.stream().map(abilityRegistry::getRegisteredAbility)
-                    .map(ability -> (BaseAbility) ability)
+            allAbilities.stream()
+                    .map(ability -> (BaseAbility) abilityRegistry.getRegisteredAbility(ability))
                     .filter(ability -> ability.canEventActivateAbility(event))
                     .filter(ability -> ability.checkIfComponentFailsActivation(abilityHolder, event).isEmpty())
                     .filter(ability -> !(ability instanceof CooldownableAbility cooldownableAbility) || !cooldownableAbility.isAbilityOnCooldown(abilityHolder))
@@ -85,8 +85,8 @@ public interface AbilityListener extends Listener {
                     loadoutHolder.getAvailableAbilitiesToUse() : abilityHolder.getAvailableAbilities();
 
             //We can do this safely because we assume that the only abilities in the loadout are registered ones.
-            allAbilities.stream().map(abilityRegistry::getRegisteredAbility)
-                    .map(ability -> (BaseAbility) ability)
+            allAbilities.stream()
+                    .map(ability -> (BaseAbility) abilityRegistry.getRegisteredAbility(ability))
                     .filter(ability -> ability.canEventReadyAbility(event))
                     .filter(ability -> ability.checkIfComponentFailsReady(abilityHolder, event).isEmpty())
                     .filter(ability -> {

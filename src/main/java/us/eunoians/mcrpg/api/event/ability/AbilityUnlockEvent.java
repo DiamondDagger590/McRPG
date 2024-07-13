@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.api.event.ability;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
  * This event is called whenever an ability holder unlocks a new ability
@@ -10,9 +11,16 @@ import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 public class AbilityUnlockEvent extends AbilityEvent {
 
     private static final HandlerList handlers = new HandlerList();
+    private final AbilityHolder abilityHolder;
 
-    public AbilityUnlockEvent(@NotNull UnlockableAbility ability) {
+    public AbilityUnlockEvent(@NotNull AbilityHolder abilityHolder, @NotNull UnlockableAbility ability) {
         super(ability);
+        this.abilityHolder = abilityHolder;
+    }
+
+    @NotNull
+    public AbilityHolder getAbilityHolder() {
+        return abilityHolder;
     }
 
     @NotNull

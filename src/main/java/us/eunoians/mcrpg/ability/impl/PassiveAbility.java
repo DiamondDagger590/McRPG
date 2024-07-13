@@ -7,7 +7,7 @@ package us.eunoians.mcrpg.ability.impl;
 public interface PassiveAbility extends Ability {
 
     @Override
-    default boolean isActivePassive() {
+    default boolean isPassive() {
         return true;
     }
 }

@@ -29,7 +29,7 @@ public class ExtraOre extends BaseAbility {
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("extra_ore");
     }
 
     @NotNull
@@ -55,7 +55,7 @@ public class ExtraOre extends BaseAbility {
     }
 
     @Override
-    public boolean isActivePassive() {
+    public boolean isPassive() {
         return false;
     }
 }

@@ -72,7 +72,7 @@ public class OnSkillLevelUpListener implements Listener {
                             AbilityUnlockedAttribute attribute = (AbilityUnlockedAttribute) attributeOptional.get();
                             // If the ability isn't unlocked, unlock it after we call the event
                             if (!attribute.getContent()) {
-                                AbilityUnlockEvent abilityUnlockEvent = new AbilityUnlockEvent(unlockableAbility);
+                                AbilityUnlockEvent abilityUnlockEvent = new AbilityUnlockEvent(skillHolder, unlockableAbility);
                                 Bukkit.getPluginManager().callEvent(abilityUnlockEvent);
                                 abilityData.updateAttribute(attribute, true);
                                 //Save the updated attribute
@@ -80,9 +80,6 @@ public class OnSkillLevelUpListener implements Listener {
                                     throwable.printStackTrace();
                                     return null;
                                 });
-                                MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-                                Audience player = McRPG.getInstance().getAdventure().player(uuid);
-                                player.sendMessage(miniMessage.deserialize(String.format("<green>You have unlocked a new ability! <gold>%s<green> is now available for use.", unlockableAbility.getDisplayName())));
                             }
                         }
                     }

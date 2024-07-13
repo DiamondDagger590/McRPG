@@ -52,7 +52,7 @@ public final class EnhancedBleed extends BaseAbility implements ConfigurableTier
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("enhanced_bleed");
     }
 
     @NotNull

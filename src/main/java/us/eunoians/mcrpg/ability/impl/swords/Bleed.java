@@ -74,7 +74,7 @@ public final class Bleed extends BaseAbility implements PassiveAbility, Configur
     @NotNull
     @Override
     public Optional<String> getDatabaseName() {
-        return Optional.empty();
+        return Optional.of("bleed");
     }
 
     @NotNull
