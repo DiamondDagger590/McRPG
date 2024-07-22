@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
 import com.diamonddagger590.mccore.parser.Parser;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,7 +17,6 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Contains all the {@link us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent} that
@@ -38,6 +36,9 @@ public class BleedComponents {
 
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+            if (!OnAttackComponent.super.shouldActivate(abilityHolder, event)) {
+                return false;
+            }
             // Get the activation boost from serrated strikes
             double activationBoost = 0;
             if (abilityHolder.isAbilityActive(SerratedStrikes.SERRATED_STRIKES_KEY)) {
@@ -45,7 +46,6 @@ public class BleedComponents {
                 activationBoost = serratedStrikes.getBoostToBleedActivation(serratedStrikes.getCurrentAbilityTier(abilityHolder));
             }
             // Check if they're a skill holder, if so then check the activation equation. Otherwise activate it ig (needs custom handling in the future for bosses n stuff)
-
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
                 if (skillHolderDataOptional.isPresent()) {

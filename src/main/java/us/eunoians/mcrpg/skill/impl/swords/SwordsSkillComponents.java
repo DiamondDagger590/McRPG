@@ -22,7 +22,7 @@ import java.util.Map;
  * A collection of all {@link us.eunoians.mcrpg.skill.component.EventLevelableComponent}s used for the
  * {@link Swords} skill.
  */
-public class SwordsComponents {
+public class SwordsSkillComponents {
 
     private static final Map<Material, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
 

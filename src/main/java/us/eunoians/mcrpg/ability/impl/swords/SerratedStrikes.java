@@ -30,7 +30,7 @@ import java.util.Set;
  * This ability activates by attacking an enemy after readying the user's sword. The ability
  * increases the activation rate of {@link Bleed} while active.
  */
-public class SerratedStrikes extends BaseAbility implements ConfigurableActiveAbility {
+public final class SerratedStrikes extends BaseAbility implements ConfigurableActiveAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPG.getInstance(), "serrated_strikes");
 

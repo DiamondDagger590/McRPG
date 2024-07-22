@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Rage Spike is an active ability that activates after the user readies their
  * sword and then crouches, blasting them forward and knocking back enemies and doing damage.
  */
-public class RageSpike extends BaseAbility implements ConfigurableActiveAbility {
+public final class RageSpike extends BaseAbility implements ConfigurableActiveAbility {
 
     public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPG.getInstance(), "rage_spike");
 

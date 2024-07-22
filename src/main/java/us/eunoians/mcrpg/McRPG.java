@@ -42,6 +42,7 @@ import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityUnlockListener;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
+import us.eunoians.mcrpg.listener.ability.OnBlockBreakListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
 import us.eunoians.mcrpg.listener.entity.OnAbilityHolderReadyListener;
@@ -224,6 +225,7 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnInteractAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnSneakAbilityListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnBlockBreakListener(), this);
 
         // Skill listeners
         Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);

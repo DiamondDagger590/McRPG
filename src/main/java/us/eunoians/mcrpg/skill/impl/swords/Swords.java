@@ -18,7 +18,7 @@ public class Swords extends Skill {
 
     public Swords() {
         super(SWORDS_KEY);
-        addLevelableComponent(SwordsComponents.SWORDS_LEVEL_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 0);
+        addLevelableComponent(SwordsSkillComponents.SWORDS_LEVEL_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 0);
     }
 
     @NotNull

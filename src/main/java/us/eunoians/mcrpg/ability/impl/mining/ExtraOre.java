@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability.impl.mining;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,12 +13,14 @@ import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.Optional;
 
-public class ExtraOre extends BaseAbility {
+public final class ExtraOre extends BaseAbility {
 
     public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPG.getInstance(), "extra_ore");
 
     public ExtraOre() {
         super(EXTRA_ORE_KEY);
+        addActivatableComponent(MiningComponents.HOLDING_PICKAXE_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
+        addActivatableComponent(ExtraOreComponents.EXTRA_ORE_ON_BREAK_COMPONENT, BlockBreakEvent.class, 1);
     }
 
     @NotNull

@@ -20,7 +20,7 @@ public interface OnAttackComponent extends EventActivatableComponent {
      * @return {@code true} if the provided {@link Entity} is affected by
      * this ability component
      */
-    public boolean affectsEntity(@NotNull Entity entity);
+    boolean affectsEntity(@NotNull Entity entity);
 
     @Override
     default boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
