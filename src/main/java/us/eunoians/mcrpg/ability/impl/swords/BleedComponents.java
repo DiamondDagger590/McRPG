@@ -8,6 +8,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.OnAttackComponent;
 import us.eunoians.mcrpg.ability.component.activatable.TargetablePlayerComponent;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -27,6 +28,7 @@ public class BleedComponents {
     private static final Random RANDOM = new Random();
     public static final BleedOnAttackComponent BLEED_ON_ATTACK_COMPONENT = new BleedOnAttackComponent();
     public static final BleedOnTargetPlayerComponent BLEED_ON_TARGET_PLAYER_COMPONENT = new BleedOnTargetPlayerComponent();
+    public static final BleedEligibleForTargetComponent BLEED_ELIGIBLE_FOR_TARGET_COMPONENT = new BleedEligibleForTargetComponent();
 
     private static class BleedOnAttackComponent implements OnAttackComponent {
         @Override
@@ -78,6 +80,17 @@ public class BleedComponents {
                 return doesAffect(damager, damaged);
             }
             return true;
+        }
+    }
+
+    private static class BleedEligibleForTargetComponent implements EventActivatableComponent {
+
+        @Override
+        public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+            if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent && entityDamageByEntityEvent.getEntity() instanceof LivingEntity livingEntity) {
+                return Bleed.getBleedManager().canEntityStartBleeding(livingEntity);
+            }
+            return false;
         }
     }
 }

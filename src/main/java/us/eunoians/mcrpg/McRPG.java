@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
+import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
@@ -17,9 +18,6 @@ import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
-import us.eunoians.mcrpg.chunk.ChunkManager;
-import us.eunoians.mcrpg.chunk.ChunkManagerFactory;
-import us.eunoians.mcrpg.chunk.ChunkStore;
 import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
@@ -53,7 +51,9 @@ import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
+import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
+import us.eunoians.mcrpg.listener.world.BlockPlaceListener;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -66,8 +66,6 @@ import java.util.concurrent.ExecutionException;
  * The main class for McRPG where developers should be able to access various components of the API's provided by McRPG
  */
 public class McRPG extends CorePlugin {
-
-    private static ChunkManager placeStore;
 
     private static final int id = 6386;
 
@@ -98,8 +96,6 @@ public class McRPG extends CorePlugin {
     @Override
     public void onEnable() {
         super.onEnable();
-
-        placeStore = ChunkManagerFactory.getChunkManager(); // Get our ChunkManager
 
         if (!isUnitTest()) {
             initializeFiles();
@@ -221,7 +217,6 @@ public class McRPG extends CorePlugin {
 
         // Ability activation/ready listeners
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), this);
-        Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnBleedActivateListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnInteractAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnSneakAbilityListener(), this);
@@ -229,6 +224,8 @@ public class McRPG extends CorePlugin {
 
         // Skill listeners
         Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAttackLevelListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnBlockBreakLevelListener(), this);
 
         // Ability listeners
         Bukkit.getPluginManager().registerEvents(new OnAbilityHolderReadyListener(), this);
@@ -238,6 +235,10 @@ public class McRPG extends CorePlugin {
         // Quest Listeners
         Bukkit.getPluginManager().registerEvents(new QuestCompleteListener(), this);
         Bukkit.getPluginManager().registerEvents(new QuestObjectiveCompleteListener(), this);
+
+        // World listener
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        CustomBlockData.registerListener(this);
 
         // Debug Listener
         Bukkit.getPluginManager().registerEvents(new OnAbilityActivateListener(), this);
@@ -350,16 +351,6 @@ public class McRPG extends CorePlugin {
     @NotNull
     public QuestManager getQuestManager() {
         return questManager;
-    }
-
-    /**
-     * Gets the {@link ChunkStore} used by McRPG
-     *
-     * @return The {@link ChunkStore} used by McRPG
-     */
-    @NotNull
-    public ChunkStore getChunkStore() {
-        return getChunkStore();
     }
 
     @NotNull

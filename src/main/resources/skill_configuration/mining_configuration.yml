@@ -1,0 +1,35 @@
+config-version: 1
+skill-enabled: true
+permissions:
+  restrict-skill-to-permission: false
+  use-permissions-to-unlock-abilities: false
+  use-permissions-to-activate-abilities: false
+leveling:
+  level-up-equation: '2000+(20*(skill_level))'
+  maximum-skill-level: 1000
+experience:
+  sources:
+    STONE: 2
+ability-configuration:
+  extra_ore:
+    enabled: true
+    activation-equation: (mining_level)*.033
+    valid_drops:
+      - COPPER_ORE
+      - DEEPSLATE_COPPER_ORE
+      - COAL_ORE
+      - DEEPSLATE_COAL_ORE
+      - IRON_ORE
+      - DEEPSLATE_IRON_ORE
+      - GOLD_ORE
+      - DEEPSLATE_GOLD_ORE
+      - DIAMOND_ORE
+      - DEEPSLATE_IRON_ORE
+      - EMERALD_ORE
+      - DEEPSLATE_EMERALD_ORE
+      - LAPIS_ORE
+      - DEEPSLATE_LAPIS_ORE
+      - REDSTONE_ORE
+      - DEEPSLATE_REDSTONE_ORE
+      - NETHER_GOLD_ORE
+      - NETHER_QUARTZ_ORE

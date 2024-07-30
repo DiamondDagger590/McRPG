@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.configuration.file.skill;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.route.Route;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
-import us.eunoians.mcrpg.configuration.file.ConfigFile;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,29 +12,13 @@ import java.util.Set;
 /**
  * Contains all the {@link Route}s used for the swords_configuration.yml
  */
-public class SwordsConfigFile extends ConfigFile {
+public class SwordsConfigFile extends AbilityConfigFile {
 
     private static final int CURRENT_VERSION = 1;
 
-    // Main Headers
-    private static final Route PERMISSIONS_HEADER = Route.fromString("permissions");
-    private static final Route LEVELING_HEADER = Route.fromString("leveling");
-    private static final Route EXPERIENCE_HEADER = Route.fromString("experience");
-    private static final Route ABILITY_CONFIGURATION_HEADER = Route.fromString("ability-configuration");
-
-    public static final Route SKILL_ENABLED = Route.fromString("skill-enabled");
-
-    // Permissions
-    public static final Route RESTRICT_SKILL_TO_PERMISSIONS = Route.addTo(PERMISSIONS_HEADER, "restrict-skill-to-permissions");
-    public static final Route USE_PERMISSIONS_TO_UNLOCK_ABILITIES = Route.addTo(PERMISSIONS_HEADER, "use-permissions-to-unlock-abilities");
-    public static final Route USE_PERMISSIONS_TO_ACTIVATE_ABILITIES = Route.addTo(PERMISSIONS_HEADER, "use-permissions-to-activate-abilities");
-
-    // Leveling
-    public static final Route LEVEL_UP_EQUATION = Route.addTo(LEVELING_HEADER, "level-up-equation");
-    public static final Route MAXIMUM_SKILL_LEVEL = Route.addTo(LEVELING_HEADER, "maximum-skill-level");
-
     // Experience
-    public static final Route MATERIAL_MODIFIERS = Route.addTo(EXPERIENCE_HEADER, "material-modifiers");
+    public static final Route MATERIAL_MODIFIERS_HEADER = Route.addTo(EXPERIENCE_HEADER, "material-modifiers");
+    public static final Route ENTITY_EXPERIENCE_HEADER = Route.addTo(EXPERIENCE_HEADER, "sources");
 
     // Bleed
     private static final Route BLEED_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "bleed");
@@ -91,7 +74,7 @@ public class SwordsConfigFile extends ConfigFile {
         for (int i = 1; i <= CURRENT_VERSION; i++) {
             Set<Route> ignoredRouteSet = new HashSet<>();
             // Add routes that have custom sections to all versions
-            ignoredRouteSet.add(MATERIAL_MODIFIERS);
+            ignoredRouteSet.add(MATERIAL_MODIFIERS_HEADER);
             ignoredRouteSet.add(ENHANCED_BLEED_TIER_CONFIGURATION_HEADER);
             // Add set to the map
             ignoredRoutes.put(String.valueOf(i), ignoredRouteSet);

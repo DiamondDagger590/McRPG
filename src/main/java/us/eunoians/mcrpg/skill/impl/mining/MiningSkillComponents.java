@@ -9,42 +9,47 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.component.OnBlockBreakLevelableComponent;
 
-public class MiningSkillComponents implements OnBlockBreakLevelableComponent {
+public class MiningSkillComponents {
 
-    @Override
-    public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
-        BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event; //Safe cast since can only be called after checks are done
-        Player player = blockBreakEvent.getPlayer();
-        Block block = blockBreakEvent.getBlock();
+    public static final MiningLevelOnBlockBreakComponent MINING_LEVEL_ON_BLOCK_BREAK_COMPONENT = new MiningLevelOnBlockBreakComponent();
 
-        player.getEquipment();
-        ItemStack heldItem = player.getEquipment().getItemInMainHand();
+    private static final class MiningLevelOnBlockBreakComponent implements OnBlockBreakLevelableComponent {
 
-        //TODO pull from config
-        double expToAward = 1000;
-
-        return (int) expToAward;
-
-    }
-
-    @Override
-    public boolean affectsBlock(@NotNull Block block) {
-        // TODO check
-        return true;
-    }
-
-    @Override
-    public boolean shouldGiveExperience(@NotNull SkillHolder skillHolder, @NotNull Event event) {
-
-        if (OnBlockBreakLevelableComponent.super.shouldGiveExperience(skillHolder, event)) {
-            BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event; //Safe cast due to super call
+        @Override
+        public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
+            BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event; //Safe cast since can only be called after checks are done
             Player player = blockBreakEvent.getPlayer();
             Block block = blockBreakEvent.getBlock();
 
             player.getEquipment();
             ItemStack heldItem = player.getEquipment().getItemInMainHand();
-            return heldItem.getType().name().contains("_PICKAXE");
+
+            //TODO pull from config
+            double expToAward = 1000;
+
+            return (int) expToAward;
+
         }
-        return false;
+
+        @Override
+        public boolean affectsBlock(@NotNull Block block) {
+            // TODO check
+            return true;
+        }
+
+        @Override
+        public boolean shouldGiveExperience(@NotNull SkillHolder skillHolder, @NotNull Event event) {
+
+            if (OnBlockBreakLevelableComponent.super.shouldGiveExperience(skillHolder, event)) {
+                BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event; //Safe cast due to super call
+                Player player = blockBreakEvent.getPlayer();
+                Block block = blockBreakEvent.getBlock();
+
+                player.getEquipment();
+                ItemStack heldItem = player.getEquipment().getItemInMainHand();
+                return heldItem.getType().name().contains("_PICKAXE");
+            }
+            return false;
+        }
     }
 }

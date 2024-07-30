@@ -1,21 +1,34 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
+import us.eunoians.mcrpg.ability.impl.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public final class ExtraOre extends BaseAbility {
+public final class ExtraOre extends BaseAbility implements PassiveAbility, ConfigurableAbility, ReloadableContentAbility {
 
     public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPG.getInstance(), "extra_ore");
+
+    private final ReloadableSet<Material> VALID_BLOCK_TYPES = new ReloadableSet<>(getYamlDocument(), MiningConfigFile.EXTRA_ORE_VALID_DROPS, strings -> strings.stream().map(Material::getMaterial).collect(Collectors.toSet()));
 
     public ExtraOre() {
         super(EXTRA_ORE_KEY);
@@ -49,16 +62,26 @@ public final class ExtraOre extends BaseAbility {
 
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
+        BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
     }
 
     @Override
     public boolean isAbilityEnabled() {
-        return false;
+        return getYamlDocument().getBoolean(MiningConfigFile.EXTRA_ORE_ENABLED);
+    }
+
+    @NotNull
+    @Override
+    public YamlDocument getYamlDocument() {
+        return McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
     @Override
-    public boolean isPassive() {
-        return false;
+    public Set<ReloadableContent<?>> getReloadableContent() {
+        return Set.of(VALID_BLOCK_TYPES);
+    }
+
+    public boolean isBlockValid(@NotNull Block block) {
+        return VALID_BLOCK_TYPES.getContent().contains(block.getType());
     }
 }

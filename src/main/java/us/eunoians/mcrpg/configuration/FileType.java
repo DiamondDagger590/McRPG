@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 
 import java.io.File;
@@ -13,7 +14,8 @@ import java.io.IOException;
 public enum FileType {
 
     MAIN_CONFIG("config.yml", new MainConfigFile()),
-    SWORDS_CONFIG("skill_configuration" + File.separator + "swords_configuration.yml", new SwordsConfigFile()),;
+    SWORDS_CONFIG("skill_configuration" + File.separator + "swords_configuration.yml", new SwordsConfigFile()),
+    MINING_CONFIG("skill_configuration" + File.separator + "mining_configuration.yml", new MiningConfigFile()),;
 
     private final String filePath;
     private final ConfigFile configFile;

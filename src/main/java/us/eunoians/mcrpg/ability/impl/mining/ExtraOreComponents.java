@@ -6,7 +6,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -22,7 +25,7 @@ public class ExtraOreComponents {
 
         @Override
         public boolean affectsBlock(@NotNull Block block) {
-            return block.getType().toString().contains("_ORE");
+            return ((ExtraOre) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(ExtraOre.EXTRA_ORE_KEY)).isBlockValid(block);
         }
 
         @Override
@@ -36,7 +39,7 @@ public class ExtraOreComponents {
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Mining.MINING_KEY);
                 if (skillHolderDataOptional.isPresent()) {
-                    Parser parser = new Parser("mining_level*0.25");
+                    Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG).getString(MiningConfigFile.EXTRA_ORE_ACTIVATION_EQUATION));
                     parser.setVariable("mining_level", skillHolderDataOptional.get().getCurrentLevel());
                     return parser.getValue() * 1000 > RANDOM.nextInt(100000);
                 }

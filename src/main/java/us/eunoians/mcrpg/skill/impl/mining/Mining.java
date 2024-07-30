@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.impl.mining;
 
+import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -11,6 +12,7 @@ public class Mining extends Skill {
 
     public Mining() {
         super(MINING_KEY);
+        addLevelableComponent(MiningSkillComponents.MINING_LEVEL_ON_BLOCK_BREAK_COMPONENT, BlockBreakBlockEvent.class, 0);
     }
 
     @NotNull

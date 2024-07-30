@@ -38,6 +38,7 @@ public class FileManager {
                 throw new RuntimeException(e);
             }
         }
+        mcRPG.getReloadableContentRegistry().reloadAllContent();
     }
 
     @NotNull

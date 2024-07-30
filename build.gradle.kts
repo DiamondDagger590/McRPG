@@ -68,6 +68,9 @@ dependencies {
     val worldGuardVersion = "7.0.7"
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:$worldGuardVersion")
 
+    val customBlockDataVersion = "2.2.2"
+    implementation("com.jeff-media:custom-block-data:$customBlockDataVersion")
+
     // Test deps
     val mockBukkitVersion = "3.80.0"
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:$mockBukkitVersion")
@@ -132,8 +135,8 @@ tasks {
 
         mergeServiceFiles()
         relocate("org.bstats", "us.eunoians.mcrpg")
-        relocate("ch.jalu.configme", "us.eunoians.mcrpg.configme")
         relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")
+        relocate("com.jeff_media.customblockdata", "us.eunoians.mcrpg.customblockdata")
     }
 }
 

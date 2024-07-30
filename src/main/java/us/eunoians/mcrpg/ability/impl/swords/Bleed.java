@@ -57,6 +57,7 @@ public final class Bleed extends BaseAbility implements PassiveAbility, Configur
         addActivatableComponent(SwordsComponents.HOLDING_SWORD_ACTIVATE_COMPONENT, EntityDamageByEntityEvent.class, 0);
         addActivatableComponent(BleedComponents.BLEED_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 1);
         addActivatableComponent(BleedComponents.BLEED_ON_TARGET_PLAYER_COMPONENT, EntityDamageByEntityEvent.class, 2);
+        addActivatableComponent(BleedComponents.BLEED_ELIGIBLE_FOR_TARGET_COMPONENT, EntityDamageByEntityEvent.class, 3);
     }
 
     @NotNull
@@ -95,16 +96,13 @@ public final class Bleed extends BaseAbility implements PassiveAbility, Configur
 
         //This is the only event that can activate this ability, so this should be a safe cast
         EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
-        Entity entity = entityDamageByEntityEvent.getEntity();
+        LivingEntity livingEntity = (LivingEntity) entityDamageByEntityEvent.getEntity();
+        YamlDocument swordsConfig = getYamlDocument();
+        BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
+        Bukkit.getPluginManager().callEvent(bleedActivateEvent);
 
-        if (entity instanceof LivingEntity livingEntity && BLEED_MANAGER.canEntityStartBleeding(livingEntity)) {
-            YamlDocument swordsConfig = getYamlDocument();
-            BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
-            Bukkit.getPluginManager().callEvent(bleedActivateEvent);
-
-            if(!bleedActivateEvent.isCancelled()) {
-                BLEED_MANAGER.startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
-            }
+        if(!bleedActivateEvent.isCancelled()) {
+            BLEED_MANAGER.startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
         }
     }
 
@@ -132,7 +130,7 @@ public final class Bleed extends BaseAbility implements PassiveAbility, Configur
     /**
      * This class is used to handle all the specific mechanics required for bleed to work.
      */
-    private static class BleedManager {
+    public static class BleedManager {
         private final Map<UUID, Optional<AbilityHolder>> ENTITIES_BLEEDING = new HashMap<>();
         private final Set<UUID> BLEED_IMMUNE_ENTITIES = new HashSet<>();
 

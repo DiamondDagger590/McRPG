@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.check.AlliedAttackCheck;
 import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
 import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
 import us.eunoians.mcrpg.api.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.api.event.ability.AbilityUnregisterEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -67,12 +68,14 @@ public class AbilityRegistry {
 
         if (ability.belongsToSkill()) {
             NamespacedKey skillKey = ability.getSkill().get();
-
             Set<NamespacedKey> abilities = abilitiesWithSkills.getOrDefault(skillKey, new HashSet<>());
             abilities.add(abilityKey);
             abilitiesWithSkills.put(skillKey, abilities);
         } else {
             abilitiesWithoutSkills.add(abilityKey);
+        }
+        if (ability instanceof ReloadableContentAbility reloadableContentAbility) {
+            mcRPG.getReloadableContentRegistry().trackReloadableContent(reloadableContentAbility.getReloadableContent());
         }
         Bukkit.getPluginManager().callEvent(new AbilityRegisterEvent(ability));
     }
