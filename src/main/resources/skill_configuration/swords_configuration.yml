@@ -173,7 +173,7 @@ ability-configuration:
         unlock-level: 850
         vampire-activation-chance: 100.0
         amount-to-heal: 1
-  serrated_strikes:
+  serrated-strikes:
     enabled: true
     amount-of-tiers: 5
     tier-configuration:
@@ -218,7 +218,7 @@ ability-configuration:
         unlock-level: 850
         cooldown: 120
         duration: 10
-  rage_spike:
+  rage-spike:
     enabled: true
     amount-of-tiers: 5
     tier-configuration:

@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
+import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.mining.RicherOre;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
@@ -25,6 +26,7 @@ import us.eunoians.mcrpg.command.admin.reset.ResetPlayerCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
+import us.eunoians.mcrpg.command.link.LinkChestCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
@@ -41,6 +43,8 @@ import us.eunoians.mcrpg.listener.ability.OnAbilityUnlockListener;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockBreakListener;
+import us.eunoians.mcrpg.listener.ability.OnBlockDropItemListener;
+import us.eunoians.mcrpg.listener.ability.OnExtraOreActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
 import us.eunoians.mcrpg.listener.entity.OnAbilityHolderReadyListener;
@@ -124,6 +128,7 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new ExtraOre());
         getAbilityRegistry().registerAbility(new RicherOre());
         getAbilityRegistry().registerAbility(new ItsATriple());
+        getAbilityRegistry().registerAbility(new RemoteTransfer());
 
         getSkillRegistry().registerSkill(new Swords());
         getSkillRegistry().registerSkill(new Mining());
@@ -133,6 +138,7 @@ public class McRPG extends CorePlugin {
             initializeDatabase();
             registerListeners();
             constructCommands();
+            reloadableContentRegistry.reloadAllContent();
         }
     }
 
@@ -203,6 +209,9 @@ public class McRPG extends CorePlugin {
 
         // Reload command
         ReloadPluginCommand.registerCommand();
+
+        // Link commands
+        LinkChestCommand.registerCommand();
     }
 
     @Override
@@ -221,6 +230,8 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new OnInteractAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnSneakAbilityListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnBlockBreakListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnBlockDropItemListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnExtraOreActivateListener(), this);
 
         // Skill listeners
         Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);

@@ -616,6 +616,11 @@ public class AbilityHolder {
         activeAbilities.clear();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof AbilityHolder abilityHolder && this.getUUID().equals(abilityHolder.getUUID());
+    }
+
     /**
      * Helper method to easily check if the provided {@link NamespacedKey} has an {@link Ability} that exists.
      *

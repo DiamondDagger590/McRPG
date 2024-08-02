@@ -10,17 +10,17 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T> The type of the value that should be stored in this attribute
  */
-public abstract class OptionalAbilityAttribute<T> extends AbilityAttribute<T> {
+public abstract class OptionalSavingAbilityAttribute<T> extends AbilityAttribute<T> {
 
-    protected OptionalAbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey) {
+    protected OptionalSavingAbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey) {
         super(databaseKeyName, namespacedKey);
     }
 
-    protected OptionalAbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content) {
+    protected OptionalSavingAbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content) {
         super(databaseKeyName, namespacedKey, content);
     }
 
-    protected OptionalAbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content, @NotNull NamespacedKey abilityType) {
+    protected OptionalSavingAbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content, @NotNull NamespacedKey abilityType) {
         super(databaseKeyName, namespacedKey, content, abilityType);
     }
 

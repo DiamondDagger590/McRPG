@@ -1,6 +1,14 @@
 package us.eunoians.mcrpg.configuration.file.skill;
 
+import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.route.Route;
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class MiningConfigFile extends AbilityConfigFile {
 
@@ -14,4 +22,34 @@ public class MiningConfigFile extends AbilityConfigFile {
     public static final Route EXTRA_ORE_ENABLED = Route.addTo(EXTRA_ORE_HEADER, "enabled");
     public static final Route EXTRA_ORE_ACTIVATION_EQUATION = Route.addTo(EXTRA_ORE_HEADER, "activation-equation");
     public static final Route EXTRA_ORE_VALID_DROPS = Route.addTo(EXTRA_ORE_HEADER, "valid-drops");
+
+    // It's A Triple
+    private static final Route ITS_A_TRIPLE_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "its-a-triple");
+    public static final Route ITS_A_TRIPLE_ENABLED = Route.addTo(ITS_A_TRIPLE_HEADER, "enabled");
+    public static final Route ITS_A_TRIPLE_AMOUNT_OF_TIERS = Route.addTo(ITS_A_TRIPLE_HEADER, "amount-of-tiers");
+    public static final Route ITS_A_TRIPLE_CONFIGURATION_HEADER = Route.addTo(ITS_A_TRIPLE_HEADER, "tier-configuration");
+
+    // Remote Transfer
+    private static final Route REMOTE_TRANSFER_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "remote-transfer");
+    public static final Route REMOTE_TRANSFER_ENABLED = Route.addTo(REMOTE_TRANSFER_HEADER, "enabled");
+    public static final Route REMOTE_TRANSFER_AMOUNT_OF_TIERS = Route.addTo(REMOTE_TRANSFER_HEADER, "amount-of-tiers");
+    public static final Route REMOTE_TRANSFER_CONFIGURATION_HEADER = Route.addTo(REMOTE_TRANSFER_HEADER, "tier-configuration");
+
+    @Override
+    public UpdaterSettings getUpdaterSettings() {
+        return UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).addIgnoredRoutes(getIgnoredRoutes()).build();
+    }
+
+    @NotNull
+    private Map<String, Set<Route>> getIgnoredRoutes() {
+        Map<String, Set<Route>> ignoredRoutes = new HashMap<>();
+        for (int i = 1; i <= CURRENT_VERSION; i++) {
+            Set<Route> ignoredRouteSet = new HashSet<>();
+            // Add routes that have custom sections to all versions
+            ignoredRouteSet.add(EXTRA_ORE_VALID_DROPS);
+            // Add set to the map
+            ignoredRoutes.put(String.valueOf(i), ignoredRouteSet);
+        }
+        return ignoredRoutes;
+    }
 }

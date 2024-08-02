@@ -25,7 +25,7 @@ public class DeeperWoundComponents {
                 AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
                 DeeperWound deeperWound = (DeeperWound) abilityRegistry.getRegisteredAbility(DeeperWound.DEEPER_WOUND_KEY);
                 double activationChance = deeperWound.getActivationChance(deeperWound.getCurrentAbilityTier(abilityHolder));
-                return activationChance * 1000 > RANDOM.nextInt(100000);
+                return bleedActivateEvent.getAbilityHolder().equals(abilityHolder) && activationChance * 1000 > RANDOM.nextInt(100000);
             }
             return false;
         }

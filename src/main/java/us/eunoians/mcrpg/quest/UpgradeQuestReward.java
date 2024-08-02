@@ -4,11 +4,10 @@ import net.kyori.adventure.audience.Audience;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
+import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 
@@ -30,7 +29,7 @@ public class UpgradeQuestReward implements QuestReward {
                     if (ability instanceof TierableAbility tierableAbility && abilityHolder instanceof SkillHolder skillHolder) {
                         int newTier = Math.min(tierableAbility.getMaxTier(), (int) abilityAttribute.getContent() + 1);
                         abilityData.addAttribute(new AbilityTierAttribute(newTier));
-                        abilityData.addAttribute(new AbilityUpgradeQuestAttribute());
+                        abilityData.removeAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
                         SkillDAO.savePlayerAbilityAttributes(McRPG.getInstance().getDatabaseManager().getDatabase().getConnection(), skillHolder).exceptionally(throwable -> {
                             throwable.printStackTrace();
                             return null;

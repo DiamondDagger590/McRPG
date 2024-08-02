@@ -11,10 +11,10 @@ experience:
   sources:
     STONE: 2
 ability-configuration:
-  extra_ore:
+  extra-ore:
     enabled: true
     activation-equation: (mining_level)*.033
-    valid_drops:
+    valid-drops:
       - COPPER_ORE
       - DEEPSLATE_COPPER_ORE
       - COAL_ORE
@@ -33,3 +33,65 @@ ability-configuration:
       - DEEPSLATE_REDSTONE_ORE
       - NETHER_GOLD_ORE
       - NETHER_QUARTZ_ORE
+  its-a-triple:
+    enabled: true
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
+      tier-1:
+        unlock-level: 1
+        activation-chance: 3.0
+      tier-2:
+        unlock-level: 2
+        activation-chance: 4.0
+      tier-3:
+        unlock-level: 3
+        activation-chance: 5.0
+      tier-4:
+        unlock-level: 4
+        activation-chance: 7.5
+      tier-5:
+        unlock-level: 5
+        activation-chance: 10.0
+  remote-transfer:
+    enabled: true
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
+      tier-1:
+        unlock-level: 1
+        maximum-distance: 50

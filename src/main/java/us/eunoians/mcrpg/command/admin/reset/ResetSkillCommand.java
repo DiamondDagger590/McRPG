@@ -56,7 +56,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                     var skillHolderData = skillHolderDataOptional.get();
                                     skillHolderData.resetSkill();
                                     skillHolder.getAllAbilityDataForSkill(skill).forEach(AbilityData::resetAbility);
-                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have has your <gold>%s skill <green>reset.", skill.getDisplayName())));
+                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have had your <gold>%s skill <green>reset.", skill.getDisplayName())));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
                                         senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have reset <gold>%s's %s skill <green>.", player.getDisplayName(), skill.getDisplayName())));

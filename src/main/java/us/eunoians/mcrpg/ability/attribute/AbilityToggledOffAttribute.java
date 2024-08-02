@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * This attribute stores if an ability is toggled off or not. So a value of
  * {@code true} would mean the ability is toggled off.
  */
-public class AbilityToggledOffAttribute extends OptionalAbilityAttribute<Boolean> {
+public class AbilityToggledOffAttribute extends OptionalSavingAbilityAttribute<Boolean> {
 
     AbilityToggledOffAttribute() {
         super("toggled", AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);

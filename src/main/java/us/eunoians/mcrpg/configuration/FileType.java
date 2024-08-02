@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 public enum FileType {
 
@@ -28,7 +29,7 @@ public enum FileType {
     @NotNull
     public YamlDocument initializeFile() {
         try {
-            return YamlDocument.create(new File(McRPG.getInstance().getDataFolder(), filePath), McRPG.getInstance().getResource(filePath), configFile.getGeneralSettings(),
+            return YamlDocument.create(new File(McRPG.getInstance().getDataFolder(), filePath), Objects.requireNonNull(McRPG.getInstance().getResource(filePath)), configFile.getGeneralSettings(),
                     configFile.getLoaderSettings(), configFile.getDumperSettings(), configFile.getUpdaterSettings());
         } catch (IOException e) {
             throw new RuntimeException(e);

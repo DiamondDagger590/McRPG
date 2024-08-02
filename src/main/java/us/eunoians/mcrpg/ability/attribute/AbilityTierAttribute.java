@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * This attribute stores the tier for an ability.
  */
-public class AbilityTierAttribute extends OptionalAbilityAttribute<Integer> implements DisplayableAttribute {
+public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer> implements DisplayableAttribute {
 
     AbilityTierAttribute() {
         super("tier", AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);

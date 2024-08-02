@@ -140,6 +140,11 @@ public abstract class AbilityAttribute<T> {
         return databaseKeyName;
     }
 
+    @NotNull
+    public String serializeContent() {
+        return getContent().toString();
+    }
+
     /**
      * Gets the {@link NamespacedKey} that this current {@link AbilityAttribute} instance is storing data for.
      * <p>

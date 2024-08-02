@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.configuration.file.skill;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.route.Route;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,13 +52,13 @@ public class SwordsConfigFile extends AbilityConfigFile {
     public static final Route VAMPIRE_TIER_CONFIGURATION_HEADER = Route.addTo(VAMPIRE_HEADER, "tier-configuration");
 
     // Rage Spike
-    private static final Route SERRATED_STRIKES_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "serrated_strikes");
+    private static final Route SERRATED_STRIKES_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "serrated-strikes");
     public static final Route SERRATED_STRIKES_ENABLED = Route.addTo(SERRATED_STRIKES_HEADER, "enabled");
     public static final Route SERRATED_STRIKES_AMOUNT_OF_TIERS = Route.addTo(SERRATED_STRIKES_HEADER, "amount-of-tiers");
     public static final Route SERRATED_STRIKES_CONFIGURATION_HEADER = Route.addTo(SERRATED_STRIKES_HEADER, "tier-configuration");
 
     // Rage Spike
-    private static final Route RAGE_SPIKE_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "rage_spike");
+    private static final Route RAGE_SPIKE_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "rage-spike");
     public static final Route RAGE_SPIKE_ENABLED = Route.addTo(RAGE_SPIKE_HEADER, "enabled");
     public static final Route RAGE_SPIKE_AMOUNT_OF_TIERS = Route.addTo(RAGE_SPIKE_HEADER, "amount-of-tiers");
     public static final Route RAGE_SPIKE_CONFIGURATION_HEADER = Route.addTo(RAGE_SPIKE_HEADER, "tier-configuration");
@@ -66,9 +67,9 @@ public class SwordsConfigFile extends AbilityConfigFile {
     @Override
     public UpdaterSettings getUpdaterSettings() {
         return UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).addIgnoredRoutes(getIgnoredRoutes()).build();
-
     }
 
+    @NotNull
     private Map<String, Set<Route>> getIgnoredRoutes() {
         Map<String, Set<Route>> ignoredRoutes = new HashMap<>();
         for (int i = 1; i <= CURRENT_VERSION; i++) {

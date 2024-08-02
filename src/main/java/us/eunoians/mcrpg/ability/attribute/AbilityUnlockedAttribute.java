@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * This attribute stores if an ability has been unlocked or not
  */
-public class AbilityUnlockedAttribute extends OptionalAbilityAttribute<Boolean> {
+public class AbilityUnlockedAttribute extends OptionalSavingAbilityAttribute<Boolean> {
 
     AbilityUnlockedAttribute() {
         super("unlocked", AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);

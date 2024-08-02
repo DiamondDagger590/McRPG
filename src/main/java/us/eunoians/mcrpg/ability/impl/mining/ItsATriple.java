@@ -1,5 +1,8 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
@@ -7,20 +10,25 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.BaseAbility;
-import us.eunoians.mcrpg.ability.impl.TierableAbility;
+import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.PassiveAbility;
+import us.eunoians.mcrpg.api.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.api.event.ability.mining.ItsATripleActivateEvent;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.quest.Quest;
-import us.eunoians.mcrpg.quest.objective.BlockBreakQuestObjective;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.Optional;
+import java.util.Set;
 
-public class ItsATriple extends BaseAbility implements TierableAbility {
+public class ItsATriple extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility {
 
     public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPG.getInstance(), "its_a_triple");
 
     public ItsATriple() {
         super(ITS_A_TRIPLE_KEY);
+        addActivatableComponent(ItsATripleComponents.ITS_A_TRIPLE_ACTIVATE_ON_EXTRA_DROP_COMPONENT, ExtraOreActivateEvent.class, 0);
     }
 
     @NotNull
@@ -55,45 +63,43 @@ public class ItsATriple extends BaseAbility implements TierableAbility {
 
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
+        ExtraOreActivateEvent extraOreActivateEvent = (ExtraOreActivateEvent) event;
+        ItsATripleActivateEvent itsATripleActivateEvent = new ItsATripleActivateEvent(abilityHolder);
+        Bukkit.getPluginManager().callEvent(itsATripleActivateEvent);
+        if (!itsATripleActivateEvent.isCancelled()) {
+            extraOreActivateEvent.setDropMultiplier(3);
+        }
     }
 
     @Override
     public boolean isAbilityEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean isPassive() {
-        return false;
+        return getYamlDocument().getBoolean(MiningConfigFile.ITS_A_TRIPLE_ENABLED);
     }
 
     @Override
     public int getMaxTier() {
-        return 5;
-    }
-
-    @Override
-    public int getUnlockLevelForTier(int tier) {
-        return 10 * tier;
-    }
-
-    @Override
-    public int getUpgradeCostForTier(int tier) {
-        return 1;
+        return getYamlDocument().getInt(MiningConfigFile.ITS_A_TRIPLE_AMOUNT_OF_TIERS);
     }
 
     @NotNull
     @Override
-    public Quest getUpgradeQuestForTier(int tier) {
-        Quest quest = new Quest("configpath");
-        BlockBreakQuestObjective objective = new BlockBreakQuestObjective(quest, 10 * tier);
-        quest.addQuestObjective(objective);
-        return quest;
+    public Route getAbilityTierConfigurationRoute() {
+        return MiningConfigFile.ITS_A_TRIPLE_CONFIGURATION_HEADER;
     }
 
+    @NotNull
     @Override
-    public int getUnlockLevel() {
-        return 2;
+    public YamlDocument getYamlDocument() {
+        return McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG);
+    }
+
+    public double getActivationChance(int tier) {
+        return getYamlDocument().getDouble(Route.addTo(getRouteForTier(tier), "activation-chance"));
+    }
+
+    @NotNull
+    @Override
+    public Set<NamespacedKey> getApplicableAttributes() {
+        return ConfigurableTierableAbility.super.getApplicableAttributes();
     }
 }

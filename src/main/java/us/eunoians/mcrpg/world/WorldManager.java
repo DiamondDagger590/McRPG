@@ -13,8 +13,8 @@ public class WorldManager {
     private static final NamespacedKey PLACED_KEY = new NamespacedKey(McRPG.getInstance(), "placed");
 
     public static boolean isBlockNatural(@NotNull Block block) {
-        PersistentDataContainer customBlockData = new CustomBlockData(block, McRPG.getInstance());
-        return !(customBlockData.has(PLACED_KEY) && customBlockData.get(PLACED_KEY, PersistentDataType.BOOLEAN));
+        CustomBlockData customBlockData = new CustomBlockData(block, McRPG.getInstance());
+        return !customBlockData.has(PLACED_KEY) || !customBlockData.get(PLACED_KEY, PersistentDataType.BOOLEAN);
     }
 
     public static void markBlockAsPlaced(@NotNull Block block) {

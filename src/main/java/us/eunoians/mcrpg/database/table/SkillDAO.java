@@ -8,7 +8,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
-import us.eunoians.mcrpg.ability.attribute.OptionalAbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.OptionalSavingAbilityAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -570,14 +570,14 @@ public class SkillDAO {
                                 if (abilityAttributeOptional.isPresent()) {
                                     AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
                                     // If the ability attribute is an optional type, then that means we need to check if the data needs to be saved or deleted
-                                    if (abilityAttribute instanceof OptionalAbilityAttribute<?> optionalAbilityAttribute && !optionalAbilityAttribute.shouldContentBeSaved()) {
+                                    if (abilityAttribute instanceof OptionalSavingAbilityAttribute<?> optionalSavingAbilityAttribute && !optionalSavingAbilityAttribute.shouldContentBeSaved()) {
                                         deleteStatement.setString(2, abilityData.getAbilityKey().value());
                                         deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
                                         deleteStatement.execute();
                                     } else {
                                         preparedStatement.setString(2, abilityData.getAbilityKey().value());
                                         preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
-                                        preparedStatement.setString(4, abilityAttribute.getContent().toString());
+                                        preparedStatement.setString(4, abilityAttribute.serializeContent());
                                         preparedStatement.executeUpdate();
                                     }
                                 }
@@ -645,14 +645,14 @@ public class SkillDAO {
                                 if (abilityAttributeOptional.isPresent()) {
                                     AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
                                     // If the ability attribute is an optional type, then that means we need to check if the data needs to be saved or deleted
-                                    if (abilityAttribute instanceof OptionalAbilityAttribute<?> optionalAbilityAttribute && !optionalAbilityAttribute.shouldContentBeSaved()) {
+                                    if (abilityAttribute instanceof OptionalSavingAbilityAttribute<?> optionalSavingAbilityAttribute && !optionalSavingAbilityAttribute.shouldContentBeSaved()) {
                                         deleteStatement.setString(2, abilityData.getAbilityKey().value());
                                         deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
                                         deleteStatement.execute();
                                     } else {
                                         preparedStatement.setString(2, abilityData.getAbilityKey().value());
                                         preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
-                                        preparedStatement.setString(4, abilityAttribute.getContent().toString());
+                                        preparedStatement.setString(4, abilityAttribute.serializeContent());
                                         preparedStatement.executeUpdate();
                                     }
                                 }

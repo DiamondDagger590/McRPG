@@ -64,10 +64,20 @@ public class BleedActivateEvent extends AbilityActivateEvent implements Cancella
         this.bleedCycles = Math.max(1, bleedCycles);
     }
 
+    /**
+     * Get the amount of damage to deal (minimum amount is 1).
+     *
+     * @return The amount of damage to deal (minimum amount is 1).
+     */
     public double getBleedDamage() {
         return bleedDamage;
     }
 
+    /**
+     * Sets the amount of damage to deal with bleed (minimum amount is 1).
+     *
+     * @param bleedDamage The new amount of damage to deal with bleed.
+     */
     public void setBleedDamage(double bleedDamage) {
         this.bleedDamage = Math.max(1, bleedDamage);
     }

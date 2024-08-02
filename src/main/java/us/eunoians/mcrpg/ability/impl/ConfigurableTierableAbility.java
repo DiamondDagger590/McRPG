@@ -70,6 +70,7 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
     @NotNull
     @Override
     default Quest getUpgradeQuestForTier(int tier) {
+        // TODO go back and finish these
         Quest quest = new Quest(getAbilityKey().getKey());
         quest.addQuestReward(new UpgradeQuestReward());
         EntitySlayQuestObjective objective = new EntitySlayQuestObjective(quest, 10 * tier);

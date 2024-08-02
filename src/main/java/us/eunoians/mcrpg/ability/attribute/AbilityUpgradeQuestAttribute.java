@@ -7,12 +7,12 @@ import java.util.UUID;
 /**
  * This attribute stores the UUID of an upgrade {@link us.eunoians.mcrpg.quest.Quest} for the ability
  */
-public class AbilityUpgradeQuestAttribute extends OptionalAbilityAttribute<UUID> {
+public class AbilityUpgradeQuestAttribute extends OptionalSavingAbilityAttribute<UUID> {
 
     // Use my minecraft UUID for this lol
     private static final UUID DEFAULT_UUID = UUID.fromString("b94b32a4-09e8-4378-905b-0df7805916c1");
 
-    public AbilityUpgradeQuestAttribute() {
+    AbilityUpgradeQuestAttribute() {
         super("quest", AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
     }
 
