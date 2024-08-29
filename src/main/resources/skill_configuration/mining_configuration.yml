@@ -74,6 +74,98 @@ ability-configuration:
     enabled: true
     #How many tiers does this ability have
     amount-of-tiers: 5
+    allowed-blocks:
+      nether:
+        - ANCIENT_DEBRIS
+        - BASALT
+        - BLACKSTONE
+        - BONE_BLOCK
+        - CRYING_OBSIDIAN
+        - GILDED_BLACKSTONE
+        - GLOWSTONE
+        - GLOWSTONE_DUST
+        - MAGMA_BLOCK
+        - NETHER_BRICK
+        - QUARTZ
+      ores:
+        - COAL
+        - COAL_ORE
+        - COPPER_INGOT
+        - COPPER_ORE
+        - DEEPSLATE_COAL_ORE
+        - DEEPSLATE_COPPER_ORE
+        - DEEPSLATE_DIAMOND_ORE
+        - DEEPSLATE_EMERALD_ORE
+        - DEEPSLATE_GOLD_ORE
+        - DEEPSLATE_IRON_ORE
+        - DEEPSLATE_LAPIS_ORE
+        - DEEPSLATE_REDSTONE_ORE
+        - DIAMOND
+        - DIAMOND_ORE
+        - EMERALD
+        - EMERALD_ORE
+        - GOLD_INGOT
+        - GOLD_NUGGET
+        - GOLD_ORE
+        - IRON_INGOT
+        - IRON_NUGGET
+        - IRON_ORE
+        - LAPIS_LAZULI
+        - LAPIS_ORE
+        - NETHER_GOLD_ORE
+        - NETHER_QUARTZ_ORE
+        - RAW_COPPER
+        - RAW_GOLD
+        - RAW_IRON
+        - REDSTONE
+        - REDSTONE_ORE
+      caves:
+        - AMETHYST_BLOCK
+        - AMETHYST_CLUSTER
+        - ANDESITE
+        - CALCITE
+        - COBBLED_DEEPSLATE
+        - COBBLESTONE
+        - DEEPSLATE
+        - DIORITE
+        - DRIPSTONE_BLOCK
+        - GRANITE
+        - OBSIDIAN
+        - POINTED_DRIPSTONE
+        - TUFF
+      end:
+        - END_STONE
+      ocean:
+        - DARK_PRISMARINE
+        - PRISMARINE
+        - PRISMARINE_CRYSTALS
+        - PRISMARINE_SHARD
+      terracotta:
+        - BLACK_TERRACOTTA
+        - BLUE_TERRACOTTA
+        - BROWN_TERRACOTTA
+        - CYAN_TERRACOTTA
+        - GRAY_TERRACOTTA
+        - GREEN_TERRACOTTA
+        - LIGHT_BLUE_TERRACOTTA
+        - LIGHT_GRAY_TERRACOTTA
+        - LIME_TERRACOTTA
+        - MAGENTA_TERRACOTTA
+        - ORANGE_TERRACOTTA
+        - PINK_TERRACOTTA
+        - PURPLE_TERRACOTTA
+        - RED_TERRACOTTA
+        - TERRACOTTA
+        - WHITE_TERRACOTTA
+        - YELLOW_TERRACOTTA
+      overworld:
+        - MOSSY_COBBLESTONE
+        - MOSSY_STONE_BRICKS
+        - RED_SANDSTONE
+        - SANDSTONE
+        - STONE
+      # custom:
+      # - STONE:1
     #Configure the values for each tier
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier

@@ -43,7 +43,7 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://repo.aikar.co/content/groups/aikar/")
-    maven("https://repo.mattstudios.me/artifactory/public/") //triumph-gui
+    maven("https://repo.opencollab.dev/main/")
 
     //Spigot
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -51,6 +51,7 @@ repositories {
     maven("https://repo.md-5.net/content/repositories/snapshots/")
     maven("https://repo.md-5.net/content/repositories/releases/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots")
+
 
 }
 
@@ -70,6 +71,9 @@ dependencies {
 
     val customBlockDataVersion = "2.2.2"
     implementation("com.jeff-media:custom-block-data:$customBlockDataVersion")
+
+    val geyserVersion = "2.4.2-SNAPSHOT"
+    compileOnly("org.geysermc.geyser:api:$geyserVersion")
 
     // Test deps
     val mockBukkitVersion = "3.80.0"

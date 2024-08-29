@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
 import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.Bukkit;
+import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
@@ -27,6 +28,7 @@ import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
 import us.eunoians.mcrpg.command.link.LinkChestCommand;
+import us.eunoians.mcrpg.command.link.UnlinkChestCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
@@ -96,6 +98,7 @@ public class McRPG extends CorePlugin {
     private boolean sickleEnabled = false;
     private boolean worldGuardEnabled = false;
     private boolean mcmmoEnabled = false;
+    private boolean geyserEnabled = false;
 
     @Override
     public void onEnable() {
@@ -212,6 +215,7 @@ public class McRPG extends CorePlugin {
 
         // Link commands
         LinkChestCommand.registerCommand();
+        UnlinkChestCommand.registerCommand();
     }
 
     @Override
@@ -285,6 +289,11 @@ public class McRPG extends CorePlugin {
 
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
             worldGuardEnabled = true;
+        }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("Geyser")) {
+            geyserEnabled = true;
+            getLogger().info("Geyser found... enabling support.");
         }
     }
 
@@ -362,6 +371,10 @@ public class McRPG extends CorePlugin {
     @NotNull
     public QuestManager getQuestManager() {
         return questManager;
+    }
+
+    public boolean isGeyserEnabled() {
+        return geyserEnabled && Geyser.isRegistered();
     }
 
     @NotNull

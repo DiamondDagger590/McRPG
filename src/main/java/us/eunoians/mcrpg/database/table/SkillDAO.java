@@ -570,10 +570,18 @@ public class SkillDAO {
                                 if (abilityAttributeOptional.isPresent()) {
                                     AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
                                     // If the ability attribute is an optional type, then that means we need to check if the data needs to be saved or deleted
-                                    if (abilityAttribute instanceof OptionalSavingAbilityAttribute<?> optionalSavingAbilityAttribute && !optionalSavingAbilityAttribute.shouldContentBeSaved()) {
-                                        deleteStatement.setString(2, abilityData.getAbilityKey().value());
-                                        deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
-                                        deleteStatement.execute();
+                                    if (abilityAttribute instanceof OptionalSavingAbilityAttribute<?> optionalSavingAbilityAttribute) {
+                                        if (!optionalSavingAbilityAttribute.shouldContentBeSaved()) {
+                                            deleteStatement.setString(2, abilityData.getAbilityKey().value());
+                                            deleteStatement.setString(3, abilityAttribute.getDatabaseKeyName());
+                                            deleteStatement.execute();
+                                        }
+                                        else {
+                                            preparedStatement.setString(2, abilityData.getAbilityKey().value());
+                                            preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());
+                                            preparedStatement.setString(4, abilityAttribute.serializeContent());
+                                            preparedStatement.executeUpdate();
+                                        }
                                     } else {
                                         preparedStatement.setString(2, abilityData.getAbilityKey().value());
                                         preparedStatement.setString(3, abilityAttribute.getDatabaseKeyName());

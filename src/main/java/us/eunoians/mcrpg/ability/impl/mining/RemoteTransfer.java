@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.google.common.collect.ImmutableMap;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.audience.Audience;
@@ -22,9 +24,13 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
+import us.eunoians.mcrpg.ability.attribute.RemoteTransferMaterialSetAttribute;
 import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
+import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryType;
 import us.eunoians.mcrpg.api.event.fake.FakeChestOpenEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
@@ -32,14 +38,26 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class RemoteTransfer extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility {
+/**
+ * This ability allows players to link to a chest and blocks they mine will automatically go into the chest if their allow list
+ * has it enabled.
+ */
+public class RemoteTransfer extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPG.getInstance(), "remote_transfer");
+    private static final Map<RemoteTransferCategoryType, RemoteTransferCategory> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
+    static {
+        for (RemoteTransferCategoryType type : RemoteTransferCategoryType.values()) {
+            REMOTE_TRANSFER_CATEGORIES.put(type, new RemoteTransferCategory(type));
+        }
+    }
 
     public RemoteTransfer() {
         super(REMOTE_TRANSFER_KEY);
@@ -228,10 +246,22 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
 
     @Override
     public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(MiningConfigFile.ITS_A_TRIPLE_ENABLED);
+        return getYamlDocument().getBoolean(MiningConfigFile.REMOTE_TRANSFER_ENABLED);
     }
 
+    /**
+     * Checks to see if the {@link Material} is transferable to the holders's linked chest.
+     * @param abilityHolder The {@link AbilityHolder} to check for.
+     * @param material The {@link Material} to check.
+     * @return {@code true} if the provided {@link Material} is transferable to the holder's linked chest.
+     */
     public boolean isMaterialTransferable(@NotNull AbilityHolder abilityHolder, @NotNull Material material) {
+        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+            return !remoteTransferMaterialSetAttribute.isMaterialStored(material);
+        }
         return true;
     }
 
@@ -240,7 +270,22 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
     public Set<NamespacedKey> getApplicableAttributes() {
         Set<NamespacedKey> applicableAttributes = new HashSet<>(ConfigurableTierableAbility.super.getApplicableAttributes());
         applicableAttributes.add(AbilityAttributeManager.ABILITY_LOCATION_ATTRIBUTE);
-        applicableAttributes.add(AbilityAttributeManager.ABILITY_MATERIAL_SET_ATTRIBUTE);
+        applicableAttributes.add(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE);
         return applicableAttributes;
+    }
+
+    @Override
+    public Set<ReloadableContent<?>> getReloadableContent() {
+        return Set.copyOf(REMOTE_TRANSFER_CATEGORIES.values());
+    }
+
+    @NotNull
+    public static RemoteTransferCategory getRemoteTransferCategory(@NotNull RemoteTransferCategoryType categoryType) {
+        return REMOTE_TRANSFER_CATEGORIES.get(categoryType);
+    }
+
+    @NotNull
+    public static Map<RemoteTransferCategoryType, RemoteTransferCategory> getRemoteTransferCategories() {
+        return ImmutableMap.copyOf(REMOTE_TRANSFER_CATEGORIES);
     }
 }

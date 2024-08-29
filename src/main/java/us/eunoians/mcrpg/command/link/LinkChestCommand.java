@@ -19,6 +19,9 @@ import us.eunoians.mcrpg.api.event.fake.FakeChestOpenEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
+/**
+ * This command is used to link a player to a specific chest for their {@link RemoteTransfer} ability.
+ */
 public class LinkChestCommand {
 
     public static void registerCommand() {

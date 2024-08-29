@@ -5,6 +5,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+/**
+ * This event is fired to validate if the player can open a chest or not.
+ */
 public class FakeChestOpenEvent extends PlayerInteractEvent {
 
     public FakeChestOpenEvent(Player player, Location location){

@@ -7,9 +7,9 @@ import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.AbilityGui;
 import us.eunoians.mcrpg.gui.HomeGui;
 import us.eunoians.mcrpg.gui.UpgradeAbilityGui;
+import us.eunoians.mcrpg.gui.ability.AbilityGui;
 
 public class TestGuiCommand {
 
@@ -36,7 +36,7 @@ public class TestGuiCommand {
                 playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
                     if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
                         AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
-                        McRPG.getInstance().getGuiTracker().trackPlayerGui(player, abilityGui);
+                        McRPG.getInstance().getGuiTrackerv2().trackPlayerGui(player, abilityGui);
                         player.openInventory(abilityGui.getInventory());
                     }
                 });

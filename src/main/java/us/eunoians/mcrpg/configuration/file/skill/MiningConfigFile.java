@@ -35,6 +35,17 @@ public class MiningConfigFile extends AbilityConfigFile {
     public static final Route REMOTE_TRANSFER_AMOUNT_OF_TIERS = Route.addTo(REMOTE_TRANSFER_HEADER, "amount-of-tiers");
     public static final Route REMOTE_TRANSFER_CONFIGURATION_HEADER = Route.addTo(REMOTE_TRANSFER_HEADER, "tier-configuration");
 
+    // Remote Transfer allow list
+    private static final Route REMOTE_TRANSFER_ALLOW_LIST_HEADER = Route.addTo(REMOTE_TRANSFER_HEADER, "allowed-blocks");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_NETHER = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "nether");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_ORES = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "ores");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_CAVES = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "caves");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_END = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "end");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_OCEAN = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "ocean");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_TERRACOTTA= Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "terracotta");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_OVERWORLD = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "overworld");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_CUSTOM = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "custom");
+
     @Override
     public UpdaterSettings getUpdaterSettings() {
         return UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).addIgnoredRoutes(getIgnoredRoutes()).build();

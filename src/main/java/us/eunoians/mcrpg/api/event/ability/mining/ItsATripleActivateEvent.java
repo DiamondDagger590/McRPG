@@ -9,6 +9,10 @@ import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.api.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
+/**
+ * This event fires whenever {@link ItsATriple} activates, which changes the drops for {@link us.eunoians.mcrpg.ability.impl.mining.ExtraOre} from
+ * 2 to 3.
+ */
 public class ItsATripleActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
