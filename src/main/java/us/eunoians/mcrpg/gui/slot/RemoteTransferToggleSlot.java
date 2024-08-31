@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.gui.slot;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Guiv2;
+import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -40,7 +40,7 @@ public class RemoteTransferToggleSlot extends Slot {
 
     @Override
     public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTrackerv2().getOpenedGui(corePlayer);
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
         guiOptional.ifPresent(gui -> {
             toggleMaterial();
             gui.refreshGUI();
@@ -73,7 +73,7 @@ public class RemoteTransferToggleSlot extends Slot {
     }
 
     @Override
-    public Set<Class<? extends Guiv2>> getValidGuiTypes() {
+    public Set<Class<? extends Gui>> getValidGuiTypes() {
         return Set.of(RemoteTransferGui.class);
     }
 

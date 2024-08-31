@@ -8,14 +8,13 @@ import org.incendo.cloud.CommandManager;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.HomeGui;
-import us.eunoians.mcrpg.gui.UpgradeAbilityGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
 
 public class TestGuiCommand {
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
-        commandManager.command(commandManager.commandBuilder("test").handler(commandContext -> {
+        commandManager.command(commandManager.commandBuilder("mcrpg").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
                 PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
@@ -36,20 +35,6 @@ public class TestGuiCommand {
                 playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
                     if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
                         AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
-                        McRPG.getInstance().getGuiTrackerv2().trackPlayerGui(player, abilityGui);
-                        player.openInventory(abilityGui.getInventory());
-                    }
-                });
-            }
-        }));
-
-        commandManager.command(commandManager.commandBuilder("upgrade").handler(commandContext -> {
-            CommandSender commandSender = commandContext.sender().getSender();
-            if (commandSender instanceof Player player) {
-                PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
-                playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
-                    if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
-                        UpgradeAbilityGui abilityGui = new UpgradeAbilityGui(mcRPGPlayer);
                         McRPG.getInstance().getGuiTracker().trackPlayerGui(player, abilityGui);
                         player.openInventory(abilityGui.getInventory());
                     }

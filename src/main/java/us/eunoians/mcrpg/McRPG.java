@@ -13,7 +13,6 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
-import us.eunoians.mcrpg.ability.impl.mining.RicherOre;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
@@ -129,7 +128,6 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new SerratedStrikes());
 
         getAbilityRegistry().registerAbility(new ExtraOre());
-        getAbilityRegistry().registerAbility(new RicherOre());
         getAbilityRegistry().registerAbility(new ItsATriple());
         getAbilityRegistry().registerAbility(new RemoteTransfer());
 
@@ -373,6 +371,11 @@ public class McRPG extends CorePlugin {
         return questManager;
     }
 
+    /**
+     * Checks to see if Geyser is enabled and registered.
+     *
+     * @return {@code true} if Geyser is enabled and registered.
+     */
     public boolean isGeyserEnabled() {
         return geyserEnabled && Geyser.isRegistered();
     }

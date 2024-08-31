@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.google.common.collect.ImmutableMap;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
-import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -31,10 +30,11 @@ import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryType;
-import us.eunoians.mcrpg.api.event.fake.FakeChestOpenEvent;
+import us.eunoians.mcrpg.api.event.ability.mining.RemoteTransferActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPG.getInstance(), "remote_transfer");
     private static final Map<RemoteTransferCategoryType, RemoteTransferCategory> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
+
     static {
         for (RemoteTransferCategoryType type : RemoteTransferCategoryType.values()) {
             REMOTE_TRANSFER_CATEGORIES.put(type, new RemoteTransferCategory(type));
@@ -61,6 +62,7 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
 
     public RemoteTransfer() {
         super(REMOTE_TRANSFER_KEY);
+        addActivatableComponent(RemoteTransferComponents.REMOTE_TRANSFER_ACTIVATE_ON_BLOCK_DROP_COMPONENT, BlockDropItemEvent.class, 0);
     }
 
     @NotNull
@@ -100,6 +102,16 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
 
     @NotNull
     @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Allows for linking of a chest to teleport mined blocks into.",
+                "<gray>Use <gold>/mcrpg link</gold> to link a chest.",
+                "<gray>Use <gold>/mcrpg unlink</gold> to unlink a chest.",
+                "<gray>Remote Transfer Range: <gold>" + getRange(currentTier));
+    }
+
+    @NotNull
+    @Override
     public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
         return new ItemStack(Material.CHEST);
     }
@@ -107,10 +119,8 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockDropItemEvent blockDropItemEvent = (BlockDropItemEvent) event;
-        if (!this.isAbilityEnabled() || !abilityHolder.getUUID().equals(blockDropItemEvent.getPlayer().getUniqueId())) {
-            return;
-        }
-        Player player  = blockDropItemEvent.getPlayer();
+        Player player = blockDropItemEvent.getPlayer();
+
         var abilityDataOptional = abilityHolder.getAbilityData(this);
         if (abilityDataOptional.isPresent()) {
             AbilityData abilityData = abilityDataOptional.get();
@@ -119,35 +129,19 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
             if (locationAttributeOptional.isPresent()) {
                 AbilityLocationAttribute attribute = (AbilityLocationAttribute) locationAttributeOptional.get();
                 Location location = attribute.getContent();
-                // If the content shouldn't be saved, the worlds aren't the same, or the chest is too far away, we skip
-                if (!attribute.shouldContentBeSaved() || !location.getWorld().equals(player.getWorld()) || location.distanceSquared(player.getLocation()) >= Math.pow(100, 2)) {
+
+                Chunk chunk = location.getChunk();
+                Block block = location.getBlock();
+                Chest chest = (Chest) block.getState();
+
+                RemoteTransferActivateEvent remoteTransferActivateEvent = new RemoteTransferActivateEvent(abilityHolder, location);
+                Bukkit.getPluginManager().callEvent(remoteTransferActivateEvent);
+                if (remoteTransferActivateEvent.isCancelled()) {
                     return;
                 }
-                Chunk chunk = location.getChunk();
+
                 // Force the chunk to load if it isn't already
                 chunk.addPluginChunkTicket(McRPG.getInstance());
-
-                Chest chest;
-                Block block = location.getBlock();
-                if (block.getType() == Material.CHEST) {
-                    chest = (Chest) block.getState();
-                }
-                // If it isn't a chest, alert player and remove the location attribute
-                else {
-                    Audience audience = McRPG.getInstance().getAdventure().player(player);
-                    audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer is missing... unlinking."));
-                    abilityData.removeAttribute(attribute);
-                    return;
-                }
-                // Simulate opening the chest
-                FakeChestOpenEvent fakeChestOpenEvent = new FakeChestOpenEvent(player, block.getLocation());
-                Bukkit.getPluginManager().callEvent(fakeChestOpenEvent);
-                if (fakeChestOpenEvent.useInteractedBlock() == Event.Result.DENY) {
-                    Audience audience = McRPG.getInstance().getAdventure().player(player);
-                    audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer was blocked from your usage... unlinking."));
-                    abilityData.removeAttribute(attribute);
-                    return;
-                }
                 List<Inventory> inventories = new ArrayList<>();
                 boolean isDouble = false;
                 if (chest.getInventory().getHolder() instanceof DoubleChest doubleChest) {
@@ -161,6 +155,7 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
                 a:
                 for (Item item : blockDropItemEvent.getItems()) {
                     Inventory currentInventory;
+                    // TODO revist to support dropping custom items (cant be entirely material based in 2024 stoopid
                     ItemStack itemStack = item.getItemStack();
                     // Get the material of the item we are putting in the chest and the amount
                     // if the chest contents are full, check if there are any stacks we can increase before dropping
@@ -183,57 +178,52 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
                                 if (currentItem == null || currentItem.getType() == Material.AIR) {
                                     ItemStack newStack = new ItemStack(material);
                                     // If the amount is greater than a stack
-                                    if(amount > 64){
-                                        newStack.setAmount(64);
-                                        amount -= 64;
+                                    if (amount > material.getMaxStackSize()) {
+                                        newStack.setAmount(material.getMaxStackSize());
+                                        amount -= material.getMaxStackSize();
                                         currentInventory.setItem(i, newStack);
                                         continue c;
                                     }
                                     // Otherwise just slap the item in there and break since we dont need to put it anywhere else
-                                    else{
+                                    else {
                                         newStack.setAmount(amount);
                                         currentInventory.setItem(i, newStack);
                                         amount = 0;
                                         item.getItemStack().setAmount(0);
                                         break b;
                                     }
-                                }
-                                else if(currentItem.getType() == material){
-                                    if(currentItem.getAmount() == 64){
+                                } else if (currentItem.getType() == material) {
+                                    if (currentItem.getAmount() == material.getMaxStackSize()) {
                                         continue c;
-                                    }
-                                    else{
-                                        if(currentItem.getAmount() + amount > 64){
-                                            amount -= 64 - currentItem.getAmount();
-                                            currentItem.setAmount(64);
+                                    } else {
+                                        if (currentItem.getAmount() + amount > material.getMaxStackSize()) {
+                                            amount -= material.getMaxStackSize() - currentItem.getAmount();
+                                            currentItem.setAmount(material.getMaxStackSize());
                                             continue c;
-                                        }
-                                        else{
+                                        } else {
                                             currentItem.setAmount(currentItem.getAmount() + amount);
                                             amount = 0;
                                             item.getItemStack().setAmount(0);
                                             break b;
                                         }
                                     }
-                                }
-                                else {
+                                } else {
                                     continue c;
                                 }
                             }
                             block.getState().update();
                             if (isDouble) {
-                                for(int i = -1; i <= 1; i += 2){
+                                for (int i = -1; i <= 1; i += 2) {
                                     block.getWorld().getBlockAt(block.getLocation().add(i, 0, 0)).getState().update();
                                     block.getWorld().getBlockAt(block.getLocation().add(0, 0, i)).getState().update();
                                 }
                             }
                             // Drop leftovers
-                            if(amount > 0){
+                            if (amount > 0) {
                                 item.getItemStack().setAmount(amount);
                             }
                         }
-                    }
-                    else {
+                    } else {
                         continue a;
                     }
                 }
@@ -251,18 +241,26 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
 
     /**
      * Checks to see if the {@link Material} is transferable to the holders's linked chest.
+     *
      * @param abilityHolder The {@link AbilityHolder} to check for.
-     * @param material The {@link Material} to check.
+     * @param material      The {@link Material} to check.
      * @return {@code true} if the provided {@link Material} is transferable to the holder's linked chest.
      */
     public boolean isMaterialTransferable(@NotNull AbilityHolder abilityHolder, @NotNull Material material) {
+        boolean presentInConfig = false;
+        for (RemoteTransferCategory category : getRemoteTransferCategories().values()) {
+            if (category.getContent().contains(material)) {
+                presentInConfig = true;
+            }
+        }
         RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
         if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
                 abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
-            return !remoteTransferMaterialSetAttribute.isMaterialStored(material);
+
+            return presentInConfig && !remoteTransferMaterialSetAttribute.isMaterialStored(material);
         }
-        return true;
+        return presentInConfig;
     }
 
     @NotNull
@@ -279,11 +277,32 @@ public class RemoteTransfer extends BaseAbility implements PassiveAbility, Confi
         return Set.copyOf(REMOTE_TRANSFER_CATEGORIES.values());
     }
 
+    /**
+     * Gets the range for this ability for the given tier.
+     *
+     * @param tier The tier to get the range for.
+     * @return The range for this ability for the given tier.
+     */
+    public int getRange(int tier) {
+        return getYamlDocument().getInt(Route.addTo(getRouteForTier(tier), "range"));
+    }
+
+    /**
+     * Gets the {@link RemoteTransferCategory} belonging to the provided {@link RemoteTransferCategoryType}.
+     *
+     * @param categoryType The {@link RemoteTransferCategoryType} to get the {@link RemoteTransferCategory} for.
+     * @return The {@link RemoteTransferCategory} belonging to the provided {@link RemoteTransferCategoryType}.
+     */
     @NotNull
     public static RemoteTransferCategory getRemoteTransferCategory(@NotNull RemoteTransferCategoryType categoryType) {
         return REMOTE_TRANSFER_CATEGORIES.get(categoryType);
     }
 
+    /**
+     * Gets an {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategory}.
+     *
+     * @return An {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategory}.
+     */
     @NotNull
     public static Map<RemoteTransferCategoryType, RemoteTransferCategory> getRemoteTransferCategories() {
         return ImmutableMap.copyOf(REMOTE_TRANSFER_CATEGORIES);

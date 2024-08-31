@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.gui.slot;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Guiv2;
+import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.Methods;
@@ -20,7 +20,6 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
@@ -55,6 +54,7 @@ public class AbilitySlot extends Slot {
 
     /**
      * Gets the {@link McRPGPlayer} creating this slot.
+     *
      * @return The {@link McRPGPlayer} creating this slot.
      */
     @NotNull
@@ -64,6 +64,7 @@ public class AbilitySlot extends Slot {
 
     /**
      * Gets the {@link Ability} represented by this slot.
+     *
      * @return The {@link Ability} represented by this slot.
      */
     @NotNull
@@ -73,7 +74,7 @@ public class AbilitySlot extends Slot {
 
     @Override
     public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTrackerv2().getOpenedGui(corePlayer);
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
         guiOptional.ifPresent(gui -> {
             var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
             playerOptional.ifPresent(player -> {
@@ -81,7 +82,7 @@ public class AbilitySlot extends Slot {
                 if ((McRPG.getInstance().isGeyserEnabled() && Geyser.api().isBedrockPlayer(corePlayer.getUUID())) || clickType == ClickType.RIGHT) {
                     AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, ability);
                     player.closeInventory();
-                    McRPG.getInstance().getGuiTrackerv2().trackPlayerGui(mcRPGPlayer.getUUID(), abilityEditGui);
+                    McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer.getUUID(), abilityEditGui);
                     player.openInventory(abilityEditGui.getInventory());
                 }
                 // If they're on java and right-clicked
@@ -119,6 +120,12 @@ public class AbilitySlot extends Slot {
             Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
             lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName()));
         }
+        // Add ability description
+        for (String string : ability.getDescription(mcRPGPlayer)) {
+            lore.add(miniMessage.deserialize(string));
+        }
+        lore.add(miniMessage.deserialize(""));
+
         // Add information about specific ability attributes
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);
         if (abilityDataOptional.isPresent()) {
@@ -132,22 +139,17 @@ public class AbilitySlot extends Slot {
 
             // If it is an unlockable ability, display information about unlocking it.
             if (ability instanceof UnlockableAbility unlockableAbility) {
-                abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE).ifPresent(abilityAttribute -> {
-                    if (abilityAttribute instanceof AbilityUnlockedAttribute unlockedAttribute) {
-                        if (unlockedAttribute.getContent()) {
-                            lore.add(miniMessage.deserialize("<gray>You have unlocked this ability."));
-                        } else {
-                            lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
-                                    skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName() + " <gray>skill"));
-                            lore.add(miniMessage.deserialize("<gray>reaches level <gold>" + unlockableAbility.getUnlockLevel() + "<gray>."));
-                        }
-                    }
-                });
+                if (unlockableAbility.isAbilityUnlocked(mcRPGPlayer.asSkillHolder())) {
+                    lore.add(miniMessage.deserialize("<gray>You have unlocked this ability."));
+                } else {
+                    lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
+                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName() + " <gray>skill"));
+                    lore.add(miniMessage.deserialize("<gray>reaches level <gold>" + unlockableAbility.getUnlockLevel() + "<gray>."));
+                }
             }
 
             // If it's a tierable ability and also is unlocked if it's an unlocked ability
-            if (ability instanceof TierableAbility tierableAbility && abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE)
-                    .map(value -> value instanceof AbilityUnlockedAttribute attribute && attribute.getContent()).orElse(true)) {
+            if (ability instanceof TierableAbility tierableAbility && tierableAbility.isAbilityUnlocked(skillHolder)) {
                 var abilityQuestOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
                 // If there is an active quest
                 if (abilityQuestOptional.isPresent() && abilityQuestOptional.get() instanceof AbilityUpgradeQuestAttribute questAttribute && questAttribute.shouldContentBeSaved()) {
@@ -221,8 +223,7 @@ public class AbilitySlot extends Slot {
                 // If they are on geyser, they only get one option since they can't right/left click
                 if (McRPG.getInstance().isGeyserEnabled() && Geyser.api().isBedrockPlayer(mcRPGPlayer.getUUID())) {
                     lore.add(miniMessage.deserialize("<gray>Click to edit ability attributes.</gray"));
-                }
-                else {
+                } else {
                     lore.add(miniMessage.deserialize("<gold>Left click</gold><gray> to toggle ability " + (toggledOffAttribute.getContent() ? "<green>on" : "<red>off")));
                     lore.add(miniMessage.deserialize("<gold>Right click</gold><gray> to edit ability attributes.</gray>"));
                 }
@@ -234,7 +235,7 @@ public class AbilitySlot extends Slot {
     }
 
     @Override
-    public Set<Class<? extends Guiv2>> getValidGuiTypes() {
+    public Set<Class<? extends Gui>> getValidGuiTypes() {
         return Set.of(AbilityGui.class);
     }
 }

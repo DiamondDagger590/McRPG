@@ -27,7 +27,7 @@ public class RemoteTransferToggleAllSlot extends Slot {
 
     @Override
     public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTrackerv2().getOpenedGui(corePlayer);
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
         guiOptional.ifPresent(gui -> {
             if (gui instanceof RemoteTransferGui remoteTransferGui) {
                 for (RemoteTransferToggleSlot slot : remoteTransferGui.getAllCurrentItemSlots()) {

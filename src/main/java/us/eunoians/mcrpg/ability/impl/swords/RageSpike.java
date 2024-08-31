@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.api.event.ability.swords.RageSpikeDamageEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.ArrayList;
@@ -88,6 +89,14 @@ public final class RageSpike extends BaseAbility implements ConfigurableActiveAb
     @Override
     public String getDisplayName() {
         return "Rage Spike";
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Ready your sword, then crouch to blast forward, damaging and knocking back foes.",
+                "<gray>Damage: <gold>" + getDamage(currentTier));
     }
 
     @NotNull

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -26,10 +27,13 @@ import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -115,6 +119,23 @@ public final class Bleed extends BaseAbility implements PassiveAbility, Configur
     @Override
     public YamlDocument getYamlDocument() {
         return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+    }
+
+    @Override
+    @NotNull
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        return List.of("<gray>Causes the opponent to bleed when attacking with sword, dealing damage over time.", "<gray>Activation chance: <gold>" + getActivationChance(mcRPGPlayer.asSkillHolder()));
+    }
+
+    public double getActivationChance(@NotNull SkillHolder skillHolder) {
+        var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
+        if (skillHolderDataOptional.isPresent()) {
+            Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
+            parser.setVariable("swords_level", skillHolderDataOptional.get().getCurrentLevel());
+            return parser.getValue();
+        }
+
+        return 0.0;
     }
 
     /**

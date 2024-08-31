@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.gui.ability;
 import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
-import com.diamonddagger590.mccore.gui.Guiv2;
+import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.player.CorePlayer;
@@ -259,7 +259,7 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
         if (corePlayerOptional.isPresent() && corePlayerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
             AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
             Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), () -> {
-                McRPG.getInstance().getGuiTrackerv2().trackPlayerGui(mcRPGPlayer, abilityEditGui);
+                McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, abilityEditGui);
                 bukkitPlayer.openInventory(abilityEditGui.getInventory());
             }, 1L);
         }
@@ -328,7 +328,7 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
             return new Slot() {
                 @Override
                 public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                    var guiOptional = CorePlugin.getInstance().getGuiTrackerv2().getOpenedGui(corePlayer);
+                    var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
                     guiOptional.ifPresent(gui -> {
                         if (gui instanceof RemoteTransferGui remoteTransferGui) {
                             corePlayer.getAsBukkitPlayer().ifPresent(player -> {
@@ -357,7 +357,7 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
                 }
 
                 @Override
-                public Set<Class<? extends Guiv2>> getValidGuiTypes() {
+                public Set<Class<? extends Gui>> getValidGuiTypes() {
                     return Set.of(RemoteTransferGui.class);
                 }
             };

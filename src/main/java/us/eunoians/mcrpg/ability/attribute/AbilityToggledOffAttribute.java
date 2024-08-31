@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.ability.attribute;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Guiv2;
+import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import net.kyori.adventure.text.Component;
@@ -78,7 +78,7 @@ public class AbilityToggledOffAttribute extends OptionalSavingAbilityAttribute<B
                         abilityData.addAttribute(abilityToggledOffAttribute);
                     }
                 });
-                CorePlugin.getInstance().getGuiTrackerv2().getOpenedGui(corePlayer).ifPresent(Guiv2::refreshGUI);
+                CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer).ifPresent(Gui::refreshGUI);
                 return true;
             }
 

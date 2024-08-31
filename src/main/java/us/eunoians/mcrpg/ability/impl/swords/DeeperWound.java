@@ -17,8 +17,10 @@ import us.eunoians.mcrpg.api.event.ability.swords.DeeperWoundActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,6 +59,15 @@ public final class DeeperWound extends BaseAbility implements ConfigurableTierab
     @Override
     public String getDisplayName() {
         return "Deeper Wound";
+    }
+
+    @Override
+    @NotNull
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Enhances Bleed ability to last longer.",
+                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier),
+                "<gray>Extra Bleed Ticks: <gold>" + getAdditionalBleedCycles(currentTier));
     }
 
     @NotNull

@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.ability.attribute;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Guiv2;
+import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import net.kyori.adventure.text.Component;
@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
 import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
+import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
 
 import java.util.HashSet;
 import java.util.List;
@@ -83,7 +83,7 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
         return new Slot() {
             @Override
             public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                var guiOptional = CorePlugin.getInstance().getGuiTrackerv2().getOpenedGui(corePlayer);
+                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
                 if (corePlayer instanceof McRPGPlayer mcRPGPlayer && mcRPGPlayer.getAsBukkitPlayer().isPresent()
                         && guiOptional.isPresent() && guiOptional.get() instanceof AbilityEditGui abilityEditGui) {
                     abilityEditGui.setIgnoreClose(true);
@@ -93,7 +93,7 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
                     Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), new Runnable() {
                         @Override
                         public void run() {
-                            McRPG.getInstance().getGuiTrackerv2().trackPlayerGui(mcRPGPlayer, remoteTransferGui);
+                            McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, remoteTransferGui);
                             player.openInventory(remoteTransferGui.getInventory());
                         }
                     }, 1L);
@@ -114,7 +114,7 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
             }
 
             @Override
-            public Set<Class<? extends Guiv2>> getValidGuiTypes() {
+            public Set<Class<? extends Gui>> getValidGuiTypes() {
                 return Set.of(AbilityEditGui.class);
             }
         };

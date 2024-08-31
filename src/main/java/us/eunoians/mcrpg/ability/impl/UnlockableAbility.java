@@ -2,7 +2,10 @@ package us.eunoians.mcrpg.ability.impl;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.Skill;
 
@@ -44,5 +47,17 @@ public interface UnlockableAbility extends Ability {
     default Set<NamespacedKey> getApplicableAttributes() {
         return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
                 AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
+    }
+
+    default boolean isAbilityUnlocked(@NotNull AbilityHolder abilityHolder) {
+        var abilityDataOptional = abilityHolder.getAbilityData(this);
+        if (abilityDataOptional.isPresent()) {
+            AbilityData abilityData = abilityDataOptional.get();
+            var attributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
+            if (attributeOptional.isPresent() && attributeOptional.get() instanceof AbilityUnlockedAttribute attribute) {
+                return attribute.getContent();
+            }
+        }
+        return false;
     }
 }

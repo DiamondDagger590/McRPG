@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.parser.Parser;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,9 +23,12 @@ import us.eunoians.mcrpg.api.event.ability.mining.ExtraOreActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -59,6 +63,24 @@ public final class ExtraOre extends BaseAbility implements PassiveAbility, Confi
     @Override
     public String getDisplayName() {
         return "Extra Ore";
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        return List.of("<gray>Will occasionally double drops while mining.",
+                "<gray>Activation Chance: <gold>" + getActivationChance(mcRPGPlayer.asSkillHolder()));
+    }
+
+    public double getActivationChance(@NotNull SkillHolder skillHolder) {
+        var skillHolderDataOptional = skillHolder.getSkillHolderData(Mining.MINING_KEY);
+        if (skillHolderDataOptional.isPresent()) {
+            Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG).getString(MiningConfigFile.EXTRA_ORE_ACTIVATION_EQUATION));
+            parser.setVariable("mining_level", skillHolderDataOptional.get().getCurrentLevel());
+            return parser.getValue();
+        }
+
+        return 0.0;
     }
 
     @NotNull

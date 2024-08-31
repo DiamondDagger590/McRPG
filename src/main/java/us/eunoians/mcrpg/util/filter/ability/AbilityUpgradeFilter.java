@@ -1,13 +1,12 @@
-package us.eunoians.mcrpg.util.filter;
+package us.eunoians.mcrpg.util.filter.ability;
 
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
+import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
@@ -30,12 +29,11 @@ public class AbilityUpgradeFilter implements PlayerContextFilter<Ability> {
                     .filter(tierableAbility -> {
                         var dataOptional = skillHolder.getAbilityData(tierableAbility);
                         if (dataOptional.isPresent()) {
-                            var unlockedData = dataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
                             var upgradableData = dataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
                             // If it's an upgradable ability
                             if (upgradableData.isPresent()) {
                                 // If it's also an unlockable ability, we only want to display it when it's unlocked
-                                return unlockedData.map(abilityAttribute -> abilityAttribute instanceof AbilityUnlockedAttribute unlockedAttribute && unlockedAttribute.getContent()).orElse(true);
+                                return tierableAbility.isAbilityUnlocked(skillHolder);
                             }
                         }
                         return false;

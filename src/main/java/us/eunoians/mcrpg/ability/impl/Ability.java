@@ -6,7 +6,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -89,6 +91,15 @@ public interface Ability {
      */
     @NotNull
     String getDisplayName();
+
+    /**
+     * Gets the description of this ability to display in guis.
+     *
+     * @param mcRPGPlayer The {@link McRPGPlayer} to use when creating the description.
+     * @return The description of this ability to display in guis.
+     */
+    @NotNull
+    List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer);
 
     /**
      * Gets the {@link ItemStack} to use when displaying this ability in guis.

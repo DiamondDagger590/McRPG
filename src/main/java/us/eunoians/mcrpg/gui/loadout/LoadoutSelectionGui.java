@@ -1,35 +1,60 @@
 package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.CoreGui;
-import com.diamonddagger590.mccore.gui.component.ClickableGui;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import com.diamonddagger590.mccore.gui.PaginatedGui;
+import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.player.CorePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectionSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class LoadoutSelectionGui extends CoreGui implements ClickableGui {
+/**
+ * This gui displays all the player's {@link Loadout}s, where they can select individual loadouts
+ * to edit.
+ */
+public class LoadoutSelectionGui extends PaginatedGui {
+
+    private static final Slot FILLER_GLASS_SLOT;
+    private static final int NAVIGATION_ROW_START_INDEX = 9;
+    private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
+    private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
+
+    // Create static slots
+    static {
+        // Create filler glass
+        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
+        fillerGlassMeta.setDisplayName(" ");
+        fillerGlass.setItemMeta(fillerGlassMeta);
+        FILLER_GLASS_SLOT = new Slot() {
+
+            @Override
+            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public ItemStack getItem() {
+                return fillerGlass;
+            }
+        };
+    }
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -41,39 +66,56 @@ public class LoadoutSelectionGui extends CoreGui implements ClickableGui {
             throw new CorePlayerOfflineException(mcRPGPlayer);
         }
         this.player = playerOptional.get();
-        setupGUI();
+    }
+
+    @NotNull
+    @Override
+    protected Inventory getInventoryForPage(int page) {
+        return Bukkit.createInventory(player, 18, McRPG.getInstance().getMiniMessage().deserialize("<gold>Viewing loadouts"));
     }
 
     @Override
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void handleClick(@NotNull InventoryClickEvent inventoryClickEvent) {
-        Inventory inventory = inventoryClickEvent.getClickedInventory();
-        if (inventoryClickEvent.getWhoClicked() instanceof Player player
-                && inventory != null
-                && canProcessEvent(player, inventory)) {
-            inventoryClickEvent.setCancelled(true);
+    protected void paintInventoryForPage(@NotNull Inventory inventory, int page) {
+        paintLoadouts(page);
+        paintNavigationBar(page);
+    }
 
-            int clickedSlot = inventoryClickEvent.getSlot();
-            LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
+    private void paintNavigationBar(int page) {
+        // Paint the nav bar with filler glass
+        for (int i = 0; i < 9; i++) {
+            setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
+        }
+        // If the page is not the first page, then we need to put a previous arrow button
+        if (page > 1) {
+            setSlot(PREVIOUS_PAGE_SLOT_INDEX, PREVIOUS_PAGE_SLOT);
+        }
+        // If the page is not the max page, then we need to put a next arrow button
+        if (page < getMaximumPage()) {
+            setSlot(NEXT_PAGE_SLOT_INDEX, NEXT_PAGE_SLOT);
+        }
+    }
 
-            // If they clicked on the upper part of the inventory
-            if (clickedSlot < inventory.getSize() - 10) {
-                // If they clicked on a valid loadout
-                if (loadoutHolder.hasLoadout(clickedSlot + 1)) {
-                    ClickType clickType = inventoryClickEvent.getClick();
-                    if (clickType == ClickType.LEFT) {
-                        player.performCommand("loadout edit " + (clickedSlot + 1));
-                    }
-                    else if(clickType == ClickType.RIGHT){
-                        player.performCommand("loadout set " + (clickedSlot + 1));
-                    }
-                }
+    private void paintLoadouts(int page) {
+        List<Loadout> loadouts = new ArrayList<>();
+        LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
+        for (int i = 1; i <= loadoutHolder.getMaxLoadoutAmount(); i++) {
+            loadouts.add(loadoutHolder.getLoadout(i));
+        }
+        for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+            if (i < loadouts.size()) {
+                Loadout loadout = loadouts.get(i);
+                LoadoutSelectionSlot loadoutSelectionSlot = new LoadoutSelectionSlot(mcRPGPlayer, loadout);
+                setSlot(i, loadoutSelectionSlot);
             }
-            // They clicked on the bottom
             else {
-
+                removeSlot(i);
             }
         }
+    }
+
+    @Override
+    public int getMaximumPage() {
+        return Math.max(1, mcRPGPlayer.asSkillHolder().getMaxLoadoutAmount() / 9);
     }
 
     @Override
@@ -84,40 +126,5 @@ public class LoadoutSelectionGui extends CoreGui implements ClickableGui {
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
-    }
-
-    private void setupGUI() {
-        List<Loadout> loadouts = new ArrayList<>();
-        LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
-        for (int i = 1; i <= getMaxLoadoutAmount(); i++) {
-            loadouts.add(loadoutHolder.getLoadout(i));
-        }
-        int loadoutSize = loadouts.size();
-        inventory = Bukkit.createInventory(player, Math.clamp(9 - loadoutSize % 9 + loadoutSize, 18, 54), McRPG.getInstance().getMiniMessage().deserialize("<gold>Select your loadout"));
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        for (int i = 0; i < loadoutSize; i++) {
-            Loadout loadout = loadouts.get(i);
-            ItemStack itemStack = new ItemStack(Material.CHERRY_SIGN);
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.displayName(miniMessage.deserialize(String.format("<gray>Loadout <gold>%d</gold></gray>", i + 1)));
-            List<Component> lore = new ArrayList<>();
-            lore.add(miniMessage.deserialize("<gray>Left click to edit this loadout."));
-            if (i + 1 == loadoutHolder.getCurrentLoadoutSlot()) {
-                lore.add(miniMessage.deserialize(""));
-                lore.add(miniMessage.deserialize("<gray>This is your currently selected loadout."));
-                itemMeta.addEnchant(Enchantment.POWER, 1, true);
-                itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            }
-            else {
-                lore.add(miniMessage.deserialize("<gray>Right click to set this loadout as active."));
-            }
-            itemMeta.lore(lore);
-            itemStack.setItemMeta(itemMeta);
-            inventory.setItem(i, itemStack);
-        }
-    }
-
-    private int getMaxLoadoutAmount() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
     }
 }

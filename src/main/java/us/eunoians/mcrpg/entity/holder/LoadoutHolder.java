@@ -45,6 +45,12 @@ public class LoadoutHolder extends AbilityHolder {
         this.loadouts = loadouts;
     }
 
+    /**
+     * Sets the current loadout slot for the holder.
+     *
+     * @param currentLoadout The new loadout slot for the holder.
+     * @throws SelectedLoadoutAboveMaxException whenever the provided slot is greater than {@link #getMaxLoadoutAmount()}
+     */
     public void setCurrentLoadoutSlot(int currentLoadout) {
         if (currentLoadout > getMaxLoadoutAmount()) {
             throw new SelectedLoadoutAboveMaxException(this, currentLoadout);
@@ -52,6 +58,11 @@ public class LoadoutHolder extends AbilityHolder {
         this.currentLoadout = currentLoadout;
     }
 
+    /**
+     * Gets the slot id of the currently equipped loadout.
+     *
+     * @return The slot id of the currently equipped loadout.
+     */
     public int getCurrentLoadoutSlot() {
         return currentLoadout;
     }
@@ -68,6 +79,14 @@ public class LoadoutHolder extends AbilityHolder {
         return getLoadout(currentLoadout);
     }
 
+    /**
+     * Gets the {@link Loadout} for the provided slot. If no loadout exists at
+     * the provided slot, a new empty one is created.
+     *
+     * @param loadoutSlot The slot to get the {@link Loadout} of
+     * @return The {@link Loadout} belonging to the provided slot.
+     * @throws SelectedLoadoutAboveMaxException if the provided slot is greater than {@link #getMaxLoadoutAmount()}.
+     */
     public Loadout getLoadout(int loadoutSlot) {
         if (loadoutSlot > getMaxLoadoutAmount()) {
             throw new SelectedLoadoutAboveMaxException(this, loadoutSlot);
@@ -78,6 +97,12 @@ public class LoadoutHolder extends AbilityHolder {
         return loadouts.get(loadoutSlot);
     }
 
+    /**
+     * Sets the {@link Loadout} at the {@link Loadout#getLoadoutSlot()} slot.
+     *
+     * @param loadout The {@link Loadout} to set.
+     * @throws SelectedLoadoutAboveMaxException if {@link Loadout#getLoadoutSlot()} is greater than {@link #getMaxLoadoutAmount()}.
+     */
     public void setLoadout(@NotNull Loadout loadout) {
         int loadoutSlot = loadout.getLoadoutSlot();
         if (loadoutSlot > getMaxLoadoutAmount()) {
@@ -86,6 +111,14 @@ public class LoadoutHolder extends AbilityHolder {
         loadouts.put(loadoutSlot, loadout);
     }
 
+    /**
+     * Checks to see if the provided slot is valid for getting a {@link Loadout}
+     * from this holder.
+     *
+     * @param loadoutSlot The slot to check.
+     * @return {@code true} if the provided slot is valid for getting a {@link Loadout}
+     * from this holder.
+     */
     public boolean hasLoadout(int loadoutSlot) {
         return loadouts.containsKey(loadoutSlot) || loadoutSlot <= getMaxLoadoutAmount();
     }
@@ -106,15 +139,34 @@ public class LoadoutHolder extends AbilityHolder {
         return abilities;
     }
 
+    /**
+     * Gets a {@link Set} of all the {@link NamespacedKey}s that represent all {@link Ability Abilities}
+     * that have some sort of active action component to their activation.
+     *
+     * @return Gets a {@link Set} of all the {@link NamespacedKey}s that represent all {@link Ability Abilities}
+     * that have some sort of active action component to their activation.
+     */
     public Set<NamespacedKey> getAvailableActiveAbilities() {
         return getAvailableAbilities().stream().filter(namespacedKey -> !McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey).isPassive()).collect(Collectors.toSet());
     }
 
+    /**
+     * Gets a {@link Set} of all the {@link NamespacedKey}s that represent all {@link Ability Abilities}
+     * that are 'default abilities', or ones that don't require unlocking to use.
+     *
+     * @return Gets a {@link Set} of all the {@link NamespacedKey}s that represent all {@link Ability Abilities}
+     * that are 'default abilities', or ones that don't require unlocking to use.
+     */
     private Set<NamespacedKey> getAvailableDefaultAbilities() {
         return getAvailableAbilities().stream().filter(namespacedKey -> !(McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)).collect(Collectors.toSet());
     }
 
-    private int getMaxLoadoutAmount() {
+    /**
+     * Gets the maximum amount of {@link Loadout}s that this holder can have.
+     *
+     * @return The maximum amount of {@link Loadout}s that this holder can have.
+     */
+    public int getMaxLoadoutAmount() {
         return McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
     }
 }

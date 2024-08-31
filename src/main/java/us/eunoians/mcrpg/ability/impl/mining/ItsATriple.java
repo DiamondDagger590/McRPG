@@ -17,8 +17,10 @@ import us.eunoians.mcrpg.api.event.ability.mining.ItsATripleActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,6 +49,14 @@ public class ItsATriple extends BaseAbility implements PassiveAbility, Configura
     @Override
     public Optional<String> getDatabaseName() {
         return Optional.of("its_a_triple");
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Has a chance to change doubled drops from Extra Ore to triple drops",
+                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier));
     }
 
     @NotNull

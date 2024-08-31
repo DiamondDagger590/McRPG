@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.ActiveAbility;
+import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.exception.loadout.LoadoutAlreadyHasActiveAbilityException;
@@ -57,19 +58,33 @@ public class Loadout {
         abilities.remove(key);
     }
 
+    public void replaceAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
+        removeAbility(oldAbility);
+        addAbility(newAbility);
+    }
+
     public boolean isAbilityInLoadout(@NotNull NamespacedKey key) {
         return abilities.contains(key);
     }
 
     public boolean canAbilityBeInLoadout(@NotNull NamespacedKey key) {
         Ability ability = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(key);
-        if (ability instanceof ActiveAbility && ability.getSkill().isPresent()) {
-            NamespacedKey skillKey = ability.getSkill().get();
-            for (NamespacedKey abilityKey : abilities) {
+        // Check if it's a default ability
+        if (!(ability instanceof UnlockableAbility unlockableAbility)) {
+            return false;
+        }
+        for (NamespacedKey abilityKey : abilities) {
+            if (ability instanceof ActiveAbility && ability.getSkill().isPresent()) {
+                NamespacedKey skillKey = ability.getSkill().get();
                 Ability abilityInLoadout = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(abilityKey);
+                // Check for active abilities in the same skill
                 if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout.getSkill().isPresent() && abilityInLoadout.getSkill().get().equals(skillKey)) {
                     return false;
                 }
+            }
+            // Check for same ability
+            else if (abilityKey.equals(key)) {
+                return false;
             }
         }
         return true;

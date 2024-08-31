@@ -21,8 +21,10 @@ import us.eunoians.mcrpg.api.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -71,6 +73,15 @@ public final class SerratedStrikes extends BaseAbility implements ConfigurableAc
     @Override
     public Optional<String> getDatabaseName() {
         return Optional.of("serrated_strikes");
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Ready your sword and attack an enemy to increase Bleed activation chance.",
+                "<gray>Duration: <gold>" + getDuration(currentTier),
+                "<gray>Activation Chance Increase: <gold>" + getBoostToBleedActivation(currentTier));
     }
 
     @NotNull

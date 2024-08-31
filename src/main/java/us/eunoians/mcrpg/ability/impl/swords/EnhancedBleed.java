@@ -17,8 +17,10 @@ import us.eunoians.mcrpg.api.event.ability.swords.EnhancedBleedActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -59,6 +61,16 @@ public final class EnhancedBleed extends BaseAbility implements ConfigurableTier
     @Override
     public String getDisplayName() {
         return "Enhanced Bleed";
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Enhances Bleed ability to do more damage each tick, with a chance to deal bonus damage.",
+                "<gray>Base Damage Boost: <gold>" + getBaseBleedDamageIncrease(currentTier),
+                "<gray>Bonus Damage Chance: <gold>" + getActivationChance(currentTier),
+                "<gray>Bonus Damage: <gold>" + getAdditionalBleedDamageBoost(currentTier));
     }
 
     @NotNull

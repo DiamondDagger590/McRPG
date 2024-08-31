@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.gui.ability;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
-import com.diamonddagger590.mccore.gui.Guiv2;
+import com.diamonddagger590.mccore.gui.Gui;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * This gui is used for whenever an {@link Ability} is having its attributes modified.
  */
-public class AbilityEditGui extends Guiv2 implements ClosableGui {
+public class AbilityEditGui extends Gui implements ClosableGui {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -103,7 +103,7 @@ public class AbilityEditGui extends Guiv2 implements ClosableGui {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), new Runnable() {
                     @Override
                     public void run() {
-                        McRPG.getInstance().getGuiTrackerv2().trackPlayerGui(mcRPGPlayer, abilityGui);
+                        McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, abilityGui);
                         bukkitPlayer.openInventory(abilityGui.getInventory());
                     }
                 }, 1L);

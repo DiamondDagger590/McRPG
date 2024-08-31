@@ -14,8 +14,11 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.loadout.LoadoutSelectionGui;
 
+/**
+ * This command sets the player's current {@link us.eunoians.mcrpg.loadout.Loadout} to
+ * the slot provided.
+ */
 public class LoadoutSetCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
@@ -40,9 +43,6 @@ public class LoadoutSetCommand extends McRPGCommandBase {
                                     return;
                                 }
                                 loadoutHolder.setCurrentLoadoutSlot(loadoutSlot);
-                                LoadoutSelectionGui loadoutGui = new LoadoutSelectionGui(mcRPGPlayer);
-                                McRPG.getInstance().getGuiTracker().trackPlayerGui(player, loadoutGui);
-                                player.openInventory(loadoutGui.getInventory());
                                 audience.sendMessage(miniMessage.deserialize("<gray>Your active loadout is now <gold>loadout #" + loadoutSlot + "</gold>.</gray>"));
                             }
                         });

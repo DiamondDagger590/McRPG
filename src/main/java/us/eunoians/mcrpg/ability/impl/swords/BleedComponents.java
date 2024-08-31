@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
-import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -11,8 +10,6 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.OnAttackComponent;
 import us.eunoians.mcrpg.ability.component.activatable.TargetablePlayerComponent;
-import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -49,11 +46,10 @@ public class BleedComponents {
             }
             // Check if they're a skill holder, if so then check the activation equation. Otherwise activate it ig (needs custom handling in the future for bosses n stuff)
             if (abilityHolder instanceof SkillHolder skillHolder) {
+                Bleed bleed = (Bleed) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(Bleed.BLEED_KEY);
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
                 if (skillHolderDataOptional.isPresent()) {
-                    Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
-                    parser.setVariable("swords_level", skillHolderDataOptional.get().getCurrentLevel());
-                    return (parser.getValue() + activationBoost) * 1000 > RANDOM.nextInt(100000);
+                    return (bleed.getActivationChance(skillHolder) + activationBoost) * 1000 > RANDOM.nextInt(100000);
                 }
             }
             return false;

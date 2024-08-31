@@ -19,8 +19,10 @@ import us.eunoians.mcrpg.api.event.ability.swords.VampireActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -61,6 +63,15 @@ public final class Vampire extends BaseAbility implements ConfigurableTierableAb
     @Override
     public String getDisplayName() {
         return "Vampire";
+    }
+
+    @NotNull
+    @Override
+    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
+        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
+        return List.of("<gray>Enhances Bleed to have a chance to heal you each time Bleed causes damage.",
+                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier),
+                "<gray>Healing Amount: <gold>" + getAmountToHeal(currentTier));
     }
 
     @NotNull
