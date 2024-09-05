@@ -24,7 +24,7 @@ public class OnAbilityHolderUnreadyListener implements Listener {
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
             Audience audience = adventure.player(player);
-            audience.sendMessage(miniMessage.deserialize("<gray>You lower your sword."));
+            audience.sendMessage(miniMessage.deserialize(event.getReadyData().getUnreadyMessage()));
         }
     }
 }

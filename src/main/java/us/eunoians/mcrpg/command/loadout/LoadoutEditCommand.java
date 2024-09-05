@@ -16,6 +16,15 @@ import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 
+/**
+ * This command is used for editing the player's loadout.
+ *
+ * The following commands are usable:
+ * <ul>
+ * <li>/loadout edit 2 -> edits the loadout in the second slot</li>
+ * <li>/loadout edit -> edits the player's current loadout</li>
+ * </ul>
+ */
 public class LoadoutEditCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
@@ -23,17 +32,17 @@ public class LoadoutEditCommand extends McRPGCommandBase {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         commandManager.command(commandManager.commandBuilder("loadout")
                 .literal("edit")
-                .required("slot", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The loadout to edit.")))
+                .optional("slot", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The loadout to edit.")))
                 .handler(commandContext -> {
                     CommandSender commandSender = commandContext.sender().getSender();
-                    CloudKey<Integer> amountKey = CloudKey.of("slot", Integer.class);
-                    int loadoutSlot = commandContext.get(amountKey);
+                    CloudKey<Integer> slotKey = CloudKey.of("slot", Integer.class);
                     if (commandSender instanceof Player player) {
                         Audience audience = McRPG.getInstance().getAdventure().player(player);
                         PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
                             if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
                                 LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
+                                int loadoutSlot = commandContext.getOrDefault(slotKey, loadoutHolder.getCurrentLoadoutSlot());
                                 if (!loadoutHolder.hasLoadout(loadoutSlot)) {
                                     audience.sendMessage(miniMessage.deserialize("<red>You do not have a loadout slot with that id."));
                                     return;

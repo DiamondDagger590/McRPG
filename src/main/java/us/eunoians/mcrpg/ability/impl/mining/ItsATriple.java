@@ -24,7 +24,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class ItsATriple extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility {
+/**
+ * This is a passive ability that has a chance to activate when {@link ExtraOre} activates,
+ * turning the double drop into a triple drop.
+ */
+public final class ItsATriple extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility {
 
     public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPG.getInstance(), "its_a_triple");
 

@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The configuration file for the mining.yml configuration file.
+ */
 public class MiningConfigFile extends AbilityConfigFile {
 
     private static final int CURRENT_VERSION = 1;
@@ -45,6 +48,13 @@ public class MiningConfigFile extends AbilityConfigFile {
     public static final Route REMOTE_TRANSFER_ALLOW_LIST_TERRACOTTA= Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "terracotta");
     public static final Route REMOTE_TRANSFER_ALLOW_LIST_OVERWORLD = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "overworld");
     public static final Route REMOTE_TRANSFER_ALLOW_LIST_CUSTOM = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "custom");
+
+    // Ore Scanner
+    private static final Route ORE_SCANNER_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "ore-scanner");
+    public static final Route ORE_SCANNER_ENABLED = Route.addTo(ORE_SCANNER_HEADER, "enabled");
+    public static final Route ORE_SCANNER_BLOCK_TYPES = Route.addTo(ORE_SCANNER_HEADER, "block-types");
+    public static final Route ORE_SCANNER_AMOUNT_OF_TIERS = Route.addTo(ORE_SCANNER_HEADER, "amount-of-tiers");
+    public static final Route ORE_SCANNER_CONFIGURATION_HEADER = Route.addTo(ORE_SCANNER_HEADER, "tier-configuration");
 
     @Override
     public UpdaterSettings getUpdaterSettings() {

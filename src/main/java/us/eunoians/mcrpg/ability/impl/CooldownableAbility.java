@@ -31,7 +31,7 @@ public interface CooldownableAbility extends Ability {
      */
     default boolean isAbilityOnCooldown(@NotNull AbilityHolder abilityHolder) {
         long cooldown = getCooldownForHolder(abilityHolder);
-        return cooldown > 0 && cooldown < System.currentTimeMillis();
+        return cooldown > 0 && cooldown > System.currentTimeMillis();
     }
 
     /**

@@ -103,7 +103,8 @@ public class AbilityGui extends PaginatedSortedAbilityGui  {
     }
 
     @Override
-    public @NotNull Set<NamespacedKey> getUnsortedAbilities() {
+    @NotNull
+    public Set<NamespacedKey> getUnsortedAbilities() {
         return getMcRPGPlayer().asSkillHolder().getAvailableAbilities();
     }
 

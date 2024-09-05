@@ -5,6 +5,8 @@ import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
 import com.jeff_media.customblockdata.CustomBlockData;
+import fr.skytasul.glowingentities.GlowingBlocks;
+import fr.skytasul.glowingentities.GlowingEntities;
 import org.bukkit.Bukkit;
 import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +14,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
+import us.eunoians.mcrpg.ability.impl.mining.OreScanner;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
@@ -40,6 +43,8 @@ import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
+import us.eunoians.mcrpg.listener.ability.OnAbilityCooldownExpireListener;
+import us.eunoians.mcrpg.listener.ability.OnAbilityPutOnCooldownListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityUnlockListener;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
@@ -63,6 +68,7 @@ import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.util.LunarUtils;
 
 import java.sql.Connection;
 import java.util.concurrent.ExecutionException;
@@ -83,12 +89,12 @@ public class McRPG extends CorePlugin {
     private AbilityRegistry abilityRegistry;
     private SkillRegistry skillRegistry;
     private AbilityAttributeManager abilityAttributeManager;
-
     private EntityManager entityManager;
-
     private DisplayManager displayManager;
-
     private QuestManager questManager;
+
+    private GlowingBlocks glowingBlocks;
+    private GlowingEntities glowingEntities;
 
     private boolean healthBarPluginEnabled = false;
     private boolean mvdwEnabled = false;
@@ -98,6 +104,7 @@ public class McRPG extends CorePlugin {
     private boolean worldGuardEnabled = false;
     private boolean mcmmoEnabled = false;
     private boolean geyserEnabled = false;
+    private boolean lunarEnabled = false;
 
     @Override
     public void onEnable() {
@@ -113,13 +120,14 @@ public class McRPG extends CorePlugin {
         abilityRegistry = new AbilityRegistry(this);
         skillRegistry = new SkillRegistry(this);
 
-        //TODO remove after testing
         abilityAttributeManager = new AbilityAttributeManager(this);
-
         displayManager = new DisplayManager();
-
         questManager = new QuestManager();
 
+        glowingBlocks = new GlowingBlocks(this);
+        glowingEntities = new GlowingEntities(this);
+
+        //TODO relocate into expansion packs
         getAbilityRegistry().registerAbility(new Bleed());
         getAbilityRegistry().registerAbility(new DeeperWound());
         getAbilityRegistry().registerAbility(new Vampire());
@@ -130,6 +138,7 @@ public class McRPG extends CorePlugin {
         getAbilityRegistry().registerAbility(new ExtraOre());
         getAbilityRegistry().registerAbility(new ItsATriple());
         getAbilityRegistry().registerAbility(new RemoteTransfer());
+        getAbilityRegistry().registerAbility(new OreScanner());
 
         getSkillRegistry().registerSkill(new Swords());
         getSkillRegistry().registerSkill(new Mining());
@@ -145,6 +154,8 @@ public class McRPG extends CorePlugin {
 
     @Override
     public void onDisable() {
+        glowingBlocks.disable();
+        glowingEntities.disable();
         if (!isUnitTest()) {
             Connection connection = databaseManager.getDatabase().getConnection();
             if (connection == null) {
@@ -156,6 +167,9 @@ public class McRPG extends CorePlugin {
                             // TODO make this one thing so it isnt in two spots
                             SkillDAO.savePlayerSkillData(connection, mcRPGPlayer.asSkillHolder()).get();
                             PlayerLoadoutDAO.saveAllPlayerLoadouts(connection, mcRPGPlayer.asSkillHolder()).get();
+                            if (isLunarEnabled()) {
+                                LunarUtils.clearCooldowns(mcRPGPlayer.getUUID());
+                            }
                         } catch (InterruptedException | ExecutionException e) {
                             throw new RuntimeException(e);
                         }
@@ -244,6 +258,8 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new OnAbilityHolderReadyListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAbilityHolderUnreadyListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnAbilityUnlockListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAbilityCooldownExpireListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnAbilityPutOnCooldownListener(), this);
 
         // Quest Listeners
         Bukkit.getPluginManager().registerEvents(new QuestCompleteListener(), this);
@@ -292,6 +308,11 @@ public class McRPG extends CorePlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("Geyser")) {
             geyserEnabled = true;
             getLogger().info("Geyser found... enabling support.");
+        }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("Apollo-Bukkit")) {
+            lunarEnabled = true;
+            getLogger().info("Apollo found... enabling Lunar Client support.");
         }
     }
 
@@ -369,6 +390,35 @@ public class McRPG extends CorePlugin {
     @NotNull
     public QuestManager getQuestManager() {
         return questManager;
+    }
+
+    /**
+     * Gets the {@link GlowingBlocks} used by McRPG.
+     *
+     * @return The {@link GlowingBlocks} used by McRPG.
+     */
+    @NotNull
+    public GlowingBlocks getGlowingBlocks() {
+        return glowingBlocks;
+    }
+
+    /**
+     * Gets the {@link GlowingEntities} used by McRPG.
+     *
+     * @return The {@link GlowingEntities} used by McRPG.
+     */
+    @NotNull
+    public GlowingEntities getGlowingEntities() {
+        return glowingEntities;
+    }
+
+    /**
+     * Checks to see if Lunar Client support is enabled.
+     *
+     * @return {@code true} if Lunar Client support is enabled
+     */
+    public boolean isLunarEnabled() {
+        return lunarEnabled;
     }
 
     /**

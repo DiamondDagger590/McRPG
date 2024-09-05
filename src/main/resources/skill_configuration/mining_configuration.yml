@@ -187,3 +187,91 @@ ability-configuration:
       tier-1:
         unlock-level: 1
         maximum-distance: 50
+  ore-scanner:
+    enabled: true
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    block-types:
+      copper:
+        type-name: "Copper Ore"
+        color-code: 'c'
+        weight: 1
+        materials:
+          - "COPPER_ORE"
+          - "DEEPSLATE_COPPER_ORE"
+      iron:
+        type-name: "Iron Ore"
+        color-code: 'e'
+        weight: 1
+        materials:
+          - "IRON_ORE"
+          - "DEEPSLATE_IRON_ORE"
+      redstone:
+        type-name: "Redstone Ore"
+        color-code: '4'
+        weight: 3
+        materials:
+          - "REDSTONE_ORE"
+          - "DEEPSLATE_REDSTONE_ORE"
+      lapis:
+        type-name: "Lapis Ore"
+        color-code: '9'
+        weight: 4
+        materials:
+          - "LAPIS_ORE"
+          - "DEEPSLATE_LAPIS_ORE"
+      gold:
+        type-name: "Gold Ore"
+        color-code: '6'
+        weight: 5
+        materials:
+          - "GOLD_ORE"
+          - "DEEPSLATE_GOLD_ORE"
+      emerald:
+        type-name: "Emerald Ore"
+        color-code: 'a'
+        weight: 6
+        materials:
+          - "EMERALD_ORE"
+          - "DEEPSLATE_EMERALD_ORE"
+      diamond:
+        type-name: "Diamond Ore"
+        color-code: 'b'
+        weight: 7
+        materials:
+          - "DIAMOND_ORE"
+          - "DEEPSLATE_DIAMOND_ORE"
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
+        cooldown: 180
+      tier-1:
+        unlock-level: 1
+        range: 10
+      tier-2:
+        unlock-level: 2
+        range: 10
+      tier-3:
+        unlock-level: 3
+        range: 10
+      tier-4:
+        unlock-level: 4
+        range: 10
+      tier-5:
+        unlock-level: 5
+        range: 10

@@ -34,6 +34,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * This is a default ability that has a chance to double the amount of drops from a
+ * mined block.
+ */
 public final class ExtraOre extends BaseAbility implements PassiveAbility, ConfigurableAbility, ReloadableContentAbility, DropMultiplierAbility {
 
     public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPG.getInstance(), "extra_ore");
@@ -43,7 +47,7 @@ public final class ExtraOre extends BaseAbility implements PassiveAbility, Confi
 
     public ExtraOre() {
         super(EXTRA_ORE_KEY);
-        addActivatableComponent(MiningComponents.HOLDING_PICKAXE_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
+        addActivatableComponent(MiningComponents.HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
         addActivatableComponent(ExtraOreComponents.EXTRA_ORE_ON_BREAK_COMPONENT, BlockBreakEvent.class, 1);
     }
 
@@ -69,7 +73,7 @@ public final class ExtraOre extends BaseAbility implements PassiveAbility, Confi
     @Override
     public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
         return List.of("<gray>Will occasionally double drops while mining.",
-                "<gray>Activation Chance: <gold>" + getActivationChance(mcRPGPlayer.asSkillHolder()));
+                "<gray>Activation Chance: <gold>" + FORMAT.format(getActivationChance(mcRPGPlayer.asSkillHolder())) + "%");
     }
 
     public double getActivationChance(@NotNull SkillHolder skillHolder) {

@@ -58,6 +58,6 @@ public class AbilityCooldownAttribute extends OptionalSavingAbilityAttribute<Lon
 
     @Override
     public boolean shouldContentBeSaved() {
-        return getContent() > 0 && getContent() < System.currentTimeMillis();
+        return getContent() > 0 && getContent() > System.currentTimeMillis();
     }
 }

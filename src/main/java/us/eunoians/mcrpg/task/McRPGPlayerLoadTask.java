@@ -52,7 +52,8 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
 
     @VisibleForTesting
     @Override
-    protected boolean loadPlayer() { //TODO completable future?
+    protected CompletableFuture<Boolean> loadPlayer() { //TODO completable future?
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
         SkillRegistry skillRegistry = getPlugin().getSkillRegistry();
         AbilityRegistry abilityRegistry = getPlugin().getAbilityRegistry();
         AbilityAttributeManager abilityAttributeManager = getPlugin().getAbilityAttributeManager();
@@ -111,19 +112,19 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
                     });
         }
 
-        CompletableFuture.allOf(ArrayUtils.addAll(futures, loadoutFutures)).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        });
-        return true;
+        CompletableFuture.allOf(ArrayUtils.addAll(futures, loadoutFutures))
+                .thenAccept(unused -> result.complete(true))
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    result.complete(false);
+                    return null;
+                });
+        return result;
     }
 
     @VisibleForTesting
     @Override
     protected void onPlayerLoadSuccessfully() {
-
-        // Fire event
-        super.onPlayerLoadSuccessfully();
 
         getPlugin().getLogger().log(Level.INFO, "Player data has been loaded for player: " + getCorePlayer().getUUID());
 
@@ -131,6 +132,9 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
         getPlugin().getPlayerManager().addPlayer(getCorePlayer());
         getPlugin().getEntityManager().trackAbilityHolder(getCorePlayer().asSkillHolder());
         getPlugin().getEntityManager().trackQuestHolder(getCorePlayer().asQuestHolder());
+
+        // Fire event
+        super.onPlayerLoadSuccessfully();
     }
 
     @VisibleForTesting

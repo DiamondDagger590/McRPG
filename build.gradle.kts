@@ -44,6 +44,7 @@ repositories {
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven("https://repo.opencollab.dev/main/")
+    maven("https://repo.lunarclient.dev") //Lunar client
 
     //Spigot
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -56,6 +57,10 @@ repositories {
 }
 
 dependencies {
+
+    // Force annotations to be 12 because @NotNull being inline was annoying me from latest
+    val intellijAnnotationVersion = "12.0"
+    compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
     val mccoreVersion = "1.0.0.10-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
@@ -74,6 +79,12 @@ dependencies {
 
     val geyserVersion = "2.4.2-SNAPSHOT"
     compileOnly("org.geysermc.geyser:api:$geyserVersion")
+
+    val glowingEntitiesVersion = "1.3.5"
+    implementation("fr.skytasul:glowingentities:$glowingEntitiesVersion")
+
+    val apolloVersion = "1.1.4"
+    compileOnly("com.lunarclient:apollo-api:$apolloVersion")
 
     // Test deps
     val mockBukkitVersion = "3.80.0"
@@ -141,6 +152,7 @@ tasks {
         relocate("org.bstats", "us.eunoians.mcrpg")
         relocate("com.diamonddagger590.mccore", "us.eunoians.mcrpg.mccore")
         relocate("com.jeff_media.customblockdata", "us.eunoians.mcrpg.customblockdata")
+        relocate("fr.skytasul.glowingentites", "us.eunoians.mcrpg.glowingentites")
     }
 }
 

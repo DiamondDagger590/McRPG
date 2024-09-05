@@ -49,7 +49,7 @@ import java.util.Set;
  * This ability allows players to link to a chest and blocks they mine will automatically go into the chest if their allow list
  * has it enabled.
  */
-public class RemoteTransfer extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public final class RemoteTransfer extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPG.getInstance(), "remote_transfer");
     private static final Map<RemoteTransferCategoryType, RemoteTransferCategory> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
