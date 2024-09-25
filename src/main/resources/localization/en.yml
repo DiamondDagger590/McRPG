@@ -63,19 +63,25 @@ Potions:
     Luck: 'Luck'
     Unluck: 'Unluck'
     DolphinsGrace: 'Dolphins Grace'
-    Strength: 'Increase Damage'
+    Strength: 'Strength'
     Weakness: 'Weakness'
     Resistance: 'Resistance'
     FireResistance: 'Fire Resistance'
     Levitation: 'Levitation'
     SlowFalling: 'Slow Falling'
     Poison: 'Poison'
+    Infested: 'Infestation'
+    Darkness: 'Darkness'
+    HeroOfTheVillage: 'Hero of the Village'
+    Oozing: 'Oozing'
+    WindCharging: 'Wind Charging'
+    Weaving: 'Weaving'
   #The translation and color code for lingering and splash potions
   Lingering: '&fLingering'
   Splash: '&fSplash'
   #A full name would be the Splash/Lingering + the Potion Name Prefix and then replace the placeholder of %PotionName% with
   #the potion name defined in the configuration
-  PotionNamePrefix: '&fPotion Of %PotionName%'
+  PotionNamePrefix: '&fPotion of %PotionName%'
 Messages:
   #Messages relating to the general plugin information
   PluginInfo:

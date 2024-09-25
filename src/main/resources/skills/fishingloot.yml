@@ -111,9 +111,9 @@ Categories:
       McRPGExp: 10000
       PotionMeta:
         Effects:
-          - 'INCREASE_DAMAGE:1:100'
+          - 'STRENGTH:1:100'
           - 'SPEED:1:100'
-          - 'SLOW_DIGGING:1:50'
+          - 'MINING_FATIGUE:1:50'
         RGB: '236:245:66'
   Junk:
     Bowl:
@@ -252,7 +252,7 @@ Categories:
           - 'WATER_BREATHING:1:240'
           - 'NIGHT_VISION:1:240'
           - 'FIRE_RESISTANCE:1:240'
-          - 'DAMAGE_RESISTANCE:1:240'
+          - 'RESISTANCE:1:240'
         RGB: '0:200:135'
         Splash: false
   MagicTouch:

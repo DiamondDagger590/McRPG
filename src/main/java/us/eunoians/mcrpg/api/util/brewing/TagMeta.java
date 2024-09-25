@@ -71,7 +71,7 @@ public class TagMeta {
         continue;
       }
       TagMeta tagMeta = potionRecipeManager.getPotionEffectTagWrapper(tempType).getTagMeta(tagToUse);
-      if(tagMeta.isValidIngredient(material)){
+      if(tagMeta != null && tagMeta.isValidIngredient(material)){
         return s;
       }
     }

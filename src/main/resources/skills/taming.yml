@@ -400,23 +400,23 @@ PetasWrathConfig:
     #A random potion effect will be selected from this list
     #Format is PotionEffectType:Level:DurationInSeconds
     PotionEffects:
-      - 'SLOW:1:10'
+      - 'SLOWNESS:1:10'
   TierII:
     PotionEffects:
-      - 'SLOW:1:10'
-      - 'SLOW_DIGGING:1:10'
+      - 'SLOWNESS:1:10'
+      - 'MINING_FATIGUE:1:10'
   TierIII:
     PotionEffects:
-      - 'SLOW:1:10'
-      - 'SLOW_DIGGING:1:10'
+      - 'SLOWNESS:1:10'
+      - 'MINING_FATIGUE:1:10'
       - 'POISON:1:10'
   TierIV:
     PotionEffects:
-      - 'CONFUSION:1:10'
+      - 'NAUSEA:1:10'
       - 'WITHER:1:10'
   TierV:
     PotionEffects:
-      - 'CONFUSION:1:10'
+      - 'NAUSEA:1:10'
       - 'WITHER:1:10'
       - 'BLINDNESS:1:10'
   #How this ability should be seen in the GUIS

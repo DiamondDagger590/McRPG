@@ -263,32 +263,32 @@ HesperidesApplesConfig:
     AppleBuffs:
       - 'SPEED:1:40'
     GoldenAppleBuffs:
-      - 'INCREASE_DAMAGE:1:25'
+      - 'STRENGTH:1:25'
     #Cooldown in seconds
     Cooldown: 100
   TierII:
     AppleBuffs:
       - 'SPEED:1:50'
     GoldenAppleBuffs:
-      - 'INCREASE_DAMAGE:1:35'
+      - 'STRENGTH:1:35'
     Cooldown: 90
   TierIII:
     AppleBuffs:
       - 'SPEED:1:50'
     GoldenAppleBuffs:
-      - 'INCREASE_DAMAGE:1:35'
+      - 'STRENGTH:1:35'
     Cooldown: 80
   TierIV:
     AppleBuffs:
       - 'SPEED:2:40'
     GoldenAppleBuffs:
-      - 'INCREASE_DAMAGE:2:30'
+      - 'STRENGTH:2:30'
     Cooldown: 70
   TierV:
     AppleBuffs:
       - 'SPEED:2:60'
     GoldenAppleBuffs:
-      - 'INCREASE_DAMAGE:2:40'
+      - 'STRENGTH:2:40'
     Cooldown: 60
   #How this ability should be seen in the GUIS
   Item:

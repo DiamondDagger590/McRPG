@@ -349,7 +349,7 @@ public class FileManager {
     SIGN_CONFIG("signdata.yml", "data/signdata.yml"),
     SKILLS_GUI("skillgui.yml", "guis/skillsgui.yml"),
     SORCERY_CONFIG("sorcery.yml", "skills/sorcery.yml"),
-    SOUNDS_FILE("sounds.yml", "sounds.yml"),
+    SOUNDS_FILE("sounds.yml", "sound.yml"),
     SUBSKILL_GUI("subskillgui.yml", "guis/subskillgui.yml"),
     SWORDS_CONFIG("swords.yml", "skills/swords.yml"),
     TAMING_CONFIG("taming.yml", "skills/taming.yml"),

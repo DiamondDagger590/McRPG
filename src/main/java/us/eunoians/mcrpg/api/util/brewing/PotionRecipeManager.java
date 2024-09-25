@@ -115,7 +115,7 @@ public class PotionRecipeManager {
     }
     String tag = basePotion.getTag();
     TagMeta tagMeta = potionEffectTagWrapper.getTagMeta(tag);
-    return tagMeta.getChildTag(ingredient) != null;
+    return tag != null && tagMeta != null && tagMeta.getChildTag(ingredient) != null;
   }
   
   public BasePotionType getChildPotionType(Material ingredient, BasePotion basePotion){

@@ -136,19 +136,19 @@ CircesRecipesConfig:
     #What non-vanilla potion effects the player can brew
     PotionEffects:
       - 'LEVITATION'
-      - 'CONFUSION'
+      - 'NAUSEA'
   TierII:
     PotionEffects:
       - 'BLINDNESS'
       - 'ABSORPTION'
       - 'LEVITATION'
-      - 'CONFUSION'
+      - 'NAUSEA'
   TierIII:
     PotionEffects:
       - 'HUNGER'
       - 'SATURATION'
       - 'LEVITATION'
-      - 'CONFUSION'
+      - 'NAUSEA'
       - 'BLINDNESS'
       - 'ABSORPTION'
   TierIV:
@@ -156,7 +156,7 @@ CircesRecipesConfig:
       - 'HUNGER'
       - 'SATURATION'
       - 'LEVITATION'
-      - 'CONFUSION'
+      - 'NAUSEA'
       - 'BLINDNESS'
       - 'ABSORPTION'
       - 'DOLPHINS_GRACE'
@@ -166,14 +166,14 @@ CircesRecipesConfig:
       - 'HUNGER'
       - 'SATURATION'
       - 'LEVITATION'
-      - 'CONFUSION'
+      - 'NAUSEA'
       - 'BLINDNESS'
       - 'ABSORPTION'
       - 'DOLPHINS_GRACE'
       - 'HEALTH_BOOST'
-      - 'FAST_DIGGING'
-      - 'SLOW_DIGGING'
-      - 'DAMAGE_RESISTANCE'
+      - 'HASTE'
+      - 'MINING_FATIGUE'
+      - 'RESISTANCE'
       - 'WITHER'
   #How this ability should be seen in the GUIS
   Item:

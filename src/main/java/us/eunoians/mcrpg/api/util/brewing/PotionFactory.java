@@ -26,11 +26,12 @@ public class PotionFactory {
         return BasePotionType.AWKWARD;
       }
       else{
-        PotionEffectType potionEffectType = meta.getBasePotionType().getEffectType();
-        if(meta.getBasePotionType() == null){
-          if(meta.hasCustomEffects()){
-            potionEffectType = meta.getCustomEffects().get(0).getType();
-          }
+        PotionEffectType potionEffectType;
+        if(meta.getBasePotionType() == null && meta.hasCustomEffects()){
+          potionEffectType = meta.getCustomEffects().get(0).getType();
+        }
+        else {
+          potionEffectType = meta.getBasePotionType().getEffectType();
         }
         return BasePotionType.getFromPotionEffect(potionEffectType);
       }

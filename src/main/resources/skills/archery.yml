@@ -195,17 +195,17 @@ TippedArrowsConfig:
     ActivationChance: 7.5
     PossibleEffects:
       - 'POISON:1:7'
-      - 'SLOW:1:5'
+      - 'SLOWNESS:1:5'
   TierIV:
     ActivationChance: 9.0
     PossibleEffects:
       - 'POISON:2:6'
-      - 'SLOW:1:7'
+      - 'SLOWNESS:1:7'
   TierV:
     ActivationChance: 11.5
     PossibleEffects:
       - 'POISON:2:6'
-      - 'SLOW:2:7'
+      - 'SLOWNESS:2:7'
       - 'BLINDNESS:1:5'
   #How this ability should be seen in the GUIS
   Item:

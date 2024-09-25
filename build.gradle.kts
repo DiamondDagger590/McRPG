@@ -23,7 +23,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.3.7-SNAPSHOT"
+version = "1.5.3.8-SNAPSHOT"
 group = "us.eunoians"
 
 java {
@@ -66,7 +66,7 @@ dependencies {
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
-    val placeholderAPIVersion = "2.9.2"
+    val placeholderAPIVersion = "2.11.6"
     compileOnly("me.clip:placeholderapi:$placeholderAPIVersion")
 
     val worldGuardVersion = "7.0.7"
