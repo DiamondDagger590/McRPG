@@ -42,7 +42,7 @@ public enum BasePotionType{
 	POISON("Poison", true, "135:163:99", PotionType.POISON, PotionEffectType.POISON),
 	INFESTED("Infested", true, "107:119:107", PotionType.INFESTED, PotionEffectType.INFESTED),
 	DARKNESS("Darkness", false, "47:44:61", null, PotionEffectType.DARKNESS),
-	HERO_OF_THE_VILLAGE("Hero of the Village", false, "134:208:160", null, PotionEffectType.HERO_OF_THE_VILLAGE),
+	HERO_OF_THE_VILLAGE("Hero Of The Village", false, "134:208:160", null, PotionEffectType.HERO_OF_THE_VILLAGE),
 	OOZING("Oozing", true, "117:197:125", PotionType.OOZING, PotionEffectType.OOZING),
 	WIND_CHARGED("Wind Charged", true, "145:155:197", PotionType.WIND_CHARGED, PotionEffectType.WIND_CHARGED),
 	WEAVING("Weaving", true, "91:79:68", PotionType.WEAVING, PotionEffectType.WEAVING),
