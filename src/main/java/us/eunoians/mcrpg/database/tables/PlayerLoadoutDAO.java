@@ -198,28 +198,20 @@ public class PlayerLoadoutDAO {
 
                         //Adds table to our tracking
                         if (lastStoredSlotsVersion == 0) {
-
                             if (updateFromLegacy) {
-
                                 try {
-
                                     //Get the amount of slots in the legacy table
                                     int slotAmount = 0;
                                     try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'" + LEGACY_LOADOUT_TABLE_NAME.toUpperCase(Locale.ROOT) + "' ")) {
-
                                         try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
                                             //Check the last column to get the highest amount of slots
                                             resultSet.last();
-
                                             //Get the slot amount
                                             slotAmount = Integer.parseInt(resultSet.getString("column_name").toLowerCase(Locale.ROOT).replace("slot", ""));
                                         }
                                     }
-
                                     //Go through all legacy slot columns and convert them to new
                                     for (int i = 1; i <= slotAmount; i++) {
-
                                         try (PreparedStatement preparedStatement = connection.prepareStatement("MERGE INTO " + LOADOUT_SLOTS_TABLE_NAME + " SELECT loadout.loadout_id AS loadout_id, " + i + " AS slot_number, legacy.slot" + i + " AS ability_id FROM " + LOADOUT_TABLE_NAME + " AS loadout JOIN " + LEGACY_LOADOUT_TABLE_NAME + " AS legacy ON legacy.uuid = loadout.player_uuid WHERE legacy.slot" + i + " IS NOT NULL AND legacy.slot" + i + " <> 'null';")) {
                                             preparedStatement.executeUpdate();
                                         }
@@ -233,9 +225,7 @@ public class PlayerLoadoutDAO {
                             TableVersionHistoryDAO.setTableVersion(connection, LOADOUT_SLOTS_TABLE_NAME, 1);
                             lastStoredSlotsVersion = 1;
                         }
-
                         isAcceptingQueries = true;
-
                         completableFuture.complete(null);
                     });
 
@@ -263,10 +253,8 @@ public class PlayerLoadoutDAO {
         CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
-
             //We are getting the first loadout since we only support single loadouts right now
             getPlayerLoadoutUUID(connection, playerUUID).thenAccept(optional -> {
-
                 //If loadout exists, return it. Otherwise return an empty list
                 if (optional.isPresent()) {
                     UUID loadoutUUID = optional.get();
@@ -305,19 +293,12 @@ public class PlayerLoadoutDAO {
         CompletableFuture<List<UnlockedAbilities>> completableFuture = new CompletableFuture<>();
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
-
             List<UnlockedAbilities> unlockedAbilities = new ArrayList<>();
-
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ABILITY_ID, SLOT_NUMBER FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE LOADOUT_ID = ? ORDER BY SLOT_NUMBER;")) {
-
                 preparedStatement.setString(1, loadoutUUID.toString());
-
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
                     while (resultSet.next()) {
-
                         UnlockedAbilities unlockedAbility = UnlockedAbilities.fromString(resultSet.getString("ability_id"));
-
                         //Handle duplicates from any existing tables that didn't have constraints
                         if(!unlockedAbilities.contains(unlockedAbility)) {
                             unlockedAbilities.add(unlockedAbility);
@@ -328,7 +309,6 @@ public class PlayerLoadoutDAO {
             catch (SQLException e) {
                 completableFuture.completeExceptionally(e);
             }
-
             completableFuture.complete(unlockedAbilities);
         });
 
@@ -349,20 +329,13 @@ public class PlayerLoadoutDAO {
         int loadoutNumber = 1;//Same as above TODO
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<Optional<UUID>> completableFuture = new CompletableFuture<>();
-
         databaseManager.getDatabaseExecutorService().submit(() -> {
-
             Optional<UUID> loadoutUUIDOptional = Optional.empty();
-
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + LOADOUT_TABLE_NAME + " WHERE player_uuid = ? AND player_loadout_id = ?;")) {
-
                 preparedStatement.setString(1, uuid.toString());
                 preparedStatement.setInt(2, loadoutNumber);
-
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
-
                     while (resultSet.next()) {
-
                         UUID loadoutUUID = UUID.fromString(resultSet.getString("loadout_id"));
                         loadoutUUIDOptional = Optional.of(loadoutUUID);
                     }
@@ -372,7 +345,6 @@ public class PlayerLoadoutDAO {
             catch (SQLException e) {
                 completableFuture.completeExceptionally(e);
             }
-
             completableFuture.complete(loadoutUUIDOptional);
 
         });
@@ -395,24 +367,18 @@ public class PlayerLoadoutDAO {
 
         DatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
         CompletableFuture<UUID> completableFuture = new CompletableFuture<>();
-
         databaseManager.getDatabaseExecutorService().submit(() -> {
-
             UUID loadoutUUID = UUID.randomUUID();
             int loadoutNumber = 1;
-
             try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + LOADOUT_TABLE_NAME + " (LOADOUT_ID, PLAYER_UUID, PLAYER_LOADOUT_ID) VALUES (?, ?, ?);")) {
-
                 preparedStatement.setString(1, loadoutUUID.toString());
                 preparedStatement.setString(2, uuid.toString());
                 preparedStatement.setInt(3, loadoutNumber);
-
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
                 completableFuture.completeExceptionally(e);
             }
-
             completableFuture.complete(loadoutUUID);
         });
         return completableFuture;
@@ -436,14 +402,11 @@ public class PlayerLoadoutDAO {
         List<UnlockedAbilities> abilityLoadout = new ArrayList<>(mcRPGPlayer.getAbilityLoadout()); //Make a copy because async stuffs and I don't want the ghost of Trigary to haunt me
 
         databaseManager.getDatabaseExecutorService().submit(() -> {
-
             getPlayerLoadoutUUID(connection, playerUUID).thenAccept(loadoutOptional -> {
-
                 if (loadoutOptional.isPresent()) {
-
                     UUID loadoutUUID = loadoutOptional.get();
-
                     try {
+                        connection.setAutoCommit(false);
                         try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM " + LOADOUT_SLOTS_TABLE_NAME + " WHERE loadout_id = ?")) {
                             preparedStatement.setString(1, loadoutUUID.toString());
                             preparedStatement.executeUpdate();
@@ -460,16 +423,21 @@ public class PlayerLoadoutDAO {
                                 preparedStatement.executeUpdate();
                             }
                         }
+                        connection.commit();
+                        connection.setAutoCommit(true);
                     }
                     catch (SQLException e) {
                         e.printStackTrace();
                         completableFuture.completeExceptionally(e);
+                        try {
+                            connection.rollback();
+                            connection.setAutoCommit(true);
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
-
-
                 completableFuture.complete(null);
-
             }).exceptionally(throwable -> {
                 logger.log(Level.SEVERE, "An error occured while getting the loadout UUID to save for player with the UUID of: " + playerUUID);
                 throwable.printStackTrace();

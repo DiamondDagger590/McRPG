@@ -7,7 +7,7 @@ import us.eunoians.mcrpg.api.events.mcrpg.FakeBlockBreakEvent;
 
 public class FakeBlockListener implements Listener {
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
     public void handleFakeBlockListener(FakeBlockBreakEvent fakeBlockBreakEvent) {
         if (fakeBlockBreakEvent.isCancelled()) {
             fakeBlockBreakEvent.setPassedChecks(false);
