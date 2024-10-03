@@ -20,7 +20,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
@@ -31,6 +31,7 @@ import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +44,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Rage Spike is an active ability that activates after the user readies their
  * sword and then crouches, blasting them forward and knocking back enemies and doing damage.
  */
-public final class RageSpike extends BaseAbility implements ConfigurableActiveAbility {
+public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility {
 
-    public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPG.getInstance(), "rage_spike");
+    public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "rage_spike");
 
-    public RageSpike() {
-        super(RAGE_SPIKE_KEY);
+    public RageSpike(@NotNull McRPG mcRPG) {
+        super(mcRPG, RAGE_SPIKE_KEY);
         addReadyingComponent(SwordsComponents.SWORDS_READY_COMPONENT, PlayerInteractEvent.class, 0);
         addReadyingComponent(SwordsComponents.SWORDS_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
 
@@ -65,7 +66,7 @@ public final class RageSpike extends BaseAbility implements ConfigurableActiveAb
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
     @Override
@@ -152,7 +153,7 @@ public final class RageSpike extends BaseAbility implements ConfigurableActiveAb
                         }
                     }
                 }
-            }.runTaskTimer(McRPG.getInstance(), 0, 1);
+            }.runTaskTimer(getPlugin(), 0, 1);
             putHolderOnCooldown(abilityHolder);
         }
     }

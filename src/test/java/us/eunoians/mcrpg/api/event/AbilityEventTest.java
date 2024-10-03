@@ -17,7 +17,7 @@ import us.eunoians.mcrpg.skill.Skill;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AbilityEventTests {
+public class AbilityEventTest {
 
     private static ServerMock serverMock;
     private static McRPG plugin;
@@ -43,7 +43,7 @@ public class AbilityEventTests {
 
     @Test
     public void testAbilityRegisterEvent() {
-        BaseAbility ability = new MockAbility(new NamespacedKey(plugin, "test"));
+        BaseAbility ability = new MockAbility(plugin, new NamespacedKey(plugin, "test"));
         plugin.getAbilityRegistry().registerAbility(ability);
         serverMock.getPluginManager().assertEventFired(AbilityRegisterEvent.class, abilityRegisterEvent -> {
             assertEquals(abilityRegisterEvent.getAbility(), ability);
@@ -53,7 +53,7 @@ public class AbilityEventTests {
 
     @Test
     public void testAbilityUnregisterEvent() {
-        BaseAbility ability = new MockAbility(new NamespacedKey(plugin, "test"));
+        BaseAbility ability = new MockAbility(plugin, new NamespacedKey(plugin, "test"));
         plugin.getAbilityRegistry().registerAbility(ability);
         plugin.getAbilityRegistry().unregisterAbility(ability);
         serverMock.getPluginManager().assertEventFired(AbilityUnregisterEvent.class, abilityUnregisterEvent -> {

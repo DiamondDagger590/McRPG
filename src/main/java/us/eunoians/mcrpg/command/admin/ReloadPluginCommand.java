@@ -19,7 +19,7 @@ public class ReloadPluginCommand extends McRPGCommandBase {
     private static final Permission RELOAD_PLUGIN_PERMISSION = Permission.of("mcrpg.admin.reload");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")

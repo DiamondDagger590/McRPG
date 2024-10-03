@@ -68,20 +68,21 @@ dependencies {
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
-    val placeholderAPIVersion = "2.9.2"
-    compileOnly("me.clip:placeholderapi:$placeholderAPIVersion")
-
-    val worldGuardVersion = "7.0.7"
-    compileOnly("com.sk89q.worldguard:worldguard-bukkit:$worldGuardVersion")
+    val glowingEntitiesVersion = "1.3.5"
+    implementation("fr.skytasul:glowingentities:$glowingEntitiesVersion")
 
     val customBlockDataVersion = "2.2.2"
     implementation("com.jeff-media:custom-block-data:$customBlockDataVersion")
 
+    val placeholderAPIVersion = "2.11.6"
+    compileOnly("me.clip:placeholderapi:$placeholderAPIVersion")
+    testImplementation("me.clip:placeholderapi:$placeholderAPIVersion")
+
+    val worldGuardVersion = "7.0.7"
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:$worldGuardVersion")
+
     val geyserVersion = "2.4.2-SNAPSHOT"
     compileOnly("org.geysermc.geyser:api:$geyserVersion")
-
-    val glowingEntitiesVersion = "1.3.5"
-    implementation("fr.skytasul:glowingentities:$glowingEntitiesVersion")
 
     val apolloVersion = "1.1.4"
     compileOnly("com.lunarclient:apollo-api:$apolloVersion")
@@ -117,23 +118,23 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.jar {
-
-    manifest.attributes["Manifest-Version"] = "1.0"
-    manifest.attributes["Main-Class"] = "us.eunoians.mcrpg.McRPG"
-    manifest.attributes["Class-Path"] = "McRPG/libs/h2.jar"
-
-    // Open git
-    val git = org.ajoberstar.grgit.Grgit.open(file("."))
-    // Use abbreviated id from git head
-    archiveAppendix.set(git.head().abbreviatedId)
-
-    // check if classifier is present before adding an unnecessary '-'.
-    val classifier = archiveClassifier.get()
-
-    // Set our desired formatting for the file name
-    archiveFileName.set("${archiveBaseName.get()}-${archiveVersion.get()}-${archiveAppendix.get()}${if (classifier.isEmpty()) "" else "-$classifier"}.${archiveExtension.get()}")
-}
+//tasks.jar {
+//
+//    manifest.attributes["Manifest-Version"] = "1.0"
+//    manifest.attributes["Main-Class"] = "us.eunoians.mcrpg.McRPG"
+//    manifest.attributes["Class-Path"] = "McRPG/libs/h2.jar"
+//
+//    // Open git
+//    val git = org.ajoberstar.grgit.Grgit.open(file("."))
+//    // Use abbreviated id from git head
+//    archiveAppendix.set(git.head().abbreviatedId)
+//
+//    // check if classifier is present before adding an unnecessary '-'.
+//    val classifier = archiveClassifier.get()
+//
+//    // Set our desired formatting for the file name
+//    archiveFileName.set("${archiveBaseName.get()}-${archiveVersion.get()}-${archiveAppendix.get()}${if (classifier.isEmpty()) "" else "-$classifier"}.${archiveExtension.get()}")
+//}
 
 tasks {
     shadowJar {

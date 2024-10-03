@@ -27,7 +27,7 @@ public class GiveExperienceCommand extends GiveCommandBase{
     private static final Permission GIVE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.give.exp");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")

@@ -11,7 +11,7 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,12 +33,12 @@ import java.util.Set;
  * can heal the user of the {@link Bleed} ability each time a bleeding
  * entity takes a tick of bleed damage
  */
-public final class Vampire extends BaseAbility implements ConfigurableTierableAbility, PassiveAbility {
+public final class Vampire extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility {
 
-    public static final NamespacedKey VAMPIRE_KEY = new NamespacedKey(McRPG.getInstance(), "vampire");
+    public static final NamespacedKey VAMPIRE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "vampire");
 
-    public Vampire() {
-        super(VAMPIRE_KEY);
+    public Vampire(@NotNull McRPG plugin) {
+        super(plugin, VAMPIRE_KEY);
         addActivatableComponent(VampireComponents.VAMPIRE_ACTIVATE_COMPONENT, BleedActivateEvent.class, 0);
     }
 
@@ -114,7 +115,7 @@ public final class Vampire extends BaseAbility implements ConfigurableTierableAb
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
     /**

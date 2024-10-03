@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.gui.ability.AbilityGui;
 public class TestGuiCommand {
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         commandManager.command(commandManager.commandBuilder("mcrpg").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {

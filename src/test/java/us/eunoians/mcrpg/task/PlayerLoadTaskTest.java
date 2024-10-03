@@ -86,7 +86,7 @@ public class PlayerLoadTaskTest {
             I tried to spy it and set the max runtime for the task to the max long, but then it still was failing on certain assertions
             so I guess this is more stable? *shrug*
              */
-            assertTrue(loadTask.loadPlayer());
+            assertTrue(loadTask.loadPlayer().get());
             loadTask.onPlayerLoadSuccessfully();
             return null;
         }).when(mockListener).handleJoin(any(PlayerJoinEvent.class));

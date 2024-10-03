@@ -22,7 +22,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 public class LoadoutSetCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         commandManager.command(commandManager.commandBuilder("loadout")
                 .literal("set")

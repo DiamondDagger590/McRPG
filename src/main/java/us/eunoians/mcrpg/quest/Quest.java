@@ -17,10 +17,12 @@ import java.util.UUID;
 
 /**
  * A quest has the following contracts:
+ * <ul>
  * <li>A {@link QuestHolder} can have zero to many quests</li>
  * <li>A quest can have one to many {@link QuestHolder}s</li>
  * <li>A quest can have one to many {@link QuestObjective}s</li>
  * <li>A {@link QuestObjective} can only belong to one quest</li>
+ * </ul>
  * <p>
  * A quest will be completed whenever all of its objectives have been completed.
  */

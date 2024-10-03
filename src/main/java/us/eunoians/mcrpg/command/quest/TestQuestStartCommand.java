@@ -21,7 +21,7 @@ import java.util.UUID;
 public class TestQuestStartCommand {
 
         public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         commandManager.command(commandManager.commandBuilder("quest").literal("start").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             Player player = (Player) commandSender;

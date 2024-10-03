@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability.impl;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -20,6 +21,13 @@ import java.util.Set;
  * extending {@link BaseAbility} in order to provide more out-of-the-box behavior.
  */
 public interface Ability {
+
+    /**
+     * Gets the {@link Plugin} that owns this ability.
+     * @return The {@link Plugin} that owns this ability.
+     */
+    @NotNull
+    Plugin getPlugin();
 
     /**
      * Gets the {@link NamespacedKey} of this ability.

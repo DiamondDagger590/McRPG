@@ -28,7 +28,7 @@ import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 public class LoadoutEditCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         commandManager.command(commandManager.commandBuilder("loadout")
                 .literal("edit")

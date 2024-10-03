@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl.swords;
+package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -10,6 +10,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.OnAttackComponent;
 import us.eunoians.mcrpg.ability.component.activatable.TargetablePlayerComponent;
+import us.eunoians.mcrpg.ability.impl.swords.Bleed;
+import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -25,7 +27,7 @@ public class BleedComponents {
     private static final Random RANDOM = new Random();
     public static final BleedOnAttackComponent BLEED_ON_ATTACK_COMPONENT = new BleedOnAttackComponent();
     public static final BleedOnTargetPlayerComponent BLEED_ON_TARGET_PLAYER_COMPONENT = new BleedOnTargetPlayerComponent();
-    public static final BleedEligibleForTargetComponent BLEED_ELIGIBLE_FOR_TARGET_COMPONENT = new BleedEligibleForTargetComponent();
+//    public static final BleedEligibleForTargetComponent BLEED_ELIGIBLE_FOR_TARGET_COMPONENT = new BleedEligibleForTargetComponent();
 
     private static class BleedOnAttackComponent implements OnAttackComponent {
         @Override
@@ -79,12 +81,18 @@ public class BleedComponents {
         }
     }
 
-    private static class BleedEligibleForTargetComponent implements EventActivatableComponent {
+    public static class BleedEligibleForTargetComponent implements EventActivatableComponent {
+
+        private final McRPG mcRPG;
+
+        public BleedEligibleForTargetComponent(@NotNull McRPG mcRPG) {
+            this.mcRPG = mcRPG;
+        }
 
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent && entityDamageByEntityEvent.getEntity() instanceof LivingEntity livingEntity) {
-                return Bleed.getBleedManager().canEntityStartBleeding(livingEntity);
+                return mcRPG.getBleedManager().canEntityStartBleeding(livingEntity);
             }
             return false;
         }

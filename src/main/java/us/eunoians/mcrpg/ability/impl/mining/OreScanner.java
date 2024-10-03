@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
@@ -32,6 +32,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.task.glow.BlockRemoveGlowTask;
 import us.eunoians.mcrpg.task.glow.BlockStartGlowTask;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -45,13 +46,13 @@ import java.util.Set;
  * Ore Scanner is an active ability that will scan the blocks around the player, informing the player of
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
-public final class OreScanner extends BaseAbility implements ConfigurableActiveAbility, ReloadableContentAbility {
+public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility, ReloadableContentAbility {
 
-    public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPG.getInstance(), "ore_scanner");
+    public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ore_scanner");
     private final ReloadableOreScannerBlocks ORE_SCANNER_BLOCK_TYPES = new ReloadableOreScannerBlocks(getYamlDocument(), MiningConfigFile.ORE_SCANNER_BLOCK_TYPES);
 
-    public OreScanner() {
-        super(ORE_SCANNER_KEY);
+    public OreScanner(@NotNull McRPG plugin) {
+        super(plugin, ORE_SCANNER_KEY);
         addReadyingComponent(MiningComponents.MINING_READY_COMPONENT, PlayerInteractEvent.class, 0);
         addReadyingComponent(MiningComponents.MINING_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
 
@@ -68,7 +69,7 @@ public final class OreScanner extends BaseAbility implements ConfigurableActiveA
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
     @Override
@@ -150,14 +151,14 @@ public final class OreScanner extends BaseAbility implements ConfigurableActiveA
             player.teleport(Methods.lookAt(playerLocation, toPoint));
         });
 
-        Audience audience = McRPG.getInstance().getAdventure().player(player);
+        Audience audience = getPlugin().getAdventure().player(player);
         instancesOfBlocks.keySet().forEach(oreScannerBlockType -> {
             Set<Location> locations = instancesOfBlocks.get(oreScannerBlockType);
             BlockStartGlowTask blockStartGlowTask = new BlockStartGlowTask(player, oreScannerBlockType, locations);
             blockStartGlowTask.runTask();
             BlockRemoveGlowTask blockRemoveGlowTask = new BlockRemoveGlowTask(player, locations);
             blockRemoveGlowTask.runTask();
-            audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<gray>You've detected <gold>" + locations.size() + " " + oreScannerBlockType.typeName() + "</gold> near you."));
+            audience.sendMessage(getPlugin().getMiniMessage().deserialize("<gray>You've detected <gold>" + locations.size() + " " + oreScannerBlockType.typeName() + "</gold> near you."));
         });
     }
 

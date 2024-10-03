@@ -27,7 +27,7 @@ public class ResetPlayerCommand extends ResetBaseCommand {
     private static final Permission RESET_PLAYER_PERMISSION = Permission.of("mcrpg.admin.reset.player");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")

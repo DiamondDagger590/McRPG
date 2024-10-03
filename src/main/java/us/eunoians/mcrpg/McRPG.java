@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.command.DisplayNameCommand;
+import com.diamonddagger590.mccore.command.LoreCommand;
 import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.player.PlayerManager;
@@ -22,6 +24,7 @@ import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
+import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
@@ -64,6 +67,7 @@ import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
 import us.eunoians.mcrpg.listener.world.BlockPlaceListener;
+import us.eunoians.mcrpg.papi.McRPGPapiExpansion;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -92,6 +96,7 @@ public class McRPG extends CorePlugin {
     private EntityManager entityManager;
     private DisplayManager displayManager;
     private QuestManager questManager;
+    private BleedManager bleedManager;
 
     private GlowingBlocks glowingBlocks;
     private GlowingEntities glowingEntities;
@@ -109,9 +114,10 @@ public class McRPG extends CorePlugin {
     @Override
     public void onEnable() {
         super.onEnable();
-
         if (!isUnitTest()) {
             initializeFiles();
+            glowingBlocks = new GlowingBlocks(this);
+            glowingEntities = new GlowingEntities(this);
         }
 
         entityManager = new EntityManager(this);
@@ -123,25 +129,25 @@ public class McRPG extends CorePlugin {
         abilityAttributeManager = new AbilityAttributeManager(this);
         displayManager = new DisplayManager();
         questManager = new QuestManager();
-
-        glowingBlocks = new GlowingBlocks(this);
-        glowingEntities = new GlowingEntities(this);
+        bleedManager = new BleedManager(this);
 
         //TODO relocate into expansion packs
-        getAbilityRegistry().registerAbility(new Bleed());
-        getAbilityRegistry().registerAbility(new DeeperWound());
-        getAbilityRegistry().registerAbility(new Vampire());
-        getAbilityRegistry().registerAbility(new EnhancedBleed());
-        getAbilityRegistry().registerAbility(new RageSpike());
-        getAbilityRegistry().registerAbility(new SerratedStrikes());
+        if (!isUnitTest()) {
+            getAbilityRegistry().registerAbility(new Bleed(this));
+            getAbilityRegistry().registerAbility(new DeeperWound(this));
+            getAbilityRegistry().registerAbility(new Vampire(this));
+            getAbilityRegistry().registerAbility(new EnhancedBleed(this));
+            getAbilityRegistry().registerAbility(new RageSpike(this));
+            getAbilityRegistry().registerAbility(new SerratedStrikes(this));
 
-        getAbilityRegistry().registerAbility(new ExtraOre());
-        getAbilityRegistry().registerAbility(new ItsATriple());
-        getAbilityRegistry().registerAbility(new RemoteTransfer());
-        getAbilityRegistry().registerAbility(new OreScanner());
+            getAbilityRegistry().registerAbility(new ExtraOre(this));
+            getAbilityRegistry().registerAbility(new ItsATriple(this));
+            getAbilityRegistry().registerAbility(new RemoteTransfer(this));
+            getAbilityRegistry().registerAbility(new OreScanner(this));
 
-        getSkillRegistry().registerSkill(new Swords());
-        getSkillRegistry().registerSkill(new Mining());
+            getSkillRegistry().registerSkill(new Swords());
+            getSkillRegistry().registerSkill(new Mining());
+        }
 
         setupHooks();
         if (!isUnitTest()) {
@@ -154,9 +160,10 @@ public class McRPG extends CorePlugin {
 
     @Override
     public void onDisable() {
-        glowingBlocks.disable();
-        glowingEntities.disable();
+
         if (!isUnitTest()) {
+            glowingBlocks.disable();
+            glowingEntities.disable();
             Connection connection = databaseManager.getDatabase().getConnection();
             if (connection == null) {
                 throw new RuntimeException("Database was not available on shutdown... there is likely lost McRPG data as a result.");
@@ -228,6 +235,10 @@ public class McRPG extends CorePlugin {
         // Link commands
         LinkChestCommand.registerCommand();
         UnlinkChestCommand.registerCommand();
+
+        // Test commands
+        LoreCommand.registerCommand();
+        DisplayNameCommand.registerCommand();
     }
 
     @Override
@@ -288,7 +299,7 @@ public class McRPG extends CorePlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             papiEnabled = true;
             getLogger().info("Papi PlaceholderAPI found... registering hooks");
-            //new McRPGPlaceHolders().register();
+            new McRPGPapiExpansion(this).register();
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("NoCheatPlus")) {
@@ -412,6 +423,11 @@ public class McRPG extends CorePlugin {
         return glowingEntities;
     }
 
+    @NotNull
+    public BleedManager getBleedManager() {
+        return bleedManager;
+    }
+
     /**
      * Checks to see if Lunar Client support is enabled.
      *
@@ -428,6 +444,10 @@ public class McRPG extends CorePlugin {
      */
     public boolean isGeyserEnabled() {
         return geyserEnabled && Geyser.isRegistered();
+    }
+
+    public boolean isPapiEnabled() {
+        return papiEnabled;
     }
 
     @NotNull

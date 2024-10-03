@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SkillEventTests {
+public class SkillEventTest {
 
     private static ServerMock serverMock;
     private static McRPG plugin;

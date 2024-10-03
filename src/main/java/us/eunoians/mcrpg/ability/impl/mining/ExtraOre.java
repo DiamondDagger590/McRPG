@@ -14,7 +14,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
@@ -26,6 +26,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,17 +39,22 @@ import java.util.stream.Collectors;
  * This is a default ability that has a chance to double the amount of drops from a
  * mined block.
  */
-public final class ExtraOre extends BaseAbility implements PassiveAbility, ConfigurableAbility, ReloadableContentAbility, DropMultiplierAbility {
+public final class ExtraOre extends McRPGAbility implements PassiveAbility, ConfigurableAbility, ReloadableContentAbility, DropMultiplierAbility {
 
-    public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPG.getInstance(), "extra_ore");
+    public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "extra_ore");
 
-    private final ReloadableSet<Material> VALID_BLOCK_TYPES = new ReloadableSet<>(getYamlDocument(), MiningConfigFile.EXTRA_ORE_VALID_DROPS, strings -> strings.stream().map(Material::getMaterial).collect(Collectors.toSet()));
+    private final ReloadableSet<Material> VALID_BLOCK_TYPES;
     private final Map<Location, Integer> multiplierMap = new HashMap<>();
 
-    public ExtraOre() {
-        super(EXTRA_ORE_KEY);
+    public ExtraOre(@NotNull McRPG mcRPG) {
+        super(mcRPG, EXTRA_ORE_KEY);
         addActivatableComponent(MiningComponents.HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
         addActivatableComponent(ExtraOreComponents.EXTRA_ORE_ON_BREAK_COMPONENT, BlockBreakEvent.class, 1);
+        VALID_BLOCK_TYPES = getValidBlockTypes();
+    }
+
+    private ReloadableSet<Material> getValidBlockTypes() {
+        return new ReloadableSet<>(getYamlDocument(), MiningConfigFile.EXTRA_ORE_VALID_DROPS, strings -> strings.stream().map(Material::getMaterial).collect(Collectors.toSet()));
     }
 
     @NotNull
@@ -79,7 +85,7 @@ public final class ExtraOre extends BaseAbility implements PassiveAbility, Confi
     public double getActivationChance(@NotNull SkillHolder skillHolder) {
         var skillHolderDataOptional = skillHolder.getSkillHolderData(Mining.MINING_KEY);
         if (skillHolderDataOptional.isPresent()) {
-            Parser parser = new Parser(McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG).getString(MiningConfigFile.EXTRA_ORE_ACTIVATION_EQUATION));
+            Parser parser = new Parser(getPlugin().getFileManager().getFile(FileType.MINING_CONFIG).getString(MiningConfigFile.EXTRA_ORE_ACTIVATION_EQUATION));
             parser.setVariable("mining_level", skillHolderDataOptional.get().getCurrentLevel());
             return parser.getValue();
         }
@@ -111,7 +117,7 @@ public final class ExtraOre extends BaseAbility implements PassiveAbility, Confi
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
     @Override

@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.entity.holder;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.api.event.skill.PostSkillGainLevelEvent;
@@ -74,7 +73,7 @@ public class SkillHolder extends LoadoutHolder {
      * @param currentExperience The skill experience to store in the data.
      */
     public void addSkillHolderData(@NotNull Skill skill, int currentLevel, int currentExperience) {
-        addSkillHolderData(new SkillHolderData(this, skill.getSkillKey(), currentLevel, currentExperience));
+        addSkillHolderData(new SkillHolderData(this, skill, currentLevel, currentExperience));
     }
 
     /**
@@ -131,18 +130,18 @@ public class SkillHolder extends LoadoutHolder {
     public static class SkillHolderData {
 
         private final SkillHolder skillHolder;
-        private final NamespacedKey skillKey;
+        private final Skill skill;
         private int currentExperience;
         private int experienceForNextLevel;
         private int currentLevel;
 
-        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey, int currentLevel) {
-            this(skillHolder, skillKey, Math.max(0, currentLevel), 0);
+        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int currentLevel) {
+            this(skillHolder, skill, Math.max(0, currentLevel), 0);
         }
 
-        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey, int currentLevel, int currentExperience) {
+        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int currentLevel, int currentExperience) {
             this.skillHolder = skillHolder;
-            this.skillKey = skillKey;
+            this.skill = skill;
             this.currentLevel = Math.max(0, currentLevel);
             this.currentExperience = Math.max(0, currentExperience);
             updateExperienceForNextLevel();
@@ -172,7 +171,7 @@ public class SkillHolder extends LoadoutHolder {
          */
         @NotNull
         public NamespacedKey getSkillKey() {
-            return skillKey;
+            return skill.getSkillKey();
         }
 
         /**
@@ -221,7 +220,7 @@ public class SkillHolder extends LoadoutHolder {
             }
             currentExperience += skillGainExpEvent.getExperience();
             checkForLevelups();
-            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, skillKey));
+            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey()));
         }
 
         /**
@@ -233,7 +232,7 @@ public class SkillHolder extends LoadoutHolder {
         public void setCurrentExperience(int experience) {
             currentExperience = Math.max(0, experience);
             checkForLevelups();
-            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, skillKey));
+            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey()));
         }
 
         /**
@@ -261,9 +260,8 @@ public class SkillHolder extends LoadoutHolder {
          */
         public int addLevel(int level, boolean resetExpOnLevelUp) {
             int amountOfLevelups = 0;
-            Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(getSkillKey());
             level = Math.min(level, skill.getMaxLevel() - getCurrentLevel());
-            SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), skillKey, level);
+            SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), level);
             Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
             level = Math.min(skillGainLevelEvent.getLevels(), skill.getMaxLevel() - getCurrentLevel());
             currentLevel += level;
@@ -277,7 +275,7 @@ public class SkillHolder extends LoadoutHolder {
                 currentExperience = 0;
             }
             if (level >= 0) {
-                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, skillKey, getCurrentLevel() - level, getCurrentLevel()));
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), getCurrentLevel() - level, getCurrentLevel()));
             }
             return amountOfLevelups;
         }

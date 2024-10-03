@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability.impl;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
@@ -37,12 +38,20 @@ public abstract class BaseAbility implements Ability {
     private final List<EventCancellingComponentAttribute> cancellingComponents;
     private final Map<Class<? extends Event>, List<EventActivatableComponentAttribute>> activatingAttributes;
     private final Map<Class<? extends Event>, List<EventReadyableComponentAttribute>> readyAttributes;
+    private final Plugin plugin;
 
-    public BaseAbility(@NotNull NamespacedKey abilityKey) {
+    public BaseAbility(@NotNull Plugin plugin, @NotNull NamespacedKey abilityKey) {
+        this.plugin = plugin;
         this.abilityKey = abilityKey;
         this.cancellingComponents = new ArrayList<>();
         this.activatingAttributes = new HashMap<>();
         this.readyAttributes = new HashMap<>();
+    }
+
+    @NotNull
+    @Override
+    public Plugin getPlugin() {
+        return plugin;
     }
 
     @NotNull

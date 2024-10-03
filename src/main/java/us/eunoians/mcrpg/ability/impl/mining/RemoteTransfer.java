@@ -21,10 +21,10 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.attribute.RemoteTransferMaterialSetAttribute;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
@@ -36,6 +36,7 @@ import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,9 +50,9 @@ import java.util.Set;
  * This ability allows players to link to a chest and blocks they mine will automatically go into the chest if their allow list
  * has it enabled.
  */
-public final class RemoteTransfer extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public final class RemoteTransfer extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
 
-    public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPG.getInstance(), "remote_transfer");
+    public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "remote_transfer");
     private static final Map<RemoteTransferCategoryType, RemoteTransferCategory> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
 
     static {
@@ -60,8 +61,8 @@ public final class RemoteTransfer extends BaseAbility implements PassiveAbility,
         }
     }
 
-    public RemoteTransfer() {
-        super(REMOTE_TRANSFER_KEY);
+    public RemoteTransfer(@NotNull McRPG plugin) {
+        super(plugin, REMOTE_TRANSFER_KEY);
         addActivatableComponent(RemoteTransferComponents.REMOTE_TRANSFER_ACTIVATE_ON_BLOCK_DROP_COMPONENT, BlockDropItemEvent.class, 0);
     }
 
@@ -74,7 +75,7 @@ public final class RemoteTransfer extends BaseAbility implements PassiveAbility,
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
     @Override
@@ -141,7 +142,7 @@ public final class RemoteTransfer extends BaseAbility implements PassiveAbility,
                 }
 
                 // Force the chunk to load if it isn't already
-                chunk.addPluginChunkTicket(McRPG.getInstance());
+                chunk.addPluginChunkTicket(getPlugin());
                 List<Inventory> inventories = new ArrayList<>();
                 boolean isDouble = false;
                 if (chest.getInventory().getHolder() instanceof DoubleChest doubleChest) {
@@ -229,7 +230,7 @@ public final class RemoteTransfer extends BaseAbility implements PassiveAbility,
                 }
                 // Allow the chunk to unload now that we are done
                 // TODO set this to be on a runnable but reset it every time this is called so we aren't constantly loading/unloading
-                chunk.removePluginChunkTicket(McRPG.getInstance());
+                chunk.removePluginChunkTicket(getPlugin());
             }
         }
     }
@@ -253,7 +254,7 @@ public final class RemoteTransfer extends BaseAbility implements PassiveAbility,
                 presentInConfig = true;
             }
         }
-        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = (RemoteTransfer) getPlugin().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
         if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
                 abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {

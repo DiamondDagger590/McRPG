@@ -29,7 +29,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
     private static final Permission RESET_SKILL_PERMISSION = Permission.of("mcrpg.admin.reset.skill");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")

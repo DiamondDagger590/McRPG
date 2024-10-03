@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,12 +33,12 @@ import java.util.Set;
  * This ability activates by attacking an enemy after readying the user's sword. The ability
  * increases the activation rate of {@link Bleed} while active.
  */
-public final class SerratedStrikes extends BaseAbility implements ConfigurableActiveAbility {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility {
 
-    public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPG.getInstance(), "serrated_strikes");
+    public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
-    public SerratedStrikes() {
-        super(SERRATED_STRIKES_KEY);
+    public SerratedStrikes(@NotNull McRPG plugin) {
+        super(plugin, SERRATED_STRIKES_KEY);
         addReadyingComponent(SwordsComponents.SWORDS_READY_COMPONENT, PlayerInteractEvent.class, 0);
         addReadyingComponent(SwordsComponents.SWORDS_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
 
@@ -54,7 +55,7 @@ public final class SerratedStrikes extends BaseAbility implements ConfigurableAc
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
     @Override

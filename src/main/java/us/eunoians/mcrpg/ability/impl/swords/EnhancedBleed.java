@@ -9,7 +9,7 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +30,13 @@ import java.util.Set;
  * This ability is an unlockable ability for {@link Swords} that
  * can increase the damage per tick for the {@link Bleed} ability
  */
-public final class EnhancedBleed extends BaseAbility implements ConfigurableTierableAbility, PassiveAbility {
+public final class EnhancedBleed extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility {
 
-    public static final NamespacedKey ENHANCED_BLEED_KEY = new NamespacedKey(McRPG.getInstance(), "enhanced_bleed");
+    public static final NamespacedKey ENHANCED_BLEED_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "enhanced_bleed");
     private static final Random RANDOM = new Random();
 
-    public EnhancedBleed() {
-        super(ENHANCED_BLEED_KEY);
+    public EnhancedBleed(@NotNull McRPG mcRPG) {
+        super(mcRPG, ENHANCED_BLEED_KEY);
         addActivatableComponent(EnhancedBleedComponents.ENHANCED_BLEED_ACTIVATE_COMPONENT, BleedActivateEvent.class, 0);
     }
 

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 
 /**
  * A DAO used to store a player's loadout
@@ -65,19 +64,21 @@ public class PlayerLoadoutDAO {
                  ** Contains player loadout information
                  *
                  *
-                 * loadout_id is the {@link UUID} of the loadout which can be used to lookup specific information about that loadout's contents
                  * player_uuid is the {@link UUID} of the player being stored
-                 * player_loadout_id is the id of the loadout. Players down the line might be able to have multiple loadouts, so this is an integer representing what loadout this is for them to make lookups easier
+                 * loadout_uuid is the {@link UUID} of the loadout which can be used to lookup specific information about that loadout's contents
+                 * loadout_id is the id of the loadout. Players down the line might be able to have multiple loadouts, so this is an integer representing what loadout this is for them to make lookups easier
                  *
                  **
                  ** Reasoning for structure:
-                 ** PK is the `loadout_id` field, as each loadout id can only exist once
+                 ** PK is the `player_uuid`, `loadout_id`, `loadout_uuid` fields, as each loadout id can only exist once, and
+                 * each loadout + player UUID can only exist once
                  *****/
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + LOADOUT_TABLE_NAME + "`" +
                         "(" +
                         "`player_uuid` varchar(36) NOT NULL," +
+                        "`loadout_uuid` varchar(36) NOT NULL," +
                         "`loadout_id` int(11) NOT NULL DEFAULT 1," +
-                        "PRIMARY KEY (`loadout_id`, `player_uuid`)" +
+                        "PRIMARY KEY (`loadout_id`, `player_uuid`, `loadout_uuid`)" +
                         ");")) {
                     statement.executeUpdate();
                 } catch (SQLException e) {
@@ -93,14 +94,16 @@ public class PlayerLoadoutDAO {
                  ** Contains player loadout slots
                  *
                  *
-                 * loadout_id is the {@link java.util.UUID} of the loadout the data belongs to
-                 * slot_number is an integer representing the slot in the loadout that the ability is stored in
+                 * loadout_id is the slot of the player's loadout the data belongs to
+                 * player_uuid is an integer representing the slot in the loadout that the ability is stored in
                  * ability_id is the ability id that is used to find the corresponding {@link UnlockedAbilities} value
                  **
                  ** Reasoning for structure:
-                 ** PK is the composite of `loadout_id` field and `slot_number`, as a loadout id will be present once for each ability in the loadout, so the combination of that and the slot number will be used to look up individual abilities
+                 ** PK is the composite of `loadout_id` field, `slot_number` and `player_uuid`, as a loadout id will be present once for each ability in the loadout,
+                 * so the combination of that and the slot number will be used to look up individual abilities and each player uuid is unique.
+                 *
+                 * The foreign key requires the player's uuid to be present in the loadout table as that's where the player's loadout info is stored
                  *****/
-                //TODO update javadoc
                 try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + LOADOUT_SLOTS_TABLE_NAME + "`" +
                         "(" +
                         "`loadout_id` int(11) NOT NULL," +
@@ -201,7 +204,7 @@ public class PlayerLoadoutDAO {
      *
      * @param connection The {@link Connection} that will be running the query
      * @param playerUUID The {@link UUID} of the player to get the loadout for
-     * @return A {@link CompletableFuture} that has a {@link List} of {@link UnlockedAbilities} that the
+     * @return A {@link CompletableFuture} that has a {@link List} of {@link us.eunoians.mcrpg.ability.impl.Ability} that the
      * provided player {@link UUID} has equipped.
      */
     @NotNull

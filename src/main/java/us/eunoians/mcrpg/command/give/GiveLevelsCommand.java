@@ -24,7 +24,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
     private static final Permission GIVE_LEVELS_PERMISSION = Permission.of("mcrpg.give.level");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")

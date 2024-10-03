@@ -9,7 +9,7 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.api.event.ability.mining.ExtraOreActivateEvent;
@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,12 +29,12 @@ import java.util.Set;
  * This is a passive ability that has a chance to activate when {@link ExtraOre} activates,
  * turning the double drop into a triple drop.
  */
-public final class ItsATriple extends BaseAbility implements PassiveAbility, ConfigurableTierableAbility {
+public final class ItsATriple extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility {
 
-    public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPG.getInstance(), "its_a_triple");
+    public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "its_a_triple");
 
-    public ItsATriple() {
-        super(ITS_A_TRIPLE_KEY);
+    public ItsATriple(@NotNull McRPG mcRPG) {
+        super(mcRPG, ITS_A_TRIPLE_KEY);
         addActivatableComponent(ItsATripleComponents.ITS_A_TRIPLE_ACTIVATE_ON_EXTRA_DROP_COMPONENT, ExtraOreActivateEvent.class, 0);
     }
 
@@ -104,7 +105,7 @@ public final class ItsATriple extends BaseAbility implements PassiveAbility, Con
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
     public double getActivationChance(int tier) {
