@@ -19,8 +19,6 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.mining.ExtraOreComponents;
-import us.eunoians.mcrpg.ability.impl.mining.MiningComponents;
 import us.eunoians.mcrpg.api.event.ability.woodcutting.ExtraLumberActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
@@ -46,8 +44,8 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
 
     public ExtraLumber(@NotNull McRPG mcRPG) {
         super(mcRPG, EXTRA_LUMBER_KEY);
-        addActivatableComponent(MiningComponents.HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
-        addActivatableComponent(ExtraOreComponents.EXTRA_ORE_ON_BREAK_COMPONENT, BlockBreakEvent.class, 1);
+        addActivatableComponent(WoodcuttingComponents.HOLDING_AXE_BREAK_BLOCK_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
+        addActivatableComponent(ExtraLumberComponents.EXTRA_LUMBER_ON_BREAK_COMPONENT, BlockBreakEvent.class, 1);
         VALID_BLOCK_TYPES = getValidBlockTypes();
     }
 

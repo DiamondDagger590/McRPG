@@ -25,6 +25,13 @@ public class WoodcuttingConfigFile extends AbilityConfigFile {
     public static final Route EXTRA_LUMBER_ACTIVATION_EQUATION = Route.addTo(EXTRA_LUMBER_HEADER, "activation-equation");
     public static final Route EXTRA_LUMBER_VALID_DROPS = Route.addTo(EXTRA_LUMBER_HEADER, "valid-drops");
 
+    private static final Route HEAVY_SWING_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "heavy-swing");
+    public static final Route HEAVY_SWING_ENABLED = Route.addTo(HEAVY_SWING_HEADER, "enabled");
+    public static final Route HEAVY_SWING_AMOUNT_OF_TIERS = Route.addTo(HEAVY_SWING_HEADER, "amount-of-tiers");
+    public static final Route HEAVY_SWING_VALID_BLOCKS = Route.addTo(EXTRA_LUMBER_HEADER, "valid-blocks");
+
+    public static final Route HEAVY_SWING_CONFIGURATION_HEADER = Route.addTo(HEAVY_SWING_HEADER, "tier-configuration");
+
     @Override
     public UpdaterSettings getUpdaterSettings() {
         return UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).addIgnoredRoutes(getIgnoredRoutes()).build();

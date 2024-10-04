@@ -60,6 +60,7 @@ import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
 import us.eunoians.mcrpg.listener.world.BlockPlaceListener;
+import us.eunoians.mcrpg.listener.world.FakeBlockBreakListener;
 import us.eunoians.mcrpg.papi.McRPGPapiExpansion;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -258,6 +259,7 @@ public class McRPG extends CorePlugin {
 
         // World listener
         Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        Bukkit.getPluginManager().registerEvents(new FakeBlockBreakListener(), this);
         CustomBlockData.registerListener(this);
 
         // Debug Listener
