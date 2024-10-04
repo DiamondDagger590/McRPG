@@ -31,7 +31,7 @@ public class ExtraLumberActivateEvent extends AbilityActivateEvent implements Ca
     }
 
     /**
-     * The amount to multiply block drops by.
+     * Gets the amount to multiply block drops by.
      *
      * @return The amount to multiply block drops by.
      */

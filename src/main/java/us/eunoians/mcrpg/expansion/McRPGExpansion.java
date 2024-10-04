@@ -13,7 +13,9 @@ import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
+import us.eunoians.mcrpg.ability.impl.woodcutting.DryadsGift;
 import us.eunoians.mcrpg.ability.impl.woodcutting.ExtraLumber;
+import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
@@ -81,6 +83,8 @@ public final class McRPGExpansion extends ContentExpansion {
 
         // Woodcutting Abilities
         abilityContent.addContent(new ExtraLumber(mcRPG));
+        abilityContent.addContent(new HeavySwing(mcRPG));
+        abilityContent.addContent(new DryadsGift(mcRPG));
         return abilityContent;
     }
 }

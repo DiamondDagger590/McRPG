@@ -25,12 +25,19 @@ public class WoodcuttingConfigFile extends AbilityConfigFile {
     public static final Route EXTRA_LUMBER_ACTIVATION_EQUATION = Route.addTo(EXTRA_LUMBER_HEADER, "activation-equation");
     public static final Route EXTRA_LUMBER_VALID_DROPS = Route.addTo(EXTRA_LUMBER_HEADER, "valid-drops");
 
+    // Heavy Swing
     private static final Route HEAVY_SWING_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "heavy-swing");
     public static final Route HEAVY_SWING_ENABLED = Route.addTo(HEAVY_SWING_HEADER, "enabled");
     public static final Route HEAVY_SWING_AMOUNT_OF_TIERS = Route.addTo(HEAVY_SWING_HEADER, "amount-of-tiers");
-    public static final Route HEAVY_SWING_VALID_BLOCKS = Route.addTo(EXTRA_LUMBER_HEADER, "valid-blocks");
-
+    public static final Route HEAVY_SWING_VALID_BLOCKS = Route.addTo(HEAVY_SWING_HEADER, "valid-blocks");
     public static final Route HEAVY_SWING_CONFIGURATION_HEADER = Route.addTo(HEAVY_SWING_HEADER, "tier-configuration");
+
+    // Dryads Gift
+    private static final Route DRYADS_GIFT_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "dryads-gift");
+    public static final Route DRYADS_GIFT_ENABLED = Route.addTo(DRYADS_GIFT_HEADER, "enabled");
+    public static final Route DRYADS_GIFT_AMOUNT_OF_TIERS = Route.addTo(DRYADS_GIFT_HEADER, "amount-of-tiers");
+    public static final Route DRYADS_GIFT_VALID_BLOCKS = Route.addTo(DRYADS_GIFT_HEADER, "valid-blocks");
+    public static final Route DRYADS_GIFT_CONFIGURATION_HEADER = Route.addTo(DRYADS_GIFT_HEADER, "tier-configuration");
 
     @Override
     public UpdaterSettings getUpdaterSettings() {
