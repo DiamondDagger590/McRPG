@@ -4,9 +4,9 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.McRPGSkill;
 
-public class Mining extends Skill {
+public final class Mining extends McRPGSkill {
 
     public static final NamespacedKey MINING_KEY = new NamespacedKey(McRPG.getInstance(), "mining");
 

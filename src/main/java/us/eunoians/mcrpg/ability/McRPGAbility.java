@@ -4,6 +4,9 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.expansion.McRPGExpansion;
+
+import java.util.Optional;
 
 public abstract class McRPGAbility extends BaseAbility {
 
@@ -15,5 +18,11 @@ public abstract class McRPGAbility extends BaseAbility {
     @NotNull
     public McRPG getPlugin() {
         return (McRPG) super.getPlugin();
+    }
+
+    @NotNull
+    @Override
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }
 }

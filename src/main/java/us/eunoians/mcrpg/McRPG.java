@@ -14,16 +14,6 @@ import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
-import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
-import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
-import us.eunoians.mcrpg.ability.impl.mining.OreScanner;
-import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
-import us.eunoians.mcrpg.ability.impl.swords.Bleed;
-import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
-import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
-import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
-import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
-import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
@@ -45,6 +35,9 @@ import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.expansion.ContentExpansionManager;
+import us.eunoians.mcrpg.expansion.McRPGExpansion;
+import us.eunoians.mcrpg.expansion.handler.ContentHandlerType;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityCooldownExpireListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityPutOnCooldownListener;
@@ -70,11 +63,10 @@ import us.eunoians.mcrpg.listener.world.BlockPlaceListener;
 import us.eunoians.mcrpg.papi.McRPGPapiExpansion;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.SkillRegistry;
-import us.eunoians.mcrpg.skill.impl.mining.Mining;
-import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.LunarUtils;
 
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -97,6 +89,7 @@ public class McRPG extends CorePlugin {
     private DisplayManager displayManager;
     private QuestManager questManager;
     private BleedManager bleedManager;
+    private ContentExpansionManager contentExpansionManager;
 
     private GlowingBlocks glowingBlocks;
     private GlowingEntities glowingEntities;
@@ -130,23 +123,10 @@ public class McRPG extends CorePlugin {
         displayManager = new DisplayManager();
         questManager = new QuestManager();
         bleedManager = new BleedManager(this);
+        contentExpansionManager = new ContentExpansionManager(this);
 
-        //TODO relocate into expansion packs
         if (!isUnitTest()) {
-            getAbilityRegistry().registerAbility(new Bleed(this));
-            getAbilityRegistry().registerAbility(new DeeperWound(this));
-            getAbilityRegistry().registerAbility(new Vampire(this));
-            getAbilityRegistry().registerAbility(new EnhancedBleed(this));
-            getAbilityRegistry().registerAbility(new RageSpike(this));
-            getAbilityRegistry().registerAbility(new SerratedStrikes(this));
-
-            getAbilityRegistry().registerAbility(new ExtraOre(this));
-            getAbilityRegistry().registerAbility(new ItsATriple(this));
-            getAbilityRegistry().registerAbility(new RemoteTransfer(this));
-            getAbilityRegistry().registerAbility(new OreScanner(this));
-
-            getSkillRegistry().registerSkill(new Swords());
-            getSkillRegistry().registerSkill(new Mining());
+            registerNativeExpansions();
         }
 
         setupHooks();
@@ -328,6 +308,14 @@ public class McRPG extends CorePlugin {
     }
 
     /**
+     * Registers the native {@link us.eunoians.mcrpg.expansion.ContentExpansion}s for McRPG
+     */
+    private void registerNativeExpansions() {
+        Arrays.stream(ContentHandlerType.values()).forEach(contentHandlerType -> contentExpansionManager.registerContentHandler(contentHandlerType.getContentHandler()));
+        contentExpansionManager.registerContentExpansion(new McRPGExpansion(this));
+    }
+
+    /**
      * Get the {@link FileManager} used by McRPG
      *
      * @return The {@link FileManager} used by McRPG
@@ -423,9 +411,24 @@ public class McRPG extends CorePlugin {
         return glowingEntities;
     }
 
+    /**
+     * Gets the {@link BleedManager} used by McRPG.
+     *
+     * @return The {@link BleedManager} used by McRPG.
+     */
     @NotNull
     public BleedManager getBleedManager() {
         return bleedManager;
+    }
+
+    /**
+     * Gets the {@link ContentExpansionManager} used by McRPG.
+     *
+     * @return The {@link ContentExpansionManager} used by McRPG.
+     */
+    @NotNull
+    public ContentExpansionManager getContentExpansionManager() {
+        return contentExpansionManager;
     }
 
     /**

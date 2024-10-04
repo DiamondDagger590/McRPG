@@ -5,6 +5,7 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.exception.skill.EventNotRegisteredForLevelingException;
+import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.skill.component.EventLevelableComponent;
 import us.eunoians.mcrpg.skill.component.EventLevelableComponentAttribute;
 
@@ -17,7 +18,7 @@ import java.util.Map;
 /**
  * The base class for any skills
  */
-public abstract class Skill {
+public abstract class Skill implements McRPGContent {
 
     private final Map<Class<? extends Event>, List<EventLevelableComponentAttribute>> levelingAttributes;
 

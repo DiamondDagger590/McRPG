@@ -2,16 +2,19 @@ package us.eunoians.mcrpg.quest;
 
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.api.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.api.event.quest.QuestStartEvent;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.exception.quest.QuestMissingObjectiveException;
+import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.quest.objective.QuestObjective;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,7 +29,7 @@ import java.util.UUID;
  * <p>
  * A quest will be completed whenever all of its objectives have been completed.
  */
-public class Quest {
+public class Quest implements McRPGContent {
 
     private final UUID uuid;
     private final String configKey;
@@ -200,5 +203,12 @@ public class Quest {
 
     public void stopListeningForProgression() {
         questObjectives.forEach(QuestObjective::stopListeningForProgression);
+    }
+
+    @NotNull
+    @Override
+    public Optional<NamespacedKey> getExpansionKey() {
+        // TODO add support for quests
+        return Optional.empty();
     }
 }

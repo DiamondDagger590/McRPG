@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ import java.util.Set;
  * Further ability behavior is provided in child interfaces which can be implemented alongside
  * extending {@link BaseAbility} in order to provide more out-of-the-box behavior.
  */
-public interface Ability {
+public interface Ability extends McRPGContent {
 
     /**
      * Gets the {@link Plugin} that owns this ability.
