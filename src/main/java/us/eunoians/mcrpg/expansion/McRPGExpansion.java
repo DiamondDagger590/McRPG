@@ -13,12 +13,14 @@ import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
+import us.eunoians.mcrpg.ability.impl.woodcutting.ExtraLumber;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
+import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Set;
@@ -52,6 +54,7 @@ public final class McRPGExpansion extends ContentExpansion {
         SkillContentPack skillContent = new SkillContentPack(this);
         skillContent.addContent(new Swords());
         skillContent.addContent(new Mining());
+        skillContent.addContent(new Woodcutting());
         return skillContent;
     }
 
@@ -76,6 +79,8 @@ public final class McRPGExpansion extends ContentExpansion {
         abilityContent.addContent(new RemoteTransfer(mcRPG));
         abilityContent.addContent(new OreScanner(mcRPG));
 
+        // Woodcutting Abilities
+        abilityContent.addContent(new ExtraLumber(mcRPG));
         return abilityContent;
     }
 }

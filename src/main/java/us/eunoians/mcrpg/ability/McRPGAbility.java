@@ -8,6 +8,9 @@ import us.eunoians.mcrpg.expansion.McRPGExpansion;
 
 import java.util.Optional;
 
+/**
+ * An ability that represents any abilities that come natively with McRPG.
+ */
 public abstract class McRPGAbility extends BaseAbility {
 
     public McRPGAbility(@NotNull McRPG mcRPG, @NotNull NamespacedKey namespacedKey) {
