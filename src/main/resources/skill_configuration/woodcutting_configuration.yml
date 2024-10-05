@@ -1,0 +1,233 @@
+config-version: 1
+skill-enabled: true
+permissions:
+  restrict-skill-to-permission: false
+  use-permissions-to-unlock-abilities: false
+  use-permissions-to-activate-abilities: false
+leveling:
+  level-up-equation: '2000+(20*(skill_level))'
+  maximum-skill-level: 1000
+experience:
+  sources:
+    OAK_LOG: 2
+ability-configuration:
+  extra-lumber:
+    enabled: true
+    activation-equation: (woodcutting_level)*.033
+    valid-drops:
+      - ACACIA_LEAVES
+      - ACACIA_LOG
+      - BIRCH_LEAVES
+      - BIRCH_LOG
+      - CHERRY_LEAVES
+      - CHERRY_LOG
+      - DARK_OAK_LEAVES
+      - DARK_OAK_LOG
+      - JUNGLE_LEAVES
+      - JUNGLE_LOG
+      - MANGROVE_LEAVES
+      - MANGROVE_LOG
+      - MANGROVE_ROOTS
+      - OAK_LEAVES
+      - OAK_LOG
+      - SPRUCE_LEAVES
+      - SPRUCE_LOG
+      - WARPED_STEM
+      - CRIMSON_STEM
+      - MUSHROOM_STEM
+      - RED_MUSHROOM_BLOCK
+      - BROWN_MUSHROOM_BLOCK
+  heavy-swing:
+    enabled: true
+    valid-blocks:
+      - ACACIA_LEAVES
+      - ACACIA_LOG
+      - BIRCH_LEAVES
+      - BIRCH_LOG
+      - CHERRY_LEAVES
+      - CHERRY_LOG
+      - DARK_OAK_LEAVES
+      - DARK_OAK_LOG
+      - JUNGLE_LEAVES
+      - JUNGLE_LOG
+      - MANGROVE_LEAVES
+      - MANGROVE_LOG
+      - MANGROVE_ROOTS
+      - OAK_LEAVES
+      - OAK_LOG
+      - SPRUCE_LEAVES
+      - SPRUCE_LOG
+      - WARPED_STEM
+      - CRIMSON_STEM
+      - MUSHROOM_STEM
+      - RED_MUSHROOM_BLOCK
+      - BROWN_MUSHROOM_BLOCK
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
+      tier-1:
+        unlock-level: 1
+        activation-chance: 3.0
+        radius: 1
+      tier-2:
+        unlock-level: 2
+        activation-chance: 4.0
+        radius: 1
+      tier-3:
+        unlock-level: 3
+        activation-chance: 5.0
+        radius: 1
+      tier-4:
+        unlock-level: 4
+        activation-chance: 7.5
+        radius: 2
+      tier-5:
+        unlock-level: 5
+        activation-chance: 10.0
+        radius: 2
+  dryads-gift:
+    enabled: true
+    valid-blocks:
+      - ACACIA_LEAVES
+      - ACACIA_LOG
+      - BIRCH_LEAVES
+      - BIRCH_LOG
+      - CHERRY_LEAVES
+      - CHERRY_LOG
+      - DARK_OAK_LEAVES
+      - DARK_OAK_LOG
+      - JUNGLE_LEAVES
+      - JUNGLE_LOG
+      - MANGROVE_LEAVES
+      - MANGROVE_LOG
+      - MANGROVE_ROOTS
+      - OAK_LEAVES
+      - OAK_LOG
+      - SPRUCE_LEAVES
+      - SPRUCE_LOG
+      - WARPED_STEM
+      - CRIMSON_STEM
+      - MUSHROOM_STEM
+      - RED_MUSHROOM_BLOCK
+      - BROWN_MUSHROOM_BLOCK
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
+      tier-1:
+        unlock-level: 1
+        activation-chance: 3.0
+        experience-to-drop: 5
+      tier-2:
+        unlock-level: 2
+        activation-chance: 4.0
+        experience-to-drop: 10
+      tier-3:
+        unlock-level: 3
+        activation-chance: 5.0
+        experience-to-drop: 15
+      tier-4:
+        unlock-level: 4
+        activation-chance: 7.5
+        experience-to-drop: 20
+      tier-5:
+        unlock-level: 5
+        activation-chance: 10.0
+        experience-to-drop: 22
+  nymphs-vitality:
+    enabled: true
+    valid-biomes:
+      - BAMBOO_JUNGLE
+      - BIRCH_FOREST
+      - CHERRY_GROVE
+      - CRIMSON_FOREST
+      - DARK_FOREST
+      - FLOWER_FOREST
+      - FOREST
+      - GROVE
+      - JUNGLE
+      - LUSH_CAVES
+      - MANGROVE_SWAMP
+      - OLD_GROWTH_BIRCH_FOREST
+      - OLD_GROWTH_PINE_TAIGA
+      - OLD_GROWTH_SPRUCE_TAIGA
+      - SNOWY_TAIGA
+      - SPARSE_JUNGLE
+      - SWAMP
+      - TAIGA
+      - WARPED_FOREST
+      - WINDSWEPT_FOREST
+      - WOODED_BADLANDS
+    #How many tiers does this ability have
+    amount-of-tiers: 5
+    #Configure the values for each tier
+    tier-configuration:
+      #Any value provided here will be default for each tier unless overridden by a tier
+      #Accepted keys are as follows:
+      # - upgrade-point-cost: integer
+      # - unlock-level: integer
+      # - upgrade-quest: quest
+      all-tiers:
+        # Ignored for tier 1
+        upgrade-point-cost: 1
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER
+      tier-1:
+        unlock-level: 1
+        activation-chance: 3.0
+        experience-to-drop: 5
+      tier-2:
+        unlock-level: 2
+        activation-chance: 4.0
+        experience-to-drop: 10
+      tier-3:
+        unlock-level: 3
+        activation-chance: 5.0
+        experience-to-drop: 15
+      tier-4:
+        unlock-level: 4
+        activation-chance: 7.5
+        experience-to-drop: 20
+      tier-5:
+        unlock-level: 5
+        activation-chance: 10.0
+        experience-to-drop: 22

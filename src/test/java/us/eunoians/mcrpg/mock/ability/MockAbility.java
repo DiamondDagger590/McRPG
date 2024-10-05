@@ -69,4 +69,10 @@ public class MockAbility extends BaseAbility {
     public boolean isPassive() {
         return false;
     }
+
+    @NotNull
+    @Override
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.empty();
+    }
 }

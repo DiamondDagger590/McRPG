@@ -84,7 +84,7 @@ dependencies {
     val geyserVersion = "2.4.2-SNAPSHOT"
     compileOnly("org.geysermc.geyser:api:$geyserVersion")
 
-    val apolloVersion = "1.1.4"
+    val apolloVersion = "1.1.5"
     compileOnly("com.lunarclient:apollo-api:$apolloVersion")
 
     // Test deps

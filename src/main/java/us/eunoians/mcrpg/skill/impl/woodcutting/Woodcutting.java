@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.skill.Skill;
  */
 public class Woodcutting extends McRPGSkill {
 
-    public static final NamespacedKey WOODCUTTING_KEY = new NamespacedKey(McRPG.getInstance(), "mining");
+    public static final NamespacedKey WOODCUTTING_KEY = new NamespacedKey(McRPG.getInstance(), "woodcutting");
 
     public Woodcutting() {
         super(WOODCUTTING_KEY);

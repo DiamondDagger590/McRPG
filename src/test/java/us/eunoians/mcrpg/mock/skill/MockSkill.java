@@ -4,6 +4,8 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.skill.Skill;
 
+import java.util.Optional;
+
 public class MockSkill extends Skill {
 
     private final int maxLevel;
@@ -27,5 +29,11 @@ public class MockSkill extends Skill {
     @Override
     public int getMaxLevel() {
         return maxLevel;
+    }
+
+    @NotNull
+    @Override
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.empty();
     }
 }

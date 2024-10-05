@@ -20,7 +20,7 @@ public class WoodcuttingConfigFile extends AbilityConfigFile {
     public static final Route BLOCK_EXPERIENCE_HEADER = Route.addTo(EXPERIENCE_HEADER, "sources");
 
     // Extra Lumber
-    private static final Route EXTRA_LUMBER_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "extra-ore");
+    private static final Route EXTRA_LUMBER_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "extra-lumber");
     public static final Route EXTRA_LUMBER_ENABLED = Route.addTo(EXTRA_LUMBER_HEADER, "enabled");
     public static final Route EXTRA_LUMBER_ACTIVATION_EQUATION = Route.addTo(EXTRA_LUMBER_HEADER, "activation-equation");
     public static final Route EXTRA_LUMBER_VALID_DROPS = Route.addTo(EXTRA_LUMBER_HEADER, "valid-drops");
