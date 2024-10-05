@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.listener.ability;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.swords.BleedActivateEvent;
 
 /**
  * This listener handles activating any abilities that rely on {@link BleedActivateEvent}

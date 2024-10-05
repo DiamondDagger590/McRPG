@@ -16,6 +16,7 @@ import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.ability.impl.woodcutting.DryadsGift;
 import us.eunoians.mcrpg.ability.impl.woodcutting.ExtraLumber;
 import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
+import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
@@ -85,6 +86,7 @@ public final class McRPGExpansion extends ContentExpansion {
         abilityContent.addContent(new ExtraLumber(mcRPG));
         abilityContent.addContent(new HeavySwing(mcRPG));
         abilityContent.addContent(new DryadsGift(mcRPG));
+        abilityContent.addContent(new NymphsVitality(mcRPG));
         return abilityContent;
     }
 }

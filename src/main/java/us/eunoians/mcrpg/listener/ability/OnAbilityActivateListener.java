@@ -3,9 +3,9 @@ package us.eunoians.mcrpg.listener.ability;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.api.event.ability.swords.RageSpikeActivateEvent;
-import us.eunoians.mcrpg.api.event.ability.swords.SerratedStrikesActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.swords.RageSpikeActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.swords.SerratedStrikesActivateEvent;
 
 public class OnAbilityActivateListener implements Listener {
 

@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.entity.AbilityHolderReadyEvent;
+import us.eunoians.mcrpg.event.event.entity.AbilityHolderReadyEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**

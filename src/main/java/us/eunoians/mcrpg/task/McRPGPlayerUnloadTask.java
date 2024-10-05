@@ -7,7 +7,7 @@ import com.diamonddagger590.mccore.task.PlayerUnloadTask;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.entity.player.McRPGPlayerUnloadEvent;
+import us.eunoians.mcrpg.event.event.entity.player.McRPGPlayerUnloadEvent;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;

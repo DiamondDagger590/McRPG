@@ -10,7 +10,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
-import us.eunoians.mcrpg.api.event.ability.AbilityPutOnCooldownEvent;
+import us.eunoians.mcrpg.event.event.ability.AbilityPutOnCooldownEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.Set;

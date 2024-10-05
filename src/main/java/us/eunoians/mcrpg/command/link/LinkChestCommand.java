@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
-import us.eunoians.mcrpg.api.event.fake.FakeChestOpenEvent;
+import us.eunoians.mcrpg.event.event.fake.FakeChestOpenEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 

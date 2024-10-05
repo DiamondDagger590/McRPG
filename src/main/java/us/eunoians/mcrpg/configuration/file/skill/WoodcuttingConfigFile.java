@@ -39,6 +39,13 @@ public class WoodcuttingConfigFile extends AbilityConfigFile {
     public static final Route DRYADS_GIFT_VALID_BLOCKS = Route.addTo(DRYADS_GIFT_HEADER, "valid-blocks");
     public static final Route DRYADS_GIFT_CONFIGURATION_HEADER = Route.addTo(DRYADS_GIFT_HEADER, "tier-configuration");
 
+    // Nymphs Vitality
+    private static final Route NYMPHS_VITALITY_HEADER = Route.addTo(ABILITY_CONFIGURATION_HEADER, "nymphs-vitality");
+    public static final Route NYMPHS_VITALITY_ENABLED = Route.addTo(NYMPHS_VITALITY_HEADER, "enabled");
+    public static final Route NYMPHS_VITALITY_AMOUNT_OF_TIERS = Route.addTo(NYMPHS_VITALITY_HEADER, "amount-of-tiers");
+    public static final Route NYMPHS_VITALITY_VALID_BIOMES = Route.addTo(NYMPHS_VITALITY_HEADER, "valid-biomes");
+    public static final Route NYMPHS_VITALITY_CONFIGURATION_HEADER = Route.addTo(NYMPHS_VITALITY_HEADER, "tier-configuration");
+
     @Override
     public UpdaterSettings getUpdaterSettings() {
         return UpdaterSettings.builder().setVersioning(new BasicVersioning("config-version")).addIgnoredRoutes(getIgnoredRoutes()).build();

@@ -24,7 +24,7 @@ import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
-import us.eunoians.mcrpg.api.event.ability.mining.OreScannerActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.mining.OreScannerActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

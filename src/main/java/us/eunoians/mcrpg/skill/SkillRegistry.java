@@ -5,8 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.skill.SkillRegisterEvent;
-import us.eunoians.mcrpg.api.event.skill.SkillUnregisterEvent;
+import us.eunoians.mcrpg.event.event.skill.SkillRegisterEvent;
+import us.eunoians.mcrpg.event.event.skill.SkillUnregisterEvent;
 import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
 
 import java.util.HashMap;

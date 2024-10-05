@@ -19,7 +19,7 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.api.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.mining.ExtraOreActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

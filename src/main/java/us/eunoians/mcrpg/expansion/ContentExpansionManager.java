@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.content.ContentPackRegisteredEvent;
+import us.eunoians.mcrpg.event.event.content.ContentPackRegisteredEvent;
 import us.eunoians.mcrpg.exception.expansion.ContentPackFailedProcessingException;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;

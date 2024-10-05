@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
-import us.eunoians.mcrpg.api.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.event.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.Random;

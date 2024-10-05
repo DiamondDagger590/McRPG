@@ -6,7 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
-import us.eunoians.mcrpg.api.event.ability.AbilityUnlockEvent;
+import us.eunoians.mcrpg.event.event.ability.AbilityUnlockEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.loadout.Loadout;

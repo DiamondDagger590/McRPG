@@ -10,7 +10,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.api.event.ability.swords.BleedDamageEvent;
+import us.eunoians.mcrpg.event.event.ability.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

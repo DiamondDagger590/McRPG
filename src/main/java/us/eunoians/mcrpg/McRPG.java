@@ -47,7 +47,9 @@ import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockBreakListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockDropItemListener;
 import us.eunoians.mcrpg.listener.ability.OnExtraOreActivateListener;
+import us.eunoians.mcrpg.listener.ability.OnFoodLevelChangeAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
+import us.eunoians.mcrpg.listener.ability.OnPlayerMoveAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
 import us.eunoians.mcrpg.listener.entity.OnAbilityHolderReadyListener;
 import us.eunoians.mcrpg.listener.entity.OnAbilityHolderUnreadyListener;
@@ -240,6 +242,8 @@ public class McRPG extends CorePlugin {
         Bukkit.getPluginManager().registerEvents(new OnBlockBreakListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnBlockDropItemListener(), this);
         Bukkit.getPluginManager().registerEvents(new OnExtraOreActivateListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnFoodLevelChangeAbilityListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnPlayerMoveAbilityListener(), this);
 
         // Skill listeners
         Bukkit.getPluginManager().registerEvents(new OnSkillLevelUpListener(), this);

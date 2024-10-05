@@ -15,9 +15,9 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
-import us.eunoians.mcrpg.api.event.ability.AbilityCooldownExpireEvent;
-import us.eunoians.mcrpg.api.event.entity.AbilityHolderReadyEvent;
-import us.eunoians.mcrpg.api.event.entity.AbilityHolderUnreadyEvent;
+import us.eunoians.mcrpg.event.event.ability.AbilityCooldownExpireEvent;
+import us.eunoians.mcrpg.event.event.entity.AbilityHolderReadyEvent;
+import us.eunoians.mcrpg.event.event.entity.AbilityHolderUnreadyEvent;
 import us.eunoians.mcrpg.exception.ready.AbilityNotValidToReadyException;
 import us.eunoians.mcrpg.skill.Skill;
 
