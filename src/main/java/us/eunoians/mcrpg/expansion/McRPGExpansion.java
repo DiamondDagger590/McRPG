@@ -20,7 +20,9 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
+import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
+import us.eunoians.mcrpg.setting.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
@@ -34,7 +36,7 @@ import java.util.Set;
  */
 public final class McRPGExpansion extends ContentExpansion {
 
-    public static final NamespacedKey EXPANSION_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mcrpg");
+    public static final NamespacedKey EXPANSION_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mcrpg-expansion");
     private final McRPG mcRPG;
 
     public McRPGExpansion(@NotNull McRPG mcRPG) {
@@ -45,11 +47,12 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     @Override
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
-        return Set.of(getSkillContent(), getAbilityContent());
+        return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent());
     }
 
     /**
      * Gets the native {@link SkillContentPack} for McRPG.
+     *
      * @return The native {@link SkillContentPack} for McRPG.
      */
     @NotNull
@@ -63,6 +66,7 @@ public final class McRPGExpansion extends ContentExpansion {
 
     /**
      * Gets the native {@link AbilityContentPack} for McRPG.
+     *
      * @return The native {@link AbilityContentPack} for McRPG.
      */
     @NotNull
@@ -88,5 +92,17 @@ public final class McRPGExpansion extends ContentExpansion {
         abilityContent.addContent(new DryadsGift(mcRPG));
         abilityContent.addContent(new NymphsVitality(mcRPG));
         return abilityContent;
+    }
+
+    /**
+     * Gets the native {@link PlayerSettingContentPack} for McRPG.
+     *
+     * @return The native {@link PlayerSettingContentPack} for McRPG.
+     */
+    @NotNull
+    public PlayerSettingContentPack getPlayerSettingContent() {
+        PlayerSettingContentPack playerSettingContent = new PlayerSettingContentPack(this);
+        playerSettingContent.addContent(ExperienceDisplaySetting.values()[0]);
+        return playerSettingContent;
     }
 }

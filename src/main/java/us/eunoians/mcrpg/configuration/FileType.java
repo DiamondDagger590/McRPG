@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.configuration;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
@@ -16,9 +17,9 @@ import java.util.Objects;
 public enum FileType {
 
     MAIN_CONFIG("config.yml", new MainConfigFile()),
-    SWORDS_CONFIG("skill_configuration" + File.separator + "swords_configuration.yml", new SwordsConfigFile()),
-    MINING_CONFIG("skill_configuration" + File.separator + "mining_configuration.yml", new MiningConfigFile()),
-    WOODCUTTING_CONFIG("skill_configuration" + File.separator + "woodcutting_configuration.yml", new WoodcuttingConfigFile()),
+    SWORDS_CONFIG("skill_configuration" + "/" + "swords_configuration.yml", new SwordsConfigFile()),
+    MINING_CONFIG("skill_configuration" + "/" + "mining_configuration.yml", new MiningConfigFile()),
+    WOODCUTTING_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new WoodcuttingConfigFile()),
     ;
 
     private final String filePath;
@@ -32,6 +33,7 @@ public enum FileType {
     @NotNull
     public YamlDocument initializeFile() {
         try {
+            Bukkit.getLogger().info("Loading " + filePath);
             return YamlDocument.create(new File(McRPG.getInstance().getDataFolder(), filePath), Objects.requireNonNull(McRPG.getInstance().getResource(filePath)), configFile.getGeneralSettings(),
                     configFile.getLoaderSettings(), configFile.getDumperSettings(), configFile.getUpdaterSettings());
         } catch (IOException e) {

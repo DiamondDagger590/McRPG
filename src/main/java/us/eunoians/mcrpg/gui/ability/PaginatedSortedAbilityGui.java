@@ -68,10 +68,10 @@ public abstract class PaginatedSortedAbilityGui extends PaginatedGui implements 
     }
 
     /**
-     * Gets a {@link List} of {@link Ability Abilities}, sorted based on the current {@link #getAbilitySortNode()} ()}.
+     * Gets a {@link List} of {@link Ability Abilities}, sorted based on the current {@link #getAbilitySortNode()}.
      *
      * @param page The page to get the list for.
-     * @return A {@link List} of {@link Ability Abilities} sorted based on the current {@link #getAbilitySortNode()} ()}
+     * @return A {@link List} of {@link Ability Abilities} sorted based on the current {@link #getAbilitySortNode()}
      * to be displayed on the provided page.
      */
     @NotNull

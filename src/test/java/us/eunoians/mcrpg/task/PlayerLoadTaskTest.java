@@ -52,7 +52,7 @@ public class PlayerLoadTaskTest {
     @Test
     void testGetPlayer() {
         PlayerMock playerMock = serverMock.addPlayer();
-        McRPGPlayer mcRPGPlayer = new McRPGPlayer(playerMock.getUniqueId());
+        McRPGPlayer mcRPGPlayer = new McRPGPlayer(playerMock.getUniqueId(), plugin);
         McRPGPlayerLoadTask mcRPGPlayerLoadTask = new McRPGPlayerLoadTask(plugin, mcRPGPlayer);
         assertEquals(mcRPGPlayer, mcRPGPlayerLoadTask.getCorePlayer());
         playerMock.disconnect();
@@ -75,7 +75,7 @@ public class PlayerLoadTaskTest {
         doAnswer(answer -> {
             McRPG mcRPG = McRPG.getInstance();
             Player player = answer.getArgument(0, PlayerJoinEvent.class).getPlayer();
-            McRPGPlayer mcRPGPlayer = new McRPGPlayer(player);
+            McRPGPlayer mcRPGPlayer = new McRPGPlayer(player, plugin);
             McRPGPlayerLoadTask loadTask = new McRPGPlayerLoadTask(spy, mcRPGPlayer);
             /*
             We are manually mocking the results of what should happen by calling #runTask on the loadTask.

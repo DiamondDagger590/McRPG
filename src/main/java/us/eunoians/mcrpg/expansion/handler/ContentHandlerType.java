@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.expansion.handler;
 
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
+import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 
 /**
@@ -33,6 +34,13 @@ public enum ContentHandlerType {
         }
         return false;
     }),
+    SETTING((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof PlayerSettingContentPack playerSettingContent) {
+            playerSettingContent.getContent().forEach(playerSetting -> mcRPG.getPlayerSettingRegistry().registerSetting(playerSetting));
+            return true;
+        }
+        return false;
+    })
     ;
 
     private final ContentPackProcessor contentPackProcessor;

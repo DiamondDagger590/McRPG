@@ -62,7 +62,7 @@ public class BleedDamageEvent extends AbilityEvent implements Cancellable {
      * that triggered the bleed.
      * <p>
      * The instance when this would be null is if bleed activated on an entity through a plugin calling
-     * {@link us.eunoians.mcrpg.ability.impl.swords.Bleed.BleedManager#startBleeding(LivingEntity)}.
+     * {@link us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager#startBleeding(LivingEntity)}.
      *
      * @return Gets an {@link Optional} that will either be empty or will contain the {@link AbilityHolder}
      * that triggered the bleed.

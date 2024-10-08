@@ -112,6 +112,9 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
                     });
         }
 
+        // TODO move to a DAO
+        getPlugin().getPlayerSettingRegistry().getSettings().forEach(playerSetting -> getCorePlayer().setPlayerSetting(playerSetting));
+
         CompletableFuture.allOf(ArrayUtils.addAll(futures, loadoutFutures))
                 .thenAccept(unused -> result.complete(true))
                 .exceptionally(throwable -> {

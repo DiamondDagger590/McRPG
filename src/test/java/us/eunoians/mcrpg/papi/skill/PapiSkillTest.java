@@ -32,7 +32,7 @@ public class PapiSkillTest {
 
         // Setup player
         playerMock = serverMock.addPlayer();
-        mockMcRPGPlayer = new MockMcRPGPlayer(playerMock);
+        mockMcRPGPlayer = new MockMcRPGPlayer(playerMock, plugin);
         plugin.getPlayerManager().addPlayer(mockMcRPGPlayer);
 
         loadSkill();

@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.HomeGui;
+import us.eunoians.mcrpg.gui.PlayerSettingGui;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +39,9 @@ public class HomeSettingsSlot extends Slot {
 
     @Override
     public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        player.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Settings are not currently supported. Please wait for a future release."));
+        PlayerSettingGui playerSettingGui = new PlayerSettingGui(mcRPGPlayer, McRPG.getInstance());
+        McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, playerSettingGui);
+        player.openInventory(playerSettingGui.getInventory());
         return true;
     }
 

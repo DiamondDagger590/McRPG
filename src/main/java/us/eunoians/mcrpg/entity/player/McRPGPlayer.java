@@ -1,6 +1,9 @@
 package us.eunoians.mcrpg.entity.player;
 
 import com.diamonddagger590.mccore.player.CorePlayer;
+import com.google.common.collect.ImmutableSet;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,7 +15,12 @@ import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.setting.PlayerSetting;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -23,19 +31,25 @@ import java.util.UUID;
  */
 public class McRPGPlayer extends CorePlayer {
 
+    private final McRPG mcRPG;
     private final SkillHolder skillHolder;
     private final QuestHolder questHolder;
+    private final Map<NamespacedKey, PlayerSetting> playerSettings;
 
-    public McRPGPlayer(@NotNull Player player) {
+    public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
         super(player.getUniqueId());
+        this.mcRPG = mcRPG;
         skillHolder = new SkillHolder(getUUID());
         questHolder = new QuestHolder(getUUID());
+        playerSettings = new HashMap<>();
     }
 
-    public McRPGPlayer(@NotNull UUID uuid) {
+    public McRPGPlayer(@NotNull UUID uuid, @NotNull McRPG mcRPG) {
         super(uuid);
+        this.mcRPG = mcRPG;
         skillHolder = new SkillHolder(getUUID());
         questHolder = new QuestHolder(getUUID());
+        playerSettings = new HashMap<>();
     }
 
     @Override
@@ -63,6 +77,20 @@ public class McRPGPlayer extends CorePlayer {
     @NotNull
     public QuestHolder asQuestHolder() {
         return questHolder;
+    }
+
+    public void setPlayerSetting(@NotNull PlayerSetting playerSetting) {
+        playerSettings.put(playerSetting.getSettingKey(), playerSetting);
+    }
+
+    @NotNull
+    public Optional<PlayerSetting> getPlayerSetting(@NotNull NamespacedKey key) {
+        return Optional.ofNullable(playerSettings.get(key));
+    }
+
+    @NotNull
+    public Set<PlayerSetting> getPlayerSettings() {
+        return ImmutableSet.copyOf(playerSettings.values());
     }
 
     public boolean canPlayerStartUpgradeQuest(@NotNull TierableAbility tierableAbility) {

@@ -52,7 +52,7 @@ public class PlayerUnloadTaskTest {
     @Test
     void testGetPlayer() {
         PlayerMock playerMock = serverMock.addPlayer();
-        McRPGPlayer mcRPGPlayer = new McRPGPlayer(playerMock.getUniqueId());
+        McRPGPlayer mcRPGPlayer = new McRPGPlayer(playerMock.getUniqueId(), plugin);
         McRPGPlayerUnloadTask unloadTask = new McRPGPlayerUnloadTask(plugin, mcRPGPlayer);
         assertEquals(mcRPGPlayer, unloadTask.getCorePlayer());
         playerMock.disconnect();
@@ -75,7 +75,7 @@ public class PlayerUnloadTaskTest {
         doAnswer(answer -> {
             McRPG mcRPG = McRPG.getInstance();
             Player player = answer.getArgument(0, PlayerQuitEvent.class).getPlayer();
-            McRPGPlayer mcRPGPlayer = new McRPGPlayer(player);
+            McRPGPlayer mcRPGPlayer = new McRPGPlayer(player, plugin);
             McRPGPlayerUnloadTask unloadTask = new McRPGPlayerUnloadTask(spy, mcRPGPlayer);
             assertTrue(unloadTask.unloadPlayer());
             return null;
@@ -86,7 +86,7 @@ public class PlayerUnloadTaskTest {
         PlayerMock playerMock = serverMock.addPlayer();
         PlayerManager playerManager = spy.getPlayerManager();
         EntityManager tracker = spy.getEntityManager();
-        McRPGPlayer player = new McRPGPlayer(playerMock);
+        McRPGPlayer player = new McRPGPlayer(playerMock, plugin);
         playerManager.addPlayer(player);
         tracker.trackAbilityHolder(player.asSkillHolder());
         // Assert player data is there

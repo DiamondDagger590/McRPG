@@ -65,6 +65,7 @@ import us.eunoians.mcrpg.listener.world.BlockPlaceListener;
 import us.eunoians.mcrpg.listener.world.FakeBlockBreakListener;
 import us.eunoians.mcrpg.papi.McRPGPapiExpansion;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.setting.PlayerSettingRegistry;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.util.LunarUtils;
 
@@ -92,6 +93,7 @@ public class McRPG extends CorePlugin {
     private DisplayManager displayManager;
     private QuestManager questManager;
     private BleedManager bleedManager;
+    private PlayerSettingRegistry playerSettingRegistry;
     private ContentExpansionManager contentExpansionManager;
 
     private GlowingBlocks glowingBlocks;
@@ -126,6 +128,7 @@ public class McRPG extends CorePlugin {
         displayManager = new DisplayManager();
         questManager = new QuestManager();
         bleedManager = new BleedManager(this);
+        playerSettingRegistry = new PlayerSettingRegistry();
         contentExpansionManager = new ContentExpansionManager(this);
 
         if (!isUnitTest()) {
@@ -425,6 +428,16 @@ public class McRPG extends CorePlugin {
     @NotNull
     public BleedManager getBleedManager() {
         return bleedManager;
+    }
+
+    /**
+     * Gets the {@link PlayerSettingRegistry} used by McRPG.
+     *
+     * @return Gets the {@link PlayerSettingRegistry} used by McRPG.
+     */
+    @NotNull
+    public PlayerSettingRegistry getPlayerSettingRegistry() {
+        return playerSettingRegistry;
     }
 
     /**
