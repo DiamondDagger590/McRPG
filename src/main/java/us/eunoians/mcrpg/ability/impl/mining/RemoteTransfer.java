@@ -131,6 +131,11 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                 AbilityLocationAttribute attribute = (AbilityLocationAttribute) locationAttributeOptional.get();
                 Location location = attribute.getContent();
 
+                // Skip default locations
+                if (location.getWorld() == null) {
+                    return;
+                }
+
                 Chunk chunk = location.getChunk();
                 Block block = location.getBlock();
                 Chest chest = (Chest) block.getState();
