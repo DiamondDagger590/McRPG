@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.player.CorePlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +15,12 @@ import us.eunoians.mcrpg.setting.PlayerSetting;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * A slot that displays a {@link PlayerSetting} and allows a player to click through all the different values
+ * for the given setting.
+ *
+ * @param <T> The {@link PlayerSetting} represented by this slot.
+ */
 public abstract class PlayerSettingSlot<T extends PlayerSetting> extends Slot {
 
     protected final McRPGPlayer mcRPGPlayer;
@@ -47,6 +52,11 @@ public abstract class PlayerSettingSlot<T extends PlayerSetting> extends Slot {
         return Set.of(PlayerSettingGui.class);
     }
 
+    /**
+     * Gets the {@link PlayerSetting} represented by this slot.
+     *
+     * @return The {@link PlayerSetting} represented by this slot.
+     */
     @NotNull
     public T getSetting() {
         return setting;

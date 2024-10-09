@@ -1,17 +1,19 @@
 package us.eunoians.mcrpg.gui.slot.setting;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.setting.ExperienceDisplaySetting;
+import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 
 import java.util.List;
 
+/**
+ * A {@link PlayerSettingSlot} that displays the {@link ExperienceDisplaySetting}.
+ */
 public class ExperienceDisplaySettingSlot extends PlayerSettingSlot<ExperienceDisplaySetting> {
 
     public ExperienceDisplaySettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ExperienceDisplaySetting setting) {

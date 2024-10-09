@@ -4,7 +4,7 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
-import us.eunoians.mcrpg.event.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.Random;

@@ -58,6 +58,7 @@ import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
+import us.eunoians.mcrpg.listener.setting.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
@@ -125,7 +126,7 @@ public class McRPG extends CorePlugin {
         skillRegistry = new SkillRegistry(this);
 
         abilityAttributeManager = new AbilityAttributeManager(this);
-        displayManager = new DisplayManager();
+        displayManager = new DisplayManager(this);
         questManager = new QuestManager();
         bleedManager = new BleedManager(this);
         playerSettingRegistry = new PlayerSettingRegistry();
@@ -271,6 +272,9 @@ public class McRPG extends CorePlugin {
 
         // Debug Listener
         Bukkit.getPluginManager().registerEvents(new OnAbilityActivateListener(), this);
+
+        // Setting listener
+        Bukkit.getPluginManager().registerEvents(new PlayerSettingChangeListener(), this);
     }
 
     /**

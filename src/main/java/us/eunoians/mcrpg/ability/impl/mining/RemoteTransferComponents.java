@@ -16,7 +16,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
-import us.eunoians.mcrpg.event.event.fake.FakeChestOpenEvent;
+import us.eunoians.mcrpg.event.fake.FakeChestOpenEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**

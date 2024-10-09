@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.listener.world;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import us.eunoians.mcrpg.event.event.fake.FakeBlockBreakEvent;
+import us.eunoians.mcrpg.event.fake.FakeBlockBreakEvent;
 
 /**
  * This listener handles checking the state of a {@link FakeBlockBreakEvent} before marking it as

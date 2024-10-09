@@ -7,17 +7,64 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.gui.slot.setting.PlayerSettingSlot;
 
+import java.util.Optional;
+
+/**
+ * A player setting represents some sort of player controlled configuration,
+ * allowing players to tailor their gameplay experience.
+ * <p>
+ * Every {@link us.eunoians.mcrpg.expansion.content.McRPGContentPack} can provide settings
+ * that will automatically be handled by McRPG.
+ * <p>
+ * Player settings are handled by a chain of {@link LinkedNode}s, where a player
+ * can click through the options for the setting with the next node representing the next
+ * setting option for the player.
+ */
 public interface PlayerSetting extends McRPGContent {
 
+    /**
+     * Gets the {@link NamespacedKey} that represents this setting.
+     *
+     * @return The {@link NamespacedKey} that represents this setting.
+     */
     @NotNull
     NamespacedKey getSettingKey();
 
+    /**
+     * Gets the first player setting in a series of {@link LinkedNode}s
+     * for a player.
+     *
+     * @return The first player setting in a series of {@link LinkedNode}s
+     * for a player.
+     */
     @NotNull
     LinkedNode<? extends PlayerSetting> getFirstSetting();
 
+    /**
+     * Gets the {@link LinkedNode} containing the next player setting.
+     *
+     * @return The {@link LinkedNode} containing the next player setting.
+     */
     @NotNull
     LinkedNode<? extends PlayerSetting> getNextSetting();
 
+    /**
+     * Gets a {@link PlayerSettingSlot} for this player setting to be used in a {@link us.eunoians.mcrpg.gui.PlayerSettingGui}
+     * for the given player.
+     *
+     * @param player The {@link McRPGPlayer} viewing this setting.
+     * @return A {@link PlayerSettingSlot} for this player setting to be used in a {@link us.eunoians.mcrpg.gui.PlayerSettingGui}
+     * for the given player.
+     */
     @NotNull
     PlayerSettingSlot<? extends PlayerSetting> getSettingSlot(@NotNull McRPGPlayer player);
+
+    /**
+     * Handles a {@link McRPGPlayer}'s setting being updated. The current player setting object is the "new" setting,
+     * while the "old" one is passed in as a parameter.
+     *
+     * @param player     The {@link McRPGPlayer} that had their setting updated.
+     * @param oldSetting An {@link Optional} containing the old setting if there was one.
+     */
+    void onSettingChange(@NotNull McRPGPlayer player, @NotNull Optional<PlayerSetting> oldSetting);
 }

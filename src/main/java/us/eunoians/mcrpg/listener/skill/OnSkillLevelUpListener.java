@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.listener.skill;
 
+import com.diamonddagger590.mccore.player.PlayerManager;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -15,10 +16,11 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
-import us.eunoians.mcrpg.event.event.ability.AbilityUnlockEvent;
-import us.eunoians.mcrpg.event.event.skill.PostSkillGainExpEvent;
-import us.eunoians.mcrpg.event.event.skill.PostSkillGainLevelEvent;
-import us.eunoians.mcrpg.event.event.skill.SkillGainLevelEvent;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.AbilityUnlockEvent;
+import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
+import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
+import us.eunoians.mcrpg.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.skill.Skill;
@@ -91,10 +93,13 @@ public class OnSkillLevelUpListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void handlePostExperienceGain(PostSkillGainExpEvent skillGainExpEvent) {
         SkillHolder skillHolder = skillGainExpEvent.getSkillHolder();
+        PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
+        var playerOptional = playerManager.getPlayer(skillHolder.getUUID());
         Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(skillGainExpEvent.getSkillKey());
 
-        if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline()) {
-            McRPG.getInstance().getDisplayManager().sendExperienceUpdate(skillHolder, skill.getSkillKey());
+        if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline()
+                && playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+            McRPG.getInstance().getDisplayManager().sendExperienceUpdate(mcRPGPlayer, skill.getSkillKey());
         }
     }
 }

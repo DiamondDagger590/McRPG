@@ -8,7 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.event.event.ability.AbilityCooldownExpireEvent;
+import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 
 /**
  * This listener handles notifying the player whenever their cooldown

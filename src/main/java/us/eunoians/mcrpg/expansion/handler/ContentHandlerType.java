@@ -34,14 +34,16 @@ public enum ContentHandlerType {
         }
         return false;
     }),
+    /**
+     * This processor handles processing {@link PlayerSettingContentPack}s.
+     */
     SETTING((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof PlayerSettingContentPack playerSettingContent) {
             playerSettingContent.getContent().forEach(playerSetting -> mcRPG.getPlayerSettingRegistry().registerSetting(playerSetting));
             return true;
         }
         return false;
-    })
-    ;
+    });
 
     private final ContentPackProcessor contentPackProcessor;
 

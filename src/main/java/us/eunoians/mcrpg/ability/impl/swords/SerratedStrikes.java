@@ -17,7 +17,7 @@ import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
-import us.eunoians.mcrpg.event.event.ability.swords.SerratedStrikesActivateEvent;
+import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.event.setting.PlayerSettingChangeEvent;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.setting.PlayerSetting;
@@ -58,6 +59,16 @@ public class McRPGPlayer extends CorePlayer {
     }
 
     /**
+     * Gets the {@link McRPG} instance that created this player.
+     *
+     * @return The {@link McRPG} instance that created this player.
+     */
+    @NotNull
+    public McRPG getMcRPGInstance() {
+        return mcRPG;
+    }
+
+    /**
      * Gets the {@link SkillHolder} representation of this player, allowing access to McRPG
      * skill functionality.
      *
@@ -79,20 +90,46 @@ public class McRPGPlayer extends CorePlayer {
         return questHolder;
     }
 
+    /**
+     * Sets the provided {@link PlayerSetting} as the current setting option for that setting type.
+     *
+     * @param playerSetting The {@link PlayerSetting} to set.
+     */
     public void setPlayerSetting(@NotNull PlayerSetting playerSetting) {
+        PlayerSetting oldSetting = playerSettings.get(playerSetting.getSettingKey());
         playerSettings.put(playerSetting.getSettingKey(), playerSetting);
+        PlayerSettingChangeEvent playerSettingChangeEvent = new PlayerSettingChangeEvent(this, oldSetting, playerSetting);
+        Bukkit.getPluginManager().callEvent(playerSettingChangeEvent);
     }
 
+    /**
+     * Gets an {@link Optional} containing the {@link PlayerSetting} that belongs to the provided {@link NamespacedKey},
+     *
+     * @param key The {@link NamespacedKey} to get the {@link PlayerSetting} for.
+     * @return An {@link Optional} containing the {@link PlayerSetting} that belongs to the provided {@link NamespacedKey},
+     * or empty if there is not a match.
+     */
     @NotNull
     public Optional<PlayerSetting> getPlayerSetting(@NotNull NamespacedKey key) {
         return Optional.ofNullable(playerSettings.get(key));
     }
 
+    /**
+     * Gets an {@link ImmutableSet} of all {@link PlayerSetting}s for this player.
+     *
+     * @return An {@link ImmutableSet} of all {@link PlayerSetting}s for this player.
+     */
     @NotNull
     public Set<PlayerSetting> getPlayerSettings() {
         return ImmutableSet.copyOf(playerSettings.values());
     }
 
+    /**
+     * Checks to see if this player can start an upgrade quest for the provided {@link TierableAbility}.
+     *
+     * @param tierableAbility The {@link TierableAbility} to check.
+     * @return {@code true} if this player can start an upgrade quest for the provided {@link TierableAbility}
+     */
     public boolean canPlayerStartUpgradeQuest(@NotNull TierableAbility tierableAbility) {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
         if (abilityDataOptional.isPresent()) {
@@ -124,6 +161,11 @@ public class McRPGPlayer extends CorePlayer {
         return false;
     }
 
+    /**
+     * Starts an upgrade quest for the provided {@link TierableAbility}.
+     *
+     * @param tierableAbility The {@link TierableAbility} to start an upgrade quest for.
+     */
     public void startUpgradeQuest(@NotNull TierableAbility tierableAbility) {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
 

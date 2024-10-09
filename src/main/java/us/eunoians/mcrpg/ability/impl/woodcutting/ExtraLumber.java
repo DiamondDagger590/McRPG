@@ -19,7 +19,7 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.event.event.ability.woodcutting.ExtraLumberActivateEvent;
+import us.eunoians.mcrpg.event.ability.woodcutting.ExtraLumberActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

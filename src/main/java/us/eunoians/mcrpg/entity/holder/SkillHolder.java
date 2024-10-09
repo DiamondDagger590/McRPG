@@ -4,10 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.event.event.skill.PostSkillGainExpEvent;
-import us.eunoians.mcrpg.event.event.skill.PostSkillGainLevelEvent;
-import us.eunoians.mcrpg.event.event.skill.SkillGainExpEvent;
-import us.eunoians.mcrpg.event.event.skill.SkillGainLevelEvent;
+import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
+import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
+import us.eunoians.mcrpg.event.skill.SkillGainExpEvent;
+import us.eunoians.mcrpg.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.HashMap;

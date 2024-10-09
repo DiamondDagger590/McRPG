@@ -20,6 +20,9 @@ import us.eunoians.mcrpg.setting.PlayerSetting;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This gui is used to display all {@link PlayerSetting}s to a player.
+ */
 public class PlayerSettingGui extends PaginatedGui {
 
     private static final Slot FILLER_GLASS_SLOT;
@@ -76,6 +79,11 @@ public class PlayerSettingGui extends PaginatedGui {
         paintSettings(page);
     }
 
+    /**
+     * Paints the settings for a given page.
+     *
+     * @param page The page to paint the settings for.
+     */
     private void paintSettings(int page) {
         List<PlayerSetting> settings = getSettingsForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
@@ -87,6 +95,11 @@ public class PlayerSettingGui extends PaginatedGui {
         }
     }
 
+    /**
+     * Paints the navigation bar for a given page.
+     *
+     * @param page The page to paint.
+     */
     private void paintNavigationBar(int page) {
         // Paint the nav bar with filler glass
         for (int i = 0; i < 9; i++) {
@@ -117,6 +130,11 @@ public class PlayerSettingGui extends PaginatedGui {
         InventoryClickEvent.getHandlerList().unregister(this);
     }
 
+    /**
+     * Gets a {@link List} of all {@link PlayerSetting}s to be displayed.
+     *
+     * @return A {@link List} of all {@link PlayerSetting}s to be displayed.
+     */
     @NotNull
     public List<PlayerSetting> getSettings() {
         return mcRPGPlayer.getPlayerSettings()
@@ -124,6 +142,14 @@ public class PlayerSettingGui extends PaginatedGui {
                 .toList();
     }
 
+    /**
+     * Gets a partial {@link List} of {@link PlayerSetting}s, containing only the ones that
+     * should be displayed for the provided page.
+     *
+     * @param page The page to get the partial list for.
+     * @return A partial {@link List} of {@link PlayerSetting}s, containing only the ones
+     * that should be displayed for the provided page.
+     */
     @NotNull
     public List<PlayerSetting> getSettingsForPage(int page) {
         // Get the abilities that need to be displayed on this page

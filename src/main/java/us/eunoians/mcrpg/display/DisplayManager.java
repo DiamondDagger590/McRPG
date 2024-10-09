@@ -1,71 +1,104 @@
 package us.eunoians.mcrpg.display;
 
-import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.entity.holder.SkillHolder;
-import us.eunoians.mcrpg.skill.Skill;
-import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
+import us.eunoians.mcrpg.display.impl.persistent.PersistentExperienceDisplay;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The manager for managing {@link ExperienceDisplay}s for players.
+ */
 public class DisplayManager {
 
-    private Map<UUID, BossBar> activeDisplays;
+    private final McRPG mcRPG;
+    private final Map<UUID, ExperienceDisplay> activeDisplays;
 
-    public DisplayManager() {
+    public DisplayManager(@NotNull McRPG plugin) {
+        this.mcRPG = plugin;
         this.activeDisplays = new HashMap<>();
     }
 
+    /**
+     * Creates and updates the active {@link ExperienceDisplay} for the provided
+     * {@link McRPGPlayer}.
+     *
+     * @param mcRPGPlayer The {@link McRPGPlayer} to create a new {@link ExperienceDisplay} for.
+     */
+    public void createDisplay(@NotNull McRPGPlayer mcRPGPlayer) {
+        // Clean up an existing display if it exists
+        UUID uuid = mcRPGPlayer.getUUID();
+        if (hasActiveDisplay(uuid)) {
+            removeDisplay(uuid);
+        }
+        var playerSettingOptional = mcRPGPlayer.getPlayerSetting(ExperienceDisplaySetting.SETTING_KEY);
+        if (playerSettingOptional.isPresent() && playerSettingOptional.get() instanceof ExperienceDisplaySetting experienceDisplaySetting) {
+            ExperienceDisplay experienceDisplay = experienceDisplaySetting.getExperienceDisplay(mcRPGPlayer);
+            activeDisplays.put(mcRPGPlayer.getUUID(), experienceDisplay);
+        }
+    }
+
+    /**
+     * Checks to see if the provided {@link UUID} has an active {@link ExperienceDisplay},
+     *
+     * @param uuid The {@link UUID} to check.
+     * @return {@code true} if the provided {@link UUID} has an active {@link ExperienceDisplay}.
+     */
     public boolean hasActiveDisplay(@NotNull UUID uuid) {
         return activeDisplays.containsKey(uuid);
     }
 
-    public void sendExperienceUpdate(@NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey) {
-        SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        Skill skill = skillRegistry.getRegisteredSkill(skillKey);
-        Optional<SkillHolder.SkillHolderData> dataOptional = skillHolder.getSkillHolderData(skillKey);
-        UUID uuid = skillHolder.getUUID();
-        Player player = Bukkit.getPlayer(uuid);
-        if (dataOptional.isPresent() && player != null) {
-
-            Audience audience = McRPG.getInstance().getAdventure().player(player);
-            removePreviousDisplay(uuid);
-
-            SkillHolder.SkillHolderData skillHolderData = dataOptional.get();
-            int currentLevel = skillHolderData.getCurrentLevel();
-            int currentExperience = skillHolderData.getCurrentExperience();
-            int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
-            Component component = miniMessage.deserialize("<gray>Lv.<gold>" + currentLevel + " <gray>- " + skill.getDisplayName() + ": <gold>" + (experienceForNextLevel - currentExperience));
-            BossBar bossBar = BossBar.bossBar(component, (((float) currentExperience)/((float) experienceForNextLevel)), BossBar.Color.WHITE, BossBar.Overlay.NOTCHED_10);
-            audience.showBossBar(bossBar);
-            activeDisplays.put(uuid, bossBar);
-            DelayableCoreTask delayableCoreTask = new DelayableCoreTask(McRPG.getInstance(), 10) {
-
-                @Override
-                public void run() {
-                    audience.hideBossBar(bossBar);
-                }
-            };
-            delayableCoreTask.runTask();
-        }
+    /**
+     * Gets an {@link Optional} containing the {@link ExperienceDisplay} for the provided
+     * {@link UUID}.
+     *
+     * @param uuid The {@link UUID} to get the {@link ExperienceDisplay} for.
+     * @return An {@link Optional} containing the {@link ExperienceDisplay} for the provided {@link UUID},
+     * or an empty on if {@link #hasActiveDisplay(UUID)} returns {@code false}.
+     */
+    @NotNull
+    public Optional<ExperienceDisplay> getActiveDisplay(@NotNull UUID uuid) {
+        return Optional.ofNullable(activeDisplays.get(uuid));
     }
 
-    private void removePreviousDisplay(@NotNull UUID uuid) {
-        if (hasActiveDisplay(uuid)) {
-            Audience audience = McRPG.getInstance().getAdventure().player(uuid);
-            audience.hideBossBar(activeDisplays.remove(uuid));
+    /**
+     * Sends a visual update of the current experience state of the {@link us.eunoians.mcrpg.skill.Skill} belonging to
+     * the provided {@link NamespacedKey} for the given {@link McRPGPlayer}.
+     *
+     * @param mcRPGPlayer The {@link McRPGPlayer} to update the display for.
+     * @param skillKey    The {@link NamespacedKey} to get the {@link us.eunoians.mcrpg.skill.Skill} information for the display.
+     */
+    public void sendExperienceUpdate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {
+        UUID uuid = mcRPGPlayer.getUUID();
+
+        // If they don't have an active display, set one
+        if (!hasActiveDisplay(uuid)) {
+            createDisplay(mcRPGPlayer);
+        }
+        ExperienceDisplay experienceDisplay = activeDisplays.get(uuid);
+        // Check if it is a persistent display and if the time has expired on it, create a new one
+        if (experienceDisplay instanceof PersistentExperienceDisplay persistentExperienceDisplay && persistentExperienceDisplay.hasExpired()) {
+            createDisplay(mcRPGPlayer);
+            experienceDisplay = activeDisplays.get(uuid);
+        }
+        experienceDisplay.sendExperienceUpdate(skillKey);
+    }
+
+    /**
+     * Removes and cleans the active display for the provided {@link UUID}.
+     *
+     * @param uuid The {@link UUID} to remove the display for.
+     */
+    public void removeDisplay(@NotNull UUID uuid) {
+        if (activeDisplays.containsKey(uuid)) {
+            activeDisplays.remove(uuid).cleanDisplay();
         }
     }
 }

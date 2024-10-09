@@ -22,7 +22,7 @@ import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
-import us.eunoians.mcrpg.setting.ExperienceDisplaySetting;
+import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;

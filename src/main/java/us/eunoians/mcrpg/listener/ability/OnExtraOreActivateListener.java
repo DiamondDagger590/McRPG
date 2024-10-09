@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.listener.ability;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import us.eunoians.mcrpg.event.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
 
 import java.util.UUID;
 
