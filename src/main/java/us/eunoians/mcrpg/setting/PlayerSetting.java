@@ -19,6 +19,10 @@ import java.util.Optional;
  * Player settings are handled by a chain of {@link LinkedNode}s, where a player
  * can click through the options for the setting with the next node representing the next
  * setting option for the player.
+ * <p>
+ * It is assumed that all player settings will be enums, requiring enums to provide
+ * the ability to access other values of said enum through methods like {@link #name()}
+ * and {@link #fromString(String)}.
  */
 public interface PlayerSetting extends McRPGContent {
 
@@ -67,4 +71,22 @@ public interface PlayerSetting extends McRPGContent {
      * @param oldSetting An {@link Optional} containing the old setting if there was one.
      */
     void onSettingChange(@NotNull McRPGPlayer player, @NotNull Optional<PlayerSetting> oldSetting);
+
+    /**
+     * Gets a setting instance from the provided string.
+     *
+     * @param setting The string of the setting.
+     * @return An {@link Optional} containing the setting matching the string,
+     * or empty if no matches are found.
+     */
+    @NotNull
+    Optional<? extends PlayerSetting> fromString(@NotNull String setting);
+
+    /**
+     * Gets the string name of this setting instance.
+     *
+     * @return The string name of this setting instance.
+     */
+    @NotNull
+    String name();
 }

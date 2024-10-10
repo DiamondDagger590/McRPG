@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.PlayerDataDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
-import us.eunoians.mcrpg.database.table.PlayerSettingsDAO;
+import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 
 import java.io.File;
@@ -84,7 +84,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
                 CompletableFuture.allOf(SkillDAO.attemptCreateTable(connection, this),
                                 PlayerLoadoutDAO.attemptCreateTable(connection, this), PlayerDataDAO.attemptCreateTable(connection, this),
-                                PlayerSettingsDAO.attemptCreateTable(connection, this))
+                                PlayerSettingDAO.attemptCreateTable(connection, this))
                         .thenAccept(tableCreationFuture::complete)
                         .exceptionally(throwable -> {
                             tableCreationFuture.completeExceptionally(throwable);
@@ -116,7 +116,7 @@ public class McRPGDatabaseManager extends DatabaseManager {
 
             getDatabaseExecutorService().submit(() -> {
                 CompletableFuture.allOf(SkillDAO.updateTable(connection), PlayerLoadoutDAO.updateTable(connection),
-                        PlayerDataDAO.updateTable(connection), PlayerSettingsDAO.updateTable(connection))
+                        PlayerDataDAO.updateTable(connection), PlayerSettingDAO.updateTable(connection))
                     .thenAccept(tableUpdateFuture::complete);
             });
 

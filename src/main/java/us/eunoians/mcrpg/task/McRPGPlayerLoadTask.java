@@ -15,16 +15,19 @@ import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
+import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.setting.PlayerSetting;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
 import java.sql.Connection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -112,10 +115,14 @@ public class McRPGPlayerLoadTask extends PlayerLoadTask {
                     });
         }
 
-        // TODO move to a DAO
-        getPlugin().getPlayerSettingRegistry().getSettings().forEach(playerSetting -> getCorePlayer().setPlayerSetting(playerSetting));
+        CompletableFuture<Set<PlayerSetting>> playerSettingFuture = PlayerSettingDAO.getPlayerSettings(connection, uuid);
+        playerSettingFuture.thenAccept(playerSettings -> {
+            playerSettings.forEach(playerSetting -> getCorePlayer().setPlayerSetting(playerSetting));
+        });
 
-        CompletableFuture.allOf(ArrayUtils.addAll(futures, loadoutFutures))
+        CompletableFuture[] finalFuture = ArrayUtils.addAll(futures, loadoutFutures);
+        finalFuture = ArrayUtils.add(finalFuture, playerSettingFuture);
+        CompletableFuture.allOf(finalFuture)
                 .thenAccept(unused -> result.complete(true))
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();

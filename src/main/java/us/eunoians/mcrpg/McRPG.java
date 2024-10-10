@@ -56,9 +56,10 @@ import us.eunoians.mcrpg.listener.entity.OnAbilityHolderUnreadyListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerLoadListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
+import us.eunoians.mcrpg.listener.entity.player.PlayerPickupItemListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
-import us.eunoians.mcrpg.listener.setting.PlayerSettingChangeListener;
+import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
@@ -275,6 +276,7 @@ public class McRPG extends CorePlugin {
 
         // Setting listener
         Bukkit.getPluginManager().registerEvents(new PlayerSettingChangeListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerPickupItemListener(), this);
     }
 
     /**

@@ -23,6 +23,8 @@ import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
+import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
+import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
@@ -103,6 +105,8 @@ public final class McRPGExpansion extends ContentExpansion {
     public PlayerSettingContentPack getPlayerSettingContent() {
         PlayerSettingContentPack playerSettingContent = new PlayerSettingContentPack(this);
         playerSettingContent.addContent(ExperienceDisplaySetting.values()[0]);
+        playerSettingContent.addContent(KeepHandEmptySetting.values()[0]);
+        playerSettingContent.addContent(KeepHotbarSlotEmptySetting.values()[0]);
         return playerSettingContent;
     }
 }

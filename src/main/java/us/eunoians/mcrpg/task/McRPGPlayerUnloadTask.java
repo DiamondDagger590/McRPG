@@ -7,6 +7,7 @@ import com.diamonddagger590.mccore.task.PlayerUnloadTask;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
 import us.eunoians.mcrpg.event.entity.player.McRPGPlayerUnloadEvent;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
@@ -51,7 +52,7 @@ public class McRPGPlayerUnloadTask extends PlayerUnloadTask {
             Connection connection = getPlugin().getDatabaseManager().getDatabase().getConnection();
 
             CompletableFuture<Void> completableFuture = CompletableFuture.allOf(SkillDAO.saveAllSkillHolderInformation(connection, skillHolder),
-                    PlayerLoadoutDAO.saveAllPlayerLoadouts(connection, skillHolder));
+                    PlayerLoadoutDAO.saveAllPlayerLoadouts(connection, skillHolder), PlayerSettingDAO.savePlayerSettings(connection, getCorePlayer().getUUID(), getCorePlayer().getPlayerSettings()));
             completableFuture.thenAccept(unused -> {
                 // If the player's mutex is locked
                 if (mcRPGPlayer.useMutex()) {

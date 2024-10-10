@@ -9,12 +9,12 @@ import us.eunoians.mcrpg.display.impl.ActionBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.BossBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.gui.slot.setting.ExperienceDisplaySettingSlot;
-import us.eunoians.mcrpg.gui.slot.setting.PlayerSettingSlot;
+import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.setting.PlayerSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +24,7 @@ import java.util.UUID;
  * A player setting that allows players to configure how they want
  * experience updates to be displayed.
  */
-public enum ExperienceDisplaySetting implements PlayerSetting {
+public enum ExperienceDisplaySetting implements McRPGSetting {
 
     /**
      * This setting allows players to view experience updates via {@link org.bukkit.boss.BossBar}
@@ -80,7 +80,7 @@ public enum ExperienceDisplaySetting implements PlayerSetting {
 
     @NotNull
     @Override
-    public PlayerSettingSlot<? extends PlayerSetting> getSettingSlot(@NotNull McRPGPlayer mcRPGPlayer) {
+    public ExperienceDisplaySettingSlot getSettingSlot(@NotNull McRPGPlayer mcRPGPlayer) {
         return new ExperienceDisplaySettingSlot(mcRPGPlayer, this);
     }
 
@@ -96,8 +96,8 @@ public enum ExperienceDisplaySetting implements PlayerSetting {
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getExpansionKey() {
-        return Optional.of(McRPGExpansion.EXPANSION_KEY);
+    public Optional<ExperienceDisplaySetting> fromString(@NotNull String setting) {
+        return Arrays.stream(values()).filter(experienceDisplaySetting -> experienceDisplaySetting.toString().equalsIgnoreCase(setting)).findFirst();
     }
 
     /**

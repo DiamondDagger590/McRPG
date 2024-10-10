@@ -245,7 +245,7 @@ public class PlayerLoadoutDAO {
         int loadoutAmount = McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
         CompletableFuture[] futures = new CompletableFuture[loadoutAmount];
         for (int i = 1; i <= loadoutAmount; i++) {
-            futures[i-1] = savePlayerLoadout(connection, uuid, loadoutHolder.getLoadout(i));
+            futures[i - 1] = savePlayerLoadout(connection, uuid, loadoutHolder.getLoadout(i));
         }
         CompletableFuture<Void> allFuture = CompletableFuture.allOf(futures);
         return allFuture;
@@ -271,8 +271,7 @@ public class PlayerLoadoutDAO {
                 preparedStatement.setString(1, playerUUID.toString());
                 preparedStatement.setInt(2, loadout.getLoadoutSlot());
                 preparedStatement.executeUpdate();
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 completableFuture.completeExceptionally(e);
             }
 
@@ -312,8 +311,7 @@ public class PlayerLoadoutDAO {
                 preparedStatement.setString(1, playerUUID.toString());
                 preparedStatement.setInt(2, loadoutId);
                 preparedStatement.executeUpdate();
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 completableFuture.completeExceptionally(e);
             }
             completableFuture.complete(null);
