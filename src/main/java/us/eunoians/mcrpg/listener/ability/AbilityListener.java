@@ -1,6 +1,9 @@
 package us.eunoians.mcrpg.listener.ability;
 
+import com.diamonddagger590.mccore.player.PlayerManager;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +13,8 @@ import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.ability.impl.CooldownableAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
 
 import java.util.Set;
 import java.util.UUID;
@@ -70,9 +75,24 @@ public interface AbilityListener extends Listener {
     default void readyAbilities(@NotNull UUID uuid, @NotNull Event event) {
         McRPG mcRPG = McRPG.getInstance();
         EntityManager entityManager = mcRPG.getEntityManager();
+        PlayerManager playerManager = mcRPG.getPlayerManager();
         AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
+
+            // Check if the player requires empty offhand
+            var playerOptional = playerManager.getPlayer(uuid);
+            if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer && mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                var settingOptional = mcRPGPlayer.getPlayerSetting(RequireEmptyOffhandSetting.SETTING_KEY);
+                Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                // If the player has the setting enabled and their offhand isn't empty, don't even try to ready any abilities
+                if (settingOptional.isPresent()
+                        && settingOptional.get() instanceof RequireEmptyOffhandSetting requireEmptyOffhandSetting
+                        && requireEmptyOffhandSetting == RequireEmptyOffhandSetting.ENABLED
+                        && player.getInventory().getItemInOffHand().getType() != Material.AIR) {
+                    return;
+                }
+            }
 
             /*
              * We can do this without too much of an impact on performance due to two assumptions.
