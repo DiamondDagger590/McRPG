@@ -10,6 +10,10 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.external.papi.placeholder.McRPGPlaceholder;
 
+/**
+ * This placeholder exists for all registered {@link us.eunoians.mcrpg.skill.Skill}s and allows
+ * PAPI to use the skill's level as a placeholder.
+ */
 public class SkillCurrentLevelPlaceholder extends McRPGPlaceholder {
 
     private static final String PLACEHOLDER = "%s_current_level";
