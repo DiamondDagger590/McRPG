@@ -1,8 +1,10 @@
 package us.eunoians.mcrpg.ability.impl;
 
+import com.diamonddagger590.mccore.builder.item.ItemBuilderConfigurationKeys;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.builder.item.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 /**
@@ -20,16 +22,17 @@ public interface ConfigurableAbility extends Ability {
     YamlDocument getYamlDocument();
 
     @NotNull
+    Route getDisplayItemRoute();
+
+    @NotNull
     @Override
-    default String getDisplayName(@NotNull McRPGPlayer player) {
-        return player.getMcRPGInstance().getLocalizationManager().getLocalizedMessage(player, getDisplayNameRoute())
+    default AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
+        return AbilityItemBuilder.from(player.getMcRPGInstance().getLocalizationManager().getLocalizedSection(player, getDisplayItemRoute()), this);
     }
 
-    /**
-     * Gets the {@link Route} to pull the ability's display name from.
-     *
-     * @return The {@link Route} to pull the ability's display name from.
-     */
     @NotNull
-    Route getDisplayNameRoute();
+    @Override
+    default String getDisplayName(@NotNull McRPGPlayer player) {
+        return player.getMcRPGInstance().getLocalizationManager().getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+    }
 }

@@ -37,7 +37,6 @@ repositories {
     mavenLocal()
 
     maven("https://jitpack.io")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
     maven("https://maven.enginehub.org/repo/") //WorldGuard
     maven("https://nexus.wesjd.net/repository/thirdparty/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -45,6 +44,7 @@ repositories {
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven("https://repo.opencollab.dev/main/")
     maven("https://repo.lunarclient.dev") //Lunar client
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
 
     //Spigot
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -52,7 +52,6 @@ repositories {
     maven("https://repo.md-5.net/content/repositories/snapshots/")
     maven("https://repo.md-5.net/content/repositories/releases/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots")
-
 
 }
 
@@ -63,7 +62,11 @@ dependencies {
     compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
     val mccoreVersion = "1.0.0.11-SNAPSHOT"
-    implementation("com.diamonddagger590:McCore:$mccoreVersion")
+    implementation("com.diamonddagger590:McCore:$mccoreVersion") {
+        exclude(group = "com.nexomc")
+        exclude(group = "dev.lone")
+        exclude(group = "com.arcaniax")
+    }
 
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
@@ -73,10 +76,6 @@ dependencies {
 
     val customBlockDataVersion = "2.2.2"
     implementation("com.jeff-media:custom-block-data:$customBlockDataVersion")
-
-    val placeholderAPIVersion = "2.11.6"
-    compileOnly("me.clip:placeholderapi:$placeholderAPIVersion")
-    testImplementation("me.clip:placeholderapi:$placeholderAPIVersion")
 
     val worldGuardVersion = "7.0.7"
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:$worldGuardVersion")

@@ -13,10 +13,12 @@ ability:
 skill:
   swords:
     bleed:
-      display-name: "Bleed"
-      display-material: REDSTONE
-      display-item-model: 0
-      display-item-lore:
-        - ""
+      display-item:
+        name: "<red>Bleed"
+        material: REDSTONE
+        lore:
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+
     deeper-wound:
       display-name: "Deeper Wound"

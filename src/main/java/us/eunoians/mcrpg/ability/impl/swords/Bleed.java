@@ -4,12 +4,10 @@ import com.diamonddagger590.mccore.parser.Parser;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
@@ -17,7 +15,6 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedComponents;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.EnglishLanguageFile;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -71,22 +68,8 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
         return Optional.of("bleed");
     }
 
-    @NotNull
-    @Override
-    public Route getDisplayNameRoute() {
-        return EnglishLanguageFile.BLEED_DISPLAY_NAME;
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        ItemStack guiItem = new ItemStack(Material.REDSTONE);
-        return guiItem;
-    }
-
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
         //This is the only event that can activate this ability, so this should be a safe cast
         EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
         LivingEntity livingEntity = (LivingEntity) entityDamageByEntityEvent.getEntity();
@@ -108,6 +91,12 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
     @Override
     public YamlDocument getYamlDocument() {
         return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return ;
     }
 
     @Override

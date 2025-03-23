@@ -6,7 +6,7 @@ import us.eunoians.mcrpg.configuration.file.ConfigFile;
 /**
  * A java representation of a language configuration file.
  */
-public final class EnglishLanguageFile extends ConfigFile {
+public final class LocalizationKeys extends ConfigFile {
 
     private static final Route LOGIN_HEADER = Route.fromString("login");
     public static final Route LOGIN_UNABLE_TO_LOAD_DATA = Route.addTo(LOGIN_HEADER, "unable-to-load-data");
@@ -15,7 +15,7 @@ public final class EnglishLanguageFile extends ConfigFile {
     private static final Route SWORDS_HEADER = Route.addTo(SKILL_HEADER, "swords");
     // Bleed
     private static final Route BLEED_HEADER = Route.addTo(SWORDS_HEADER, "bleed");
-    public static final Route BLEED_DISPLAY_NAME = Route.addTo(BLEED_HEADER, "display-name");
+    public static final Route BLEED_DISPLAY_ITEM_HEADER = Route.addTo(BLEED_HEADER, "display-item");
 
     // Deeper Wound
     private static final Route DEEPER_WOUND_HEADER = Route.addTo(SWORDS_HEADER, "deeper-wound");

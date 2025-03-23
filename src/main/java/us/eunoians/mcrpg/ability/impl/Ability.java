@@ -2,10 +2,10 @@ package us.eunoians.mcrpg.ability.impl;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
+import us.eunoians.mcrpg.builder.item.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
@@ -112,15 +112,6 @@ public interface Ability extends McRPGContent {
     List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer);
 
     /**
-     * Gets the {@link ItemStack} to use when displaying this ability in guis.
-     *
-     * @param abilityHolder The {@link AbilityHolder} that is needing an item displayed for.
-     * @return The {@link ItemStack} to use when displaying this ability in guis.
-     */
-    @NotNull
-    ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder);
-
-    /**
      * Activates this ability for the given {@link AbilityHolder} with the provided {@link Event} being the trigger.
      * <p>
      * This method should not be used to determine if an ability activates or not. Instead, ensure that {@link us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent}s are used.
@@ -156,4 +147,7 @@ public interface Ability extends McRPGContent {
      */
     @NotNull
     Optional<ReadyData> getReadyData();
+
+    @NotNull
+    AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player);
 }

@@ -186,7 +186,7 @@ public class McRPGPlayer extends CorePlayer {
 
         if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE).isEmpty()
                 || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
-            throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName());
+            throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName(this));
         }
         int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
         Quest quest = tierableAbility.getUpgradeQuestForTier(tier);

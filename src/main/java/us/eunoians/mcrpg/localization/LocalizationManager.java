@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.localization;
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -110,6 +111,34 @@ public final class LocalizationManager {
                             message = papiHookOptional.get().translateMessage(playerOptional.get(), message);
                         }
                         return message;
+                    }
+                }
+            }
+        }
+        // If we reach here, then that means no languages support the message which shouldn't be true.
+        // English should always be supported.
+        throw new NoLocalizationContainsMessageException(route, processedLocales);
+    }
+
+    @NotNull
+    public Section getLocalizedSection(@NotNull McRPGPlayer player, @NotNull Route route) {
+        LinkedNode<Locale> locales = getLocaleChain(player);
+        Set<Locale> processedLocales = new HashSet<>();
+        while (locales.hasNext()) {
+            Locale locale = locales.getNodeValue();
+            // We don't want to process locales twice
+            if (processedLocales.contains(locale)) {
+                continue;
+            }
+            // Mark that it has now been processed
+            processedLocales.add(locale);
+            // If we support this localization
+            if (localizations.containsKey(locale)) {
+                List<YamlDocument> documents = localizations.get(locale);
+                // Check all registered configurations for the message
+                for (YamlDocument yamlDocument : documents) {
+                    if (yamlDocument.contains(route)) {
+                        return yamlDocument.getSection(route);
                     }
                 }
             }

@@ -44,7 +44,6 @@ import us.eunoians.mcrpg.expansion.handler.ContentHandlerType;
 import us.eunoians.mcrpg.external.lands.LandsHook;
 import us.eunoians.mcrpg.external.lunar.LunarUtils;
 import us.eunoians.mcrpg.external.papi.McRPGPapiExpansion;
-import us.eunoians.mcrpg.external.papi.PapiHook;
 import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityCooldownExpireListener;
@@ -139,8 +138,6 @@ public class McRPG extends CorePlugin {
     private LandsHook landsHook;
     @Nullable
     private WorldGuardHook worldGuardHook;
-    @Nullable
-    private PapiHook papiHook;
 
     @Override
     public void onEnable() {
@@ -313,7 +310,9 @@ public class McRPG extends CorePlugin {
     /**
      * Setup 3rd party plugin hooks that are natively supported by McRPG
      */
-    private void setupHooks() {
+    @Override
+    protected void setupHooks() {
+        super.setupHooks();
 
         healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
         sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
@@ -323,9 +322,8 @@ public class McRPG extends CorePlugin {
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            getLogger().info("Papi PlaceholderAPI found... registering hooks");
+            getLogger().info("Papi PlaceholderAPI found... registering placeholders");
             new McRPGPapiExpansion(this).register();
-            papiHook = new PapiHook(this);
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("NoCheatPlus")) {
@@ -603,16 +601,7 @@ public class McRPG extends CorePlugin {
         return Optional.ofNullable(worldGuardHook);
     }
 
-    /**
-     * Gets the {@link PapiHook} McRPG uses to support PlaceholderAPI.
-     *
-     * @return An {@link Optional} containing the {@link PapiHook} McRPG uses to support
-     * <a href="https://www.spigotmc.org/resources/placeholderapi.6245/">PlaceholderAPI</a> if the plugin is running.
-     */
-    @NotNull
-    public Optional<PapiHook> getPapiHook() {
-        return Optional.ofNullable(papiHook);
-    }
+
 
     /**
      * Gets the running instance of {@link McRPG}.
