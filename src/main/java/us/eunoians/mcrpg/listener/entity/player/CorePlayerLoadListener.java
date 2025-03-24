@@ -40,7 +40,7 @@ public class CorePlayerLoadListener implements Listener {
                             long remainingSeconds = diff/1000;
                             skillHolder.startCooldownExpireNotificationTimer(abilityKey, remainingSeconds);
                             if (McRPG.getInstance().isLunarEnabled()) {
-                                LunarUtils.displayCooldown(skillHolder.getUUID(), ability.getGuiItem(skillHolder), ability.getAbilityKey().getKey(), remainingSeconds);
+                                LunarUtils.displayCooldown(skillHolder.getUUID(), ability.getDisplayItemBuilder(mcRPGPlayer).asItemStack(), ability.getAbilityKey().getKey(), remainingSeconds);
                             }
                         }
                     }

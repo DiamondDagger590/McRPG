@@ -44,9 +44,12 @@ public class OnSkillLevelUpListener implements Listener {
         UUID uuid = skillHolder.getUUID();
         int levels = skillGainLevelEvent.getLevels();
         Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(skillGainLevelEvent.getSkillKey());
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        Audience player = McRPG.getInstance().getAdventure().player(uuid);
-        player.sendMessage(miniMessage.deserialize(String.format("<green>You have gone up <gold>%d levels<green> in <gold>%s<green>.", levels, skill.getDisplayName())));
+        var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(uuid);
+        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+            MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+            Audience player = McRPG.getInstance().getAdventure().player(uuid);
+            player.sendMessage(miniMessage.deserialize(String.format("<green>You have gone up <gold>%d levels<green> in <gold>%s<green>.", levels, skill.getDisplayName(mcRPGPlayer))));
+        }
     }
 
     @EventHandler

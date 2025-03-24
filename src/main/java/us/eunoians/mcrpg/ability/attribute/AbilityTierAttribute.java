@@ -85,8 +85,14 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
 
     @NotNull
     @Override
-    public String getDisplayName() {
-        return "Tier";
+    public String getPlaceholderName() {
+        return "tier";
+    }
+
+    @NotNull
+    @Override
+    public String getDisplayableContent() {
+        return getContent().toString();
     }
 
     @NotNull
@@ -115,7 +121,7 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
                             lore.add(blankLine);
                             lore.add(miniMessage.deserialize("<gray>Upgrade Quest Progress: ").append(Methods.getProgressBar(questOptional.get().getQuestProgress(), 20)));
                         } else {
-                            throw new IllegalArgumentException("The ability quest for ability " + ability.getDisplayName() + " was not found.");
+                            throw new IllegalArgumentException("The ability quest for ability " + ability.getDisplayName(mcRPGPlayer) + " was not found.");
                         }
                     }
                     else {
@@ -151,7 +157,7 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
                                                 lore.add(blankLine);
                                                 lore.add(miniMessage.deserialize(
                                                         String.format("<gray>You can upgrade this ability once you reach <gold>Lv %d<gray> in <gold>%s<gray>.",
-                                                                tierableAbility.getUnlockLevelForTier(nextTier), skill.getDisplayName())));
+                                                                tierableAbility.getUnlockLevelForTier(nextTier), skill.getDisplayName(mcRPGPlayer))));
                                             }
                                         }
                                     }
@@ -177,7 +183,7 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
                 else {
                     lore.add(blankLine);
                     lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
-                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName() + " <gray>skill"));
+                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName(mcRPGPlayer) + " <gray>skill"));
                     lore.add(miniMessage.deserialize("<gray>reaches level <gold>" + tierableAbility.getUnlockLevel() + "<gray>."));
                 }
             }

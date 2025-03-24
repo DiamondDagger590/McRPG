@@ -133,7 +133,7 @@ public class AbilitySlot extends Slot {
             for (AbilityAttribute<?> abilityAttribute : abilityData.getAllAttributes()) {
                 // If the attribute can be displayed
                 if (abilityAttribute instanceof DisplayableAttribute displayableAttribute) {
-                    lore.add(miniMessage.deserialize("<gray>" + displayableAttribute.getDisplayName() + ": <gold>" + abilityAttribute.getContent()));
+                    lore.add(miniMessage.deserialize("<gray>" + displayableAttribute.getPlaceholderName() + ": <gold>" + abilityAttribute.getContent()));
                 }
             }
 

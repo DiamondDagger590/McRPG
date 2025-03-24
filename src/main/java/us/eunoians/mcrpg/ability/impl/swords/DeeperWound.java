@@ -3,26 +3,26 @@ package us.eunoians.mcrpg.ability.impl.swords;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.ActivationChanceAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
-import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.event.ability.swords.DeeperWoundActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.event.ability.swords.DeeperWoundActivateEvent;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * This ability is an unlockable ability for {@link Swords} that
  * can increase the duration of the {@link Bleed} ability
  */
-public final class DeeperWound extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility {
+public final class DeeperWound extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, ActivationChanceAbility {
 
     public static final NamespacedKey DEEPER_WOUND_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "deeper_wound");
 
@@ -57,12 +57,6 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
         return Optional.of("deeper_wound");
     }
 
-    @NotNull
-    @Override
-    public Route getDisplayNameRoute() {
-        return LocalizationKeys.DEEPER_WOUND_DISPLAY_NAME;
-    }
-
     @Override
     @NotNull
     public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
@@ -70,12 +64,6 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
         return List.of("<gray>Enhances Bleed ability to last longer.",
                 "<gray>Activation Chance: <gold>" + getActivationChance(currentTier),
                 "<gray>Extra Bleed Ticks: <gold>" + getAdditionalBleedCycles(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.RED_DYE);
     }
 
     @Override
@@ -98,6 +86,12 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
     @Override
     public YamlDocument getYamlDocument() {
         return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return null;
     }
 
     @NotNull
@@ -129,6 +123,17 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
     }
 
     /**
+     * Gets the chance of activating this ability for the given {@link AbilityHolder}.
+     *
+     * @param abilityHolder The {@link AbilityHolder} to get the activation chance for
+     * @return The activation chance for this ability.
+     */
+    @Override
+    public double getActivationChance(@NotNull AbilityHolder abilityHolder) {
+        return getActivationChance(getCurrentAbilityTier(abilityHolder));
+    }
+
+    /**
      * Gets how many extra bleed cycles should be added if this ability activates.
      *
      * @param tier The tier to get the extra cycles for
@@ -139,9 +144,9 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "deeper-wound-cycle-increase");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "deeper-wound-cycle-increase");
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getInt(tierRoute);
+            return swordsConfig.getInt(tierRoute, 0);
         } else {
-            return swordsConfig.getInt(allTiersRoute);
+            return swordsConfig.getInt(allTiersRoute, 0);
         }
     }
 
@@ -149,5 +154,14 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableTierableAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getAbilityPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        int tier = getCurrentAbilityTier(player.asSkillHolder());
+        placeholders.put("additional-bleed-cycles", Integer.toString(getAdditionalBleedCycles(tier)));
+        return placeholders;
     }
 }

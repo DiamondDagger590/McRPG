@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityPutOnCooldownEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
@@ -58,17 +59,18 @@ public interface CooldownableAbility extends Ability {
     }
 
     /**
-     * Notifies the {@link AbilityHolder} that their cooldown is still active if that holder
+     * Notifies the {@link McRPGPlayer} that their cooldown is still active if that holder
      * is also a {@link Player}.
      *
-     * @param abilityHolder The {@link AbilityHolder} to notify
+     * @param mcRPGPlayer The {@link McRPGPlayer} to notify
      */
-    default void notifyCooldownActive(@NotNull AbilityHolder abilityHolder) {
-        if (Bukkit.getEntity(abilityHolder.getUUID()) instanceof Player player) {
+    default void notifyCooldownActive(@NotNull McRPGPlayer mcRPGPlayer) {
+        var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
+        playerOptional.ifPresent(player -> {
             MiniMessage miniMessage = MiniMessage.miniMessage();
             Audience audience = McRPG.getInstance().getAdventure().player(player);
-            audience.sendMessage(miniMessage.deserialize("<red>" + getDisplayName() + " is still on cooldown."));
-        }
+            audience.sendMessage(miniMessage.deserialize("<red>" + getDisplayName(mcRPGPlayer) + " is still on cooldown."));
+        });
     }
 
     @NotNull

@@ -27,7 +27,7 @@ public interface ConfigurableAbility extends Ability {
     @NotNull
     @Override
     default AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-        return AbilityItemBuilder.from(player.getMcRPGInstance().getLocalizationManager().getLocalizedSection(player, getDisplayItemRoute()), this);
+        return AbilityItemBuilder.from(player.getMcRPGInstance().getLocalizationManager().getLocalizedSection(player, getDisplayItemRoute()), player, this);
     }
 
     @NotNull

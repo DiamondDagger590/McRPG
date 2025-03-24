@@ -11,7 +11,9 @@ import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.database.table.SkillDAO;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,9 +26,10 @@ public class UpgradeQuestReward implements QuestReward {
 
     @Override
     public void giveReward(@NotNull UUID uuid, @NotNull Quest quest) {
-        var abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(uuid);
-        abilityHolderOptional.ifPresent(abilityHolder -> {
+        var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(uuid);
+        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
             NamespacedKey namespacedKey = new NamespacedKey(McRPG.getInstance(), quest.getConfigKey());
+            AbilityHolder abilityHolder = mcRPGPlayer.asSkillHolder();
             abilityHolder.getAbilityData(namespacedKey).ifPresent(abilityData -> {
                 abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).ifPresent(abilityAttribute -> {
                     Ability ability = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey);
@@ -44,10 +47,10 @@ public class UpgradeQuestReward implements QuestReward {
                             }
                         });
                         Audience audience = McRPG.getInstance().getAdventure().player(uuid);
-                        audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize(String.format("<green>You have completed the upgrade quest for your <gold>%s ability<green>! It is now tier <gold>%d<green>.", ability.getDisplayName(), newTier)));
+                        audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize(String.format("<green>You have completed the upgrade quest for your <gold>%s ability<green>! It is now tier <gold>%d<green>.", ability.getDisplayName(mcRPGPlayer), newTier)));
                     }
                 });
             });
-        });
+        }
     }
 }

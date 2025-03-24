@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -150,4 +151,9 @@ public interface Ability extends McRPGContent {
 
     @NotNull
     AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player);
+
+    @NotNull
+    default Map<String, String> getAbilityPlaceholders(@NotNull McRPGPlayer player) {
+        return Map.of();
+    }
 }

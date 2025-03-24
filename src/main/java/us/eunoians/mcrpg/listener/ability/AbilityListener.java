@@ -122,7 +122,9 @@ public interface AbilityListener extends Listener {
                     .filter(ability -> ability.checkIfComponentFailsReady(abilityHolder, event).isEmpty())
                     .filter(ability -> {
                         if (ability instanceof CooldownableAbility cooldownableAbility && cooldownableAbility.isAbilityOnCooldown(abilityHolder)) {
-                            cooldownableAbility.notifyCooldownActive(abilityHolder);
+                            playerOptional.filter(corePlayer -> corePlayer instanceof McRPGPlayer)
+                                    .map(corePlayer -> (McRPGPlayer) corePlayer)
+                                    .ifPresent(cooldownableAbility::notifyCooldownActive);
                             return false;
                         }
                         return true;

@@ -1,24 +1,77 @@
+# Configure messages for McRPG commands
 commands:
+  # Configure experience commands
   experience:
+    # Configure the experience give command
+    # Supports the following placeholders: <experience>, <skill>, <target>, <sender>
     give-command:
-      recipient-message: "<green>You have been given <gold>%experience%</gold> in <gold>%skill%</gold>."
-      sender-success-message: "<green>You gave <gold>%experience%</gold> in <gold>%skill%</gold> to %target%."
-      sender-error-message: "<red>Unable to give <gray>%player%</gray> experience at the moment."
+      # The message to send to the player getting experience.
+      recipient-message: "<green>You have been given <gold><experience></gold> in <gold><skill></gold>."
+      # The message to send to the sender when the command works.
+      sender-success-message: "<green>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
+      # The message to send to the sender when the command fails.
+      sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+# Configure messages for player login
 login:
+  # The message to send a player whenever there is an issue loading their McRPG data.
   unable-to-load-data: "<red>There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!"
+# Configure generic ability strings.
 ability:
+  # Configure messages relating to abilities that can be on cooldown
   cooldown:
-    # Supports %ability% as a placeholder for the ability on cooldown.
-    ability-still-on-cooldown: "<red>%ability% is still on cooldown."
+    # The message to send to the player when they try to use an ability still on cooldown
+    # Supports <ability> as a placeholder for the ability on cooldown.
+    ability-still-on-cooldown: "<red><ability> is still on cooldown."
+  # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
+  lore:
+    # Configure ability upgrade quest lore
+    # The following placeholders are supported: <upgrade-points>, <next-tier-upgrade-points>, <upgrade-quest-progress>
+    quest:
+      # The lore to add when an ability can be upgraded via upgrade quest but the player lacks enough upgrade points
+      not-enough-upgrade-points:
+        - '<gray>You need <gold><next-tier-upgrade-points> upgrade points<gray> to start the upgrade quest.'
+      #  The lore to add to prompt a player to click when an ability can be upgraded via upgrade quest
+      click-to-start:
+        - '<green>Click to spend <gold><next-tier-upgrade-points> upgrade points</gold> to start upgrade quest.'
+      # The lore to add when an ability has an active upgrade quest
+      quest-progress:
+        - '<gray>Upgrade Quest Progress: <upgrade-quest-progress>'
+    # The lore to add when the player isn't high enough level to upgrade the ability.
+    # The following placeholders are supported: <upgrade-points>, <next-tier-level>
+    upgrade-locked-behind-levelup:
+      - '<gray>You can upgrade this ability once you reach <gold>Lv <next-tier-level><gray> in <gold>>skill><gray>.'
+    # The lore to add to show how many upgrade points the player has.
+    # The following placeholders are supported: <upgrade-point-amount>
+    ability-point-count:
+      - '<gray>You currently have <gold><upgrade-point-amount></gold> upgrade points.'
+    # The lore to add to show what expansion pack an ability is from (only will be displayed if it isn't from McRPG)
+    # The following placeholders are supported: <expansion-pack>
+    expansion-pack:
+      - '<gray>Expansion Pack: <expansion-pack>'
+# Configure localization for skills
 skill:
+  # Configure localization for the Swords skill
   swords:
+    # Configure localization for the Bleed ability
     bleed:
       display-item:
         name: "<red>Bleed"
         material: REDSTONE
+        # Supports the following placeholders: <skill>, <activation-chance>
         lore:
+          - '<gray>Causes the opponent to bleed when attacking with sword, dealing damage over time.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+    deeper-wound:
+      display-item:
+        name: "<red>Deeper Wound"
+        material: RED_DYE
+        # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>
+        lore:
+          - '<gray>Enhances Bleed ability to last longer.'
+          - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
-
-    deeper-wound:
-      display-name: "Deeper Wound"
+          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<gray>Additional Bleed Cycles: <gold><additional-bleed-cycles>'

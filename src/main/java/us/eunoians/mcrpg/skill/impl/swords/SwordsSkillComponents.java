@@ -36,13 +36,14 @@ public class SwordsSkillComponents {
             McRPG mcRPG = McRPG.getInstance();
             EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast since can only be called after checks are done
             Swords swords = (Swords) McRPG.getInstance().getSkillRegistry().getRegisteredSkill(Swords.SWORDS_KEY);
-            EntityDamageContext entityDamageContext = new EntityDamageContext(skillHolder, swords, entityDamageByEntityEvent);
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
             double damage = entityDamageByEntityEvent.getFinalDamage();
+            int baseExperience = (int) (getDamageToAwardExperienceFor(entityDamageByEntityEvent) * getBaseExperienceForEntity(skillHolder, damaged));
+            EntityDamageContext entityDamageContext = new EntityDamageContext(skillHolder, swords, baseExperience, entityDamageByEntityEvent);
 
             if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
-                return (int) ((getDamageToAwardExperienceFor(entityDamageByEntityEvent) * getBaseExperienceForEntity(skillHolder, damaged) * McRPG.getInstance().getExperienceModifierRegistry().calculateModifierForContext(entityDamageContext)));
+                return (int) (baseExperience * McRPG.getInstance().getExperienceModifierRegistry().calculateModifierForContext(entityDamageContext));
             }
 
             return 0;

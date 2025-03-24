@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.command.admin.reset;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
+import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
@@ -17,8 +18,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.command.parser.SkillParser;
 import us.eunoians.mcrpg.database.table.SkillDAO;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.sql.Connection;
@@ -52,17 +53,18 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
-                            Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());
-                            if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
+                            Optional<CorePlayer> playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(player.getUniqueId());
+                            if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+                                SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
                                 Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
                                     var skillHolderData = skillHolderDataOptional.get();
                                     skillHolderData.resetSkill();
                                     skillHolder.getAllAbilityDataForSkill(skill).forEach(AbilityData::resetAbility);
-                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have had your <gold>%s skill <green>reset.", skill.getDisplayName())));
+                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have had your <gold>%s skill <green>reset.", skill.getDisplayName(mcRPGPlayer))));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
-                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have reset <gold>%s's %s skill <green>.", player.getDisplayName(), skill.getDisplayName())));
+                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have reset <gold>%s's %s skill <green>.", player.getDisplayName(), skill.getDisplayName(mcRPGPlayer))));
                                     }
 
                                     Database database = McRPG.getInstance().getDatabase();
