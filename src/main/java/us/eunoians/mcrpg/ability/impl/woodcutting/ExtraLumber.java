@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.configuration.ReloadableSet;
 import com.diamonddagger590.mccore.parser.Parser;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,7 +12,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
@@ -19,17 +19,16 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.event.ability.woodcutting.ExtraLumberActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.woodcutting.ExtraLumberActivateEvent;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -64,6 +63,12 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
         return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
     }
 
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.EXTRA_LUMBER_DISPLAY_ITEM_HEADER;
+    }
+
     @Override
     public Map<Location, Integer> getMultiplierMap() {
         return multiplierMap;
@@ -82,27 +87,8 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("extra_lumber");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Extra Lumber";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of("<gray>Will occasionally double drops while cutting wood.",
-                "<gray>Activation Chance: <gold>" + FORMAT.format(getActivationChance(mcRPGPlayer.asSkillHolder())) + "%");
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.OAK_LOG, 2);
+    public String getDatabaseName() {
+        return "extra_lumber";
     }
 
     @Override

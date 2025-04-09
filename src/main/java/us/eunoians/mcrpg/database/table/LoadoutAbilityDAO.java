@@ -153,7 +153,7 @@ public class LoadoutAbilityDAO {
                 PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (holder_uuid, loadout_id, ability_id) VALUES (?, ?, ?);");
                 preparedStatement.setString(1, uuid.toString());
                 preparedStatement.setInt(2, loadout.getLoadoutSlot());
-                preparedStatement.setString(3, abilityRegistry.getRegisteredAbility(namespacedKey).getDatabaseName().get());
+                preparedStatement.setString(3, abilityRegistry.getRegisteredAbility(namespacedKey).getDatabaseName());
                 preparedStatements.add(preparedStatement);
             }
         }

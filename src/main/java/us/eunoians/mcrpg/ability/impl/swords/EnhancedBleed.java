@@ -3,25 +3,26 @@ package us.eunoians.mcrpg.ability.impl.swords;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.event.ability.swords.EnhancedBleedActivateEvent;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.event.ability.swords.EnhancedBleedActivateEvent;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -48,36 +49,8 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
 
     @NotNull
     @Override
-    public Optional<String> getLegacyName() {
-        return Optional.of("Bleed+");
-    }
-
-    @NotNull
-    @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("enhanced_bleed");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Enhanced Bleed";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Enhances Bleed ability to do more damage each tick, with a chance to deal bonus damage.",
-                "<gray>Base Damage Boost: <gold>" + getBaseBleedDamageIncrease(currentTier),
-                "<gray>Bonus Damage Chance: <gold>" + getActivationChance(currentTier),
-                "<gray>Bonus Damage: <gold>" + getAdditionalBleedDamageBoost(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.SPIDER_EYE);
+    public String getDatabaseName() {
+        return "enhanced_bleed";
     }
 
     @Override
@@ -101,6 +74,12 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
     @Override
     public YamlDocument getYamlDocument() {
         return McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.ENHANCED_BLEED_DISPLAY_ITEM_HEADER;
     }
 
     @NotNull
@@ -168,5 +147,16 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableTierableAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        int tier = getCurrentAbilityTier(player.asSkillHolder());
+        placeholders.put(AbilityItemPlaceholderKeys.BASE_DAMAGE_BOOST.getKey(), Integer.toString(getBaseBleedDamageIncrease(tier)));
+        placeholders.put(AbilityItemPlaceholderKeys.BONUS_DAMAGE_CHANCE.getKey(), McRPGMethods.getChanceNumberFormat().format(getActivationChance(tier)));
+        placeholders.put(AbilityItemPlaceholderKeys.BONUS_DAMAGE.getKey(), Integer.toString(getAdditionalBleedDamageBoost(tier)));
+        return placeholders;
     }
 }

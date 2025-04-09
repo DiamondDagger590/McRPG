@@ -7,6 +7,8 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 
+import java.text.NumberFormat;
+
 /**
  * A collection of various utility methods that may be shared across McRPG.
  */
@@ -24,6 +26,17 @@ public class McRPGMethods {
     @NotNull
     public static String getMcRPGNamespace() {
         return MCRPG_NAMESPACED_KEY;
+    }
+
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
+    static {
+        NUMBER_FORMAT.setMaximumFractionDigits(2);
+        NUMBER_FORMAT.setMinimumFractionDigits(1);
+    }
+
+    @NotNull
+    public static NumberFormat getChanceNumberFormat() {
+        return NUMBER_FORMAT;
     }
 
     /**

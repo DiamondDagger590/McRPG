@@ -1,8 +1,6 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
@@ -12,6 +10,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
@@ -24,6 +23,7 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutAbilitySelectGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * This slot is used to select an {@link Ability} to go into a player's {@link Loadout}.
  */
-public class LoadoutSelectAbilitySlot extends Slot {
+public class LoadoutSelectAbilitySlot extends McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Loadout loadout;
@@ -58,8 +58,8 @@ public class LoadoutSelectAbilitySlot extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        corePlayer.getAsBukkitPlayer().ifPresent(player -> {
+    public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
+        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             if (oldAbilityKey.isPresent()) {
                 loadout.replaceAbility(oldAbilityKey.get(), ability.getAbilityKey());
             } else if (loadout.getRemainingLoadoutSize() > 0) {
@@ -74,26 +74,26 @@ public class LoadoutSelectAbilitySlot extends Slot {
 
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         Component blankLine = miniMessage.deserialize("");
 
-        ItemStack itemStack = ability.getGuiItem(mcRPGPlayer.asSkillHolder());
+        ItemStack itemStack = ability.getDisplayItemBuilder(mcRPGPlayer).asItemStack(McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID()));
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(miniMessage.deserialize("<red>" + ability.getDisplayName()));
+        itemMeta.displayName(miniMessage.deserialize("<red>" + ability.getDisplayName(mcRPGPlayer)));
 
         List<Component> lore = new ArrayList<>();
         // Add skill information
         if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
             Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
-            lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName()));
+            lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
         }
         // Add ability description
-        for (String string : ability.getDescription(mcRPGPlayer)) {
-            lore.add(miniMessage.deserialize(string));
-        }
+//        for (String string : ability.getDescription(mcRPGPlayer)) {
+//            lore.add(miniMessage.deserialize(string));
+//        }
         lore.add(miniMessage.deserialize(""));
         // Add information about specific ability attributes
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);
@@ -112,7 +112,7 @@ public class LoadoutSelectAbilitySlot extends Slot {
                     lore.add(miniMessage.deserialize("<gray>You have unlocked this ability."));
                 } else {
                     lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
-                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName() + " <gray>skill"));
+                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName(mcRPGPlayer) + " <gray>skill"));
                     lore.add(miniMessage.deserialize("<gray>reaches level <gold>" + unlockableAbility.getUnlockLevel() + "<gray>."));
                 }
             }
@@ -129,11 +129,11 @@ public class LoadoutSelectAbilitySlot extends Slot {
         }
         itemMeta.lore(lore);
         itemStack.setItemMeta(itemMeta);
-        return itemStack;
+        return ItemBuilder.from(itemStack);
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutAbilitySelectGui.class);
     }
 }

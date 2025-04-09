@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.skill;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.exception.skill.EventNotRegisteredForLevelingException;
@@ -47,7 +48,7 @@ public abstract class  Skill implements McRPGContent {
      * @return The name of this skill to display to the player in messages or guis
      */
     @NotNull
-    public abstract String getDisplayName(@NotNull McRPGPlayer player);
+    public abstract String getDisplayName(@Nullable McRPGPlayer player);
 
     /**
      * Gets the maximum level that this skill can be leveled to.

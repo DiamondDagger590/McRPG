@@ -3,9 +3,6 @@ package us.eunoians.mcrpg.entity.player;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.player.CorePlayer;
-import com.google.common.collect.ImmutableSet;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -21,17 +18,14 @@ import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
-import us.eunoians.mcrpg.event.setting.PlayerSettingChangeEvent;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
-import us.eunoians.mcrpg.setting.PlayerSetting;
+import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * The main "player" object for any player who will be playing McRPG.
@@ -41,29 +35,23 @@ import java.util.UUID;
  */
 public class McRPGPlayer extends CorePlayer {
 
-    private final McRPG mcRPG;
     private final SkillHolder skillHolder;
     private final QuestHolder questHolder;
-    private final Map<NamespacedKey, PlayerSetting> playerSettings;
     private final PlayerExperienceExtras playerExperienceExtras;
     private boolean standingInSafeZone;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
-        super(player.getUniqueId());
-        this.mcRPG = mcRPG;
+        super(player.getUniqueId(), mcRPG);
         this.skillHolder = new SkillHolder(mcRPG, getUUID());
         this.questHolder = new QuestHolder(getUUID());
-        this.playerSettings = new HashMap<>();
         this.playerExperienceExtras = new PlayerExperienceExtras();
         this.standingInSafeZone = false;
     }
 
     public McRPGPlayer(@NotNull UUID uuid, @NotNull McRPG mcRPG) {
-        super(uuid);
-        this.mcRPG = mcRPG;
+        super(uuid, mcRPG);
         this.skillHolder = new SkillHolder(mcRPG, getUUID());
         this.questHolder = new QuestHolder(getUUID());
-        this.playerSettings = new HashMap<>();
         this.playerExperienceExtras = new PlayerExperienceExtras();
         this.standingInSafeZone = false;
     }
@@ -79,8 +67,15 @@ public class McRPGPlayer extends CorePlayer {
      * @return The {@link McRPG} instance that created this player.
      */
     @NotNull
-    public McRPG getMcRPGInstance() {
-        return mcRPG;
+    @Override
+    public McRPG getPlugin() {
+        return (McRPG) super.getPlugin();
+    }
+
+    @NotNull
+    @Override
+    public Set<McRPGSetting> getPlayerSettings() {
+        return super.getPlayerSettings().stream().filter(setting -> setting instanceof McRPGSetting).map(setting -> (McRPGSetting) setting).collect(Collectors.toSet());
     }
 
     /**
@@ -103,40 +98,6 @@ public class McRPGPlayer extends CorePlayer {
     @NotNull
     public QuestHolder asQuestHolder() {
         return questHolder;
-    }
-
-    /**
-     * Sets the provided {@link PlayerSetting} as the current setting option for that setting type.
-     *
-     * @param playerSetting The {@link PlayerSetting} to set.
-     */
-    public void setPlayerSetting(@NotNull PlayerSetting playerSetting) {
-        PlayerSetting oldSetting = playerSettings.get(playerSetting.getSettingKey());
-        playerSettings.put(playerSetting.getSettingKey(), playerSetting);
-        PlayerSettingChangeEvent playerSettingChangeEvent = new PlayerSettingChangeEvent(this, oldSetting, playerSetting);
-        Bukkit.getPluginManager().callEvent(playerSettingChangeEvent);
-    }
-
-    /**
-     * Gets an {@link Optional} containing the {@link PlayerSetting} that belongs to the provided {@link NamespacedKey},
-     *
-     * @param key The {@link NamespacedKey} to get the {@link PlayerSetting} for.
-     * @return An {@link Optional} containing the {@link PlayerSetting} that belongs to the provided {@link NamespacedKey},
-     * or empty if there is not a match.
-     */
-    @NotNull
-    public Optional<PlayerSetting> getPlayerSetting(@NotNull NamespacedKey key) {
-        return Optional.ofNullable(playerSettings.get(key));
-    }
-
-    /**
-     * Gets an {@link ImmutableSet} of all {@link PlayerSetting}s for this player.
-     *
-     * @return An {@link ImmutableSet} of all {@link PlayerSetting}s for this player.
-     */
-    @NotNull
-    public Set<PlayerSetting> getPlayerSettings() {
-        return ImmutableSet.copyOf(playerSettings.values());
     }
 
     /**

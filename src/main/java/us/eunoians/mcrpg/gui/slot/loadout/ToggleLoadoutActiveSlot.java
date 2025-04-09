@@ -1,10 +1,8 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
@@ -13,9 +11,11 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayHomeGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.Set;
  * {@link Loadout}. If the loadout is not currently the player's active one,
  * clicking this slot will set it as such.
  */
-public class ToggleLoadoutActiveSlot extends Slot {
+public class ToggleLoadoutActiveSlot extends McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -46,7 +46,7 @@ public class ToggleLoadoutActiveSlot extends Slot {
 
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(isLoadoutActive() ? Material.GREEN_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -58,17 +58,17 @@ public class ToggleLoadoutActiveSlot extends Slot {
         }
         itemMeta.lore(lore);
         itemStack.setItemMeta(itemMeta);
-        return itemStack;
+        return ItemBuilder.from(itemStack);
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutDisplayHomeGui.class);
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             if (!isLoadoutActive()) {
                 player.performCommand("loadout set " + loadout.getLoadoutSlot());

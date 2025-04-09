@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.CooldownableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityPutOnCooldownEvent;
 import us.eunoians.mcrpg.external.lunar.LunarUtils;
 
@@ -21,8 +22,9 @@ public class OnAbilityPutOnCooldownListener implements Listener {
         CooldownableAbility cooldownableAbility = event.getAbility();
         long cooldown = event.getCooldown();
         abilityHolder.startCooldownExpireNotificationTimer(cooldownableAbility, cooldown);
-        if (McRPG.getInstance().isLunarEnabled()) {
-            LunarUtils.displayCooldown(abilityHolder.getUUID(), cooldownableAbility.getGuiItem(abilityHolder), cooldownableAbility.getAbilityKey().getKey(), cooldown);
+        var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(abilityHolder.getUUID());
+        if (McRPG.getInstance().isLunarEnabled() && playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+            LunarUtils.displayCooldown(abilityHolder.getUUID(), cooldownableAbility.getDisplayItemBuilder(mcRPGPlayer).asItemStack(), cooldownableAbility.getAbilityKey().getKey(), cooldown);
         }
     }
 }

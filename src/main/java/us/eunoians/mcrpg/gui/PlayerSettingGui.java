@@ -1,9 +1,10 @@
 package us.eunoians.mcrpg.gui;
 
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.PaginatedGui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,9 +14,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.setting.PlayerSetting;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,9 +26,9 @@ import java.util.Optional;
 /**
  * This gui is used to display all {@link PlayerSetting}s to a player.
  */
-public class PlayerSettingGui extends PaginatedGui {
+public class PlayerSettingGui extends McRPGPaginatedGui {
 
-    private static final Slot FILLER_GLASS_SLOT;
+    private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int SETTING_DISPLAY_SIZE = 18;
     private static final int NAVIGATION_ROW_START_INDEX = SETTING_DISPLAY_SIZE;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
@@ -38,33 +41,44 @@ public class PlayerSettingGui extends PaginatedGui {
         ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
         fillerGlassMeta.setDisplayName(" ");
         fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new Slot() {
+        FILLER_GLASS_SLOT = new McRPGSlot() {
 
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 return true;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                return fillerGlass;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(fillerGlass);
             }
         };
     }
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Player player;
     private final McRPG plugin;
 
     public PlayerSettingGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull McRPG mcRPG) {
-        this.mcRPGPlayer = mcRPGPlayer;
+        super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);
         }
         this.player = playerOptional.get();
         this.plugin = mcRPG;
+    }
+
+    @NotNull
+    @Override
+    public PreviousPageSlot getPreviousPageSlot() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public NextPageSlot getNextPageSlot() {
+        return null;
     }
 
     @NotNull
@@ -85,10 +99,10 @@ public class PlayerSettingGui extends PaginatedGui {
      * @param page The page to paint the settings for.
      */
     private void paintSettings(int page) {
-        List<PlayerSetting> settings = getSettingsForPage(page);
+        List<McRPGSetting> settings = getSettingsForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < settings.size()) {
-                setSlot(i, settings.get(i).getSettingSlot(mcRPGPlayer));
+                setSlot(i, settings.get(i).getSettingSlot(getMcRPGPlayer()));
             } else {
                 removeSlot(i);
             }
@@ -107,11 +121,11 @@ public class PlayerSettingGui extends PaginatedGui {
         }
         // If the page is not the first page, then we need to put a previous arrow button
         if (page > 1) {
-            setSlot(PREVIOUS_PAGE_SLOT_INDEX, PREVIOUS_PAGE_SLOT);
+            setSlot(PREVIOUS_PAGE_SLOT_INDEX, getPreviousPageSlot());
         }
         // If the page is not the max page, then we need to put a next arrow button
         if (page < getMaximumPage()) {
-            setSlot(NEXT_PAGE_SLOT_INDEX, NEXT_PAGE_SLOT);
+            setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
     }
 
@@ -136,8 +150,8 @@ public class PlayerSettingGui extends PaginatedGui {
      * @return A {@link List} of all {@link PlayerSetting}s to be displayed.
      */
     @NotNull
-    public List<PlayerSetting> getSettings() {
-        return mcRPGPlayer.getPlayerSettings()
+    public List<McRPGSetting> getSettings() {
+        return getMcRPGPlayer().getPlayerSettings()
                 .stream()
                 .toList();
     }
@@ -151,9 +165,9 @@ public class PlayerSettingGui extends PaginatedGui {
      * that should be displayed for the provided page.
      */
     @NotNull
-    public List<PlayerSetting> getSettingsForPage(int page) {
+    public List<McRPGSetting> getSettingsForPage(int page) {
         // Get the abilities that need to be displayed on this page
-        List<PlayerSetting> settings = getSettings();
+        List<McRPGSetting> settings = getSettings();
         int startRange = ((page - 1) * getNavigationRowStartIndex());
         int endRange = Math.min(settings.size(), page * getNavigationRowStartIndex());
         return settings.subList(startRange, endRange);

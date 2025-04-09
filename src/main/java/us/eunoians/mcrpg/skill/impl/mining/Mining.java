@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.skill.impl.mining;
 import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.util.McRPGMethods;
@@ -24,7 +26,7 @@ public final class Mining extends McRPGSkill {
 
     @NotNull
     @Override
-    public String getDisplayName() {
+    public String getDisplayName(@Nullable McRPGPlayer player) {
         return "Mining";
     }
 

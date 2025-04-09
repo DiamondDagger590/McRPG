@@ -11,22 +11,20 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.event.ability.woodcutting.DryadsGiftActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.woodcutting.DryadsGiftActivateEvent;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -70,28 +68,8 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("dryads_gift");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Has a chance to drop experience when breaking wood",
-                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Dryad's Gift";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.OAK_SAPLING, 1);
+    public String getDatabaseName() {
+        return "dryads_gift";
     }
 
     @Override
@@ -124,6 +102,12 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
     @Override
     public YamlDocument getYamlDocument() {
         return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.DRYADS_GIFT_DISPLAY_ITEM_HEADER;
     }
 
     /**

@@ -73,9 +73,8 @@ import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
 import us.eunoians.mcrpg.listener.world.FakeBlockBreakListener;
-import us.eunoians.mcrpg.localization.LocalizationManager;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
-import us.eunoians.mcrpg.setting.PlayerSettingRegistry;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.modifier.BoostedExperienceModifier;
@@ -108,6 +107,7 @@ public class McRPG extends CorePlugin {
     private FileManager fileManager;
     private McRPGDatabase database;
 
+    private PlayerManager<McRPG, McRPGPlayer> playerManager;
     private AbilityRegistry abilityRegistry;
     private SkillRegistry skillRegistry;
     private AbilityAttributeManager abilityAttributeManager;
@@ -115,13 +115,12 @@ public class McRPG extends CorePlugin {
     private DisplayManager displayManager;
     private QuestManager questManager;
     private BleedManager bleedManager;
-    private PlayerSettingRegistry playerSettingRegistry;
     private ContentExpansionManager contentExpansionManager;
     private WorldManager worldManager;
     private SafeZoneManager safeZoneManager;
     private ExperienceModifierRegistry experienceModifierRegistry;
     private RestedExperienceManager restedExperienceManager;
-    private LocalizationManager localizationManager;
+    private McRPGLocalizationManager localizationManager;
 
     private GlowingBlocks glowingBlocks;
     private GlowingEntities glowingEntities;
@@ -149,21 +148,21 @@ public class McRPG extends CorePlugin {
         }
 
         entityManager = new EntityManager(this);
-        playerManager = new PlayerManager(this);
+        playerManager = new PlayerManager<>(this);
         abilityRegistry = new AbilityRegistry(this);
         skillRegistry = new SkillRegistry(this);
+        localizationManager = new McRPGLocalizationManager(this);
 
         abilityAttributeManager = new AbilityAttributeManager(this);
         displayManager = new DisplayManager(this);
         questManager = new QuestManager();
         bleedManager = new BleedManager(this);
-        playerSettingRegistry = new PlayerSettingRegistry();
         contentExpansionManager = new ContentExpansionManager(this);
         worldManager = new WorldManager(this);
         safeZoneManager = new SafeZoneManager(this);
         experienceModifierRegistry = new ExperienceModifierRegistry(this);
         restedExperienceManager = new RestedExperienceManager(this);
-        localizationManager = new LocalizationManager(this);
+        localizationManager = new McRPGLocalizationManager(this);
 
         if (!isUnitTest()) {
             registerNativeExpansions();
@@ -305,6 +304,18 @@ public class McRPG extends CorePlugin {
     @Override
     public McRPGDatabase getDatabase() {
         return database;
+    }
+
+    @NotNull
+    @Override
+    public PlayerManager<McRPG, McRPGPlayer> getPlayerManager() {
+        return playerManager;
+    }
+
+    @NotNull
+    @Override
+    public McRPGLocalizationManager getLocalizationManager() {
+        return localizationManager;
     }
 
     /**
@@ -491,16 +502,6 @@ public class McRPG extends CorePlugin {
     }
 
     /**
-     * Gets the {@link PlayerSettingRegistry} used by McRPG.
-     *
-     * @return Gets the {@link PlayerSettingRegistry} used by McRPG.
-     */
-    @NotNull
-    public PlayerSettingRegistry getPlayerSettingRegistry() {
-        return playerSettingRegistry;
-    }
-
-    /**
      * Gets the {@link ContentExpansionManager} used by McRPG.
      *
      * @return The {@link ContentExpansionManager} used by McRPG.
@@ -551,16 +552,6 @@ public class McRPG extends CorePlugin {
     }
 
     /**
-     * Gets the {@link LocalizationManager} used by McRPG.
-     *
-     * @return The {@link LocalizationManager} used by McRPG.
-     */
-    @NotNull
-    public LocalizationManager getLocalizationManager() {
-        return localizationManager;
-    }
-
-    /**
      * Checks to see if Lunar Client support is enabled.
      *
      * @return {@code true} if Lunar Client support is enabled
@@ -600,7 +591,6 @@ public class McRPG extends CorePlugin {
     public Optional<WorldGuardHook> getWorldGuardHook() {
         return Optional.ofNullable(worldGuardHook);
     }
-
 
 
     /**

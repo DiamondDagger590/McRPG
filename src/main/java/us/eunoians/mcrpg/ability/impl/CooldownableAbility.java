@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl;
 
+import com.diamonddagger590.mccore.localization.LocalizationManager;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -10,10 +11,13 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityPutOnCooldownEvent;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -67,9 +71,11 @@ public interface CooldownableAbility extends Ability {
     default void notifyCooldownActive(@NotNull McRPGPlayer mcRPGPlayer) {
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         playerOptional.ifPresent(player -> {
-            MiniMessage miniMessage = MiniMessage.miniMessage();
-            Audience audience = McRPG.getInstance().getAdventure().player(player);
-            audience.sendMessage(miniMessage.deserialize("<red>" + getDisplayName(mcRPGPlayer) + " is still on cooldown."));
+            McRPG mcRPG = mcRPGPlayer.getPlugin();
+            LocalizationManager localizationManager = mcRPG.getLocalizationManager();
+            MiniMessage miniMessage = mcRPG.getMiniMessage();
+            Audience audience = mcRPG.getAdventure().player(player);
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKeys.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getDisplayName(mcRPGPlayer))));
         });
     }
 

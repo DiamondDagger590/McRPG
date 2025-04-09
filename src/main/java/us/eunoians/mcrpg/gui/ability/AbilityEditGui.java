@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.gui.ability;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
-import com.diamonddagger590.mccore.gui.Gui;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -15,6 +14,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.GuiModifiableAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.McRPGGui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,31 +23,20 @@ import java.util.Optional;
 /**
  * This gui is used for whenever an {@link Ability} is having its attributes modified.
  */
-public class AbilityEditGui extends Gui implements ClosableGui {
+public class AbilityEditGui extends McRPGGui implements ClosableGui {
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Player player;
     private final Ability ability;
     private boolean ignoreClose = false;
 
     public AbilityEditGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        this.mcRPGPlayer = mcRPGPlayer;
+        super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);
         }
         this.player = playerOptional.get();
         this.ability = ability;
-    }
-
-    /**
-     * Gets the {@link McRPGPlayer} modifying the ability.
-     *
-     * @return The {@link McRPGPlayer} modifying the ability.
-     */
-    @NotNull
-    public McRPGPlayer getMcRPGPlayer() {
-        return mcRPGPlayer;
     }
 
     /**
@@ -66,7 +55,7 @@ public class AbilityEditGui extends Gui implements ClosableGui {
             throw new InventoryAlreadyExistsForGuiException(this);
         } else {
             int size = getModifiableAttributes().size();
-            this.inventory = Bukkit.createInventory(player, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size)), McRPG.getInstance().getMiniMessage().deserialize("<gold>Editing " + ability.getDisplayName()));
+            this.inventory = Bukkit.createInventory(player, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size)), McRPG.getInstance().getMiniMessage().deserialize("<gold>Editing " + ability.getDisplayName(getMcRPGPlayer())));
             paintInventory();
         }
     }
@@ -86,7 +75,7 @@ public class AbilityEditGui extends Gui implements ClosableGui {
         List<GuiModifiableAttribute> modifyableAttributes = getModifiableAttributes();
         for (int i = 0; i < inventory.getSize(); i++) {
             if (i < modifyableAttributes.size()) {
-                setSlot(i, modifyableAttributes.get(i).getSlot(mcRPGPlayer, ability));
+                setSlot(i, modifyableAttributes.get(i).getSlot(getMcRPGPlayer(), ability));
             } else {
                 removeSlot(i);
             }
@@ -128,7 +117,7 @@ public class AbilityEditGui extends Gui implements ClosableGui {
     @NotNull
     private List<GuiModifiableAttribute> getModifiableAttributes() {
         List<GuiModifiableAttribute> modifiableAttributes = new ArrayList<>();
-        var abilityDataOptional = mcRPGPlayer.asSkillHolder().getAbilityData(ability);
+        var abilityDataOptional = getMcRPGPlayer().asSkillHolder().getAbilityData(ability);
         if (abilityDataOptional.isPresent()) {
             AbilityData abilityData = abilityDataOptional.get();
             for (AbilityAttribute<?> abilityAttribute : abilityData.getAllAttributes()) {

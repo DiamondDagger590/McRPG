@@ -17,6 +17,8 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.DryadsGift;
 import us.eunoians.mcrpg.ability.impl.woodcutting.ExtraLumber;
 import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
 import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
@@ -55,6 +57,12 @@ public final class McRPGExpansion extends ContentExpansion {
     @Override
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
         return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent(), getLocalizationContent());
+    }
+
+    @NotNull
+    @Override
+    public String getExpansionName(@NotNull McRPGPlayer player) {
+        return mcRPG.getLocalizationManager().getLocalizedMessage(player, LocalizationKeys.MCRPG_EXPANSION_NAME);
     }
 
     /**

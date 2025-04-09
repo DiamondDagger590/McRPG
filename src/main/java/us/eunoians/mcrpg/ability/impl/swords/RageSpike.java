@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.ability.impl.swords;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -14,7 +13,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -24,17 +22,21 @@ import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
-import us.eunoians.mcrpg.event.ability.swords.RageSpikeActivateEvent;
-import us.eunoians.mcrpg.event.ability.swords.RageSpikeDamageEvent;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.swords.RageSpikeActivateEvent;
+import us.eunoians.mcrpg.event.ability.swords.RageSpikeDamageEvent;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -69,6 +71,12 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
         return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.RAGE_SPIKE_DISPLAY_ITEM_HEADER;
+    }
+
     @Override
     public int getMaxTier() {
         return getYamlDocument().getInt(SwordsConfigFile.RAGE_SPIKE_AMOUNT_OF_TIERS);
@@ -82,28 +90,8 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("rage_spike");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Rage Spike";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Ready your sword, then crouch to blast forward, damaging and knocking back foes.",
-                "<gray>Damage: <gold>" + getDamage(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.IRON_SWORD);
+    public String getDatabaseName() {
+        return "rage_spike";
     }
 
     @Override
@@ -207,6 +195,14 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableActiveAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.DAMAGE.getKey(), Double.toString(getDamage(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 
     /**

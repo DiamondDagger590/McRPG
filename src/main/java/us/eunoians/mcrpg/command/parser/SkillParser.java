@@ -36,7 +36,7 @@ public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggest
 
     @Override
     public @NonNull Iterable<@NonNull String> stringSuggestions(@NonNull CommandContext<C> commandContext, @NonNull CommandInput input) {
-        return McRPG.getInstance().getSkillRegistry().getRegisteredSkills().stream().map(Skill::getDisplayName).map(String::toLowerCase).toList();
+        return McRPG.getInstance().getSkillRegistry().getRegisteredSkills().stream().map(skill -> skill.getDisplayName(null)).map(String::toLowerCase).toList();
     }
 
     private static class SkillParseException extends ParserException {

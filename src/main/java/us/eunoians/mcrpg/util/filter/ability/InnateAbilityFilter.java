@@ -14,7 +14,7 @@ import java.util.Collection;
  * This filter is used to filter a collection of {@link Ability Abilities} so only abilities that aren't unlocked are
  * left.
  */
-public class DefaultAbilityFilter implements PlayerContextFilter<Ability> {
+public class InnateAbilityFilter implements PlayerContextFilter<Ability> {
 
     @Override
     public Collection<Ability> filter(@NotNull CorePlayer corePlayer, @NotNull Collection<Ability> collection) {

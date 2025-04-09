@@ -16,7 +16,7 @@ import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
 public enum SafeZoneType {
 
     LANDS(mcRPGPlayer -> {
-        McRPG mcRPG = mcRPGPlayer.getMcRPGInstance();
+        McRPG mcRPG = mcRPGPlayer.getPlugin();
         YamlDocument configFile = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG);
         var landsHookOptional = mcRPG.getLandsHook();
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
@@ -31,7 +31,7 @@ public enum SafeZoneType {
         return false;
     }),
     WORLD_GUARD(mcRPGPlayer -> {
-        McRPG mcRPG = mcRPGPlayer.getMcRPGInstance();
+        McRPG mcRPG = mcRPGPlayer.getPlugin();
         YamlDocument configFile = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG);
         var worldGuardHookOptional = mcRPG.getWorldGuardHook();
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();

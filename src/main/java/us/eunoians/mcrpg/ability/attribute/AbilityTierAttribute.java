@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.ability.attribute;
 
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.util.Methods;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -10,12 +9,14 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -193,13 +194,11 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
 
     @NotNull
     @Override
-    public Slot getSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        return new Slot() {
+    public McRPGSlot getSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
+        return new McRPGSlot() {
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                if (corePlayer instanceof McRPGPlayer player &&
-                        ability instanceof TierableAbility tierableAbility &&
-                        player.canPlayerStartUpgradeQuest(tierableAbility)) {
+            public boolean onClick(@NotNull McRPGPlayer player, @NotNull ClickType clickType) {
+                if (ability instanceof TierableAbility tierableAbility && player.canPlayerStartUpgradeQuest(tierableAbility)) {
                     player.startUpgradeQuest(tierableAbility);
                 }
                 return true;
@@ -207,14 +206,14 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
 
             @NotNull
             @Override
-            public ItemStack getItem() {
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
                 MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
                 ItemStack itemStack = new ItemStack(ability instanceof TierableAbility ? Material.IRON_INGOT : Material.AIR);
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.displayName(miniMessage.deserialize("<gold>Ability Tier Upgrade</gold>"));
                 itemMeta.lore(getGuiLore(mcRPGPlayer, ability));
                 itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(itemStack);
             }
         };
     }

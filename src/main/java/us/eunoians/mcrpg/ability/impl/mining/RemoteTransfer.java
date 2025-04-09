@@ -30,11 +30,11 @@ import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryType;
-import us.eunoians.mcrpg.event.ability.mining.RemoteTransferActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.mining.RemoteTransferActivateEvent;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -78,6 +78,12 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
         return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.REMOTE_TRANSFER_DISPLAY_ITEM_HEADER;
+    }
+
     @Override
     public int getMaxTier() {
         return getYamlDocument().getInt(MiningConfigFile.REMOTE_TRANSFER_AMOUNT_OF_TIERS);
@@ -91,30 +97,8 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("remote_transfer");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Remote Transfer";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Allows for linking of a chest to teleport mined blocks into.",
-                "<gray>Use <gold>/mcrpg link</gold> to link a chest.",
-                "<gray>Use <gold>/mcrpg unlink</gold> to unlink a chest.",
-                "<gray>Remote Transfer Range: <gold>" + getRange(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.CHEST);
+    public String getDatabaseName() {
+        return "remote_transfer";
     }
 
     @Override

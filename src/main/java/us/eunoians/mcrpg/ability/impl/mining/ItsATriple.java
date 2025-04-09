@@ -3,25 +3,22 @@ package us.eunoians.mcrpg.ability.impl.mining;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
-import us.eunoians.mcrpg.event.ability.mining.ItsATripleActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.event.ability.mining.ItsATripleActivateEvent;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -52,28 +49,8 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("its_a_triple");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Has a chance to change doubled drops from Extra Ore to triple drops",
-                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "It's A Triple";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.DIAMOND, 3);
+    public String getDatabaseName() {
+        return "its_a_triple";
     }
 
     @Override
@@ -106,6 +83,12 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     @Override
     public YamlDocument getYamlDocument() {
         return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.ITS_A_TRIPLE_DISPLAY_ITEM_HEADER;
     }
 
     public double getActivationChance(int tier) {

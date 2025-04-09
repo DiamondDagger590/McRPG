@@ -1,7 +1,8 @@
 package us.eunoians.mcrpg.gui.loadout;
 
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -11,11 +12,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.InvalidLoadoutSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutAbilitySlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutHomeSlot;
@@ -31,7 +34,7 @@ import java.util.Set;
  */
 public class LoadoutGui extends PaginatedSortedAbilityGui {
 
-    private static final Slot FILLER_GLASS_SLOT;
+    private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int ABILITY_DISPLAY_SIZE = 18;
     private static final int NAVIGATION_ROW_START_INDEX = ABILITY_DISPLAY_SIZE;
     private static final int LOADOUT_SELECTION_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -47,17 +50,17 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
         fillerGlassMeta.setDisplayName(" ");
         fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new Slot() {
+        FILLER_GLASS_SLOT = new McRPGSlot() {
 
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 return true;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                return fillerGlass;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(fillerGlass);
             }
         };
     }
@@ -72,6 +75,18 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @NotNull
     public Loadout getLoadout() {
         return loadout;
+    }
+
+    @NotNull
+    @Override
+    public PreviousPageSlot getPreviousPageSlot() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public NextPageSlot getNextPageSlot() {
+        return null;
     }
 
     @NotNull
@@ -118,11 +133,11 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         setSlot(SORT_SLOT_INDEX, getAbilitySortNode().getNodeValue().getSlot());
         // If the page is not the first page, then we need to put a previous arrow button
         if (page > 1) {
-            setSlot(PREVIOUS_PAGE_SLOT_INDEX, PREVIOUS_PAGE_SLOT);
+            setSlot(PREVIOUS_PAGE_SLOT_INDEX, getPreviousPageSlot());
         }
         // If the page is not the max page, then we need to put a next arrow button
         if (page < getMaximumPage()) {
-            setSlot(NEXT_PAGE_SLOT_INDEX, NEXT_PAGE_SLOT);
+            setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
         // Set the toggle loadout slot
         setSlot(LOADOUT_DISPLAY_EDIT_SLOT, new LoadoutDisplayHomeSlot(getLoadout()));
@@ -140,6 +155,6 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
 
     @Override
     protected @NotNull Set<AbilitySortType> getSkippedSortTypes() {
-        return Set.of(AbilitySortType.DEFAULT_ABILITIES, AbilitySortType.UNLOCKED_ABILITIES, AbilitySortType.UPGRADEABLE_ABILITIES);
+        return Set.of(AbilitySortType.INNATE_ABILITIES, AbilitySortType.UNLOCKED_ABILITIES, AbilitySortType.UPGRADEABLE_ABILITIES);
     }
 }

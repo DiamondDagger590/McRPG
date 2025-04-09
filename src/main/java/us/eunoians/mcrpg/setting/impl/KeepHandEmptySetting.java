@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.setting.impl;
 
+import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -7,7 +9,6 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.setting.KeepHandEmptySettingSlot;
 import us.eunoians.mcrpg.setting.DenySlotSetting;
 import us.eunoians.mcrpg.setting.McRPGSetting;
-import us.eunoians.mcrpg.setting.PlayerSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Arrays;
@@ -75,7 +76,7 @@ public enum KeepHandEmptySetting implements DenySlotSetting, McRPGSetting {
     }
 
     @Override
-    public void onSettingChange(@NotNull McRPGPlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
+    public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
         // No-op
     }
 

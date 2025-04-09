@@ -1,12 +1,12 @@
 package us.eunoians.mcrpg.gui.ability;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.PaginatedGui;
+import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
 import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
@@ -21,10 +21,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.McRPGPaginatedGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.RemoteTransferToggleAllSlot;
 import us.eunoians.mcrpg.gui.slot.RemoteTransferToggleSlot;
 
@@ -41,13 +44,14 @@ import java.util.stream.Collectors;
 /**
  * This gui is used to let players toggle the allow state for a given material for their {@link RemoteTransfer} ability.
  */
-public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
+public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui {
 
     private static final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot -> slot.getRemoteTransferCategory().getName());
-    private static final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_MATERIAL = new ChainComparator<>(ALPHABETICAL_CATEGORY, Comparator.comparing(slot -> slot.getItem().getType().toString()));
+    // TODO this might need revisited (also shouldn't be tied to material, we need to support custom item data as well :<)
+    private static final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_MATERIAL = new ChainComparator<>(ALPHABETICAL_CATEGORY, Comparator.comparing(slot -> slot.getItem(null).getType().toString()));
 
-    private static final Slot FILLER_GLASS_SLOT;
-    private static final Slot PREVIOUS_GUI_SLOT;
+    private static final McRPGSlot FILLER_GLASS_SLOT;
+    private static final McRPGSlot PREVIOUS_GUI_SLOT;
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
@@ -61,17 +65,17 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
         ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
         fillerGlassMeta.setDisplayName(" ");
         fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new Slot() {
+        FILLER_GLASS_SLOT = new McRPGSlot() {
 
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 return true;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                return fillerGlass;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(fillerGlass);
             }
         };
 
@@ -82,11 +86,11 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
         previousGuiItemMeta.displayName(miniMessage.deserialize("<red>Return to editing</red>"));
         previousGuiItemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to return to editing <gold>Remote Transfer</gold>.")));
         previousGuiItem.setItemMeta(previousGuiItemMeta);
-        PREVIOUS_GUI_SLOT = new Slot() {
+        PREVIOUS_GUI_SLOT = new McRPGSlot() {
 
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                if (corePlayer.getAsBukkitPlayer().isPresent() && corePlayer instanceof McRPGPlayer mcRPGPlayer) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
                     AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
                     Player player = mcRPGPlayer.getAsBukkitPlayer().get();
                     player.closeInventory();
@@ -96,20 +100,19 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                return previousGuiItem;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(previousGuiItem);
             }
         };
     }
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Player player;
     private final List<RemoteTransferToggleSlot> remoteTransferToggleSlots = new ArrayList<>(); // This means it won't auto refresh until they open again but oh well
     private final Map<RemoteTransferSortOption, List<RemoteTransferToggleSlot>> cachedSort = new HashMap<>();
     private LinkedNode<RemoteTransferSortOption> sortOption;
 
     public RemoteTransferGui(@NotNull McRPGPlayer mcRPGPlayer) {
-        this.mcRPGPlayer = mcRPGPlayer;
+        super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);
@@ -122,6 +125,18 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
                 remoteTransferToggleSlots.add(new RemoteTransferToggleSlot(mcRPGPlayer, material, remoteTransferCategory.getCategoryType()));
             }
         }
+    }
+
+    @NotNull
+    @Override
+    public PreviousPageSlot getPreviousPageSlot() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public NextPageSlot getNextPageSlot() {
+        return null;
     }
 
     @NotNull
@@ -175,11 +190,11 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
         setSlot(SORT_SLOT_INDEX, sortOption.getNodeValue().getSortSlot());
         // If the page is not the first page, then we need to put a previous arrow button
         if (page > 1) {
-            setSlot(PREVIOUS_PAGE_SLOT_INDEX, PREVIOUS_PAGE_SLOT);
+            setSlot(PREVIOUS_PAGE_SLOT_INDEX, getPreviousPageSlot());
         }
         // If the page is not the max page, then we need to put a next arrow button
         if (page < getMaximumPage()) {
-            setSlot(NEXT_PAGE_SLOT_INDEX, NEXT_PAGE_SLOT);
+            setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
         // Set the toggle all slot
         setSlot(TOGGLE_ALL_SLOT_INDEX, new RemoteTransferToggleAllSlot(enableButton));
@@ -212,7 +227,7 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
         if (cachedSort.containsKey(sortOption)) {
             slots = cachedSort.get(sortOption);
         } else {
-            slots = sortOption.filter(mcRPGPlayer, remoteTransferToggleSlots).stream().sorted(ALPHABETICAL_MATERIAL).collect(Collectors.toList());
+            slots = sortOption.filter(getMcRPGPlayer(), remoteTransferToggleSlots).stream().sorted(ALPHABETICAL_MATERIAL).collect(Collectors.toList());
             cachedSort.put(sortOption, slots);
         }
         return slots;
@@ -324,14 +339,14 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
          * @return A {@link Slot} for this sort option.
          */
         @NotNull
-        public Slot getSortSlot() {
-            return new Slot() {
+        public McRPGSlot getSortSlot() {
+            return new McRPGSlot() {
                 @Override
-                public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                    var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+                public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                    var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
                     guiOptional.ifPresent(gui -> {
                         if (gui instanceof RemoteTransferGui remoteTransferGui) {
-                            corePlayer.getAsBukkitPlayer().ifPresent(player -> {
+                            mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
                                 remoteTransferGui.setPage(1);
                                 // Ignore empty categories
                                 do {
@@ -346,18 +361,18 @@ public class RemoteTransferGui extends PaginatedGui implements ClosableGui {
 
                 @NotNull
                 @Override
-                public ItemStack getItem() {
+                public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
                     MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
                     ItemStack itemStack = new ItemStack(remoteTransferCategory != null ? remoteTransferCategory.getCategoryType().getDisplayMaterial() : Material.ENDER_CHEST);
                     ItemMeta itemMeta = itemStack.getItemMeta();
                     itemMeta.displayName(miniMessage.deserialize("<red>Click to change sort category."));
                     itemMeta.lore(List.of(miniMessage.deserialize("<gray>Current Category: <gold>" + getName())));
                     itemStack.setItemMeta(itemMeta);
-                    return itemStack;
+                    return ItemBuilder.from(itemStack);
                 }
 
                 @Override
-                public Set<Class<? extends Gui>> getValidGuiTypes() {
+                public Set<Class<?>> getValidGuiTypes() {
                     return Set.of(RemoteTransferGui.class);
                 }
             };

@@ -1,9 +1,7 @@
 package us.eunoians.mcrpg.gui.slot;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.util.Methods;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -14,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
@@ -42,7 +41,7 @@ import java.util.Set;
  * This slot is used in {@link us.eunoians.mcrpg.gui.ability.AbilityGui}s to represent an {@link Ability}
  * while providing click actions for said ability.
  */
-public class AbilitySlot extends Slot {
+public class AbilitySlot extends McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Ability ability;
@@ -73,13 +72,13 @@ public class AbilitySlot extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
             playerOptional.ifPresent(player -> {
                 // If the player is using geyser, we have custom logic for them since they don't have right/left clicks. (Or if they just did a left click lol)
-                if ((McRPG.getInstance().isGeyserEnabled() && Geyser.api().isBedrockPlayer(corePlayer.getUUID())) || clickType == ClickType.RIGHT) {
+                if ((McRPG.getInstance().isGeyserEnabled() && Geyser.api().isBedrockPlayer(mcRPGPlayer.getUUID())) || clickType == ClickType.RIGHT) {
                     AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, ability);
                     player.closeInventory();
                     McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer.getUUID(), abilityEditGui);
@@ -104,26 +103,26 @@ public class AbilitySlot extends Slot {
 
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         Component blankLine = miniMessage.deserialize("");
 
-        ItemStack itemStack = ability.getGuiItem(mcRPGPlayer.asSkillHolder());
+        ItemStack itemStack = ability.getDisplayItemBuilder(mcRPGPlayer).asItemStack();
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(miniMessage.deserialize("<red>" + ability.getDisplayName()));
+        itemMeta.displayName(miniMessage.deserialize("<red>" + ability.getDisplayName(mcRPGPlayer)));
 
         List<Component> lore = new ArrayList<>();
         // Add skill information
         if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
             Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
-            lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName()));
+            lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
         }
         // Add ability description
-        for (String string : ability.getDescription(mcRPGPlayer)) {
-            lore.add(miniMessage.deserialize(string));
-        }
+//        for (String string : ability.getDescription(mcRPGPlayer)) {
+//            lore.add(miniMessage.deserialize(string));
+//        }
         lore.add(miniMessage.deserialize(""));
 
         // Add information about specific ability attributes
@@ -143,7 +142,7 @@ public class AbilitySlot extends Slot {
                     lore.add(miniMessage.deserialize("<gray>You have unlocked this ability."));
                 } else {
                     lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
-                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName() + " <gray>skill"));
+                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName(mcRPGPlayer) + " <gray>skill"));
                     lore.add(miniMessage.deserialize("<gray>reaches level <gold>" + unlockableAbility.getUnlockLevel() + "<gray>."));
                 }
             }
@@ -158,7 +157,7 @@ public class AbilitySlot extends Slot {
                     if (questOptional.isPresent()) {
                         lore.add(miniMessage.deserialize("<gray>Upgrade Quest Progress: ").append(Methods.getProgressBar(questOptional.get().getQuestProgress(), 20)));
                     } else {
-                        throw new IllegalArgumentException("The ability quest for ability " + ability.getDisplayName() + " was not found.");
+                        throw new IllegalArgumentException("The ability quest for ability " + ability.getDisplayName(mcRPGPlayer) + " was not found.");
                     }
                 }
                 // If there isn't a quest, check to see if they can upgrade
@@ -191,7 +190,7 @@ public class AbilitySlot extends Slot {
                                         else {
                                             lore.add(miniMessage.deserialize(
                                                     String.format("<gray>You can upgrade this ability once you reach <gold>Lv %d<gray> in <gold>%s<gray>.",
-                                                            tierableAbility.getUnlockLevelForTier(nextTier), skill.getDisplayName())));
+                                                            tierableAbility.getUnlockLevelForTier(nextTier), skill.getDisplayName(mcRPGPlayer))));
                                         }
                                     }
                                 }
@@ -231,11 +230,11 @@ public class AbilitySlot extends Slot {
         }
         itemMeta.lore(lore);
         itemStack.setItemMeta(itemMeta);
-        return itemStack;
+        return ItemBuilder.from(itemStack);
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(AbilityGui.class);
     }
 }

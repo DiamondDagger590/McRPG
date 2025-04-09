@@ -1,3 +1,16 @@
+#######################################
+#
+# Configure localization for players.
+
+# Certain messages will contain placeholders using the
+# <> format. This format is for any native placeholders supported
+# by McRPG.
+#
+# If PAPI is enabled, then you may also use PAPI placeholders
+# for messages in this file as well.
+#
+#######################################
+#
 # Configure messages for McRPG commands
 commands:
   # Configure experience commands
@@ -11,6 +24,10 @@ commands:
       sender-success-message: "<green>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
       # The message to send to the sender when the command fails.
       sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+# Configure McRPG expansions
+expansion:
+  # What is the display name for the McRPG content expansion?
+  mcrpg: 'McRPG'
 # Configure messages for player login
 login:
   # The message to send a player whenever there is an issue loading their McRPG data.
@@ -22,6 +39,9 @@ ability:
     # The message to send to the player when they try to use an ability still on cooldown
     # Supports <ability> as a placeholder for the ability on cooldown.
     ability-still-on-cooldown: "<red><ability> is still on cooldown."
+    # The message to send to the player whenever an ability is no longer on cooldown
+    # Supports <ability> as a placeholder for the ability that was on cooldown.
+    ability-no-longer-on-cooldown: "<gold><ability> <gray>is now off cooldown!"
   # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
   lore:
     # Configure ability upgrade quest lore
@@ -48,24 +68,70 @@ ability:
     # The following placeholders are supported: <expansion-pack>
     expansion-pack:
       - '<gray>Expansion Pack: <expansion-pack>'
-# Configure localization for skills
-skill:
-  # Configure localization for the Swords skill
-  swords:
+  sort-types:
+    alphabetical:
+      display-item:
+        name: "<red>Alphabetical Sort"
+        material: BAMBOO_HANGING_SIGN
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+    innate-abilities:
+      display-item:
+        name: "<red>Innate Abilities Sort"
+        material: REDSTONE
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+    skill:
+      display-item:
+        name: "<red>Sort by Skill"
+        material: DIAMOND_SWORD
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+    unlocked-abilities:
+      display-item:
+        name: "<red>Sort by Unlock Level"
+        material: DIAMOND
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+    upgradable-abilities:
+      display-item:
+        name: "<red>Sort by Abilities you can upgrade"
+        material: DIAMOND
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+    passive-abilities:
+      display-item:
+        name: "<red>Sort by Passive Abilities"
+        material: GHAST_TEAR
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+    active-abilities:
+      display-item:
+        name: "<red>Sort by Active Abilities"
+        material: STONE_SWORD
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
+  ability-specific-localization:
     # Configure localization for the Bleed ability
     bleed:
       display-item:
-        name: "<red>Bleed"
+        # Allows you to configure how this ability's name will be displayed
+        name: "<red><ability></red>"
+        # The name of this ability to be displayed across McRPG
+        ability-name: "Bleed"
         material: REDSTONE
         # Supports the following placeholders: <skill>, <activation-chance>
         lore:
-          - '<gray>Causes the opponent to bleed when attacking with sword, dealing damage over time.'
+          - '<gray>Inflicts the <red>Bleed</red> status on an enemy when attacking'
+          - 'with sword, dealing damage over time.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
+    # Configure localization for the Deeper Wound ability
     deeper-wound:
       display-item:
-        name: "<red>Deeper Wound"
+        name: "<red><ability></red>"
+        ability-name: "Deeper Wound"
         material: RED_DYE
         # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>
         lore:
@@ -75,3 +141,170 @@ skill:
           - '<gray>Tier: <gold><tier>'
           - '<gray>Activation Chance: <gold><activation-chance>'
           - '<gray>Additional Bleed Cycles: <gold><additional-bleed-cycles>'
+    # Configure localization for the Enhanced Bleed ability
+    enhanced-bleed:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Enhanced Bleed"
+        material: SPIDER_EYE
+        lore:
+          - '<gray>Enhances Bleed ability to do more damage each tick, with a chance to deal bonus damage.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Base Damage Boost: <gold><base-damage-boost>'
+          - '<gray>Bonus Damage Chance: <gold><bonus-damage-chance>'
+          - '<gray>Bonus Damage: <gold><bonus-damage>'
+    rage-spike:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Rage Spike"
+        material: IRON_SWORD
+        lore:
+          - '<gray>Ready your sword, then crouch to blast forward, damaging and knocking back foes.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Damage: <gold><damage>'
+    serrated-strikes:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Serrated Strikes"
+        material: STONE_SWORD
+        lore:
+          - '<gray>Ready your sword and attack an enemy to increase Bleed activation chance.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Duration: <gold><ability-duration>'
+          - '<gray>Activation Chance Increase: <gold><activation-chance-increase>'
+    vampire:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Vampire"
+        material: GHAST_TEAR
+        lore:
+          - '<gray>Enhances Bleed to have a chance to heal you each time Bleed causes damage.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<gray>Healing Amount: <gold><vampire-healing>'
+    extra-ore:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Extra Ore"
+        material: DIAMOND
+        amount: 2
+        lore:
+          - '<gray>Will occasionally double drops while mining.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+    its-a-triple:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "It's A Triple"
+        material: DIAMOND
+        amount: 3
+        lore:
+          - '<gray>Has a chance to change doubled drops from Extra Ore to triple drops'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+    ore-scanner:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Ore Scanner"
+        material: DIAMOND_ORE
+        lore:
+          - '<gray>Activate to see all nearby ores!'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Range: <gold><ability-range>'
+          - '<gray>Cooldown: <gold><cooldown>'
+    remote-transfer:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Remote Transfer"
+        material: CHEST
+        lore:
+          - '<gray>Allows for linking of a chest to teleport mined blocks into.'
+          - '<gray>Use <gold>/mcrpg link</gold> to link a chest.'
+          - '<gray>Use <gold>/mcrpg unlink</gold> to unlink a chest.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Transfer Range: <gold><remote-transfer-range>'
+    dryads-gift:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Dryad's Gift"
+        material: CHEST
+        lore:
+          - '<gray>Has a chance to drop experience when breaking wood'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+    extra-lumber:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Extra Lumber"
+        material: OAK_LOG
+        amount: 2
+        lore:
+          - '<gray>Will occasionally double drops while cutting wood.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+    heavy-swing:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Nymph's Vitality
+        material: NETHERITE_AXE
+        lore:
+          - '<gray>Will prevent your hunger from dropping past a certain point when in wooded biomes.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+skills:
+  swords:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Swords'
+      material: DIAMOND_SWORD
+      lore:
+        - '<gray>Your strength in Swords grows each time you use a'
+        - '<gray>sword in combat. How much you gain will depend'
+        - '<gray>on the weapon you wield.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><required-experience-for-next-level>'
+  mining:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Mining'
+      material: DIAMOND_PICKAXE
+      lore:
+        - '<gray>Your expertise in Mining grows each time you'
+        - '<gray>break blocks with a pickaxe.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><required-experience-for-next-level>'
+  woodcutting:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Woodcutting'
+      material: DIAMOND_AXE
+      lore:
+        - '<gray>Your expertise in Woodcutting grows each time you'
+        - '<gray>break wood with an axe.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><required-experience-for-next-level>'

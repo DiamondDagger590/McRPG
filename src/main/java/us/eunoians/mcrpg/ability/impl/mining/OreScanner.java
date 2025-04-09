@@ -7,14 +7,12 @@ import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
@@ -24,11 +22,11 @@ import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
-import us.eunoians.mcrpg.event.ability.mining.OreScannerActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.mining.OreScannerActivateEvent;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.task.glow.BlockRemoveGlowTask;
 import us.eunoians.mcrpg.task.glow.BlockStartGlowTask;
@@ -37,7 +35,6 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -72,6 +69,12 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
         return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
     }
 
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.ORE_SCANNER_DISPLAY_ITEM_HEADER;
+    }
+
     @Override
     public int getMaxTier() {
         return getYamlDocument().getInt(MiningConfigFile.ORE_SCANNER_AMOUNT_OF_TIERS);
@@ -85,26 +88,8 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("ore_scanner");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Ore Scanner";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of();
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.DIAMOND_ORE);
+    public String getDatabaseName() {
+        return "ore_scanner";
     }
 
     @Override

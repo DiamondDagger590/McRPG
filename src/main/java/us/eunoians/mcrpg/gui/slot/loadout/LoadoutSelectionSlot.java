@@ -1,10 +1,8 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.enchantments.Enchantment;
@@ -15,10 +13,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutSelectionGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.loadout.LoadoutDisplay;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * This slot is used to select a specific {@link Loadout} to edit.
  */
-public class LoadoutSelectionSlot extends Slot {
+public class LoadoutSelectionSlot extends McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -47,8 +47,8 @@ public class LoadoutSelectionSlot extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             if (isPlayerOnGeyser() || clickType != ClickType.RIGHT) {
                 LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadout);
@@ -64,7 +64,7 @@ public class LoadoutSelectionSlot extends Slot {
 
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         LoadoutDisplay loadoutDisplay = loadout.getDisplay();
         ItemStack itemStack = loadoutDisplay.getDisplayItem();
@@ -83,11 +83,11 @@ public class LoadoutSelectionSlot extends Slot {
         }
         itemMeta.lore(lore);
         itemStack.setItemMeta(itemMeta);
-        return itemStack;
+        return ItemBuilder.from(itemStack);
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutSelectionGui.class);
     }
 

@@ -10,7 +10,6 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -69,30 +68,17 @@ public interface Ability extends McRPGContent {
     Optional<NamespacedKey> getSkill();
 
     /**
-     * Gets an {@link Optional} that will be empty or contain the legacy name of this ability.
-     * <p>
-     * This is only used for abilities that existed before the recode in order to support
-     * legacy database table conversions.
+     * Gets the database name for an ability. This is an internal
+     * use only name that is used for database storage.
      *
-     * @return An {@link Optional} that will be empty or contain the legacy name of this ability.
+     * @return The database name for an ability. This is an internal
+     * use only name that is used for database storage.
      */
     @NotNull
-    default Optional<String> getLegacyName() {
-        return Optional.empty();
-    }
+    String getDatabaseName();
 
-    /**
-     * Gets an {@link Optional} containing the database name for an ability. This is an internal
-     * use only name that is used for database storage.
-     * <p>
-     * The {@link Optional} will be empty if this is a legacy ability since there is code to convert
-     * {@link #getLegacyName()} to its old form for this use.
-     *
-     * @return An {@link Optional} containing the database name for an ability. This is an internal
-     * use only name that is used for database storage.
-     */
     @NotNull
-    Optional<String> getDatabaseName();
+    String getName(@NotNull McRPGPlayer player);
 
     /**
      * Gets the name to display in messages or guis for this ability.
@@ -102,15 +88,6 @@ public interface Ability extends McRPGContent {
      */
     @NotNull
     String getDisplayName(@NotNull McRPGPlayer player);
-
-    /**
-     * Gets the description of this ability to display in guis.
-     *
-     * @param mcRPGPlayer The {@link McRPGPlayer} to use when creating the description.
-     * @return The description of this ability to display in guis.
-     */
-    @NotNull
-    List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer);
 
     /**
      * Activates this ability for the given {@link AbilityHolder} with the provided {@link Event} being the trigger.
@@ -149,11 +126,30 @@ public interface Ability extends McRPGContent {
     @NotNull
     Optional<ReadyData> getReadyData();
 
+    /**
+     * Gets the {@link AbilityItemBuilder} for this ability based off the provided
+     * {@link McRPGPlayer}.
+     * @param player The {@link McRPGPlayer} to get an item builder for.
+     * @return The {@link AbilityItemBuilder} for this ability based off the provided
+     * {@link McRPGPlayer}.
+     */
     @NotNull
     AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player);
 
+    /**
+     * Gets a map containing the placeholders supported for this ability using the given
+     * {@link McRPGPlayer}.
+     *
+     * The key will be the placeholder itself whilst the value will be the string to replace the
+     * placeholder with. Placeholders should follow the format of {@code <example>}.
+     *
+     * Some generic placeholders are provided out of box in the {@link AbilityItemBuilder}
+     * itself, 
+     * @param player
+     * @return
+     */
     @NotNull
-    default Map<String, String> getAbilityPlaceholders(@NotNull McRPGPlayer player) {
+    default Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         return Map.of();
     }
 }

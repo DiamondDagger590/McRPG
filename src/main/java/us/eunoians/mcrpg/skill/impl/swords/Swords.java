@@ -7,9 +7,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.HeldItemBonusSkill;
 import us.eunoians.mcrpg.skill.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
@@ -36,7 +38,7 @@ public final class Swords extends McRPGSkill implements HeldItemBonusSkill {
 
     @NotNull
     @Override
-    public String getDisplayName() {
+    public String getDisplayName(@Nullable McRPGPlayer player) {
         return "Swords";
     }
 

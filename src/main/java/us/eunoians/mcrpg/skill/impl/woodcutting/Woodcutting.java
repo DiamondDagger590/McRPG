@@ -3,7 +3,9 @@ package us.eunoians.mcrpg.skill.impl.woodcutting;
 import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
 
@@ -25,7 +27,7 @@ public class Woodcutting extends McRPGSkill {
 
     @NotNull
     @Override
-    public String getDisplayName() {
+    public String getDisplayName(@Nullable McRPGPlayer player) {
         return "Woodcutting";
     }
 

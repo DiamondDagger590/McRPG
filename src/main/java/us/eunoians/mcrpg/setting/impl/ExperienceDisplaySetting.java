@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.setting.impl;
 
+import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +13,6 @@ import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.setting.ExperienceDisplaySettingSlot;
 import us.eunoians.mcrpg.setting.McRPGSetting;
-import us.eunoians.mcrpg.setting.PlayerSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Arrays;
@@ -85,12 +86,13 @@ public enum ExperienceDisplaySetting implements McRPGSetting {
     }
 
     @Override
-    public void onSettingChange(@NotNull McRPGPlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
-        McRPG mcRPG = player.getMcRPGInstance();
+    public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
+        assert(player instanceof McRPGPlayer);
+        McRPG mcRPG = ((McRPGPlayer) player).getPlugin();
         DisplayManager displayManager = mcRPG.getDisplayManager();
         UUID uuid = player.getUUID();
         if (displayManager.hasActiveDisplay(uuid)) {
-            displayManager.createDisplay(player);
+            displayManager.createDisplay((McRPGPlayer) player);
         }
     }
 

@@ -34,13 +34,13 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
     @Override
     public void sendExperienceUpdate(@NotNull NamespacedKey skillKey) {
         McRPGPlayer mcRPGPlayer = getMcRPGPlayer();
-        McRPG mcRPG = mcRPGPlayer.getMcRPGInstance();
+        McRPG mcRPG = mcRPGPlayer.getPlugin();
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         var dataOptional = skillHolder.getSkillHolderData(skillKey);
         UUID uuid = skillHolder.getUUID();
         Player player = Bukkit.getPlayer(uuid);
         if (dataOptional.isPresent() && player != null) {
-            displayUpdate(skillKey, player, dataOptional.get());
+            displayUpdate(skillKey, getMcRPGPlayer(), dataOptional.get());
             DelayableCoreTask delayableCoreTask = new DelayableCoreTask(mcRPG, 10) {
 
                 @Override
@@ -58,20 +58,20 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
      * Displays an experience update.
      *
      * @param skillKey        The {@link NamespacedKey} to get the {@link Skill} info for.
-     * @param player          The {@link Player} to display to.
+     * @param mcRPGPlayer          The {@link McRPGPlayer} to display to.
      * @param skillHolderData The {@link us.eunoians.mcrpg.entity.holder.SkillHolder.SkillHolderData} containing data.
      */
-    protected void displayUpdate(@NotNull NamespacedKey skillKey, @NotNull Player player, @NotNull SkillHolder.SkillHolderData skillHolderData) {
-        McRPG mcRPG = getMcRPGPlayer().getMcRPGInstance();
+    protected void displayUpdate(@NotNull NamespacedKey skillKey, @NotNull McRPGPlayer mcRPGPlayer, @NotNull SkillHolder.SkillHolderData skillHolderData) {
+        McRPG mcRPG = getMcRPGPlayer().getPlugin();
         SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
         MiniMessage miniMessage = mcRPG.getMiniMessage();
         Skill skill = skillRegistry.getRegisteredSkill(skillKey);
-        Audience audience = mcRPG.getAdventure().player(player);
+        Audience audience = mcRPG.getAdventure().player(mcRPGPlayer.getUUID());
         cleanDisplay();
         int currentLevel = skillHolderData.getCurrentLevel();
         int currentExperience = skillHolderData.getCurrentExperience();
         int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
-        Component component = miniMessage.deserialize("<gray>Lv.<gold>" + currentLevel + " <gray>- " + skill.getDisplayName() + ": <gold>" + (experienceForNextLevel - currentExperience));
+        Component component = miniMessage.deserialize("<gray>Lv.<gold>" + currentLevel + " <gray>- " + skill.getDisplayName(mcRPGPlayer) + ": <gold>" + (experienceForNextLevel - currentExperience));
         bossBar = BossBar.bossBar(component, (((float) currentExperience) / ((float) experienceForNextLevel)), BossBar.Color.WHITE, BossBar.Overlay.NOTCHED_10);
         audience.showBossBar(bossBar);
     }
@@ -80,7 +80,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
     public void cleanDisplay() {
         if (bossBar != null) {
             McRPGPlayer mcRPGPlayer = getMcRPGPlayer();
-            McRPG mcRPG = mcRPGPlayer.getMcRPGInstance();
+            McRPG mcRPG = mcRPGPlayer.getPlugin();
             Audience audience = mcRPG.getAdventure().player(mcRPGPlayer.getUUID());
             audience.hideBossBar(bossBar);
             bossBar = null;

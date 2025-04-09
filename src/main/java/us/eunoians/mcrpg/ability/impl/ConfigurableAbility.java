@@ -26,13 +26,19 @@ public interface ConfigurableAbility extends Ability {
 
     @NotNull
     @Override
+    default String getName(@NotNull McRPGPlayer player) {
+        return player.getPlugin().getLocalizationManager().getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), "ability-name"));
+    }
+
+    @NotNull
+    @Override
     default AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-        return AbilityItemBuilder.from(player.getMcRPGInstance().getLocalizationManager().getLocalizedSection(player, getDisplayItemRoute()), player, this);
+        return AbilityItemBuilder.from(player.getPlugin().getLocalizationManager().getLocalizedSection(player, getDisplayItemRoute()), player, this);
     }
 
     @NotNull
     @Override
     default String getDisplayName(@NotNull McRPGPlayer player) {
-        return player.getMcRPGInstance().getLocalizationManager().getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+        return player.getPlugin().getLocalizationManager().getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
     }
 }

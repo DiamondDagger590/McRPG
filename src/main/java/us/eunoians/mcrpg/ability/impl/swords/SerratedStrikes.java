@@ -3,29 +3,26 @@ package us.eunoians.mcrpg.ability.impl.swords;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
-import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -58,6 +55,12 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
     }
 
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.SERRATED_STRIKES_DISPLAY_ITEM_HEADER;
+    }
+
     @Override
     public int getMaxTier() {
         return getYamlDocument().getInt(SwordsConfigFile.SERRATED_STRIKES_AMOUNT_OF_TIERS);
@@ -72,29 +75,8 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("serrated_strikes");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Ready your sword and attack an enemy to increase Bleed activation chance.",
-                "<gray>Duration: <gold>" + getDuration(currentTier),
-                "<gray>Activation Chance Increase: <gold>" + getBoostToBleedActivation(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Serrated Strikes";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.STONE_SWORD);
+    public String getDatabaseName() {
+        return "serrated_strikes";
     }
 
     @Override

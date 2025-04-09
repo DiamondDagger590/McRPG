@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.command.admin.reset;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
-import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
@@ -53,8 +52,9 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
-                            Optional<CorePlayer> playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(player.getUniqueId());
-                            if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+                            Optional<McRPGPlayer> playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(player.getUniqueId());
+                            if (playerOptional.isPresent()) {
+                                McRPGPlayer mcRPGPlayer = playerOptional.get();
                                 SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
                                 Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {

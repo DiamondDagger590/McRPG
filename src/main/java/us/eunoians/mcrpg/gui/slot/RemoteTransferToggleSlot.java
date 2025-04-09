@@ -1,9 +1,7 @@
 package us.eunoians.mcrpg.gui.slot;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -12,6 +10,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
 import us.eunoians.mcrpg.ability.attribute.RemoteTransferMaterialSetAttribute;
@@ -26,7 +25,7 @@ import java.util.Set;
 /**
  * This slot is used to toggle a specific item's allow list state for a given player's {@link RemoteTransfer}.
  */
-public class RemoteTransferToggleSlot extends Slot {
+public class RemoteTransferToggleSlot extends McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Material material;
@@ -39,8 +38,8 @@ public class RemoteTransferToggleSlot extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             toggleMaterial();
             gui.refreshGUI();
@@ -50,7 +49,7 @@ public class RemoteTransferToggleSlot extends Slot {
 
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(material);
@@ -69,11 +68,11 @@ public class RemoteTransferToggleSlot extends Slot {
             }
             itemStack.setItemMeta(itemMeta);
         }
-        return itemStack;
+        return ItemBuilder.from(itemStack);
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(RemoteTransferGui.class);
     }
 

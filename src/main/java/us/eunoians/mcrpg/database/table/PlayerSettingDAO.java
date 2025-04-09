@@ -2,12 +2,12 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
+import com.diamonddagger590.mccore.setting.PlayerSettingRegistry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.exception.setting.SettingNotRegisteredException;
-import us.eunoians.mcrpg.setting.PlayerSetting;
-import us.eunoians.mcrpg.setting.PlayerSettingRegistry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -188,7 +188,7 @@ public class PlayerSettingDAO {
      * @param playerSettings The {@link Set} of {@link PlayerSetting}s to save.
      * @return A {@link List} of all {@link PreparedStatement}s to run in order to save.
      */
-    public static List<PreparedStatement> savePlayerSettings(@NotNull Connection connection, @NotNull UUID playerUUID, @NotNull Set<PlayerSetting> playerSettings) {
+    public static List<PreparedStatement> savePlayerSettings(@NotNull Connection connection, @NotNull UUID playerUUID, @NotNull Set<? extends PlayerSetting> playerSettings) {
         return playerSettings.stream().map(playerSetting -> savePlayerSetting(connection, playerUUID, playerSetting)).toList();
     }
 

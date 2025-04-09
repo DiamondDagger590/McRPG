@@ -1,8 +1,6 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
@@ -10,6 +8,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
@@ -19,6 +18,7 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutAbilitySelectGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -35,7 +35,7 @@ import java.util.Set;
  * When clicked, it will open a {@link LoadoutAbilitySelectGui} for a player
  * to select a new ability to go into this slot.
  */
-public class LoadoutAbilitySlot extends Slot {
+public class LoadoutAbilitySlot extends McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Loadout loadout;
@@ -54,8 +54,8 @@ public class LoadoutAbilitySlot extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        corePlayer.getAsBukkitPlayer().ifPresent(player -> {
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             if (abilityOptional.isPresent()) {
                 Ability ability = abilityOptional.get();
                 LoadoutAbilitySelectGui loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout, ability.getAbilityKey());
@@ -73,22 +73,22 @@ public class LoadoutAbilitySlot extends Slot {
 
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         ItemStack itemStack;
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        if (abilityOptional.isPresent()) {
+        if (abilityOptional.isPresent() && mcRPGPlayer != null) {
             Ability ability = abilityOptional.get();
             SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
             SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
-            itemStack = ability.getGuiItem(skillHolder);
+            itemStack = ability.getDisplayItemBuilder(mcRPGPlayer).asItemStack(McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID()));
             ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.displayName(miniMessage.deserialize("<red>" + ability.getDisplayName()));
+            itemMeta.displayName(miniMessage.deserialize("<red>" + ability.getDisplayName(mcRPGPlayer)));
 
             List<Component> lore = new ArrayList<>();
             // Add skill information
             if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
                 Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
-                lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName()));
+                lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
             }
             // Add information about specific ability attributes
             Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);
@@ -112,11 +112,11 @@ public class LoadoutAbilitySlot extends Slot {
             itemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to change what ability is in this slot.")));
             itemStack.setItemMeta(itemMeta);
         }
-        return itemStack;
+        return ItemBuilder.from(itemStack);
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutGui.class);
     }
 }

@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.listener.entity.player;
 
 import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Item;
@@ -16,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.setting.DenySlotSetting;
-import us.eunoians.mcrpg.setting.PlayerSetting;
 
 import java.util.HashSet;
 import java.util.Set;

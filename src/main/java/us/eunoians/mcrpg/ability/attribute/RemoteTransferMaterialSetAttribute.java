@@ -1,9 +1,7 @@
 package us.eunoians.mcrpg.ability.attribute;
 
 import com.diamonddagger590.mccore.CorePlugin;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -13,11 +11,13 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 
 import java.util.HashSet;
 import java.util.List;
@@ -79,12 +79,12 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
 
     @NotNull
     @Override
-    public Slot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability) {
-        return new Slot() {
+    public McRPGSlot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability) {
+        return new McRPGSlot() {
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
-                if (corePlayer instanceof McRPGPlayer mcRPGPlayer && mcRPGPlayer.getAsBukkitPlayer().isPresent()
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()
                         && guiOptional.isPresent() && guiOptional.get() instanceof AbilityEditGui abilityEditGui) {
                     abilityEditGui.setIgnoreClose(true);
                     RemoteTransferGui remoteTransferGui = new RemoteTransferGui(mcRPGPlayer);
@@ -103,18 +103,18 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
 
             @NotNull
             @Override
-            public ItemStack getItem() {
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
                 MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
                 ItemStack itemStack = new ItemStack(Material.CHEST);
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.displayName(miniMessage.deserialize("<gold>Block Filter"));
                 itemMeta.lore(getGuiLore(player, ability));
                 itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(itemStack);
             }
 
             @Override
-            public Set<Class<? extends Gui>> getValidGuiTypes() {
+            public Set<Class<?>> getValidGuiTypes() {
                 return Set.of(AbilityEditGui.class);
             }
         };

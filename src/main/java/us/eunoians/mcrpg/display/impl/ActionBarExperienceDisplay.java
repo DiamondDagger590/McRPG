@@ -29,7 +29,7 @@ public class ActionBarExperienceDisplay extends ExperienceDisplay {
     @Override
     public void sendExperienceUpdate(@NotNull NamespacedKey skillKey) {
         McRPGPlayer mcRPGPlayer = getMcRPGPlayer();
-        McRPG mcRPG = mcRPGPlayer.getMcRPGInstance();
+        McRPG mcRPG = mcRPGPlayer.getPlugin();
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         var dataOptional = skillHolder.getSkillHolderData(skillKey);
         UUID uuid = skillHolder.getUUID();
@@ -44,7 +44,7 @@ public class ActionBarExperienceDisplay extends ExperienceDisplay {
             int currentLevel = skillHolderData.getCurrentLevel();
             int currentExperience = skillHolderData.getCurrentExperience();
             int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
-            Component component = miniMessage.deserialize("<gray>" + skill.getDisplayName() + "Lv.<gold>" + currentLevel + " <gray>- Needed Exp" + skill.getDisplayName() + ": <gold>" + (experienceForNextLevel - currentExperience));
+            Component component = miniMessage.deserialize("<gray>" + skill.getDisplayName(getMcRPGPlayer()) + "Lv.<gold>" + currentLevel + " <gray>- Needed Exp" + skill.getDisplayName(getMcRPGPlayer()) + ": <gold>" + (experienceForNextLevel - currentExperience));
             player.sendActionBar(component);
         }
     }

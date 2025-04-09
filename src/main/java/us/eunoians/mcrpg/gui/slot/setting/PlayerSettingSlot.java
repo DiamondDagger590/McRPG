@@ -2,15 +2,13 @@ package us.eunoians.mcrpg.gui.slot.setting;
 
 import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.PlayerSettingGui;
-import us.eunoians.mcrpg.setting.PlayerSetting;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +19,7 @@ import java.util.Set;
  *
  * @param <T> The {@link PlayerSetting} represented by this slot.
  */
-public abstract class PlayerSettingSlot<T extends PlayerSetting> extends Slot {
+public abstract class PlayerSettingSlot<T extends PlayerSetting> extends McRPGSlot {
 
     protected final McRPGPlayer mcRPGPlayer;
     protected final Player player;
@@ -38,7 +36,7 @@ public abstract class PlayerSettingSlot<T extends PlayerSetting> extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+    public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
         var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
         guiOptional.ifPresent(gui -> {
             mcRPGPlayer.setPlayerSetting(setting.getNextSetting().getNodeValue());
@@ -48,7 +46,7 @@ public abstract class PlayerSettingSlot<T extends PlayerSetting> extends Slot {
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(PlayerSettingGui.class);
     }
 

@@ -61,7 +61,7 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val mccoreVersion = "1.0.0.11-SNAPSHOT"
+    val mccoreVersion = "1.0.0.12-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion") {
         exclude(group = "com.nexomc")
         exclude(group = "dev.lone")

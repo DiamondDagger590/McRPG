@@ -36,7 +36,7 @@ public class PersistentBossBarExperienceDisplay extends BossBarExperienceDisplay
         super(player);
         this.skillKey = skillKey;
         this.expireTime = System.currentTimeMillis() + duration.toMillis();
-        DelayableCoreTask delayableCoreTask = new DelayableCoreTask(getMcRPGPlayer().getMcRPGInstance(), (int) duration.toSeconds()) {
+        DelayableCoreTask delayableCoreTask = new DelayableCoreTask(getMcRPGPlayer().getPlugin(), (int) duration.toSeconds()) {
 
             @Override
             public void run() {
@@ -52,7 +52,7 @@ public class PersistentBossBarExperienceDisplay extends BossBarExperienceDisplay
     public void sendExperienceUpdate(@NotNull NamespacedKey skillKey) {
         // Only display updates for a single skill
         if (skillKey.equals(this.skillKey)) {
-            McRPG mcRPG = getMcRPGPlayer().getMcRPGInstance();
+            McRPG mcRPG = getMcRPGPlayer().getPlugin();
             SkillHolder skillHolder = getMcRPGPlayer().asSkillHolder();
             SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
             MiniMessage miniMessage = mcRPG.getMiniMessage();
@@ -61,7 +61,7 @@ public class PersistentBossBarExperienceDisplay extends BossBarExperienceDisplay
             UUID uuid = skillHolder.getUUID();
             Player player = Bukkit.getPlayer(uuid);
             if (dataOptional.isPresent() && player != null) {
-                displayUpdate(skillKey, player, dataOptional.get());
+                displayUpdate(skillKey, getMcRPGPlayer(), dataOptional.get());
             }
         }
     }

@@ -7,14 +7,12 @@ import dev.dejvokep.boostedyaml.route.Route;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
@@ -22,14 +20,13 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.NymphsVitalityActivateEvent;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -85,26 +82,8 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("nymphs_vitality");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of("<gray>Will prevent your hunger from dropping past a certain point when in wooded biomes.");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Nymph's Vitality";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.ACACIA_SAPLING, 1);
+    public String getDatabaseName() {
+        return "nymphs_vitality";
     }
 
     @Override
@@ -149,6 +128,12 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @Override
     public YamlDocument getYamlDocument() {
         return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.NYMPHS_VITALITY_DISPLAY_ITEM_HEADER;
     }
 
     /**

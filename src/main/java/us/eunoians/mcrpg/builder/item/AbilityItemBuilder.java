@@ -9,22 +9,16 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.ActivationChanceAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
-import java.text.NumberFormat;
+import java.util.Map;
 import java.util.Optional;
 
 public class AbilityItemBuilder extends ItemBuilder {
 
-    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
-    static {
-        NUMBER_FORMAT.setMaximumFractionDigits(2);
-        NUMBER_FORMAT.setMinimumFractionDigits(1);
-    }
     private final McRPGPlayer player;
     private final Ability ability;
 
@@ -51,12 +45,15 @@ public class AbilityItemBuilder extends ItemBuilder {
     }
 
     private void addPlaceholders() {
-        McRPG plugin = player.getMcRPGInstance();
+        McRPG plugin = player.getPlugin();
         SkillRegistry skillRegistry = plugin.getSkillRegistry();
         SkillHolder skillHolder = player.asSkillHolder();
+        // Ability placeholder
+        addPlaceholder(AbilityItemPlaceholderKeys.ABILITY.getKey(), ability.getName(player));
+        // Skill placeholder
         if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
             Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
-            addPlaceholder("skill", skill.getDisplayName(player));
+            addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(player));
         }
         // Add information about specific ability attributes
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);
@@ -69,9 +66,15 @@ public class AbilityItemBuilder extends ItemBuilder {
                 }
             }
         }
-        if (ability instanceof ActivationChanceAbility activationChanceAbility) {
-            addPlaceholder("activation-chance", NUMBER_FORMAT.format(activationChanceAbility.getActivationChance(skillHolder)));
+        // Ability point placeholder
+        addPlaceholder(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
+        var abilityExpansionOptional = ability.getExpansionKey();
+        abilityExpansionOptional.flatMap(namespacedKey -> plugin.getContentExpansionManager().getContentExpansion(namespacedKey)).ifPresent(expansion -> {
+            addPlaceholder(AbilityItemPlaceholderKeys.EXPANSION.getKey(), expansion.getExpansionName(player));
+        });
+
+        for (Map.Entry<String, String> entry : ability.getItemBuilderPlaceholders(player).entrySet()) {
+            addPlaceholder(entry.getKey(), entry.getValue());
         }
-        addPlaceholder("upgrade-point-amount", Integer.toString(skillHolder.getUpgradePoints()));
     }
 }

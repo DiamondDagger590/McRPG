@@ -13,8 +13,8 @@ import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.parser.SkillParser;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.Optional;
@@ -49,16 +49,18 @@ public class GiveExperienceCommand extends GiveCommandBase{
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
-                            Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());
-                            if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
+                            var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(player.getUniqueId());
+                            if (playerOptional.isPresent()) {
+                                McRPGPlayer mcRPGPlayer = playerOptional.get();
+                                SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
                                 Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
                                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
                                     skillHolderData.addExperience(experienceAmount);
-                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have been given <gold>%d experience <green>in <gold>%s<green>.", experienceAmount, skill.getDisplayName())));
+                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have been given <gold>%d experience <green>in <gold>%s<green>.", experienceAmount, skill.getDisplayName(mcRPGPlayer))));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())){
-                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You gave <gold>%d experience <green>in <gold>%s <green>to %s.", experienceAmount, skill.getDisplayName(), player.getDisplayName())));
+                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You gave <gold>%d experience <green>in <gold>%s <green>to %s.", experienceAmount, skill.getDisplayName(mcRPGPlayer), player.getDisplayName())));
                                     }
                                     return;
                                 }

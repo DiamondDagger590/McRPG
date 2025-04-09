@@ -9,7 +9,7 @@ import java.util.List;
  * This represents a setting that will prevent items from being picked up
  * and going into specific slots of a players inventory.
  */
-public interface DenySlotSetting extends PlayerSetting {
+public interface DenySlotSetting extends McRPGSetting {
 
     /**
      * Gets a {@link List} of all slots that currently prevent items from going into

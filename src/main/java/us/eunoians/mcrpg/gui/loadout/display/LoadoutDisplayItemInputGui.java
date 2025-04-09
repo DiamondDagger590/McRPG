@@ -1,11 +1,9 @@
 package us.eunoians.mcrpg.gui.loadout.display;
 
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,8 +13,11 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.McRPGGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayCancelItemEditSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayItemConfirmSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
@@ -27,10 +28,10 @@ import java.util.Set;
 /**
  * This GUI is used to allow players to input an item that they want to display
  */
-public class LoadoutDisplayItemInputGui extends Gui implements ClosableGui {
+public class LoadoutDisplayItemInputGui extends McRPGGui implements ClosableGui {
 
-    private static final Slot FILLER_GLASS_SLOT;
-    private static final Slot PURPLE_GLASS_SLOT;
+    private static final McRPGSlot FILLER_GLASS_SLOT;
+    private static final McRPGSlot PURPLE_GLASS_SLOT;
     private static final int INPUT_SLOT = 13;
     private static final Set<Integer> PURPLE_SLOTS = Set.of(INPUT_SLOT - 9, INPUT_SLOT - 1, INPUT_SLOT + 1, INPUT_SLOT + 9);
     private static final int RETURN_SLOT = 18;
@@ -43,17 +44,17 @@ public class LoadoutDisplayItemInputGui extends Gui implements ClosableGui {
         ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
         fillerGlassMeta.setDisplayName(" ");
         fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new Slot() {
+        FILLER_GLASS_SLOT = new McRPGSlot() {
 
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 return true;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                return fillerGlass;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(fillerGlass);
             }
         };
 
@@ -62,28 +63,27 @@ public class LoadoutDisplayItemInputGui extends Gui implements ClosableGui {
         ItemMeta purpleGlassMeta = fillerGlass.getItemMeta();
         purpleGlassMeta.setDisplayName(" ");
         purpleGlass.setItemMeta(purpleGlassMeta);
-        PURPLE_GLASS_SLOT = new Slot() {
+        PURPLE_GLASS_SLOT = new McRPGSlot() {
 
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 return true;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                return fillerGlass;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(purpleGlass);
             }
         };
     }
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Player player;
     private final Loadout loadout;
     private boolean save = true;
 
     public LoadoutDisplayItemInputGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
-        this.mcRPGPlayer = mcRPGPlayer;
+        super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);
@@ -142,8 +142,8 @@ public class LoadoutDisplayItemInputGui extends Gui implements ClosableGui {
         }
         // Open the new inventory after a tick delay
         Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), () -> {
-            LoadoutDisplayHomeGui loadoutDisplayHomeGui = new LoadoutDisplayHomeGui(mcRPGPlayer, loadout);
-            McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutDisplayHomeGui);
+            LoadoutDisplayHomeGui loadoutDisplayHomeGui = new LoadoutDisplayHomeGui(getMcRPGPlayer(), loadout);
+            McRPG.getInstance().getGuiTracker().trackPlayerGui(getMcRPGPlayer(), loadoutDisplayHomeGui);
             player.openInventory(loadoutDisplayHomeGui.getInventory());
         }, 1L);
     }

@@ -1,10 +1,12 @@
 package us.eunoians.mcrpg.gui.slot.setting;
 
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
@@ -23,7 +25,7 @@ public class ExperienceDisplaySettingSlot extends PlayerSettingSlot<ExperienceDi
     // TODO make this configurable before verum kills u
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         switch (getSetting()) {
             case BOSS_BAR -> {
@@ -32,7 +34,7 @@ public class ExperienceDisplaySettingSlot extends PlayerSettingSlot<ExperienceDi
                 itemMeta.displayName(miniMessage.deserialize("<gold>Boss Bar"));
                 itemMeta.lore(List.of(miniMessage.deserialize("<gray>Displays gained experience through a boss bar."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this display setting.")));
                 itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(itemStack);
             }
             case ACTION_BAR -> {
                 ItemStack itemStack = new ItemStack(Material.BLAZE_ROD);
@@ -40,10 +42,10 @@ public class ExperienceDisplaySettingSlot extends PlayerSettingSlot<ExperienceDi
                 itemMeta.displayName(miniMessage.deserialize("<gold>Action Bar"));
                 itemMeta.lore(List.of(miniMessage.deserialize("<gray>Displays gained experience through an action bar."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this display setting.")));
                 itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(itemStack);
             }
             default -> {
-                return new ItemStack(Material.AIR);
+                return ItemBuilder.from(new ItemStack(Material.AIR));
             }
         }
     }

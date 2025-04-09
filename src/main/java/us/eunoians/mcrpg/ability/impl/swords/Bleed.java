@@ -11,10 +11,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ActivationChanceAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedComponents;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
@@ -25,7 +25,8 @@ import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -40,7 +41,7 @@ import java.util.Optional;
  * allow them a chance to regenerate health since constantly bleeding would cause fights to
  * easily swing in one direction.
  */
-public final class Bleed extends McRPGAbility implements PassiveAbility, ConfigurableAbility, ActivationChanceAbility {
+public final class Bleed extends McRPGAbility implements PassiveAbility, ConfigurableAbility {
 
     public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "bleed");
 
@@ -60,14 +61,8 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
 
     @NotNull
     @Override
-    public Optional<String> getLegacyName() {
-        return Optional.of("Bleed");
-    }
-
-    @NotNull
-    @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("bleed");
+    public String getDatabaseName() {
+        return "bleed";
     }
 
     @Override
@@ -101,13 +96,6 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
         return LocalizationKeys.BLEED_DISPLAY_ITEM_HEADER;
     }
 
-    @Override
-    @NotNull
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of("<gray>Causes the opponent to bleed when attacking with sword, dealing damage over time.", "<gray>Activation chance: <gold>" + getActivationChance(mcRPGPlayer.asSkillHolder()));
-    }
-
-    @Override
     public double getActivationChance(@NotNull AbilityHolder abilityHolder) {
         if (abilityHolder instanceof SkillHolder skillHolder) {
             var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
@@ -120,4 +108,11 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
         return 0.0;
     }
 
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(), McRPGMethods.getChanceNumberFormat().format(getActivationChance(player.asSkillHolder())));
+        return placeholders;
+    }
 }

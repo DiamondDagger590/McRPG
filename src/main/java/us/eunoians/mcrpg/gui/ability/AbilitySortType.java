@@ -1,28 +1,27 @@
 package us.eunoians.mcrpg.gui.ability;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.McRPGPaginatedGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.util.filter.ability.AbilityUpgradeFilter;
 import us.eunoians.mcrpg.util.filter.ability.ActiveAbilityFilter;
-import us.eunoians.mcrpg.util.filter.ability.DefaultAbilityFilter;
+import us.eunoians.mcrpg.util.filter.ability.InnateAbilityFilter;
 import us.eunoians.mcrpg.util.filter.ability.PassiveAbilityFilter;
 import us.eunoians.mcrpg.util.filter.ability.UnlockableAbilityFilter;
 
@@ -39,11 +38,12 @@ import java.util.Optional;
  */
 public enum AbilitySortType {
 
-    ALPHABETICAL(Material.BAMBOO_HANGING_SIGN, "Alphabetical Sort", null, Comparator.comparing(Ability::getDisplayName)),
-    DEFAULT_ABILITIES(Material.REDSTONE, "Default Abilities Sort", new DefaultAbilityFilter(), new ChainComparator<>(
-            Comparator.comparing(ability -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator())),
-    SKILL(Material.DIAMOND_SWORD, "Sort by Skill", null, new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
-            Comparator.comparing(ability -> ability.getSkill().isPresent()),
+    // TODO come back and finish
+    ALPHABETICAL(null, null, mcrpgPlayer -> Comparator.comparing((Ability ability) -> ability.getDisplayName(mcrpgPlayer))),
+    INNATE_ABILITIES(null, new InnateAbilityFilter(), mcrpgPlayer -> new ChainComparator<>(
+            Comparator.comparing((Ability ability) -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator(mcrpgPlayer))),
+    SKILL(null, null, mcRPGPlayer -> new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
+            Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
                 SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
@@ -57,15 +57,15 @@ public enum AbilitySortType {
                 if (skillOptional.isPresent() && skillOptional1.isPresent()) {
                     Skill skill = skillOptional.get();
                     Skill skill1 = skillOptional1.get();
-                    return skill.getDisplayName().compareTo(skill1.getDisplayName());
+                    return skill.getDisplayName(mcRPGPlayer).compareTo(skill1.getDisplayName(mcRPGPlayer));
                 }
                 // Otherwise, they both don't have skills then say they're equal
                 return 0;
             },
-            DEFAULT_ABILITIES.getAbilityComparator())),
-    UNLOCKED_ABILITIES(Material.DIAMOND, "Sort by Unlock Level", new UnlockableAbilityFilter(), new ChainComparator<>(
-            Comparator.comparing(ability -> !(ability instanceof UnlockableAbility)),
-            Comparator.comparing(ability -> ability.getSkill().isPresent()),
+            INNATE_ABILITIES.getAbilityComparator(mcRPGPlayer))),
+    UNLOCKED_ABILITIES(null, new UnlockableAbilityFilter(), mcRPGPlayer -> new ChainComparator<>(
+            Comparator.comparing((Ability ability) -> !(ability instanceof UnlockableAbility)),
+            Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
                 SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
@@ -79,7 +79,7 @@ public enum AbilitySortType {
                 if (skillOptional.isPresent() && skillOptional1.isPresent()) {
                     Skill skill = skillOptional.get();
                     Skill skill1 = skillOptional1.get();
-                    return skill.getDisplayName().compareTo(skill1.getDisplayName());
+                    return skill.getDisplayName(mcRPGPlayer).compareTo(skill1.getDisplayName(mcRPGPlayer));
                 }
                 // Otherwise, they both don't have skills then say they're equal
                 return 0;
@@ -94,13 +94,12 @@ public enum AbilitySortType {
                 }
                 return 0;
             })),
-    UPGRADEABLE_ABILITIES(Material.GOLD_INGOT, "Sort by abilities you can upgrade", new AbilityUpgradeFilter(),
-            SKILL.getAbilityComparator()),
-    PASSIVE_ABILITIES(Material.REDSTONE, "Sort by passive abilities", new PassiveAbilityFilter(), SKILL.getAbilityComparator()),
-    ACTIVE_ABILITIES(Material.STONE_SWORD, "Sort by active abilities", new ActiveAbilityFilter(), SKILL.getAbilityComparator());
+    UPGRADEABLE_ABILITIES(null, new AbilityUpgradeFilter(),
+            SKILL::getAbilityComparator),
+    PASSIVE_ABILITIES(null, new PassiveAbilityFilter(), SKILL::getAbilityComparator),
+    ACTIVE_ABILITIES(null, new ActiveAbilityFilter(), SKILL::getAbilityComparator);
 
     private final static LinkedNode<AbilitySortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilitySortType.SKILL);
-
     static {
         LinkedNode<AbilitySortType> prev = FIRST_SORT_TYPE;
         // Using definition order as the link order
@@ -116,36 +115,14 @@ public enum AbilitySortType {
         prev.setNext(FIRST_SORT_TYPE);
     }
 
-    private final Material displayMaterial;
-    private final String displayName;
+    private final Route displayItemRoute;
     private final PlayerContextFilter<Ability> filter;
-    private final Comparator<Ability> abilityComparator;
+    private final PlayerComparator<Ability> abilityComparator;
 
-    AbilitySortType(@NotNull Material displayMaterial, @NotNull String displayName, @Nullable PlayerContextFilter<Ability> filter, @NotNull Comparator<Ability> abilityComparator) {
-        this.displayMaterial = displayMaterial;
-        this.displayName = displayName;
+    AbilitySortType(@NotNull Route displayItemRoute, @Nullable PlayerContextFilter<Ability> filter, @NotNull PlayerComparator<Ability> abilityComparator) {
+        this.displayItemRoute = displayItemRoute;
         this.filter = filter;
         this.abilityComparator = abilityComparator;
-    }
-
-    /**
-     * Gets the {@link Material} used to display this sort.
-     *
-     * @return The {@link Material} used to display this sort.
-     */
-    @NotNull
-    public Material getDisplayMaterial() {
-        return this.displayMaterial;
-    }
-
-    /**
-     * Gets the name to use when displaying this sort
-     *
-     * @return The name used to display this sort
-     */
-    @NotNull
-    public String getDisplayName() {
-        return this.displayName;
     }
 
     /**
@@ -154,8 +131,8 @@ public enum AbilitySortType {
      * @return The {@link Comparator} used to sort {@link Ability Abilities}
      */
     @NotNull
-    public Comparator<Ability> getAbilityComparator() {
-        return this.abilityComparator;
+    public Comparator<Ability> getAbilityComparator(@NotNull McRPGPlayer player) {
+        return this.abilityComparator.getComparator(player);
     }
 
     /**
@@ -172,25 +149,26 @@ public enum AbilitySortType {
 
     /**
      * Gets a {@link Slot} that will progress to the next sort type and refresh the gui it is hosted in.
-     *
+     * <p>
      * This slot can only be added to {@link SortableAbilityGui}'s, and if it is added to a {@link PaginatedGui} as well
      * (see {@link PaginatedSortedAbilityGui}), then it will set the page to 1 before refreshing the gui.
+     *
      * @return A {@link Slot} that when clicked will progress to the next sort type and refresh the gui it is
-     * hosted in.¬
+     * hosted in.
      */
     @NotNull
-    public Slot getSlot() {
-        return new Slot() {
+    public McRPGSlot getSlot() {
+        return new McRPGSlot() {
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
                 guiOptional.ifPresent(gui -> {
                     // If it's a sortable gui, progress node
                     if (gui instanceof SortableAbilityGui sortableAbilityGui) {
-                        corePlayer.getAsBukkitPlayer().ifPresent(player -> {
+                        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
                             sortableAbilityGui.progressToNextSortNode();
                             // If it's a paginated gui, reset page
-                            if (gui instanceof PaginatedGui paginatedGui) {
+                            if (gui instanceof McRPGPaginatedGui paginatedGui) {
                                 paginatedGui.setPage(1);
                             }
                             // Refresh gui
@@ -203,14 +181,8 @@ public enum AbilitySortType {
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                ItemStack itemStack = new ItemStack(displayMaterial);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-                itemMeta.displayName(miniMessage.deserialize("<red>" + displayName + "</red>"));
-                itemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to change how abilities are sorted.")));
-                itemStack.setItemMeta(itemMeta);
-                return itemStack;
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(McRPG.getInstance().getLocalizationManager().getLocalizedSection(mcRPGPlayer, displayItemRoute));
             }
         };
     }
@@ -223,5 +195,9 @@ public enum AbilitySortType {
     @NotNull
     public static LinkedNode<AbilitySortType> getFirstSortType() {
         return FIRST_SORT_TYPE;
+    }
+
+    private interface PlayerComparator<E> {
+        Comparator<E> getComparator(@NotNull McRPGPlayer mcRPGPlayer);
     }
 }

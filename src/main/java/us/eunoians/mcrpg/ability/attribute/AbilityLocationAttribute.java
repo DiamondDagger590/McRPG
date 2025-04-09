@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.ability.attribute;
 
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.util.Methods;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -11,9 +10,11 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,22 +70,22 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
 
     @NotNull
     @Override
-    public Slot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability) {
-        return new Slot() {
+    public McRPGSlot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability) {
+        return new McRPGSlot() {
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 return false;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
                 ItemStack itemStack = new ItemStack(Material.CHERRY_SIGN);
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.displayName(McRPG.getInstance().getMiniMessage().deserialize("<gold>Bound Location"));
                 itemMeta.lore(getGuiLore(player, ability));
                 itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(itemStack);
             }
         };
     }

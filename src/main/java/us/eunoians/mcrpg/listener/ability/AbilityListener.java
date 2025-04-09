@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.listener.ability;
 
-import com.diamonddagger590.mccore.player.PlayerManager;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -81,7 +80,6 @@ public interface AbilityListener extends Listener {
     default void readyAbilities(@NotNull UUID uuid, @NotNull Event event) {
         McRPG mcRPG = McRPG.getInstance();
         EntityManager entityManager = mcRPG.getEntityManager();
-        PlayerManager playerManager = mcRPG.getPlayerManager();
         AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
@@ -92,8 +90,9 @@ public interface AbilityListener extends Listener {
             }
 
             // Check if the player requires empty offhand
-            var playerOptional = playerManager.getPlayer(uuid);
-            if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer && mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+            var playerOptional = mcRPG.getPlayerManager().getPlayer(uuid);
+            if (playerOptional.isPresent() && playerOptional.get().getAsBukkitPlayer().isPresent()) {
+                McRPGPlayer mcRPGPlayer = playerOptional.get();
                 var settingOptional = mcRPGPlayer.getPlayerSetting(RequireEmptyOffhandSetting.SETTING_KEY);
                 Player player = mcRPGPlayer.getAsBukkitPlayer().get();
                 // If the player has the setting enabled and their offhand isn't empty, don't even try to ready any abilities
@@ -122,9 +121,7 @@ public interface AbilityListener extends Listener {
                     .filter(ability -> ability.checkIfComponentFailsReady(abilityHolder, event).isEmpty())
                     .filter(ability -> {
                         if (ability instanceof CooldownableAbility cooldownableAbility && cooldownableAbility.isAbilityOnCooldown(abilityHolder)) {
-                            playerOptional.filter(corePlayer -> corePlayer instanceof McRPGPlayer)
-                                    .map(corePlayer -> (McRPGPlayer) corePlayer)
-                                    .ifPresent(cooldownableAbility::notifyCooldownActive);
+                            playerOptional.ifPresent(cooldownableAbility::notifyCooldownActive);
                             return false;
                         }
                         return true;

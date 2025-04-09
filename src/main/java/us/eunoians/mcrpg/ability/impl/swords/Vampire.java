@@ -3,27 +3,24 @@ package us.eunoians.mcrpg.ability.impl.swords;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
-import us.eunoians.mcrpg.event.ability.swords.VampireActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.event.ability.swords.VampireActivateEvent;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -50,35 +47,8 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
 
     @NotNull
     @Override
-    public Optional<String> getLegacyName() {
-        return Optional.of("Vampire");
-    }
-
-    @NotNull
-    @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("vampire");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Vampire";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Enhances Bleed to have a chance to heal you each time Bleed causes damage.",
-                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier),
-                "<gray>Healing Amount: <gold>" + getAmountToHeal(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.GHAST_TEAR);
+    public String getDatabaseName() {
+        return "vampire";
     }
 
     @Override
@@ -116,6 +86,12 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
     @Override
     public YamlDocument getYamlDocument() {
         return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKeys.VAMPIRE_DISPLAY_ITEM_HEADER;
     }
 
     /**
