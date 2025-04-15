@@ -21,6 +21,15 @@ public final class LocalizationKeys extends ConfigFile {
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.addTo(ABILITY_HEADER, "ability-still-on-cooldown");
     public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.addTo(ABILITY_HEADER, "ability-no-longer-on-cooldown");
 
+    private static final Route ABILITY_SORT_TYPE_HEADER = Route.addTo(ABILITY_HEADER, "sort-types");
+    public static final Route ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "alphabetical.display-item");
+    public static final Route ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "innate-abilities.display-item");
+    public static final Route ABILITY_SORT_SKILL_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "skill.display-item");
+    public static final Route ABILITY_SORT_UNLOCKED_ABILITIES_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "unlocked-abilities.display-item");
+    public static final Route ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "upgradable-abilities.display-item");
+    public static final Route ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "passive-abilities.display-item");
+    public static final Route ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "active-abilities.display-item");
+
     private static final Route ABILITY_SPECIFIC_LOCALIZATION_HEADER = Route.addTo(ABILITY_HEADER, "ability-specific-localization");
     private static final Route BLEED_HEADER = Route.addTo(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "bleed");
     public static final Route BLEED_DISPLAY_ITEM_HEADER = Route.addTo(BLEED_HEADER, "display-item");
