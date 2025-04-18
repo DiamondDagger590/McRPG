@@ -14,6 +14,10 @@ public final class LocalizationKeys extends ConfigFile {
     private static final Route EXPANSION_HEADER = Route.fromString("expansion");
     public static final Route MCRPG_EXPANSION_NAME = Route.addTo(EXPANSION_HEADER, "mcrpg");
 
+    private static final Route DISPLAY_HEADER = Route.from("experience-display");
+    public static final Route ACTION_BAR_DISPLAY_MESSAGE = Route.addTo(DISPLAY_HEADER, "action-bar-display-message");
+    public static final Route BOSS_BAR_DISPLAY_MESSAGE = Route.addTo(DISPLAY_HEADER, "boss-bar-display-message");
+
     private static final Route SKILL_HEADER = Route.fromString("skill");
     private static final Route SWORDS_HEADER = Route.addTo(SKILL_HEADER, "swords");
 

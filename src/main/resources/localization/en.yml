@@ -32,6 +32,14 @@ expansion:
 login:
   # The message to send a player whenever there is an issue loading their McRPG data.
   unable-to-load-data: "<red>There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!"
+# Configure experience display localization
+experience-display:
+  # The message to send to a player's action bar whenever they gain experience.
+  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-for-next-level> and <remaining-experience-for-next-level>
+  action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><required-experience-for-next-level></gold>"
+  # The message to send to display as the boss bar's name when sent to a player.
+  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-for-next-level> and <remaining-experience-for-next-level>
+  boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><required-experience-for-next-level></gold>"
 # Configure generic ability strings.
 ability:
   # Configure messages relating to abilities that can be on cooldown

@@ -26,12 +26,14 @@ public class AbilityItemBuilder extends ItemBuilder {
         super(itemStack);
         this.player = player;
         this.ability = ability;
+        addPlaceholders();
     }
 
     public AbilityItemBuilder(@NotNull final String value, @NotNull McRPGPlayer player, @NotNull final Ability ability) {
         super(value);
         this.player = player;
         this.ability = ability;
+        addPlaceholders();
     }
 
     @NotNull

@@ -64,6 +64,19 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route SAFE_ZONE_HOOKS_LANDS_ANY_LANDS = Route.addTo(SAFE_ZONE_HOOKS_LANDS_HEADER, "any-lands");
     public static final Route SAFE_ZONE_HOOKS_LANDS_WILD_ZONE = Route.addTo(SAFE_ZONE_HOOKS_LANDS_HEADER, "wild-zone");
 
+    // Display
+    private static final Route DISPLAY_HEADER = Route.addTo(CONFIGURATION_HEADER, "display");
+    private static final Route DISPLAY_EXPERIENCE_UPDATES_HEADER = Route.addTo(DISPLAY_HEADER, "experience-updates");
+    private static final Route EXPERIENCE_BOSS_BAR_DISPLAY_HEADER = Route.addTo(DISPLAY_HEADER, "boss-bar");
+    public static final Route DISPLAY_EXPERIENCE_UPDATES_ENABLED = Route.addTo(DISPLAY_EXPERIENCE_UPDATES_HEADER, "enabled");
+    public static final Route EXPERIENCE_BOSS_BAR_DISPLAY_DURATION = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "display-duration");
+    public static final Route EXPERIENCE_BOSS_BAR_DISPLAY_COLOR = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "color");
+    public static final Route EXPERIENCE_BOOS_BAR_STYLE = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "style");
+
+    // Gameplay
+    private static final Route LOADOUT_HEADER = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "loadout");
+    public static final Route LOADOUT_DISPLAY_NAME_RESPONSE_TIMEOUT = Route.addTo(LOADOUT_HEADER, "display-name-response-timeout");
+
     public static final Route DISABLE_SKILL_BOOKS_IN_END = Route.addTo(SKILL_BOOKS_CONFIGURATION_HEADER, "disable-books-in-end");
     public static final Route EXPERIENCE_UPDATES_ENABLED = Route.addTo(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "enabled");
     public static final Route EXPERIENCE_UPDATE_DISPLAY_TYPE = Route.addTo(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-type");

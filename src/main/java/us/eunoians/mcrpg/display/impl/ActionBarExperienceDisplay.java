@@ -1,20 +1,20 @@
 package us.eunoians.mcrpg.display.impl;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
-import java.util.UUID;
+import java.util.Map;
 
 /**
  * This experience display will display experience updates via
@@ -30,22 +30,27 @@ public class ActionBarExperienceDisplay extends ExperienceDisplay {
     public void sendExperienceUpdate(@NotNull NamespacedKey skillKey) {
         McRPGPlayer mcRPGPlayer = getMcRPGPlayer();
         McRPG mcRPG = mcRPGPlayer.getPlugin();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().getLocalizationManager();
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         var dataOptional = skillHolder.getSkillHolderData(skillKey);
-        UUID uuid = skillHolder.getUUID();
-        Player player = Bukkit.getPlayer(uuid);
+        var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
         MiniMessage miniMessage = mcRPG.getMiniMessage();
         Skill skill = skillRegistry.getRegisteredSkill(skillKey);
-        Audience audience = mcRPG.getAdventure().player(player);
-        cleanDisplay();
-        if (dataOptional.isPresent()) {
+        if (dataOptional.isPresent() && playerOptional.isPresent()) {
+            cleanDisplay();
+            Audience audience = mcRPG.getAdventure().player(playerOptional.get());
             var skillHolderData = dataOptional.get();
             int currentLevel = skillHolderData.getCurrentLevel();
             int currentExperience = skillHolderData.getCurrentExperience();
             int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
-            Component component = miniMessage.deserialize("<gray>" + skill.getDisplayName(getMcRPGPlayer()) + "Lv.<gold>" + currentLevel + " <gray>- Needed Exp" + skill.getDisplayName(getMcRPGPlayer()) + ": <gold>" + (experienceForNextLevel - currentExperience));
-            player.sendActionBar(component);
+            audience.sendActionBar(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKeys.ACTION_BAR_DISPLAY_MESSAGE, Map.of(
+                    "skill", skill.getDisplayName(mcRPGPlayer),
+                    "level", Integer.toString(currentLevel),
+                    "current-experience", Integer.toString(currentExperience),
+                    "required-experience-for-next-level", Integer.toString(experienceForNextLevel),
+                    "remaining-experience-for-next-level", Integer.toString(experienceForNextLevel, currentExperience))
+            ));
         }
     }
 

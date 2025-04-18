@@ -1,21 +1,26 @@
 package us.eunoians.mcrpg.display.impl;
 
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,7 +46,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
         Player player = Bukkit.getPlayer(uuid);
         if (dataOptional.isPresent() && player != null) {
             displayUpdate(skillKey, getMcRPGPlayer(), dataOptional.get());
-            DelayableCoreTask delayableCoreTask = new DelayableCoreTask(mcRPG, 10) {
+            DelayableCoreTask delayableCoreTask = new DelayableCoreTask(mcRPG, mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_DURATION, 3)) {
 
                 @Override
                 public void run() {
@@ -63,16 +68,22 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
      */
     protected void displayUpdate(@NotNull NamespacedKey skillKey, @NotNull McRPGPlayer mcRPGPlayer, @NotNull SkillHolder.SkillHolderData skillHolderData) {
         McRPG mcRPG = getMcRPGPlayer().getPlugin();
+        YamlDocument mainConfig = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG);
+        McRPGLocalizationManager localizationManager = mcRPG.getLocalizationManager();
         SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
-        MiniMessage miniMessage = mcRPG.getMiniMessage();
         Skill skill = skillRegistry.getRegisteredSkill(skillKey);
         Audience audience = mcRPG.getAdventure().player(mcRPGPlayer.getUUID());
         cleanDisplay();
         int currentLevel = skillHolderData.getCurrentLevel();
         int currentExperience = skillHolderData.getCurrentExperience();
         int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
-        Component component = miniMessage.deserialize("<gray>Lv.<gold>" + currentLevel + " <gray>- " + skill.getDisplayName(mcRPGPlayer) + ": <gold>" + (experienceForNextLevel - currentExperience));
-        bossBar = BossBar.bossBar(component, (((float) currentExperience) / ((float) experienceForNextLevel)), BossBar.Color.WHITE, BossBar.Overlay.NOTCHED_10);
+        Component component = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKeys.BOSS_BAR_DISPLAY_MESSAGE, Map.of(
+                "skill", skill.getDisplayName(mcRPGPlayer),
+                "level", Integer.toString(currentLevel),
+                "current-experience", Integer.toString(currentExperience),
+                "required-experience-for-next-level", Integer.toString(experienceForNextLevel),
+                "remaining-experience-for-next-level", Integer.toString(experienceForNextLevel, currentExperience)));
+        bossBar = BossBar.bossBar(component, (((float) currentExperience) / ((float) experienceForNextLevel)), BossBar.Color.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_COLOR, "PURPLE")), BossBar.Overlay.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOOS_BAR_STYLE, "SEGMENTED_10")));
         audience.showBossBar(bossBar);
     }
 

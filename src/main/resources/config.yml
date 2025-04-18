@@ -16,7 +16,7 @@ configuration:
   localization:
     # Language support will go in the order of user's local language -> server default -> english
     # User local language is determined by their minecraft client
-    server-default-language: en
+    server-default-locale: en
   # Configure all admin features
   admin:
     # If enabled, admins with the permission node 'mcrpg.ability.spy' will be alerted when abilities are unlocked and upgraded
@@ -105,18 +105,25 @@ configuration:
   # Configure various displays (scoreboard, actionbar, and bossbar) for McRPG
   display:
     # Configure displays for whenever experience is gained
-    exp-updates:
+    experience-updates:
       # If set to true, players will get a visual update whenever experience is gained (unless their setting disables this)
       enabled: true
-      # What type should the display be. Accepted values are: BOSSBAR, SCOREBOARD, or ACTIONBAR
+      # What type should the display be. Accepted values are: BOSSBAR or ACTIONBAR
       display-type: BOSSBAR
-      # Duration of the reminder in seconds. Only used for scoreboard and bossbar
-      display-duration: 3
+      # Configure additional attributes about a boss bar
+      boss-bar:
+        display-duration: 3
+        # Can be any value found here: https://javadoc.io/doc/net.kyori/adventure-api/4.1.0/net/kyori/adventure/bossbar/BossBar.Color.html
+        color: PURPLE
+        # Can be any value found here: https://javadoc.io/doc/net.kyori/adventure-api/4.1.0/net/kyori/adventure/bossbar/BossBar.Overlay.html
+        style: SEGMENTED_10
+
   # Configure various gameplay mechanics
   gameplay:
     loadout:
       max-loadout-amount: 3
       max-loadout-size: 15
+      loadout-display-name-response-timeout: 10
     # If enabled, players will be required to have an empty off hand in order to ready their abilities
     require-empty-off-hand-to-ready: false
     # If enabled, then a player will not be able to gain experience past a certain level.
