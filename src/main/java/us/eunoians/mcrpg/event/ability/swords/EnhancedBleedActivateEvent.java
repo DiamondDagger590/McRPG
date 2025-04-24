@@ -7,8 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * This event is called whenever {@link EnhancedBleed} activates
@@ -16,7 +17,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 public class EnhancedBleedActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability ENHANCED_BLEED = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(EnhancedBleed.ENHANCED_BLEED_KEY);
+    private static final Ability ENHANCED_BLEED = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(EnhancedBleed.ENHANCED_BLEED_KEY);
 
     private final LivingEntity entity;
     private double additionalBleedDamage;

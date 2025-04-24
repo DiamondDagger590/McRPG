@@ -90,7 +90,7 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
 
     @Override
     public @NotNull Set<NamespacedKey> getUnsortedAbilities() {
-        return Set.copyOf(ABILITY_KEY_FILTER.filter(getMcRPGPlayer(), getMcRPGPlayer().asSkillHolder().getAvailableAbilities()));
+        return Set.copyOf(ABILITY_KEY_FILTER.filter(getCreatingPlayer(), getCreatingPlayer().asSkillHolder().getAvailableAbilities()));
     }
 
     @Override
@@ -99,9 +99,9 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedAbilities.size()) {
                 if (oldAbilityKey.isPresent()) {
-                    setSlot(i, new LoadoutSelectAbilitySlot(getMcRPGPlayer(), loadout, sortedAbilities.get(i), oldAbilityKey.get()));
+                    setSlot(i, new LoadoutSelectAbilitySlot(getCreatingPlayer(), loadout, sortedAbilities.get(i), oldAbilityKey.get()));
                 } else {
-                    setSlot(i, new LoadoutSelectAbilitySlot(getMcRPGPlayer(), loadout, sortedAbilities.get(i)));
+                    setSlot(i, new LoadoutSelectAbilitySlot(getCreatingPlayer(), loadout, sortedAbilities.get(i)));
                 }
             } else {
                 removeSlot(i);
@@ -129,13 +129,13 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
 
     @NotNull
     @Override
-    public PreviousPageSlot getPreviousPageSlot() {
+    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
         return null;
     }
 
     @NotNull
     @Override
-    public NextPageSlot getNextPageSlot() {
+    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
         return null;
     }
 

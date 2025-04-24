@@ -1,5 +1,8 @@
 package us.eunoians.mcrpg.configuration;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,13 +15,12 @@ import java.util.Map;
  * Manages all of McRPGs configuration files and is the point of access
  * to get any {@link YamlDocument}s that hold configuration values.
  */
-public final class FileManager {
+public final class FileManager extends Manager<McRPG> {
 
-    private final McRPG mcRPG;
     private final Map<FileType, YamlDocument> loadedFiles;
 
     public FileManager(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+        super(mcRPG);
         this.loadedFiles = new HashMap<>();
 
         if (!mcRPG.getDataFolder().exists()) {
@@ -48,7 +50,7 @@ public final class FileManager {
                 throw new RuntimeException(e);
             }
         }
-        mcRPG.getReloadableContentRegistry().reloadAllContent();
+        plugin().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
     }
 
     /**

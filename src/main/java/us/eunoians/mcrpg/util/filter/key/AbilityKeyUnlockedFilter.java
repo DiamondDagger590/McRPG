@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Collection;
 
@@ -18,8 +19,8 @@ public class AbilityKeyUnlockedFilter implements PlayerContextFilter<NamespacedK
     @Override
     public Collection<NamespacedKey> filter(@NotNull CorePlayer corePlayer, @NotNull Collection<NamespacedKey> collection) {
         return collection.stream()
-                .filter(namespacedKey -> McRPG.getInstance().getAbilityRegistry().isAbilityRegistered(namespacedKey))
-                .filter(namespacedKey -> McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)
+                .filter(namespacedKey -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).registered(namespacedKey))
+                .filter(namespacedKey -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)
                 .toList();
     }
 }

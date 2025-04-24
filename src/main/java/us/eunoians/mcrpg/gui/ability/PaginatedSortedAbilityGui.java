@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.McRPGPaginatedGui;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +29,7 @@ import java.util.Set;
  * This gui also assumes that there will be a 'navigation bar' for pagination, however specific navigation
  * bar implementation is left to be implemented by individual guis.
  */
-public abstract class PaginatedSortedAbilityGui extends McRPGPaginatedGui implements SortableAbilityGui {
+public abstract class PaginatedSortedAbilityGui extends PaginatedGui<McRPGPlayer> implements SortableAbilityGui {
 
     private final Map<AbilitySortType, List<Ability>> cachedSorts;
     private LinkedNode<AbilitySortType> sortTypeNode;
@@ -73,11 +73,11 @@ public abstract class PaginatedSortedAbilityGui extends McRPGPaginatedGui implem
         } else {
             abilities = getUnsortedAbilities()
                     .stream()
-                    .map(namespacedKey -> McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey)).toList();
-            abilities = sortType.filter(getMcRPGPlayer(), abilities);
+                    .map(namespacedKey -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey)).toList();
+            abilities = sortType.filter(getCreatingPlayer(), abilities);
             abilities = abilities
                     .stream()
-                    .sorted(sortType.getAbilityComparator(getMcRPGPlayer()))
+                    .sorted(sortType.getAbilityComparator(getCreatingPlayer()))
                     .toList();
             cachedSorts.put(sortType, abilities);
         }

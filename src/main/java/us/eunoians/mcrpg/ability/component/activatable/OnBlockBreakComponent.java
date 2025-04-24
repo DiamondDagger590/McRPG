@@ -7,6 +7,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * An {@link EventActivatableComponent} which will activate for {@link BlockBreakEvent}s
@@ -27,7 +29,7 @@ public interface OnBlockBreakComponent extends EventActivatableComponent {
         if (event instanceof BlockBreakEvent blockBreakEvent) {
             Entity entity = blockBreakEvent.getPlayer();
             Block block = blockBreakEvent.getBlock();
-            return entity.getUniqueId().equals(abilityHolder.getUUID()) && affectsBlock(block) && McRPG.getInstance().getWorldManager().isBlockNatural(block);
+            return entity.getUniqueId().equals(abilityHolder.getUUID()) && affectsBlock(block) && McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isBlockNatural(block);
         }
         return false;
     }

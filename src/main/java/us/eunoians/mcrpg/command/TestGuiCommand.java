@@ -1,29 +1,29 @@
 package us.eunoians.mcrpg.command;
 
-import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.gui.HomeGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 public class TestGuiCommand {
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
         commandManager.command(commandManager.commandBuilder("mcrpg").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
-                PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
-                playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
-                    if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
-                        HomeGui homeGui = new HomeGui(mcRPGPlayer);
-                        McRPG.getInstance().getGuiTracker().trackPlayerGui(player, homeGui);
-                        player.openInventory(homeGui.getInventory());
-                    }
+                McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+                playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
+                    HomeGui homeGui = new HomeGui(mcRPGPlayer);
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(player, homeGui);
+                    player.openInventory(homeGui.getInventory());
                 });
             }
         }));
@@ -31,13 +31,11 @@ public class TestGuiCommand {
         commandManager.command(commandManager.commandBuilder("skill").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
-                PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
-                playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
-                    if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
-                        AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
-                        McRPG.getInstance().getGuiTracker().trackPlayerGui(player, abilityGui);
-                        player.openInventory(abilityGui.getInventory());
-                    }
+                McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+                playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
+                    AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(player, abilityGui);
+                    player.openInventory(abilityGui.getInventory());
                 });
             }
         }));

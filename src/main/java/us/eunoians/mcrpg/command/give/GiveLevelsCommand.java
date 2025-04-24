@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.command.give;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -15,6 +17,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.parser.SkillParser;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 /**
@@ -25,7 +28,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
     private static final Permission GIVE_LEVELS_PERMISSION = Permission.of("mcrpg.give.level");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -48,7 +51,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
-                            var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(player.getUniqueId());
+                            var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                             if (playerOptional.isPresent()) {
                                 McRPGPlayer mcRPGPlayer = playerOptional.get();
                                 SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();

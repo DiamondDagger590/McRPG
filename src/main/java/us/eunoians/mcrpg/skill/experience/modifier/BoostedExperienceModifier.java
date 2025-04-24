@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.skill.experience.modifier;
 
 import com.diamonddagger590.mccore.parser.EvaluationException;
 import com.diamonddagger590.mccore.parser.ParseError;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -12,6 +13,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 
 import java.util.UUID;
@@ -37,8 +39,9 @@ public final class BoostedExperienceModifier extends ExperienceModifier {
 
     @Override
     public boolean canProcessContext(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
-        var playerOptional = mcRPG.getPlayerManager().getPlayer(skillExperienceContext.getSkillHolder().getUUID());
-        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+        var playerOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(skillExperienceContext.getSkillHolder().getUUID());
+        if (playerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerOptional.get();
             PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
             return playerExperienceExtras.getBoostedExperience() > 0;
         }
@@ -48,26 +51,28 @@ public final class BoostedExperienceModifier extends ExperienceModifier {
     @Override
     public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
         UUID uuid = skillExperienceContext.getSkillHolder().getUUID();
-        var playerOptional = mcRPG.getPlayerManager().getPlayer(uuid);
+        var playerOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(uuid);
         Player player = Bukkit.getPlayer(uuid);
-        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer && player != null) {
-            PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
-            int playerBoostedExperience = playerExperienceExtras.getBoostedExperience();
-            try {
-                double boostToApply = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE);
-                double boostedExperience = skillExperienceContext.getBaseExperience() * boostToApply;
-                // If the end result is larger than the amount of experience we can give, then we need to find the multiplier of base exp that gets us to the remaining exp
-                if (boostedExperience > playerBoostedExperience) {
-                    boostToApply = (double) playerBoostedExperience / skillExperienceContext.getBaseExperience();
-                    boostedExperience = playerBoostedExperience;
+        if (playerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerOptional.get();
+            if (player != null) {
+                PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
+                int playerBoostedExperience = playerExperienceExtras.getBoostedExperience();
+                try {
+                    double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE);
+                    double boostedExperience = skillExperienceContext.getBaseExperience() * boostToApply;
+                    // If the end result is larger than the amount of experience we can give, then we need to find the multiplier of base exp that gets us to the remaining exp
+                    if (boostedExperience > playerBoostedExperience) {
+                        boostToApply = (double) playerBoostedExperience / skillExperienceContext.getBaseExperience();
+                        boostedExperience = playerBoostedExperience;
+                    }
+                    // Consume boosted experience
+                    playerExperienceExtras.modifyRedeemableExperience((int) (boostedExperience * -1));
+                    // Normalize the boost
+                    return boostToApply - 1;
+                } catch (ParseError | EvaluationException e) {
+                    e.printStackTrace();
                 }
-                // Consume boosted experience
-                playerExperienceExtras.modifyRedeemableExperience((int) (boostedExperience * -1));
-                // Normalize the boost
-                return boostToApply - 1;
-            }
-            catch (ParseError | EvaluationException e) {
-                e.printStackTrace();
             }
         }
         return 0;

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.command.admin;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -8,6 +9,7 @@ import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import static us.eunoians.mcrpg.command.admin.AdminBaseCommand.ADMIN_BASE_PERMISSION;
 
@@ -19,7 +21,7 @@ public class ReloadPluginCommand extends McRPGCommandBase {
     private static final Permission RELOAD_PLUGIN_PERMISSION = Permission.of("mcrpg.admin.reload");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -29,7 +31,7 @@ public class ReloadPluginCommand extends McRPGCommandBase {
                 .handler(commandContext -> {
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
-                            McRPG.getInstance().getFileManager().reloadFiles();
+                            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
                             senderAudience.sendMessage(miniMessage.deserialize("<gray>You have reloaded all McRPG files."));
                         }
                 ));

@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.listener.skill;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
-import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -14,17 +14,20 @@ import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 import us.eunoians.mcrpg.database.table.SkillDAO;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityUnlockEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainLevelEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.sql.Connection;
@@ -43,9 +46,10 @@ public class OnSkillLevelUpListener implements Listener {
         SkillHolder skillHolder = skillGainLevelEvent.getSkillHolder();
         UUID uuid = skillHolder.getUUID();
         int levels = skillGainLevelEvent.getLevels();
-        Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(skillGainLevelEvent.getSkillKey());
-        var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(uuid);
-        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+        Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillGainLevelEvent.getSkillKey());
+        var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(uuid);
+        if (playerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerOptional.get();
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             Audience player = McRPG.getInstance().getAdventure().player(uuid);
             player.sendMessage(miniMessage.deserialize(String.format("<green>You have gone up <gold>%d levels<green> in <gold>%s<green>.", levels, skill.getDisplayName(mcRPGPlayer))));
@@ -56,7 +60,7 @@ public class OnSkillLevelUpListener implements Listener {
     public void handlePostLevelEvent(PostSkillGainLevelEvent postSkillGainLevelEvent) {
         SkillHolder skillHolder = postSkillGainLevelEvent.getSkillHolder();
         UUID uuid = skillHolder.getUUID();
-        Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
+        Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
         var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
         // Check to see if we need to unlock any abilities
         if (skillHolderDataOptional.isPresent()) {
@@ -67,7 +71,7 @@ public class OnSkillLevelUpListener implements Listener {
             }
 
             var skillHolderData = skillHolderDataOptional.get();
-            AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+            AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
             // Check all abilities for the skill
             for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skill)) {
                 Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
@@ -76,7 +80,7 @@ public class OnSkillLevelUpListener implements Listener {
                     var abilityDataOptional = skillHolder.getAbilityData(abilityKey);
                     if (abilityDataOptional.isPresent()) {
                         AbilityData abilityData = abilityDataOptional.get();
-                        var attributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
+                        var attributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE);
                         if (attributeOptional.isPresent()) {
                             AbilityUnlockedAttribute attribute = (AbilityUnlockedAttribute) attributeOptional.get();
                             // If the ability isn't unlocked, unlock it after we call the event
@@ -106,13 +110,14 @@ public class OnSkillLevelUpListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void handlePostExperienceGain(PostSkillGainExpEvent skillGainExpEvent) {
         SkillHolder skillHolder = skillGainExpEvent.getSkillHolder();
-        PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
+        McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
         var playerOptional = playerManager.getPlayer(skillHolder.getUUID());
-        Skill skill = McRPG.getInstance().getSkillRegistry().getRegisteredSkill(skillGainExpEvent.getSkillKey());
+        Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillGainExpEvent.getSkillKey());
 
         if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline()
-                && playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
-            McRPG.getInstance().getDisplayManager().sendExperienceUpdate(mcRPGPlayer, skill.getSkillKey());
+                && playerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerOptional.get();
+            McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY).sendExperienceUpdate(mcRPGPlayer, skill.getSkillKey());
         }
     }
 }

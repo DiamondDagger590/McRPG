@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.localization;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.localization.LocalizationManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -10,6 +11,7 @@ import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.exception.localization.LocaleParseException;
 import us.eunoians.mcrpg.exception.localization.NoLocalizationContainsMessageException;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 
 import java.util.Locale;
@@ -63,7 +65,7 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
     @NotNull
     @Override
     protected ReloadableContent<LinkedNode<Locale>> generateLocaleChain() {
-        return new ReloadableContent<>(getPlugin().getFileManager().getFile(FileType.MAIN_CONFIG), MainConfigFile.SERVER_DEFAULT_LOCALE, ((yamlDocument, route) -> {
+        return new ReloadableContent<>(plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG), MainConfigFile.SERVER_DEFAULT_LOCALE, ((yamlDocument, route) -> {
             String serverDefaultLocaleString = yamlDocument.getString(route);
             String[] locale = serverDefaultLocaleString.split("_");
             Locale serverDefaultLocale = locale.length > 1 ? Locale.of(locale[0], locale[1]) : Locale.of(locale[0]);

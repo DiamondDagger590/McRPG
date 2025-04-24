@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.component;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -8,6 +9,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * An {@link EventLevelableComponent} that awards experience whenever a {@link SkillHolder}
@@ -52,6 +54,6 @@ public interface OnAttackLevelableComponent extends EventLevelableComponent {
      * @return The amount of damage to award experience for.
      */
     default double getDamageToAwardExperienceFor(@NotNull EntityDamageByEntityEvent entityDamageByEntityEvent) {
-        return Math.min(entityDamageByEntityEvent.getFinalDamage(), McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.MAX_DAMAGE_CAP_TO_AWARD_EXPERIENCE));
+        return Math.min(entityDamageByEntityEvent.getFinalDamage(), McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.MAX_DAMAGE_CAP_TO_AWARD_EXPERIENCE));
     }
 }

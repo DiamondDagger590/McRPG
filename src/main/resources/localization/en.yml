@@ -40,6 +40,171 @@ experience-display:
   # The message to send to display as the boss bar's name when sent to a player.
   # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-for-next-level> and <remaining-experience-for-next-level>
   boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><required-experience-for-next-level></gold>"
+gui:
+  # This GUI allows for editing an ability's attributes. Since these items are shared
+  # across multiple GUIs, they are configured under the ability.ability-attribute section.
+  ability-edit-gui:
+    title: '<gold>Editing <ability>'
+    # Allows configuration of displaying different states of a location attribute (such as Remote Transfer)
+    location-attribute:
+      # What item should be used if there is no location saved for this attribute?
+      no-location-saved:
+        display-item:
+          name: "<gold>Bound Location</gold>"
+          material: CHERRY_SIGN
+          lore:
+            - "<gray>You currently don't have a bound location for this ability."
+      # What item should be used if there is a location saved for this attribute?
+      location-saved:
+        display-item:
+          name: "<gold>Bound Location</gold>"
+          material: CHERRY_SIGN
+          # Supports the following placeholders: <location>, <location-x>, <location-y>, <location-z>, <location-world>
+          lore:
+            - "<gray>This ability's bound location is:"
+            - "<gray>X: <gold><location-x>"
+            - "<gray>Y: <gold><location-y>"
+            - "<gray>Z: <gold><location-z>"
+            - "<gray>World: <gold><location-world>"
+    # Allows configuration of the ability's tier.
+    # This may have additional lore appended to it based on things like upgrade eligibility, upgrade cost,
+    # upgrade quest progress, etc.
+    # These additional lores are used elsewhere too, so they will not be configured here. They can be configured
+    # in ability.lore
+    tier-attribute:
+      display-item:
+        name: "<gold>Ability Tier Upgrade</gold>"
+        material: IRON_INGOT
+        # Supports the following placeholders: <tier>
+        lore:
+          - "<gray>Tier: <gold><tier>"
+    toggled-off-attribute:
+      toggled-off:
+        display-item:
+          name: "<gold>Ability Toggle Status</gold>"
+          material: REDSTONE_BLOCK
+          lore:
+            - "<gray>Ability is currently <red>DISABLED</red>.</gray>"
+            - "<gray>Click to <green>ENABLE</green> this ability.</gray>"
+      toggled-on:
+        display-item:
+          name: "<gold>Ability Toggle Status</gold>"
+          material: EMERALD_BLOCK
+          lore:
+            - "<gray>Ability is currently <green>ENABLED</green>.</gray>"
+            - "<gray>Click to <red>DISABLE</red> this ability.</gray>"
+  remote-transfer-gui:
+    title: "<gold>Toggling Remote Transfer Items"
+    categories:
+      all:
+        # The name to use for the <remote-transfer-category> placeholder.
+        name: "All"
+        display-item:
+          # The material to use for the category-button when displaying this category.
+          material: ENDER_CHEST
+          # Supports the following placeholders: <remote-transfer-category>
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      nether:
+        name: "Nether"
+        display-item:
+          material: MAGMA_BLOCK
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      caves:
+        name: "Caves"
+        display-item:
+          material: AMETHYST_BLOCK
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      end:
+        name: "End"
+        display-item:
+          material: ENDER_PEARL
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      ocean:
+        name: "Ocean"
+        display-item:
+          material: PRISMARINE
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      ores:
+        name: "Ores"
+        display-item:
+          material: DIAMOND_ORE
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      overworld:
+        name: "Overworld"
+        display-item:
+          material: MOSSY_COBBLESTONE
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+      terracotta:
+        name: "Terracotta"
+        display-item:
+          material: TERRACOTTA
+          display-item:
+            name: "<red>Click to change sort category."
+            lore:
+              - "<gray>Current Category: <gold><remote-transfer-category>"
+    # What button should be used to display an option for a category
+    # This will be all the allowed items configured in the mining_configuration.yml
+    # The display item will be the item configured over there with no edits to the name.
+    category-item-option:
+      option-enabled:
+        # Supports the following placeholders: <remote-transfer-category>
+        display-item:
+          lore:
+            - '<gray>Click to toggle the filter state for this item.'
+            - '<gray>Item is currently <green>enabled</green>.'
+            - '<gray>Category: <gold><remote-transfer-category>'
+      option-disabled:
+        # Supports the following placeholders: <remote-transfer-category>
+        display-item:
+          lore:
+            - '<gray>Click to toggle the filter state for this item.'
+            - '<gray>Item is currently <red>disabled</red>.'
+            - '<gray>Category: <gold><remote-transfer-category>'
+    # Configure the back button for this gui
+    next-button:
+      display-item:
+        name: "<red>Next Page</red>"
+        lore:
+          - "<gray>Click to go back to the next page.</gray>"
+    # Configure the next button for this gui
+    previous-button:
+      display-item:
+        name: "<red>Previous Page</red>"
+        lore:
+          - "<gray>Click to go back to the previous page.</gray>"
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Editing</red>"
+        material: BARRIER
+        # Supports the following placeholders: <ability>
+        lore:
+          - '<gray>Click to return to editing <gold><ability></gold>'
+    # Configure the item to be used as a filler for the gui
+    filler-item:
+      display-item:
+        name: ""
+        material: GRAY_STAINED_GLASS_PANE
 # Configure generic ability strings.
 ability:
   # Configure messages relating to abilities that can be on cooldown
@@ -53,11 +218,11 @@ ability:
   # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
   lore:
     # Configure ability upgrade quest lore
-    # The following placeholders are supported: <upgrade-points>, <next-tier-upgrade-points>, <upgrade-quest-progress>
+    # The following placeholders are supported: <ability-points>, <next-tier-ability-points>, <upgrade-quest-progress>
     quest:
-      # The lore to add when an ability can be upgraded via upgrade quest but the player lacks enough upgrade points
-      not-enough-upgrade-points:
-        - '<gray>You need <gold><next-tier-upgrade-points> upgrade points<gray> to start the upgrade quest.'
+      # The lore to add when an ability can be upgraded via upgrade quest but the player lacks enough ability points
+      not-enough-ability-points:
+        - '<gray>You need <gold><next-tier-ability-points> ability points<gray> to start the upgrade quest.'
       #  The lore to add to prompt a player to click when an ability can be upgraded via upgrade quest
       click-to-start:
         - '<green>Click to spend <gold><next-tier-upgrade-points> upgrade points</gold> to start upgrade quest.'
@@ -69,9 +234,12 @@ ability:
     upgrade-locked-behind-levelup:
       - '<gray>You can upgrade this ability once you reach <gold>Lv <next-tier-level><gray> in <gold>>skill><gray>.'
     # The lore to add to show how many upgrade points the player has.
-    # The following placeholders are supported: <upgrade-point-amount>
+    # The following placeholders are supported: <ability-point-count>
     ability-point-count:
-      - '<gray>You currently have <gold><upgrade-point-amount></gold> upgrade points.'
+      - '<gray>You currently have <gold><ability-point-count></gold> upgrade points.'
+    ability-locked:
+      - '<gray>Unlock this ability when your <gold><skill></gold> skill'
+      - '<gray>reaches level <gold><ability-unlock-level></gold>.'
     # The lore to add to show what expansion pack an ability is from (only will be displayed if it isn't from McRPG)
     # The following placeholders are supported: <expansion-pack>
     expansion-pack:

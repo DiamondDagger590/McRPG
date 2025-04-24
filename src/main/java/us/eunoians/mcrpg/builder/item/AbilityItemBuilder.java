@@ -11,6 +11,8 @@ import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
@@ -48,12 +50,12 @@ public class AbilityItemBuilder extends ItemBuilder {
 
     private void addPlaceholders() {
         McRPG plugin = player.getPlugin();
-        SkillRegistry skillRegistry = plugin.getSkillRegistry();
+        SkillRegistry skillRegistry = plugin.registryAccess().registry(McRPGRegistryKey.SKILL);
         SkillHolder skillHolder = player.asSkillHolder();
         // Ability placeholder
         addPlaceholder(AbilityItemPlaceholderKeys.ABILITY.getKey(), ability.getName(player));
         // Skill placeholder
-        if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
+        if (ability.getSkill().isPresent() && skillRegistry.registered(ability.getSkill().get())) {
             Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
             addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(player));
         }
@@ -71,7 +73,9 @@ public class AbilityItemBuilder extends ItemBuilder {
         // Ability point placeholder
         addPlaceholder(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
         var abilityExpansionOptional = ability.getExpansionKey();
-        abilityExpansionOptional.flatMap(namespacedKey -> plugin.getContentExpansionManager().getContentExpansion(namespacedKey)).ifPresent(expansion -> {
+        abilityExpansionOptional.flatMap(namespacedKey -> plugin.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                .manager(McRPGManagerKey.CONTENT_EXPANSION)
+                .getContentExpansion(namespacedKey)).ifPresent(expansion -> {
             addPlaceholder(AbilityItemPlaceholderKeys.EXPANSION.getKey(), expansion.getExpansionName(player));
         });
 

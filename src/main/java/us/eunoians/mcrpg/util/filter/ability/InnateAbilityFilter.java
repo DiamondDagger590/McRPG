@@ -4,7 +4,7 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
@@ -24,7 +24,7 @@ public class InnateAbilityFilter implements PlayerContextFilter<Ability> {
                     .filter(ability -> {
                         var abilityData = skillHolder.getAbilityData(ability);
                         if (abilityData.isPresent()) {
-                            var unlockedAttribute = abilityData.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
+                            var unlockedAttribute = abilityData.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE);
                             return unlockedAttribute.isEmpty();
                         }
                         return false;

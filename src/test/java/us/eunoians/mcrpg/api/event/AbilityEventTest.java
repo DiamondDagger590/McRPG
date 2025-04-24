@@ -28,7 +28,7 @@ public class AbilityEventTest {
         serverMock = MockBukkit.mock();
         plugin = MockBukkit.load(McRPG.class);
         mockedSkill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(mockedSkill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(mockedSkill);
     }
 
     @AfterAll
@@ -44,7 +44,7 @@ public class AbilityEventTest {
     @Test
     public void testAbilityRegisterEvent() {
         BaseAbility ability = new MockAbility(plugin, new NamespacedKey(plugin, "test"));
-        plugin.getAbilityRegistry().registerAbility(ability);
+        plugin.registryAccess().registry(McRPGRegistryKey.ABILITY).register(ability);
         serverMock.getPluginManager().assertEventFired(AbilityRegisterEvent.class, abilityRegisterEvent -> {
             assertEquals(abilityRegisterEvent.getAbility(), ability);
             return true;
@@ -54,8 +54,8 @@ public class AbilityEventTest {
     @Test
     public void testAbilityUnregisterEvent() {
         BaseAbility ability = new MockAbility(plugin, new NamespacedKey(plugin, "test"));
-        plugin.getAbilityRegistry().registerAbility(ability);
-        plugin.getAbilityRegistry().unregisterAbility(ability);
+        plugin.registryAccess().registry(McRPGRegistryKey.ABILITY).register(ability);
+        plugin.registryAccess().registry(McRPGRegistryKey.ABILITY).unregisterAbility(ability);
         serverMock.getPluginManager().assertEventFired(AbilityUnregisterEvent.class, abilityUnregisterEvent -> {
             assertEquals(abilityUnregisterEvent.getAbility(), ability);
             return true;

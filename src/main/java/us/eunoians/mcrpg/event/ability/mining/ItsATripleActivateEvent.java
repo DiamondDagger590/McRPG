@@ -6,8 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * This event fires whenever {@link ItsATriple} activates, which changes the drops for {@link us.eunoians.mcrpg.ability.impl.mining.ExtraOre} from
@@ -16,7 +17,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 public class ItsATripleActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability ITS_A_TRIPLE = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(ItsATriple.ITS_A_TRIPLE_KEY);
+    private static final Ability ITS_A_TRIPLE = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ItsATriple.ITS_A_TRIPLE_KEY);
     private boolean cancelled = false;
 
     public ItsATripleActivateEvent(@NotNull AbilityHolder abilityHolder) {

@@ -6,7 +6,7 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
@@ -20,6 +20,8 @@ import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.sql.Connection;
@@ -109,8 +111,8 @@ public class McRPGPlayer extends CorePlayer {
     public boolean canPlayerStartUpgradeQuest(@NotNull TierableAbility tierableAbility) {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
         if (abilityDataOptional.isPresent()) {
-            var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
-            var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+            var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY);
+            var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
             // Validate they don't have an ongoing upgrade quest
             if (skillHolder.hasActiveUpgradeQuest(tierableAbility.getAbilityKey())) {
                 return false;
@@ -145,14 +147,14 @@ public class McRPGPlayer extends CorePlayer {
     public void startUpgradeQuest(@NotNull TierableAbility tierableAbility) {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
 
-        if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE).isEmpty()
-                || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
+        if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE).isEmpty()
+                || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
             throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName(this));
         }
-        int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
+        int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
         Quest quest = tierableAbility.getUpgradeQuestForTier(tier);
         abilityDataOptional.get().addAttribute(new AbilityUpgradeQuestAttribute(quest.getUUID()));
-        QuestManager questManager = McRPG.getInstance().getQuestManager();
+        QuestManager questManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
         skillHolder.setUpgradePoints(skillHolder.getUpgradePoints() - tierableAbility.getUpgradeCostForTier(tier));
         questManager.addActiveQuest(quest);
         questManager.addHolderToQuest(questHolder, quest);

@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
@@ -9,6 +10,8 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -100,7 +103,7 @@ public class LoadoutInfoDAO {
     public static List<PreparedStatement> saveAllLoadoutInfo(@NotNull Connection connection, @NotNull LoadoutHolder loadoutHolder) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         UUID uuid = loadoutHolder.getUUID();
-        int loadoutAmount = McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
+        int loadoutAmount = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
         for (int i = 1; i <= loadoutAmount; i++) {
             preparedStatements.addAll(saveLoadoutInfo(connection, uuid, loadoutHolder.getLoadout(i)));
         }
@@ -118,7 +121,7 @@ public class LoadoutInfoDAO {
     @NotNull
     public static List<PreparedStatement> saveLoadoutInfo(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, @NotNull Loadout loadout) {
         List<PreparedStatement> preparedStatements = new ArrayList<>(deleteLoadoutInfo(connection, loadoutHolderUUID, loadout.getLoadoutSlot()));
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         // If it's empty, don't bother saving
         if (loadout.getAbilities().isEmpty()) {
             return preparedStatements;

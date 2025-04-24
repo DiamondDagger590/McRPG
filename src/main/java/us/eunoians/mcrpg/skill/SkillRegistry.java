@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill;
 
+import com.diamonddagger590.mccore.registry.Registry;
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -27,7 +28,7 @@ import java.util.Set;
  * on {@link NamespacedKey NamespacedKeys}. While you can register them in any order, an ability
  * registered against a skill that is not registered will cause errors to flag in the code at some point.
  */
-public class SkillRegistry {
+public class SkillRegistry implements Registry<Skill> {
 
     private final McRPG mcRPG;
     private final Map<NamespacedKey, Skill> skills;
@@ -42,7 +43,7 @@ public class SkillRegistry {
      *
      * @param skill The {@link Skill} to track
      */
-    public void registerSkill(@NotNull Skill skill) {
+    public void register(@NotNull Skill skill) {
         skills.put(skill.getSkillKey(), skill);
         Bukkit.getPluginManager().callEvent(new SkillRegisterEvent(skill));
     }
@@ -56,7 +57,7 @@ public class SkillRegistry {
      * @return The {@link Skill} that maps to the provided {@link NamespacedKey}.
      */
     public Skill getRegisteredSkill(@NotNull NamespacedKey skillKey) {
-        if (!isSkillRegistered(skillKey)) {
+        if (!registered(skillKey)) {
             throw new SkillNotRegisteredException(skillKey);
         }
 
@@ -88,8 +89,8 @@ public class SkillRegistry {
      * @param skill The {@link Skill} to check.
      * @return {@code true} if the provided {@link Skill} is registered.
      */
-    public boolean isSkillRegistered(@NotNull Skill skill) {
-        return isSkillRegistered(skill.getSkillKey());
+    public boolean registered(@NotNull Skill skill) {
+        return registered(skill.getSkillKey());
     }
 
     /**
@@ -98,7 +99,7 @@ public class SkillRegistry {
      * @param skillKey The {@link NamespacedKey} to check.
      * @return {@code true} if the provided {@link NamespacedKey} has a registered {@link Skill}.
      */
-    public boolean isSkillRegistered(@NotNull NamespacedKey skillKey) {
+    public boolean registered(@NotNull NamespacedKey skillKey) {
         return skills.containsKey(skillKey);
     }
 

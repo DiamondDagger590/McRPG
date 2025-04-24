@@ -1,19 +1,19 @@
 package us.eunoians.mcrpg.task.player;
 
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
-import com.diamonddagger590.mccore.player.CorePlayer;
-import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.player.PlayerUnloadTask;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
-import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.Optional;
 
 /**
  * A task used to save and unload the player data
@@ -25,7 +25,7 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
     public McRPGPlayerUnloadTask(@NotNull McRPG mcRPG, @NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPG, mcRPGPlayer);
         // Do this on main thread
-        playerLogoutInSafeZone = mcRPG.getSafeZoneManager().isPlayerInSafeZone(mcRPGPlayer);
+        playerLogoutInSafeZone = mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.SAFE_ZONE).isPlayerInSafeZone(mcRPGPlayer);
     }
 
     @Override
@@ -41,20 +41,20 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
 
     @Override
     protected boolean unloadPlayer() {
-        PlayerManager playerManager = getPlugin().getPlayerManager();
+        McRPGPlayerManager playerManager = getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
         // Ensure they are registered... probs a better way to do this
-        Optional<CorePlayer> corePlayerOptional = playerManager.getPlayer(getCorePlayer().getUUID());
+        var corePlayerOptional = playerManager.getPlayer(getCorePlayer().getUUID());
 
-        if (corePlayerOptional.isPresent() && corePlayerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
-            SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
+        if (corePlayerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = corePlayerOptional.get();
 
             try (Connection connection = getPlugin().getDatabase().getConnection()) {
                 mcRPGPlayer.savePlayer(connection);
-                /*
-                 We don't want to include the last seen time or the last logout time with saving general information about
-                 the player because the existence of an McRPGPlayer doesn't have any contract with whether a player is online or not,
-                 so we update it externally here.
-                 */
+            /*
+             We don't want to include the last seen time or the last logout time with saving general information about
+             the player because the existence of an McRPGPlayer doesn't have any contract with whether a player is online or not,
+             so we update it externally here.
+             */
                 Instant logoutTime = Instant.now();
                 BatchTransaction lastLogoutTransaction = new BatchTransaction(connection);
                 lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLastLogoutTime(connection, mcRPGPlayer.getUUID(), logoutTime));

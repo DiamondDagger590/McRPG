@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
@@ -14,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
@@ -25,6 +26,8 @@ import us.eunoians.mcrpg.gui.loadout.LoadoutAbilitySelectGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
@@ -66,7 +69,7 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
                 loadout.addAbility(ability.getAbilityKey());
             }
             LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadout);
-            McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutGui);
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutGui);
             player.openInventory(loadoutGui.getInventory());
         });
         return true;
@@ -76,7 +79,7 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
     @Override
     public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+        SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         Component blankLine = miniMessage.deserialize("");
 
@@ -86,7 +89,7 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
 
         List<Component> lore = new ArrayList<>();
         // Add skill information
-        if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
+        if (ability.getSkill().isPresent() && skillRegistry.registered(ability.getSkill().get())) {
             Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
             lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
         }
@@ -118,7 +121,7 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
             }
 
             // Custom handling of toggled since we enchant toggled on items
-            Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
+            Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
             if (abilityAttributeOptional.isPresent() && abilityAttributeOptional.get() instanceof AbilityToggledOffAttribute toggledOffAttribute) {
                 if (!toggledOffAttribute.getContent()) {
                     itemMeta.addEnchant(Enchantment.POWER, 1, true);

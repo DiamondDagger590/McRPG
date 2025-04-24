@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.entity.holder;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -9,6 +10,8 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.exception.loadout.SelectedLoadoutAboveMaxException;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,7 +150,7 @@ public class LoadoutHolder extends AbilityHolder {
      * that have some sort of active action component to their activation.
      */
     public Set<NamespacedKey> getAvailableActiveAbilities() {
-        return getAvailableAbilities().stream().filter(namespacedKey -> !McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey).isPassive()).collect(Collectors.toSet());
+        return getAvailableAbilities().stream().filter(namespacedKey -> !McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey).isPassive()).collect(Collectors.toSet());
     }
 
     /**
@@ -158,7 +161,7 @@ public class LoadoutHolder extends AbilityHolder {
      * that are 'default abilities', or ones that don't require unlocking to use.
      */
     private Set<NamespacedKey> getAvailableDefaultAbilities() {
-        return getAvailableAbilities().stream().filter(namespacedKey -> !(McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)).collect(Collectors.toSet());
+        return getAvailableAbilities().stream().filter(namespacedKey -> !(McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)).collect(Collectors.toSet());
     }
 
     /**
@@ -167,6 +170,6 @@ public class LoadoutHolder extends AbilityHolder {
      * @return The maximum amount of {@link Loadout}s that this holder can have.
      */
     public int getMaxLoadoutAmount() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
     }
 }

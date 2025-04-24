@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.impl.swords;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.entity.Entity;
@@ -13,6 +14,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.component.OnAttackLevelableComponent;
 import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
 
@@ -35,7 +38,7 @@ public class SwordsSkillComponents {
         public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
             McRPG mcRPG = McRPG.getInstance();
             EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast since can only be called after checks are done
-            Swords swords = (Swords) McRPG.getInstance().getSkillRegistry().getRegisteredSkill(Swords.SWORDS_KEY);
+            Swords swords = (Swords) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(Swords.SWORDS_KEY);
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
             double damage = entityDamageByEntityEvent.getFinalDamage();
@@ -43,7 +46,7 @@ public class SwordsSkillComponents {
             EntityDamageContext entityDamageContext = new EntityDamageContext(skillHolder, swords, baseExperience, entityDamageByEntityEvent);
 
             if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
-                return (int) (baseExperience * McRPG.getInstance().getExperienceModifierRegistry().calculateModifierForContext(entityDamageContext));
+                return (int) (baseExperience * McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).calculateModifierForContext(entityDamageContext));
             }
 
             return 0;
@@ -78,7 +81,7 @@ public class SwordsSkillComponents {
             if (!ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.containsKey(entityType)) {
                 ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.put(entityType, Route.addTo(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, entityType.toString()));
             }
-            YamlDocument swordsFile = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
             return swordsFile.getInt(ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.get(entityType), 0);
         }
     }

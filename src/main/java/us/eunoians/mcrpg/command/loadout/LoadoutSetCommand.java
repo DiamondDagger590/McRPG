@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.command.loadout;
 
-import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -12,8 +13,9 @@ import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * This command sets the player's current {@link us.eunoians.mcrpg.loadout.Loadout} to
@@ -22,7 +24,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 public class LoadoutSetCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         commandManager.command(commandManager.commandBuilder("loadout")
                 .literal("set")
@@ -34,17 +36,15 @@ public class LoadoutSetCommand extends McRPGCommandBase {
                     int loadoutSlot = commandContext.get(amountKey);
                     if (commandSender instanceof Player player) {
                         Audience audience = McRPG.getInstance().getAdventure().player(player);
-                        PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
-                        playerManager.getPlayer(player.getUniqueId()).ifPresent(corePlayer -> {
-                            if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
-                                LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
-                                if (!loadoutHolder.hasLoadout(loadoutSlot)) {
-                                    audience.sendMessage(miniMessage.deserialize("<red>You do not have a loadout slot with that id."));
-                                    return;
-                                }
-                                loadoutHolder.setCurrentLoadoutSlot(loadoutSlot);
-                                audience.sendMessage(miniMessage.deserialize("<gray>Your active loadout is now <gold>loadout #" + loadoutSlot + "</gold>.</gray>"));
+                        McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+                        playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
+                            LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
+                            if (!loadoutHolder.hasLoadout(loadoutSlot)) {
+                                audience.sendMessage(miniMessage.deserialize("<red>You do not have a loadout slot with that id."));
+                                return;
                             }
+                            loadoutHolder.setCurrentLoadoutSlot(loadoutSlot);
+                            audience.sendMessage(miniMessage.deserialize("<gray>Your active loadout is now <gold>loadout #" + loadoutSlot + "</gold>.</gray>"));
                         });
                     }
                 }));

@@ -110,7 +110,7 @@ public class AbilityGui extends PaginatedSortedAbilityGui  {
         List<Ability> sortedAbilities = getSortedAbilitiesForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedAbilities.size()) {
-                setSlot(i, new AbilitySlot(getMcRPGPlayer(), sortedAbilities.get(i)));
+                setSlot(i, new AbilitySlot(getCreatingPlayer(), sortedAbilities.get(i)));
             } else {
                 removeSlot(i);
             }
@@ -120,7 +120,7 @@ public class AbilityGui extends PaginatedSortedAbilityGui  {
     @Override
     @NotNull
     public Set<NamespacedKey> getUnsortedAbilities() {
-        return getMcRPGPlayer().asSkillHolder().getAvailableAbilities();
+        return getCreatingPlayer().asSkillHolder().getAvailableAbilities();
     }
 
     @Override

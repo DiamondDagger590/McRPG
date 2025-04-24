@@ -2,29 +2,34 @@ package us.eunoians.mcrpg.skill.experience.rested;
 
 import com.diamonddagger590.mccore.configuration.ReloadableParser;
 import com.diamonddagger590.mccore.parser.Parser;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Set;
 
 /**
  * This manager handles calculating and awarding rested experience for players.
  */
-public class RestedExperienceManager {
+public class RestedExperienceManager extends Manager<McRPG> {
 
-    private final McRPG mcRPG;
     private final ReloadableParser normalAccumulationRate;
     private final ReloadableParser safeZoneAccumulationRate;
 
     public RestedExperienceManager(@NotNull McRPG plugin) {
-        this.mcRPG = plugin;
-        this.normalAccumulationRate = new ReloadableParser(mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG), MainConfigFile.RESTED_EXPERIENCE_ACCUMULATION_RATE);
-        this.safeZoneAccumulationRate = new ReloadableParser(mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG), MainConfigFile.SAFE_ZONE_ACCUMULATION_RATE);
-        mcRPG.getReloadableContentRegistry().trackReloadableContent(Set.of(normalAccumulationRate, safeZoneAccumulationRate));
+        super(plugin);
+        FileManager fileManager = plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        this.normalAccumulationRate = new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.RESTED_EXPERIENCE_ACCUMULATION_RATE);
+        this.safeZoneAccumulationRate = new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.SAFE_ZONE_ACCUMULATION_RATE);
+        plugin.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).trackReloadableContent(Set.of(normalAccumulationRate, safeZoneAccumulationRate));
     }
 
     /**
@@ -52,7 +57,7 @@ public class RestedExperienceManager {
      * @param safeZone      If the safe zone equation should be used or not.
      */
     public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, int timeInSeconds, boolean safeZone) {
-        boolean useSafeZone = safeZone && mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION);
+        boolean useSafeZone = safeZone && plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION);
         awardRestedExperience(mcRPGPlayer, getRestedExperience(timeInSeconds, useSafeZone));
     }
 
@@ -66,7 +71,7 @@ public class RestedExperienceManager {
     public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience) {
         PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
         double currentRestedExperience = playerExperienceExtras.getRestedExperience();
-        double maxAccumulation = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
+        double maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
         // If they have over the limit (theyve accumulated before and the limit got lowered or something), then leave it alone
         if (currentRestedExperience >= maxAccumulation) {
             return;

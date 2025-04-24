@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
 import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
 import org.bukkit.Bukkit;
@@ -17,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectionSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
@@ -30,7 +30,7 @@ import java.util.Optional;
  * This gui displays all the player's {@link Loadout}s, where they can select individual loadouts
  * to edit.
  */
-public class LoadoutSelectionGui extends McRPGPaginatedGui {
+public class LoadoutSelectionGui extends PaginatedGui<McRPGPlayer> {
 
     private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int NAVIGATION_ROW_START_INDEX = 9;
@@ -111,14 +111,14 @@ public class LoadoutSelectionGui extends McRPGPaginatedGui {
 
     private void paintLoadouts(int page) {
         List<Loadout> loadouts = new ArrayList<>();
-        LoadoutHolder loadoutHolder = getMcRPGPlayer().asSkillHolder();
+        LoadoutHolder loadoutHolder = getCreatingPlayer().asSkillHolder();
         for (int i = 1; i <= loadoutHolder.getMaxLoadoutAmount(); i++) {
             loadouts.add(loadoutHolder.getLoadout(i));
         }
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < loadouts.size()) {
                 Loadout loadout = loadouts.get(i);
-                LoadoutSelectionSlot loadoutSelectionSlot = new LoadoutSelectionSlot(getMcRPGPlayer(), loadout);
+                LoadoutSelectionSlot loadoutSelectionSlot = new LoadoutSelectionSlot(getCreatingPlayer(), loadout);
                 setSlot(i, loadoutSelectionSlot);
             }
             else {
@@ -129,7 +129,7 @@ public class LoadoutSelectionGui extends McRPGPaginatedGui {
 
     @Override
     public int getMaximumPage() {
-        return Math.max(1, getMcRPGPlayer().asSkillHolder().getMaxLoadoutAmount() / 9);
+        return Math.max(1, getCreatingPlayer().asSkillHolder().getMaxLoadoutAmount() / 9);
     }
 
     @Override

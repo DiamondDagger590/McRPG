@@ -1,8 +1,7 @@
 package us.eunoians.mcrpg.ability.attribute;
 
-import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import net.kyori.adventure.text.Component;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -18,9 +17,9 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,11 +29,11 @@ import java.util.Set;
 public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAttribute<Set<Material>> implements GuiModifiableAttribute {
 
     RemoteTransferMaterialSetAttribute() {
-        super("material_set", AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE);
+        super("material_set", AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE);
     }
 
     public RemoteTransferMaterialSetAttribute(@NotNull Set<Material> set) {
-        super("material_set", AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE, set);
+        super("material_set", AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE, set);
     }
 
     @Override
@@ -83,7 +82,7 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
         return new McRPGSlot() {
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
+                var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
                 if (mcRPGPlayer.getAsBukkitPlayer().isPresent()
                         && guiOptional.isPresent() && guiOptional.get() instanceof AbilityEditGui abilityEditGui) {
                     abilityEditGui.setIgnoreClose(true);
@@ -93,7 +92,7 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
                     Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), new Runnable() {
                         @Override
                         public void run() {
-                            McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, remoteTransferGui);
+                            mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, remoteTransferGui);
                             player.openInventory(remoteTransferGui.getInventory());
                         }
                     }, 1L);
@@ -108,7 +107,7 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
                 ItemStack itemStack = new ItemStack(Material.CHEST);
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 itemMeta.displayName(miniMessage.deserialize("<gold>Block Filter"));
-                itemMeta.lore(getGuiLore(player, ability));
+//                itemMeta.lore(getGuiLore(player, ability));
                 itemStack.setItemMeta(itemMeta);
                 return ItemBuilder.from(itemStack);
             }
@@ -120,10 +119,10 @@ public class RemoteTransferMaterialSetAttribute extends OptionalSavingAbilityAtt
         };
     }
 
-    @NotNull
-    @Override
-    public List<Component> getGuiLore(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        return List.of(miniMessage.deserialize("<gray>Click to filter blocks for <gold>Remote Transfer</gold>."));
-    }
+//    @NotNull
+//    @Override
+//    public List<Component> getGuiLore(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
+//        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+//        return List.of(miniMessage.deserialize("<gray>Click to filter blocks for <gold>Remote Transfer</gold>."));
+//    }
 }

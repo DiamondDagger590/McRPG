@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.listener.skill;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -9,6 +10,8 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
@@ -32,12 +35,12 @@ public interface SkillListener extends Listener {
      */
     default void levelSkill(@NotNull UUID uuid, @NotNull Event event) {
         McRPG mcRPG = McRPG.getInstance();
-        EntityManager entityManager = mcRPG.getEntityManager();
-        SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
+        EntityManager entityManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+        SkillRegistry skillRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL);
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
 
             // Validate that the holder specific context allows for McRPG to be used here.
-            if (!mcRPG.getWorldManager().isMcRPGEnabledForHolder(abilityHolder)) {
+            if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
             }
 
@@ -51,7 +54,7 @@ public interface SkillListener extends Listener {
                             if (exp > 0) {
                                 var eventContextOptional = getEventContext(skillHolder, skill, exp, event);
                                 if (eventContextOptional.isPresent()) {
-                                    double modifier = Math.min(mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.EXPERIENCE_MULTIPLIER_LIMIT), mcRPG.getExperienceModifierRegistry().calculateModifierForContext(eventContextOptional.get()));
+                                    double modifier = Math.min(mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.EXPERIENCE_MULTIPLIER_LIMIT), mcRPG.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).calculateModifierForContext(eventContextOptional.get()));
                                     exp = (int) (exp * modifier);
                                 }
                                 skillHolderData.addExperience(exp);

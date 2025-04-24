@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
-import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayHomeGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +69,7 @@ public class ToggleLoadoutActiveSlot extends McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
+        var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             if (!isLoadoutActive()) {
                 player.performCommand("loadout set " + loadout.getLoadoutSlot());

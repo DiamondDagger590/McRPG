@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.external.worldguard;
 
+import com.diamonddagger590.mccore.registry.plugin.PluginHook;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.WorldGuard;
@@ -15,20 +16,17 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.exception.external.worldguard.WorldGuardFlagRegisterException;
 
-import java.util.Optional;
-
 /**
  * A hook for containing all code related to <a href="https://modrinth.com/plugin/worldguard/versions">WorldGuard</a> that McRPG
  * needs in order to support it.
  */
-public class WorldGuardHook {
+public class WorldGuardHook extends PluginHook<McRPG> {
 
     private static final String SAFE_ZONE_FLAG_KEY = "mcrpg-safe-zone";
-    private final McRPG plugin;
     private StateFlag safeZoneFlag;
 
     public WorldGuardHook(McRPG plugin) {
-        this.plugin = plugin;
+        super(plugin);
         loadCustomFlags();
     }
 
@@ -50,18 +48,6 @@ public class WorldGuardHook {
                 throw new WorldGuardFlagRegisterException(SAFE_ZONE_FLAG_KEY);
             }
         }
-    }
-
-    /**
-     * Gets the {@link StateFlag} used to represent if something is a safe zone or not
-     * for McRPG.
-     *
-     * @return An {@link Optional} containing a {@link StateFlag} used to represent if something is a safe
-     * zone or not, or it will be empty if there was an issue loading it.
-     */
-    @NotNull
-    public Optional<StateFlag> getSafeZoneFlag() {
-        return Optional.ofNullable(safeZoneFlag);
     }
 
     /**

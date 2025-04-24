@@ -1,11 +1,14 @@
 package us.eunoians.mcrpg.ability.impl;
 
 import com.diamonddagger590.mccore.builder.item.ItemBuilderConfigurationKeys;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.builder.item.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * This interface represents an {@link Ability} that has configuration that comes out of
@@ -21,24 +24,37 @@ public interface ConfigurableAbility extends Ability {
     @NotNull
     YamlDocument getYamlDocument();
 
+    /**
+     * Gets the {@link Route} containing the {@link dev.dejvokep.boostedyaml.block.implementation.Section}
+     * for the ability's display item.
+     *
+     * @return The {@link Route} containing the {@link dev.dejvokep.boostedyaml.block.implementation.Section}
+     * for the ability's display item.
+     */
     @NotNull
     Route getDisplayItemRoute();
 
     @NotNull
     @Override
     default String getName(@NotNull McRPGPlayer player) {
-        return player.getPlugin().getLocalizationManager().getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), "ability-name"));
+        return player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), "ability-name"));
+    }
+
+    @NotNull
+    @Override
+    default String getName(){
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(Route.addTo(getDisplayItemRoute(), "ability-name"));
     }
 
     @NotNull
     @Override
     default AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-        return AbilityItemBuilder.from(player.getPlugin().getLocalizationManager().getLocalizedSection(player, getDisplayItemRoute()), player, this);
+        return AbilityItemBuilder.from(player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(player, getDisplayItemRoute()), player, this);
     }
 
     @NotNull
     @Override
     default String getDisplayName(@NotNull McRPGPlayer player) {
-        return player.getPlugin().getLocalizationManager().getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+        return player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
     }
 }

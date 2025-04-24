@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.woodcutting.NymphsVitalityActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -127,7 +128,7 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
+        return getPlugin().registryAccess().registry(com.diamonddagger590.mccore.registry.RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
     }
 
     @NotNull

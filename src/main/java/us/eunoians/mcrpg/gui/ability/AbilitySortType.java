@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.gui.ability;
 
-import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
@@ -16,8 +16,9 @@ import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.util.filter.ability.AbilityUpgradeFilter;
@@ -46,7 +47,7 @@ public enum AbilitySortType {
             Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
-                SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+                SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
                 Optional<Skill> skillOptional = Optional.ofNullable(ability.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability.getSkill().get()) : null);
                 Optional<Skill> skillOptional1 = Optional.ofNullable(ability1.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability1.getSkill().get()) : null);
                 // If one of these has a skill but the other doesn't, then we want to prioritize the one that has the skill first
@@ -68,7 +69,7 @@ public enum AbilitySortType {
             Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
-                SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+                SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
                 Optional<Skill> skillOptional = Optional.ofNullable(ability.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability.getSkill().get()) : null);
                 Optional<Skill> skillOptional1 = Optional.ofNullable(ability1.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability1.getSkill().get()) : null);
                 // If one of these has a skill but the other doesn't, then we want to prioritize the one that has the skill first
@@ -161,14 +162,14 @@ public enum AbilitySortType {
         return new McRPGSlot() {
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
+                var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
                 guiOptional.ifPresent(gui -> {
                     // If it's a sortable gui, progress node
                     if (gui instanceof SortableAbilityGui sortableAbilityGui) {
                         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
                             sortableAbilityGui.progressToNextSortNode();
                             // If it's a paginated gui, reset page
-                            if (gui instanceof McRPGPaginatedGui paginatedGui) {
+                            if (gui instanceof PaginatedGui<?> paginatedGui) {
                                 paginatedGui.setPage(1);
                             }
                             // Refresh gui
@@ -181,8 +182,8 @@ public enum AbilitySortType {
 
             @NotNull
             @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(McRPG.getInstance().getLocalizationManager().getLocalizedSection(mcRPGPlayer, displayItemRoute));
+            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, displayItemRoute));
             }
         };
     }

@@ -2,6 +2,8 @@ package us.eunoians.mcrpg.command.admin.reset;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
@@ -19,6 +21,8 @@ import us.eunoians.mcrpg.command.parser.SkillParser;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.sql.Connection;
@@ -33,7 +37,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
     private static final Permission RESET_SKILL_PERMISSION = Permission.of("mcrpg.admin.reset.skill");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -52,7 +56,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
 
-                            Optional<McRPGPlayer> playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(player.getUniqueId());
+                            Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                             if (playerOptional.isPresent()) {
                                 McRPGPlayer mcRPGPlayer = playerOptional.get();
                                 SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
@@ -72,7 +76,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                         try (Connection connection = database.getConnection()) {
                                             FailSafeTransaction failsafeTransaction = new FailSafeTransaction(connection);
                                             failsafeTransaction.addAll(SkillDAO.savePlayerSkillData(connection, skillHolder, skillHolderData.getSkillKey()));
-                                            failsafeTransaction.addAll(SkillDAO.savePlayerAbilityAttributes(connection, skillHolder, McRPG.getInstance().getAbilityRegistry().getAbilitiesBelongingToSkill(skill)));
+                                            failsafeTransaction.addAll(SkillDAO.savePlayerAbilityAttributes(connection, skillHolder, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getAbilitiesBelongingToSkill(skill)));
                                             failsafeTransaction.executeTransaction();
                                         } catch (SQLException e) {
                                             e.printStackTrace();

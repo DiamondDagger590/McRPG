@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.objective;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.google.common.collect.ImmutableSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.quest.Quest;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -139,7 +141,7 @@ public class EntitySlayQuestObjective extends QuestObjective {
     public void onEntityDeath(EntityDeathEvent entityDeathEvent) {
         Player player = entityDeathEvent.getEntity().getKiller();
         if (player != null) {
-            var questHolderOptional = McRPG.getInstance().getEntityManager().getQuestHolder(player.getUniqueId());
+            var questHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getQuestHolder(player.getUniqueId());
             if (questHolderOptional.isPresent()) {
                 var questHolder = questHolderOptional.get();
                 if (questHolder.isQuestActive(getQuest()) && canProcessEvent(questHolder, entityDeathEvent)) {

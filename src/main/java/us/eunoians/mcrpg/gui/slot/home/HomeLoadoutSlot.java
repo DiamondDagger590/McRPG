@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.slot.home;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -13,6 +14,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.HomeGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutSelectionGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Set;
@@ -26,7 +28,7 @@ public class HomeLoadoutSlot extends McRPGSlot {
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
             LoadoutSelectionGui loadoutSelectionGui = new LoadoutSelectionGui(mcRPGPlayer);
-            McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutSelectionGui);
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutSelectionGui);
             mcRPGPlayer.getAsBukkitPlayer().get().openInventory(loadoutSelectionGui.getInventory());
         }
         return true;

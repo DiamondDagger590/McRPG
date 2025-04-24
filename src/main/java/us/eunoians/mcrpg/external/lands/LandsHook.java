@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.external.lands;
 
+
+import com.diamonddagger590.mccore.registry.plugin.PluginHook;
 import me.angeschossen.lands.api.LandsIntegration;
 import me.angeschossen.lands.api.land.Area;
 import org.bukkit.entity.Player;
@@ -10,13 +12,12 @@ import us.eunoians.mcrpg.McRPG;
  * A hook for containing all code related to <a href="https://www.spigotmc.org/resources/lands-%E2%AD%95-land-claim-plugin-%E2%9C%85-grief-prevention-protection-gui-management-nations-wars-1-21-support.53313/">Lands</a>
  * that McRPG needs in order to support it.
  */
-public class LandsHook {
+public class LandsHook extends PluginHook {
 
-    private final McRPG plugin;
     private final LandsIntegration landsIntegration;
 
     public LandsHook(@NotNull McRPG plugin) {
-        this.plugin = plugin;
+        super(plugin);
         this.landsIntegration = LandsIntegration.of(plugin);
     }
 

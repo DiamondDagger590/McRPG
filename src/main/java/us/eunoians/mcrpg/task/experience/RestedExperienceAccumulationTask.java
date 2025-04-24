@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.task.experience;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +10,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 
 import java.util.Arrays;
@@ -28,9 +31,9 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
     public RestedExperienceAccumulationTask(@NotNull McRPG mcRPG, double taskDelay, double taskFrequency) {
         super(mcRPG, taskDelay, taskFrequency);
         this.playersLastUpdated = new HashSet<>();
-        this.onlineAccumulationType = new ReloadableContent<>(mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG), MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION,
+        this.onlineAccumulationType = new ReloadableContent<>(mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG), MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION,
                 (yamlDocument, route) -> OnlineAccumulationType.fromString(yamlDocument.getString(route)).orElse(OnlineAccumulationType.DISABLED));
-        mcRPG.getReloadableContentRegistry().trackReloadableContent(onlineAccumulationType);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT).trackReloadableContent(onlineAccumulationType);
     }
 
     @NotNull
@@ -57,12 +60,12 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
     @Override
     protected void onIntervalComplete() {
         Set<UUID> currentPlayers = new HashSet<>();
-        RestedExperienceManager restedExperienceManager = getPlugin().getRestedExperienceManager();
+        RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
         double duration = getTaskFrequency();
         // Ensure we allow online accumulation
         if (onlineAccumulationType.getContent() != OnlineAccumulationType.DISABLED) {
             // Check all players
-            for (CorePlayer corePlayer : getPlugin().getPlayerManager().getAllPlayers()) {
+            for (CorePlayer corePlayer : getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
                 currentPlayers.add(corePlayer.getUUID());
                 // If the player was online last time, then we can award experience
                 if (playersLastUpdated.contains(corePlayer.getUUID()) && corePlayer instanceof McRPGPlayer mcRPGPlayer) {
@@ -72,7 +75,9 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
                         boolean inSafeZone = false;
                         // ENABLED and SAFE_ZONE_ONLY support safe zones so we can first check for
                         // safe zone accumulation
-                        if (mcRPGPlayer.isStandingInSafeZone() && getPlugin().getSafeZoneManager().isPlayerInSafeZone(player) && getPlugin().getFileManager().getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
+                        if (mcRPGPlayer.isStandingInSafeZone()
+                                && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.SAFE_ZONE).isPlayerInSafeZone(player)
+                                && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
                             inSafeZone = true;
                         }
                         // If normal online accumulation isn't enabled and we aren't in a safe zone, then we aren't going to award anything.

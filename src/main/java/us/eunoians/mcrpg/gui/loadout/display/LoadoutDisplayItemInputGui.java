@@ -3,7 +3,9 @@ package us.eunoians.mcrpg.gui.loadout.display;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
+import com.diamonddagger590.mccore.gui.BaseGui;
 import com.diamonddagger590.mccore.gui.ClosableGui;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -16,11 +18,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.McRPGGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayCancelItemEditSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayItemConfirmSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +30,7 @@ import java.util.Set;
 /**
  * This GUI is used to allow players to input an item that they want to display
  */
-public class LoadoutDisplayItemInputGui extends McRPGGui implements ClosableGui {
+public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
 
     private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final McRPGSlot PURPLE_GLASS_SLOT;
@@ -142,8 +144,8 @@ public class LoadoutDisplayItemInputGui extends McRPGGui implements ClosableGui 
         }
         // Open the new inventory after a tick delay
         Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), () -> {
-            LoadoutDisplayHomeGui loadoutDisplayHomeGui = new LoadoutDisplayHomeGui(getMcRPGPlayer(), loadout);
-            McRPG.getInstance().getGuiTracker().trackPlayerGui(getMcRPGPlayer(), loadoutDisplayHomeGui);
+            LoadoutDisplayHomeGui loadoutDisplayHomeGui = new LoadoutDisplayHomeGui(getCreatingPlayer(), loadout);
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(getCreatingPlayer(), loadoutDisplayHomeGui);
             player.openInventory(loadoutDisplayHomeGui.getInventory());
         }, 1L);
     }

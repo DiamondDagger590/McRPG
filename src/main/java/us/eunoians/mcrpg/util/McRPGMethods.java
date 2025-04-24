@@ -1,11 +1,13 @@
 package us.eunoians.mcrpg.util;
 
 import com.diamonddagger590.mccore.parser.Parser;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 
 import java.text.NumberFormat;
 
@@ -61,6 +63,6 @@ public class McRPGMethods {
      */
     @NotNull
     public static Parser parseWithPapi(@NotNull Parser parser, @NotNull OfflinePlayer offlinePlayer) {
-        return McRPG.getInstance().getPapiHook().map(papiHook -> new Parser(papiHook.translateMessage(offlinePlayer, parser.getInputString()))).orElse(parser);
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.PAPI).map(papiHook -> new Parser(papiHook.translateMessage(offlinePlayer, parser.getInputString()))).orElse(parser);
     }
 }

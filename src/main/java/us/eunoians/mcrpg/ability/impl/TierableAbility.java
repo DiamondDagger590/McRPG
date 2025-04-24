@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.ability.impl;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.quest.Quest;
@@ -14,6 +14,7 @@ import java.util.Set;
  * with tiers SHOUlD be {@link UnlockableAbility UnlockableAbilities}, thus why this provides
  * extended functionality.
  */
+// TODO this shouldnt need to be skill/level based. Why not allow tier progression from other ways
 public interface TierableAbility extends UnlockableAbility {
 
     /**
@@ -55,10 +56,10 @@ public interface TierableAbility extends UnlockableAbility {
     @NotNull
     @Override
     default Set<NamespacedKey> getApplicableAttributes() {
-        return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
-                AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE,
-                AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY,
-                AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+        return Set.of(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
+                AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE,
+                AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY,
+                AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
     }
 
     /**
@@ -70,7 +71,7 @@ public interface TierableAbility extends UnlockableAbility {
         var abilityData = abilityHolder.getAbilityData(this);
         int currentTier = 0;
         if (abilityData.isPresent()) {
-            var attributeData = abilityData.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
+            var attributeData = abilityData.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY);
             if (attributeData.isPresent() && attributeData.get() instanceof AbilityTierAttribute attribute) {
                 currentTier = attribute.getContent();
             }

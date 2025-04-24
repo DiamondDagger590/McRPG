@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.gui.slot.setting;
 
-import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.PlayerSettingGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;
 import java.util.Set;
@@ -36,8 +37,8 @@ public abstract class PlayerSettingSlot<T extends PlayerSetting> extends McRPGSl
     }
 
     @Override
-    public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer);
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             mcRPGPlayer.setPlayerSetting(setting.getNextSetting().getNodeValue());
             gui.refreshGUI();

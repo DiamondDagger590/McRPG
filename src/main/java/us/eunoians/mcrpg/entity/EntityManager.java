@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.entity;
 
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -17,15 +18,13 @@ import java.util.UUID;
  * than just an {@link AbilityHolder}, such as an {@link us.eunoians.mcrpg.entity.holder.SkillHolder} in the
  * instance of a tracked {@link us.eunoians.mcrpg.entity.player.McRPGPlayer}.
  */
-public class EntityManager {
-
-    private final McRPG mcRPG;
+public class EntityManager extends Manager<McRPG> {
 
     private final Map<UUID, AbilityHolder> abilityHolderMap;
     private final Map<UUID, QuestHolder> questHolderMap;
 
     public EntityManager(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+        super(mcRPG);
         this.abilityHolderMap = new HashMap<>();
         this.questHolderMap = new HashMap<>();
     }

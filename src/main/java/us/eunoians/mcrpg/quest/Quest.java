@@ -5,12 +5,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.event.quest.QuestStartEvent;
-import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.exception.quest.QuestMissingObjectiveException;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.quest.objective.QuestObjective;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashSet;
 import java.util.List;
@@ -106,7 +108,7 @@ public class Quest implements McRPGContent {
      * @param uuid The {@link UUID} to add.
      */
     public void addQuestHolder(@NotNull UUID uuid) {
-        McRPG.getInstance().getQuestManager().addHolderToQuest(uuid, getUUID());
+        McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).addHolderToQuest(uuid, getUUID());
     }
 
     /**
@@ -126,12 +128,12 @@ public class Quest implements McRPGContent {
      * @return {@code true} if the provided {@link UUID} is someone working on this quest.
      */
     public boolean doesQuestHaveHolder(@NotNull UUID uuid) {
-        return McRPG.getInstance().getQuestManager().doesQuestHaveHolder(uuid, getUUID());
+        return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).doesQuestHaveHolder(uuid, getUUID());
     }
 
     @NotNull
     public Set<UUID> getQuestHolders() {
-        return McRPG.getInstance().getQuestManager().getQuestHoldersForQuest(this);
+        return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).getQuestHoldersForQuest(this);
     }
 
     public void removeQuestHolder(@NotNull QuestHolder questHolder) {
@@ -139,7 +141,7 @@ public class Quest implements McRPGContent {
     }
 
     public void removeQuestHolder(@NotNull UUID uuid) {
-        McRPG.getInstance().getQuestManager().removeHolderFromQuest(uuid, getUUID());
+        McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).removeHolderFromQuest(uuid, getUUID());
     }
 
     public double getQuestProgress() {

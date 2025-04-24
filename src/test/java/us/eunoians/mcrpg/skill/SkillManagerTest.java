@@ -33,9 +33,9 @@ public class SkillManagerTest {
         plugin = spy(MockBukkit.load(McRPG.class));
         // Isolate skill registry
         skillRegistry = new SkillRegistry(plugin);
-        when(plugin.getSkillRegistry()).thenReturn(skillRegistry);
+        when(plugin.registryAccess().registry(McRPGRegistryKey.SKILL)).thenReturn(skillRegistry);
         skillKey = new NamespacedKey(plugin, "test");
-        skillRegistry = plugin.getSkillRegistry();
+        skillRegistry = plugin.registryAccess().registry(McRPGRegistryKey.SKILL);
     }
 
     @AfterAll
@@ -51,43 +51,43 @@ public class SkillManagerTest {
     @Test
     public void testIsSkillRegistered() {
         Skill skill = new MockSkill(skillKey);
-        skillRegistry.registerSkill(skill);
-        assertTrue(skillRegistry.isSkillRegistered(skill));
+        skillRegistry.register(skill);
+        assertTrue(skillRegistry.registered(skill));
     }
 
     @Test
     public void testIsSkillNotRegistered() {
         Skill skill = new MockSkill(skillKey);
-        assertFalse(plugin.getSkillRegistry().isSkillRegistered(skill));
+        assertFalse(plugin.registryAccess().registry(McRPGRegistryKey.SKILL).isRegistered(skill));
     }
 
     @Test
     public void testUnregisterSkill() {
         Skill skill = new MockSkill(skillKey);
-        skillRegistry.registerSkill(skill);
-        assertTrue(skillRegistry.isSkillRegistered(skill));
+        skillRegistry.register(skill);
+        assertTrue(skillRegistry.registered(skill));
         skillRegistry.unregisterSkill(skill);
-        assertFalse(skillRegistry.isSkillRegistered(skill));
+        assertFalse(skillRegistry.registered(skill));
     }
 
     @Test
     public void testGetSkill() {
         Skill skill = new MockSkill(skillKey);
-        plugin.getSkillRegistry().registerSkill(skill);
-        assertEquals(plugin.getSkillRegistry().getRegisteredSkill(skill.getSkillKey()), skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
+        assertEquals(plugin.registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skill.getSkillKey()), skill);
     }
 
     @Test
     public void testThrowsSkillNotRegisteredException() {
         assertThrows(SkillNotRegisteredException.class, () -> {
-           plugin.getSkillRegistry().getRegisteredSkill(skillKey);
+           plugin.registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillKey);
         });
     }
 
     @Test
     public void testGetSkillKeys() {
         Skill skill = new MockSkill(skillKey);
-        skillRegistry.registerSkill(skill);
+        skillRegistry.register(skill);
         Set<NamespacedKey> skillKeys = skillRegistry.getRegisteredSkillKeys();
         assertEquals(skillKeys.size(), 1);
         assertTrue(skillKeys.contains(skillKey));
@@ -96,7 +96,7 @@ public class SkillManagerTest {
     @Test
     public void testGetRegisteredSkills() {
         Skill skill = new MockSkill(skillKey);
-        skillRegistry.registerSkill(skill);
+        skillRegistry.register(skill);
         Set<Skill> skills = skillRegistry.getRegisteredSkills();
         assertEquals(skills.size(), 1);
         assertTrue(skills.contains(skill));

@@ -1,17 +1,19 @@
 package us.eunoians.mcrpg.task.player;
 
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This task will run continually in the background to save player data
@@ -47,10 +49,7 @@ public final class McRPGPlayerSaveTask extends CancellableCoreTask {
     @Override
     protected void onIntervalComplete() {
         // Get a copy of all online players that need to be saved
-        Set<McRPGPlayer> players = getPlugin().getPlayerManager().getAllPlayers().stream()
-                .filter(corePlayer -> corePlayer instanceof McRPGPlayer)
-                .map(corePlayer -> (McRPGPlayer) corePlayer)
-                .collect(Collectors.toSet());
+        Set<McRPGPlayer> players = new HashSet<>(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers());
         try (Connection connection = getPlugin().getDatabase().getConnection()) {
             BatchTransaction lastSeenTimeTransaction = new BatchTransaction(connection);
             Instant lastSeenTime = Instant.now();

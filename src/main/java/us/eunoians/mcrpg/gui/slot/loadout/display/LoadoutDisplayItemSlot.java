@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.slot.loadout.display;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -12,6 +13,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayItemInputGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class LoadoutDisplayItemSlot extends McRPGSlot {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             player.closeInventory();
             LoadoutDisplayItemInputGui loadoutDisplayItemInputGui = new LoadoutDisplayItemInputGui(mcRPGPlayer, loadout);
-            McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutDisplayItemInputGui);
+            mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutDisplayItemInputGui);
             player.openInventory(loadoutDisplayItemInputGui.getInventory());
         });
         return true;

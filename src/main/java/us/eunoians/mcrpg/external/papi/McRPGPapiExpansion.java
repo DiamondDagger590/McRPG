@@ -22,7 +22,7 @@ public class McRPGPapiExpansion extends PlaceholderExpansion {
 
     private final Map<String, McRPGPlaceholder> placeholders = new HashMap<>();
 
-    public McRPGPapiExpansion(@NotNull McRPG mcRPG) {
+    McRPGPapiExpansion(@NotNull McRPG mcRPG) {
         Arrays.stream(McRPGPlaceHolderType.values()).forEach(mcRPGPlaceHolderType -> mcRPGPlaceHolderType.registerPlaceholders(mcRPG, this));
     }
 

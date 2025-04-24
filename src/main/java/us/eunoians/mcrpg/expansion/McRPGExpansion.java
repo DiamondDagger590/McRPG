@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.expansion;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -26,6 +27,7 @@ import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.localization.NativeLocale;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
@@ -62,7 +64,7 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     @Override
     public String getExpansionName(@NotNull McRPGPlayer player) {
-        return mcRPG.getLocalizationManager().getLocalizedMessage(player, LocalizationKeys.MCRPG_EXPANSION_NAME);
+        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, LocalizationKeys.MCRPG_EXPANSION_NAME);
     }
 
     /**

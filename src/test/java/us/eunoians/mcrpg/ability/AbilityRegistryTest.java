@@ -38,7 +38,7 @@ public class AbilityRegistryTest {
         serverMock = MockBukkit.mock();
         plugin = spy(MockBukkit.load(McRPG.class));
         abilityRegistry = new AbilityRegistry(plugin);
-        when(plugin.getAbilityRegistry()).thenReturn(abilityRegistry);
+        when(plugin.registryAccess().registry(McRPGRegistryKey.ABILITY)).thenReturn(abilityRegistry);
         abilityKey = new NamespacedKey(plugin, "test");
         skillKey = new NamespacedKey(plugin, "test-skill");
     }
@@ -49,46 +49,46 @@ public class AbilityRegistryTest {
     }
 
     @AfterEach
-    public void unregisterAbility() {
+    public void unregister() {
         abilityRegistry.unregisterAbility(abilityKey);
     }
 
     @Test
-    public void testIsAbilityRegistered() {
+    public void testRegistered() {
         BaseAbility ability = new MockAbility(plugin, abilityKey);
-        abilityRegistry.registerAbility(ability);
-        assertTrue(abilityRegistry.isAbilityRegistered(ability));
+        abilityRegistry.register(ability);
+        assertTrue(abilityRegistry.registered(ability));
     }
 
     @Test
     public void testIsAbilityNotRegistered() {
         BaseAbility ability = new MockAbility(plugin, abilityKey);
-        assertFalse(abilityRegistry.isAbilityRegistered(ability));
+        assertFalse(abilityRegistry.registered(ability));
     }
 
     @Test
-    public void testUnregisterAbility() {
+    public void testUnregister() {
         BaseAbility ability = new MockAbility(plugin, abilityKey);
-        abilityRegistry.registerAbility(ability);
-        assertTrue(abilityRegistry.isAbilityRegistered(ability));
+        abilityRegistry.register(ability);
+        assertTrue(abilityRegistry.registered(ability));
         abilityRegistry.unregisterAbility(abilityKey);
-        assertFalse(abilityRegistry.isAbilityRegistered(ability));
+        assertFalse(abilityRegistry.registered(ability));
     }
 
     @Test
-    public void testUnregisterAbilityWithSkill() {
+    public void testUnregisterWithSkill() {
         BaseAbility ability = new MockAbility(plugin, abilityKey, skillKey);
-        abilityRegistry.registerAbility(ability);
-        assertTrue(abilityRegistry.isAbilityRegistered(ability));
+        abilityRegistry.register(ability);
+        assertTrue(abilityRegistry.registered(ability));
         abilityRegistry.unregisterAbility(abilityKey);
-        assertFalse(abilityRegistry.isAbilityRegistered(ability));
+        assertFalse(abilityRegistry.registered(ability));
     }
 
     @Test
     public void testDoesSkillHaveAbilities() {
         Skill skill = new MockSkill(skillKey);
         BaseAbility ability = new MockAbility(plugin, abilityKey, skillKey);
-        abilityRegistry.registerAbility(ability);
+        abilityRegistry.register(ability);
         assertTrue(abilityRegistry.doesSkillHaveAbilities(skill));
     }
 
@@ -96,7 +96,7 @@ public class AbilityRegistryTest {
     public void testGetAbilitiesBelongingToSkill() {
         Skill skill = new MockSkill(skillKey);
         BaseAbility ability = new MockAbility(plugin, abilityKey, skillKey);
-        abilityRegistry.registerAbility(ability);
+        abilityRegistry.register(ability);
         Set<NamespacedKey> abilities = abilityRegistry.getAbilitiesBelongingToSkill(skill);
         assertEquals(abilities.size(), 1);
         assertTrue(abilities.contains(abilityKey));
@@ -107,8 +107,8 @@ public class AbilityRegistryTest {
         Skill skill = new MockSkill(skillKey);
         BaseAbility skillAbility = new MockAbility(plugin, abilityKey, skillKey);
         BaseAbility noSkillAbility = new MockAbility(plugin, new NamespacedKey(plugin, "no-skill-ability"));
-        abilityRegistry.registerAbility(skillAbility);
-        abilityRegistry.registerAbility(noSkillAbility);
+        abilityRegistry.register(skillAbility);
+        abilityRegistry.register(noSkillAbility);
         Set<NamespacedKey> abilities = abilityRegistry.getAbilitiesBelongingToSkill(skill);
         assertEquals(abilities.size(), 1);
         assertTrue(abilities.contains(abilityKey));
@@ -122,8 +122,8 @@ public class AbilityRegistryTest {
         Skill skill = new MockSkill(skillKey);
         BaseAbility skillAbility = new MockAbility(plugin, abilityKey, skillKey);
         BaseAbility noSkillAbility = new MockAbility(plugin, new NamespacedKey(plugin, "no-skill-ability"));
-        abilityRegistry.registerAbility(skillAbility);
-        abilityRegistry.registerAbility(noSkillAbility);
+        abilityRegistry.register(skillAbility);
+        abilityRegistry.register(noSkillAbility);
         Set<NamespacedKey> abilities = abilityRegistry.getAllAbilities();
         assertEquals(abilities.size(), 2);
         assertTrue(abilities.contains(abilityKey));
@@ -133,7 +133,7 @@ public class AbilityRegistryTest {
     @Test
     public void testGetAbility() {
         BaseAbility ability = new MockAbility(plugin, abilityKey);
-        abilityRegistry.registerAbility(ability);
+        abilityRegistry.register(ability);
         Ability foundAbility = abilityRegistry.getRegisteredAbility(ability.getAbilityKey());
         assertEquals(ability, foundAbility);
     }

@@ -1,10 +1,13 @@
 package us.eunoians.mcrpg.expansion.handler;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * This enum provides all the content pack processors native to McRPG.
@@ -20,7 +23,7 @@ public enum ContentHandlerType {
      */
     SKILL((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof SkillContentPack skillContent) {
-            skillContent.getContent().forEach(skill -> mcRPG.getSkillRegistry().registerSkill(skill));
+            skillContent.getContent().forEach(skill -> mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill));
             return true;
         }
         return false;
@@ -30,7 +33,7 @@ public enum ContentHandlerType {
      */
     ABILITY((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof AbilityContentPack abilityContent) {
-            abilityContent.getContent().forEach(ability -> mcRPG.getAbilityRegistry().registerAbility(ability));
+            abilityContent.getContent().forEach(ability -> mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY).register(ability));
             return true;
         }
         return false;
@@ -40,7 +43,7 @@ public enum ContentHandlerType {
      */
     SETTING((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof PlayerSettingContentPack playerSettingContent) {
-            playerSettingContent.getContent().forEach(playerSetting -> mcRPG.getPlayerSettingRegistry().registerSetting(playerSetting));
+            playerSettingContent.getContent().forEach(playerSetting -> mcRPG.registryAccess().registry(RegistryKey.PLAYER_SETTING).register(playerSetting));
             return true;
         }
         return false;
@@ -50,7 +53,7 @@ public enum ContentHandlerType {
      */
     LOCALIZATION(((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof LocalizationContentPack localizationContent) {
-            localizationContent.getContent().forEach(localization -> mcRPG.getLocalizationManager().registerLanguageFile(localization));
+            localizationContent.getContent().forEach(localization -> mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).registerLanguageFile(localization));
         }
         return false;
     }));

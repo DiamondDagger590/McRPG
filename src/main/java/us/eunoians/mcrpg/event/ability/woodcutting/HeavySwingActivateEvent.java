@@ -7,8 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Set;
 
@@ -18,7 +19,7 @@ import java.util.Set;
 public class HeavySwingActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability HEAVY_SWING = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(HeavySwing.HEAVY_SWING_KEY);
+    private static final Ability HEAVY_SWING = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(HeavySwing.HEAVY_SWING_KEY);
     private Set<Location> toBreakLocations;
     private boolean cancelled = false;
 

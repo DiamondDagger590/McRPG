@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
@@ -20,6 +21,8 @@ import us.eunoians.mcrpg.gui.loadout.LoadoutAbilitySelectGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
@@ -59,11 +62,11 @@ public class LoadoutAbilitySlot extends McRPGSlot {
             if (abilityOptional.isPresent()) {
                 Ability ability = abilityOptional.get();
                 LoadoutAbilitySelectGui loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout, ability.getAbilityKey());
-                McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutAbilitySelectGui);
+                mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutAbilitySelectGui);
                 player.openInventory(loadoutAbilitySelectGui.getInventory());
             } else {
                 LoadoutAbilitySelectGui loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout);
-                McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutAbilitySelectGui);
+                mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutAbilitySelectGui);
                 player.openInventory(loadoutAbilitySelectGui.getInventory());
             }
         });
@@ -78,7 +81,7 @@ public class LoadoutAbilitySlot extends McRPGSlot {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         if (abilityOptional.isPresent() && mcRPGPlayer != null) {
             Ability ability = abilityOptional.get();
-            SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+            SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
             SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
             itemStack = ability.getDisplayItemBuilder(mcRPGPlayer).asItemStack(McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID()));
             ItemMeta itemMeta = itemStack.getItemMeta();
@@ -86,7 +89,7 @@ public class LoadoutAbilitySlot extends McRPGSlot {
 
             List<Component> lore = new ArrayList<>();
             // Add skill information
-            if (ability.getSkill().isPresent() && skillRegistry.isSkillRegistered(ability.getSkill().get())) {
+            if (ability.getSkill().isPresent() && skillRegistry.registered(ability.getSkill().get())) {
                 Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
                 lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
             }

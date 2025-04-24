@@ -1,6 +1,9 @@
 package us.eunoians.mcrpg.world;
 
 import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -14,6 +17,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -26,18 +30,17 @@ import java.util.stream.Collectors;
  * block by definition for McRPG is one that is not placed by a player. Blocks
  * created by world generation, cobble farms etc are all valid.
  */
-public class WorldManager {
+public class WorldManager extends Manager<McRPG> {
 
     private static final NamespacedKey PLACED_KEY = new NamespacedKey(McRPG.getInstance(), "placed");
 
     private final ReloadableSet<String> worlds;
-    private final McRPG mcRPG;
 
     public WorldManager(@NotNull McRPG plugin) {
-        this.mcRPG = plugin;
-        this.worlds = new ReloadableSet<>(mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG), MainConfigFile.DISABLED_WORLDS,
+        super(plugin);
+        this.worlds = new ReloadableSet<>(plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG), MainConfigFile.DISABLED_WORLDS,
                 (strings -> strings.stream().map(string -> string.toLowerCase(Locale.ROOT)).collect(Collectors.toSet())));
-        mcRPG.getReloadableContentRegistry().trackReloadableContent(worlds);
+        plugin().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).trackReloadableContent(worlds);
     }
 
     /**
@@ -47,7 +50,7 @@ public class WorldManager {
      * @return {@code true} if the provided {@link Block} is natural.
      */
     public boolean isBlockNatural(@NotNull Block block) {
-        CustomBlockData customBlockData = new CustomBlockData(block, mcRPG);
+        CustomBlockData customBlockData = new CustomBlockData(block, plugin());
         return !customBlockData.has(PLACED_KEY) || !customBlockData.get(PLACED_KEY, PersistentDataType.BOOLEAN);
     }
 

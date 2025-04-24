@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.command.admin.reset;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
@@ -18,6 +19,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,7 +33,7 @@ public class ResetPlayerCommand extends ResetBaseCommand {
     private static final Permission RESET_PLAYER_PERMISSION = Permission.of("mcrpg.admin.reset.player");
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -48,7 +50,7 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                             Audience receiverAudience = adventure.player(player);
                             McRPG mcRPG = McRPG.getInstance();
 
-                            Optional<AbilityHolder> abilityHolderOptional = mcRPG.getEntityManager().getAbilityHolder(player.getUniqueId());
+                            Optional<AbilityHolder> abilityHolderOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(player.getUniqueId());
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
                                 // Reset skills
                                 skillHolder.getSkills().stream().map(skillHolder::getSkillHolderData).filter(Optional::isPresent).map(Optional::get).forEach(SkillHolder.SkillHolderData::resetSkill);

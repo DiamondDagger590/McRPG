@@ -5,8 +5,9 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import java.util.Set;
  * <p>
  * This class allows for the storing of information in an abstract manner about any given {@link Ability}
  * through using {@link AbilityAttribute AbilityAttributes}. An example of this would be an ability's tier
- * through the {@link us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager#ABILITY_TIER_ATTRIBUTE_KEY}.
+ * through the {@link AbilityAttributeRegistry#ABILITY_TIER_ATTRIBUTE_KEY}.
  * <p>
  * In the previous iteration of this plugin, every ability could have unique behavior which would require custom handling.
  * This is highlighted by ability tiers, where abilities that a player unlocked would have tiers whilst abilities that
@@ -175,10 +176,10 @@ public class AbilityData {
      */
     public void resetAbility() {
         ImmutableSet<NamespacedKey> attributeKeys = ImmutableSet.copyOf(abilityAttributes.keySet());
-        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        AbilityAttributeRegistry abilityAttributeRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         for (NamespacedKey namespacedKey : attributeKeys) {
             // Override the existing attribute with the default attribute
-            abilityAttributeManager.getAttribute(namespacedKey).ifPresent(this::addAttribute);
+            abilityAttributeRegistry.getAttribute(namespacedKey).ifPresent(this::addAttribute);
         }
     }
 }

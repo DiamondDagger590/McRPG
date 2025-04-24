@@ -1,23 +1,19 @@
 package us.eunoians.mcrpg.ability.attribute;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -25,14 +21,14 @@ import java.util.Optional;
  */
 public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Location> implements GuiModifiableAttribute {
 
-    private static final Location DEFAULT_LOCATION = new Location(null, 0, 0 ,0);
+    private static final Location DEFAULT_LOCATION = new Location(null, 0, 0, 0);
 
     AbilityLocationAttribute() {
-        super("location", AbilityAttributeManager.ABILITY_LOCATION_ATTRIBUTE);
+        super("location", AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE);
     }
 
     public AbilityLocationAttribute(@NotNull Location content) {
-        super("location", AbilityAttributeManager.ABILITY_LOCATION_ATTRIBUTE, content);
+        super("location", AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE, content);
     }
 
     @Override
@@ -79,32 +75,22 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
 
             @NotNull
             @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                ItemStack itemStack = new ItemStack(Material.CHERRY_SIGN);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.displayName(McRPG.getInstance().getMiniMessage().deserialize("<gold>Bound Location"));
-                itemMeta.lore(getGuiLore(player, ability));
-                itemStack.setItemMeta(itemMeta);
-                return ItemBuilder.from(itemStack);
+            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+                McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+                if (shouldContentBeSaved()) {
+                    ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKeys.LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM));
+                    itemBuilder.setPlaceholders(Map.of(
+                            "location-x", Double.toString(getContent().getBlockX()),
+                            "location-y", Double.toString(getContent().getBlockY()),
+                            "location-z", Double.toString(getContent().getBlockZ()),
+                            "location-world", getContent().getWorld() == null ? "null" : getContent().getWorld().getName(),
+                            "location", getContent().toBlockLocation().toString()));
+                    return itemBuilder;
+                }
+                else {
+                    return ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKeys.LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM));
+                }
             }
         };
-    }
-
-    @NotNull
-    @Override
-    public List<Component> getGuiLore(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        List<Component> lore = new ArrayList<>();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        if (shouldContentBeSaved()) {
-            lore.add(miniMessage.deserialize("<gray>This ability's bound location is:"));
-            lore.add(miniMessage.deserialize("<gray>X: <gold>" + getContent().getX()));
-            lore.add(miniMessage.deserialize("<gray>Y: <gold>" + getContent().getY()));
-            lore.add(miniMessage.deserialize("<gray>Z: <gold>" + getContent().getZ()));
-            lore.add(miniMessage.deserialize("<gray>World: <gold>" + getContent().getWorld()));
-        }
-        else {
-            lore.add(miniMessage.deserialize("<gray>You currently don't have a bound location for this ability."));
-        }
-        return lore;
     }
 }

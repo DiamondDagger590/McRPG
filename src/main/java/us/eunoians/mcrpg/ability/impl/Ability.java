@@ -25,6 +25,7 @@ public interface Ability extends McRPGContent {
 
     /**
      * Gets the {@link Plugin} that owns this ability.
+     *
      * @return The {@link Plugin} that owns this ability.
      */
     @NotNull
@@ -69,16 +70,20 @@ public interface Ability extends McRPGContent {
 
     /**
      * Gets the database name for an ability. This is an internal
-     * use only name that is used for database storage.
+     * use-only name used for database storage.
      *
      * @return The database name for an ability. This is an internal
-     * use only name that is used for database storage.
+     * use-only name used for database storage.
      */
     @NotNull
     String getDatabaseName();
 
     @NotNull
     String getName(@NotNull McRPGPlayer player);
+
+    @NotNull
+    String getName();
+
 
     /**
      * Gets the name to display in messages or guis for this ability.
@@ -129,6 +134,7 @@ public interface Ability extends McRPGContent {
     /**
      * Gets the {@link AbilityItemBuilder} for this ability based off the provided
      * {@link McRPGPlayer}.
+     *
      * @param player The {@link McRPGPlayer} to get an item builder for.
      * @return The {@link AbilityItemBuilder} for this ability based off the provided
      * {@link McRPGPlayer}.
@@ -139,12 +145,13 @@ public interface Ability extends McRPGContent {
     /**
      * Gets a map containing the placeholders supported for this ability using the given
      * {@link McRPGPlayer}.
-     *
+     * <p>
      * The key will be the placeholder itself whilst the value will be the string to replace the
      * placeholder with. Placeholders should follow the format of {@code <example>}.
-     *
+     * <p>
      * Some generic placeholders are provided out of box in the {@link AbilityItemBuilder}
-     * itself, 
+     * itself,
+     *
      * @param player
      * @return
      */

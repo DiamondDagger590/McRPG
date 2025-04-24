@@ -7,6 +7,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 public interface OnBlockBreakLevelableComponent extends EventLevelableComponent {
 
@@ -17,7 +19,7 @@ public interface OnBlockBreakLevelableComponent extends EventLevelableComponent 
         if (event instanceof BlockBreakEvent blockBreakEvent) {
             Player player = blockBreakEvent.getPlayer();
             Block block = blockBreakEvent.getBlock();
-            return player.getUniqueId().equals(skillHolder.getUUID()) && affectsBlock(block) && McRPG.getInstance().getWorldManager().isBlockNatural(block);
+            return player.getUniqueId().equals(skillHolder.getUUID()) && affectsBlock(block) && McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isBlockNatural(block);
         }
         return false;
     }

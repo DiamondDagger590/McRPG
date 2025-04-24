@@ -79,13 +79,13 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
 
     @NotNull
     @Override
-    public PreviousPageSlot getPreviousPageSlot() {
+    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
         return null;
     }
 
     @NotNull
     @Override
-    public NextPageSlot getNextPageSlot() {
+    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
         return null;
     }
 
@@ -112,9 +112,9 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         int totalLoadoutSize = loadout.getAbilities().size() + loadout.getRemainingLoadoutSize() - difference;
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedAbilities.size()) {
-                setSlot(i, new LoadoutAbilitySlot(getMcRPGPlayer(), loadout, sortedAbilities.get(i)));
+                setSlot(i, new LoadoutAbilitySlot(getCreatingPlayer(), loadout, sortedAbilities.get(i)));
             } else if (i < totalLoadoutSize) {
-                setSlot(i, new LoadoutAbilitySlot(getMcRPGPlayer(), loadout));
+                setSlot(i, new LoadoutAbilitySlot(getCreatingPlayer(), loadout));
             } else {
                 setSlot(i, new InvalidLoadoutSlot());
             }
@@ -128,7 +128,7 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
             setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
         }
         // Set the back slot
-        setSlot(LOADOUT_SELECTION_SLOT_INDEX, new LoadoutHomeSlot(getMcRPGPlayer()));
+        setSlot(LOADOUT_SELECTION_SLOT_INDEX, new LoadoutHomeSlot(getCreatingPlayer()));
         // Set the sort slot
         setSlot(SORT_SLOT_INDEX, getAbilitySortNode().getNodeValue().getSlot());
         // If the page is not the first page, then we need to put a previous arrow button

@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.google.common.collect.ImmutableMap;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
@@ -22,19 +23,21 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.attribute.RemoteTransferMaterialSetAttribute;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
+import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryOld;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryType;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.mining.RemoteTransferActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -53,11 +56,12 @@ import java.util.Set;
 public final class RemoteTransfer extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "remote_transfer");
-    private static final Map<RemoteTransferCategoryType, RemoteTransferCategory> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
+
+    private static final Map<RemoteTransferCategoryType, RemoteTransferCategoryOld> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
 
     static {
         for (RemoteTransferCategoryType type : RemoteTransferCategoryType.values()) {
-            REMOTE_TRANSFER_CATEGORIES.put(type, new RemoteTransferCategory(type));
+            REMOTE_TRANSFER_CATEGORIES.put(type, new RemoteTransferCategoryOld(type));
         }
     }
 
@@ -75,7 +79,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
     }
 
     @NotNull
@@ -109,7 +113,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
         var abilityDataOptional = abilityHolder.getAbilityData(this);
         if (abilityDataOptional.isPresent()) {
             AbilityData abilityData = abilityDataOptional.get();
-            var locationAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_LOCATION_ATTRIBUTE);
+            var locationAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE);
             // If the player has a location saved
             if (locationAttributeOptional.isPresent()) {
                 AbilityLocationAttribute attribute = (AbilityLocationAttribute) locationAttributeOptional.get();
@@ -238,15 +242,15 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
      */
     public boolean isMaterialTransferable(@NotNull AbilityHolder abilityHolder, @NotNull Material material) {
         boolean presentInConfig = false;
-        for (RemoteTransferCategory category : getRemoteTransferCategories().values()) {
+        for (RemoteTransferCategoryOld category : getRemoteTransferCategories().values()) {
             if (category.getContent().contains(material)) {
                 presentInConfig = true;
             }
         }
-        RemoteTransfer remoteTransfer = (RemoteTransfer) getPlugin().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = (RemoteTransfer) getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
-        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
-                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
 
             return presentInConfig && !remoteTransferMaterialSetAttribute.isMaterialStored(material);
         }
@@ -257,8 +261,8 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         Set<NamespacedKey> applicableAttributes = new HashSet<>(ConfigurableTierableAbility.super.getApplicableAttributes());
-        applicableAttributes.add(AbilityAttributeManager.ABILITY_LOCATION_ATTRIBUTE);
-        applicableAttributes.add(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE);
+        applicableAttributes.add(AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE);
+        applicableAttributes.add(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE);
         return applicableAttributes;
     }
 
@@ -278,23 +282,23 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     }
 
     /**
-     * Gets the {@link RemoteTransferCategory} belonging to the provided {@link RemoteTransferCategoryType}.
+     * Gets the {@link RemoteTransferCategoryOld} belonging to the provided {@link RemoteTransferCategoryType}.
      *
-     * @param categoryType The {@link RemoteTransferCategoryType} to get the {@link RemoteTransferCategory} for.
-     * @return The {@link RemoteTransferCategory} belonging to the provided {@link RemoteTransferCategoryType}.
+     * @param categoryType The {@link RemoteTransferCategoryType} to get the {@link RemoteTransferCategoryOld} for.
+     * @return The {@link RemoteTransferCategoryOld} belonging to the provided {@link RemoteTransferCategoryType}.
      */
     @NotNull
-    public static RemoteTransferCategory getRemoteTransferCategory(@NotNull RemoteTransferCategoryType categoryType) {
+    public static RemoteTransferCategoryOld getRemoteTransferCategory(@NotNull RemoteTransferCategoryType categoryType) {
         return REMOTE_TRANSFER_CATEGORIES.get(categoryType);
     }
 
     /**
-     * Gets an {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategory}.
+     * Gets an {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategoryOld}.
      *
-     * @return An {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategory}.
+     * @return An {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategoryOld}.
      */
     @NotNull
-    public static Map<RemoteTransferCategoryType, RemoteTransferCategory> getRemoteTransferCategories() {
+    public static Map<RemoteTransferCategoryType, RemoteTransferCategoryOld> getRemoteTransferCategories() {
         return ImmutableMap.copyOf(REMOTE_TRANSFER_CATEGORIES);
     }
 }

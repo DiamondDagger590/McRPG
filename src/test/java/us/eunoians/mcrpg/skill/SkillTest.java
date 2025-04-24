@@ -26,7 +26,7 @@ public class SkillTest {
         serverMock = MockBukkit.mock();
         plugin = MockBukkit.load(McRPG.class);
         mockedSkill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(mockedSkill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(mockedSkill);
     }
 
     @AfterAll

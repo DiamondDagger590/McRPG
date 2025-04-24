@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.impl.swords;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Material;
@@ -12,6 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.HeldItemBonusSkill;
 import us.eunoians.mcrpg.skill.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
@@ -56,7 +58,7 @@ public final class Swords extends McRPGSkill implements HeldItemBonusSkill {
             if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(material)) {
                 MATERIAL_BONUS_ROUTE_MAP.put(material, Route.addTo(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, material.toString()));
             }
-            YamlDocument swordsFile = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
             modifier += (swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(material), 1.0d) - 1);
         }
         return modifier;

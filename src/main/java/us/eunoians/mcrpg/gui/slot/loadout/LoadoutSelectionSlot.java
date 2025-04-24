@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.gui.slot.loadout;
 
-import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.enchantments.Enchantment;
@@ -11,7 +11,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
@@ -21,11 +20,15 @@ import us.eunoians.mcrpg.gui.loadout.LoadoutSelectionGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.loadout.LoadoutDisplay;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static com.diamonddagger590.mccore.registry.RegistryAccess.registryAccess;
 
 /**
  * This slot is used to select a specific {@link Loadout} to edit.
@@ -48,11 +51,11 @@ public class LoadoutSelectionSlot extends McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
+        var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             if (isPlayerOnGeyser() || clickType != ClickType.RIGHT) {
                 LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadout);
-                McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, loadoutGui);
+                mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutGui);
                 player.openInventory(loadoutGui.getInventory());
             } else {
                 player.performCommand("loadout set " + loadout.getLoadoutSlot());
@@ -96,6 +99,6 @@ public class LoadoutSelectionSlot extends McRPGSlot {
     }
 
     private boolean isPlayerOnGeyser() {
-        return (McRPG.getInstance().isGeyserEnabled() && Geyser.api().isBedrockPlayer(mcRPGPlayer.getUUID()));
+        return registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.GEYSER).map(geyserHook -> geyserHook.isBedrockPlayer(mcRPGPlayer.getUUID())).orElse(false);
     }
 }

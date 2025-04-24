@@ -1,6 +1,6 @@
 package us.eunoians.mcrpg.ability.impl;
 
-import com.diamonddagger590.mccore.localization.LocalizationManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -9,13 +9,16 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityPutOnCooldownEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Map;
 import java.util.Set;
@@ -48,11 +51,11 @@ public interface CooldownableAbility extends Ability {
      */
     default long getCooldownForHolder(@NotNull AbilityHolder abilityHolder) {
         // Sanity check
-        if (getApplicableAttributes().contains(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY)) {
+        if (getApplicableAttributes().contains(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY)) {
             var abilityDataOptional = abilityHolder.getAbilityData(this);
             if (abilityDataOptional.isPresent()) {
                 AbilityData abilityData = abilityDataOptional.get();
-                var cooldownOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
+                var cooldownOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
                 if (cooldownOptional.isPresent()) {
                     AbilityCooldownAttribute cooldownAttribute = (AbilityCooldownAttribute) cooldownOptional.get();
                     return cooldownAttribute.getContent();
@@ -72,7 +75,7 @@ public interface CooldownableAbility extends Ability {
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         playerOptional.ifPresent(player -> {
             McRPG mcRPG = mcRPGPlayer.getPlugin();
-            LocalizationManager localizationManager = mcRPG.getLocalizationManager();
+            McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             MiniMessage miniMessage = mcRPG.getMiniMessage();
             Audience audience = mcRPG.getAdventure().player(player);
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKeys.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getDisplayName(mcRPGPlayer))));
@@ -82,7 +85,7 @@ public interface CooldownableAbility extends Ability {
     @NotNull
     @Override
     default Set<NamespacedKey> getApplicableAttributes() {
-        return Set.of(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
+        return Set.of(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
     }
 
     /**
@@ -114,11 +117,11 @@ public interface CooldownableAbility extends Ability {
      */
     default void putHolderOnCooldown(@NotNull AbilityHolder abilityHolder, long cooldown) {
         // Sanity check
-        if (getApplicableAttributes().contains(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY)) {
+        if (getApplicableAttributes().contains(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY)) {
             var abilityDataOptional = abilityHolder.getAbilityData(this);
             if (abilityDataOptional.isPresent()) {
                 AbilityData abilityData = abilityDataOptional.get();
-                var cooldownOptional = McRPG.getInstance().getAbilityAttributeManager().getAttribute(AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
+                var cooldownOptional = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE).getAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
                 cooldownOptional.ifPresent(abilityAttribute -> {
                     AbilityPutOnCooldownEvent abilityPutOnCooldownEvent = new AbilityPutOnCooldownEvent(abilityHolder, this, cooldown);
                     Bukkit.getPluginManager().callEvent(abilityPutOnCooldownEvent);

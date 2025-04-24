@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.task.player;
 
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.player.PlayerLoadTask;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.NamespacedKey;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -25,6 +26,8 @@ import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
@@ -62,9 +65,9 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     @Override
     protected boolean loadPlayer() { //TODO completable future?
         Instant loginTime = Instant.now();
-        SkillRegistry skillRegistry = getPlugin().getSkillRegistry();
-        AbilityRegistry abilityRegistry = getPlugin().getAbilityRegistry();
-        AbilityAttributeManager abilityAttributeManager = getPlugin().getAbilityAttributeManager();
+        SkillRegistry skillRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.SKILL);
+        AbilityRegistry abilityRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY);
+        AbilityAttributeRegistry abilityAttributeRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         SkillHolder skillHolder = getCorePlayer().asSkillHolder();
         UUID uuid = getCorePlayer().getUUID();
 
@@ -85,7 +88,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
                     AbilityData abilityData = new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values());
                     for (NamespacedKey attributeKey : ability.getApplicableAttributes()) {
                         if (!abilityData.hasAttribute(attributeKey)) {
-                            abilityAttributeManager.getAttribute(attributeKey).ifPresent(abilityData::addAttribute);
+                            abilityAttributeRegistry.getAttribute(attributeKey).ifPresent(abilityData::addAttribute);
                         }
                     }
                     skillHolder.addAbilityData(abilityData);
@@ -100,7 +103,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             }
 
             // Loadouts
-            int loadoutAmount = McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
+            int loadoutAmount = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
             for (int x = 1; x <= loadoutAmount; x++) {
                 Loadout loadout = LoadoutAbilityDAO.getLoadout(connection, uuid, x);
                 var displayOptional = LoadoutDisplayDAO.getLoadoutDisplay(connection, uuid, x);
@@ -128,9 +131,9 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         getPlugin().getLogger().log(Level.INFO, "Player data has been loaded for player: " + getCorePlayer().getUUID());
 
         //Begin tracking player
-        getPlugin().getPlayerManager().addPlayer(getCorePlayer());
-        getPlugin().getEntityManager().trackAbilityHolder(getCorePlayer().asSkillHolder());
-        getPlugin().getEntityManager().trackQuestHolder(getCorePlayer().asQuestHolder());
+        getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).addPlayer(getCorePlayer());
+        getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(getCorePlayer().asSkillHolder());
+        getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackQuestHolder(getCorePlayer().asQuestHolder());
 
         // Fire event
         super.onPlayerLoadSuccessfully();
@@ -145,7 +148,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
 
         if (player.isPresent() && player.get().isOnline()) {
             Audience audience = getPlugin().getAdventure().player(player.get());
-            audience.sendMessage(getPlugin().getLocalizationManager().getLocalizedMessageAsComponent(getCorePlayer(), LocalizationKeys.LOGIN_UNABLE_TO_LOAD_DATA));
+            audience.sendMessage(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessageAsComponent(getCorePlayer(), LocalizationKeys.LOGIN_UNABLE_TO_LOAD_DATA));
         }
     }
 
@@ -185,7 +188,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             Instant logoutTime = logoutTimeOptional.get();
             Instant now = Instant.now();
             double difference = Duration.between(now, logoutTime).abs().toSeconds();
-            RestedExperienceManager restedExperienceManager = getPlugin().getRestedExperienceManager();
+            RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
             // Award rested experience
             restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, safeZoneLogout);
         }

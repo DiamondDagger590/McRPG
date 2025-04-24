@@ -6,8 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.woodcutting.DryadsGift;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * This event is fired whenever {@link DryadsGift} activates.
@@ -15,7 +16,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 public class DryadsGiftActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability DRYADS_GIFT = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(DryadsGift.DRYADS_GIFT_KEY);
+    private static final Ability DRYADS_GIFT = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(DryadsGift.DRYADS_GIFT_KEY);
     private int experienceToDrop;
     private boolean cancelled = false;
 

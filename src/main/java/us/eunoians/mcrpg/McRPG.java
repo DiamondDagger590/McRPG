@@ -5,17 +5,16 @@ import com.diamonddagger590.mccore.command.DisplayNameCommand;
 import com.diamonddagger590.mccore.command.LoreCommand;
 import com.diamonddagger590.mccore.configuration.ReloadableTask;
 import com.diamonddagger590.mccore.database.driver.DatabaseDriverType;
-import com.diamonddagger590.mccore.player.CorePlayer;
-import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import com.diamonddagger590.mccore.registry.plugin.PluginHookRegistry;
 import com.jeff_media.customblockdata.CustomBlockData;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import fr.skytasul.glowingentities.GlowingEntities;
 import org.bukkit.Bukkit;
-import org.geysermc.api.Geyser;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.command.TestGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
@@ -37,14 +36,21 @@ import us.eunoians.mcrpg.database.McRPGDatabase;
 import us.eunoians.mcrpg.database.driver.McRPGSqliteDriver;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.ContentExpansionManager;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.expansion.handler.ContentHandlerType;
+import us.eunoians.mcrpg.external.geyser.GeyserHook;
+import us.eunoians.mcrpg.external.healthbar.HealthBarHook;
 import us.eunoians.mcrpg.external.lands.LandsHook;
-import us.eunoians.mcrpg.external.lunar.LunarUtils;
-import us.eunoians.mcrpg.external.papi.McRPGPapiExpansion;
+import us.eunoians.mcrpg.external.lunar.LunarClientHook;
+import us.eunoians.mcrpg.external.mcmmo.McMMOHook;
+import us.eunoians.mcrpg.external.nocheatplus.NoCheatPlusHook;
+import us.eunoians.mcrpg.external.papi.McRPGPapiHook;
+import us.eunoians.mcrpg.external.sickle.SickleHook;
 import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
+import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityCooldownExpireListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityPutOnCooldownListener;
@@ -75,6 +81,9 @@ import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
 import us.eunoians.mcrpg.listener.world.FakeBlockBreakListener;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.modifier.BoostedExperienceModifier;
@@ -90,7 +99,6 @@ import us.eunoians.mcrpg.world.safezone.SafeZoneManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -104,65 +112,35 @@ public class McRPG extends CorePlugin {
     private static final String customNameKey = "mcMMO: Custom Name";
     private static final String customVisibleKey = "mcMMO: Name Visibility";
 
-    private FileManager fileManager;
     private McRPGDatabase database;
-
-    private PlayerManager<McRPG, McRPGPlayer> playerManager;
-    private AbilityRegistry abilityRegistry;
-    private SkillRegistry skillRegistry;
-    private AbilityAttributeManager abilityAttributeManager;
-    private EntityManager entityManager;
-    private DisplayManager displayManager;
-    private QuestManager questManager;
-    private BleedManager bleedManager;
-    private ContentExpansionManager contentExpansionManager;
-    private WorldManager worldManager;
-    private SafeZoneManager safeZoneManager;
-    private ExperienceModifierRegistry experienceModifierRegistry;
-    private RestedExperienceManager restedExperienceManager;
-    private McRPGLocalizationManager localizationManager;
 
     private GlowingBlocks glowingBlocks;
     private GlowingEntities glowingEntities;
-
-    private boolean healthBarPluginEnabled = false;
-    private boolean mvdwEnabled = false;
-    private boolean papiEnabled = false;
-    private boolean ncpEnabled = false;
-    private boolean sickleEnabled = false;
-    private boolean mcmmoEnabled = false;
-    private boolean geyserEnabled = false;
-    private boolean lunarEnabled = false;
-    @Nullable
-    private LandsHook landsHook;
-    @Nullable
-    private WorldGuardHook worldGuardHook;
 
     @Override
     public void onEnable() {
         super.onEnable();
         if (!isUnitTest()) {
-            initializeFiles();
+            registryAccess().registry(RegistryKey.MANAGER).register(new FileManager(this));
             glowingBlocks = new GlowingBlocks(this);
             glowingEntities = new GlowingEntities(this);
         }
 
-        entityManager = new EntityManager(this);
-        playerManager = new PlayerManager<>(this);
-        abilityRegistry = new AbilityRegistry(this);
-        skillRegistry = new SkillRegistry(this);
-        localizationManager = new McRPGLocalizationManager(this);
-
-        abilityAttributeManager = new AbilityAttributeManager(this);
-        displayManager = new DisplayManager(this);
-        questManager = new QuestManager();
-        bleedManager = new BleedManager(this);
-        contentExpansionManager = new ContentExpansionManager(this);
-        worldManager = new WorldManager(this);
-        safeZoneManager = new SafeZoneManager(this);
-        experienceModifierRegistry = new ExperienceModifierRegistry(this);
-        restedExperienceManager = new RestedExperienceManager(this);
-        localizationManager = new McRPGLocalizationManager(this);
+        registryAccess().registry(RegistryKey.MANAGER).register(new EntityManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(this));
+        registryAccess().register(new AbilityRegistry(this));
+        registryAccess().register(new SkillRegistry(this));
+        registryAccess().register(new AbilityAttributeRegistry(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new McRPGLocalizationManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new DisplayManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new QuestManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new BleedManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new ContentExpansionManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new WorldManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new SafeZoneManager(this));
+        registryAccess().register(new ExperienceModifierRegistry(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new RestedExperienceManager(this));
+        registryAccess().registry(RegistryKey.MANAGER).register(new McRPGGuiManager(this));
 
         if (!isUnitTest()) {
             registerNativeExpansions();
@@ -175,7 +153,7 @@ public class McRPG extends CorePlugin {
             constructCommands();
             registerExperienceModifiers();
             registerBackgroundTasks();
-            reloadableContentRegistry.reloadAllContent();
+            registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
         }
     }
 
@@ -185,13 +163,10 @@ public class McRPG extends CorePlugin {
             glowingBlocks.disable();
             glowingEntities.disable();
             try (Connection connection = getDatabase().getConnection()) {
-                for (CorePlayer corePlayer : playerManager.getAllPlayers()) {
-                    if (corePlayer instanceof McRPGPlayer mcRPGPlayer) {
-                        mcRPGPlayer.savePlayer(connection);
-                        if (isLunarEnabled()) {
-                            LunarUtils.clearCooldowns(mcRPGPlayer.getUUID());
-                        }
-                    }
+                var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
+                for (McRPGPlayer mcRPGPlayer : registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
+                    mcRPGPlayer.savePlayer(connection);
+                    lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -200,15 +175,8 @@ public class McRPG extends CorePlugin {
         super.onDisable();
     }
 
-    /**
-     * Initializes the {@link FileManager} and populates it with all files McRPG needs
-     */
-    private void initializeFiles() {
-        fileManager = new FileManager(this);
-    }
-
     @Override
-    public void constructCommands() {
+    protected void constructCommands() {
         super.constructCommands();
         TestGuiCommand.registerCommand();
 
@@ -243,7 +211,7 @@ public class McRPG extends CorePlugin {
     }
 
     @Override
-    public void registerListeners() {
+    protected void registerListeners() {
         // Register core listeners
         super.registerListeners();
 
@@ -296,26 +264,14 @@ public class McRPG extends CorePlugin {
     }
 
     @Override
-    public void registerDrivers() {
-        driverManager.registerDriver(new McRPGSqliteDriver(this));
+    protected void registerDrivers() {
+        registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.DRIVER).registerDriver(new McRPGSqliteDriver(this));
     }
 
     @NotNull
     @Override
     public McRPGDatabase getDatabase() {
         return database;
-    }
-
-    @NotNull
-    @Override
-    public PlayerManager<McRPG, McRPGPlayer> getPlayerManager() {
-        return playerManager;
-    }
-
-    @NotNull
-    @Override
-    public McRPGLocalizationManager getLocalizationManager() {
-        return localizationManager;
     }
 
     /**
@@ -325,44 +281,44 @@ public class McRPG extends CorePlugin {
     protected void setupHooks() {
         super.setupHooks();
 
-        healthBarPluginEnabled = getServer().getPluginManager().getPlugin("HealthBar") != null;
-        sickleEnabled = getServer().getPluginManager().getPlugin("Sickle") != null;
-
-        if (healthBarPluginEnabled) {
+        PluginHookRegistry pluginHookRegistry = registryAccess().registry(RegistryKey.PLUGIN_HOOK);
+        if (Bukkit.getPluginManager().isPluginEnabled("HealthBar")) {
             getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
+            pluginHookRegistry.register(new HealthBarHook(this));
         }
-
+        if (Bukkit.getPluginManager().isPluginEnabled("Sickle")) {
+            pluginHookRegistry.register(new SickleHook(this));
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("HealthBar")) {
+            pluginHookRegistry.register(new HealthBarHook(this));
+        }
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            getLogger().info("Papi PlaceholderAPI found... registering placeholders");
-            new McRPGPapiExpansion(this).register();
+            getLogger().info("PlaceholderAPI found... registering placeholders");
+            pluginHookRegistry.register(new McRPGPapiHook(this));
         }
-
         if (Bukkit.getPluginManager().isPluginEnabled("NoCheatPlus")) {
-            ncpEnabled = true;
             getLogger().info("NoCheatPlus found... will enable anticheat support");
+            pluginHookRegistry.register(new NoCheatPlusHook(this));
         }
-
         if (Bukkit.getPluginManager().isPluginEnabled("mcMMO")) {
-            mcmmoEnabled = true;
             getLogger().info("McMMO found... ready to convert.");
+            pluginHookRegistry.register(new McMMOHook(this));
         }
-
         if (Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
-            worldGuardHook = new WorldGuardHook(this);
+            getLogger().info("WorldGuard found... enabling support");
+            pluginHookRegistry.register(new WorldGuardHook(this));
         }
-
         if (Bukkit.getPluginManager().isPluginEnabled("Geyser")) {
-            geyserEnabled = true;
             getLogger().info("Geyser found... enabling support.");
+            pluginHookRegistry.register(new GeyserHook(this));
         }
-
         if (Bukkit.getPluginManager().isPluginEnabled("Apollo-Bukkit")) {
-            lunarEnabled = true;
             getLogger().info("Apollo found... enabling Lunar Client support.");
+            pluginHookRegistry.register(new LunarClientHook(this));
         }
-
         if (Bukkit.getPluginManager().isPluginEnabled("Lands")) {
-            landsHook = new LandsHook(this);
+            getLogger().info("Lands found... enabling support.");
+            pluginHookRegistry.register(new LandsHook(this));
         }
     }
 
@@ -370,6 +326,7 @@ public class McRPG extends CorePlugin {
      * Registers the native {@link us.eunoians.mcrpg.expansion.ContentExpansion}s for McRPG
      */
     private void registerNativeExpansions() {
+        ContentExpansionManager contentExpansionManager = registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.CONTENT_EXPANSION);
         Arrays.stream(ContentHandlerType.values()).forEach(contentHandlerType -> contentExpansionManager.registerContentHandler(contentHandlerType.getContentHandler()));
         contentExpansionManager.registerContentExpansion(new McRPGExpansion(this));
     }
@@ -378,6 +335,7 @@ public class McRPG extends CorePlugin {
      * Register all background tasks that McROG uses.
      */
     private void registerBackgroundTasks() {
+        FileManager fileManager = registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         ReloadableTask<McRPGPlayerSaveTask> saveTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.SAVE_TASK_FREQUENCY,
                 (yamlDocument, route) -> {
                     int frequency = yamlDocument.getInt(route);
@@ -388,87 +346,18 @@ public class McRPG extends CorePlugin {
                     int frequency = yamlDocument.getInt(route);
                     return new RestedExperienceAccumulationTask(this, frequency, frequency);
                 }, false);
-        reloadableContentRegistry.trackReloadableContent(Set.of(saveTask, safeZoneUpdateTask));
+        registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT).trackReloadableContent(Set.of(saveTask, safeZoneUpdateTask));
     }
 
     /**
      * Registers all the natively supported {@link us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier}s.
      */
     private void registerExperienceModifiers() {
-        experienceModifierRegistry.registerModifier(new HeldItemBonusModifier());
-        experienceModifierRegistry.registerModifier(new SpawnReasonModifier());
-        experienceModifierRegistry.registerModifier(new BoostedExperienceModifier(this));
-        experienceModifierRegistry.registerModifier(new RestedExperienceModifier(this));
-    }
-
-    /**
-     * Get the {@link FileManager} used by McRPG
-     *
-     * @return The {@link FileManager} used by McRPG
-     */
-    @NotNull
-    public FileManager getFileManager() {
-        return fileManager;
-    }
-
-    /**
-     * Get the {@link EntityManager} used by McRPG
-     *
-     * @return The {@link EntityManager} used by McRPG
-     */
-    @NotNull
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
-
-    /**
-     * Gets the {@link AbilityRegistry} used by McRPG
-     *
-     * @return The {@link AbilityRegistry} used by McRPG
-     */
-    @NotNull
-    public AbilityRegistry getAbilityRegistry() {
-        return abilityRegistry;
-    }
-
-    /**
-     * Gets the {@link SkillRegistry} used by McRPG
-     *
-     * @return The {@link SkillRegistry} used by McRPG
-     */
-    @NotNull
-    public SkillRegistry getSkillRegistry() {
-        return skillRegistry;
-    }
-
-    /**
-     * Gets the {@link AbilityAttributeManager} used by McRPG
-     *
-     * @return The {@link AbilityAttributeManager} used by McRPG
-     */
-    @NotNull
-    public AbilityAttributeManager getAbilityAttributeManager() {
-        return abilityAttributeManager;
-    }
-
-    /**
-     * Gets the {@link DisplayManager} used by McRPG
-     *
-     * @return The {@link DisplayManager} used by McRPG
-     */
-    @NotNull
-    public DisplayManager getDisplayManager() {
-        return displayManager;
-    }
-
-    /**
-     * Gets the {@link QuestManager} used by McRPG
-     *
-     * @return The {@link QuestManager} used by McRPG
-     */
-    @NotNull
-    public QuestManager getQuestManager() {
-        return questManager;
+        ExperienceModifierRegistry experienceModifierRegistry = registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
+        experienceModifierRegistry.register(new HeldItemBonusModifier());
+        experienceModifierRegistry.register(new SpawnReasonModifier());
+        experienceModifierRegistry.register(new BoostedExperienceModifier(this));
+        experienceModifierRegistry.register(new RestedExperienceModifier(this));
     }
 
     /**
@@ -489,107 +378,6 @@ public class McRPG extends CorePlugin {
     @NotNull
     public GlowingEntities getGlowingEntities() {
         return glowingEntities;
-    }
-
-    /**
-     * Gets the {@link BleedManager} used by McRPG.
-     *
-     * @return The {@link BleedManager} used by McRPG.
-     */
-    @NotNull
-    public BleedManager getBleedManager() {
-        return bleedManager;
-    }
-
-    /**
-     * Gets the {@link ContentExpansionManager} used by McRPG.
-     *
-     * @return The {@link ContentExpansionManager} used by McRPG.
-     */
-    @NotNull
-    public ContentExpansionManager getContentExpansionManager() {
-        return contentExpansionManager;
-    }
-
-    /**
-     * Gets the {@link WorldManager} used by McRPG.
-     *
-     * @return The {@link WorldManager} used by McRPG.
-     */
-    @NotNull
-    public WorldManager getWorldManager() {
-        return worldManager;
-    }
-
-    /**
-     * Gets the {@link SafeZoneManager} used by McRPG.
-     *
-     * @return The {@link SafeZoneManager} used by McRPG.
-     */
-    @NotNull
-    public SafeZoneManager getSafeZoneManager() {
-        return safeZoneManager;
-    }
-
-    /**
-     * Gets the {@link ExperienceModifierRegistry} used by McRPG.
-     *
-     * @return The {@link ExperienceModifierRegistry} used by McRPG.
-     */
-    @NotNull
-    public ExperienceModifierRegistry getExperienceModifierRegistry() {
-        return experienceModifierRegistry;
-    }
-
-    /**
-     * Gets the {@link RestedExperienceManager} used by McRPG.
-     *
-     * @return The {@link RestedExperienceManager} used by McRPG.
-     */
-    @NotNull
-    public RestedExperienceManager getRestedExperienceManager() {
-        return restedExperienceManager;
-    }
-
-    /**
-     * Checks to see if Lunar Client support is enabled.
-     *
-     * @return {@code true} if Lunar Client support is enabled
-     */
-    public boolean isLunarEnabled() {
-        return lunarEnabled;
-    }
-
-    /**
-     * Checks to see if Geyser is enabled and registered.
-     *
-     * @return {@code true} if Geyser is enabled and registered.
-     */
-    public boolean isGeyserEnabled() {
-        return geyserEnabled && Geyser.isRegistered();
-    }
-
-    /**
-     * Gets the {@link LandsHook} McRPG uses to support Lands.
-     *
-     * @return An {@link Optional} containing the {@link LandsHook} McRPG uses to support
-     * <a href="https://www.spigotmc.org/resources/lands-%E2%AD%95-land-claim-plugin-%E2%9C%85-grief-prevention-protection-gui-management-nations-wars-1-21-support.53313/">Lands</a>
-     * if Lands is running.
-     */
-    @NotNull
-    public Optional<LandsHook> getLandsHook() {
-        return Optional.ofNullable(landsHook);
-    }
-
-    /**
-     * Gets the {@link WorldGuardHook} McRPG uses to support WorldGuard.
-     *
-     * @return An {@link Optional} containing the {@link WorldGuardHook} McRPG uses to support
-     * <a href="https://modrinth.com/plugin/worldguard/versions">WorldGuard</a> if the plugin is running.
-     */
-    @NotNull
-    public Optional<WorldGuardHook> getWorldGuardHook() {
-        return Optional.ofNullable(worldGuardHook);
     }
 
 

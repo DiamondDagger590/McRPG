@@ -12,6 +12,7 @@ import org.incendo.cloud.parser.ArgumentParser;
 import org.incendo.cloud.parser.ParserDescriptor;
 import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
@@ -24,10 +25,10 @@ public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggest
     @Override
     public @NonNull ArgumentParseResult<@NonNull Skill> parse(@NonNull CommandContext<@NonNull C> commandContext, @NonNull CommandInput commandInput) {
         String input = commandInput.peekString();
-        SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+        SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
         NamespacedKey skillKey = new NamespacedKey(McRPG.getInstance(), input);
 
-        if (skillRegistry.isSkillRegistered(skillKey)) {
+        if (skillRegistry.registered(skillKey)) {
             commandInput.readString();
             return ArgumentParseResult.success(skillRegistry.getRegisteredSkill(skillKey));
         }
@@ -36,7 +37,7 @@ public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggest
 
     @Override
     public @NonNull Iterable<@NonNull String> stringSuggestions(@NonNull CommandContext<C> commandContext, @NonNull CommandInput input) {
-        return McRPG.getInstance().getSkillRegistry().getRegisteredSkills().stream().map(skill -> skill.getDisplayName(null)).map(String::toLowerCase).toList();
+        return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkills().stream().map(skill -> skill.getDisplayName(null)).map(String::toLowerCase).toList();
     }
 
     private static class SkillParseException extends ParserException {

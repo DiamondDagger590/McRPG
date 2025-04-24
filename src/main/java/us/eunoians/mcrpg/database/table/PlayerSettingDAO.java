@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.setting.PlayerSettingRegistry;
 import org.bukkit.NamespacedKey;
@@ -107,7 +108,7 @@ public class PlayerSettingDAO {
      */
     @NotNull
     public static Set<PlayerSetting> getPlayerSettings(@NotNull Connection connection, @NotNull UUID playerUUID) {
-        PlayerSettingRegistry playerSettingRegistry = McRPG.getInstance().getPlayerSettingRegistry();
+        PlayerSettingRegistry playerSettingRegistry = McRPG.getInstance().registryAccess().registry(RegistryKey.PLAYER_SETTING);
         Set<PlayerSetting> playerSettings = new HashSet<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT setting_value FROM " + TABLE_NAME + " WHERE uuid = ? AND setting_key = ?")) {
             preparedStatement.setString(1, playerUUID.toString());
@@ -152,7 +153,7 @@ public class PlayerSettingDAO {
      */
     @NotNull
     public static PlayerSetting getPlayerSetting(@NotNull Connection connection, @NotNull UUID playerUUID, @NotNull NamespacedKey settingKey) {
-        PlayerSettingRegistry playerSettingRegistry = McRPG.getInstance().getPlayerSettingRegistry();
+        PlayerSettingRegistry playerSettingRegistry = McRPG.getInstance().registryAccess().registry(RegistryKey.PLAYER_SETTING);
         var settingOptional = playerSettingRegistry.getSetting(settingKey);
         if (settingOptional.isEmpty()) {
             throw new SettingNotRegisteredException(settingKey);

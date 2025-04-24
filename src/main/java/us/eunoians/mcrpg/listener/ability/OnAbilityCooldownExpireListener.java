@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.listener.ability;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
@@ -11,6 +12,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Map;
 
@@ -22,10 +24,11 @@ public class OnAbilityCooldownExpireListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void handleExpire(AbilityCooldownExpireEvent abilityCooldownExpireEvent) {
-        var playerOptional = McRPG.getInstance().getPlayerManager().getPlayer(abilityCooldownExpireEvent.getAbilityHolder().getUUID());
-        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
+        var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(abilityCooldownExpireEvent.getAbilityHolder().getUUID());
+        if (playerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerOptional.get();
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-            McRPGLocalizationManager localizationManager = McRPG.getInstance().getLocalizationManager();
+            McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             Audience audience = McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID());
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer,
                     LocalizationKeys.ABILITY_NO_LONGER_ON_COOLDOWN,

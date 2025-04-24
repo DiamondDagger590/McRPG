@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.attribute;
 
+import com.diamonddagger590.mccore.registry.Registry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -15,7 +16,7 @@ import java.util.Optional;
  * The code at this time isn't dynamic enough to fully support the desired 3rd party plugin implementation, however
  * this is the initial version of the system with the intent for the plugin recode to expand upon this.
  */
-public class AbilityAttributeManager {
+public class AbilityAttributeRegistry implements Registry<AbilityAttribute<?>> {
 
     public static final NamespacedKey ABILITY_COOLDOWN_ATTRIBUTE_KEY = new NamespacedKey(McRPG.getInstance(), "ability_cooldown_attribute");
     public static final NamespacedKey ABILITY_TIER_ATTRIBUTE_KEY = new NamespacedKey(McRPG.getInstance(), "ability_tier_attribute");
@@ -28,7 +29,7 @@ public class AbilityAttributeManager {
     private final Map<String, NamespacedKey> abilityAttributeKeys;
     private final Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes;
 
-    public AbilityAttributeManager(@NotNull McRPG mcRPG) {
+    public AbilityAttributeRegistry(@NotNull McRPG mcRPG) {
         this.plugin = mcRPG;
         this.abilityAttributeKeys = new HashMap<>();
         this.abilityAttributes = new HashMap<>();
@@ -37,13 +38,13 @@ public class AbilityAttributeManager {
     }
 
     public void registerDefaultAttributes(){
-        registerAttribute(new AbilityTierAttribute());
-        registerAttribute(new AbilityCooldownAttribute());
-        registerAttribute(new AbilityToggledOffAttribute());
-        registerAttribute(new AbilityUnlockedAttribute());
-        registerAttribute(new AbilityUpgradeQuestAttribute());
-        registerAttribute(new AbilityLocationAttribute());
-        registerAttribute(new RemoteTransferMaterialSetAttribute());
+        register(new AbilityTierAttribute());
+        register(new AbilityCooldownAttribute());
+        register(new AbilityToggledOffAttribute());
+        register(new AbilityUnlockedAttribute());
+        register(new AbilityUpgradeQuestAttribute());
+        register(new AbilityLocationAttribute());
+        register(new RemoteTransferMaterialSetAttribute());
     }
 
     /**
@@ -52,7 +53,7 @@ public class AbilityAttributeManager {
      *
      * @param abilityAttribute The {@link AbilityAttribute} to register
      */
-    public void registerAttribute(@NotNull AbilityAttribute<?> abilityAttribute) {
+    public void register(@NotNull AbilityAttribute<?> abilityAttribute) {
         String key = abilityAttribute.getDatabaseKeyName();
         NamespacedKey namespacedKey = abilityAttribute.getNamespacedKey();
 
@@ -67,8 +68,8 @@ public class AbilityAttributeManager {
      * @param abilityAttribute The {@link AbilityAttribute} to check
      * @return {@code true} if the provided {@link AbilityAttribute} is registered
      */
-    public boolean isAttributeRegistered(@NotNull AbilityAttribute<?> abilityAttribute) {
-        return isAttributeRegistered(abilityAttribute.getNamespacedKey());
+    public boolean registered(@NotNull AbilityAttribute<?> abilityAttribute) {
+        return registered(abilityAttribute.getNamespacedKey());
     }
 
     /**
@@ -77,7 +78,7 @@ public class AbilityAttributeManager {
      * @param namespacedKey The {@link NamespacedKey} to check
      * @return {@code true} if the provided {@link NamespacedKey} is registered
      */
-    public boolean isAttributeRegistered(@NotNull NamespacedKey namespacedKey) {
+    public boolean registered(@NotNull NamespacedKey namespacedKey) {
         return abilityAttributes.containsKey(namespacedKey);
     }
 

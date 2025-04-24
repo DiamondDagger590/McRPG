@@ -45,7 +45,7 @@ public class SkillEventTest {
     @Test
     public void testSkillGainExpEvent() {
         Skill skill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
         SkillHolder skillHolder = new SkillHolder(UUID.randomUUID());
         skillHolder.addSkillHolderData(skill);
         var skillHolderData = skillHolder.getSkillHolderData(skill).get();
@@ -61,7 +61,7 @@ public class SkillEventTest {
     @Test
     public void testPostSkillGainExpEvent() {
         Skill skill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
         SkillHolder skillHolder = new SkillHolder(UUID.randomUUID());
         skillHolder.addSkillHolderData(skill);
         var skillHolderData = skillHolder.getSkillHolderData(skill).get();
@@ -76,7 +76,7 @@ public class SkillEventTest {
     @Test
     public void testGainLevelEventThroughExperience() {
         Skill skill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
         SkillHolder skillHolder = new SkillHolder(UUID.randomUUID());
         skillHolder.addSkillHolderData(skill);
         var skillHolderData = skillHolder.getSkillHolderData(skill).get();
@@ -92,7 +92,7 @@ public class SkillEventTest {
     @Test
     public void testGainLevelEventThroughAdding() {
         Skill skill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
         SkillHolder skillHolder = new SkillHolder(UUID.randomUUID());
         skillHolder.addSkillHolderData(skill);
         var skillHolderData = skillHolder.getSkillHolderData(skill).get();
@@ -108,7 +108,7 @@ public class SkillEventTest {
     @Test
     public void testSkillRegisterEvent() {
         Skill skill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
         serverMock.getPluginManager().assertEventFired(SkillRegisterEvent.class, skillRegisterEvent -> {
             assertEquals(skillRegisterEvent.getSkillKey(), skill.getSkillKey());
             return true;
@@ -118,8 +118,8 @@ public class SkillEventTest {
     @Test
     public void testSkillUnregisterEvent() {
         Skill skill = new MockSkill(new NamespacedKey(plugin, "test"));
-        plugin.getSkillRegistry().registerSkill(skill);
-        plugin.getSkillRegistry().unregisterSkill(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).register(skill);
+        plugin.registryAccess().registry(McRPGRegistryKey.SKILL).unregisterSkill(skill);
         serverMock.getPluginManager().assertEventFired(SkillUnregisterEvent.class, skillUnregisterEvent -> {
             assertEquals(skillUnregisterEvent.getSkillKey(), skill.getSkillKey());
             return true;

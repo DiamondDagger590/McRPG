@@ -14,6 +14,8 @@ import us.eunoians.mcrpg.ability.impl.swords.Bleed;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 
 import java.util.Random;
@@ -43,12 +45,12 @@ public class BleedComponents {
             // Get the activation boost from serrated strikes
             double activationBoost = 0;
             if (abilityHolder.isAbilityActive(SerratedStrikes.SERRATED_STRIKES_KEY)) {
-                SerratedStrikes serratedStrikes = (SerratedStrikes) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(SerratedStrikes.SERRATED_STRIKES_KEY);
+                SerratedStrikes serratedStrikes = (SerratedStrikes) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(SerratedStrikes.SERRATED_STRIKES_KEY);
                 activationBoost = serratedStrikes.getBoostToBleedActivation(serratedStrikes.getCurrentAbilityTier(abilityHolder));
             }
             // Check if they're a skill holder, if so then check the activation equation. Otherwise activate it ig (needs custom handling in the future for bosses n stuff)
             if (abilityHolder instanceof SkillHolder skillHolder) {
-                Bleed bleed = (Bleed) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(Bleed.BLEED_KEY);
+                Bleed bleed = (Bleed) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(Bleed.BLEED_KEY);
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
                 if (skillHolderDataOptional.isPresent()) {
                     return (bleed.getActivationChance(skillHolder) + activationBoost) * 1000 > RANDOM.nextInt(100000);
@@ -92,7 +94,7 @@ public class BleedComponents {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent && entityDamageByEntityEvent.getEntity() instanceof LivingEntity livingEntity) {
-                return mcRPG.getBleedManager().canEntityStartBleeding(livingEntity);
+                return mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.BLEED).canEntityStartBleeding(livingEntity);
             }
             return false;
         }

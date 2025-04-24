@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.entity.holder;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.Quest;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +24,7 @@ public class QuestHolder {
 
     @NotNull
     public Set<UUID> getActiveQuests() {
-        return McRPG.getInstance().getQuestManager().getQuestsForHolder(this);
+        return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).getQuestsForHolder(this);
     }
 
     public boolean isQuestActive(@NotNull Quest quest) {
@@ -30,7 +32,7 @@ public class QuestHolder {
     }
 
     public boolean isQuestActive(@NotNull UUID questUUID) {
-        return McRPG.getInstance().getQuestManager().doesHolderHaveQuest(uuid, questUUID);
+        return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).doesHolderHaveQuest(uuid, questUUID);
     }
 
     public void trackQuest(@NotNull Quest quest) {
@@ -38,7 +40,7 @@ public class QuestHolder {
     }
 
     public void trackQuest(@NotNull UUID questUUID) {
-        McRPG.getInstance().getQuestManager().addHolderToQuest(uuid, questUUID);
+        McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).addHolderToQuest(uuid, questUUID);
     }
 
     public void stopTrackingQuest(@NotNull Quest quest) {
@@ -46,7 +48,7 @@ public class QuestHolder {
     }
 
     public void stopTrackingQuest(@NotNull UUID questUUID) {
-        McRPG.getInstance().getQuestManager().removeHolderFromQuest(uuid, questUUID);
+        McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).removeHolderFromQuest(uuid, questUUID);
     }
 
 }

@@ -11,7 +11,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 import us.eunoians.mcrpg.event.entity.AbilityHolderReadyEvent;
 import us.eunoians.mcrpg.event.entity.AbilityHolderUnreadyEvent;
 import us.eunoians.mcrpg.exception.ready.AbilityNotValidToReadyException;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.HashMap;
@@ -203,11 +204,11 @@ public class AbilityHolder {
                 return Optional.of(abilityDataMap.get(abilityKey));
             } else {
                 // TODO This code adds all default attributes if none are loaded, but this may already be handled in the SkilLDAO so maybe this can be removed
-                Set<NamespacedKey> abilityAttributes = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(abilityKey).getApplicableAttributes();
-                AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+                Set<NamespacedKey> abilityAttributes = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey).getApplicableAttributes();
+                AbilityAttributeRegistry abilityAttributeRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
                 AbilityData abilityData = new AbilityData(abilityKey);
                 for (NamespacedKey abilityAttributeKey : abilityAttributes) {
-                    Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityAttributeManager.getAttribute(abilityAttributeKey);
+                    Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityAttributeRegistry.getAttribute(abilityAttributeKey);
                     if (abilityAttributeOptional.isPresent()) {
                         AbilityAttribute<?> abilityAttribute = abilityAttributeOptional.get();
                         abilityData.addAttribute(abilityAttribute);
@@ -243,7 +244,7 @@ public class AbilityHolder {
      */
     @NotNull
     public Set<AbilityData> getAllAbilityDataForSkill(@NotNull NamespacedKey namespacedKey) {
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         Set<AbilityData> returnSet = new HashSet<>();
         Set<NamespacedKey> abilityKeys = abilityRegistry.getAbilitiesBelongingToSkill(namespacedKey);
         abilityKeys.stream().map(this::getAbilityData).filter(Optional::isPresent).map(Optional::get).forEach(returnSet::add);
@@ -565,7 +566,7 @@ public class AbilityHolder {
             DelayableCoreTask delayableCoreTask = new DelayableCoreTask(McRPG.getInstance(), (int) cooldown) {
                 @Override
                 public void run() {
-                    Ability ability = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(abilityKey);
+                    Ability ability = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey);
                     AbilityCooldownExpireEvent abilityCooldownExpireEvent = new AbilityCooldownExpireEvent(abilityHolder, ability);
                     Bukkit.getPluginManager().callEvent(abilityCooldownExpireEvent);
                     removeCooldownExpireNotificationTimer(abilityKey);
@@ -605,7 +606,7 @@ public class AbilityHolder {
     public boolean hasActiveUpgradeQuest(@NotNull NamespacedKey abilityKey) {
         if (abilityDataMap.containsKey(abilityKey)) {
             AbilityData abilityData = abilityDataMap.get(abilityKey);
-            var questOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+            var questOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
             return questOptional.isPresent() && questOptional.get() instanceof AbilityUpgradeQuestAttribute attribute && attribute.shouldContentBeSaved();
         }
         return false;
@@ -635,6 +636,6 @@ public class AbilityHolder {
      * @return {@code true} if the provided {@link NamespacedKey} has an {@link Ability} that exists.
      */
     private boolean validateAbilityExists(@NotNull NamespacedKey abilityKey) {
-        return McRPG.getInstance().getAbilityRegistry().isAbilityRegistered(abilityKey);
+        return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).registered(abilityKey);
     }
 }

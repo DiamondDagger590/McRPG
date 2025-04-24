@@ -1,11 +1,13 @@
 package us.eunoians.mcrpg.localization;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -50,7 +52,7 @@ public enum NativeLocale implements McRPGLocalization {
     @NotNull
     @Override
     public YamlDocument getConfigurationFile() {
-        return McRPG.getInstance().getFileManager().getFile(fileType);
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(fileType);
     }
 
     @NotNull

@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.gui.loadout.display;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
+import com.diamonddagger590.mccore.gui.BaseGui;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.McRPGGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.ToggleLoadoutActiveSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayItemSlot;
@@ -27,7 +27,7 @@ import java.util.Optional;
  * This GUI is used as an entry point for players to go through the workflow
  * of editing the item representing a loadout.
  */
-public class LoadoutDisplayHomeGui extends McRPGGui {
+public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> {
 
     private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int NAME_EDIT_SLOT = 10;
@@ -86,7 +86,7 @@ public class LoadoutDisplayHomeGui extends McRPGGui {
         }
         setSlot(NAME_EDIT_SLOT, new LoadoutDisplayNameEditSlot(loadout));
         setSlot(ITEM_EDIT_SLOT, new LoadoutDisplayItemSlot(loadout));
-        setSlot(ACTIVE_TOGGLE_SLOT, new ToggleLoadoutActiveSlot(getMcRPGPlayer(), loadout));
+        setSlot(ACTIVE_TOGGLE_SLOT, new ToggleLoadoutActiveSlot(getCreatingPlayer(), loadout));
     }
 
     @Override

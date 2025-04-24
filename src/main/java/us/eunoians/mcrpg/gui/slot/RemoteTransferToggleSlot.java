@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.gui.slot;
 
-import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -12,12 +12,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.RemoteTransferMaterialSetAttribute;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryType;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Set;
@@ -39,7 +41,7 @@ public class RemoteTransferToggleSlot extends McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-        var guiOptional = CorePlugin.getInstance().getGuiTracker().getOpenedGui(mcRPGPlayer);
+        var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             toggleMaterial();
             gui.refreshGUI();
@@ -50,13 +52,13 @@ public class RemoteTransferToggleSlot extends McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(material);
         var abilityDataOptional = mcRPGPlayer.asSkillHolder().getAbilityData(remoteTransfer);
 
-        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
-                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
             ItemMeta itemMeta = itemStack.getItemMeta();
             boolean materialDisabled = isMaterialDisallowed();
             itemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to toggle the filter state for this item."),
@@ -92,10 +94,10 @@ public class RemoteTransferToggleSlot extends McRPGSlot {
      * @return {@code true} if the item represented by this slow is disallowed for usage with {@link RemoteTransfer}.
      */
     public boolean isMaterialDisallowed() {
-        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = mcRPGPlayer.asSkillHolder().getAbilityData(remoteTransfer);
-        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
-                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
             return remoteTransferMaterialSetAttribute.isMaterialStored(material);
         }
         return false;
@@ -105,10 +107,10 @@ public class RemoteTransferToggleSlot extends McRPGSlot {
      * Toggles the allow list state for the item represented by this slot.
      */
     public void toggleMaterial() {
-        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = mcRPGPlayer.asSkillHolder().getAbilityData(remoteTransfer);
-        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
-                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
             if (remoteTransferMaterialSetAttribute.isMaterialStored(material)) {
                 remoteTransferMaterialSetAttribute.getContent().remove(material);
                 abilityDataOptional.get().addAttribute(remoteTransferMaterialSetAttribute);
@@ -125,10 +127,10 @@ public class RemoteTransferToggleSlot extends McRPGSlot {
      * @param enableMaterial If the item represented by this slot should be allow listed by {@link RemoteTransfer}.
      */
     public void toggleMaterial(boolean enableMaterial) {
-        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = mcRPGPlayer.asSkillHolder().getAbilityData(remoteTransfer);
-        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
-                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
             if (enableMaterial) {
                 remoteTransferMaterialSetAttribute.getContent().remove(material);
                 abilityDataOptional.get().addAttribute(remoteTransferMaterialSetAttribute);

@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.gui;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
 import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
@@ -26,7 +27,7 @@ import java.util.Optional;
 /**
  * This gui is used to display all {@link PlayerSetting}s to a player.
  */
-public class PlayerSettingGui extends McRPGPaginatedGui {
+public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
 
     private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int SETTING_DISPLAY_SIZE = 18;
@@ -102,7 +103,7 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
         List<McRPGSetting> settings = getSettingsForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < settings.size()) {
-                setSlot(i, settings.get(i).getSettingSlot(getMcRPGPlayer()));
+                setSlot(i, settings.get(i).getSettingSlot(getCreatingPlayer()));
             } else {
                 removeSlot(i);
             }
@@ -151,7 +152,7 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
      */
     @NotNull
     public List<McRPGSetting> getSettings() {
-        return getMcRPGPlayer().getPlayerSettings()
+        return getCreatingPlayer().getPlayerSettings()
                 .stream()
                 .toList();
     }

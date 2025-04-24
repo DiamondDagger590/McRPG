@@ -39,7 +39,7 @@ public class MiningConfigFile extends AbilityConfigFile {
     public static final Route REMOTE_TRANSFER_CONFIGURATION_HEADER = Route.addTo(REMOTE_TRANSFER_HEADER, "tier-configuration");
 
     // Remote Transfer allow list
-    private static final Route REMOTE_TRANSFER_ALLOW_LIST_HEADER = Route.addTo(REMOTE_TRANSFER_HEADER, "allowed-blocks");
+    public static final Route REMOTE_TRANSFER_ALLOW_LIST_HEADER = Route.addTo(REMOTE_TRANSFER_HEADER, "allowed-blocks");
     public static final Route REMOTE_TRANSFER_ALLOW_LIST_NETHER = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "nether");
     public static final Route REMOTE_TRANSFER_ALLOW_LIST_ORES = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "ores");
     public static final Route REMOTE_TRANSFER_ALLOW_LIST_CAVES = Route.addTo(REMOTE_TRANSFER_ALLOW_LIST_HEADER, "caves");

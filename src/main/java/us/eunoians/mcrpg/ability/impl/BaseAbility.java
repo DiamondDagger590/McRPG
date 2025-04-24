@@ -4,7 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponentAttribute;
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponent;
@@ -63,7 +63,7 @@ public abstract class BaseAbility implements Ability {
     @NotNull
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
-        return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
+        return Set.of(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
     }
 
     // TODO finish

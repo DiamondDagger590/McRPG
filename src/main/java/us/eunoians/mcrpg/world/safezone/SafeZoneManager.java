@@ -1,9 +1,12 @@
 package us.eunoians.mcrpg.world.safezone;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,13 +17,12 @@ import java.util.Set;
  * <p>
  * Any third party plugins natively supported by McRPG will have their support defined in {@link SafeZoneType}s.
  */
-public class SafeZoneManager {
+public class SafeZoneManager extends Manager<McRPG> {
 
-    private final McRPG mcRPG;
     private final Set<SafeZoneFunction> safeZoneFunctions;
 
     public SafeZoneManager(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+        super(mcRPG);
         this.safeZoneFunctions = new HashSet<>();
         registerNativeFunctions();
     }
@@ -51,11 +53,8 @@ public class SafeZoneManager {
      * @return {@code true} if the player has data loaded and is standing in a safe zone.
      */
     public boolean isPlayerInSafeZone(Player player) {
-        var playerOptional = mcRPG.getPlayerManager().getPlayer(player.getUniqueId());
-        if (playerOptional.isPresent() && playerOptional.get() instanceof McRPGPlayer mcRPGPlayer) {
-            return isPlayerInSafeZone(mcRPGPlayer);
-        }
-        return false;
+        var playerOptional = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
+        return playerOptional.filter(this::isPlayerInSafeZone).isPresent();
     }
 
     /**

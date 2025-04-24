@@ -21,9 +21,41 @@ public final class LocalizationKeys extends ConfigFile {
     private static final Route SKILL_HEADER = Route.fromString("skill");
     private static final Route SWORDS_HEADER = Route.addTo(SKILL_HEADER, "swords");
 
+    private static final Route GUI_HEADER = Route.fromString("gui");
+
+    private static final Route REMOTE_TRANSFER_GUI_HEADER = Route.addTo(GUI_HEADER, "remote-transfer-gui");
+    public static final Route REMOTE_TRANSFER_GUI_TITLE = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "title");
+    public static final Route REMOTE_TRANSFER_GUI_CATEGORIES_HEADER = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "categories");
+    public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-enabled.display-item");
+    public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-disabled.display-item");
+    public static final Route REMOTE_TRANSFER_GUI_NEXT_BUTTON_DISPLAY_ITEM = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "next-button.display-item");
+    public static final Route REMOTE_TRANSFER_GUI_PREVIOUS_BUTTON_DISPLAY_ITEM = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "previous-button.display-item");
+    public static final Route REMOTE_TRANSFER_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "previous-gui-button.display-item");
+    public static final Route REMOTE_TRANSFER_GUI_FILLER_ITEM_DISPLAY_ITEM = Route.addTo(REMOTE_TRANSFER_GUI_HEADER, "filler-item.display-item");
+
+    private static final Route ABILITY_EDIT_GUI_HEADER = Route.addTo(GUI_HEADER, "ability-edit-gui");
+    public static final Route ABILITY_EDIT_GUI_TITLE = Route.addTo(ABILITY_EDIT_GUI_HEADER, "title");
+    private static final Route LOCATION_ATTRIBUTE_HEADER = Route.addTo(ABILITY_EDIT_GUI_HEADER, "location-attribute");
+    public static final Route LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM = Route.addTo(LOCATION_ATTRIBUTE_HEADER, "no-location-saved.display-item");
+    public static final Route LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM = Route.addTo(LOCATION_ATTRIBUTE_HEADER, "location-saved.display-item");
+    public static final Route TIER_ATTRIBUTE_DISPLAY_ITEM = Route.addTo(ABILITY_EDIT_GUI_HEADER, "tier-attribute.display-item");
+    private static final Route TOGGLED_OFF_HEADER = Route.addTo(ABILITY_EDIT_GUI_HEADER, "toggle-off-attribute");
+    public static final Route ABILITY_TOGGLED_OFF_ATTRIBUTE_DISPLAY_ITEM = Route.addTo(TOGGLED_OFF_HEADER, "toggled-off.display-item");
+    public static final Route ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM = Route.addTo(TOGGLED_OFF_HEADER, "toggled-on.display-item");
+
     private static final Route ABILITY_HEADER = Route.fromString("ability");
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.addTo(ABILITY_HEADER, "ability-still-on-cooldown");
     public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.addTo(ABILITY_HEADER, "ability-no-longer-on-cooldown");
+
+    private static final Route ABILITY_LORE_HEADER = Route.addTo(ABILITY_HEADER, "lore");
+    private static final Route ABILITY_QUEST_LORE_HEADER = Route.addTo(ABILITY_LORE_HEADER, "quest");
+    public static final Route NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE = Route.addTo(ABILITY_QUEST_LORE_HEADER, "not-enough-ability-points");
+    public static final Route CLICK_TO_START_UPGRADE_QUEST_LORE = Route.addTo(ABILITY_QUEST_LORE_HEADER, "click-to-start");
+    public static final Route QUEST_PROGRESS_LORE = Route.addTo(ABILITY_QUEST_LORE_HEADER, "quest-progress");
+    public static final Route UPGRADE_LOCKED_BEHIND_LEVELUP_LORE = Route.addTo(ABILITY_LORE_HEADER, "upgrade-locked-behind-levelup");
+    public static final Route ABILITY_POINT_COUNT_LORE = Route.addTo(ABILITY_LORE_HEADER, "ability-point-count");
+    public static final Route ABILITY_LOCKED_LORE = Route.addTo(ABILITY_LORE_HEADER, "ability-locked");
+    public static final Route EXPANSION_PACK_LORE = Route.addTo(ABILITY_LORE_HEADER, "expansion-pack");
 
     private static final Route ABILITY_SORT_TYPE_HEADER = Route.addTo(ABILITY_HEADER, "sort-types");
     public static final Route ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM = Route.addTo(ABILITY_SORT_TYPE_HEADER, "alphabetical.display-item");

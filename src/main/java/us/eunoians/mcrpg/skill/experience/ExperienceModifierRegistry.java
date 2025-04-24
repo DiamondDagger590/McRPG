@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.experience;
 
+import com.diamonddagger590.mccore.registry.Registry;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -13,7 +14,7 @@ import java.util.List;
  * This registry is used for registering {@link ExperienceModifier}s to modify
  * experience gain.
  */
-public final class ExperienceModifierRegistry {
+public final class ExperienceModifierRegistry implements Registry<ExperienceModifier> {
 
     private final McRPG mcRPG;
     private final List<ExperienceModifier> experienceModifiers;
@@ -28,8 +29,13 @@ public final class ExperienceModifierRegistry {
      *
      * @param experienceModifier The {@link ExperienceModifier} to register.
      */
-    public void registerModifier(@NotNull ExperienceModifier experienceModifier) {
+    public void register(@NotNull ExperienceModifier experienceModifier) {
         experienceModifiers.add(experienceModifier);
+    }
+
+    @Override
+    public boolean registered(@NotNull ExperienceModifier experienceModifier) {
+        return experienceModifiers.contains(experienceModifier);
     }
 
     /**

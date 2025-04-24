@@ -4,8 +4,9 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
-import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Random;
 
@@ -19,7 +20,7 @@ public class ItsATripleComponents {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof ExtraOreActivateEvent extraOreActivateEvent) {
-                ItsATriple itsATriple = (ItsATriple) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(ItsATriple.ITS_A_TRIPLE_KEY);
+                ItsATriple itsATriple = (ItsATriple) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ItsATriple.ITS_A_TRIPLE_KEY);
                 return extraOreActivateEvent.getAbilityHolder().getUUID().equals(abilityHolder.getUUID())
                         && itsATriple.getActivationChance(itsATriple.getCurrentAbilityTier(abilityHolder)) * 1000 > RANDOM.nextInt(100000);
             }

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.world.safezone;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -8,6 +9,8 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.external.lands.LandsHook;
 import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 
 /**
  * A Safe Zone Type represents a 3rd party plugin that McRPG natively supports
@@ -17,8 +20,8 @@ public enum SafeZoneType {
 
     LANDS(mcRPGPlayer -> {
         McRPG mcRPG = mcRPGPlayer.getPlugin();
-        YamlDocument configFile = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG);
-        var landsHookOptional = mcRPG.getLandsHook();
+        YamlDocument configFile = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
+        var landsHookOptional = mcRPG.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LANDS);
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (landsHookOptional.isPresent() && playerOptional.isPresent()) {
             LandsHook landsHook = landsHookOptional.get();
@@ -32,8 +35,8 @@ public enum SafeZoneType {
     }),
     WORLD_GUARD(mcRPGPlayer -> {
         McRPG mcRPG = mcRPGPlayer.getPlugin();
-        YamlDocument configFile = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG);
-        var worldGuardHookOptional = mcRPG.getWorldGuardHook();
+        YamlDocument configFile = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
+        var worldGuardHookOptional = mcRPG.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.WORLDGUARD);
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (worldGuardHookOptional.isPresent() && playerOptional.isPresent()) {
             WorldGuardHook worldGuardHook = worldGuardHookOptional.get();

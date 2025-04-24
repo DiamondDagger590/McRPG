@@ -8,8 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
-import us.eunoians.mcrpg.event.ability.AbilityEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class BleedDamageEvent extends AbilityEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability BLEED = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(Bleed.BLEED_KEY);
+    private static final Ability BLEED = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(Bleed.BLEED_KEY);
 
     private final Optional<AbilityHolder> bleedUser;
     private final Entity damagedEntity;

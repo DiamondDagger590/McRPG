@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.display.impl;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import net.kyori.adventure.audience.Audience;
@@ -16,6 +17,8 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -46,7 +49,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
         Player player = Bukkit.getPlayer(uuid);
         if (dataOptional.isPresent() && player != null) {
             displayUpdate(skillKey, getMcRPGPlayer(), dataOptional.get());
-            DelayableCoreTask delayableCoreTask = new DelayableCoreTask(mcRPG, mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_DURATION, 3)) {
+            DelayableCoreTask delayableCoreTask = new DelayableCoreTask(mcRPG, mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_DURATION, 3)) {
 
                 @Override
                 public void run() {
@@ -68,9 +71,9 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
      */
     protected void displayUpdate(@NotNull NamespacedKey skillKey, @NotNull McRPGPlayer mcRPGPlayer, @NotNull SkillHolder.SkillHolderData skillHolderData) {
         McRPG mcRPG = getMcRPGPlayer().getPlugin();
-        YamlDocument mainConfig = mcRPG.getFileManager().getFile(FileType.MAIN_CONFIG);
-        McRPGLocalizationManager localizationManager = mcRPG.getLocalizationManager();
-        SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
+        YamlDocument mainConfig = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
+        McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        SkillRegistry skillRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL);
         Skill skill = skillRegistry.getRegisteredSkill(skillKey);
         Audience audience = mcRPG.getAdventure().player(mcRPGPlayer.getUUID());
         cleanDisplay();

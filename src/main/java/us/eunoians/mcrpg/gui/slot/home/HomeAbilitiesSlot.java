@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.slot.home;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -13,6 +14,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.HomeGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Set;
@@ -26,7 +28,7 @@ public class HomeAbilitiesSlot extends McRPGSlot {
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            McRPG.getInstance().getGuiTracker().trackPlayerGui(player, abilityGui);
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(player, abilityGui);
             player.openInventory(abilityGui.getInventory());
         });
         return true;

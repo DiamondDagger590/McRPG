@@ -12,6 +12,8 @@ import us.eunoians.mcrpg.display.impl.BossBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.setting.ExperienceDisplaySettingSlot;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -89,7 +91,7 @@ public enum ExperienceDisplaySetting implements McRPGSetting {
     public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
         assert(player instanceof McRPGPlayer);
         McRPG mcRPG = ((McRPGPlayer) player).getPlugin();
-        DisplayManager displayManager = mcRPG.getDisplayManager();
+        DisplayManager displayManager = mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY);
         UUID uuid = player.getUUID();
         if (displayManager.hasActiveDisplay(uuid)) {
             displayManager.createDisplay((McRPGPlayer) player);

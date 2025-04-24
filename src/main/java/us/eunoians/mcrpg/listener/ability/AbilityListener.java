@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.listener.ability;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -13,6 +14,8 @@ import us.eunoians.mcrpg.ability.impl.CooldownableAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
 
 import java.util.Set;
@@ -38,14 +41,14 @@ public interface AbilityListener extends Listener {
      */
     default void activateAbilities(@NotNull UUID uuid, @NotNull Event event) {
         McRPG mcRPG = McRPG.getInstance();
-        EntityManager entityManager = mcRPG.getEntityManager();
-        AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
+        EntityManager entityManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+        AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
 
             // Validate that the holder currently can use McRPG
-            if (!mcRPG.getWorldManager().isMcRPGEnabledForHolder(abilityHolder)) {
+            if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
             }
 
@@ -79,18 +82,18 @@ public interface AbilityListener extends Listener {
      */
     default void readyAbilities(@NotNull UUID uuid, @NotNull Event event) {
         McRPG mcRPG = McRPG.getInstance();
-        EntityManager entityManager = mcRPG.getEntityManager();
-        AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
+        EntityManager entityManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+        AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
 
             // Validate that the holder currently can use McRPG
-            if (!mcRPG.getWorldManager().isMcRPGEnabledForHolder(abilityHolder)) {
+            if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
             }
 
             // Check if the player requires empty offhand
-            var playerOptional = mcRPG.getPlayerManager().getPlayer(uuid);
+            var playerOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(uuid);
             if (playerOptional.isPresent() && playerOptional.get().getAsBukkitPlayer().isPresent()) {
                 McRPGPlayer mcRPGPlayer = playerOptional.get();
                 var settingOptional = mcRPGPlayer.getPlayerSetting(RequireEmptyOffhandSetting.SETTING_KEY);

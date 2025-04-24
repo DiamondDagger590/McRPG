@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.display;
 
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -16,13 +17,12 @@ import java.util.UUID;
 /**
  * The manager for managing {@link ExperienceDisplay}s for players.
  */
-public class DisplayManager {
+public class DisplayManager extends Manager<McRPG> {
 
-    private final McRPG mcRPG;
     private final Map<UUID, ExperienceDisplay> activeDisplays;
 
     public DisplayManager(@NotNull McRPG plugin) {
-        this.mcRPG = plugin;
+        super(plugin);
         this.activeDisplays = new HashMap<>();
     }
 

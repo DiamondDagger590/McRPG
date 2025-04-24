@@ -2,6 +2,8 @@ package us.eunoians.mcrpg.ability;
 
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
+import com.diamonddagger590.mccore.registry.Registry;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -14,10 +16,11 @@ import us.eunoians.mcrpg.ability.check.AlliedAttackCheck;
 import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.AbilityRegisterEvent;
 import us.eunoians.mcrpg.event.ability.AbilityUnregisterEvent;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.HashMap;
@@ -32,7 +35,7 @@ import java.util.Set;
  * This is where abilities will be registered and unregistered, as well the central location for
  * the creation of {@link AbilityData} for {@link AbilityHolder ability holders}.
  */
-public class AbilityRegistry {
+public class AbilityRegistry implements Registry<Ability> {
 
     private final McRPG mcRPG;
     private final Map<NamespacedKey, Ability> abilities;
@@ -62,7 +65,7 @@ public class AbilityRegistry {
      *
      * @param ability The {@link Ability} to register
      */
-    public void registerAbility(@NotNull Ability ability) {
+    public void register(@NotNull Ability ability) {
         NamespacedKey abilityKey = ability.getAbilityKey();
         abilities.put(abilityKey, ability);
 
@@ -75,20 +78,20 @@ public class AbilityRegistry {
             abilitiesWithoutSkills.add(abilityKey);
         }
         if (ability instanceof ReloadableContentAbility reloadableContentAbility) {
-            mcRPG.getReloadableContentRegistry().trackReloadableContent(reloadableContentAbility.getReloadableContent());
+            mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT).trackReloadableContent(reloadableContentAbility.getReloadableContent());
         }
         Bukkit.getPluginManager().callEvent(new AbilityRegisterEvent(ability));
     }
 
     /**
      * Checks to see if the provided {@link Ability} is registered by using {@link Ability#getAbilityKey()}
-     * and calling {@link #isAbilityRegistered(NamespacedKey)}.
+     * and calling {@link #registered(NamespacedKey)}.
      *
      * @param ability The {@link Ability} to check
      * @return {@code true} if the provided {@link Ability} is registered or {@code false} otherwise.
      */
-    public boolean isAbilityRegistered(@NotNull Ability ability) {
-        return isAbilityRegistered(ability.getAbilityKey());
+    public boolean registered(@NotNull Ability ability) {
+        return registered(ability.getAbilityKey());
     }
 
     /**
@@ -98,7 +101,7 @@ public class AbilityRegistry {
      * @param abilityKey The {@link NamespacedKey} to check
      * @return {@code true} if the provided {@link NamespacedKey} matches a registered {@link Ability} or {@code false} otherwise.
      */
-    public boolean isAbilityRegistered(@NotNull NamespacedKey abilityKey) {
+    public boolean registered(@NotNull NamespacedKey abilityKey) {
         return abilities.containsKey(abilityKey);
     }
 
@@ -162,7 +165,7 @@ public class AbilityRegistry {
     /**
      * Gets an {@link Ability} instance of the provided {@link NamespacedKey}.
      * <p>
-     * This method will throw a {@link AbilityNotRegisteredException} if the {@link #isAbilityRegistered(NamespacedKey)}
+     * This method will throw a {@link AbilityNotRegisteredException} if the {@link #registered(NamespacedKey)}
      * returns false for the provided {@link NamespacedKey}.
      *
      * @param abilityKey The {@link NamespacedKey} to get the {@link Ability} instance of
@@ -170,7 +173,7 @@ public class AbilityRegistry {
      */
     @NotNull
     public Ability getRegisteredAbility(@NotNull NamespacedKey abilityKey) {
-        if (!isAbilityRegistered(abilityKey)) {
+        if (!registered(abilityKey)) {
             throw new AbilityNotRegisteredException(abilityKey);
         }
 

@@ -4,9 +4,10 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -131,9 +132,9 @@ public class SkillDataSnapshot {
 
     public void addDefaultAttributes(@NotNull Ability ability) {
         Map<NamespacedKey, AbilityAttribute<?>> abilityAttributeList = getAbilityAttributes(ability.getAbilityKey());
-        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
+        AbilityAttributeRegistry abilityAttributeRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         for (NamespacedKey attributeKey : ability.getApplicableAttributes()) {
-            abilityAttributeManager.getAttribute(attributeKey).ifPresent(abilityAttribute -> abilityAttributeList.put(attributeKey, abilityAttribute));
+            abilityAttributeRegistry.getAttribute(attributeKey).ifPresent(abilityAttribute -> abilityAttributeList.put(attributeKey, abilityAttribute));
         }
         abilityAttributes.put(ability.getAbilityKey(), abilityAttributeList);
     }

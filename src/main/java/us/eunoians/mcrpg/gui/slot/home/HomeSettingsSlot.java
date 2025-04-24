@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.gui.slot.home;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,6 +16,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.HomeGui;
 import us.eunoians.mcrpg.gui.PlayerSettingGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +42,7 @@ public class HomeSettingsSlot extends McRPGSlot {
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         PlayerSettingGui playerSettingGui = new PlayerSettingGui(mcRPGPlayer, McRPG.getInstance());
-        McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, playerSettingGui);
+        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, playerSettingGui);
         player.openInventory(playerSettingGui.getInventory());
         return true;
     }

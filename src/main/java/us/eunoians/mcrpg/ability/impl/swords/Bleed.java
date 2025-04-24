@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
 import com.diamonddagger590.mccore.parser.Parser;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
@@ -22,6 +23,8 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -75,7 +78,7 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
         Bukkit.getPluginManager().callEvent(bleedActivateEvent);
 
         if(!bleedActivateEvent.isCancelled()) {
-            getPlugin().getBleedManager().startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
+            getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.BLEED).startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
         }
     }
 
@@ -87,7 +90,7 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
     }
 
     @NotNull
@@ -100,7 +103,7 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
         if (abilityHolder instanceof SkillHolder skillHolder) {
             var skillHolderDataOptional = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
             if (skillHolderDataOptional.isPresent()) {
-                Parser parser = new Parser(getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
+                Parser parser = new Parser(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getString(SwordsConfigFile.BLEED_ACTIVATION_EQUATION));
                 parser.setVariable("swords_level", skillHolderDataOptional.get().getCurrentLevel());
                 return parser.getValue();
             }

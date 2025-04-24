@@ -4,7 +4,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.UpgradeQuestReward;
 import us.eunoians.mcrpg.quest.objective.EntitySlayQuestObjective;
@@ -81,9 +81,9 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
     @NotNull
     @Override
     default Set<NamespacedKey> getApplicableAttributes() {
-        return Set.of(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
-                AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE,
-                AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY,
-                AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+        return Set.of(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY,
+                AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE,
+                AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY,
+                AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
     }
 }
