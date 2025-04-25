@@ -29,8 +29,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * A helper class that provides the functionality to return lore
+ * that should be appended to ability items conditionally.
+ */
 public final class AbilityLoreAppender {
 
+    /**
+     * Returns a {@link Pair} containing information needed to append to ability item lore.
+     * <p>
+     * The left side of the pair contains a {@link List} representing the lore that should be appended.
+     * The right side of the pair contains a {@link Map} of placeholders needed to support the lore. The key
+     * of this map is the placeholder and the value is the value to replace the placeholder with.
+     *
+     * @param mcRPGPlayer The player to use as context when generating the lore.
+     * @param ability     The ability to use as context when generating the lore.
+     * @return A {@link Pair} containing information needed to append to ability item lore.
+     */
     @NotNull
     public static Pair<List<String>, Map<String, String>> getAppendLore(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
@@ -58,8 +73,7 @@ public final class AbilityLoreAppender {
                         } else {
                             throw new IllegalArgumentException("The ability quest for ability " + ability.getName() + " was not found.");
                         }
-                    }
-                    else {
+                    } else {
                         abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).ifPresent(abilityAttribute -> {
                             if (abilityAttribute instanceof AbilityTierAttribute abilityTierAttribute) {
                                 int tier = abilityTierAttribute.getContent();
@@ -123,8 +137,7 @@ public final class AbilityLoreAppender {
                             }
                         });
                     }
-                }
-                else {
+                } else {
                     lore.add("");
                     lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.ABILITY_LOCKED_LORE));
                 }

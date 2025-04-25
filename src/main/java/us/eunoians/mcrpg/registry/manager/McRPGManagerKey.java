@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.registry.manager;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.configuration.FileManager;
@@ -16,6 +17,13 @@ import us.eunoians.mcrpg.world.safezone.SafeZoneManager;
 
 import static com.diamonddagger590.mccore.registry.manager.ManagerKeyImpl.create;
 
+/**
+ * A soft enum of all {@link ManagerKey}s supported by McRPG.
+ * <p>
+ * To use these, you will need access to the {@link com.diamonddagger590.mccore.registry.manager.ManagerRegistry}
+ * via {@link com.diamonddagger590.mccore.registry.RegistryAccess#registry(RegistryKey)} while passing in
+ * {@link RegistryKey#MANAGER}.
+ */
 public interface McRPGManagerKey<M> extends ManagerKey<M> {
 
     ManagerKey<McRPGPlayerManager> PLAYER = create(McRPGPlayerManager.class);

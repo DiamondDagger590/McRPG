@@ -42,7 +42,6 @@ import us.eunoians.mcrpg.expansion.ContentExpansionManager;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.expansion.handler.ContentHandlerType;
 import us.eunoians.mcrpg.external.geyser.GeyserHook;
-import us.eunoians.mcrpg.external.healthbar.HealthBarHook;
 import us.eunoians.mcrpg.external.lands.LandsHook;
 import us.eunoians.mcrpg.external.lunar.LunarClientHook;
 import us.eunoians.mcrpg.external.mcmmo.McMMOHook;
@@ -282,15 +281,8 @@ public class McRPG extends CorePlugin {
         super.setupHooks();
 
         PluginHookRegistry pluginHookRegistry = registryAccess().registry(RegistryKey.PLUGIN_HOOK);
-        if (Bukkit.getPluginManager().isPluginEnabled("HealthBar")) {
-            getLogger().info("HealthBar plugin found, McRPG's healthbars are automatically disabled.");
-            pluginHookRegistry.register(new HealthBarHook(this));
-        }
         if (Bukkit.getPluginManager().isPluginEnabled("Sickle")) {
             pluginHookRegistry.register(new SickleHook(this));
-        }
-        if (Bukkit.getPluginManager().isPluginEnabled("HealthBar")) {
-            pluginHookRegistry.register(new HealthBarHook(this));
         }
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("PlaceholderAPI found... registering placeholders");

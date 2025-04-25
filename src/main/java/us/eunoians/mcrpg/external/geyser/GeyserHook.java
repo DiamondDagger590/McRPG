@@ -7,6 +7,10 @@ import us.eunoians.mcrpg.McRPG;
 
 import java.util.UUID;
 
+/**
+ * A hook for containing all code related to <a href="https://www.spigotmc.org/resources/geyser-minecraft-bedrock-protocol-support.81297/">Geyser</a>
+ * that this plugin needs in order to support it.
+ */
 public class GeyserHook extends PluginHook<McRPG> {
 
     public GeyserHook(@NotNull McRPG plugin) {
