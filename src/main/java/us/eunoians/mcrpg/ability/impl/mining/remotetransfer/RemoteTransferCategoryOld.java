@@ -1,6 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.mining.remotetransfer;
 
-import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;

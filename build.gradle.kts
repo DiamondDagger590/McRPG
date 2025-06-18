@@ -61,12 +61,8 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val mccoreVersion = "1.0.0.12-SNAPSHOT"
-    implementation("com.diamonddagger590:McCore:$mccoreVersion") {
-        exclude(group = "com.nexomc")
-        exclude(group = "dev.lone")
-        exclude(group = "com.arcaniax")
-    }
+    val mccoreVersion = "1.0.0.13-SNAPSHOT"
+    implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")

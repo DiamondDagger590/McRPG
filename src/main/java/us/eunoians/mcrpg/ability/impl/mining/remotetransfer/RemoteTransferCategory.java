@@ -1,32 +1,50 @@
 package us.eunoians.mcrpg.ability.impl.mining.remotetransfer;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import com.diamonddagger590.mccore.configuration.ReloadableSet;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.item.CustomBlockWrapper;
+import com.google.common.collect.ImmutableSet;
 import dev.dejvokep.boostedyaml.route.Route;
-import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RemoteTransferCategory {
 
     private final String categoryKey;
-    private final ReloadableSet<Material> allowedMaterials;
+    private final Set<CustomBlockWrapper> categoryBlocks;
 
     public RemoteTransferCategory(@NotNull String categoryKey){
         this.categoryKey = categoryKey;
-        allowedMaterials = new ReloadableSet<>(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG), categoryType.getConfigurationRoute(), strings -> strings.stream().map(Material::getMaterial).collect(Collectors.toSet()));
+        this.categoryBlocks = new HashSet<>();
+    }
+
+    public RemoteTransferCategory(@NotNull String categoryKey, @NotNull Set<CustomBlockWrapper> categoryBlocks){
+        this.categoryKey = categoryKey;
+        this.categoryBlocks = categoryBlocks;
     }
 
     @NotNull
     public String getCategoryKey(){
         return categoryKey;
+    }
+
+    @NotNull
+    public Set<CustomBlockWrapper> getCategoryBlocks(){
+        return ImmutableSet.copyOf(categoryBlocks);
+    }
+
+    public void setCategoryBlocks(@NotNull Set<CustomBlockWrapper> categoryBlocks){
+        this.categoryBlocks.clear();
+        this.categoryBlocks.addAll(categoryBlocks);
+    }
+
+    public void addCategoryBlock(@NotNull CustomBlockWrapper customBlockWrapper){
+        categoryBlocks.add(customBlockWrapper);
     }
 
     @NotNull

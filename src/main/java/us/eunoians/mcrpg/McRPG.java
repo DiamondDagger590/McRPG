@@ -3,7 +3,7 @@ package us.eunoians.mcrpg;
 import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.command.DisplayNameCommand;
 import com.diamonddagger590.mccore.command.LoreCommand;
-import com.diamonddagger590.mccore.configuration.ReloadableTask;
+import com.diamonddagger590.mccore.configuration.task.ReloadableTask;
 import com.diamonddagger590.mccore.database.driver.DatabaseDriverType;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
