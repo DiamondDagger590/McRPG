@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.exception.ready;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**

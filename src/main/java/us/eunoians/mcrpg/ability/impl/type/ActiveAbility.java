@@ -1,4 +1,6 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability.impl.type;
+
+import us.eunoians.mcrpg.ability.Ability;
 
 /**
  * An interface that represents an {@link Ability} that requires some sort of

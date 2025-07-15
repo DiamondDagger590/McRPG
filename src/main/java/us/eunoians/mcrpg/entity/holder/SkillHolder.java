@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainExpEvent;

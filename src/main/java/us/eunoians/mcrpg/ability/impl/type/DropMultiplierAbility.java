@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability.impl.type;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -6,6 +6,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 
 import java.util.Map;
 

@@ -6,7 +6,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
+import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;

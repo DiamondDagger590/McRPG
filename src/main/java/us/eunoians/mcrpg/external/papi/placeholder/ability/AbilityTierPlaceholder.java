@@ -6,6 +6,7 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
@@ -15,7 +16,7 @@ import us.eunoians.mcrpg.external.papi.placeholder.McRPGPlaceholder;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
- * This placeholder exists for all registered {@link us.eunoians.mcrpg.ability.impl.Ability Abilities} and allows
+ * This placeholder exists for all registered {@link Ability Abilities} and allows
  * PAPI to use the ability tier as a placeholder.
  */
 public class AbilityTierPlaceholder extends McRPGPlaceholder {

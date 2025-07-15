@@ -4,7 +4,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;

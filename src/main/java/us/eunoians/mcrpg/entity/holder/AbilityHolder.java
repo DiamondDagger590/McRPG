@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 import us.eunoians.mcrpg.event.entity.AbilityHolderReadyEvent;

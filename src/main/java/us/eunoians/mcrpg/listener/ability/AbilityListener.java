@@ -8,9 +8,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
-import us.eunoians.mcrpg.ability.impl.CooldownableAbility;
+import us.eunoians.mcrpg.ability.BaseAbility;
+import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -32,7 +33,7 @@ import java.util.UUID;
 public interface AbilityListener extends Listener {
 
     /**
-     * Goes through a list of all valid {@link us.eunoians.mcrpg.ability.impl.Ability Abilities}
+     * Goes through a list of all valid {@link Ability Abilities}
      * for an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} that maps to the provided {@link UUID} while
      * checking for activation logic and finally activating said abilities.
      *
@@ -73,7 +74,7 @@ public interface AbilityListener extends Listener {
     }
 
     /**
-     * Goes through a list of all valid {@link us.eunoians.mcrpg.ability.impl.Ability Abilities}
+     * Goes through a list of all valid {@link Ability Abilities}
      * for an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} that maps to the provided {@link UUID} while
      * checking for ready logic and finally readying said abilities.
      *

@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.util.filter.ability;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;

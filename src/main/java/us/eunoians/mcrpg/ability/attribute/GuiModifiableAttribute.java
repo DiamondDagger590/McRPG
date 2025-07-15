@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.ability.attribute;
 
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;

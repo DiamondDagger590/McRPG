@@ -4,13 +4,14 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * A {@link PlayerContextFilter} that filters out all {@link us.eunoians.mcrpg.ability.impl.Ability Abilities} that can't be added to the
+ * A {@link PlayerContextFilter} that filters out all {@link Ability Abilities} that can't be added to the
  * {@link McRPGPlayer}'s {@link us.eunoians.mcrpg.loadout.Loadout}.
  */
 public class AbilityKeyInLoadoutFilter implements PlayerContextFilter<NamespacedKey> {

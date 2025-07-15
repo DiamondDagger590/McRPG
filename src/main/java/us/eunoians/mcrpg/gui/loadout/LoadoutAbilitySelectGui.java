@@ -15,7 +15,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
@@ -34,7 +35,7 @@ import java.util.Set;
  * their {@link Loadout}.
  * <p>
  * Abilities in this gui are automatically filtered out if the ability can't be added to the selected slot. Since
- * a loadout can only contain one {@link us.eunoians.mcrpg.ability.impl.ActiveAbility} per {@link us.eunoians.mcrpg.skill.Skill},
+ * a loadout can only contain one {@link ActiveAbility} per {@link us.eunoians.mcrpg.skill.Skill},
  * if a player is trying to replace an active ability, all other active abilities for that skill are filtered out and not shown as options.
  */
 public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {

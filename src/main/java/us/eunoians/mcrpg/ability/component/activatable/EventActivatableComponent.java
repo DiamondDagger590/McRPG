@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.ability.component.activatable;
 
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.component.AbilityComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 

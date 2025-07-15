@@ -1,9 +1,9 @@
-package us.eunoians.mcrpg.ability;
+package us.eunoians.mcrpg.ability.impl;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 
 import java.util.Optional;

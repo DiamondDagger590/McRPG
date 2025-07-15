@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;

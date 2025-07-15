@@ -8,8 +8,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
 import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 import us.eunoians.mcrpg.mock.ability.MockAbility;
 import us.eunoians.mcrpg.mock.skill.MockSkill;

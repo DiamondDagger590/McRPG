@@ -7,7 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
+import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;

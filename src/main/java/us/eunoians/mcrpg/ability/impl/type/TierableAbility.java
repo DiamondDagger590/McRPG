@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability.impl.type;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;

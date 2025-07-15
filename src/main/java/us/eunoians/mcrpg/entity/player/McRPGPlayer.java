@@ -9,7 +9,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
-import us.eunoians.mcrpg.ability.impl.TierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;

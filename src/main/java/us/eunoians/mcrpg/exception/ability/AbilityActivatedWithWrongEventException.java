@@ -1,8 +1,7 @@
 package us.eunoians.mcrpg.exception.ability;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.BaseAbility;
+import us.eunoians.mcrpg.ability.Ability;
 
 public class AbilityActivatedWithWrongEventException extends RuntimeException {
 

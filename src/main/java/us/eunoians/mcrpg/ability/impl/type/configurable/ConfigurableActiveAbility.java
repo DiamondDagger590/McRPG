@@ -1,9 +1,11 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability.impl.type.configurable;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.HashSet;

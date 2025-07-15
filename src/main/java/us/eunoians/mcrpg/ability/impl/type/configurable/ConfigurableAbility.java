@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability.impl.type.configurable;
 
 import com.diamonddagger590.mccore.builder.item.ItemBuilderConfigurationKeys;
 import com.diamonddagger590.mccore.registry.RegistryKey;
@@ -6,6 +6,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.builder.item.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;

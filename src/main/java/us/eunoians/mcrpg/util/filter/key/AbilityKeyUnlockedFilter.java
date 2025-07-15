@@ -5,13 +5,14 @@ import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Collection;
 
 /**
- * A {@link PlayerContextFilter} that filters out all {@link us.eunoians.mcrpg.ability.impl.Ability Abilities}
+ * A {@link PlayerContextFilter} that filters out all {@link Ability Abilities}
  * that aren't unlockable abilities.
  */
 public class AbilityKeyUnlockedFilter implements PlayerContextFilter<NamespacedKey> {

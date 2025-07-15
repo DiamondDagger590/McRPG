@@ -1,10 +1,12 @@
-package us.eunoians.mcrpg.ability.impl;
+package us.eunoians.mcrpg.ability.impl.type.configurable;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.UpgradeQuestReward;
 import us.eunoians.mcrpg.quest.objective.EntitySlayQuestObjective;

@@ -2,9 +2,10 @@ package us.eunoians.mcrpg.gui.ability;
 
 import com.diamonddagger590.mccore.util.LinkedNode;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 
 /**
- * This gui is used to sort {@link us.eunoians.mcrpg.ability.impl.Ability Abilities} in a {@link com.diamonddagger590.mccore.gui.Gui} by
+ * This gui is used to sort {@link Ability Abilities} in a {@link com.diamonddagger590.mccore.gui.Gui} by
  * providing a {@link AbilitySortType} that can be toggled through to do different kinds of sorting.
  */
 public interface SortableAbilityGui {
