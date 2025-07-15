@@ -17,7 +17,7 @@ import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedComponents;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -96,7 +96,7 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.BLEED_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.BLEED_DISPLAY_ITEM_HEADER;
     }
 
     public double getActivationChance(@NotNull AbilityHolder abilityHolder) {
@@ -115,7 +115,8 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
     @Override
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(), McRPGMethods.getChanceNumberFormat().format(getActivationChance(player.asSkillHolder())));
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(player.asSkillHolder())));
         return placeholders;
     }
 }

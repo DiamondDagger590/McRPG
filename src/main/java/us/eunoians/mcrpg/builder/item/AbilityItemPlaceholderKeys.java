@@ -10,6 +10,9 @@ public enum AbilityItemPlaceholderKeys {
     TIER("tier"),
     SKILL("skill"),
     ABILITY("ability"),
+    RANGE("range"),
+    RADIUS("radius"),
+    COOLDOWN("cooldown"),
     ACTIVATION_CHANCE("activation-chance"),
     EXPANSION("expansion"),
     ABILITY_POINT_COUNT("ability-point-count"),
@@ -20,8 +23,10 @@ public enum AbilityItemPlaceholderKeys {
     BASE_DAMAGE_BOOST("base-damage-boost"),
     BONUS_DAMAGE_CHANCE("bonus-damage-chance"),
     BONUS_DAMAGE("bonus-damage"),
-    VAMPIRE_HEALING("vampire-healing"),
-    REMOTE_TRANSFER_RANGE("remote-transfer-range");
+    HEALING_AMOUNT("healing-amount"),
+    EXPERIENCE_DROPPED("experience-dropped"),
+    MINIMUM_HUNGER("minimum-hunger"),
+    ;
 
     private final String key;
 

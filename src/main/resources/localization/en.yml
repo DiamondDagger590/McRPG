@@ -11,6 +11,7 @@
 #
 #######################################
 #
+config-version: 1
 # Configure messages for McRPG commands
 commands:
   # Configure experience commands
@@ -93,8 +94,15 @@ gui:
           lore:
             - "<gray>Ability is currently <green>ENABLED</green>.</gray>"
             - "<gray>Click to <red>DISABLE</red> this ability.</gray>"
+    remote-transfer-block-toggle-attribute:
+      display-item:
+        material: CHEST
+        name: "<gold>Block Filter"
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"
+    # These categories should match exactly to the ones in the mining_configuration.yml.
+    # The "all" category is an internal concept that acts as the combination of all configured categories.
+    # If any category is defined in the mining_configuration.yml but not here, you will get errors.
     categories:
       all:
         # The name to use for the <remote-transfer-category> placeholder.
@@ -181,18 +189,19 @@ gui:
             - '<gray>Click to toggle the filter state for this item.'
             - '<gray>Item is currently <red>disabled</red>.'
             - '<gray>Category: <gold><remote-transfer-category>'
-    # Configure the back button for this gui
-    next-button:
+    # Configure the next button for this gui
+    next-page-button:
       display-item:
         name: "<red>Next Page</red>"
         lore:
           - "<gray>Click to go back to the next page.</gray>"
-    # Configure the next button for this gui
-    previous-button:
+    # Configure the previous page button for this gui
+    previous-page-button:
       display-item:
         name: "<red>Previous Page</red>"
         lore:
           - "<gray>Click to go back to the previous page.</gray>"
+    # Configure the back button
     previous-gui-button:
       display-item:
         name: "<red>Return to Editing</red>"
@@ -299,7 +308,7 @@ ability:
         # Supports the following placeholders: <skill>, <activation-chance>
         lore:
           - '<gray>Inflicts the <red>Bleed</red> status on an enemy when attacking'
-          - 'with sword, dealing damage over time.'
+          - '<gray>with sword, dealing damage over time.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
@@ -342,6 +351,7 @@ ability:
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
           - '<gray>Damage: <gold><damage>'
+          - '<gray>Cooldown: <gold><cooldown>'
     serrated-strikes:
       display-item:
         name: "<red><ability></red>"
@@ -354,6 +364,7 @@ ability:
           - '<gray>Tier: <gold><tier>'
           - '<gray>Duration: <gold><ability-duration>'
           - '<gray>Activation Chance Increase: <gold><activation-chance-increase>'
+          - '<gray>Cooldown: <gold><cooldown>'
     vampire:
       display-item:
         name: "<red><ability></red>"
@@ -365,7 +376,7 @@ ability:
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
           - '<gray>Activation Chance: <gold><activation-chance>'
-          - '<gray>Healing Amount: <gold><vampire-healing>'
+          - '<gray>Healing Amount: <gold><healing-amount>'
     extra-ore:
       display-item:
         name: "<red><ability></red>"
@@ -399,7 +410,7 @@ ability:
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
-          - '<gray>Range: <gold><ability-range>'
+          - '<gray>Range: <gold><range>'
           - '<gray>Cooldown: <gold><cooldown>'
     remote-transfer:
       display-item:
@@ -413,18 +424,19 @@ ability:
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
-          - '<gray>Transfer Range: <gold><remote-transfer-range>'
+          - '<gray>Transfer Range: <gold><range>'
     dryads-gift:
       display-item:
         name: "<red><ability></red>"
         ability-name: "Dryad's Gift"
-        material: CHEST
+        material: EXPERIENCE_BOTTLE
         lore:
           - '<gray>Has a chance to drop experience when breaking wood'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
           - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<gray><Experience Dropped: <gold><experience-dropped>'
     extra-lumber:
       display-item:
         name: "<red><ability></red>"
@@ -436,16 +448,29 @@ ability:
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
-    heavy-swing:
+    nymphs-vitality:
       display-item:
         name: "<red><ability></red>"
-        ability-name: "Nymph's Vitality
-        material: NETHERITE_AXE
+        ability-name: "Nymph's Vitality"
+        material: OAK_SAPLING
         lore:
           - '<gray>Will prevent your hunger from dropping past a certain point when in wooded biomes.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
+          - '<gray>Minimum Hunger: <gold><minimum-hunger>'
+    heavy-swing:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Heavy Swing"
+        material: NETHERITE_AXE
+        lore:
+          - '<gray>Will occasionally break wood in an AOE as you mine..'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<gray>Radius: <gold><radius>'
 skills:
   swords:
     display-item:

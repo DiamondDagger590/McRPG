@@ -25,7 +25,7 @@ import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -76,7 +76,7 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.RAGE_SPIKE_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.RAGE_SPIKE_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -203,7 +203,10 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
     @Override
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put(AbilityItemPlaceholderKeys.DAMAGE.getKey(), Double.toString(getDamage(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(AbilityItemPlaceholderKeys.DAMAGE.getKey(),
+                Double.toString(getDamage(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(AbilityItemPlaceholderKeys.COOLDOWN.getKey(),
+                Long.toString(getCooldown(player.asSkillHolder())));
         return placeholders;
     }
 

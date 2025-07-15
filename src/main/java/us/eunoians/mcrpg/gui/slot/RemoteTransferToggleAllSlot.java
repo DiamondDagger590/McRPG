@@ -33,7 +33,7 @@ public class RemoteTransferToggleAllSlot extends McRPGSlot {
         guiOptional.ifPresent(gui -> {
             if (gui instanceof RemoteTransferGui remoteTransferGui) {
                 for (RemoteTransferToggleSlot slot : remoteTransferGui.getAllCurrentItemSlots()) {
-                    slot.toggleMaterial(enableAll);
+                    slot.toggleItemStack(enableAll);
                 }
                 setToggleState(!enableAll);
                 gui.refreshGUI();

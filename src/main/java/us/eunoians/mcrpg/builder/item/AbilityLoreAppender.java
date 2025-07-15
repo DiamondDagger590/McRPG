@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -54,6 +54,7 @@ public final class AbilityLoreAppender {
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);
         List<String> lore = new ArrayList<>();
         Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("ability", ability.getName(mcRPGPlayer));
 
         if (abilityDataOptional.isPresent()) {
             AbilityData abilityData = abilityDataOptional.get();
@@ -68,7 +69,7 @@ public final class AbilityLoreAppender {
                         var questOptional = questManager.getActiveQuest(questAttribute.getContent());
                         if (questOptional.isPresent()) {
                             lore.add("");
-                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.QUEST_PROGRESS_LORE));
+                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_LORE));
                             placeholders.put("quest-progress", Methods.getProgressBarAsString(questOptional.get().getQuestProgress(), 20));
                         } else {
                             throw new IllegalArgumentException("The ability quest for ability " + ability.getName() + " was not found.");
@@ -92,16 +93,16 @@ public final class AbilityLoreAppender {
                                                 // If they have enough upgrade points, tell them they can click
                                                 if (skillHolder.getUpgradePoints() >= upgradeCost) {
                                                     lore.add("");
-                                                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.CLICK_TO_START_UPGRADE_QUEST_LORE));
+                                                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.CLICK_TO_START_UPGRADE_QUEST_LORE));
                                                     placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
                                                 }
                                                 // If they don't have enough, tell them how many they need
                                                 else {
                                                     lore.add("");
-                                                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE));
+                                                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE));
                                                     placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
                                                 }
-                                                lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.ABILITY_POINT_COUNT_LORE));
+                                                lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_POINT_COUNT_LORE));
                                                 placeholders.put(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
                                                 placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(mcRPGPlayer));
 
@@ -109,7 +110,7 @@ public final class AbilityLoreAppender {
                                             // Otherwise, tell the player the level they need to reach
                                             else {
                                                 lore.add("");
-                                                lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.UPGRADE_LOCKED_BEHIND_LEVELUP_LORE));
+                                                lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.UPGRADE_LOCKED_BEHIND_LEVELUP_LORE));
                                                 placeholders.put("next-tier-level", Integer.toString(tierableAbility.getUnlockLevelForTier(nextTier)));
                                                 placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(mcRPGPlayer));
 
@@ -121,16 +122,16 @@ public final class AbilityLoreAppender {
                                         // If they have enough upgrade points, tell them they can click
                                         if (skillHolder.getUpgradePoints() >= upgradeCost) {
                                             lore.add("");
-                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.CLICK_TO_START_UPGRADE_QUEST_LORE));
+                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.CLICK_TO_START_UPGRADE_QUEST_LORE));
                                             placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
                                         }
                                         // If they don't have enough, tell them how many they need
                                         else {
                                             lore.add("");
-                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE));
+                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE));
                                             placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
                                         }
-                                        lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.ABILITY_POINT_COUNT_LORE));
+                                        lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_POINT_COUNT_LORE));
                                         placeholders.put(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
                                     }
                                 }
@@ -139,7 +140,7 @@ public final class AbilityLoreAppender {
                     }
                 } else {
                     lore.add("");
-                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKeys.ABILITY_LOCKED_LORE));
+                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_LOCKED_LORE));
                 }
 
             }

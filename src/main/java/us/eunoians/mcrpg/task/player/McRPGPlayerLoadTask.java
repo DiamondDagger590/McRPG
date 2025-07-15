@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
@@ -148,7 +148,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
 
         if (player.isPresent() && player.get().isOnline()) {
             Audience audience = getPlugin().getAdventure().player(player.get());
-            audience.sendMessage(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessageAsComponent(getCorePlayer(), LocalizationKeys.LOGIN_UNABLE_TO_LOAD_DATA));
+            audience.sendMessage(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessageAsComponent(getCorePlayer(), LocalizationKey.LOGIN_UNABLE_TO_LOAD_DATA));
         }
     }
 

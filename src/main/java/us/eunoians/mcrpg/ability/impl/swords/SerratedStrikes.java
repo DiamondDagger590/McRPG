@@ -17,16 +17,23 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.ABILITY_DURATION;
+import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.ACTIVATION_CHANCE_INCREASE;
+import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.COOLDOWN;
 
 /**
  * This ability activates by attacking an enemy after readying the user's sword. The ability
@@ -60,7 +67,7 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.SERRATED_STRIKES_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.SERRATED_STRIKES_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -143,5 +150,16 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableActiveAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        int tier = getCurrentAbilityTier(player.asSkillHolder());
+        placeholders.put(ABILITY_DURATION.getKey(), Integer.toString(getDuration(tier)));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(ACTIVATION_CHANCE_INCREASE.getKey(), McRPGMethods.getChanceNumberFormat().format(getBoostToBleedActivation(tier)));
+        return placeholders;
     }
 }

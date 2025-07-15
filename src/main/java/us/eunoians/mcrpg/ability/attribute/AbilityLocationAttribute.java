@@ -7,7 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -78,7 +78,7 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
                 McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                 if (shouldContentBeSaved()) {
-                    ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKeys.LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM));
+                    ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM));
                     itemBuilder.setPlaceholders(Map.of(
                             "location-x", Double.toString(getContent().getBlockX()),
                             "location-y", Double.toString(getContent().getBlockY()),
@@ -88,7 +88,7 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
                     return itemBuilder;
                 }
                 else {
-                    return ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKeys.LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM));
+                    return ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM));
                 }
             }
         };

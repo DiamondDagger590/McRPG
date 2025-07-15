@@ -19,15 +19,19 @@ import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.NymphsVitalityActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -134,7 +138,7 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.NYMPHS_VITALITY_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.NYMPHS_VITALITY_DISPLAY_ITEM_HEADER;
     }
 
     /**
@@ -166,5 +170,14 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @Override
     public Set<ReloadableContent<?>> getReloadableContent() {
         return Set.of(VALID_BIOMES);
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.MINIMUM_HUNGER.getKey(),
+                Integer.toString(getMinimumHunger(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -78,7 +78,7 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.DEEPER_WOUND_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.DEEPER_WOUND_DISPLAY_ITEM_HEADER;
     }
 
     @NotNull
@@ -137,8 +137,10 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
         int tier = getCurrentAbilityTier(player.asSkillHolder());
-        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(), McRPGMethods.getChanceNumberFormat().format(getActivationChance(tier)));
-        placeholders.put(AbilityItemPlaceholderKeys.ADDITIONAL_BLEED_CYCLES.getKey(), Integer.toString(getAdditionalBleedCycles(tier)));
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(tier)));
+        placeholders.put(AbilityItemPlaceholderKeys.ADDITIONAL_BLEED_CYCLES.getKey(),
+                Integer.toString(getAdditionalBleedCycles(tier)));
         return placeholders;
     }
 }

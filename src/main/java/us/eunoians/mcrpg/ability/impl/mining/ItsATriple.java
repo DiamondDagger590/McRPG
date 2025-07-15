@@ -11,16 +11,20 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
 import us.eunoians.mcrpg.event.ability.mining.ItsATripleActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -90,7 +94,7 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.ITS_A_TRIPLE_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.ITS_A_TRIPLE_DISPLAY_ITEM_HEADER;
     }
 
     public double getActivationChance(int tier) {
@@ -101,5 +105,14 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableTierableAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

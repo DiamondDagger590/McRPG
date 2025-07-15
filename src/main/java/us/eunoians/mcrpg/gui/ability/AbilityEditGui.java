@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.GuiModifiableAttribute;
 import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -60,7 +60,7 @@ public class AbilityEditGui extends BaseGui<McRPGPlayer> implements ClosableGui<
             int size = getModifiableAttributes().size();
             this.inventory = Bukkit.createInventory(player, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size)),
                     getCreatingPlayer().getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
-                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKeys.ABILITY_EDIT_GUI_TITLE));
+                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.ABILITY_EDIT_GUI_TITLE));
             paintInventory();
         }
     }

@@ -2,7 +2,8 @@ package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.google.common.collect.ImmutableMap;
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
+import com.google.common.collect.ImmutableSet;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
@@ -25,16 +26,17 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
-import us.eunoians.mcrpg.ability.attribute.RemoteTransferMaterialSetAttribute;
+import us.eunoians.mcrpg.ability.attribute.RemoteTransferItemSetAttribute;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryOld;
-import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryType;
+import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.ReloadableRemoteTransferMap;
+import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.mining.RemoteTransferActivateEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -49,6 +51,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.RANGE;
+
 /**
  * This ability allows players to link to a chest and blocks they mine will automatically go into the chest if their allow list
  * has it enabled.
@@ -56,14 +60,8 @@ import java.util.Set;
 public final class RemoteTransfer extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "remote_transfer");
+    private static final ReloadableRemoteTransferMap REMOTE_TRANSFER_CATEGORIES = new ReloadableRemoteTransferMap();
 
-    private static final Map<RemoteTransferCategoryType, RemoteTransferCategoryOld> REMOTE_TRANSFER_CATEGORIES = new HashMap<>();
-
-    static {
-        for (RemoteTransferCategoryType type : RemoteTransferCategoryType.values()) {
-            REMOTE_TRANSFER_CATEGORIES.put(type, new RemoteTransferCategoryOld(type));
-        }
-    }
 
     public RemoteTransfer(@NotNull McRPG plugin) {
         super(plugin, REMOTE_TRANSFER_KEY);
@@ -85,7 +83,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.REMOTE_TRANSFER_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.REMOTE_TRANSFER_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -149,12 +147,11 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                 a:
                 for (Item item : blockDropItemEvent.getItems()) {
                     Inventory currentInventory;
-                    // TODO revist to support dropping custom items (cant be entirely material based in 2024 stoopid
                     ItemStack itemStack = item.getItemStack();
+                    CustomItemWrapper itemWrapper = new CustomItemWrapper(itemStack);
                     // Get the material of the item we are putting in the chest and the amount
                     // if the chest contents are full, check if there are any stacks we can increase before dropping
-                    Material material = itemStack.getType();
-                    if (isMaterialTransferable(abilityHolder, material)) {
+                    if (isItemTransferable(abilityHolder, itemStack)) {
                         int amount = itemStack.getAmount();
                         b:
                         for (Inventory inventory : inventories) {
@@ -170,11 +167,11 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                                 ItemStack currentItem = currentInventory.getItem(i);
                                 // If the slot is empty
                                 if (currentItem == null || currentItem.getType() == Material.AIR) {
-                                    ItemStack newStack = new ItemStack(material);
+                                    ItemStack newStack = itemStack.clone();
                                     // If the amount is greater than a stack
-                                    if (amount > material.getMaxStackSize()) {
-                                        newStack.setAmount(material.getMaxStackSize());
-                                        amount -= material.getMaxStackSize();
+                                    if (amount > newStack.getMaxStackSize()) {
+                                        newStack.setAmount(newStack.getMaxStackSize());
+                                        amount -= newStack.getMaxStackSize();
                                         currentInventory.setItem(i, newStack);
                                         continue c;
                                     }
@@ -186,13 +183,13 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                                         item.getItemStack().setAmount(0);
                                         break b;
                                     }
-                                } else if (currentItem.getType() == material) {
-                                    if (currentItem.getAmount() == material.getMaxStackSize()) {
+                                } else if (new CustomItemWrapper(currentItem).equals(itemWrapper)) {
+                                    if (currentItem.getAmount() == currentItem.getMaxStackSize()) {
                                         continue c;
                                     } else {
-                                        if (currentItem.getAmount() + amount > material.getMaxStackSize()) {
-                                            amount -= material.getMaxStackSize() - currentItem.getAmount();
-                                            currentItem.setAmount(material.getMaxStackSize());
+                                        if (currentItem.getAmount() + amount > currentItem.getMaxStackSize()) {
+                                            amount -= currentItem.getMaxStackSize() - currentItem.getAmount();
+                                            currentItem.setAmount(currentInventory.getMaxStackSize());
                                             continue c;
                                         } else {
                                             currentItem.setAmount(currentItem.getAmount() + amount);
@@ -234,25 +231,26 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     }
 
     /**
-     * Checks to see if the {@link Material} is transferable to the holders's linked chest.
+     * Checks to see if the {@link ItemStack} is transferable to the holders's linked chest.
      *
      * @param abilityHolder The {@link AbilityHolder} to check for.
-     * @param material      The {@link Material} to check.
-     * @return {@code true} if the provided {@link Material} is transferable to the holder's linked chest.
+     * @param itemStack      The {@link ItemStack} to check.
+     * @return {@code true} if the provided {@link ItemStack} is transferable to the holder's linked chest.
      */
-    public boolean isMaterialTransferable(@NotNull AbilityHolder abilityHolder, @NotNull Material material) {
+    public boolean isItemTransferable(@NotNull AbilityHolder abilityHolder, @NotNull ItemStack itemStack) {
         boolean presentInConfig = false;
-        for (RemoteTransferCategoryOld category : getRemoteTransferCategories().values()) {
-            if (category.getContent().contains(material)) {
+        CustomItemWrapper customItemWrapper = new CustomItemWrapper(itemStack);
+        for (RemoteTransferCategory category : getRemoteTransferCategories()) {
+            if (category.getCategoryItems().contains(customItemWrapper)) {
                 presentInConfig = true;
             }
         }
         RemoteTransfer remoteTransfer = (RemoteTransfer) getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
         var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
-        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).isPresent() &&
-                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE).get() instanceof RemoteTransferMaterialSetAttribute remoteTransferMaterialSetAttribute) {
+        if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE).isPresent() &&
+                abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE).get() instanceof RemoteTransferItemSetAttribute remoteTransferItemSetAttribute) {
 
-            return presentInConfig && !remoteTransferMaterialSetAttribute.isMaterialStored(material);
+            return presentInConfig && !remoteTransferItemSetAttribute.isCustomItemWrapperStored(customItemWrapper);
         }
         return presentInConfig;
     }
@@ -262,13 +260,13 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     public Set<NamespacedKey> getApplicableAttributes() {
         Set<NamespacedKey> applicableAttributes = new HashSet<>(ConfigurableTierableAbility.super.getApplicableAttributes());
         applicableAttributes.add(AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE);
-        applicableAttributes.add(AbilityAttributeRegistry.REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE);
+        applicableAttributes.add(AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE);
         return applicableAttributes;
     }
 
     @Override
     public Set<ReloadableContent<?>> getReloadableContent() {
-        return Set.copyOf(REMOTE_TRANSFER_CATEGORIES.values());
+        return Set.of(REMOTE_TRANSFER_CATEGORIES);
     }
 
     /**
@@ -281,24 +279,30 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
         return getYamlDocument().getInt(Route.addTo(getRouteForTier(tier), "range"));
     }
 
-    /**
-     * Gets the {@link RemoteTransferCategoryOld} belonging to the provided {@link RemoteTransferCategoryType}.
-     *
-     * @param categoryType The {@link RemoteTransferCategoryType} to get the {@link RemoteTransferCategoryOld} for.
-     * @return The {@link RemoteTransferCategoryOld} belonging to the provided {@link RemoteTransferCategoryType}.
-     */
     @NotNull
-    public static RemoteTransferCategoryOld getRemoteTransferCategory(@NotNull RemoteTransferCategoryType categoryType) {
-        return REMOTE_TRANSFER_CATEGORIES.get(categoryType);
+    public static Optional<RemoteTransferCategory> getRemoteTransferCategory(@NotNull String category) {
+        return Optional.ofNullable(REMOTE_TRANSFER_CATEGORIES.getContent().get(category));
     }
 
     /**
-     * Gets an {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategoryOld}.
+     * Get all the {@link RemoteTransferCategory RemoteTransferCategories} currently loaded into memory.
+     * <p>
+     * The returned value should not be stored as a source of truth as it may be updated when the plugin reloads.
+     * If the most up-to-date values are desired, ensure this method is called each time.
      *
-     * @return An {@link ImmutableMap} of all the {@link RemoteTransferCategoryType}s mapped to their respective {@link RemoteTransferCategoryOld}.
+     * @return An {@link ImmutableSet} of the {@link RemoteTransferCategory RemoteTransferCategories} currently
+     * loaded into memory.
      */
     @NotNull
-    public static Map<RemoteTransferCategoryType, RemoteTransferCategoryOld> getRemoteTransferCategories() {
-        return ImmutableMap.copyOf(REMOTE_TRANSFER_CATEGORIES);
+    public static Set<RemoteTransferCategory> getRemoteTransferCategories() {
+        return ImmutableSet.copyOf(REMOTE_TRANSFER_CATEGORIES.getContent().values());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(RANGE.getKey(), Integer.toString(getRange(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

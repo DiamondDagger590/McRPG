@@ -82,9 +82,10 @@ public class ContentExpansionManager extends Manager<McRPG> {
 
     /**
      * Attempts to process the provided {@link McRPGContentPack} using all the registered {@link ContentPackProcessor}s.
-     *
+     * <p>
      * If the pack is properly processed, a {@link ContentPackRegisteredEvent} will be fired. Otherwise, an {@link ContentPackFailedProcessingException}
      * will be thrown.
+     *
      * @param content The {@link McRPGContentPack} to process.
      * @throws ContentPackFailedProcessingException If the {@link McRPGContentPack} was unable to be processed.
      */
@@ -99,7 +100,6 @@ public class ContentExpansionManager extends Manager<McRPG> {
             Bukkit.getPluginManager().callEvent(new ContentPackRegisteredEvent(content));
         } else {
             throw new ContentPackFailedProcessingException(content);
-
         }
     }
 }

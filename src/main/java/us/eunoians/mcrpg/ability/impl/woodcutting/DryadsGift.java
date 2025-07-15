@@ -18,15 +18,19 @@ import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.DryadsGiftActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -109,7 +113,7 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.DRYADS_GIFT_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.DRYADS_GIFT_DISPLAY_ITEM_HEADER;
     }
 
     /**
@@ -154,5 +158,16 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
      */
     public boolean isBlockValid(@NotNull Block block) {
         return VALID_BLOCK_TYPES.getContent().contains(block.getType());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.EXPERIENCE_DROPPED.getKey(),
+                Integer.toString(getExperienceToDrop(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

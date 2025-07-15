@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -80,7 +80,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
         int currentLevel = skillHolderData.getCurrentLevel();
         int currentExperience = skillHolderData.getCurrentExperience();
         int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
-        Component component = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKeys.BOSS_BAR_DISPLAY_MESSAGE, Map.of(
+        Component component = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.BOSS_BAR_DISPLAY_MESSAGE, Map.of(
                 "skill", skill.getDisplayName(mcRPGPlayer),
                 "level", Integer.toString(currentLevel),
                 "current-experience", Integer.toString(currentExperience),

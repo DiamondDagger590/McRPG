@@ -213,21 +213,16 @@ ability-configuration:
               - CAVE_SPIDER
       tier-1:
         unlock-level: 1
-        activation-chance: 3.0
-        experience-to-drop: 5
+        minimum-hunger: 7
       tier-2:
         unlock-level: 2
-        activation-chance: 4.0
-        experience-to-drop: 10
+        minimum-hunger: 9
       tier-3:
         unlock-level: 3
-        activation-chance: 5.0
-        experience-to-drop: 15
+        minimum-hunger: 11
       tier-4:
         unlock-level: 4
-        activation-chance: 7.5
-        experience-to-drop: 20
+        minimum-hunger: 13
       tier-5:
         unlock-level: 5
-        activation-chance: 10.0
-        experience-to-drop: 22
+        minimum-hunger: 15

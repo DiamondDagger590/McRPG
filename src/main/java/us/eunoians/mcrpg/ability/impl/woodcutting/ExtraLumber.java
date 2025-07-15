@@ -20,11 +20,13 @@ import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.ExtraLumberActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
@@ -68,7 +70,7 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.EXTRA_LUMBER_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.EXTRA_LUMBER_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -127,5 +129,14 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
      */
     public boolean isBlockValid(@NotNull Block block) {
         return VALID_BLOCK_TYPES.getContent().contains(block.getType());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(player.asSkillHolder())));
+        return placeholders;
     }
 }

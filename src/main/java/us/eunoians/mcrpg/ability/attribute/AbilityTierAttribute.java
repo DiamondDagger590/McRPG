@@ -10,7 +10,7 @@ import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.TierableAbility;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.builder.item.AbilityLoreAppender;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -108,7 +108,7 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
                 if (ability instanceof TierableAbility tierableAbility) {
                     MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-                    ItemBuilder itemBuilder = ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(LocalizationKeys.TIER_ATTRIBUTE_DISPLAY_ITEM));
+                    ItemBuilder itemBuilder = ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(LocalizationKey.TIER_ATTRIBUTE_DISPLAY_ITEM));
                     var extraLore = AbilityLoreAppender.getAppendLore(mcRPGPlayer, ability);
                     extraLore.getLeft().forEach(itemBuilder::addDisplayLore);
                     itemBuilder.setPlaceholders(extraLore.getRight());

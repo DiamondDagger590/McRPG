@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -31,7 +31,7 @@ public class OnAbilityCooldownExpireListener implements Listener {
             McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             Audience audience = McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID());
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer,
-                    LocalizationKeys.ABILITY_NO_LONGER_ON_COOLDOWN,
+                    LocalizationKey.ABILITY_NO_LONGER_ON_COOLDOWN,
                     Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), abilityCooldownExpireEvent.getAbility().getDisplayName(mcRPGPlayer))));
         }
     }

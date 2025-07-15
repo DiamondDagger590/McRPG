@@ -13,16 +13,20 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.PassiveAbility;
+import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.event.ability.swords.VampireActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -93,7 +97,7 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.VAMPIRE_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.VAMPIRE_DISPLAY_ITEM_HEADER;
     }
 
     /**
@@ -134,5 +138,16 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableTierableAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.HEALING_AMOUNT.getKey(),
+                Integer.toString(getAmountToHeal(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

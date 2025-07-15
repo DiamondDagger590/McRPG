@@ -8,25 +8,24 @@ import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
 import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
-import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategoryOld;
+import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.RemoteTransferToggleAllSlot;
@@ -49,65 +48,16 @@ import java.util.stream.Collectors;
  */
 public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
 
-    private static final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot -> slot.getRemoteTransferCategory().getName());
+    private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot -> slot.getRemoteTransferCategory().getName(getCreatingPlayer()));
     // TODO this might need revisited (also shouldn't be tied to material, we need to support custom item data as well :<)
-    private static final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_MATERIAL = new ChainComparator<>(ALPHABETICAL_CATEGORY, Comparator.comparing(slot -> slot.getItem(null).getType().toString()));
+    private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_MATERIAL = new ChainComparator<>(ALPHABETICAL_CATEGORY, Comparator.comparing(slot -> slot.getItem(getCreatingPlayer()).getType().toString()));
 
-    private static final McRPGSlot FILLER_GLASS_SLOT;
-    private static final McRPGSlot PREVIOUS_GUI_SLOT;
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
     private static final int TOGGLE_ALL_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 8;
-
-    static {
-        // Create filler glass
-        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
-        fillerGlassMeta.setDisplayName(" ");
-        fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(fillerGlass);
-            }
-        };
-
-        // Create previous gui button
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack previousGuiItem = new ItemStack(Material.BARRIER);
-        ItemMeta previousGuiItemMeta = previousGuiItem.getItemMeta();
-        previousGuiItemMeta.displayName(miniMessage.deserialize("<red>Return to editing</red>"));
-        previousGuiItemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to return to editing <gold>Remote Transfer</gold>.")));
-        previousGuiItem.setItemMeta(previousGuiItemMeta);
-        PREVIOUS_GUI_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
-                    AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
-                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
-                    player.closeInventory();
-                }
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(previousGuiItem);
-            }
-        };
-    }
 
     private final Player player;
     private final List<RemoteTransferToggleSlot> remoteTransferToggleSlots = new ArrayList<>(); // This means it won't auto refresh until they open again but oh well
@@ -123,29 +73,86 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
         this.player = playerOptional.get();
         this.sortOption = RemoteTransferSortOption.FIRST_SORT_TYPE;
         // Create all the slots we will need
-        for (RemoteTransferCategoryOld remoteTransferCategory : RemoteTransfer.getRemoteTransferCategories().values()) {
-            for (Material material : remoteTransferCategory.getContent()) {
-                remoteTransferToggleSlots.add(new RemoteTransferToggleSlot(mcRPGPlayer, material, remoteTransferCategory.getCategoryType()));
+        for (RemoteTransferCategory remoteTransferCategory : RemoteTransfer.getRemoteTransferCategories()) {
+            for (CustomItemWrapper customItemWrapper : remoteTransferCategory.getCategoryItems()) {
+                remoteTransferToggleSlots.add(new RemoteTransferToggleSlot(mcRPGPlayer, customItemWrapper, remoteTransferCategory));
             }
         }
     }
 
     @NotNull
+    public McRPGSlot getFillerItemSlot() {
+        return new McRPGSlot() {
+
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_FILLER_ITEM_DISPLAY_ITEM));
+            }
+        };
+    }
+
+    @NotNull
+    public McRPGSlot getPreviousGuiSlot() {
+         return new McRPGSlot() {
+
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                    AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
+                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                    player.closeInventory();
+                    player.openInventory(abilityEditGui.getInventory());
+                }
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM));
+            }
+        };
+    }
+
+    @NotNull
     @Override
     public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
-        return null;
+        return new PreviousPageSlot<>() {
+            @NotNull
+            @Override
+            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM));
+            }
+        };
     }
 
     @NotNull
     @Override
     public NextPageSlot<McRPGPlayer> getNextPageSlot() {
-        return null;
+        return new NextPageSlot<>() {
+            @NotNull
+            @Override
+            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_NEXT_PAGE_BUTTON_DISPLAY_ITEM));
+            }
+        };
     }
 
     @NotNull
     @Override
     protected Inventory getInventoryForPage(int i) {
-        return Bukkit.createInventory(player, 54, McRPG.getInstance().getMiniMessage().deserialize("<gold>Toggling Remote Transfer Items"));
+        return Bukkit.createInventory(player, 54, RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(getCreatingPlayer(), LocalizationKey.REMOTE_TRANSFER_GUI_TITLE));
     }
 
     @Override
@@ -166,7 +173,7 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
             if (i < slots.size()) {
                 RemoteTransferToggleSlot slot = slots.get(i);
                 setSlot(i, slot);
-                if (slot.isMaterialDisallowed()) {
+                if (slot.isItemDisallowed()) {
                     enableButton = true;
                 }
             } else {
@@ -183,12 +190,13 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
      * @param enableButton If {@code true}, sets the {@link RemoteTransferToggleAllSlot} to be in "enable" mode.
      */
     private void paintNavigationBar(int page, boolean enableButton) {
+        McRPGSlot fillerItem = getFillerItemSlot();
         // Paint the nav bar with filler glass
         for (int i = 0; i < 9; i++) {
-            setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
+            setSlot(NAVIGATION_ROW_START_INDEX + i, fillerItem);
         }
         // Set the back button
-        setSlot(PREVIOUS_GUI_SLOT_INDEX, PREVIOUS_GUI_SLOT);
+        setSlot(PREVIOUS_GUI_SLOT_INDEX, getPreviousGuiSlot());
         // Set the sort slot
         setSlot(SORT_SLOT_INDEX, sortOption.getNodeValue().getSortSlot());
         // If the page is not the first page, then we need to put a previous arrow button
@@ -294,7 +302,7 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
 
         static {
             LinkedNode<RemoteTransferSortOption> prev = FIRST_SORT_TYPE;
-            for (RemoteTransferCategoryOld remoteTransferCategory : RemoteTransfer.getRemoteTransferCategories().values()) {
+            for (RemoteTransferCategory remoteTransferCategory : RemoteTransfer.getRemoteTransferCategories()) {
                 LinkedNode<RemoteTransferSortOption> next = new LinkedNode<>(new RemoteTransferSortOption(remoteTransferCategory));
                 prev.setNext(next);
                 prev = next;
@@ -302,7 +310,7 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
             prev.setNext(FIRST_SORT_TYPE);
         }
 
-        private final RemoteTransferCategoryOld remoteTransferCategory;
+        private final RemoteTransferCategory remoteTransferCategory;
         private final PlayerContextFilter<RemoteTransferToggleSlot> filter;
 
         public RemoteTransferSortOption() {
@@ -310,9 +318,11 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
             this.filter = (corePlayer, collection) -> collection;
         }
 
-        public RemoteTransferSortOption(@NotNull RemoteTransferCategoryOld remoteTransferCategory) {
+        public RemoteTransferSortOption(@NotNull RemoteTransferCategory remoteTransferCategory) {
             this.remoteTransferCategory = remoteTransferCategory;
-            this.filter = (corePlayer, collection) -> collection.stream().filter(remoteTransferToggleSlot -> remoteTransferToggleSlot.getRemoteTransferCategory() == remoteTransferCategory.getCategoryType()).collect(Collectors.toList());
+            this.filter = (corePlayer, collection) -> collection.stream()
+                    .filter(remoteTransferToggleSlot -> remoteTransferToggleSlot.getRemoteTransferCategory().getCategoryKey().equalsIgnoreCase(remoteTransferCategory.getCategoryKey()))
+                    .collect(Collectors.toList());
         }
 
         /**
@@ -321,8 +331,8 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
          * @return The name for this sort option.
          */
         @NotNull
-        public String getName() {
-            return remoteTransferCategory == null ? "All" : remoteTransferCategory.getCategoryType().getName();
+        public String getName(@NotNull McRPGPlayer mcRPGPlayer) {
+            return remoteTransferCategory.getName(mcRPGPlayer);
         }
 
         /**
@@ -365,14 +375,8 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
 
                 @NotNull
                 @Override
-                public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                    MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-                    ItemStack itemStack = new ItemStack(remoteTransferCategory != null ? remoteTransferCategory.getCategoryType().getDisplayMaterial() : Material.ENDER_CHEST);
-                    ItemMeta itemMeta = itemStack.getItemMeta();
-                    itemMeta.displayName(miniMessage.deserialize("<red>Click to change sort category."));
-                    itemMeta.lore(List.of(miniMessage.deserialize("<gray>Current Category: <gold>" + getName())));
-                    itemStack.setItemMeta(itemMeta);
-                    return ItemBuilder.from(itemStack);
+                public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+                    return remoteTransferCategory.getItemBuilder(mcRPGPlayer);
                 }
 
                 @Override

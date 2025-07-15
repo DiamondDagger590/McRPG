@@ -163,14 +163,18 @@ public class McRPG extends CorePlugin {
             glowingEntities.disable();
             try (Connection connection = getDatabase().getConnection()) {
                 var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
+                System.out.println("got connection");
                 for (McRPGPlayer mcRPGPlayer : registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
+                    System.out.println("saving player");
                     mcRPGPlayer.savePlayer(connection);
+                    System.out.println("saved player");
                     lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+        System.out.println("disabling database");
         super.onDisable();
     }
 

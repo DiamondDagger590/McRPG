@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityPutOnCooldownEvent;
@@ -78,7 +78,7 @@ public interface CooldownableAbility extends Ability {
             McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             MiniMessage miniMessage = mcRPG.getMiniMessage();
             Audience audience = mcRPG.getAdventure().player(player);
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKeys.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getDisplayName(mcRPGPlayer))));
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getDisplayName(mcRPGPlayer))));
         });
     }
 

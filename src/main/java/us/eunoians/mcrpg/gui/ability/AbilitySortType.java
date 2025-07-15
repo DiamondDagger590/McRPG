@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.Ability;
 import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -40,10 +40,10 @@ import java.util.Optional;
  */
 public enum AbilitySortType {
 
-    ALPHABETICAL(LocalizationKeys.ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM, null, mcrpgPlayer -> Comparator.comparing((Ability ability) -> ability.getDisplayName(mcrpgPlayer))),
-    INNATE_ABILITIES(LocalizationKeys.ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM, new InnateAbilityFilter(), mcrpgPlayer -> new ChainComparator<>(
+    ALPHABETICAL(LocalizationKey.ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM, null, mcrpgPlayer -> Comparator.comparing((Ability ability) -> ability.getDisplayName(mcrpgPlayer))),
+    INNATE_ABILITIES(LocalizationKey.ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM, new InnateAbilityFilter(), mcrpgPlayer -> new ChainComparator<>(
             Comparator.comparing((Ability ability) -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator(mcrpgPlayer))),
-    SKILL(LocalizationKeys.ABILITY_SORT_SKILL_DISPLAY_ITEM, null, mcRPGPlayer -> new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
+    SKILL(LocalizationKey.ABILITY_SORT_SKILL_DISPLAY_ITEM, null, mcRPGPlayer -> new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
             Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
@@ -64,7 +64,7 @@ public enum AbilitySortType {
                 return 0;
             },
             INNATE_ABILITIES.getAbilityComparator(mcRPGPlayer))),
-    UNLOCKED_ABILITIES(LocalizationKeys.ABILITY_SORT_UNLOCKED_ABILITIES_DISPLAY_ITEM, new UnlockableAbilityFilter(), mcRPGPlayer -> new ChainComparator<>(
+    UNLOCKED_ABILITIES(LocalizationKey.ABILITY_SORT_UNLOCKED_ABILITIES_DISPLAY_ITEM, new UnlockableAbilityFilter(), mcRPGPlayer -> new ChainComparator<>(
             Comparator.comparing((Ability ability) -> !(ability instanceof UnlockableAbility)),
             Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
@@ -95,10 +95,10 @@ public enum AbilitySortType {
                 }
                 return 0;
             })),
-    UPGRADEABLE_ABILITIES(LocalizationKeys.ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM, new AbilityUpgradeFilter(),
+    UPGRADEABLE_ABILITIES(LocalizationKey.ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM, new AbilityUpgradeFilter(),
             SKILL::getAbilityComparator),
-    PASSIVE_ABILITIES(LocalizationKeys.ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM, new PassiveAbilityFilter(), SKILL::getAbilityComparator),
-    ACTIVE_ABILITIES(LocalizationKeys.ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM, new ActiveAbilityFilter(), SKILL::getAbilityComparator);
+    PASSIVE_ABILITIES(LocalizationKey.ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM, new PassiveAbilityFilter(), SKILL::getAbilityComparator),
+    ACTIVE_ABILITIES(LocalizationKey.ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM, new ActiveAbilityFilter(), SKILL::getAbilityComparator);
 
     private final static LinkedNode<AbilitySortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilitySortType.SKILL);
     static {

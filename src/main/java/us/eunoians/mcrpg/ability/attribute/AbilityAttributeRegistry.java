@@ -24,7 +24,7 @@ public class AbilityAttributeRegistry implements Registry<AbilityAttribute<?>> {
     public static final NamespacedKey ABILITY_UNLOCKED_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "ability_unlocked_attribute");
     public static final NamespacedKey ABILITY_QUEST_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "ability_quest_attribute");
     public static final NamespacedKey ABILITY_LOCATION_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "ability_location_attribute");
-    public static final NamespacedKey REMOTE_TRANSFER_MATERIAL_SET_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "remote_transfer_material_set_attribute");
+    public static final NamespacedKey REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "remote_transfer_item_set_attribute");
     private final McRPG plugin;
     private final Map<String, NamespacedKey> abilityAttributeKeys;
     private final Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes;
@@ -44,7 +44,7 @@ public class AbilityAttributeRegistry implements Registry<AbilityAttribute<?>> {
         register(new AbilityUnlockedAttribute());
         register(new AbilityUpgradeQuestAttribute());
         register(new AbilityLocationAttribute());
-        register(new RemoteTransferMaterialSetAttribute());
+        register(new RemoteTransferItemSetAttribute());
     }
 
     /**

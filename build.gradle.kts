@@ -67,7 +67,7 @@ dependencies {
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
-    val glowingEntitiesVersion = "1.4.2"
+    val glowingEntitiesVersion = "1.4.5"
     implementation("fr.skytasul:glowingentities:$glowingEntitiesVersion")
 
     val customBlockDataVersion = "2.2.2"

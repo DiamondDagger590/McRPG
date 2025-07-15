@@ -24,9 +24,10 @@ import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBloc
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKeys;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.mining.OreScannerActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -40,6 +41,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.RANGE;
 
 /**
  * Ore Scanner is an active ability that will scan the blocks around the player, informing the player of
@@ -74,7 +78,7 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return LocalizationKeys.ORE_SCANNER_DISPLAY_ITEM_HEADER;
+        return LocalizationKey.ORE_SCANNER_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -215,5 +219,14 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableActiveAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(RANGE.getKey(), Integer.toString(getRange(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        return placeholders;
     }
 }

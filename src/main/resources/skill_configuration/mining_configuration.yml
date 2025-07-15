@@ -74,8 +74,17 @@ ability-configuration:
     enabled: true
     #How many tiers does this ability have
     amount-of-tiers: 5
-    allowed-blocks:
+    # What different categories of blocks can players toggle?
+    # These categories are used for filtering specific blocks to make
+    # it easier to search for specific ones.
+    #
+    # These categories should match exactly to the ones in the en.yml under gui.remote-transfer-gui.categories.
+    # The "all" category is an internal concept and should not be defined here.
+    # If any category is defined here but not in the en.yml, you will get errors.
+    categories:
+      # The identifier of the category. You will use this in the en.yml to configure UI elements
       nether:
+        # A list of materials or custom item identifiers if you want to support custom blocks from something like Nexo
         - ANCIENT_DEBRIS
         - BASALT
         - BLACKSTONE

@@ -54,6 +54,7 @@ public enum ContentHandlerType {
     LOCALIZATION(((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof LocalizationContentPack localizationContent) {
             localizationContent.getContent().forEach(localization -> mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).registerLanguageFile(localization));
+            return true;
         }
         return false;
     }));
