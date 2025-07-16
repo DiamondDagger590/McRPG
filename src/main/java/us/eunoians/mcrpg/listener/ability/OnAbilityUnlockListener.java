@@ -6,6 +6,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
@@ -35,8 +36,8 @@ public class OnAbilityUnlockListener implements Listener {
                     loadout.addAbility(unlockableAbility.getAbilityKey());
                     player.sendMessage(miniMessage.deserialize("<green>The new ability has automatically been added to your current loadout."));
                 }
-                else {
-                    Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(unlockableAbility.getSkill().get());
+                else if (unlockableAbility instanceof SkillAbility skillAbility){
+                    Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillAbility.getSkillKey());
                     playerOptional.ifPresent(mcRPGPlayer -> player.sendMessage(miniMessage.deserialize("<red>You already have an active ability for the skill " + skill.getDisplayName(mcRPGPlayer) + " in your loadout, so "
                             + unlockableAbility.getDisplayName(mcRPGPlayer) + " was not automatically added.")));
                 }

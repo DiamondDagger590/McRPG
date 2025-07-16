@@ -27,6 +27,7 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.attribute.RemoteTransferItemSetAttribute;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
@@ -57,7 +58,8 @@ import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.RANGE;
  * This ability allows players to link to a chest and blocks they mine will automatically go into the chest if their allow list
  * has it enabled.
  */
-public final class RemoteTransfer extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public final class RemoteTransfer extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
+        ReloadableContentAbility, SkillAbility {
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "remote_transfer");
     private static final ReloadableRemoteTransferMap REMOTE_TRANSFER_CATEGORIES = new ReloadableRemoteTransferMap();
@@ -93,8 +95,8 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Mining.MINING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Mining.MINING_KEY;
     }
 
     @NotNull

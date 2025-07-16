@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.check.AlliedAttackCheck;
 import us.eunoians.mcrpg.ability.check.EntityAlliedCheck;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.AbilityRegisterEvent;
@@ -68,8 +69,8 @@ public class AbilityRegistry implements Registry<Ability> {
         NamespacedKey abilityKey = ability.getAbilityKey();
         abilities.put(abilityKey, ability);
 
-        if (ability.belongsToSkill()) {
-            NamespacedKey skillKey = ability.getSkill().get();
+        if (ability instanceof SkillAbility skillAbility) {
+            NamespacedKey skillKey = skillAbility.getSkillKey();
             Set<NamespacedKey> abilities = abilitiesWithSkills.getOrDefault(skillKey, new HashSet<>());
             abilities.add(abilityKey);
             abilitiesWithSkills.put(skillKey, abilities);
@@ -143,8 +144,8 @@ public class AbilityRegistry implements Registry<Ability> {
             return;
         }
 
-        if (ability.belongsToSkill() && ability.getSkill().isPresent()) {
-            NamespacedKey skillKey = ability.getSkill().get();
+        if (ability instanceof SkillAbility skillAbility) {
+            NamespacedKey skillKey = skillAbility.getSkillKey();
 
             if (abilitiesWithSkills.containsKey(skillKey)) {
                 Set<NamespacedKey> abilities = abilitiesWithSkills.get(skillKey);

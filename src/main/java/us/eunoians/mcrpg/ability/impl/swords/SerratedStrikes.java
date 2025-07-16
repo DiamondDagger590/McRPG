@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
@@ -39,7 +40,7 @@ import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.COOLDOWN
  * This ability activates by attacking an enemy after readying the user's sword. The ability
  * increases the activation rate of {@link Bleed} while active.
  */
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, SkillAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
@@ -77,8 +78,8 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Swords.SWORDS_KEY);
+    public NamespacedKey getSkillKey() {
+        return Swords.SWORDS_KEY;
     }
 
 

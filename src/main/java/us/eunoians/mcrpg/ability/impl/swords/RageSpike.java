@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
@@ -48,7 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Rage Spike is an active ability that activates after the user readies their
  * sword and then crouches, blasting them forward and knocking back enemies and doing damage.
  */
-public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility {
+public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, SkillAbility {
 
     public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "rage_spike");
 
@@ -86,8 +87,8 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Swords.SWORDS_KEY);
+    public NamespacedKey getSkillKey() {
+        return Swords.SWORDS_KEY;
     }
 
     @NotNull

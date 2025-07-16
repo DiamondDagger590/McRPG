@@ -50,25 +50,6 @@ public interface Ability extends McRPGContent {
     Set<NamespacedKey> getApplicableAttributes();
 
     /**
-     * Checks to see if this ability belongs to a {@link us.eunoians.mcrpg.skill.Skill}
-     *
-     * @return {@code true} if the ability belongs to a {@link us.eunoians.mcrpg.skill.Skill}
-     */
-    default boolean belongsToSkill() {
-        return getSkill().isPresent();
-    }
-
-    /**
-     * Gets an {@link Optional} that will be empty or contain the {@link NamespacedKey} of the
-     * {@link us.eunoians.mcrpg.skill.Skill} this ability belongs to.
-     *
-     * @return An {@link Optional} that will be empty or contain the {@link NamespacedKey} of the
-     * {@link us.eunoians.mcrpg.skill.Skill} this ability belongs to.
-     */
-    @NotNull
-    Optional<NamespacedKey> getSkill();
-
-    /**
      * Gets the database name for an ability. This is an internal
      * use-only name used for database storage.
      *
@@ -78,15 +59,27 @@ public interface Ability extends McRPGContent {
     @NotNull
     String getDatabaseName();
 
+    /**
+     * Gets the localized name of the ability for the provided {@link McRPGPlayer}.
+     *
+     * @param player The player whose localization to use.
+     * @return The localized name of the ability.
+     */
     @NotNull
     String getName(@NotNull McRPGPlayer player);
 
+    /**
+     * Gets the localized name of the ability in {@link java.util.Locale#ENGLISH}.
+     *
+     * @return The localized name of the ability.
+     */
     @NotNull
     String getName();
 
 
     /**
-     * Gets the name to display in messages or guis for this ability.
+     * Gets the name to display in messages or guis for this ability. This may have a placeholder
+     * such as {@code <ability-name>} which should be replaced by {@link #getName()};
      *
      * @param player The {@link McRPGPlayer} to get the localized display name for.
      * @return The name to display in messages or guis for this ability.
@@ -152,8 +145,8 @@ public interface Ability extends McRPGContent {
      * Some generic placeholders are provided out of box in the {@link AbilityItemBuilder}
      * itself,
      *
-     * @param player
-     * @return
+     * @param player The player to build the placerholders for.
+     * @return A map containing the placeholders to use for this ability display.
      */
     @NotNull
     default Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {

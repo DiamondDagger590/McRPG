@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
@@ -124,8 +125,8 @@ public class McRPGPlayer extends CorePlayer {
                 // If the next tier is below or at the tier cap
                 if (tierableAbility.getMaxTier() >= nextTier) {
                     // If the ability has a skill tied to it
-                    if (tierableAbility.getSkill().isPresent()) {
-                        var skillData = skillHolder.getSkillHolderData(tierableAbility.getSkill().get());
+                    if (tierableAbility instanceof SkillAbility skillAbility) {
+                        var skillData = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
                         // Check if the current skill level is enough to unlock and ensure player has enough upgrade points
                         return skillData.isPresent() && skillData.get().getCurrentLevel() >= tierableAbility.getUnlockLevelForTier(nextTier) && skillHolder.getUpgradePoints() >= upgradeCost;
                     }

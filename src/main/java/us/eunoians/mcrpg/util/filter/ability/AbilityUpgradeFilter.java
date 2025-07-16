@@ -3,9 +3,10 @@ package us.eunoians.mcrpg.util.filter.ability;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.util.PlayerContextFilter;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -47,8 +48,8 @@ public class AbilityUpgradeFilter implements PlayerContextFilter<Ability> {
                     })
                     .filter(tierableAbility -> {
                         // If the ability has a skill, is it high enough level to upgrade it
-                        if (tierableAbility.getSkill().isPresent()) {
-                            var skillData = skillHolder.getSkillHolderData(tierableAbility.getSkill().get());
+                        if (tierableAbility instanceof SkillAbility skillAbility) {
+                            var skillData = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
                             int currentTier = (int) skillHolder.getAbilityData(tierableAbility).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent();
                             if (skillData.isPresent()) {
                                 return skillData.get().getCurrentLevel() >= tierableAbility.getUnlockLevelForTier(currentTier);

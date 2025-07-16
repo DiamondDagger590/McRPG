@@ -17,9 +17,10 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -36,7 +37,6 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,7 +44,8 @@ import java.util.stream.Collectors;
  * Heavy Swing is an ability that has a chance to activate when a player breaks wood using an axe. This ability will
  * break wood in an area around the broken block.
  */
-public class HeavySwing extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public class HeavySwing extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
+        ReloadableContentAbility, SkillAbility {
 
     public static final NamespacedKey HEAVY_SWING_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "heavy_swing");
 
@@ -73,8 +74,8 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Woodcutting.WOODCUTTING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Woodcutting.WOODCUTTING_KEY;
     }
 
     @NotNull

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -147,11 +148,11 @@ public final class Loadout {
             return false;
         }
         for (NamespacedKey abilityKey : abilities) {
-            if (ability instanceof ActiveAbility && ability.getSkill().isPresent()) {
-                NamespacedKey skillKey = ability.getSkill().get();
+            if (ability instanceof ActiveAbility && ability instanceof SkillAbility skillAbility) {
+                NamespacedKey skillKey = skillAbility.getSkillKey();
                 Ability abilityInLoadout = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey);
                 // Check for active abilities in the same skill
-                if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout.getSkill().isPresent() && abilityInLoadout.getSkill().get().equals(skillKey)) {
+                if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout instanceof SkillAbility skillAbilityInLoadout && skillAbilityInLoadout.getSkillKey().equals(skillKey)) {
                     return false;
                 }
             }

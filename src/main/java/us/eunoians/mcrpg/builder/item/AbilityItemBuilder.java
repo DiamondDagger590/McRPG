@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -55,8 +56,8 @@ public class AbilityItemBuilder extends ItemBuilder {
         // Ability placeholder
         addPlaceholder(AbilityItemPlaceholderKeys.ABILITY.getKey(), ability.getName(player));
         // Skill placeholder
-        if (ability.getSkill().isPresent() && skillRegistry.registered(ability.getSkill().get())) {
-            Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
+        if (ability instanceof SkillAbility skillAbility) {
+            Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
             addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(player));
         }
         // Add information about specific ability attributes

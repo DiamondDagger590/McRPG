@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -83,10 +84,10 @@ public final class AbilityLoreAppender {
                                 // If the ability isn't the max tier
                                 if (tierableAbility.getMaxTier() > tier) {
                                     // If the ability has a skill it belongs to
-                                    if (tierableAbility.getSkill().isPresent()) {
-                                        var skillDataOptional = skillHolder.getSkillHolderData(tierableAbility.getSkill().get());
+                                    if (tierableAbility instanceof SkillAbility skillAbility) {
+                                        var skillDataOptional = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
                                         if (skillDataOptional.isPresent()) {
-                                            Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
+                                            Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
                                             int currentLevel = skillDataOptional.get().getCurrentLevel();
                                             // If the current skill level is above the unlock level
                                             if (currentLevel >= tierableAbility.getUnlockLevelForTier(nextTier)) {

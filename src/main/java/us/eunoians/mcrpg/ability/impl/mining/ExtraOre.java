@@ -16,10 +16,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -34,7 +35,6 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,7 +42,8 @@ import java.util.stream.Collectors;
  * This is a default ability that has a chance to double the amount of drops from a
  * mined block.
  */
-public final class ExtraOre extends McRPGAbility implements PassiveAbility, ConfigurableAbility, ReloadableContentAbility, DropMultiplierAbility {
+public final class ExtraOre extends McRPGAbility implements PassiveAbility, ConfigurableAbility,
+        ReloadableContentAbility, DropMultiplierAbility, SkillAbility {
 
     public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "extra_ore");
 
@@ -67,8 +68,8 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility, Conf
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Mining.MINING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Mining.MINING_KEY;
     }
 
     @NotNull

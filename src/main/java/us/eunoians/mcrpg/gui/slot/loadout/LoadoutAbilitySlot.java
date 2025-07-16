@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutAbilitySelectGui;
@@ -89,8 +90,8 @@ public class LoadoutAbilitySlot extends McRPGSlot {
 
             List<Component> lore = new ArrayList<>();
             // Add skill information
-            if (ability.getSkill().isPresent() && skillRegistry.registered(ability.getSkill().get())) {
-                Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
+            if (ability instanceof SkillAbility skillAbility) {
+                Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
                 lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
             }
             // Add information about specific ability attributes

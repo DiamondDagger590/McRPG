@@ -11,14 +11,14 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -77,7 +77,7 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
@@ -89,8 +89,8 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
 
         List<Component> lore = new ArrayList<>();
         // Add skill information
-        if (ability.getSkill().isPresent() && skillRegistry.registered(ability.getSkill().get())) {
-            Skill skill = skillRegistry.getRegisteredSkill(ability.getSkill().get());
+        if (ability instanceof SkillAbility skillAbility) {
+            Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
             lore.add(miniMessage.deserialize("<gray>Skill: <gold>" + skill.getDisplayName(mcRPGPlayer)));
         }
         // Add ability description
@@ -113,9 +113,9 @@ public class LoadoutSelectAbilitySlot extends McRPGSlot {
             if (ability instanceof UnlockableAbility unlockableAbility) {
                 if (unlockableAbility.isAbilityUnlocked(mcRPGPlayer.asSkillHolder())) {
                     lore.add(miniMessage.deserialize("<gray>You have unlocked this ability."));
-                } else {
+                } else if (ability instanceof SkillAbility skillAbility) {
                     lore.add(miniMessage.deserialize("<gray>Unlock this ability when your <gold>" +
-                            skillRegistry.getRegisteredSkill(ability.getSkill().get()).getDisplayName(mcRPGPlayer) + " <gray>skill"));
+                            skillRegistry.getRegisteredSkill(skillAbility.getSkillKey()).getDisplayName(mcRPGPlayer) + " <gray>skill"));
                     lore.add(miniMessage.deserialize("<gray>reaches level <gold>" + unlockableAbility.getUnlockLevel() + "<gray>."));
                 }
             }

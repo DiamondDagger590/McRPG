@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -44,12 +45,12 @@ public enum AbilitySortType {
     INNATE_ABILITIES(LocalizationKey.ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM, new InnateAbilityFilter(), mcrpgPlayer -> new ChainComparator<>(
             Comparator.comparing((Ability ability) -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator(mcrpgPlayer))),
     SKILL(LocalizationKey.ABILITY_SORT_SKILL_DISPLAY_ITEM, null, mcRPGPlayer -> new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
-            Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
+            Comparator.comparing((Ability ability) -> ability instanceof SkillAbility),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
                 SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
-                Optional<Skill> skillOptional = Optional.ofNullable(ability.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability.getSkill().get()) : null);
-                Optional<Skill> skillOptional1 = Optional.ofNullable(ability1.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability1.getSkill().get()) : null);
+                Optional<Skill> skillOptional = Optional.ofNullable(ability instanceof SkillAbility skillAbility ? skillRegistry.getRegisteredSkill(skillAbility.getSkillKey()) : null);
+                Optional<Skill> skillOptional1 = Optional.ofNullable(ability1 instanceof SkillAbility skillAbility ? skillRegistry.getRegisteredSkill(skillAbility.getSkillKey()) : null);
                 // If one of these has a skill but the other doesn't, then we want to prioritize the one that has the skill first
                 if (skillOptional.isPresent() != skillOptional1.isPresent()) {
                     return skillOptional.isEmpty() ? -1 : 1;
@@ -66,12 +67,12 @@ public enum AbilitySortType {
             INNATE_ABILITIES.getAbilityComparator(mcRPGPlayer))),
     UNLOCKED_ABILITIES(LocalizationKey.ABILITY_SORT_UNLOCKED_ABILITIES_DISPLAY_ITEM, new UnlockableAbilityFilter(), mcRPGPlayer -> new ChainComparator<>(
             Comparator.comparing((Ability ability) -> !(ability instanceof UnlockableAbility)),
-            Comparator.comparing((Ability ability) -> ability.getSkill().isPresent()),
+            Comparator.comparing((Ability ability) -> ability instanceof SkillAbility),
             // After we've sorted it so abilities with skills are put in front of abilities without skills, sort the skills by name
             (ability, ability1) -> {
                 SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
-                Optional<Skill> skillOptional = Optional.ofNullable(ability.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability.getSkill().get()) : null);
-                Optional<Skill> skillOptional1 = Optional.ofNullable(ability1.getSkill().isPresent() ? skillRegistry.getRegisteredSkill(ability1.getSkill().get()) : null);
+                Optional<Skill> skillOptional = Optional.ofNullable(ability instanceof SkillAbility skillAbility ? skillRegistry.getRegisteredSkill(skillAbility.getSkillKey()) : null);
+                Optional<Skill> skillOptional1 = Optional.ofNullable(ability1 instanceof SkillAbility skillAbility ? skillRegistry.getRegisteredSkill(skillAbility.getSkillKey()) : null);
                 // If one of these has a skill but the other doesn't, then we want to prioritize the one that has the skill first
                 if (skillOptional.isPresent() != skillOptional1.isPresent()) {
                     return skillOptional.isEmpty() ? -1 : 1;

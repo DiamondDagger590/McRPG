@@ -12,9 +12,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
-import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedComponents;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -30,7 +31,6 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Bleed is an ability that does a DOT for enemies whenever
@@ -44,7 +44,7 @@ import java.util.Optional;
  * allow them a chance to regenerate health since constantly bleeding would cause fights to
  * easily swing in one direction.
  */
-public final class Bleed extends McRPGAbility implements PassiveAbility, ConfigurableAbility {
+public final class Bleed extends McRPGAbility implements PassiveAbility, ConfigurableAbility, SkillAbility {
 
     public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "bleed");
 
@@ -58,8 +58,8 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Swords.SWORDS_KEY);
+    public NamespacedKey getSkillKey() {
+        return Swords.SWORDS_KEY;
     }
 
     @NotNull
