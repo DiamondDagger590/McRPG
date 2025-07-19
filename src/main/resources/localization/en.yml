@@ -14,17 +14,31 @@
 config-version: 1
 # Configure messages for McRPG commands
 commands:
-  # Configure experience commands
-  experience:
+  # Configure /mcrpg give commmands
+  give:
     # Configure the experience give command
     # Supports the following placeholders: <experience>, <skill>, <target>, <sender>
-    give-command:
+    experience:
       # The message to send to the player getting experience.
-      recipient-message: "<green>You have been given <gold><experience></gold> in <gold><skill></gold>."
+      recipient-message: "<gray>You have been given <gold><experience></gold> in <gold><skill></gold>."
       # The message to send to the sender when the command works.
-      sender-success-message: "<green>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
+      sender-success-message: "<gray>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
       # The message to send to the sender when the command fails.
       sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+  # Configure /mcrpg admin commands
+  admin:
+    # Configure the reload command
+    reload:
+      sender-success-message: "<gray>You have reloaded all McRPG files."
+    reset:
+      player:
+        # The message to send to the player being reset.
+        recipient-message: "<gray>You have had your McRPG data reset."
+        # The message to send to the sender when the command works.
+        sender-success-message: "<gray>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
+        # The message to send to the sender when the command fails.
+        sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+
 # Configure McRPG expansions
 expansion:
   # What is the display name for the McRPG content expansion?

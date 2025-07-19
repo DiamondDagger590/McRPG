@@ -9,6 +9,7 @@ import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import static us.eunoians.mcrpg.command.admin.AdminBaseCommand.ADMIN_BASE_PERMISSION;
@@ -32,6 +33,8 @@ public class ReloadPluginCommand extends McRPGCommandBase {
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
+                            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                                    .getLocalizedMessageAsComponent(LocalizationKey.LOGIN_UNABLE_TO_LOAD_DATA);
                             senderAudience.sendMessage(miniMessage.deserialize("<gray>You have reloaded all McRPG files."));
                         }
                 ));

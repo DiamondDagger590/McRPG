@@ -14,6 +14,27 @@ public final class LocalizationKey extends ConfigFile {
     private static final String LOGIN_HEADER = "login";
     public static final Route LOGIN_UNABLE_TO_LOAD_DATA = Route.fromString(toRoutePath(LOGIN_HEADER, "unable-to-load-data"));
 
+    private static final String COMMAND_HEADER = "commands";
+
+    private static final String GIVE_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "give");
+    private static final String GIVE_EXPERIENCE_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "experience");
+    public static final Route GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
+
+    private static final String ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "admin");
+
+    private static final String RELOAD_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reload");
+    public static final Route RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RELOAD_COMMAND_HEADER, "sender-success-message"));
+
+    private static final String RESET_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "reset");
+    private static final String RESET_PLAYER_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "player");
+    public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-error-message"));
+
+
+
     private static final String EXPANSION_HEADER = "expansion";
     public static final Route MCRPG_EXPANSION_NAME = Route.fromString(toRoutePath(EXPANSION_HEADER, "mcrpg"));
 

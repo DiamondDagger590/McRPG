@@ -22,6 +22,8 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
+
 /**
  * A {@link Skill} that focuses on the usage of Minecraft Swords.
  * <p>
@@ -53,10 +55,11 @@ public final class Swords extends McRPGSkill implements HeldItemBonusSkill {
     public double getHeldItemBonus(@NotNull ItemStack... items) {
         double modifier = 0.0;
         for (ItemStack itemStack : items) {
+            // TODO https://github.com/DiamondDagger590/McRPG/issues/117
             Material material = itemStack.getType();
             // Cache so we don't constantly rebuild routes (especially if players are spam clicking or smth)
             if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(material)) {
-                MATERIAL_BONUS_ROUTE_MAP.put(material, Route.addTo(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, material.toString()));
+                MATERIAL_BONUS_ROUTE_MAP.put(material, Route.fromString(toRoutePath(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, material.toString())));
             }
             YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
             modifier += (swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(material), 1.0d) - 1);

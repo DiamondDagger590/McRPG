@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomBlockWrapper;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import dev.dejvokep.boostedyaml.route.Route;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
@@ -23,7 +24,7 @@ public class ReloadableRemoteTransferMap extends ReloadableContent<Map<String, R
 
     public ReloadableRemoteTransferMap() {
         super(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG),
-                MiningConfigFile.REMOTE_TRANSFER_CATEGORIES_HEADER, (document, categoryRoute) -> {
+                Route.fromString(MiningConfigFile.REMOTE_TRANSFER_CATEGORIES_HEADER), (document, categoryRoute) -> {
             Map<String, RemoteTransferCategory> map = new HashMap<>();
             RemoteTransferCategory allCategory = new RemoteTransferCategory("all");
             Section categorySection = document.getSection(categoryRoute);

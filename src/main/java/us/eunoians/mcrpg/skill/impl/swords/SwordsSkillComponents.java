@@ -22,6 +22,8 @@ import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
+
 /**
  * A collection of all {@link us.eunoians.mcrpg.skill.component.EventLevelableComponent}s used for the
  * {@link Swords} skill.
@@ -78,8 +80,9 @@ public class SwordsSkillComponents {
         @Override
         public int getBaseExperienceForEntity(@NotNull SkillHolder skillHolder, @NotNull Entity attackedEntity) {
             EntityType entityType = attackedEntity.getType();
+            // TODO https://github.com/DiamondDagger590/McRPG/issues/117
             if (!ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.containsKey(entityType)) {
-                ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.put(entityType, Route.addTo(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, entityType.toString()));
+                ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.put(entityType, Route.fromString(toRoutePath(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, entityType.toString())));
             }
             YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
             return swordsFile.getInt(ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.get(entityType), 0);
