@@ -19,6 +19,7 @@ public final class SwordsConfigFile extends AbilityConfigFile {
 
     private static final int CURRENT_VERSION = 1;
 
+    public static final Route SKILL_ENABLED = Route.fromString("skill-enabled");
     // Experience
     public static final String MATERIAL_MODIFIERS_HEADER = toRoutePath(EXPERIENCE_HEADER, "material-modifiers");
     public static final String ENTITY_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");

@@ -61,7 +61,7 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val mccoreVersion = "1.0.0.13-SNAPSHOT"
+    val mccoreVersion = "1.0.0.14-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     val bstatsVersion = "2.2.1"
@@ -79,7 +79,7 @@ dependencies {
     val geyserVersion = "2.4.2-SNAPSHOT"
     compileOnly("org.geysermc.geyser:api:$geyserVersion")
 
-    val apolloVersion = "1.1.5"
+    val apolloVersion = "1.1.8"
     compileOnly("com.lunarclient:apollo-api:$apolloVersion")
 
     val landsVersion = "7.10.13"

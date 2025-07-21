@@ -43,8 +43,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.COOLDOWN;
-import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.RANGE;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RANGE;
 
 /**
  * Ore Scanner is an active ability that will scan the blocks around the player, informing the player of

@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.builder.item;
+package us.eunoians.mcrpg.builder.item.ability;
 
 import org.jetbrains.annotations.NotNull;
 

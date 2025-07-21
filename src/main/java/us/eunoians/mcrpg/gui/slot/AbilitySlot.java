@@ -8,7 +8,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.builder.item.AbilityLoreAppender;
+import us.eunoians.mcrpg.builder.item.ability.AbilityLoreAppender;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;

@@ -5,7 +5,7 @@ import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
-import us.eunoians.mcrpg.builder.item.AbilityItemBuilder;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
@@ -69,23 +69,31 @@ public interface Ability extends McRPGContent {
     String getName(@NotNull McRPGPlayer player);
 
     /**
-     * Gets the localized name of the ability in {@link java.util.Locale#ENGLISH}.
+     * Gets the localized name of the ability using the default locale.
      *
      * @return The localized name of the ability.
      */
     @NotNull
     String getName();
 
-
     /**
      * Gets the name to display in messages or guis for this ability. This may have a placeholder
-     * such as {@code <ability-name>} which should be replaced by {@link #getName()};
+     * such as {@code <ability-name>} which should be replaced by {@link #getName()}.
      *
      * @param player The {@link McRPGPlayer} to get the localized display name for.
      * @return The name to display in messages or guis for this ability.
      */
     @NotNull
     String getDisplayName(@NotNull McRPGPlayer player);
+
+    /**
+     * Gets the name to display in messages or guis for this ability using the default locale.
+     * This may have a placeholder such as {@code <ability-name>} which should be replaced by {@link #getName()}.
+     *
+     * @return The name to display in messages or guis for this ability.
+     */
+    @NotNull
+    String getDisplayName();
 
     /**
      * Activates this ability for the given {@link AbilityHolder} with the provided {@link Event} being the trigger.
@@ -145,7 +153,7 @@ public interface Ability extends McRPGContent {
      * Some generic placeholders are provided out of box in the {@link AbilityItemBuilder}
      * itself,
      *
-     * @param player The player to build the placerholders for.
+     * @param player The player to build the placeholders for.
      * @return A map containing the placeholders to use for this ability display.
      */
     @NotNull

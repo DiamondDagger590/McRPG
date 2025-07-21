@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.builder.item;
+package us.eunoians.mcrpg.builder.item.ability;
 
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;

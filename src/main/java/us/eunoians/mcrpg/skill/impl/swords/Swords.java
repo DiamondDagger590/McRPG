@@ -15,7 +15,7 @@ import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.HeldItemBonusSkill;
-import us.eunoians.mcrpg.skill.McRPGSkill;
+import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.util.McRPGMethods;
 

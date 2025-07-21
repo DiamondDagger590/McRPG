@@ -14,6 +14,8 @@
 config-version: 1
 # Configure messages for McRPG commands
 commands:
+  # The name of console to use if the sender of a command is ever console and the <sender> placeholder is used
+  console-name: "console"
   # Configure /mcrpg give commmands
   give:
     # Configure the experience give command
@@ -29,15 +31,29 @@ commands:
   admin:
     # Configure the reload command
     reload:
+      # The message to send to the sender when the command works.
       sender-success-message: "<gray>You have reloaded all McRPG files."
     reset:
+      # Supports the following placeholders: <target>, <sender>
       player:
         # The message to send to the player being reset.
         recipient-message: "<gray>You have had your McRPG data reset."
         # The message to send to the sender when the command works.
-        sender-success-message: "<gray>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
+        sender-success-message: "<gray>You have reset <gold><target>'s <gray>McRPG data."
+        # The message to send to the sender when the command fails to save updated data.
+        sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
-        sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+        sender-error-message: "<red>Unable to reset McRPG data for <target>."
+      # Supports the following placeholders: <skill>, <target>, <sender>
+      skill:
+        # The message to send to the player being reset.
+        recipient-message: "<gray>You have had your <gold><skill> skill <gray>reset."
+        # The message to send to the sender when the command works.
+        sender-success-message: "<gray>You have reset <gold><target>'s <skill> skill<gray>."
+        # The message to send to the sender when the command fails to save updated data.
+        sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
+        # The message to send to the sender when the command fails.
+        sender-error-message: "<red>Unable to reset McRPG data for <target>."
 
 # Configure McRPG expansions
 expansion:

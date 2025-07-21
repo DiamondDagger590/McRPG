@@ -19,6 +19,8 @@ public class MiningConfigFile extends AbilityConfigFile {
 
     private static final int CURRENT_VERSION = 1;
 
+    public static final Route SKILL_ENABLED = Route.fromString("skill-enabled");
+
     // Experience
     public static final String BLOCK_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
 

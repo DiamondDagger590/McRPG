@@ -32,9 +32,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.ABILITY_DURATION;
-import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.ACTIVATION_CHANCE_INCREASE;
-import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ABILITY_DURATION;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ACTIVATION_CHANCE_INCREASE;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
 
 /**
  * This ability activates by attacking an enemy after readying the user's sword. The ability

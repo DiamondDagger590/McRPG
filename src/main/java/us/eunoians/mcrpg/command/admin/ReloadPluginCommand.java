@@ -34,8 +34,7 @@ public class ReloadPluginCommand extends McRPGCommandBase {
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
                             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
-                                    .getLocalizedMessageAsComponent(LocalizationKey.LOGIN_UNABLE_TO_LOAD_DATA);
-                            senderAudience.sendMessage(miniMessage.deserialize("<gray>You have reloaded all McRPG files."));
+                                    .getLocalizedMessageAsComponent(LocalizationKey.RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE);
                         }
                 ));
     }

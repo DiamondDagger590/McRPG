@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;

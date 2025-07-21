@@ -7,7 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;

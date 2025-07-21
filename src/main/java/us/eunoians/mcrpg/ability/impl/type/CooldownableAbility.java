@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
-import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;

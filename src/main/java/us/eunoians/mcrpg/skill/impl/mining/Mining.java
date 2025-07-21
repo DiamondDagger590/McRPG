@@ -5,7 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.skill.McRPGSkill;
+import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.util.McRPGMethods;
 

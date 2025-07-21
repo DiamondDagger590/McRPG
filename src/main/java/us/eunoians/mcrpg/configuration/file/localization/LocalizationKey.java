@@ -15,6 +15,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LOGIN_UNABLE_TO_LOAD_DATA = Route.fromString(toRoutePath(LOGIN_HEADER, "unable-to-load-data"));
 
     private static final String COMMAND_HEADER = "commands";
+    public static final Route CONSOLE_NAME = Route.fromString(toRoutePath(COMMAND_HEADER, "console-name"));
 
     private static final String GIVE_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "give");
     private static final String GIVE_EXPERIENCE_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "experience");
@@ -32,8 +33,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "recipient-message"));
     public static final Route RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-success-message"));
     public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-error-message"));
-
-
+    public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_SAVING_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-error-saving-message"));
 
     private static final String EXPANSION_HEADER = "expansion";
     public static final Route MCRPG_EXPANSION_NAME = Route.fromString(toRoutePath(EXPANSION_HEADER, "mcrpg"));
@@ -44,6 +44,11 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String SKILL_HEADER = "skill";
     private static final String SWORDS_HEADER = toRoutePath(SKILL_HEADER, "swords");
+    public static final Route SWORDS_DISPLAY_ITEM  = Route.fromString(toRoutePath(SWORDS_HEADER, "display-item"));
+    private static final String MINING_HEADER = toRoutePath(SKILL_HEADER, "mining");
+    public static final Route MINING_DISPLAY_ITEM = Route.fromString(toRoutePath(MINING_HEADER, "display-item"));
+    private static final String WOODCUTTING_HEADER = toRoutePath(SKILL_HEADER, "woodcutting");
+    public static final Route WOODCUTTING_DISPLAY_ITEM = Route.fromString(toRoutePath(WOODCUTTING_HEADER, "display-item"));
 
     private static final String GUI_HEADER = "gui";
 

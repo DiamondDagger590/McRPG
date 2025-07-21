@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys.RANGE;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RANGE;
 
 /**
  * This ability allows players to link to a chest and blocks they mine will automatically go into the chest if their allow list

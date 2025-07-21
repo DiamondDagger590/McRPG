@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.builder.item;
+package us.eunoians.mcrpg.builder.item.ability;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import dev.dejvokep.boostedyaml.block.implementation.Section;

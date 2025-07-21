@@ -15,8 +15,10 @@ import org.incendo.cloud.bukkit.parser.PlayerParser;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.permission.Permission;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.command.parser.SkillParser;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -27,7 +29,11 @@ import us.eunoians.mcrpg.skill.Skill;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+
+import static us.eunoians.mcrpg.command.CommandPlaceholders.SKILL;
 
 /**
  * Command used to reset a player's skill
@@ -96,5 +102,11 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             senderAudience.sendMessage(miniMessage.deserialize(String.format("<red>Unable to reset skill for %s.", player.displayName())));
                         }
                 ));
+    }
+
+    @NotNull
+    public static Map<String, String> getPlaceholders(@NotNull Audience messageAudience, @NotNull Audience senderAudience, @NotNull Audience receiverAudience, @NotNull Skill skill) {
+        Map<String, String> placeholders = new HashMap<>(McRPGCommandBase.getPlaceholders(messageAudience, senderAudience, receiverAudience));
+        placeholders.put(SKILL.getPlaceholder(), skill.getDisplayName())
     }
 }

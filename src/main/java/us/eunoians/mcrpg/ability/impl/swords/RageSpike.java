@@ -24,7 +24,7 @@ import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
-import us.eunoians.mcrpg.builder.item.AbilityItemPlaceholderKeys;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
