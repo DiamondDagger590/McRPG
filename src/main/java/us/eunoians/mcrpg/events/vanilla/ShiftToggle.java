@@ -111,8 +111,8 @@ public class ShiftToggle implements Listener {
                       continue;
                     }
                     //make target go voom
-                    Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
-                    en.setVelocity(targVector.multiply(-4.3));
+//                    Vector targVector = new Vector(en.getLocation().getDirection().getX(), en.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
+//                    en.setVelocity(targVector.multiply(-4.3));
                     //damage target and add them to list
                     len.damage(event.getDamage());
                     entities.add(en.getUniqueId());
