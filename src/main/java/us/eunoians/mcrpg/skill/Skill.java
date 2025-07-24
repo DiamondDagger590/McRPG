@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -117,10 +118,11 @@ public interface Skill extends McRPGContent {
      * @param player The player to build the placeholders for.
      * @return A map containing the placeholders to use for this skill display.
      */
-
     @NotNull
     default Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         return Map.of();
     }
 
+    @NotNull
+    Parser getLevelUpEquation();
 }

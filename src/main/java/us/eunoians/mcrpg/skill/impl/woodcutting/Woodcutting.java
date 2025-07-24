@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
-import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.impl.McRPGSkill;
@@ -44,16 +43,6 @@ public class Woodcutting extends McRPGSkill implements ConfigurableSkill {
     @Override
     public String getDatabaseName() {
         return "woodcutting";
-    }
-
-    @Override
-    public int getMaxLevel() {
-        return 1000;
-    }
-
-    @Override
-    public boolean isSkillEnabled() {
-        return getYamlDocument().getBoolean(WoodcuttingConfigFile.SKILL_ENABLED);
     }
 
     @NotNull

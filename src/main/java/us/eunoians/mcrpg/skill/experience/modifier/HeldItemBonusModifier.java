@@ -5,7 +5,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.skill.HeldItemBonusSkill;
+import us.eunoians.mcrpg.skill.impl.type.HeldItemBonusSkill;
 import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 

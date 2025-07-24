@@ -15,7 +15,7 @@ import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 /**
  * Contains all the {@link Route}s used for the swords_configuration.yml
  */
-public final class SwordsConfigFile extends AbilityConfigFile {
+public final class SwordsConfigFile extends SkillConfigFile {
 
     private static final int CURRENT_VERSION = 1;
 

@@ -7,16 +7,17 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.HeldItemBonusSkill;
-import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.impl.McRPGSkill;
+import us.eunoians.mcrpg.skill.impl.type.ConfigurableSkill;
+import us.eunoians.mcrpg.skill.impl.type.HeldItemBonusSkill;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
@@ -30,25 +31,40 @@ import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
  * Players will gain experience by attacking mobs with swords and unlock abilities focused
  * on the {@link us.eunoians.mcrpg.ability.impl.swords.Bleed} mechanic.
  */
-public final class Swords extends McRPGSkill implements HeldItemBonusSkill {
+public final class Swords extends McRPGSkill implements HeldItemBonusSkill, ConfigurableSkill {
 
     public static final NamespacedKey SWORDS_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "swords");
     private static final Map<Material, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
 
-    public Swords() {
+    private final McRPG mcRPG;
+    public Swords(@NotNull McRPG mcRPG) {
         super(SWORDS_KEY);
+        this.mcRPG = mcRPG;
         addLevelableComponent(SwordsSkillComponents.SWORDS_LEVEL_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 0);
     }
 
     @NotNull
     @Override
-    public String getDisplayName(@Nullable McRPGPlayer player) {
-        return "Swords";
+    public YamlDocument getYamlDocument() {
+        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
     }
 
+    @NotNull
     @Override
-    public int getMaxLevel() {
-        return 1000;
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.SWORDS_DISPLAY_ITEM;
+    }
+
+    @NotNull
+    @Override
+    public Plugin getPlugin() {
+        return mcRPG;
+    }
+
+    @NotNull
+    @Override
+    public String getDatabaseName() {
+        return "swords";
     }
 
     @Override

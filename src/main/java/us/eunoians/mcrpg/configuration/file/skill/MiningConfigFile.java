@@ -15,7 +15,7 @@ import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 /**
  * The configuration file for the mining.yml configuration file.
  */
-public class MiningConfigFile extends AbilityConfigFile {
+public class MiningConfigFile extends SkillConfigFile {
 
     private static final int CURRENT_VERSION = 1;
 

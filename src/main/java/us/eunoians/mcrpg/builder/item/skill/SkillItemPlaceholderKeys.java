@@ -8,9 +8,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum SkillItemPlaceholderKeys {
     SKILL("skill"),
-    TIER("tier"),
-    MAX_TIER("max-tier"),
     LEVEL("level"),
+    CURRENT_EXPERIENCE("current-experience"),
     EXPERIENCE_TO_LEVEL_UP("experience-to-level-up"),
     ;
 

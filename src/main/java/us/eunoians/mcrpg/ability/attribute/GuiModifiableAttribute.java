@@ -4,11 +4,11 @@ import com.diamonddagger590.mccore.gui.slot.Slot;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
+import us.eunoians.mcrpg.gui.ability.AbilityAttributeEditGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 
 /**
- * Any attribute that can be displayed/has some sort of action in the {@link AbilityEditGui}
+ * Any attribute that can be displayed/has some sort of action in the {@link AbilityAttributeEditGui}
  * should extend this.
  */
 public interface GuiModifiableAttribute {

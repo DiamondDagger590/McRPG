@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
+import us.eunoians.mcrpg.gui.ability.AbilityAttributeEditGui;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -83,8 +83,8 @@ public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribu
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
                 if (mcRPGPlayer.getAsBukkitPlayer().isPresent()
-                        && guiOptional.isPresent() && guiOptional.get() instanceof AbilityEditGui abilityEditGui) {
-                    abilityEditGui.setIgnoreClose(true);
+                        && guiOptional.isPresent() && guiOptional.get() instanceof AbilityAttributeEditGui abilityAttributeEditGui) {
+                    abilityAttributeEditGui.setIgnoreClose(true);
                     RemoteTransferGui remoteTransferGui = new RemoteTransferGui(mcRPGPlayer);
                     Player player = mcRPGPlayer.getAsBukkitPlayer().get();
                     player.closeInventory();
@@ -107,7 +107,7 @@ public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribu
 
             @Override
             public Set<Class<?>> getValidGuiTypes() {
-                return Set.of(AbilityEditGui.class);
+                return Set.of(AbilityAttributeEditGui.class);
             }
         };
     }

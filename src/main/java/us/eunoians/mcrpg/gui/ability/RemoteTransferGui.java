@@ -105,10 +105,10 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
-                    AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
+                    AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
                     Player player = mcRPGPlayer.getAsBukkitPlayer().get();
                     player.closeInventory();
-                    player.openInventory(abilityEditGui.getInventory());
+                    player.openInventory(abilityAttributeEditGui.getInventory());
                 }
                 return true;
             }
@@ -284,10 +284,10 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
         var corePlayerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(bukkitPlayer.getUniqueId());
         if (corePlayerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = corePlayerOptional.get();
-            AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
+            AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
             Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), () -> {
-                McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityEditGui);
-                bukkitPlayer.openInventory(abilityEditGui.getInventory());
+                McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityAttributeEditGui);
+                bukkitPlayer.openInventory(abilityAttributeEditGui.getInventory());
             }, 1L);
         }
     }

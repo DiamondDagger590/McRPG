@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.builder.item.ability.AbilityLoreAppender;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
-import us.eunoians.mcrpg.gui.ability.AbilityEditGui;
+import us.eunoians.mcrpg.gui.ability.AbilityAttributeEditGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
@@ -64,10 +64,10 @@ public class AbilitySlot extends McRPGSlot {
                 // If the player is using geyser, we have custom logic for them since they don't have right/left clicks. (Or if they just did a left click lol)
                 var geyserOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.GEYSER);
                 if ((geyserOptional.isPresent() && geyserOptional.get().isBedrockPlayer(mcRPGPlayer.getUUID())) || clickType == ClickType.RIGHT) {
-                    AbilityEditGui abilityEditGui = new AbilityEditGui(mcRPGPlayer, ability);
+                    AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer, ability);
                     player.closeInventory();
-                    guiManager.trackPlayerGui(mcRPGPlayer.getUUID(), abilityEditGui);
-                    player.openInventory(abilityEditGui.getInventory());
+                    guiManager.trackPlayerGui(mcRPGPlayer.getUUID(), abilityAttributeEditGui);
+                    player.openInventory(abilityAttributeEditGui.getInventory());
                 }
                 // If they're on java and right-clicked
                 else if (clickType == ClickType.LEFT) {

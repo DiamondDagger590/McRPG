@@ -15,7 +15,7 @@ import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 /**
  * The configuration file for {@link us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting}.
  */
-public class WoodcuttingConfigFile extends AbilityConfigFile {
+public class WoodcuttingConfigFile extends SkillConfigFile {
 
     private static final int CURRENT_VERSION = 1;
 

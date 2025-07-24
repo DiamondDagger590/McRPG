@@ -26,13 +26,13 @@ import java.util.Optional;
 /**
  * This gui is used for whenever an {@link Ability} is having its attributes modified.
  */
-public class AbilityEditGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
+public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
 
     private final Player player;
     private final Ability ability;
     private boolean ignoreClose = false;
 
-    public AbilityEditGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
+    public AbilityAttributeEditGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
         super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {

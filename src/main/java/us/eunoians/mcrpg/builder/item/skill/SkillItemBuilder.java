@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.Skill;
 
@@ -39,5 +40,9 @@ public class SkillItemBuilder extends ItemBuilder {
     private void addPlaceholders() {
         // Skill placeholder
         addPlaceholder(SkillItemPlaceholderKeys.SKILL.getKey(), skill.getName(player));
+        var skillOptional = player.asSkillHolder().getSkillHolderData(skill);
+        addPlaceholder(SkillItemPlaceholderKeys.LEVEL.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getCurrentLevel).orElse(0)));
+        addPlaceholder(SkillItemPlaceholderKeys.CURRENT_EXPERIENCE.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getCurrentExperience).orElse(0)));
+        addPlaceholder(SkillItemPlaceholderKeys.EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getExperienceForNextLevel).orElse(0)));
     }
 }

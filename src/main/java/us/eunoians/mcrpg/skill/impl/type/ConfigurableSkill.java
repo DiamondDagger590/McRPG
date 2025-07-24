@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.skill.impl.type;
 
 import com.diamonddagger590.mccore.builder.item.ItemBuilderConfigurationKeys;
+import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -8,6 +9,7 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.builder.item.skill.SkillItemBuilder;
+import us.eunoians.mcrpg.configuration.file.skill.SkillConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -60,5 +62,21 @@ public interface ConfigurableSkill extends Skill {
     @Override
     default String getDisplayName() {
         return RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+    }
+
+    @Override
+    default int getMaxLevel() {
+        return getYamlDocument().getInt(SkillConfigFile.MAXIMUM_SKILL_LEVEL);
+    }
+
+    @Override
+    default boolean isSkillEnabled() {
+        return getYamlDocument().getBoolean(SkillConfigFile.SKILL_ENABLED);
+    }
+
+    @NotNull
+    @Override
+    default Parser getLevelUpEquation() {
+        return new Parser(getYamlDocument().getString(SkillConfigFile.LEVEL_UP_EQUATION));
     }
 }
