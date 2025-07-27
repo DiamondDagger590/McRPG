@@ -112,8 +112,6 @@ public class McRPG extends CorePlugin {
     private GlowingBlocks glowingBlocks;
     private GlowingEntities glowingEntities;
 
-    private boolean debounce = false;
-
     @Override
     public void onEnable() {
         super.onEnable();
@@ -306,13 +304,9 @@ public class McRPG extends CorePlugin {
             getLogger().info("Geyser found... enabling support.");
             pluginHookRegistry.register(new GeyserHook(this));
         }
-        if (debounce) {
-            throw new RuntimeException();
-        }
-        if (Bukkit.getPluginManager().isPluginEnabled("Apollo-Bukkit") && !debounce) {
+        if (Bukkit.getPluginManager().isPluginEnabled("Apollo-Bukkit")) {
             getLogger().info("Apollo found... enabling Lunar Client support.");
             pluginHookRegistry.register(new LunarClientHook(this));
-            debounce = true;
         }
         if (Bukkit.getPluginManager().isPluginEnabled("Lands")) {
             getLogger().info("Lands found... enabling support.");
