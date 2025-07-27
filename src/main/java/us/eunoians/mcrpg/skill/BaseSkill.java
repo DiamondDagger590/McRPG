@@ -50,33 +50,12 @@ public abstract class BaseSkill implements Skill {
         return levelingAttributes.getOrDefault(clazz, new ArrayList<>());
     }
 
-    /**
-     * Checks to see if the provided {@link Event} can be used to provide experience to this skill.
-     *
-     * @param event The {@link Event} to check.
-     * @return {@code true} if the provided {@link Event} can be used to provide experience to this skill.
-     */
+    @Override
     public boolean canEventLevelSkill(@NotNull Event event) {
         return levelingAttributes.containsKey(event.getClass());
     }
 
-    /**
-     * Calculates the amount of experience to award the provided {@link SkillHolder} based on the provided {@link Event}.
-     * <p>
-     * No experience is awarded during this method call, this method simply calculates the amount of experience that the {@link Event}
-     * CAN award.
-     * <p>
-     * This method looks through every {@link EventLevelableComponentAttribute} that is used for the {@link Event} (in sorted order of priority),
-     * and will return the highest calculated experience gain from any of these attributes.
-     * <p>
-     * If one {@link EventLevelableComponentAttribute} returns {@code false} on {@link EventLevelableComponent#shouldGiveExperience(SkillHolder, Event)},
-     * then it will stop checking the subsequent ones and return a value of {@code 0}. This allows for other plugins to add additional {@link EventLevelableComponentAttribute}s
-     * to vanilla McRPG skills, while allowing the default experience checks to do validation on experience awarding.
-     *
-     * @param skillHolder The {@link SkillHolder} to calculate experience for.
-     * @param event       The {@link Event} to calculate experience from.
-     * @return The non-negative, zero inclusive amount of experience that can be awarded by the provided event.
-     */
+    @Override
     public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
         // If the event can't be used to level this skill, throw an error because for some reason we are expecting it to be and it isn't.
         if (!canEventLevelSkill(event)) {

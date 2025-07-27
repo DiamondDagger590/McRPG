@@ -2,11 +2,15 @@ package us.eunoians.mcrpg.skill;
 
 import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.builder.item.skill.SkillItemBuilder;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
+import us.eunoians.mcrpg.skill.component.EventLevelableComponent;
+import us.eunoians.mcrpg.skill.component.EventLevelableComponentAttribute;
 
 import java.util.Map;
 
@@ -125,4 +129,32 @@ public interface Skill extends McRPGContent {
 
     @NotNull
     Parser getLevelUpEquation();
+
+    /**
+     * Calculates the amount of experience to award the provided {@link SkillHolder} based on the provided {@link Event}.
+     * <p>
+     * No experience is awarded during this method call, this method simply calculates the amount of experience that the {@link Event}
+     * CAN award.
+     * <p>
+     * This method looks through every {@link EventLevelableComponentAttribute} that is used for the {@link Event} (in sorted order of priority),
+     * and will return the highest calculated experience gain from any of these attributes.
+     * <p>
+     * If one {@link EventLevelableComponentAttribute} returns {@code false} on {@link EventLevelableComponent#shouldGiveExperience(SkillHolder, Event)},
+     * then it will stop checking the subsequent ones and return a value of {@code 0}. This allows for other plugins to add additional {@link EventLevelableComponentAttribute}s
+     * to vanilla McRPG skills, while allowing the default experience checks to do validation on experience awarding.
+     *
+     * @param skillHolder The {@link SkillHolder} to calculate experience for.
+     * @param event       The {@link Event} to calculate experience from.
+     * @return The non-negative, zero inclusive amount of experience that can be awarded by the provided event.
+     */
+    int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event);
+
+    /**
+     * Checks to see if the provided {@link Event} can be used to provide experience to this skill.
+     *
+     * @param event The {@link Event} to check.
+     * @return {@code true} if the provided {@link Event} can be used to provide experience to this skill.
+     */
+    boolean canEventLevelSkill(@NotNull Event event);
+
 }

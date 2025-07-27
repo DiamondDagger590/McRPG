@@ -107,14 +107,12 @@ public class McRPG extends CorePlugin {
 
     private static final int id = 6386;
 
-    //Needed to support McMMO's Healthbars
-    private static final String customNameKey = "mcMMO: Custom Name";
-    private static final String customVisibleKey = "mcMMO: Name Visibility";
-
     private McRPGDatabase database;
 
     private GlowingBlocks glowingBlocks;
     private GlowingEntities glowingEntities;
+
+    private boolean debounce = false;
 
     @Override
     public void onEnable() {
@@ -308,9 +306,13 @@ public class McRPG extends CorePlugin {
             getLogger().info("Geyser found... enabling support.");
             pluginHookRegistry.register(new GeyserHook(this));
         }
-        if (Bukkit.getPluginManager().isPluginEnabled("Apollo-Bukkit")) {
+        if (debounce) {
+            throw new RuntimeException();
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("Apollo-Bukkit") && !debounce) {
             getLogger().info("Apollo found... enabling Lunar Client support.");
             pluginHookRegistry.register(new LunarClientHook(this));
+            debounce = true;
         }
         if (Bukkit.getPluginManager().isPluginEnabled("Lands")) {
             getLogger().info("Lands found... enabling support.");

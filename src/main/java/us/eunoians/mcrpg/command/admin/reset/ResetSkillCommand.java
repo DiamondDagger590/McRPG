@@ -107,6 +107,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
     @NotNull
     public static Map<String, String> getPlaceholders(@NotNull Audience messageAudience, @NotNull Audience senderAudience, @NotNull Audience receiverAudience, @NotNull Skill skill) {
         Map<String, String> placeholders = new HashMap<>(McRPGCommandBase.getPlaceholders(messageAudience, senderAudience, receiverAudience));
-        placeholders.put(SKILL.getPlaceholder(), skill.getDisplayName())
+        placeholders.put(SKILL.getPlaceholder(), skill.getDisplayName());
+        return placeholders;
     }
 }

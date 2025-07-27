@@ -1,7 +1,11 @@
 package us.eunoians.mcrpg.task.player;
 
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
+import com.diamonddagger590.mccore.pair.ImmutablePair;
+import com.diamonddagger590.mccore.pair.Pair;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
+import com.diamonddagger590.mccore.task.core.CoreTask;
 import com.diamonddagger590.mccore.task.player.PlayerLoadTask;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.NamespacedKey;
@@ -9,10 +13,10 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -25,7 +29,9 @@ import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.loadout.LoadoutDisplay;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -36,8 +42,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 /**
@@ -65,60 +78,29 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     @Override
     protected boolean loadPlayer() { //TODO completable future?
         Instant loginTime = Instant.now();
-        SkillRegistry skillRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.SKILL);
-        AbilityRegistry abilityRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY);
-        AbilityAttributeRegistry abilityAttributeRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
-        SkillHolder skillHolder = getCorePlayer().asSkillHolder();
-        UUID uuid = getCorePlayer().getUUID();
 
         // TODO move this into the skill holder
         try (Connection connection = getPlugin().getDatabase().getConnection()) {
-
-            // TODO Do these player manipulations on main thread oop
-            for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
-                Skill skill = skillRegistry.getRegisteredSkill(skillKey);
-                getPlugin().getLogger().log(Level.INFO, "Loading data for skill: " + skillKey.getKey());
-                SkillDataSnapshot skillDataSnapshot = SkillDAO.getAllPlayerSkillInformation(connection, getCorePlayer().getUUID(), skillKey);
-                getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey() + " Skill level: " + skillDataSnapshot.getCurrentLevel() + " Skill exp: " + skillDataSnapshot.getCurrentExp());
-                skillHolder.addSkillHolderData(skill, skillDataSnapshot.getCurrentLevel(), skillDataSnapshot.getCurrentExp());
-
-                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skillKey)) {
-                    Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
-                    skillHolder.addAvailableAbility(abilityKey);
-                    AbilityData abilityData = new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values());
-                    for (NamespacedKey attributeKey : ability.getApplicableAttributes()) {
-                        if (!abilityData.hasAttribute(attributeKey)) {
-                            abilityAttributeRegistry.getAttribute(attributeKey).ifPresent(abilityData::addAttribute);
-                        }
-                    }
-                    skillHolder.addAbilityData(abilityData);
-                }
-
-                getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
-                        + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
-                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " " + s2).get());
-                getPlugin().getLogger().log(Level.INFO, "Player skills are now: "
-                        + getCorePlayer().asSkillHolder().getSkills().stream()
-                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " " + s2).get());
-            }
-
-            // Loadouts
-            int loadoutAmount = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
-            for (int x = 1; x <= loadoutAmount; x++) {
-                Loadout loadout = LoadoutAbilityDAO.getLoadout(connection, uuid, x);
-                var displayOptional = LoadoutDisplayDAO.getLoadoutDisplay(connection, uuid, x);
-                displayOptional.ifPresent(loadout::setLoadoutDisplay);
-                skillHolder.setLoadout(loadout);
-            }
-
-            // Player settings
-            PlayerSettingDAO.getPlayerSettings(connection, uuid).forEach(playerSetting -> getCorePlayer().setPlayerSetting(playerSetting));
-            // Experience extras
-            getCorePlayer().getExperienceExtras().copyExtras(PlayerExperienceExtrasDAO.getPlayerExperienceExtras(connection, uuid));
-            awardRestedExperience(connection);
+            List<UpdatePlayerDataSyncFunction> updatePlayerDataSyncFunctions = new ArrayList<>();
+            updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
+            updatePlayerDataSyncFunctions.add(loadPlayerSkills(connection));
+            updatePlayerDataSyncFunctions.add(loadPlayerLoadouts(connection));
+            updatePlayerDataSyncFunctions.add(loadPlayerSettings(connection));
+            updatePlayerDataSyncFunctions.add(loadPlayerExperienceExtras(connection));
             updatePlayerLoginTimes(connection, loginTime);
+            CompletableFuture<Void> loadingFuture = new CompletableFuture<>();
+            // Jump to main thread to save the data
+            new CoreTask(getPlugin()) {
+                @Override
+                public void run() {
+                    updatePlayerDataSyncFunctions.forEach(UpdatePlayerDataSyncFunction::updateData);
+                    loadingFuture.complete(null);
+                }
+            }.runTask();
+            // We want to wait until we load data before we signal that data is loaded
+            loadingFuture.get();
             return true;
-        } catch (SQLException e) {
+        } catch (SQLException | ExecutionException | InterruptedException e) {
             e.printStackTrace();
             return false;
         }
@@ -180,18 +162,126 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
      * Awards players rested experience based on their time offline
      *
      * @param connection The {@link Connection} to use when checking player login information.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to load the player's data.
      */
-    private void awardRestedExperience(@NotNull Connection connection) {
+    @NotNull
+    private UpdatePlayerDataSyncFunction awardRestedExperience(@NotNull Connection connection) {
         var logoutTimeOptional = PlayerLoginTimeDAO.getLastLogoutTime(connection, getCorePlayer().getUUID());
         boolean safeZoneLogout = PlayerLoginTimeDAO.didPlayerLogoutInSafeZone(connection, getCorePlayer().getUUID());
-        if (logoutTimeOptional.isPresent()) {
-            Instant logoutTime = logoutTimeOptional.get();
-            Instant now = Instant.now();
-            double difference = Duration.between(now, logoutTime).abs().toSeconds();
-            RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
-            // Award rested experience
-            restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, safeZoneLogout);
+        return () -> {
+            if (logoutTimeOptional.isPresent()) {
+                Instant logoutTime = logoutTimeOptional.get();
+                Instant now = Instant.now();
+                double difference = Duration.between(now, logoutTime).abs().toSeconds();
+                RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
+                // Award rested experience
+                restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, safeZoneLogout);
+            }
+        };
+    }
+
+    /**
+     * Loads player skills and abilities from database.
+     *
+     * @param connection The {@link Connection} to use when loading a player's skill and ability data.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to load the player's data.
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadPlayerSkills(@NotNull Connection connection) {
+        SkillRegistry skillRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.SKILL);
+        AbilityRegistry abilityRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY);
+        AbilityAttributeRegistry abilityAttributeRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
+        SkillHolder skillHolder = getCorePlayer().asSkillHolder();
+        Map<Skill, SkillDataSnapshot> skillDataSnapshots = new HashMap<>();
+        for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
+            Skill skill = skillRegistry.getRegisteredSkill(skillKey);
+            getPlugin().getLogger().log(Level.INFO, "Loading data for skill: " + skillKey.getKey());
+            SkillDataSnapshot skillDataSnapshot = SkillDAO.getAllPlayerSkillInformation(connection, getCorePlayer().getUUID(), skillKey);
+            getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey() + " Skill level: " + skillDataSnapshot.getCurrentLevel() + " Skill exp: " + skillDataSnapshot.getCurrentExp());
+            skillDataSnapshots.put(skill, skillDataSnapshot);
         }
+        return () -> {
+            // Load skill/ability data
+            for (Map.Entry<Skill, SkillDataSnapshot> entry : skillDataSnapshots.entrySet()) {
+                Skill skill = entry.getKey();
+                SkillDataSnapshot skillDataSnapshot = entry.getValue();
+                skillHolder.addSkillHolderData(skill, skillDataSnapshot.getCurrentLevel(), skillDataSnapshot.getCurrentExp());
+
+                for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skill)) {
+                    Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
+                    skillHolder.addAvailableAbility(abilityKey);
+                    AbilityData abilityData = new AbilityData(abilityKey, skillDataSnapshot.getAbilityAttributes(abilityKey).values());
+                    for (NamespacedKey attributeKey : ability.getApplicableAttributes()) {
+                        if (!abilityData.hasAttribute(attributeKey)) {
+                            abilityAttributeRegistry.getAttribute(attributeKey).ifPresent(abilityData::addAttribute);
+                        }
+                    }
+                    skillHolder.addAbilityData(abilityData);
+                }
+                getPlugin().getLogger().log(Level.INFO, "Player abilities are now: "
+                        + getCorePlayer().asSkillHolder().getAvailableAbilities().stream()
+                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " " + s2).get());
+                getPlugin().getLogger().log(Level.INFO, "Player skills are now: "
+                        + getCorePlayer().asSkillHolder().getSkills().stream()
+                        .map(NamespacedKey::getKey).reduce((s, s2) -> s + " " + s2).get());
+            }
+        };
+    }
+
+    /**
+     * Loads player loadouts from database.
+     *
+     * @param connection The {@link Connection} to use when loading a player's loadouts.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to load the player's data.
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadPlayerLoadouts(@NotNull Connection connection) {
+        int loadoutAmount = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
+        SkillHolder skillHolder = getCorePlayer().asSkillHolder();
+        UUID uuid = getCorePlayer().getUUID();
+        List<Pair<Loadout, Optional<LoadoutDisplay>>> loadouts = new ArrayList<>();
+        for (int x = 1; x <= loadoutAmount; x++) {
+            Loadout loadout = LoadoutAbilityDAO.getLoadout(connection, uuid, x);
+            var displayOptional = LoadoutDisplayDAO.getLoadoutDisplay(connection, uuid, x);
+            loadouts.add(ImmutablePair.of(loadout, displayOptional));
+        }
+        return () -> {
+            for (Pair<Loadout, Optional<LoadoutDisplay>> loadoutData : loadouts) {
+                Loadout loadout = loadoutData.getLeft();
+                loadoutData.getRight().ifPresent(loadout::setLoadoutDisplay);
+                skillHolder.setLoadout(loadout);
+            }
+        };
+    }
+
+    /**
+     * Loads {@link PlayerExperienceExtras} from database.
+     *
+     * @param connection The {@link Connection} to use when loading a player's experience extras.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to load the player's data.
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadPlayerExperienceExtras(@NotNull Connection connection) {
+        UUID uuid = getCorePlayer().getUUID();
+        PlayerExperienceExtras experienceExtras = PlayerExperienceExtrasDAO.getPlayerExperienceExtras(connection, uuid);
+        return () -> {
+            getCorePlayer().getExperienceExtras().copyExtras(experienceExtras);
+        };
+    }
+
+    /**
+     * Loads player settings from database.
+     *
+     * @param connection The {@link Connection} to use when loading a player's settings.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to load the player's data.
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadPlayerSettings(@NotNull Connection connection) {
+        UUID uuid = getCorePlayer().getUUID();
+        Set<PlayerSetting> playerSettings = PlayerSettingDAO.getPlayerSettings(connection, uuid);
+        return () -> {
+            playerSettings.forEach(playerSetting -> getCorePlayer().setPlayerSetting(playerSetting));
+        };
     }
 
     /**
@@ -213,5 +303,10 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         // Reset now that they've logged in
         loginInfoTransaction.addAll(PlayerLoginTimeDAO.saveLoggedOutInSafeZone(connection, uuid, false));
         loginInfoTransaction.executeTransaction();
+    }
+
+    @FunctionalInterface
+    private interface UpdatePlayerDataSyncFunction {
+        void updateData();
     }
 }

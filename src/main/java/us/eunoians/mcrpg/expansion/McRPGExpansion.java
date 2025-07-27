@@ -75,9 +75,9 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     private SkillContentPack getSkillContent() {
         SkillContentPack skillContent = new SkillContentPack(this);
-        skillContent.addContent(new Swords());
-        skillContent.addContent(new Mining());
-        skillContent.addContent(new Woodcutting());
+        skillContent.addContent(new Swords(mcRPG));
+        skillContent.addContent(new Mining(mcRPG));
+        skillContent.addContent(new Woodcutting(mcRPG));
         return skillContent;
     }
 
