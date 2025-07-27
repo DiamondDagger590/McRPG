@@ -116,11 +116,13 @@ public class PlayerExperienceExtrasDAO {
     @NotNull
     public static List<PreparedStatement> savePlayerExperienceExtras(@NotNull Connection connection, @NotNull UUID uuid, @NotNull PlayerExperienceExtras playerExperienceExtras) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
-        try (PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, redeemable_experience, redeemable_levels, boosted_experience) VALUES (?, ?, ?, ?)")) {
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, redeemable_experience, redeemable_levels, boosted_experience, rested_experience) VALUES (?, ?, ?, ?, ?)");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setInt(2, playerExperienceExtras.getRedeemableExperience());
             preparedStatement.setInt(3, playerExperienceExtras.getRedeemableLevels());
             preparedStatement.setInt(4, playerExperienceExtras.getBoostedExperience());
+            preparedStatement.setFloat(5, playerExperienceExtras.getRestedExperience());
             preparedStatements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();

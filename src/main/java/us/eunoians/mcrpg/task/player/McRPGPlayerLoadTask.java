@@ -49,8 +49,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 /**
@@ -88,19 +86,15 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             updatePlayerDataSyncFunctions.add(loadPlayerSettings(connection));
             updatePlayerDataSyncFunctions.add(loadPlayerExperienceExtras(connection));
             updatePlayerLoginTimes(connection, loginTime);
-            CompletableFuture<Void> loadingFuture = new CompletableFuture<>();
             // Jump to main thread to save the data
             new CoreTask(getPlugin()) {
                 @Override
                 public void run() {
                     updatePlayerDataSyncFunctions.forEach(UpdatePlayerDataSyncFunction::updateData);
-                    loadingFuture.complete(null);
                 }
             }.runTask();
-            // We want to wait until we load data before we signal that data is loaded
-            loadingFuture.get();
             return true;
-        } catch (SQLException | ExecutionException | InterruptedException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
@@ -109,7 +103,6 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     @VisibleForTesting
     @Override
     protected void onPlayerLoadSuccessfully() {
-
         getPlugin().getLogger().log(Level.INFO, "Player data has been loaded for player: " + getCorePlayer().getUUID());
 
         //Begin tracking player
@@ -195,9 +188,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         Map<Skill, SkillDataSnapshot> skillDataSnapshots = new HashMap<>();
         for (NamespacedKey skillKey : skillRegistry.getRegisteredSkillKeys()) {
             Skill skill = skillRegistry.getRegisteredSkill(skillKey);
-            getPlugin().getLogger().log(Level.INFO, "Loading data for skill: " + skillKey.getKey());
             SkillDataSnapshot skillDataSnapshot = SkillDAO.getAllPlayerSkillInformation(connection, getCorePlayer().getUUID(), skillKey);
-            getPlugin().getLogger().log(Level.INFO, "Data loaded for skill: " + skillKey.getKey() + " Skill level: " + skillDataSnapshot.getCurrentLevel() + " Skill exp: " + skillDataSnapshot.getCurrentExp());
             skillDataSnapshots.put(skill, skillDataSnapshot);
         }
         return () -> {
