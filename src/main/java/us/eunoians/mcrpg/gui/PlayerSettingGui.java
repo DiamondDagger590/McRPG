@@ -100,12 +100,18 @@ public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
      * @param page The page to paint the settings for.
      */
     private void paintSettings(int page) {
+        Bukkit.broadcastMessage("1");
         List<McRPGSetting> settings = getSettingsForPage(page);
+        Bukkit.broadcastMessage("2 settings count: " + settings.size());
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+            Bukkit.broadcastMessage("3 i: " + i + " settings count: " + settings.size());
             if (i < settings.size()) {
+                Bukkit.broadcastMessage("4");
                 setSlot(i, settings.get(i).getSettingSlot(getCreatingPlayer()));
+                Bukkit.broadcastMessage("5");
             } else {
                 removeSlot(i);
+                Bukkit.broadcastMessage("6");
             }
         }
     }

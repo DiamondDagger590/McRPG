@@ -89,7 +89,7 @@ public class PlayerExperienceExtrasDAO {
     @NotNull
     public static PlayerExperienceExtras getPlayerExperienceExtras(@NotNull Connection connection, @NotNull UUID uuid) {
         PlayerExperienceExtras playerExperienceExtras = new PlayerExperienceExtras();
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT redeemable_experience, redeemable_levels, boosted_experience FROM " + TABLE_NAME + " WHERE uuid = ?")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT redeemable_experience, redeemable_levels, boosted_experience, rested_experience FROM " + TABLE_NAME + " WHERE uuid = ?")) {
             preparedStatement.setString(1, uuid.toString());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
