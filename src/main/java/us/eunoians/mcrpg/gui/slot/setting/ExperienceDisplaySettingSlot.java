@@ -14,9 +14,9 @@ import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import java.util.List;
 
 /**
- * A {@link PlayerSettingSlot} that displays the {@link ExperienceDisplaySetting}.
+ * A {@link McRPGSettingSlot} that displays the {@link ExperienceDisplaySetting}.
  */
-public class ExperienceDisplaySettingSlot extends PlayerSettingSlot<ExperienceDisplaySetting> {
+public class ExperienceDisplaySettingSlot extends McRPGSettingSlot<ExperienceDisplaySetting> {
 
     public ExperienceDisplaySettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ExperienceDisplaySetting setting) {
         super(mcRPGPlayer, setting);

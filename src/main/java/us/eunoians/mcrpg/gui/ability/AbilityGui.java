@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.gui.ability;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,8 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.AbilitySlot;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.gui.slot.ability.AbilitySlot;
 
 import java.util.List;
 import java.util.Set;

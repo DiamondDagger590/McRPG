@@ -14,9 +14,9 @@ import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
 import java.util.List;
 
 /**
- * A {@link PlayerSettingSlot} that displays {@link KeepHotbarSlotEmptySetting}s.
+ * A {@link McRPGSettingSlot} that displays {@link KeepHotbarSlotEmptySetting}s.
  */
-public class KeepHotbarSlotEmptySettingSlot extends PlayerSettingSlot<KeepHotbarSlotEmptySetting> {
+public class KeepHotbarSlotEmptySettingSlot extends McRPGSettingSlot<KeepHotbarSlotEmptySetting> {
 
     public KeepHotbarSlotEmptySettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull KeepHotbarSlotEmptySetting setting) {
         super(mcRPGPlayer, setting);

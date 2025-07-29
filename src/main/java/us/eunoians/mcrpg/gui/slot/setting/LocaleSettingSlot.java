@@ -15,9 +15,9 @@ import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import java.util.List;
 
 /**
- * A {@link PlayerSettingSlot} that displays {@link LocaleSetting}s.
+ * A {@link McRPGSettingSlot} that displays {@link LocaleSetting}s.
  */
-public class LocaleSettingSlot extends PlayerSettingSlot<LocaleSetting> {
+public class LocaleSettingSlot extends McRPGSettingSlot<LocaleSetting> {
 
     public LocaleSettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull LocaleSetting setting) {
         super(mcRPGPlayer, setting);

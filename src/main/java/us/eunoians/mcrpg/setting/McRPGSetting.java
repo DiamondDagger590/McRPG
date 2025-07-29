@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
-import us.eunoians.mcrpg.gui.slot.setting.PlayerSettingSlot;
+import us.eunoians.mcrpg.gui.slot.setting.McRPGSettingSlot;
 
 import java.util.Optional;
 
@@ -21,5 +21,5 @@ public interface McRPGSetting extends PlayerSetting, McRPGContent {
     }
 
     @NotNull
-    PlayerSettingSlot<? extends PlayerSetting> getSettingSlot(@NotNull McRPGPlayer player);
+    McRPGSettingSlot<? extends McRPGSetting> getSettingSlot(@NotNull McRPGPlayer player);
 }

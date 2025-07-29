@@ -5,9 +5,9 @@ import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
-import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.ChainComparator;
@@ -28,8 +28,8 @@ import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCatego
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
-import us.eunoians.mcrpg.gui.slot.RemoteTransferToggleAllSlot;
-import us.eunoians.mcrpg.gui.slot.RemoteTransferToggleSlot;
+import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleAllSlot;
+import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

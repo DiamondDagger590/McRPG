@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
 
 import java.util.List;
 
-public class RequireEmptyOffhandSettingSlot extends PlayerSettingSlot<RequireEmptyOffhandSetting> {
+public class RequireEmptyOffhandSettingSlot extends McRPGSettingSlot<RequireEmptyOffhandSetting> {
 
     public RequireEmptyOffhandSettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull RequireEmptyOffhandSetting setting) {
         super(mcRPGPlayer, setting);

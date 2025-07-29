@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.gui.slot;
+package us.eunoians.mcrpg.gui.slot.ability;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryKey;
@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.gui.ability.AbilityAttributeEditGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 

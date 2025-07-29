@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;

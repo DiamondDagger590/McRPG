@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.gui.slot;
+package us.eunoians.mcrpg.gui.slot.ability.remotetransfer;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCatego
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

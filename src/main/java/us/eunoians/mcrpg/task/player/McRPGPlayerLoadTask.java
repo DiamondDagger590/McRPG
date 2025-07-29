@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.task.player;
 
+import com.diamonddagger590.mccore.database.table.impl.PlayerSettingDAO;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
@@ -24,7 +25,6 @@ import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
-import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;

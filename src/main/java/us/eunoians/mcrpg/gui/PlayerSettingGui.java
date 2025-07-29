@@ -3,8 +3,8 @@ package us.eunoians.mcrpg.gui;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
-import com.diamonddagger590.mccore.gui.slot.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.PreviousPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
+import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -72,13 +72,13 @@ public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
 
     @NotNull
     @Override
-    public PreviousPageSlot getPreviousPageSlot() {
+    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
         return null;
     }
 
     @NotNull
     @Override
-    public NextPageSlot getNextPageSlot() {
+    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
         return null;
     }
 

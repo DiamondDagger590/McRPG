@@ -8,10 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
-import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
-import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
+import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 
 import java.sql.Connection;
@@ -78,8 +77,6 @@ public class McRPGDatabase extends Database {
                             + (LoadoutDisplayDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Player Data DAO "
                             + (PlayerLoginTimeDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
-                    logger.log(Level.INFO, "Database Creation - Player Setting DAO "
-                            + (PlayerSettingDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Player Experience Extras DAO "
                             + (PlayerExperienceExtrasDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
@@ -103,7 +100,6 @@ public class McRPGDatabase extends Database {
                     LoadoutAbilityDAO.updateTable(connection);
                     LoadoutDisplayDAO.updateTable(connection);
                     PlayerLoginTimeDAO.updateTable(connection);
-                    PlayerSettingDAO.updateTable(connection);
                     PlayerExperienceExtrasDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }

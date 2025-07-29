@@ -14,9 +14,9 @@ import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import java.util.List;
 
 /**
- * A {@link PlayerSettingSlot} that displays {@link KeepHandEmptySetting}s.
+ * A {@link McRPGSettingSlot} that displays {@link KeepHandEmptySetting}s.
  */
-public class KeepHandEmptySettingSlot extends PlayerSettingSlot<KeepHandEmptySetting> {
+public class KeepHandEmptySettingSlot extends McRPGSettingSlot<KeepHandEmptySetting> {
 
     public KeepHandEmptySettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull KeepHandEmptySetting setting) {
         super(mcRPGPlayer, setting);
