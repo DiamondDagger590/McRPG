@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
-import us.eunoians.mcrpg.gui.HomeGui;
+import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

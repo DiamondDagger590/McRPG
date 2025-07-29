@@ -271,6 +271,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         UUID uuid = getCorePlayer().getUUID();
         Set<PlayerSetting> playerSettings = PlayerSettingDAO.getPlayerSettings(connection, uuid);
         return () -> {
+            McRPG.getInstance().getLogger().info("Loaded " + playerSettings.size() + " players settings");
             playerSettings.forEach(playerSetting -> getCorePlayer().setPlayerSetting(playerSetting));
         };
     }

@@ -54,7 +54,6 @@ commands:
         sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
         sender-error-message: "<red>Unable to reset McRPG data for <target>."
-
 # Configure McRPG expansions
 expansion:
   # What is the display name for the McRPG content expansion?
@@ -72,6 +71,32 @@ experience-display:
   # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-for-next-level> and <remaining-experience-for-next-level>
   boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><required-experience-for-next-level></gold>"
 gui:
+  common:
+    next-page-button:
+      display-item:
+        name: "<gold>Next Page</gold>"
+        material: ARROW
+        lore:
+          - '<gray>Click this to go to the next page.'
+    previous-page-button:
+      display-item:
+        name: "<gold>Previous Page</gold>"
+        material: ARROW
+        lore:
+          - '<gray>Click this to go to the previous page.'
+    # Configure the back button
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Editing</red>"
+        material: BARRIER
+        # Supports the following placeholders: <ability>
+        lore:
+          - '<gray>Click to return to editing <gold><ability></gold>'
+    # Configure the item to be used as a filler for the gui
+    filler-item:
+      display-item:
+        name: ""
+        material: GRAY_STAINED_GLASS_PANE
   # This GUI allows for editing an ability's attributes. Since these items are shared
   # across multiple GUIs, they are configured under the ability.ability-attribute section.
   ability-edit-gui:
@@ -219,31 +244,6 @@ gui:
             - '<gray>Click to toggle the filter state for this item.'
             - '<gray>Item is currently <red>disabled</red>.'
             - '<gray>Category: <gold><remote-transfer-category>'
-    # Configure the next button for this gui
-    next-page-button:
-      display-item:
-        name: "<red>Next Page</red>"
-        lore:
-          - "<gray>Click to go back to the next page.</gray>"
-    # Configure the previous page button for this gui
-    previous-page-button:
-      display-item:
-        name: "<red>Previous Page</red>"
-        lore:
-          - "<gray>Click to go back to the previous page.</gray>"
-    # Configure the back button
-    previous-gui-button:
-      display-item:
-        name: "<red>Return to Editing</red>"
-        material: BARRIER
-        # Supports the following placeholders: <ability>
-        lore:
-          - '<gray>Click to return to editing <gold><ability></gold>'
-    # Configure the item to be used as a filler for the gui
-    filler-item:
-      display-item:
-        name: ""
-        material: GRAY_STAINED_GLASS_PANE
 # Configure generic ability strings.
 ability:
   # Configure messages relating to abilities that can be on cooldown

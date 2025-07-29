@@ -6,8 +6,6 @@ import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.ChainComparator;
@@ -21,7 +19,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
@@ -30,6 +27,10 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleAllSlot;
 import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleSlot;
+import us.eunoians.mcrpg.gui.slot.common.McRPGFillerSlot;
+import us.eunoians.mcrpg.gui.slot.common.McRPGNextPageSlot;
+import us.eunoians.mcrpg.gui.slot.common.McRPGPreviousGuiSlot;
+import us.eunoians.mcrpg.gui.slot.common.McRPGPreviousPageSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -81,26 +82,13 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
     }
 
     @NotNull
-    public McRPGSlot getFillerItemSlot() {
-        return new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_FILLER_ITEM_DISPLAY_ITEM));
-            }
-        };
+    public McRPGFillerSlot getFillerItemSlot() {
+        return new McRPGFillerSlot();
     }
 
     @NotNull
-    public McRPGSlot getPreviousGuiSlot() {
-         return new McRPGSlot() {
+    public McRPGPreviousGuiSlot getPreviousGuiSlot() {
+         return new McRPGPreviousGuiSlot() {
 
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
@@ -112,40 +100,19 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
                 }
                 return true;
             }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM));
-            }
         };
     }
 
     @NotNull
     @Override
-    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
-        return new PreviousPageSlot<>() {
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM));
-            }
-        };
+    public McRPGPreviousPageSlot getPreviousPageSlot() {
+        return new McRPGPreviousPageSlot();
     }
 
     @NotNull
     @Override
-    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
-        return new NextPageSlot<>() {
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_GUI_NEXT_PAGE_BUTTON_DISPLAY_ITEM));
-            }
-        };
+    public McRPGNextPageSlot getNextPageSlot() {
+        return new McRPGNextPageSlot();
     }
 
     @NotNull

@@ -51,6 +51,12 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route WOODCUTTING_DISPLAY_ITEM = Route.fromString(toRoutePath(WOODCUTTING_HEADER, "display-item"));
 
     private static final String GUI_HEADER = "gui";
+    private static final String COMMON_GUI_HEADER = toRoutePath(GUI_HEADER, "common");
+
+    public static final Route GUI_COMMON_NEXT_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "next-page-button", "display-item"));
+    public static final Route GUI_COMMON_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "previous-page-button", "display-item"));
+    public static final Route GUI_COMMON_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(GUI_HEADER, "previous-gui-button", "display-item"));
+    public static final Route GUI_COMMON_PREVIOUS_FILLTER_ITEM_DISPLAY_ITEM = Route.fromString(toRoutePath(GUI_HEADER, "filler_item", "display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
@@ -58,10 +64,6 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route REMOTE_TRANSFER_GUI_CATEGORIES_HEADER = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "categories"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-enabled.display-item"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-disabled.display-item"));
-    public static final Route REMOTE_TRANSFER_GUI_NEXT_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "next-page-button.display-item"));
-    public static final Route REMOTE_TRANSFER_GUI_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "previous-page-button.display-item"));
-    public static final Route REMOTE_TRANSFER_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "previous-gui-button.display-item"));
-    public static final Route REMOTE_TRANSFER_GUI_FILLER_ITEM_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "filler-item.display-item"));
 
     private static final String ABILITY_EDIT_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-edit-gui");
     public static final Route ABILITY_EDIT_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "title"));

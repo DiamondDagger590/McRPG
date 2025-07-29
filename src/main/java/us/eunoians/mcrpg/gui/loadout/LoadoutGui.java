@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
 import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import org.bukkit.Bukkit;
@@ -34,7 +35,6 @@ import java.util.Set;
  */
 public class LoadoutGui extends PaginatedSortedAbilityGui {
 
-    private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int ABILITY_DISPLAY_SIZE = 18;
     private static final int NAVIGATION_ROW_START_INDEX = ABILITY_DISPLAY_SIZE;
     private static final int LOADOUT_SELECTION_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -42,28 +42,6 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
     private static final int LOADOUT_DISPLAY_EDIT_SLOT = NAVIGATION_ROW_START_INDEX + 8;
-
-    // Create static slots
-    static {
-        // Create filler glass
-        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
-        fillerGlassMeta.setDisplayName(" ");
-        fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(fillerGlass);
-            }
-        };
-    }
 
     private final Loadout loadout;
 
@@ -124,6 +102,7 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @Override
     protected void paintNavigationBar(int page) {
         // Paint the nav bar with filler glass
+        Slot<?> fillerSlot = ge
         for (int i = 0; i < 9; i++) {
             setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
         }

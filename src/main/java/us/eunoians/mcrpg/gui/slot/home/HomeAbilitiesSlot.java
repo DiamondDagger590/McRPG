@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.HomeGui;
+import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;

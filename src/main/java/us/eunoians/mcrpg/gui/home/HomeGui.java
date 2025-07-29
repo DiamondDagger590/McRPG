@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.gui;
+package us.eunoians.mcrpg.gui.home;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;

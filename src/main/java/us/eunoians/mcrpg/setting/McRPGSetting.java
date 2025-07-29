@@ -20,6 +20,14 @@ public interface McRPGSetting extends PlayerSetting, McRPGContent {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }
 
+    /**
+     * Gets the {@link McRPGSettingSlot} used to display this slot to players and
+     * allow them to cycle through the setting's options.
+     *
+     * @param player The player to create the slot for.
+     * @return The {@link McRPGSettingSlot} used to display this slot to players and
+     * allow them to cycle through the setting's options.
+     */
     @NotNull
     McRPGSettingSlot<? extends McRPGSetting> getSettingSlot(@NotNull McRPGPlayer player);
 }
