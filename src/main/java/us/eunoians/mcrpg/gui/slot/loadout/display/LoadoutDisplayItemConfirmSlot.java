@@ -21,7 +21,7 @@ import java.util.Set;
  * This slot will close the {@link LoadoutDisplayItemInputGui} in order to save the display and reopen
  * the previous gui.
  */
-public class LoadoutDisplayItemConfirmSlot extends McRPGSlot {
+public class LoadoutDisplayItemConfirmSlot implements McRPGSlot {
 
     public LoadoutDisplayItemConfirmSlot() {
     }

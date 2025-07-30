@@ -130,7 +130,7 @@ public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements 
     }
 
     @Override
-    public void onClose(InventoryCloseEvent inventoryCloseEvent) {
+    public void onClose(@NotNull InventoryCloseEvent inventoryCloseEvent) {
         if (save) {
             saveLoadoutDisplayItem();
         }

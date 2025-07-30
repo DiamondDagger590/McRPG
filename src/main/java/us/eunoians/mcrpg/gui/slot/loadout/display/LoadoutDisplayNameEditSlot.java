@@ -10,7 +10,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.chat.LoadoutDisplayNameChatResponse;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -24,7 +23,7 @@ import java.util.List;
  * Clicking this slot will start a {@link LoadoutDisplayNameChatResponse}, where when responded to,
  * the response will be saved as the new name for the {@link us.eunoians.mcrpg.loadout.LoadoutDisplay}.
  */
-public class LoadoutDisplayNameEditSlot extends McRPGSlot {
+public class LoadoutDisplayNameEditSlot implements McRPGSlot {
 
     private final Loadout loadout;
 
@@ -51,7 +50,7 @@ public class LoadoutDisplayNameEditSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(Material.OAK_HANGING_SIGN);
         ItemMeta itemMeta = itemStack.getItemMeta();

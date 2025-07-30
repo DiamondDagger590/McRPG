@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
@@ -39,32 +40,33 @@ import java.util.Set;
 /**
  * This slot is used to select an {@link Ability} to go into a player's {@link Loadout}.
  */
-public class LoadoutSelectAbilitySlot extends McRPGSlot {
+public class LoadoutSelectAbilitySlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Loadout loadout;
     private final Ability ability;
-    private final Optional<NamespacedKey> oldAbilityKey;
+    @Nullable
+    private final NamespacedKey oldAbilityKey;
 
     public LoadoutSelectAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull Ability ability) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.loadout = loadout;
         this.ability = ability;
-        this.oldAbilityKey = Optional.empty();
+        this.oldAbilityKey = null;
     }
 
     public LoadoutSelectAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull Ability ability, @NotNull NamespacedKey oldAbilityKey) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.loadout = loadout;
         this.ability = ability;
-        this.oldAbilityKey = Optional.of(oldAbilityKey);
+        this.oldAbilityKey = oldAbilityKey;
     }
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            if (oldAbilityKey.isPresent()) {
-                loadout.replaceAbility(oldAbilityKey.get(), ability.getAbilityKey());
+            if (oldAbilityKey != null) {
+                loadout.replaceAbility(oldAbilityKey, ability.getAbilityKey());
             } else if (loadout.getRemainingLoadoutSize() > 0) {
                 loadout.addAbility(ability.getAbilityKey());
             }

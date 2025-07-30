@@ -1,61 +1,31 @@
 package us.eunoians.mcrpg.gui.setting;
 
-import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.PaginatedGui;
-import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
+import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 /**
  * This gui is used to display all {@link PlayerSetting}s to a player.
  */
-public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
+public class PlayerSettingGui extends McRPGPaginatedGui {
 
-    private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int SETTING_DISPLAY_SIZE = 18;
     private static final int NAVIGATION_ROW_START_INDEX = SETTING_DISPLAY_SIZE;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
-
-    // Create static slots
-    static {
-        // Create filler glass
-        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
-        fillerGlassMeta.setDisplayName(" ");
-        fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(fillerGlass);
-            }
-        };
-    }
 
     private final Player player;
     private final McRPG plugin;
@@ -68,18 +38,6 @@ public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
         }
         this.player = playerOptional.get();
         this.plugin = mcRPG;
-    }
-
-    @NotNull
-    @Override
-    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
-        return null;
     }
 
     @NotNull
@@ -100,18 +58,13 @@ public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
      * @param page The page to paint the settings for.
      */
     private void paintSettings(int page) {
-        Bukkit.broadcastMessage("1");
         List<McRPGSetting> settings = getSettingsForPage(page);
-        Bukkit.broadcastMessage("2 settings count: " + settings.size());
+
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
-            Bukkit.broadcastMessage("3 i: " + i + " settings count: " + settings.size());
             if (i < settings.size()) {
-                Bukkit.broadcastMessage("4");
                 setSlot(i, settings.get(i).getSettingSlot(getCreatingPlayer()));
-                Bukkit.broadcastMessage("5");
             } else {
                 removeSlot(i);
-                Bukkit.broadcastMessage("6");
             }
         }
     }
@@ -123,8 +76,9 @@ public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
      */
     private void paintNavigationBar(int page) {
         // Paint the nav bar with filler glass
+        Slot<McRPGPlayer> fillerItem = getFillerItemSlot();
         for (int i = 0; i < 9; i++) {
-            setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
+            setSlot(NAVIGATION_ROW_START_INDEX + i, fillerItem);
         }
         // If the page is not the first page, then we need to put a previous arrow button
         if (page > 1) {
@@ -160,6 +114,7 @@ public class PlayerSettingGui extends PaginatedGui<McRPGPlayer> {
     public List<McRPGSetting> getSettings() {
         return getCreatingPlayer().getPlayerSettings()
                 .stream()
+                .sorted(Comparator.comparing(PlayerSetting::getSettingKey))
                 .toList();
     }
 

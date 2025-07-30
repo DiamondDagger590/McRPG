@@ -31,7 +31,7 @@ public class ExperienceDisplaySettingSlot extends McRPGSettingSlot<ExperienceDis
             case BOSS_BAR -> {
                 ItemStack itemStack = new ItemStack(Material.DRAGON_HEAD);
                 ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.displayName(miniMessage.deserialize("<gold>Boss Bar"));
+                itemMeta.displayName(miniMessage.deserialize("<gold>Experience Display"));
                 itemMeta.lore(List.of(miniMessage.deserialize("<gray>Displays gained experience through a boss bar."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this display setting.")));
                 itemStack.setItemMeta(itemMeta);
                 return ItemBuilder.from(itemStack);
@@ -39,7 +39,7 @@ public class ExperienceDisplaySettingSlot extends McRPGSettingSlot<ExperienceDis
             case ACTION_BAR -> {
                 ItemStack itemStack = new ItemStack(Material.BLAZE_ROD);
                 ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.displayName(miniMessage.deserialize("<gold>Action Bar"));
+                itemMeta.displayName(miniMessage.deserialize("<gold>Experience Display"));
                 itemMeta.lore(List.of(miniMessage.deserialize("<gray>Displays gained experience through an action bar."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this display setting.")));
                 itemStack.setItemMeta(itemMeta);
                 return ItemBuilder.from(itemStack);

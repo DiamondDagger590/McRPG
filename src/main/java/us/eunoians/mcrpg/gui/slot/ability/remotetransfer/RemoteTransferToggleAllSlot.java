@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * This slot is used to toggle the allow state for all materials for a given player's {@link us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer}.
  */
-public class RemoteTransferToggleAllSlot extends McRPGSlot {
+public class RemoteTransferToggleAllSlot implements McRPGSlot {
 
     private boolean enableAll;
 

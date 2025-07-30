@@ -1,25 +1,16 @@
 package us.eunoians.mcrpg.gui.loadout;
 
-import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
-import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.InvalidLoadoutSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutAbilitySlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutHomeSlot;
@@ -57,18 +48,6 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
 
     @NotNull
     @Override
-    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
-        return null;
-    }
-
-    @NotNull
-    @Override
     protected Inventory getInventoryForPage(int page) {
         return Bukkit.createInventory(getPlayer(), 27, McRPG.getInstance().getMiniMessage().deserialize("<gold>Editing Loadout " + loadout.getLoadoutSlot()));
     }
@@ -102,9 +81,9 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @Override
     protected void paintNavigationBar(int page) {
         // Paint the nav bar with filler glass
-        Slot<?> fillerSlot = ge
+        Slot<McRPGPlayer> fillerSlot = getFillerItemSlot();
         for (int i = 0; i < 9; i++) {
-            setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
+            setSlot(NAVIGATION_ROW_START_INDEX + i, fillerSlot);
         }
         // Set the back slot
         setSlot(LOADOUT_SELECTION_SLOT_INDEX, new LoadoutHomeSlot(getCreatingPlayer()));

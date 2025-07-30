@@ -7,7 +7,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayItemInputGui;
@@ -21,7 +20,7 @@ import java.util.List;
  * This slot will open the {@link LoadoutDisplayItemInputGui} whenever clicked to allow
  * users to input an {@link ItemStack} to edit the {@link us.eunoians.mcrpg.loadout.LoadoutDisplay}.
  */
-public class LoadoutDisplayItemSlot extends McRPGSlot {
+public class LoadoutDisplayItemSlot implements McRPGSlot {
 
     private final Loadout loadout;
 
@@ -42,7 +41,7 @@ public class LoadoutDisplayItemSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = loadout.getDisplay().getDisplayItem();
         ItemMeta itemMeta = itemStack.getItemMeta();

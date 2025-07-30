@@ -8,11 +8,10 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.ability.AbilityGui;
+import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -22,7 +21,7 @@ import java.util.Set;
 /**
  * This slot is used in the {@link HomeGui} to open a new {@link AbilityGui} when clicked.
  */
-public class HomeAbilitiesSlot extends McRPGSlot {
+public class HomeAbilitiesSlot implements McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
@@ -36,7 +35,7 @@ public class HomeAbilitiesSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta itemMeta = itemStack.getItemMeta();

@@ -1,22 +1,15 @@
 package us.eunoians.mcrpg.gui.ability;
 
-import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
+import com.diamonddagger590.mccore.gui.slot.Slot;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.slot.ability.AbilitySlot;
 
 import java.util.List;
@@ -25,50 +18,15 @@ import java.util.Set;
 /**
  * This gui is the main gui for players to view all their abilities from.
  */
-public class AbilityGui extends PaginatedSortedAbilityGui  {
+public class AbilityGui extends PaginatedSortedAbilityGui implements FillerItemGui {
 
-    private static final McRPGSlot FILLER_GLASS_SLOT;
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
 
-    // Create static slots
-    static {
-        // Create filler glass
-        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
-        fillerGlassMeta.setDisplayName(" ");
-        fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(fillerGlass);
-            }
-        };
-    }
-
     public AbilityGui(@NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPGPlayer);
-    }
-
-    @NotNull
-    @Override
-    public PreviousPageSlot getPreviousPageSlot() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public NextPageSlot getNextPageSlot() {
-        return null;
     }
 
     @NotNull
@@ -90,8 +48,9 @@ public class AbilityGui extends PaginatedSortedAbilityGui  {
     @Override
     protected void paintNavigationBar(int page) {
         // Paint the nav bar with filler glass
+        Slot<McRPGPlayer> fillerSlot = getFillerItemSlot();
         for (int i = 0; i < 9; i++) {
-            setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
+            setSlot(NAVIGATION_ROW_START_INDEX + i, fillerSlot);
         }
         // Set the sort slot
         setSlot(SORT_SLOT_INDEX, getAbilitySortNode().getNodeValue().getSlot());

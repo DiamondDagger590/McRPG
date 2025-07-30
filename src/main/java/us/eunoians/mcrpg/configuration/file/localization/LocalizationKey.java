@@ -55,8 +55,8 @@ public final class LocalizationKey extends ConfigFile {
 
     public static final Route GUI_COMMON_NEXT_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "next-page-button", "display-item"));
     public static final Route GUI_COMMON_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "previous-page-button", "display-item"));
-    public static final Route GUI_COMMON_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(GUI_HEADER, "previous-gui-button", "display-item"));
-    public static final Route GUI_COMMON_PREVIOUS_FILLTER_ITEM_DISPLAY_ITEM = Route.fromString(toRoutePath(GUI_HEADER, "filler_item", "display-item"));
+    public static final Route GUI_COMMON_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "previous-gui-button", "display-item"));
+    public static final Route GUI_COMMON_PREVIOUS_FILLER_ITEM_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "filler-item", "display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");

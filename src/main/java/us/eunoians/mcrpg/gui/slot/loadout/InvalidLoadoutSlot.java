@@ -7,7 +7,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
@@ -16,7 +15,7 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
  * This slot is a no-op slot used to represent a slot that is not
  * useable when viewing a loadout.
  */
-public class InvalidLoadoutSlot extends McRPGSlot {
+public class InvalidLoadoutSlot implements McRPGSlot {
 
     private static final ItemBuilder SLOT_ITEM;
 
@@ -36,7 +35,7 @@ public class InvalidLoadoutSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         return SLOT_ITEM;
     }
 }

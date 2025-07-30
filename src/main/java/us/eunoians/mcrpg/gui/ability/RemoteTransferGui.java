@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.ClosableGui;
-import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
@@ -24,13 +23,12 @@ import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.common.FillerItemGui;
+import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleAllSlot;
 import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleSlot;
-import us.eunoians.mcrpg.gui.slot.common.McRPGFillerSlot;
-import us.eunoians.mcrpg.gui.slot.common.McRPGNextPageSlot;
 import us.eunoians.mcrpg.gui.slot.common.McRPGPreviousGuiSlot;
-import us.eunoians.mcrpg.gui.slot.common.McRPGPreviousPageSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -47,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * This gui is used to let players toggle the allow state for a given material for their {@link RemoteTransfer} ability.
  */
-public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
+public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<McRPGPlayer>, FillerItemGui {
 
     private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot -> slot.getRemoteTransferCategory().getName(getCreatingPlayer()));
     // TODO this might need revisited (also shouldn't be tied to material, we need to support custom item data as well :<)
@@ -82,11 +80,6 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
     }
 
     @NotNull
-    public McRPGFillerSlot getFillerItemSlot() {
-        return new McRPGFillerSlot();
-    }
-
-    @NotNull
     public McRPGPreviousGuiSlot getPreviousGuiSlot() {
          return new McRPGPreviousGuiSlot() {
 
@@ -101,18 +94,6 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
                 return true;
             }
         };
-    }
-
-    @NotNull
-    @Override
-    public McRPGPreviousPageSlot getPreviousPageSlot() {
-        return new McRPGPreviousPageSlot();
-    }
-
-    @NotNull
-    @Override
-    public McRPGNextPageSlot getNextPageSlot() {
-        return new McRPGNextPageSlot();
     }
 
     @NotNull
@@ -157,7 +138,7 @@ public class RemoteTransferGui extends PaginatedGui<McRPGPlayer> implements Clos
      * @param enableButton If {@code true}, sets the {@link RemoteTransferToggleAllSlot} to be in "enable" mode.
      */
     private void paintNavigationBar(int page, boolean enableButton) {
-        McRPGSlot fillerItem = getFillerItemSlot();
+        Slot<McRPGPlayer> fillerItem = getFillerItemSlot();
         // Paint the nav bar with filler glass
         for (int i = 0; i < 9; i++) {
             setSlot(NAVIGATION_ROW_START_INDEX + i, fillerItem);

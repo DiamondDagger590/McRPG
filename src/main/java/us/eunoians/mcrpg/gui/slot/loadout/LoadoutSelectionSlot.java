@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
@@ -33,7 +32,7 @@ import static com.diamonddagger590.mccore.registry.RegistryAccess.registryAccess
 /**
  * This slot is used to select a specific {@link Loadout} to edit.
  */
-public class LoadoutSelectionSlot extends McRPGSlot {
+public class LoadoutSelectionSlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -67,7 +66,7 @@ public class LoadoutSelectionSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         LoadoutDisplay loadoutDisplay = loadout.getDisplay();
         ItemStack itemStack = loadoutDisplay.getDisplayItem();

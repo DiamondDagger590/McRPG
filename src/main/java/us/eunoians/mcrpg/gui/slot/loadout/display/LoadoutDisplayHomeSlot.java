@@ -8,7 +8,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayHomeGui;
@@ -21,7 +20,7 @@ import java.util.List;
 /**
  * This slot allows for opening of the {@link LoadoutDisplayHomeGui} when clicked.
  */
-public class LoadoutDisplayHomeSlot extends McRPGSlot {
+public class LoadoutDisplayHomeSlot implements McRPGSlot {
 
     private Loadout loadout;
 
@@ -42,7 +41,7 @@ public class LoadoutDisplayHomeSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(Material.OAK_HANGING_SIGN);
         ItemMeta itemMeta = itemStack.getItemMeta();

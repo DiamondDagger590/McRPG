@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * This slot is used to toggle a specific item's allow list state for a given player's {@link RemoteTransfer}.
  */
-public class RemoteTransferToggleSlot extends McRPGSlot {
+public class RemoteTransferToggleSlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final CustomItemWrapper customItemWrapper;

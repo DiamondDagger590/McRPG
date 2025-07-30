@@ -39,29 +39,29 @@ import java.util.Set;
  * When clicked, it will open a {@link LoadoutAbilitySelectGui} for a player
  * to select a new ability to go into this slot.
  */
-public class LoadoutAbilitySlot extends McRPGSlot {
+public class LoadoutAbilitySlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Loadout loadout;
-    private final Optional<Ability> abilityOptional;
+    @Nullable
+    private final Ability ability;
 
     public LoadoutAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.loadout = loadout;
-        this.abilityOptional = Optional.empty();
+        this.ability = null;
     }
 
     public LoadoutAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull Ability ability) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.loadout = loadout;
-        this.abilityOptional = Optional.of(ability);
+        this.ability = ability;
     }
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            if (abilityOptional.isPresent()) {
-                Ability ability = abilityOptional.get();
+            if (ability != null) {
                 LoadoutAbilitySelectGui loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout, ability.getAbilityKey());
                 mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutAbilitySelectGui);
                 player.openInventory(loadoutAbilitySelectGui.getInventory());
@@ -77,11 +77,10 @@ public class LoadoutAbilitySlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         ItemStack itemStack;
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        if (abilityOptional.isPresent() && mcRPGPlayer != null) {
-            Ability ability = abilityOptional.get();
+        if (ability != null) {
             SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
             SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
             itemStack = ability.getDisplayItemBuilder(mcRPGPlayer).asItemStack(McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID()));

@@ -6,7 +6,7 @@ import com.diamonddagger590.mccore.util.LinkedNode;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.setting.McRPGSettingSlot;
+import us.eunoians.mcrpg.gui.slot.setting.RequireEmptyOffhandSettingSlot;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -71,9 +71,8 @@ public enum RequireEmptyOffhandSetting implements McRPGSetting {
 
     @NotNull
     @Override
-    public McRPGSettingSlot<? extends McRPGSetting> getSettingSlot(@NotNull McRPGPlayer player) {
-        //TODO
-        return null;
+    public RequireEmptyOffhandSettingSlot getSettingSlot(@NotNull McRPGPlayer player) {
+        return new RequireEmptyOffhandSettingSlot(player, this);
     }
 
     @Override

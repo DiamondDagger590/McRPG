@@ -25,7 +25,7 @@ import java.util.Set;
  * This slot is used in {@link us.eunoians.mcrpg.gui.ability.AbilityGui}s to represent an {@link Ability}
  * while providing click actions for said ability.
  */
-public class AbilitySlot extends McRPGSlot {
+public class AbilitySlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Ability ability;

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.Set;
  * This gui also assumes that there will be a 'navigation bar' for pagination, however specific navigation
  * bar implementation is left to be implemented by individual guis.
  */
-public abstract class PaginatedSortedAbilityGui extends PaginatedGui<McRPGPlayer> implements SortableAbilityGui {
+public abstract class PaginatedSortedAbilityGui extends McRPGPaginatedGui implements SortableAbilityGui {
 
     private final Map<AbilitySortType, List<Ability>> cachedSorts;
     private LinkedNode<AbilitySortType> sortTypeNode;

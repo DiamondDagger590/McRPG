@@ -11,7 +11,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayHomeGui;
@@ -29,7 +28,7 @@ import java.util.Set;
  * {@link Loadout}. If the loadout is not currently the player's active one,
  * clicking this slot will set it as such.
  */
-public class ToggleLoadoutActiveSlot extends McRPGSlot {
+public class ToggleLoadoutActiveSlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -47,7 +46,7 @@ public class ToggleLoadoutActiveSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack itemStack = new ItemStack(isLoadoutActive() ? Material.GREEN_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE);
         ItemMeta itemMeta = itemStack.getItemMeta();

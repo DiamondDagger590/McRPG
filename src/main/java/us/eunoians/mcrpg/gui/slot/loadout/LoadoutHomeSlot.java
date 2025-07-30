@@ -10,7 +10,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
@@ -25,7 +24,7 @@ import java.util.Set;
 /**
  * This slot is used to go back to the {@link LoadoutSelectionGui} from the {@link LoadoutGui}.
  */
-public class LoadoutHomeSlot extends McRPGSlot {
+public class LoadoutHomeSlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -54,7 +53,7 @@ public class LoadoutHomeSlot extends McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         ItemStack previousGuiItem = new ItemStack(Material.BARRIER);
         ItemMeta previousGuiItemMeta = previousGuiItem.getItemMeta();
