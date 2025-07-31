@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.builder.item.ability;
 
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
 import org.jetbrains.annotations.NotNull;
@@ -143,7 +144,15 @@ public final class AbilityLoreAppender {
                     lore.add("");
                     lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_LOCKED_LORE));
                 }
-
+            }
+            if (ability.getExpansionKey().isPresent()) {
+                var expansionOptional = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.CONTENT_EXPANSION)
+                        .getContentExpansion(ability.getExpansionKey().get());
+                if (expansionOptional.isPresent()) {
+                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.EXPANSION_PACK_LORE));
+                    placeholders.put(AbilityItemPlaceholderKeys.EXPANSION_PACK.getKey(), expansionOptional.get().getExpansionName(mcRPGPlayer));
+                }
             }
         }
         return ImmutablePair.of(lore, placeholders);

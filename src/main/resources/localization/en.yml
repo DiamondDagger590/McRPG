@@ -387,7 +387,7 @@ ability:
     # The lore to add to show what expansion pack an ability is from (only will be displayed if it isn't from McRPG)
     # The following placeholders are supported: <expansion-pack>
     expansion-pack:
-      - '<gray>Expansion Pack: <expansion-pack>'
+      - '<gray>Expansion Pack: <gold><expansion-pack>'
   ability-specific-localization:
     # Configure localization for the Bleed ability
     bleed:

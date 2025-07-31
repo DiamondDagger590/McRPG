@@ -14,7 +14,7 @@ public enum AbilityItemPlaceholderKeys {
     RADIUS("radius"),
     COOLDOWN("cooldown"),
     ACTIVATION_CHANCE("activation-chance"),
-    EXPANSION("expansion"),
+    EXPANSION_PACK("expansion-pack"),
     ABILITY_POINT_COUNT("ability-point-count"),
     DAMAGE("damage"),
     ABILITY_DURATION("ability-duration"),

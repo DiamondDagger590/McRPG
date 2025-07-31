@@ -77,7 +77,7 @@ public class AbilityItemBuilder extends ItemBuilder {
         abilityExpansionOptional.flatMap(namespacedKey -> plugin.registryAccess().registry(McRPGRegistryKey.MANAGER)
                 .manager(McRPGManagerKey.CONTENT_EXPANSION)
                 .getContentExpansion(namespacedKey)).ifPresent(expansion -> {
-            addPlaceholder(AbilityItemPlaceholderKeys.EXPANSION.getKey(), expansion.getExpansionName(player));
+            addPlaceholder(AbilityItemPlaceholderKeys.EXPANSION_PACK.getKey(), expansion.getExpansionName(player));
         });
 
         for (Map.Entry<String, String> entry : ability.getItemBuilderPlaceholders(player).entrySet()) {
