@@ -76,7 +76,7 @@ public class SkillDAO {
                     "(" +
                     "`player_uuid` varchar(36) NOT NULL," +
                     "`skill_id` varchar(32) NOT NULL," +
-                    "`current_level` int(11) NOT NULL DEFAULT 0," +
+                    "`current_level` int(11) NOT NULL DEFAULT 1," +
                     "`current_exp` int(11) NOT NULL DEFAULT 0," +
                     "PRIMARY KEY (`player_uuid`, `skill_id`)" +
                     ");")) {
@@ -166,7 +166,6 @@ public class SkillDAO {
         if (!skillRegistry.registered(skillKey)) {
             throw new SkillNotRegisteredException(skillKey);
         }
-
         return getAbilityAttributes(connection, uuid, getPlayerSkillLevelingData(connection, uuid, skillKey));
     }
 

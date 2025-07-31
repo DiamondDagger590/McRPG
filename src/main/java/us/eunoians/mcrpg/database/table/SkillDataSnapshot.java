@@ -152,7 +152,6 @@ public class SkillDataSnapshot {
         return abilityAttributes.getOrDefault(abilityKey, new HashMap<>());
     }
 
-
     //TODO Put this here and maybe a #snapshot() method into Skill?
     public static SkillDataSnapshot fromSkill(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {
         return null;

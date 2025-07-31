@@ -11,6 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.builder.item.skill.SkillItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -80,13 +81,16 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
         int currentLevel = skillHolderData.getCurrentLevel();
         int currentExperience = skillHolderData.getCurrentExperience();
         int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
+        int remainingExperienceForNextLevel = skillHolderData.getRemainingExperienceForNextLevel();
         Component component = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.BOSS_BAR_DISPLAY_MESSAGE, Map.of(
-                "skill", skill.getName(mcRPGPlayer),
-                "level", Integer.toString(currentLevel),
-                "current-experience", Integer.toString(currentExperience),
-                "required-experience-for-next-level", Integer.toString(experienceForNextLevel),
-                "remaining-experience-for-next-level", Integer.toString(experienceForNextLevel, currentExperience)));
-        bossBar = BossBar.bossBar(component, (((float) currentExperience) / ((float) experienceForNextLevel)), BossBar.Color.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_COLOR, "PURPLE")), BossBar.Overlay.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOOS_BAR_STYLE, "SEGMENTED_10")));
+                SkillItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer),
+                SkillItemPlaceholderKeys.LEVEL.getKey(), Integer.toString(currentLevel),
+                SkillItemPlaceholderKeys.CURRENT_EXPERIENCE.getKey(), Integer.toString(currentExperience),
+                SkillItemPlaceholderKeys.REQUIRED_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(experienceForNextLevel),
+                SkillItemPlaceholderKeys.REMAINING_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(remainingExperienceForNextLevel)));
+        bossBar = BossBar.bossBar(component, (((float) currentExperience) / ((float) experienceForNextLevel)),
+                BossBar.Color.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_COLOR, "PURPLE")),
+                BossBar.Overlay.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOSS_BAR_STYLE, "NOTCHED_10")));
         audience.showBossBar(bossBar);
     }
 

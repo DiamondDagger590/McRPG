@@ -71,7 +71,7 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route DISPLAY_EXPERIENCE_UPDATES_ENABLED = Route.addTo(DISPLAY_EXPERIENCE_UPDATES_HEADER, "enabled");
     public static final Route EXPERIENCE_BOSS_BAR_DISPLAY_DURATION = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "display-duration");
     public static final Route EXPERIENCE_BOSS_BAR_DISPLAY_COLOR = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "color");
-    public static final Route EXPERIENCE_BOOS_BAR_STYLE = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "style");
+    public static final Route EXPERIENCE_BOSS_BAR_STYLE = Route.addTo(EXPERIENCE_BOSS_BAR_DISPLAY_HEADER, "style");
 
     // Gameplay
     private static final Route LOADOUT_HEADER = Route.addTo(GAMEPLAY_CONFIGURATION_HEADER, "loadout");

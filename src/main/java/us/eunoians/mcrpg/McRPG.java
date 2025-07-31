@@ -16,7 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
-import us.eunoians.mcrpg.command.TestGuiCommand;
+import us.eunoians.mcrpg.command.HomeGUICommand;
+import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetPlayerCommand;
@@ -29,6 +30,8 @@ import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
 import us.eunoians.mcrpg.command.quest.TestQuestStartCommand;
+import us.eunoians.mcrpg.command.setting.SettingGuiCommand;
+import us.eunoians.mcrpg.command.skill.SkillGuiCommand;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -164,7 +167,12 @@ public class McRPG extends CorePlugin {
     @Override
     protected void constructCommands() {
         super.constructCommands();
-        TestGuiCommand.registerCommand();
+        // Home GUI command
+        HomeGUICommand.registerCommand();
+        // Home Sub Menu GUI Commands
+        SkillGuiCommand.registerCommand();
+        AbilityGuiCommand.registerCommand();
+        SettingGuiCommand.registerCommand();
 
         LoadoutCommand.registerCommand();
         LoadoutEditCommand.registerCommand();

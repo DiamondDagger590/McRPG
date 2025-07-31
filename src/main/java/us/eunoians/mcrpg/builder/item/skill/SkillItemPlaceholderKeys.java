@@ -10,7 +10,8 @@ public enum SkillItemPlaceholderKeys {
     SKILL("skill"),
     LEVEL("level"),
     CURRENT_EXPERIENCE("current-experience"),
-    EXPERIENCE_TO_LEVEL_UP("experience-to-level-up"),
+    REQUIRED_EXPERIENCE_TO_LEVEL_UP("required-experience-to-level-up"),
+    REMAINING_EXPERIENCE_TO_LEVEL_UP("remaining-experience-to-level-up"),
     ;
 
     private final String key;

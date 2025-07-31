@@ -65,11 +65,11 @@ login:
 # Configure experience display localization
 experience-display:
   # The message to send to a player's action bar whenever they gain experience.
-  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-for-next-level> and <remaining-experience-for-next-level>
-  action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><required-experience-for-next-level></gold>"
+  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
+  action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
   # The message to send to display as the boss bar's name when sent to a player.
-  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-for-next-level> and <remaining-experience-for-next-level>
-  boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><required-experience-for-next-level></gold>"
+  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
+  boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
 gui:
   # Allows for configuring slots that are shared commonly across many guis.
   common:
@@ -576,7 +576,7 @@ skills:
         - ''
         - '<gray>Current Level: <gold><level>'
         - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><experience-to-level-up>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
   mining:
     display-item:
       name: '<red><skill></red>'
@@ -588,7 +588,7 @@ skills:
         - ''
         - '<gray>Current Level: <gold><level>'
         - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><experience-to-level-up>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
   woodcutting:
     display-item:
       name: '<red><skill></red>'
@@ -600,4 +600,4 @@ skills:
         - ''
         - '<gray>Current Level: <gold><level>'
         - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><experience-to-level-up>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'

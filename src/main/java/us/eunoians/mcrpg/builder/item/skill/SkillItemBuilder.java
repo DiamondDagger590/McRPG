@@ -43,6 +43,7 @@ public class SkillItemBuilder extends ItemBuilder {
         var skillOptional = player.asSkillHolder().getSkillHolderData(skill);
         addPlaceholder(SkillItemPlaceholderKeys.LEVEL.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getCurrentLevel).orElse(0)));
         addPlaceholder(SkillItemPlaceholderKeys.CURRENT_EXPERIENCE.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getCurrentExperience).orElse(0)));
-        addPlaceholder(SkillItemPlaceholderKeys.EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getExperienceForNextLevel).orElse(0)));
+        addPlaceholder(SkillItemPlaceholderKeys.REQUIRED_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getExperienceForNextLevel).orElse(0)));
+        addPlaceholder(SkillItemPlaceholderKeys.REMAINING_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(skillOptional.map(SkillHolder.SkillHolderData::getRemainingExperienceForNextLevel).orElse(0)));
     }
 }

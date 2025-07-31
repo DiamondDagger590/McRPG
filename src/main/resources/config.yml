@@ -116,7 +116,7 @@ configuration:
         # Can be any value found here: https://javadoc.io/doc/net.kyori/adventure-api/4.1.0/net/kyori/adventure/bossbar/BossBar.Color.html
         color: PURPLE
         # Can be any value found here: https://javadoc.io/doc/net.kyori/adventure-api/4.1.0/net/kyori/adventure/bossbar/BossBar.Overlay.html
-        style: SEGMENTED_10
+        style: NOTCHED_10
 
   # Configure various gameplay mechanics
   gameplay:

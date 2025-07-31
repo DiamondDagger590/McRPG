@@ -32,7 +32,8 @@ public class LoadoutEditCommand extends McRPGCommandBase {
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        commandManager.command(commandManager.commandBuilder("loadout")
+        commandManager.command(commandManager.commandBuilder("mcrpg")
+                .literal("loadout")
                 .literal("edit")
                 .optional("slot", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The loadout to edit.")))
                 .handler(commandContext -> {

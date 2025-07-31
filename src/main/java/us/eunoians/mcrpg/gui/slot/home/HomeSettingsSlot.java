@@ -36,7 +36,7 @@ public class HomeSettingsSlot implements McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-        PlayerSettingGui playerSettingGui = new PlayerSettingGui(mcRPGPlayer, McRPG.getInstance());
+        PlayerSettingGui playerSettingGui = new PlayerSettingGui(mcRPGPlayer);
         McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, playerSettingGui);
         player.openInventory(playerSettingGui.getInventory());
         return true;

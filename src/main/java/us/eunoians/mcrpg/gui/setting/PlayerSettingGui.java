@@ -30,14 +30,14 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
     private final Player player;
     private final McRPG plugin;
 
-    public PlayerSettingGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull McRPG mcRPG) {
+    public PlayerSettingGui(@NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);
         }
         this.player = playerOptional.get();
-        this.plugin = mcRPG;
+        this.plugin = mcRPGPlayer.getPlugin();
     }
 
     @NotNull

@@ -31,8 +31,10 @@ import java.util.List;
 public enum SkillSortType {
 
     ALPHABETICAL(LocalizationKey.SKILL_SORT_ALPHABETICAL_DISPLAY_ITEM, null, mcrpgPlayer -> Comparator.comparing((Skill skill) -> skill.getName(mcrpgPlayer))),
-    SKILL_LEVEL(LocalizationKey.SKILL_SORT_SKILL_LEVEL_DISPLAY_ITEM, new SkillHolderDataPresentFilter(), mcRPGPlayer -> Comparator.comparing((Skill skill) ->  mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get().getCurrentLevel())),
-    SKILL_EXPERIENCE_TO_LEVEL(LocalizationKey.SKILL_SORT_EXPERIENCE_TO_LEVEL_DISPLAY_ITEM, new SkillHolderDataPresentFilter(), mcRPGPlayer -> Comparator.comparing((Skill skill) ->  mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get().getExperienceForNextLevel())),
+    SKILL_LEVEL(LocalizationKey.SKILL_SORT_SKILL_LEVEL_DISPLAY_ITEM, new SkillHolderDataPresentFilter(),
+            mcRPGPlayer -> Comparator.comparing((Skill skill) ->  mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get().getCurrentLevel())),
+    SKILL_EXPERIENCE_TO_LEVEL(LocalizationKey.SKILL_SORT_EXPERIENCE_TO_LEVEL_DISPLAY_ITEM, new SkillHolderDataPresentFilter(),
+            mcRPGPlayer -> Comparator.comparing((Skill skill) ->  mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get().getRemainingExperienceForNextLevel())),
     ;
 
     private final static LinkedNode<SkillSortType> FIRST_SORT_TYPE = new LinkedNode<>(SkillSortType.ALPHABETICAL);
