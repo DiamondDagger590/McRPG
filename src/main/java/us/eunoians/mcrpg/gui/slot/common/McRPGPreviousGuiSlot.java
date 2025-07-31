@@ -10,6 +10,12 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+/**
+ * A default implementation of a next page slot that pulls from a common display configuration.
+ * <p>
+ * This slot lacks a click handler and expects guis to implement their specific logic for how that
+ * button should behave.
+ */
 public abstract class McRPGPreviousGuiSlot implements McRPGSlot {
 
     @NotNull

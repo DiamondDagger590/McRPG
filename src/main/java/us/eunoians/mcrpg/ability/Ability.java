@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
@@ -84,7 +85,7 @@ public interface Ability extends McRPGContent {
      * @return The name to display in messages or guis for this ability.
      */
     @NotNull
-    String getDisplayName(@NotNull McRPGPlayer player);
+    Component getDisplayName(@NotNull McRPGPlayer player);
 
     /**
      * Gets the name to display in messages or guis for this ability using the default locale.
@@ -93,7 +94,7 @@ public interface Ability extends McRPGContent {
      * @return The name to display in messages or guis for this ability.
      */
     @NotNull
-    String getDisplayName();
+    Component getDisplayName();
 
     /**
      * Activates this ability for the given {@link AbilityHolder} with the provided {@link Event} being the trigger.

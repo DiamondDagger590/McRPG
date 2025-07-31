@@ -79,7 +79,7 @@ public interface CooldownableAbility extends Ability {
             McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             MiniMessage miniMessage = mcRPG.getMiniMessage();
             Audience audience = mcRPG.getAdventure().player(player);
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getDisplayName(mcRPGPlayer))));
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getName(mcRPGPlayer))));
         });
     }
 

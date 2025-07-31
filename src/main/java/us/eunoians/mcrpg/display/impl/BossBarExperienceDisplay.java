@@ -81,7 +81,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
         int currentExperience = skillHolderData.getCurrentExperience();
         int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
         Component component = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.BOSS_BAR_DISPLAY_MESSAGE, Map.of(
-                "skill", skill.getDisplayName(mcRPGPlayer),
+                "skill", skill.getName(mcRPGPlayer),
                 "level", Integer.toString(currentLevel),
                 "current-experience", Integer.toString(currentExperience),
                 "required-experience-for-next-level", Integer.toString(experienceForNextLevel),

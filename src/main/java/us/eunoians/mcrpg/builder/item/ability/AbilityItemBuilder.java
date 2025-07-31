@@ -58,7 +58,7 @@ public class AbilityItemBuilder extends ItemBuilder {
         // Skill placeholder
         if (ability instanceof SkillAbility skillAbility) {
             Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
-            addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(player));
+            addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(player));
         }
         // Add information about specific ability attributes
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);

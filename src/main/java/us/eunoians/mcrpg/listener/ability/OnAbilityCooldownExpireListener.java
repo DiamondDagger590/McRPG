@@ -32,7 +32,7 @@ public class OnAbilityCooldownExpireListener implements Listener {
             Audience audience = McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID());
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer,
                     LocalizationKey.ABILITY_NO_LONGER_ON_COOLDOWN,
-                    Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), abilityCooldownExpireEvent.getAbility().getDisplayName(mcRPGPlayer))));
+                    Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), abilityCooldownExpireEvent.getAbility().getName(mcRPGPlayer))));
         }
     }
 }

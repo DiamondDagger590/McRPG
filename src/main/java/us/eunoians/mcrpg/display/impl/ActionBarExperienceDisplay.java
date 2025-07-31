@@ -48,7 +48,7 @@ public class ActionBarExperienceDisplay extends ExperienceDisplay {
             int currentExperience = skillHolderData.getCurrentExperience();
             int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
             audience.sendActionBar(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ACTION_BAR_DISPLAY_MESSAGE, Map.of(
-                    "skill", skill.getDisplayName(mcRPGPlayer),
+                    "skill", skill.getName(mcRPGPlayer),
                     "level", Integer.toString(currentLevel),
                     "current-experience", Integer.toString(currentExperience),
                     "required-experience-for-next-level", Integer.toString(experienceForNextLevel),

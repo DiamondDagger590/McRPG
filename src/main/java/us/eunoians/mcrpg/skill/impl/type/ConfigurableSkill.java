@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.builder.item.skill.SkillItemBuilder;
@@ -13,6 +14,8 @@ import us.eunoians.mcrpg.configuration.file.skill.SkillConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
+
+import java.util.Map;
 
 public interface ConfigurableSkill extends Skill {
 
@@ -49,19 +52,26 @@ public interface ConfigurableSkill extends Skill {
     @NotNull
     @Override
     default SkillItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-        return SkillItemBuilder.from(player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(player, getDisplayItemRoute()), player, this);
+        return SkillItemBuilder.from(player.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(player, getDisplayItemRoute()), player, this);
     }
 
     @NotNull
     @Override
-    default String getDisplayName(@NotNull McRPGPlayer player) {
-        return player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+    default Component getDisplayName(@NotNull McRPGPlayer player) {
+        return player.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME), Map.of("skill", getName(player)));
     }
 
     @NotNull
     @Override
-    default String getDisplayName() {
-        return RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+    default Component getDisplayName() {
+        return RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME), Map.of("skill", getName()));
     }
 
     @Override

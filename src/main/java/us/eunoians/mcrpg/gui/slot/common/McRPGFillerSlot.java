@@ -11,6 +11,10 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+/**
+ * This slot is meant to fill space in a GUI where we don't want a blank slot,
+ * but we don't want any other UI element there either.
+ */
 public class McRPGFillerSlot implements McRPGSlot {
 
     @NotNull

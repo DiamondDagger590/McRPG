@@ -115,12 +115,9 @@ public class McRPG extends CorePlugin {
     @Override
     public void onEnable() {
         super.onEnable();
-        if (!isUnitTest()) {
-            registryAccess().registry(RegistryKey.MANAGER).register(new FileManager(this));
-            glowingBlocks = new GlowingBlocks(this);
-            glowingEntities = new GlowingEntities(this);
-        }
-
+        registryAccess().registry(RegistryKey.MANAGER).register(new FileManager(this));
+        glowingBlocks = new GlowingBlocks(this);
+        glowingEntities = new GlowingEntities(this);
         registryAccess().registry(RegistryKey.MANAGER).register(new EntityManager(this));
         registryAccess().registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(this));
         registryAccess().register(new AbilityRegistry(this));
@@ -137,40 +134,30 @@ public class McRPG extends CorePlugin {
         registryAccess().registry(RegistryKey.MANAGER).register(new RestedExperienceManager(this));
         registryAccess().registry(RegistryKey.MANAGER).register(new McRPGGuiManager(this));
 
-        if (!isUnitTest()) {
-            registerNativeExpansions();
-        }
+        registerNativeExpansions();
 
         setupHooks();
-        if (!isUnitTest()) {
-            database = new McRPGDatabase(this, DatabaseDriverType.SQLITE);
-            registerListeners();
-            constructCommands();
-            registerExperienceModifiers();
-            registerBackgroundTasks();
-            registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
-        }
+        database = new McRPGDatabase(this, DatabaseDriverType.SQLITE);
+        registerListeners();
+        constructCommands();
+        registerExperienceModifiers();
+        registerBackgroundTasks();
+        registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
     }
 
     @Override
     public void onDisable() {
-        if (!isUnitTest()) {
-            glowingBlocks.disable();
-            glowingEntities.disable();
-            try (Connection connection = getDatabase().getConnection()) {
-                var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
-                System.out.println("got connection");
-                for (McRPGPlayer mcRPGPlayer : registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
-                    System.out.println("saving player");
-                    mcRPGPlayer.savePlayer(connection);
-                    System.out.println("saved player");
-                    lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+        glowingBlocks.disable();
+        glowingEntities.disable();
+        try (Connection connection = getDatabase().getConnection()) {
+            var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
+            for (McRPGPlayer mcRPGPlayer : registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
+                mcRPGPlayer.savePlayer(connection);
+                lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        System.out.println("disabling database");
         super.onDisable();
     }
 

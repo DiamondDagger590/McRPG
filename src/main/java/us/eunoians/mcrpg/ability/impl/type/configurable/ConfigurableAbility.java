@@ -5,12 +5,15 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import java.util.Map;
 
 /**
  * This interface represents an {@link Ability} that has configuration that comes out of
@@ -56,14 +59,20 @@ public interface ConfigurableAbility extends Ability {
 
     @NotNull
     @Override
-    default String getDisplayName(@NotNull McRPGPlayer player) {
-        return player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+    default Component getDisplayName(@NotNull McRPGPlayer player) {
+        return player.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(player, Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME), Map.of("ability", getName(player)));
     }
 
     @NotNull
     @Override
-    default String getDisplayName() {
-        return RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME));
+    default Component getDisplayName() {
+        return RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME), Map.of("ability", getName()));
     }
 
 }

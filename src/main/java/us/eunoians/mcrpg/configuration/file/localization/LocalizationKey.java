@@ -42,12 +42,12 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ACTION_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(DISPLAY_HEADER, "action-bar-display-message"));
     public static final Route BOSS_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(DISPLAY_HEADER, "boss-bar-display-message"));
 
-    private static final String SKILL_HEADER = "skill";
-    private static final String SWORDS_HEADER = toRoutePath(SKILL_HEADER, "swords");
+    private static final String SKILLS_HEADER = "skills";
+    private static final String SWORDS_HEADER = toRoutePath(SKILLS_HEADER, "swords");
     public static final Route SWORDS_DISPLAY_ITEM  = Route.fromString(toRoutePath(SWORDS_HEADER, "display-item"));
-    private static final String MINING_HEADER = toRoutePath(SKILL_HEADER, "mining");
+    private static final String MINING_HEADER = toRoutePath(SKILLS_HEADER, "mining");
     public static final Route MINING_DISPLAY_ITEM = Route.fromString(toRoutePath(MINING_HEADER, "display-item"));
-    private static final String WOODCUTTING_HEADER = toRoutePath(SKILL_HEADER, "woodcutting");
+    private static final String WOODCUTTING_HEADER = toRoutePath(SKILLS_HEADER, "woodcutting");
     public static final Route WOODCUTTING_DISPLAY_ITEM = Route.fromString(toRoutePath(WOODCUTTING_HEADER, "display-item"));
 
     private static final String GUI_HEADER = "gui";
@@ -57,6 +57,33 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route GUI_COMMON_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "previous-page-button", "display-item"));
     public static final Route GUI_COMMON_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "previous-gui-button", "display-item"));
     public static final Route GUI_COMMON_PREVIOUS_FILLER_ITEM_DISPLAY_ITEM = Route.fromString(toRoutePath(COMMON_GUI_HEADER, "filler-item", "display-item"));
+
+    private static final String ABILITY_SORT_TYPE_HEADER = toRoutePath(GUI_HEADER, "ability-sort-types");
+    public static final Route ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "alphabetical.display-item"));
+    public static final Route ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "innate-abilities.display-item"));
+    public static final Route ABILITY_SORT_SKILL_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "skill.display-item"));
+    public static final Route ABILITY_SORT_UNLOCKED_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "unlocked-abilities.display-item"));
+    public static final Route ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "upgradable-abilities.display-item"));
+    public static final Route ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "passive-abilities.display-item"));
+    public static final Route ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "active-abilities.display-item"));
+
+    private static final String SKILL_SORT_TYPE_HEADER = toRoutePath(GUI_HEADER, "skill-sort-types");
+    public static final Route SKILL_SORT_ALPHABETICAL_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_SORT_TYPE_HEADER, "alphabetical.display-item"));
+    public static final Route SKILL_SORT_SKILL_LEVEL_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_SORT_TYPE_HEADER, "skill-level.display-item"));
+    public static final Route SKILL_SORT_EXPERIENCE_TO_LEVEL_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_SORT_TYPE_HEADER, "experience-to-level.display-item"));
+
+    private static final String ABILITY_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-gui");
+    public static final Route ABILITY_GUI_TITLE =  Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "title"));
+
+    private static final String SKILL_GUI_HEADER = toRoutePath(GUI_HEADER, "skill-gui");
+    public static final Route SKILL_GUI_TITLE =  Route.fromString(toRoutePath(SKILL_GUI_HEADER, "title"));
+
+    private static final String HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "home-gui");
+    public static final Route HOME_GUI_TITLE =  Route.fromString(toRoutePath(HOME_GUI_HEADER, "title"));
+    public static final Route HOME_GUI_SETTINGS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "settings-slot.display-item"));
+    public static final Route HOME_GUI_ABILITIES_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "abilities-slot.display-item"));
+    public static final Route HOME_GUI_SKILLS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "skills-slot.display-item"));
+    public static final Route HOME_GUI_LOADOUTS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "loadouts-slot.display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
@@ -89,16 +116,6 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_POINT_COUNT_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "ability-point-count"));
     public static final Route ABILITY_LOCKED_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "ability-locked"));
     public static final Route EXPANSION_PACK_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "expansion-pack"));
-
-    private static final String ABILITY_SORT_TYPE_HEADER = toRoutePath(ABILITY_HEADER, "sort-types");
-    public static final Route ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "alphabetical.display-item"));
-    public static final Route ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "innate-abilities.display-item"));
-    private static final String ABILITY_SORT_SKILL_HEADER =  toRoutePath(ABILITY_SORT_TYPE_HEADER, "skill");
-    public static final Route ABILITY_SORT_SKILL_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_SKILL_HEADER, "display-item"));
-    public static final Route ABILITY_SORT_UNLOCKED_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "unlocked-abilities.display-item"));
-    public static final Route ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "upgradable-abilities.display-item"));
-    public static final Route ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "passive-abilities.display-item"));
-    public static final Route ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "active-abilities.display-item"));
 
     private static final String ABILITY_SPECIFIC_LOCALIZATION_HEADER = toRoutePath(ABILITY_HEADER, "ability-specific-localization");
     private static final String BLEED_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "bleed");

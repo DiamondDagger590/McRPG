@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.McRPG;
  * A hook for containing all code related to <a href="https://www.spigotmc.org/resources/lands-%E2%AD%95-land-claim-plugin-%E2%9C%85-grief-prevention-protection-gui-management-nations-wars-1-21-support.53313/">Lands</a>
  * that McRPG needs in order to support it.
  */
-public class LandsHook extends PluginHook {
+public class LandsHook extends PluginHook<McRPG> {
 
     private final LandsIntegration landsIntegration;
 

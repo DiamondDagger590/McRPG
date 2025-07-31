@@ -4,9 +4,8 @@ import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.PaginatedGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
-import com.diamonddagger590.mccore.util.PlayerContextFilter;
+import com.diamonddagger590.mccore.util.comparator.ChainComparator;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
@@ -22,11 +21,13 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.util.comparator.McRPGPlayerContextComparator;
 import us.eunoians.mcrpg.util.filter.ability.AbilityUpgradeFilter;
 import us.eunoians.mcrpg.util.filter.ability.ActiveAbilityFilter;
 import us.eunoians.mcrpg.util.filter.ability.InnateAbilityFilter;
 import us.eunoians.mcrpg.util.filter.ability.PassiveAbilityFilter;
 import us.eunoians.mcrpg.util.filter.ability.UnlockableAbilityFilter;
+import us.eunoians.mcrpg.util.filter.core.McRPGPlayerContextFilter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.Optional;
  */
 public enum AbilitySortType {
 
-    ALPHABETICAL(LocalizationKey.ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM, null, mcrpgPlayer -> Comparator.comparing((Ability ability) -> ability.getDisplayName(mcrpgPlayer))),
+    ALPHABETICAL(LocalizationKey.ABILITY_SORT_ALPHABETICAL_DISPLAY_ITEM, null, mcrpgPlayer -> Comparator.comparing((Ability ability) -> ability.getName(mcrpgPlayer))),
     INNATE_ABILITIES(LocalizationKey.ABILITY_SORT_INNATE_ABILITIES_DISPLAY_ITEM, new InnateAbilityFilter(), mcrpgPlayer -> new ChainComparator<>(
             Comparator.comparing((Ability ability) -> ability instanceof UnlockableAbility), ALPHABETICAL.getAbilityComparator(mcrpgPlayer))),
     SKILL(LocalizationKey.ABILITY_SORT_SKILL_DISPLAY_ITEM, null, mcRPGPlayer -> new ChainComparator<>(//ALPHABETICAL.getAbilityComparator(),
@@ -59,7 +60,7 @@ public enum AbilitySortType {
                 if (skillOptional.isPresent() && skillOptional1.isPresent()) {
                     Skill skill = skillOptional.get();
                     Skill skill1 = skillOptional1.get();
-                    return skill.getDisplayName(mcRPGPlayer).compareTo(skill1.getDisplayName(mcRPGPlayer));
+                    return skill.getName(mcRPGPlayer).compareTo(skill1.getName(mcRPGPlayer));
                 }
                 // Otherwise, they both don't have skills then say they're equal
                 return 0;
@@ -81,7 +82,7 @@ public enum AbilitySortType {
                 if (skillOptional.isPresent() && skillOptional1.isPresent()) {
                     Skill skill = skillOptional.get();
                     Skill skill1 = skillOptional1.get();
-                    return skill.getDisplayName(mcRPGPlayer).compareTo(skill1.getDisplayName(mcRPGPlayer));
+                    return skill.getName(mcRPGPlayer).compareTo(skill1.getName(mcRPGPlayer));
                 }
                 // Otherwise, they both don't have skills then say they're equal
                 return 0;
@@ -118,10 +119,10 @@ public enum AbilitySortType {
     }
 
     private final Route displayItemRoute;
-    private final PlayerContextFilter<Ability> filter;
-    private final PlayerComparator<Ability> abilityComparator;
+    private final McRPGPlayerContextFilter<Ability> filter;
+    private final McRPGPlayerContextComparator<Ability> abilityComparator;
 
-    AbilitySortType(@NotNull Route displayItemRoute, @Nullable PlayerContextFilter<Ability> filter, @NotNull PlayerComparator<Ability> abilityComparator) {
+    AbilitySortType(@NotNull Route displayItemRoute, @Nullable McRPGPlayerContextFilter<Ability> filter, @NotNull McRPGPlayerContextComparator<Ability> abilityComparator) {
         this.displayItemRoute = displayItemRoute;
         this.filter = filter;
         this.abilityComparator = abilityComparator;
@@ -133,8 +134,8 @@ public enum AbilitySortType {
      * @return The {@link Comparator} used to sort {@link Ability Abilities}
      */
     @NotNull
-    public Comparator<Ability> getAbilityComparator(@NotNull McRPGPlayer player) {
-        return this.abilityComparator.getComparator(player);
+    public Comparator<Ability> getAbilityComparator(@NotNull McRPGPlayer mcRPGPlayer) {
+        return this.abilityComparator.getComparator(mcRPGPlayer);
     }
 
     /**
@@ -197,9 +198,5 @@ public enum AbilitySortType {
     @NotNull
     public static LinkedNode<AbilitySortType> getFirstSortType() {
         return FIRST_SORT_TYPE;
-    }
-
-    private interface PlayerComparator<E> {
-        Comparator<E> getComparator(@NotNull McRPGPlayer mcRPGPlayer);
     }
 }

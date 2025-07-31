@@ -3,21 +3,17 @@ package us.eunoians.mcrpg.gui.slot.home;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.setting.PlayerSettingGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,14 +45,8 @@ public class HomeSettingsSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta itemMeta = (SkullMeta) itemStack.getItemMeta();
-        itemMeta.setOwningPlayer(player);
-        itemMeta.displayName(miniMessage.deserialize("<red>Settings"));
-        itemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to edit your McRPG settings.")));
-        itemStack.setItemMeta(itemMeta);
-        return ItemBuilder.from(itemStack);
+        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_SETTINGS_SLOT_DISPLAY_ITEM));
     }
 
     @Override

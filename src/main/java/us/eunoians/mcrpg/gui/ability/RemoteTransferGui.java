@@ -7,9 +7,8 @@ import com.diamonddagger590.mccore.gui.ClosableGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.util.ChainComparator;
 import com.diamonddagger590.mccore.util.LinkedNode;
-import com.diamonddagger590.mccore.util.PlayerContextFilter;
+import com.diamonddagger590.mccore.util.comparator.ChainComparator;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -31,6 +30,7 @@ import us.eunoians.mcrpg.gui.slot.ability.remotetransfer.RemoteTransferToggleSlo
 import us.eunoians.mcrpg.gui.slot.common.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.util.filter.core.McRPGPlayerContextFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +49,8 @@ public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<
 
     private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot -> slot.getRemoteTransferCategory().getName(getCreatingPlayer()));
     // TODO this might need revisited (also shouldn't be tied to material, we need to support custom item data as well :<)
-    private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_MATERIAL = new ChainComparator<>(ALPHABETICAL_CATEGORY, Comparator.comparing(slot -> slot.getItem(getCreatingPlayer()).getType().toString()));
+    private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_MATERIAL = new ChainComparator<>(ALPHABETICAL_CATEGORY,
+            Comparator.comparing(slot -> slot.getItem(getCreatingPlayer()).getType().toString()));
 
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -259,7 +260,7 @@ public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<
         }
 
         private final RemoteTransferCategory remoteTransferCategory;
-        private final PlayerContextFilter<RemoteTransferToggleSlot> filter;
+        private final McRPGPlayerContextFilter<RemoteTransferToggleSlot> filter;
 
         public RemoteTransferSortOption() {
             this.remoteTransferCategory = null;

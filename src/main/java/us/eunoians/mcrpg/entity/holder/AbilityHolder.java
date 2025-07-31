@@ -109,7 +109,6 @@ public class AbilityHolder {
      */
     @NotNull
     public ImmutableSet<NamespacedKey> getAvailableAbilities() {
-        System.out.println(availableAbilities.stream().map(NamespacedKey::getKey).reduce((a, b) -> a + " " + b));
         return ImmutableSet.copyOf(availableAbilities);
     }
 

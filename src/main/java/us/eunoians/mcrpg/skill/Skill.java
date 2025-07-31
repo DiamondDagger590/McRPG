@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.skill;
 
 import com.diamonddagger590.mccore.parser.Parser;
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
@@ -73,7 +74,7 @@ public interface Skill extends McRPGContent {
      * @return The name to display in messages or guis for this skill.
      */
     @NotNull
-    String getDisplayName(@NotNull McRPGPlayer player);
+    Component getDisplayName(@NotNull McRPGPlayer player);
 
     /**
      * Gets the name to display in messages or guis for this skill using the default locale.
@@ -82,7 +83,7 @@ public interface Skill extends McRPGContent {
      * @return The name to display in messages or guis for this skill.
      */
     @NotNull
-    String getDisplayName();
+    Component getDisplayName();
 
     /**
      * Gets the maximum level that this skill can be leveled to.

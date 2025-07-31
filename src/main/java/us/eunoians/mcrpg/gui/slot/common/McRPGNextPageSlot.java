@@ -11,6 +11,9 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+/**
+ * A default implementation of a next page slot that pulls from a common display configuration.
+ */
 public class McRPGNextPageSlot extends NextPageSlot<McRPGPlayer> implements McRPGSlot {
 
     @NotNull

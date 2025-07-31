@@ -7,14 +7,12 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.impl.type.ConfigurableSkill;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -58,12 +56,6 @@ public final class Mining extends McRPGSkill implements ConfigurableSkill {
     @Override
     public String getDatabaseName() {
         return "mining";
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName(@Nullable McRPGPlayer player) {
-        return "Mining";
     }
 
     @Override

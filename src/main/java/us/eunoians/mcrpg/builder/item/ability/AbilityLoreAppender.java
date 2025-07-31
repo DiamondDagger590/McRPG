@@ -105,7 +105,7 @@ public final class AbilityLoreAppender {
                                                 }
                                                 lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_POINT_COUNT_LORE));
                                                 placeholders.put(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
-                                                placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(mcRPGPlayer));
+                                                placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
 
                                             }
                                             // Otherwise, tell the player the level they need to reach
@@ -113,7 +113,7 @@ public final class AbilityLoreAppender {
                                                 lore.add("");
                                                 lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.UPGRADE_LOCKED_BEHIND_LEVELUP_LORE));
                                                 placeholders.put("next-tier-level", Integer.toString(tierableAbility.getUnlockLevelForTier(nextTier)));
-                                                placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getDisplayName(mcRPGPlayer));
+                                                placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
 
                                             }
                                         }

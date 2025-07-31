@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.gui.loadout;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
 import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
-import com.diamonddagger590.mccore.util.ChainPlayerContextFilter;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -18,6 +17,7 @@ import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectAbilitySlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.util.filter.core.McRPGChainPlayerContextFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyInLoadoutFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyUnlockedFilter;
 
@@ -38,7 +38,7 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
-    private static final ChainPlayerContextFilter<NamespacedKey> ABILITY_KEY_FILTER = new ChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter());
+    private static final McRPGChainPlayerContextFilter<NamespacedKey> ABILITY_KEY_FILTER = new McRPGChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter());
 
     private final Loadout loadout;
     @Nullable
