@@ -68,8 +68,7 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                                 skillHolder.getAvailableAbilities().stream().map(skillHolder::getAbilityData).filter(Optional::isPresent).map(Optional::get).forEach(AbilityData::resetAbility);
                                 // Reset timers
                                 skillHolder.cleanupHolder();
-                                receiverAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(receiverAudience, LocalizationKey.RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE,
-                                        receiverPlaceholders));
+                                receiverAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(receiverAudience, LocalizationKey.RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                 // Only send a message if the sender is not the receiver or the sender is console
                                 if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
                                     senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));

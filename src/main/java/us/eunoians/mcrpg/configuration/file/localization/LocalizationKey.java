@@ -30,10 +30,16 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String RESET_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "reset");
     private static final String RESET_PLAYER_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "player");
-    public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "recipient-message"));
-    public static final Route RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-success-message"));
-    public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-error-message"));
-    public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_SAVING_MESSAGE = Route.fromString(toRoutePath(RESET_COMMAND_HEADER, "sender-error-saving-message"));
+    public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-error-message"));
+    public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_SAVING_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-error-saving-message"));
+
+    private static final String RESET_SKILL_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "skill");
+    public static final Route RESET_SKILL_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_SKILL_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_SKILL_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "sender-error-message"));
+    public static final Route RESET_SKILL_COMMAND_SENDER_ERROR_SAVING_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "sender-error-saving-message"));
 
     private static final String EXPANSION_HEADER = "expansion";
     public static final Route MCRPG_EXPANSION_NAME = Route.fromString(toRoutePath(EXPANSION_HEADER, "mcrpg"));

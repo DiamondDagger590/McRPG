@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.command.admin.reset;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
@@ -20,9 +21,11 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.command.parser.SkillParser;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -61,6 +64,9 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
+                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, receiverAudience);
+                            Map<String, String> receiverPlaceholders = getPlaceholders(receiverAudience, senderAudience, receiverAudience);
+                            McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
                             Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                             if (playerOptional.isPresent()) {
@@ -71,10 +77,10 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                     var skillHolderData = skillHolderDataOptional.get();
                                     skillHolderData.resetSkill();
                                     skillHolder.getAllAbilityDataForSkill(skill).forEach(AbilityData::resetAbility);
-                                    receiverAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have had your <gold>%s skill <green>reset.", skill.getDisplayName(mcRPGPlayer))));
+                                    receiverAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(receiverAudience, LocalizationKey.RESET_SKILL_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
-                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You have reset <gold>%s's %s skill <green>.", player.getDisplayName(), skill.getDisplayName(mcRPGPlayer))));
+                                        senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_SKILL_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
                                     }
 
                                     Database database = McRPG.getInstance().getDatabase();
@@ -90,7 +96,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                             new CoreTask(McRPG.getInstance()) {
                                                 @Override
                                                 public void run() {
-                                                    senderAudience.sendMessage(miniMessage.deserialize(String.format("<red>There was an error trying to save data for %s after resetting their skill. Please have an admin check console.", player.getDisplayName())));
+                                                    senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_SKILL_COMMAND_SENDER_ERROR_SAVING_MESSAGE, senderPlaceholders));
                                                 }
                                             }.runTask();
                                         }
@@ -98,8 +104,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                     return;
                                 }
                             }
-
-                            senderAudience.sendMessage(miniMessage.deserialize(String.format("<red>Unable to reset skill for %s.", player.displayName())));
+                            senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_SKILL_COMMAND_SENDER_ERROR_MESSAGE, senderPlaceholders));
                         }
                 ));
     }
