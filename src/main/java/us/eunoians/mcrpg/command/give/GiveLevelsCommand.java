@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.command.give;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -13,12 +14,24 @@ import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.parser.standard.IntegerParser;
 import org.incendo.cloud.permission.Permission;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.command.parser.SkillParser;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static us.eunoians.mcrpg.command.CommandPlaceholders.LEVEL;
+import static us.eunoians.mcrpg.command.CommandPlaceholders.SKILL;
 
 /**
  * Command used to give a player levels in one of their skills
@@ -44,37 +57,51 @@ public class GiveLevelsCommand extends GiveCommandBase {
                             Skill skill = commandContext.get(skillKey);
                             CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                             Player player = commandContext.get(playerKey);
-
+                            CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
                             boolean resetExperience = commandContext.flags().isPresent("reset_experience");
 
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
                             Audience senderAudience = adventure.sender(commandContext.sender().getSender());
                             Audience receiverAudience = adventure.player(player);
+                            McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+                            Optional<McRPGPlayer> senderOptional = commandContext.sender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                                    .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
+                            Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
 
-                            var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
+                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, receiverAudience);
+                            Map<String, String> receiverPlaceholders = getPlaceholders(receiverAudience, senderAudience, receiverAudience);
                             if (playerOptional.isPresent()) {
                                 McRPGPlayer mcRPGPlayer = playerOptional.get();
                                 SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
                                 var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
                                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
-                                    CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
                                     /*
                                      We can't give them a level amount that would put them over the max level, so we only give the difference between the max and current level if that amount is smaller than the provided amount.
                                      While there is a sanity check inside the add levels method, we want to ensure
                                      */
                                     int levelAmount = Math.min(commandContext.get(amountKey), skill.getMaxLevel() - skillHolderData.getCurrentLevel());
 
-                                    skillHolderData.addLevel(levelAmount, resetExperience); // No need to send a message ourselves as this sends one
+                                    skillHolderData.addLevel(levelAmount, resetExperience);
+                                    receiverAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
-                                    if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())){
-                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<green>You gave <gold>%d levels <green>in <gold>%s <green>to %s.", levelAmount, skill.getDisplayName(mcRPGPlayer), player.getDisplayName())));
+                                    if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
+                                        senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
                                     }
                                     return;
                                 }
                             }
-                            senderAudience.sendMessage(miniMessage.deserialize(String.format("<red>Unable to give <gray>%s <red>levels at the moment.", player.displayName())));
+                            senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE, senderPlaceholders));
                         }
                 ));
+    }
+
+    @NotNull
+    public static Map<String, String> getPlaceholders(@NotNull Audience messageAudience, @NotNull Audience senderAudience, @NotNull Audience receiverAudience, int levels,
+                                                      @NotNull Skill skill, @Nullable McRPGPlayer mcRPGPlayer) {
+        Map<String, String> placeholders = new HashMap<>(McRPGCommandBase.getPlaceholders(messageAudience, senderAudience, receiverAudience));
+        placeholders.put(SKILL.getPlaceholder(), mcRPGPlayer == null ? skill.getName() : skill.getName(mcRPGPlayer));
+        placeholders.put(LEVEL.getPlaceholder(), Integer.toString(levels));
+        return placeholders;
     }
 }

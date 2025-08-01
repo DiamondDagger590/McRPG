@@ -27,6 +27,48 @@ commands:
       sender-success-message: "<gray>You gave <gold><experience></gold> in <gold><skill></gold> to <target>."
       # The message to send to the sender when the command fails.
       sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+    # Configure the level give command
+    # Supports the following placeholders: <level>, <skill>, <target>, <sender>
+    level:
+      # The message to send to the player getting levels.
+      recipient-message: "<gray>You have been given <gold><experience> experience</gold> in <gold><skill></gold>."
+      # The message to send to the sender when the command works.
+      sender-success-message: "<gray>You gave <gold><level> level(s)</gold> in <gold><skill></gold> to <target>."
+      # The message to send to the sender when the command fails.
+      sender-error-message: "<red>Unable to give <gray><player></gray> levels at the moment."
+  # Configure the link command for Remote Transfer
+  # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
+  link:
+    # The message to be sent if the command is run while the player isn't looking at a chest
+    not-looking-at-chest-message: '<red>You must be looking at a chest in order to link <skill>.'
+    # The message to be sent if the command is run and the Remote Transfer ability is disabled
+    remote-transfer-not-enabled-message: '<red><skill> is not currently enabled.'
+    # The message to be sent if the linking worked successfully.
+    link-success-message: '<gray>Successfully linked chest to your <skill> ability.'
+  # Configure the unlink command for Remote Transfer
+  # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
+  unlink:
+    # The message to be sent if unlinking worked successfully.
+    unlink-success-message: '<gray>You have unlinked your chest.'
+    # The message to be sent if the command is run but the player doesn't have a linked chest.
+    no-linked-chest-message: "<gray>You don't have a linked chest."
+  # Configure the different /mcrpg loadout commands.
+  loadout:
+    # Configure the loadout edit command.
+    edit:
+      # The message to be sent to the player who ran the command if they don't have a loadout
+      # with the provided slot.
+      # Supports the following placeholders: <loadout-id>
+      no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
+    # Configure the loadout set command.
+    set:
+      # The message to be sent to the player who ran the command if they don't have a loadout
+      # with the provided slot.
+      # Supports the following placeholders: <loadout-id>
+      no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
+      # The message to be sent if the loadout was set successfully.
+      # Supports the following placeholders: <loadout-id>
+      loadout-set-success-message: "<gray>Your active loadout is now <gold>loadout #<loadout-id></gold>.</gray>"
   # Configure /mcrpg admin commands
   admin:
     # Configure the reload command

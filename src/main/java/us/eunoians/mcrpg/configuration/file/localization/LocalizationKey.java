@@ -22,9 +22,28 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
     public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
+    private static final String GIVE_LEVELS_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "levels");
+    public static final Route GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-error-message"));
+
+    private static final String LINK_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "link");
+    public static final Route LINK_COMMAND_NOT_LOOKING_AT_CHEST_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "not-looking-at-chest-message"));
+    public static final Route LINK_COMMAND_REMOTE_TRANSFER_NOT_ENABLED_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "remote-transfer-not-enabled-message"));
+    public static final Route LINK_COMMAND_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "link-success-message"));
+
+    private static final String UNLINK_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "unlink");
+    public static final Route UNLINK_COMMAND_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(UNLINK_COMMAND_HEADER, "unlink-success-message"));
+    public static final Route UNLINK_COMMAND_NO_LINKED_CHEST_MESSAGE = Route.fromString(toRoutePath(UNLINK_COMMAND_HEADER, "no-linked-chest-message"));
+
+    private static final String LOADOUT_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "loadout");
+    private static final String LOADOUT_EDIT_COMMAND_HEADER = toRoutePath(LOADOUT_COMMAND_HEADER, "edit");
+    public static final Route LOADOUT_EDIT_COMMAND_NO_LOADOUT_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_EDIT_COMMAND_HEADER, "no-loadout-matches"));
+    private static final String LOADOUT_SET_COMMAND_HEADER = toRoutePath(LOADOUT_COMMAND_HEADER, "set");
+    public static final Route LOADOUT_SET_COMMAND_NO_LOADOUT_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "no-loadout-matches"));
+    public static final Route LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "loadout-set-success-message"));
 
     private static final String ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "admin");
-
     private static final String RELOAD_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reload");
     public static final Route RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RELOAD_COMMAND_HEADER, "sender-success-message"));
 

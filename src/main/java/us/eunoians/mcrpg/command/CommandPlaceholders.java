@@ -10,8 +10,10 @@ public enum CommandPlaceholders {
     SENDER("sender"),
     TARGET("target"),
     EXPERIENCE("experience"),
+    LEVEL("level"),
     SKILL("skill"),
     ABILITY("ability"),
+    LOADOUT_SLOT("loadout-slot"),
     ;
 
     private final String placeholder;
