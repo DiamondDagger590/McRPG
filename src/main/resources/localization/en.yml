@@ -58,17 +58,17 @@ commands:
     edit:
       # The message to be sent to the player who ran the command if they don't have a loadout
       # with the provided slot.
-      # Supports the following placeholders: <loadout-id>
+      # Supports the following placeholders: <loadout-slot>
       no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
     # Configure the loadout set command.
     set:
       # The message to be sent to the player who ran the command if they don't have a loadout
       # with the provided slot.
-      # Supports the following placeholders: <loadout-id>
+      # Supports the following placeholders: <loadout-slot>
       no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
       # The message to be sent if the loadout was set successfully.
-      # Supports the following placeholders: <loadout-id>
-      loadout-set-success-message: "<gray>Your active loadout is now <gold>loadout #<loadout-id></gold>.</gray>"
+      # Supports the following placeholders: <loadout-slot>
+      loadout-set-success-message: "<gray>Your active loadout is now <gold>loadout #<loadout-slot></gold>.</gray>"
   # Configure /mcrpg admin commands
   admin:
     # Configure the reload command
@@ -300,6 +300,15 @@ gui:
       display-item:
         material: CHEST
         name: "<gold>Block Filter"
+  loadout-display-home-gui:
+    title: "<gold>Editing Loadout <loadout-name>"
+    edit-name-slot:
+      name-input-request-prompt: '<gray>Please type in chat the name you want this loadout to be called, or type <gold>cancel</gold> to cancel:'
+      display-item:
+        material: OAK_HANGING_SIGN
+        name: '<gold>Loadout Display Name'
+        lore:
+          - "<gold>Click <gray>to change what the loadout's name is."
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"
     # These categories should match exactly to the ones in the mining_configuration.yml.

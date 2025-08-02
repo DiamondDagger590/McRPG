@@ -128,6 +128,12 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(TOGGLED_OFF_HEADER, "toggled-on.display-item"));
     public static final Route REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "remote-transfer-block-toggle-attribute"));
 
+    private static final String LOADOUT_DISPLAY_HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-display-home-gui");
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "title"));
+    private static final String LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER = toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "edit-name-slot");
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_PROMPT = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "name-input-request-prompt"));
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "display-item"));
+
     private static final String ABILITY_HEADER = "ability";
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-still-on-cooldown"));
     public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-no-longer-on-cooldown"));

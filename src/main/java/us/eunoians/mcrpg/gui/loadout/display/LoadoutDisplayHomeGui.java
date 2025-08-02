@@ -4,18 +4,23 @@ import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
 import com.diamonddagger590.mccore.gui.BaseGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.slot.loadout.ToggleLoadoutActiveSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayItemSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayNameEditSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -46,7 +51,10 @@ public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements Fille
         if (this.inventory != null) {
             throw new InventoryAlreadyExistsForGuiException(this);
         } else {
-            this.inventory = Bukkit.createInventory(player, 27, McRPG.getInstance().getMiniMessage().deserialize(loadout.getDisplay().getDisplayName().orElse("<gold>Editing Loadout")));
+            String loadoutName = loadout.getDisplay().getDisplayName().orElse(Integer.toString(loadout.getLoadoutSlot()));
+            this.inventory = Bukkit.createInventory(player, 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TITLE, Map.of()));
             paintInventory();
         }
     }
