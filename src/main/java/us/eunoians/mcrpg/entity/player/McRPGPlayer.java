@@ -1,37 +1,34 @@
 package us.eunoians.mcrpg.entity.player;
 
-import com.diamonddagger590.mccore.database.table.impl.MutexDAO;
+import com.diamonddagger590.mccore.database.table.impl.PlayerSettingDAO;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.player.CorePlayer;
-import com.google.common.collect.ImmutableSet;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
-import us.eunoians.mcrpg.ability.impl.TierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
-import us.eunoians.mcrpg.database.table.PlayerSettingDAO;
+import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
-import us.eunoians.mcrpg.event.setting.PlayerSettingChangeEvent;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
-import us.eunoians.mcrpg.setting.PlayerSetting;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * The main "player" object for any player who will be playing McRPG.
@@ -41,25 +38,25 @@ import java.util.UUID;
  */
 public class McRPGPlayer extends CorePlayer {
 
-    private final McRPG mcRPG;
     private final SkillHolder skillHolder;
     private final QuestHolder questHolder;
-    private final Map<NamespacedKey, PlayerSetting> playerSettings;
+    private final PlayerExperienceExtras playerExperienceExtras;
+    private boolean standingInSafeZone;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
-        super(player.getUniqueId());
-        this.mcRPG = mcRPG;
-        skillHolder = new SkillHolder(mcRPG, getUUID());
-        questHolder = new QuestHolder(getUUID());
-        playerSettings = new HashMap<>();
+        super(player.getUniqueId(), mcRPG);
+        this.skillHolder = new SkillHolder(mcRPG, getUUID());
+        this.questHolder = new QuestHolder(getUUID());
+        this.playerExperienceExtras = new PlayerExperienceExtras();
+        this.standingInSafeZone = false;
     }
 
     public McRPGPlayer(@NotNull UUID uuid, @NotNull McRPG mcRPG) {
-        super(uuid);
-        this.mcRPG = mcRPG;
-        skillHolder = new SkillHolder(mcRPG, getUUID());
-        questHolder = new QuestHolder(getUUID());
-        playerSettings = new HashMap<>();
+        super(uuid, mcRPG);
+        this.skillHolder = new SkillHolder(mcRPG, getUUID());
+        this.questHolder = new QuestHolder(getUUID());
+        this.playerExperienceExtras = new PlayerExperienceExtras();
+        this.standingInSafeZone = false;
     }
 
     @Override
@@ -73,8 +70,15 @@ public class McRPGPlayer extends CorePlayer {
      * @return The {@link McRPG} instance that created this player.
      */
     @NotNull
-    public McRPG getMcRPGInstance() {
-        return mcRPG;
+    @Override
+    public McRPG getPlugin() {
+        return (McRPG) super.getPlugin();
+    }
+
+    @NotNull
+    @Override
+    public Set<McRPGSetting> getPlayerSettings() {
+        return super.getPlayerSettings().stream().filter(setting -> setting instanceof McRPGSetting).map(setting -> (McRPGSetting) setting).collect(Collectors.toSet());
     }
 
     /**
@@ -100,40 +104,6 @@ public class McRPGPlayer extends CorePlayer {
     }
 
     /**
-     * Sets the provided {@link PlayerSetting} as the current setting option for that setting type.
-     *
-     * @param playerSetting The {@link PlayerSetting} to set.
-     */
-    public void setPlayerSetting(@NotNull PlayerSetting playerSetting) {
-        PlayerSetting oldSetting = playerSettings.get(playerSetting.getSettingKey());
-        playerSettings.put(playerSetting.getSettingKey(), playerSetting);
-        PlayerSettingChangeEvent playerSettingChangeEvent = new PlayerSettingChangeEvent(this, oldSetting, playerSetting);
-        Bukkit.getPluginManager().callEvent(playerSettingChangeEvent);
-    }
-
-    /**
-     * Gets an {@link Optional} containing the {@link PlayerSetting} that belongs to the provided {@link NamespacedKey},
-     *
-     * @param key The {@link NamespacedKey} to get the {@link PlayerSetting} for.
-     * @return An {@link Optional} containing the {@link PlayerSetting} that belongs to the provided {@link NamespacedKey},
-     * or empty if there is not a match.
-     */
-    @NotNull
-    public Optional<PlayerSetting> getPlayerSetting(@NotNull NamespacedKey key) {
-        return Optional.ofNullable(playerSettings.get(key));
-    }
-
-    /**
-     * Gets an {@link ImmutableSet} of all {@link PlayerSetting}s for this player.
-     *
-     * @return An {@link ImmutableSet} of all {@link PlayerSetting}s for this player.
-     */
-    @NotNull
-    public Set<PlayerSetting> getPlayerSettings() {
-        return ImmutableSet.copyOf(playerSettings.values());
-    }
-
-    /**
      * Checks to see if this player can start an upgrade quest for the provided {@link TierableAbility}.
      *
      * @param tierableAbility The {@link TierableAbility} to check.
@@ -142,8 +112,8 @@ public class McRPGPlayer extends CorePlayer {
     public boolean canPlayerStartUpgradeQuest(@NotNull TierableAbility tierableAbility) {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
         if (abilityDataOptional.isPresent()) {
-            var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY);
-            var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+            var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY);
+            var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
             // Validate they don't have an ongoing upgrade quest
             if (skillHolder.hasActiveUpgradeQuest(tierableAbility.getAbilityKey())) {
                 return false;
@@ -155,8 +125,8 @@ public class McRPGPlayer extends CorePlayer {
                 // If the next tier is below or at the tier cap
                 if (tierableAbility.getMaxTier() >= nextTier) {
                     // If the ability has a skill tied to it
-                    if (tierableAbility.getSkill().isPresent()) {
-                        var skillData = skillHolder.getSkillHolderData(tierableAbility.getSkill().get());
+                    if (tierableAbility instanceof SkillAbility skillAbility) {
+                        var skillData = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
                         // Check if the current skill level is enough to unlock and ensure player has enough upgrade points
                         return skillData.isPresent() && skillData.get().getCurrentLevel() >= tierableAbility.getUnlockLevelForTier(nextTier) && skillHolder.getUpgradePoints() >= upgradeCost;
                     }
@@ -178,20 +148,59 @@ public class McRPGPlayer extends CorePlayer {
     public void startUpgradeQuest(@NotNull TierableAbility tierableAbility) {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
 
-        if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE).isEmpty()
-                || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
-            throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName());
+        if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE).isEmpty()
+                || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
+            throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName(this));
         }
-        int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeManager.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
+        int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
         Quest quest = tierableAbility.getUpgradeQuestForTier(tier);
         abilityDataOptional.get().addAttribute(new AbilityUpgradeQuestAttribute(quest.getUUID()));
-        QuestManager questManager = McRPG.getInstance().getQuestManager();
+        QuestManager questManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
         skillHolder.setUpgradePoints(skillHolder.getUpgradePoints() - tierableAbility.getUpgradeCostForTier(tier));
         questManager.addActiveQuest(quest);
         questManager.addHolderToQuest(questHolder, quest);
         quest.startQuest();
     }
 
+    /**
+     * Gets the {@link PlayerExperienceExtras} for this player.
+     *
+     * @return The {@link PlayerExperienceExtras} for this player.
+     */
+    @NotNull
+    public PlayerExperienceExtras getExperienceExtras() {
+        return playerExperienceExtras;
+    }
+
+    /**
+     * Updates if the player is currently standing in a safe zone or not.
+     * <p>
+     * This value will not actually be saved to the database, but is meant to serve as a frequently
+     * updated in memory copy.
+     *
+     * @param standingInSafeZone If the player is currently standing in a safe zone or not.
+     */
+    public void setStandingInSafeZone(boolean standingInSafeZone) {
+        this.standingInSafeZone = standingInSafeZone;
+    }
+
+    /**
+     * Checks to see if the player is currently standing in a safe zone or not.
+     * <p>
+     * This value is updated periodically while the player is online. If the player is offline,
+     * then check {@link us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO#didPlayerLogoutInSafeZone(Connection, UUID)}.
+     *
+     * @return {@code true} if the player is currently standing in a safe zone or not.
+     */
+    public boolean isStandingInSafeZone() {
+        return standingInSafeZone;
+    }
+
+    /**
+     * Saves all player data using the provided {@link Connection}.
+     *
+     * @param connection The {@link Connection} to use to save data to.
+     */
     public void savePlayer(@NotNull Connection connection) {
         BatchTransaction batchTransaction = new BatchTransaction(connection);
         FailSafeTransaction failsafeTransaction = new FailSafeTransaction(connection);
@@ -199,12 +208,9 @@ public class McRPGPlayer extends CorePlayer {
         failsafeTransaction.addAll(LoadoutInfoDAO.saveAllLoadoutInfo(connection, skillHolder));
         failsafeTransaction.addAll(LoadoutAbilityDAO.saveAllLoadouts(connection, skillHolder));
         failsafeTransaction.addAll(LoadoutDisplayDAO.saveAllLoadoutDisplays(connection, skillHolder));
+        failsafeTransaction.addAll(PlayerExperienceExtrasDAO.savePlayerExperienceExtras(connection, getUUID(), playerExperienceExtras));
         batchTransaction.addAll(PlayerSettingDAO.savePlayerSettings(connection, getUUID(), getPlayerSettings()));
         failsafeTransaction.executeTransaction();
         batchTransaction.executeTransaction();
-
-        if (useMutex()) {
-            MutexDAO.updateUserMutex(connection, getUUID(), false);
-        }
     }
 }

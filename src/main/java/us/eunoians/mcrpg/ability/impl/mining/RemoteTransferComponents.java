@@ -13,11 +13,12 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
-import us.eunoians.mcrpg.event.fake.FakeChestOpenEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.fake.FakeChestOpenEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * All components that are used to check for activation logic for {@link RemoteTransfer}
@@ -32,7 +33,7 @@ public class RemoteTransferComponents {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             BlockDropItemEvent blockDropItemEvent = (BlockDropItemEvent) event;
-            RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+            RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
             if (!remoteTransfer.isAbilityEnabled() || !abilityHolder.getUUID().equals(blockDropItemEvent.getPlayer().getUniqueId())) {
                 return false;
             }
@@ -40,7 +41,7 @@ public class RemoteTransferComponents {
             var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
             if (abilityDataOptional.isPresent()) {
                 AbilityData abilityData = abilityDataOptional.get();
-                var locationAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_LOCATION_ATTRIBUTE);
+                var locationAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE);
                 // If the player has a location saved
                 if (locationAttributeOptional.isPresent()) {
                     AbilityLocationAttribute attribute = (AbilityLocationAttribute) locationAttributeOptional.get();

@@ -5,10 +5,11 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * This event gets called whenever {@link Vampire} activates
@@ -16,7 +17,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 public class VampireActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability VAMPIRE = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(Vampire.VAMPIRE_KEY);
+    private static final Ability VAMPIRE = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(Vampire.VAMPIRE_KEY);
 
     private final LivingEntity entity;
     private double amountToHeal;

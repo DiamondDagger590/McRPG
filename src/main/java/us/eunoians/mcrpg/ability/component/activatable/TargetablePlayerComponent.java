@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability.component.activatable;
 
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 //TODO javadoc
 public interface TargetablePlayerComponent extends EventActivatableComponent {
@@ -42,7 +43,7 @@ public interface TargetablePlayerComponent extends EventActivatableComponent {
             return true;
         }
         //Check if they're allies
-        boolean allies = McRPG.getInstance().getAbilityRegistry().areEntitiesAllied(activator, target).getLeft();
+        boolean allies = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).areEntitiesAllied(activator, target).getLeft();
 
         //Return true if allies we affect allies or not ally and we affect enemies
         return (allies && affectAllies()) || (!allies && affectEnemies());

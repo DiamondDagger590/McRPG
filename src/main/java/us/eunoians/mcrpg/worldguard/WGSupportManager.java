@@ -10,7 +10,7 @@ public class WGSupportManager {
 
 
 //  public WGSupportManager(McRPG plugin){
-//    FileConfiguration config = plugin.getFileManager().getFile(FileManager.Files.WORLDGUARD_CONFIG);
+//    FileConfiguration config = plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileManager.Files.WORLDGUARD_CONFIG);
 //
 //    for(String s : config.getConfigurationSection("WorldGuardSupport").getKeys(false)){
 //      if(s.equals("TestRegion")){

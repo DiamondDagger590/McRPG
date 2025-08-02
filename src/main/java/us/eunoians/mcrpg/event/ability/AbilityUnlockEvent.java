@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.event.ability;
 
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
+import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**

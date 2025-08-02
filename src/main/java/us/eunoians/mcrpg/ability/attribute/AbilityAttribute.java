@@ -13,13 +13,13 @@ import java.util.Optional;
  * for future support of 3rd party plugins adding their own unique attributes to be utilized for abilities,
  * which can further modify plugin behavior.
  * <p>
- * In {@link AbilityAttributeManager}, if you get a {@link AbilityAttribute} by using {@link AbilityAttributeManager#getAttribute(NamespacedKey)} or
+ * In {@link AbilityAttributeRegistry}, if you get a {@link AbilityAttribute} by using {@link AbilityAttributeRegistry#getAttribute(NamespacedKey)} or
  * any overloaded methods, you will get an instance of this class but with only default content.
  * <p>
  * An example of this would be as follows:
  * <ul>
  * <li> I want to create a {@link AbilityTierAttribute} using only an abstracted {@link NamespacedKey}.
- * <li> To do so, I would get an {@link AbilityAttribute} from {@link AbilityAttributeManager#getAttribute(NamespacedKey)} using my provided {@link NamespacedKey}.
+ * <li> To do so, I would get an {@link AbilityAttribute} from {@link AbilityAttributeRegistry#getAttribute(NamespacedKey)} using my provided {@link NamespacedKey}.
  * <li> This found value will be "default" and populated only with the value from {@link AbilityTierAttribute}.
  * <li> To now create a new instance with a new value, I would do {@link AbilityAttribute#create(Object)}.
  * <li> The returned {@link AbilityAttribute} will be different than the one initially obtained, as it is a newly created one and populated with the provided value
@@ -88,7 +88,7 @@ public abstract class AbilityAttribute<T> {
 
     /**
      * Gets the {@link NamespacedKey} that is associated with this attribute. This relation is mostly utilized
-     * in {@link AbilityAttributeManager}.
+     * in {@link AbilityAttributeRegistry}.
      *
      * @return The {@link NamespacedKey} that is associated with this attribute.
      */
@@ -122,7 +122,7 @@ public abstract class AbilityAttribute<T> {
      * Gets the default content value for this attribute. This should be considered the "default state" for this attribute, such
      * as a tier defaulting to 0.
      * <p>
-     * The largest use case for this is populating {@link AbilityAttributeManager} with initial instances of this class, which can then
+     * The largest use case for this is populating {@link AbilityAttributeRegistry} with initial instances of this class, which can then
      * be built on using {@link #create(Object)}.
      *
      * @return The default {@link T} content to use.
@@ -148,11 +148,11 @@ public abstract class AbilityAttribute<T> {
     /**
      * Gets the {@link NamespacedKey} that this current {@link AbilityAttribute} instance is storing data for.
      * <p>
-     * In the case that this is the default instance provided by {@link AbilityAttributeManager#getAttribute(NamespacedKey)}, this will return an empty
+     * In the case that this is the default instance provided by {@link AbilityAttributeRegistry#getAttribute(NamespacedKey)}, this will return an empty
      * {@link Optional}, as no value is being represented.
      *
      * @return An {@link Optional} containing the {@link NamespacedKey} that is having data represented by this attribute,
-     * or an empty {@link Optional} if this is a default instance provided by {@link AbilityAttributeManager#getAttribute(NamespacedKey)} which represents
+     * or an empty {@link Optional} if this is a default instance provided by {@link AbilityAttributeRegistry#getAttribute(NamespacedKey)} which represents
      * a blank attribute.
      */
     @NotNull

@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.expansion.content;
 
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.expansion.ContentExpansion;
 
 /**

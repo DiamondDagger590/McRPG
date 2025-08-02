@@ -1,10 +1,11 @@
 package us.eunoians.mcrpg.entity.holder;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainExpEvent;
@@ -152,7 +153,9 @@ public class SkillHolder extends LoadoutHolder {
          * Calculates and updates the amount of experience required for the next level up.
          */
         public void updateExperienceForNextLevel() {
-            experienceForNextLevel = currentLevel * 1000; //TODO make configurable
+            Parser levelParser = skill.getLevelUpEquation();
+            levelParser.setVariable("skill_level", currentLevel);
+            this.experienceForNextLevel = (int) levelParser.getValue();
         }
 
         /**
@@ -191,6 +194,16 @@ public class SkillHolder extends LoadoutHolder {
          */
         public int getExperienceForNextLevel() {
             return experienceForNextLevel;
+        }
+
+        /**
+         * Gets the amount of experience the player still has to gain for the next level
+         * up.
+         *
+         * @return The amount of experience required for the next level up.
+         */
+        public int getRemainingExperienceForNextLevel() {
+            return experienceForNextLevel - currentExperience;
         }
 
         /**

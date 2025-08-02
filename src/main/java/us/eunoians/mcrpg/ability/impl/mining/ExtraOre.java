@@ -1,9 +1,11 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
-import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
 import com.diamonddagger590.mccore.parser.Parser;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,27 +13,28 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableAbility;
-import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
-import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +42,8 @@ import java.util.stream.Collectors;
  * This is a default ability that has a chance to double the amount of drops from a
  * mined block.
  */
-public final class ExtraOre extends McRPGAbility implements PassiveAbility, ConfigurableAbility, ReloadableContentAbility, DropMultiplierAbility {
+public final class ExtraOre extends McRPGAbility implements PassiveAbility, ConfigurableAbility,
+        ReloadableContentAbility, DropMultiplierAbility, SkillAbility {
 
     public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "extra_ore");
 
@@ -64,27 +68,14 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility, Conf
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Mining.MINING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Mining.MINING_KEY;
     }
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("extra_ore");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Extra Ore";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of("<gray>Will occasionally double drops while mining.",
-                "<gray>Activation Chance: <gold>" + FORMAT.format(getActivationChance(mcRPGPlayer.asSkillHolder())) + "%");
+    public String getDatabaseName() {
+        return "extra_ore";
     }
 
     /**
@@ -102,12 +93,6 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility, Conf
         }
 
         return 0.0;
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.DIAMOND, 2);
     }
 
     @Override
@@ -128,7 +113,13 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility, Conf
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.EXTRA_ORE_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -149,5 +140,14 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility, Conf
     @Override
     public Map<Location, Integer> getMultiplierMap() {
         return multiplierMap;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(player.asSkillHolder())));
+        return placeholders;
     }
 }

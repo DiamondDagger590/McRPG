@@ -1,84 +1,135 @@
 package us.eunoians.mcrpg.skill;
 
+import com.diamonddagger590.mccore.parser.Parser;
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.builder.item.skill.SkillItemBuilder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
-import us.eunoians.mcrpg.exception.skill.EventNotRegisteredForLevelingException;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.skill.component.EventLevelableComponent;
 import us.eunoians.mcrpg.skill.component.EventLevelableComponentAttribute;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * The base class for any skills
+ * The base interface for all skills, providing basic behavior outlines that gain some definition
+ * in {@link BaseSkill}.
+ * <p>
+ * Further skill behavior is provided in child interfaces which can be implemented alongside
+ * extending {@link BaseSkill} in order to provide more out-of-the-box behavior.
  */
-public abstract class Skill implements McRPGContent {
+public interface Skill extends McRPGContent {
 
-    private final Map<Class<? extends Event>, List<EventLevelableComponentAttribute>> levelingAttributes;
-
-    private final NamespacedKey skillKey;
-
-    public Skill(@NotNull NamespacedKey skillKey) {
-        this.skillKey = skillKey;
-        this.levelingAttributes = new HashMap<>();
-    }
+    /**
+     * Gets the {@link Plugin} that owns this ability.
+     *
+     * @return The {@link Plugin} that owns this ability.
+     */
+    @NotNull
+    Plugin getPlugin();
 
     /**
      * Gets the {@link NamespacedKey} that represents this skill
      *
      * @return The {@link NamespacedKey} that represents this skill
      */
-    @NotNull
-    public NamespacedKey getSkillKey() {
-        return skillKey;
-    }
+    @NotNull NamespacedKey getSkillKey();
 
     /**
-     * Gets the name of this skill to display to the player in messages or guis.
+     * Gets the database name for a skill. This is an internal
+     * use-only name used for database storage.
      *
-     * @return The name of this skill to display to the player in messages or guis
+     * @return The database name for a skill. This is an internal
+     * use-only name used for database storage.
      */
     @NotNull
-    public abstract String getDisplayName();
+    String getDatabaseName();
+
+    /**
+     * Gets the localized name of the skill for the provided {@link McRPGPlayer}.
+     *
+     * @param player The player whose localization to use.
+     * @return The localized name of the skill.
+     */
+    @NotNull
+    String getName(@NotNull McRPGPlayer player);
+
+    /**
+     * Gets the localized name of the skill using the default locale.
+     *
+     * @return The localized name of the skill.
+     */
+    @NotNull
+    String getName();
+
+    /**
+     * Gets the name to display in messages or guis for this skill. This may have a placeholder
+     * such as {@code <skill-name>} which should be replaced by {@link #getName()}.
+     *
+     * @param player The {@link McRPGPlayer} to get the localized display name for.
+     * @return The name to display in messages or guis for this skill.
+     */
+    @NotNull
+    Component getDisplayName(@NotNull McRPGPlayer player);
+
+    /**
+     * Gets the name to display in messages or guis for this skill using the default locale.
+     * This may have a placeholder such as {@code <skill-name>} which should be replaced by {@link #getName()}.
+     *
+     * @return The name to display in messages or guis for this skill.
+     */
+    @NotNull
+    Component getDisplayName();
 
     /**
      * Gets the maximum level that this skill can be leveled to.
      *
      * @return The maximum level that this skill can be leveled to.
      */
-    public abstract int getMaxLevel();
+    int getMaxLevel();
 
     /**
-     * Gets a {@link List} of all {@link EventLevelableComponentAttribute}s used by this skill that trigger based on the
-     * {@link Event} passed in.
+     * Checks to see if this skill is enabled.
      *
-     * @param clazz The {@link Event} to get the {@link EventLevelableComponentAttribute}s for.
-     * @return A {@link List} of all {@link EventLevelableComponentAttribute}s used by this skill that trigger based on the
-     * {@link Event} passed in.
-     * <p>
-     * This list will be empty if there are no {@link EventLevelableComponentAttribute}s that this skill has for the provided
-     * {@link Event}.
+     * @return {@code true} if this skill is enabled.
+     */
+    boolean isSkillEnabled();
+
+    /**
+     * Gets the {@link SkillItemBuilder} for this skill based off the provided
+     * {@link McRPGPlayer}.
+     *
+     * @param player The {@link McRPGPlayer} to get an item builder for.
+     * @return The {@link SkillItemBuilder} for this skill based off the provided
+     * {@link McRPGPlayer}.
      */
     @NotNull
-    public List<EventLevelableComponentAttribute> getLevelableComponents(@NotNull Class<? extends Event> clazz) {
-        return levelingAttributes.getOrDefault(clazz, new ArrayList<>());
-    }
+    SkillItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player);
 
     /**
-     * Checks to see if the provided {@link Event} can be used to provide experience to this skill.
+     * Gets a map containing the placeholders supported for this skill using the given
+     * {@link McRPGPlayer}.
+     * <p>
+     * The key will be the placeholder itself whilst the value will be the string to replace the
+     * placeholder with. Placeholders should follow the format of {@code <example>}.
+     * <p>
+     * Some generic placeholders are provided out of box in the {@link SkillItemBuilder}
+     * itself,
      *
-     * @param event The {@link Event} to check.
-     * @return {@code true} if the provided {@link Event} can be used to provide experience to this skill.
+     * @param player The player to build the placeholders for.
+     * @return A map containing the placeholders to use for this skill display.
      */
-    public boolean canEventLevelSkill(@NotNull Event event) {
-        return levelingAttributes.containsKey(event.getClass());
+    @NotNull
+    default Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        return Map.of();
     }
+
+    @NotNull
+    Parser getLevelUpEquation();
 
     /**
      * Calculates the amount of experience to award the provided {@link SkillHolder} based on the provided {@link Event}.
@@ -97,66 +148,14 @@ public abstract class Skill implements McRPGContent {
      * @param event       The {@link Event} to calculate experience from.
      * @return The non-negative, zero inclusive amount of experience that can be awarded by the provided event.
      */
-    public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
-        // If the event can't be used to level this skill, throw an error because for some reason we are expecting it to be and it isn't.
-        if (!canEventLevelSkill(event)) {
-            throw new EventNotRegisteredForLevelingException(event, this);
-        }
-
-        int expToAward = 0;
-        // Check every levelable component for experience amounts
-        for (EventLevelableComponentAttribute eventLevelableComponentAttribute : getLevelableComponents(event.getClass())) {
-            EventLevelableComponent eventLevelableComponent = eventLevelableComponentAttribute.levelableComponent();
-            /*
-             If this component can't give experience, then stop iterating and return 0.
-
-             We assume that if a component CAN give experience but doesn't want to, it will return 0 when we calculate.
-             This check here is to validate whether conditions are right to award experience in the first place, as we assume
-             subsequent components will share at least the same criteria (they may have more specific criteria but should never
-             be more broad than the ones before it).
-             */
-            if (!eventLevelableComponent.shouldGiveExperience(skillHolder, event)) {
-                return 0;
-            } else {
-                // Set the amount of experience to return if it is higher than the current result.
-                int exp = eventLevelableComponent.calculateExperienceToGive(skillHolder, event);
-                if (exp > expToAward) {
-                    expToAward = exp;
-                }
-            }
-        }
-
-        return expToAward;
-    }
+    int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event);
 
     /**
-     * Adds the provided {@link EventLevelableComponent} as an option to award experience whenever {@link #calculateExperienceToGive(SkillHolder, Event)}
-     * with the provided {@link Event}.
-     * <p>
-     * {@link EventLevelableComponent}s use a priority system. These start at 0 (McRPG level) and go from there. If there are two components that
-     * share the same priority, then order is not guaranteed. The order allows for setting specific validation criteria that other components following should
-     * be encompassed by. An example being a component with priority 0 validating that the player is holding a sword in order to award swords experience.
-     * Since all other components that award swords experience should be encompassed by this same criteria, priority 0 makes sense for this check.
+     * Checks to see if the provided {@link Event} can be used to provide experience to this skill.
      *
-     * @param eventLevelableComponent The {@link EventLevelableComponent} to add as an option
-     * @param clazz                   The {@link Event} class that the component is being registered against
-     * @param priority                The priority of this component (starts at 0 and goes up from there).
+     * @param event The {@link Event} to check.
+     * @return {@code true} if the provided {@link Event} can be used to provide experience to this skill.
      */
-    public void addLevelableComponent(@NotNull EventLevelableComponent eventLevelableComponent, @NotNull Class<? extends Event> clazz,
-                                      int priority) {
-        List<EventLevelableComponentAttribute> newAttributes = getLevelableComponents(clazz);
-        newAttributes.add(new EventLevelableComponentAttribute(eventLevelableComponent, clazz, priority));
-        levelingAttributes.put(clazz, newAttributes);
-        sortLevelingComponents();
-    }
+    boolean canEventLevelSkill(@NotNull Event event);
 
-    /**
-     * Sorts the leveling components based on priority.
-     */
-    private void sortLevelingComponents() {
-        for (Class<? extends Event> clazz : levelingAttributes.keySet()) {
-            List<EventLevelableComponentAttribute> attributes = getLevelableComponents(clazz);
-            attributes.sort(Comparator.comparingInt(EventLevelableComponentAttribute::priority));
-        }
-    }
 }

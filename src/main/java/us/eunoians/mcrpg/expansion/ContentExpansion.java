@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.expansion;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 
@@ -39,4 +40,7 @@ public abstract class ContentExpansion {
      */
     @NotNull
     public abstract Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent();
+
+    @NotNull
+    public abstract String getExpansionName(@NotNull McRPGPlayer player);
 }

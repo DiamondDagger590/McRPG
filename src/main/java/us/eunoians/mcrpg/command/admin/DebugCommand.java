@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.command.admin;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -15,6 +16,7 @@ import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;
 
@@ -24,7 +26,7 @@ import java.util.Optional;
 public class DebugCommand {
 
     public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMMAND).getCommandManager();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
@@ -39,7 +41,7 @@ public class DebugCommand {
                             BukkitAudiences adventure = McRPG.getInstance().getAdventure();
                             Audience senderAudience = adventure.sender(player);
 
-                            Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(player.getUniqueId());
+                            Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(player.getUniqueId());
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
                                 senderAudience.sendMessage(miniMessage.deserialize(String.format("<gray>Printing debug information for player <gold>%s", player.getDisplayName())));
                                 senderAudience.sendMessage(miniMessage.deserialize(String.format("<gray>Upgrade Points: <gold>%s", skillHolder.getUpgradePoints())));

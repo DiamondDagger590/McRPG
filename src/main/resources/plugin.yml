@@ -4,4 +4,4 @@ author: Eunoians
 description: A RPG plugin for 1.21
 main: us.eunoians.mcrpg.McRPG
 api-version: 1.21
-soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO, Geyser, Apollo-Bukkit]
+soft-depend: [PlaceholderAPI, WorldGuard, NoCheatPlus, mcMMO, Geyser, Apollo-Bukkit, Lands]

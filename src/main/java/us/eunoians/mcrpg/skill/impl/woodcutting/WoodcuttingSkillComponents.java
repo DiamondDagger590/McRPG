@@ -24,7 +24,7 @@ public class WoodcuttingSkillComponents {
             player.getEquipment();
             ItemStack heldItem = player.getEquipment().getItemInMainHand();
 
-            //TODO pull from config
+            //TODO https://github.com/DiamondDagger590/McRPG/issues/117
             double expToAward = 1000;
 
             return (int) expToAward;
@@ -47,6 +47,7 @@ public class WoodcuttingSkillComponents {
 
                 player.getEquipment();
                 ItemStack heldItem = player.getEquipment().getItemInMainHand();
+                // TODO https://github.com/DiamondDagger590/McRPG/issues/117
                 return heldItem.getType().name().contains("_AXE");
             }
             return false;

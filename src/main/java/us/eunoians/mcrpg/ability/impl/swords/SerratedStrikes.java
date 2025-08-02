@@ -1,39 +1,46 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
-import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ABILITY_DURATION;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ACTIVATION_CHANCE_INCREASE;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
 
 /**
  * This ability activates by attacking an enemy after readying the user's sword. The ability
  * increases the activation rate of {@link Bleed} while active.
  */
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, SkillAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
@@ -55,7 +62,13 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.SERRATED_STRIKES_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -65,36 +78,15 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Swords.SWORDS_KEY);
+    public NamespacedKey getSkillKey() {
+        return Swords.SWORDS_KEY;
     }
 
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("serrated_strikes");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Ready your sword and attack an enemy to increase Bleed activation chance.",
-                "<gray>Duration: <gold>" + getDuration(currentTier),
-                "<gray>Activation Chance Increase: <gold>" + getBoostToBleedActivation(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Serrated Strikes";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.STONE_SWORD);
+    public String getDatabaseName() {
+        return "serrated_strikes";
     }
 
     @Override
@@ -159,5 +151,16 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableActiveAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        int tier = getCurrentAbilityTier(player.asSkillHolder());
+        placeholders.put(ABILITY_DURATION.getKey(), Integer.toString(getDuration(tier)));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(ACTIVATION_CHANCE_INCREASE.getKey(), McRPGMethods.getChanceNumberFormat().format(getBoostToBleedActivation(tier)));
+        return placeholders;
     }
 }

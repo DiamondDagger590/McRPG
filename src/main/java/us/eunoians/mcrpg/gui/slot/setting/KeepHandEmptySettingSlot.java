@@ -1,49 +1,44 @@
 package us.eunoians.mcrpg.gui.slot.setting;
 
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 
-import java.util.List;
-
 /**
- * A {@link PlayerSettingSlot} that displays {@link KeepHandEmptySetting}s.
+ * A {@link McRPGSettingSlot} that displays {@link KeepHandEmptySetting}s.
  */
-public class KeepHandEmptySettingSlot extends PlayerSettingSlot<KeepHandEmptySetting> {
+public class KeepHandEmptySettingSlot extends McRPGSettingSlot<KeepHandEmptySetting> {
 
     public KeepHandEmptySettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull KeepHandEmptySetting setting) {
         super(mcRPGPlayer, setting);
     }
 
-    // TODO make this configurable before verum kills u
     @NotNull
     @Override
-    public ItemStack getItem() {
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         switch (getSetting()) {
             case ENABLED -> {
-                ItemStack itemStack = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.displayName(miniMessage.deserialize("<gold>Keep Hand Empty"));
-                itemMeta.lore(List.of(miniMessage.deserialize("<gray>Status: <green>Enabled</green>."), miniMessage.deserialize("<gray>Prevents picked up items from going into your hand if it is empty."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this setting.")));
-                itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_ENABLED_DISPLAY_ITEM));
             }
             case DISABLED -> {
-                ItemStack itemStack = new ItemStack(Material.RED_STAINED_GLASS_PANE);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.displayName(miniMessage.deserialize("<gold>Keep Hand Empty"));
-                itemMeta.lore(List.of(miniMessage.deserialize("<gray>Status: <red>Disabled</red>."), miniMessage.deserialize("<gray>Lets picked up items go into your hand."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this setting.")));
-                itemStack.setItemMeta(itemMeta);
-                return itemStack;
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_DISABLED_DISPLAY_ITEM));
             }
             default -> {
-                return new ItemStack(Material.AIR);
+                return ItemBuilder.from(new ItemStack(Material.AIR));
             }
         }
     }

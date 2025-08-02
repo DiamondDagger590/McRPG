@@ -1,7 +1,8 @@
 package us.eunoians.mcrpg.ability.impl.woodcutting;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
-import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Location;
@@ -11,23 +12,26 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.event.ability.woodcutting.DryadsGiftActivateEvent;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.woodcutting.DryadsGiftActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +39,8 @@ import java.util.stream.Collectors;
  * Dryads Gift is a {@link Woodcutting} ability that activates whenever a player breaks
  * wood. Whenever the ability activates, vanilla experience is dropped.
  */
-public class DryadsGift extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public class DryadsGift extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
+        ReloadableContentAbility, SkillAbility {
 
     public static final NamespacedKey DRYADS_GIFT_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "dryads_gift");
 
@@ -64,34 +69,14 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Woodcutting.WOODCUTTING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Woodcutting.WOODCUTTING_KEY;
     }
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("dryads_gift");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Has a chance to drop experience when breaking wood",
-                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Dryad's Gift";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.OAK_SAPLING, 1);
+    public String getDatabaseName() {
+        return "dryads_gift";
     }
 
     @Override
@@ -123,7 +108,13 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.DRYADS_GIFT_DISPLAY_ITEM_HEADER;
     }
 
     /**
@@ -168,5 +159,16 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
      */
     public boolean isBlockValid(@NotNull Block block) {
         return VALID_BLOCK_TYPES.getContent().contains(block.getType());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.EXPERIENCE_DROPPED.getKey(),
+                Integer.toString(getExperienceToDrop(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

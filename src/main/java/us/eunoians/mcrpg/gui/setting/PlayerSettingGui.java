@@ -1,0 +1,167 @@
+package us.eunoians.mcrpg.gui.setting;
+
+import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.McRPGSetting;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * This gui is used to display all {@link PlayerSetting}s to a player.
+ */
+public class PlayerSettingGui extends McRPGPaginatedGui {
+
+    private static final int SETTING_DISPLAY_SIZE = 18;
+    private static final int NAVIGATION_ROW_START_INDEX = SETTING_DISPLAY_SIZE;
+    private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
+    private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
+
+    private final Player player;
+    private final McRPG plugin;
+
+    public PlayerSettingGui(@NotNull McRPGPlayer mcRPGPlayer) {
+        super(mcRPGPlayer);
+        Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
+        if (playerOptional.isEmpty()) {
+            throw new CorePlayerOfflineException(mcRPGPlayer);
+        }
+        this.player = playerOptional.get();
+        this.plugin = mcRPGPlayer.getPlugin();
+    }
+
+    @NotNull
+    @Override
+    protected Inventory getInventoryForPage(int i) {
+        return Bukkit.createInventory(getPlayer(), 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.PLAYER_SETTINGS_GUI_TITLE));
+    }
+
+    @Override
+    protected void paintInventoryForPage(@NotNull Inventory inventory, int page) {
+        paintNavigationBar(page);
+        paintSettings(page);
+    }
+
+    /**
+     * Paints the settings for a given page.
+     *
+     * @param page The page to paint the settings for.
+     */
+    private void paintSettings(int page) {
+        List<McRPGSetting> settings = getSettingsForPage(page);
+
+        for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+            if (i < settings.size()) {
+                setSlot(i, settings.get(i).getSettingSlot(getCreatingPlayer()));
+            } else {
+                removeSlot(i);
+            }
+        }
+    }
+
+    /**
+     * Paints the navigation bar for a given page.
+     *
+     * @param page The page to paint.
+     */
+    private void paintNavigationBar(int page) {
+        // Paint the nav bar with filler glass
+        Slot<McRPGPlayer> fillerItem = getFillerItemSlot();
+        for (int i = 0; i < 9; i++) {
+            setSlot(NAVIGATION_ROW_START_INDEX + i, fillerItem);
+        }
+        // If the page is not the first page, then we need to put a previous arrow button
+        if (page > 1) {
+            setSlot(PREVIOUS_PAGE_SLOT_INDEX, getPreviousPageSlot());
+        }
+        // If the page is not the max page, then we need to put a next arrow button
+        if (page < getMaximumPage()) {
+            setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
+        }
+    }
+
+    @Override
+    public int getMaximumPage() {
+        return (int) Math.max(1, Math.ceil((double) getSettings().size() / getNavigationRowStartIndex()));
+    }
+
+    @Override
+    public void registerListeners() {
+        Bukkit.getPluginManager().registerEvents(this, McRPG.getInstance());
+    }
+
+    @Override
+    public void unregisterListeners() {
+        InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    /**
+     * Gets a {@link List} of all {@link PlayerSetting}s to be displayed.
+     *
+     * @return A {@link List} of all {@link PlayerSetting}s to be displayed.
+     */
+    @NotNull
+    public List<McRPGSetting> getSettings() {
+        return getCreatingPlayer().getPlayerSettings()
+                .stream()
+                .sorted(Comparator.comparing(PlayerSetting::getSettingKey))
+                .toList();
+    }
+
+    /**
+     * Gets a partial {@link List} of {@link PlayerSetting}s, containing only the ones that
+     * should be displayed for the provided page.
+     *
+     * @param page The page to get the partial list for.
+     * @return A partial {@link List} of {@link PlayerSetting}s, containing only the ones
+     * that should be displayed for the provided page.
+     */
+    @NotNull
+    public List<McRPGSetting> getSettingsForPage(int page) {
+        // Get the abilities that need to be displayed on this page
+        List<McRPGSetting> settings = getSettings();
+        int startRange = ((page - 1) * getNavigationRowStartIndex());
+        int endRange = Math.min(settings.size(), page * getNavigationRowStartIndex());
+        return settings.subList(startRange, endRange);
+    }
+
+    /**
+     * Gets the inventory index for the navigation row to start.
+     * <p>
+     * If an inventory is size {@code 54}, then to have a one row navigation bar, this
+     * should return {@code 45} as an example.
+     * <p>
+     * This value is also used to determine the amount of pages to be displayed.
+     *
+     * @return The inventory index for the navigation row to start.
+     */
+    public int getNavigationRowStartIndex() {
+        return NAVIGATION_ROW_START_INDEX;
+    }
+
+    /**
+     * Gets the {@link Player} who is viewing their settings.
+     *
+     * @return The {@link Player} who is viewing their settings.
+     */
+    @NotNull
+    public Player getPlayer() {
+        return player;
+    }
+}

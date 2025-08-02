@@ -8,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 public class AbilityCooldownAttribute extends OptionalSavingAbilityAttribute<Long> {
 
     AbilityCooldownAttribute() {
-        super("cooldown", AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
+        super("cooldown", AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
     }
 
     public AbilityCooldownAttribute(@NotNull Long content) {
-        super("cooldown", AbilityAttributeManager.ABILITY_COOLDOWN_ATTRIBUTE_KEY, content);
+        super("cooldown", AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY, content);
     }
 
     /**
@@ -45,7 +45,7 @@ public class AbilityCooldownAttribute extends OptionalSavingAbilityAttribute<Lon
      * Gets the default content value for this attribute. This should be considered the "default state" for this attribute, such
      * as a tier defaulting to 0.
      * <p>
-     * The largest use case for this is populating {@link AbilityAttributeManager} with initial instances of this class, which can then
+     * The largest use case for this is populating {@link AbilityAttributeRegistry} with initial instances of this class, which can then
      * be built on using {@link #create(Long)}.
      *
      * @return {@code 0} as a {@link Long}.

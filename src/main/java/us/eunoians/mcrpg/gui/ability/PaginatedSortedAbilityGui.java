@@ -8,8 +8,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,16 +30,15 @@ import java.util.Set;
  * This gui also assumes that there will be a 'navigation bar' for pagination, however specific navigation
  * bar implementation is left to be implemented by individual guis.
  */
-public abstract class PaginatedSortedAbilityGui extends PaginatedGui implements SortableAbilityGui {
+public abstract class PaginatedSortedAbilityGui extends McRPGPaginatedGui implements SortableAbilityGui {
 
     private final Map<AbilitySortType, List<Ability>> cachedSorts;
     private LinkedNode<AbilitySortType> sortTypeNode;
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Player player;
 
     public PaginatedSortedAbilityGui(@NotNull McRPGPlayer mcRPGPlayer) {
-        this.mcRPGPlayer = mcRPGPlayer;
+        super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);
@@ -45,16 +46,6 @@ public abstract class PaginatedSortedAbilityGui extends PaginatedGui implements 
         this.player = playerOptional.get();
         this.cachedSorts = new HashMap<>();
         this.sortTypeNode = AbilitySortType.getFirstSortType();
-    }
-
-    /**
-     * Get the {@link McRPGPlayer} who is viewing their abilities.
-     *
-     * @return The {@link McRPGPlayer} who is viewing their abilities.
-     */
-    @NotNull
-    public McRPGPlayer getMcRPGPlayer() {
-        return mcRPGPlayer;
     }
 
     /**
@@ -83,11 +74,11 @@ public abstract class PaginatedSortedAbilityGui extends PaginatedGui implements 
         } else {
             abilities = getUnsortedAbilities()
                     .stream()
-                    .map(namespacedKey -> McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(namespacedKey)).toList();
-            abilities = sortType.filter(mcRPGPlayer, abilities);
+                    .map(namespacedKey -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey)).toList();
+            abilities = sortType.filter(getCreatingPlayer(), abilities);
             abilities = abilities
                     .stream()
-                    .sorted(sortType.getAbilityComparator())
+                    .sorted(sortType.getAbilityComparator(getCreatingPlayer()))
                     .toList();
             cachedSorts.put(sortType, abilities);
         }

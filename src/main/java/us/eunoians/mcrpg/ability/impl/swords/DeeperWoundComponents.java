@@ -5,8 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
-import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.swords.BleedActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Random;
 
@@ -22,7 +23,7 @@ public class DeeperWoundComponents {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof BleedActivateEvent bleedActivateEvent && !bleedActivateEvent.isCancelled()) {
-                AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+                AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
                 DeeperWound deeperWound = (DeeperWound) abilityRegistry.getRegisteredAbility(DeeperWound.DEEPER_WOUND_KEY);
                 double activationChance = deeperWound.getActivationChance(deeperWound.getCurrentAbilityTier(abilityHolder));
                 return bleedActivateEvent.getAbilityHolder().equals(abilityHolder) && activationChance * 1000 > RANDOM.nextInt(100000);

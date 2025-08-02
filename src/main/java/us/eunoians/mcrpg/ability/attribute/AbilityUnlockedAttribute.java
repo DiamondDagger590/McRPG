@@ -8,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 public class AbilityUnlockedAttribute extends OptionalSavingAbilityAttribute<Boolean> {
 
     AbilityUnlockedAttribute() {
-        super("unlocked", AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE);
+        super("unlocked", AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE);
     }
 
     public AbilityUnlockedAttribute(@NotNull Boolean content) {
-        super("unlocked", AbilityAttributeManager.ABILITY_UNLOCKED_ATTRIBUTE, content);
+        super("unlocked", AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE, content);
     }
 
     @NotNull

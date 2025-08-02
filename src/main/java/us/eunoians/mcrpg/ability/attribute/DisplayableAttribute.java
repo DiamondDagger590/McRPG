@@ -11,12 +11,14 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface DisplayableAttribute {
 
-
     /**
      * Gets the display name for this attribute to use when displaying information to the player
      *
      * @return The display name for this attribute to use when displaying information to the player
      */
     @NotNull
-    String getDisplayName();
+    String getPlaceholderName();
+
+    @NotNull
+    String getDisplayableContent();
 }

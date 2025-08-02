@@ -1,18 +1,22 @@
 package us.eunoians.mcrpg.loadout;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.google.common.collect.ImmutableSet;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
-import us.eunoians.mcrpg.ability.impl.ActiveAbility;
-import us.eunoians.mcrpg.ability.impl.UnlockableAbility;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.exception.loadout.LoadoutAlreadyHasActiveAbilityException;
 import us.eunoians.mcrpg.exception.loadout.LoadoutMaxSizeExceededException;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -138,17 +142,17 @@ public final class Loadout {
      */
     // TODO this shit broken
     public boolean canAbilityBeInLoadout(@NotNull NamespacedKey key) {
-        Ability ability = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(key);
+        Ability ability = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(key);
         // Check if it's a default ability
         if (!(ability instanceof UnlockableAbility unlockableAbility)) {
             return false;
         }
         for (NamespacedKey abilityKey : abilities) {
-            if (ability instanceof ActiveAbility && ability.getSkill().isPresent()) {
-                NamespacedKey skillKey = ability.getSkill().get();
-                Ability abilityInLoadout = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(abilityKey);
+            if (ability instanceof ActiveAbility && ability instanceof SkillAbility skillAbility) {
+                NamespacedKey skillKey = skillAbility.getSkillKey();
+                Ability abilityInLoadout = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey);
                 // Check for active abilities in the same skill
-                if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout.getSkill().isPresent() && abilityInLoadout.getSkill().get().equals(skillKey)) {
+                if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout instanceof SkillAbility skillAbilityInLoadout && skillAbilityInLoadout.getSkillKey().equals(skillKey)) {
                     return false;
                 }
             }
@@ -225,7 +229,7 @@ public final class Loadout {
      * @return The maximum size of a loadout.
      */
     private int getMaxLoadoutSize() {
-        return McRPG.getInstance().getFileManager().getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_SIZE);
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_SIZE);
     }
 
     /**

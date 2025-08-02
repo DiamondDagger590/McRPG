@@ -1,35 +1,38 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
-import us.eunoians.mcrpg.event.ability.mining.ItsATripleActivateEvent;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
+import us.eunoians.mcrpg.event.ability.mining.ItsATripleActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * This is a passive ability that has a chance to activate when {@link ExtraOre} activates,
  * turning the double drop into a triple drop.
  */
-public final class ItsATriple extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility {
+public final class ItsATriple extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, SkillAbility {
 
     public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "its_a_triple");
 
@@ -46,34 +49,14 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Mining.MINING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Mining.MINING_KEY;
     }
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("its_a_triple");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Has a chance to change doubled drops from Extra Ore to triple drops",
-                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "It's A Triple";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.DIAMOND, 3);
+    public String getDatabaseName() {
+        return "its_a_triple";
     }
 
     @Override
@@ -105,7 +88,13 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.ITS_A_TRIPLE_DISPLAY_ITEM_HEADER;
     }
 
     public double getActivationChance(int tier) {
@@ -116,5 +105,14 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableTierableAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

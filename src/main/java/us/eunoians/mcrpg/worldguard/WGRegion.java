@@ -18,7 +18,7 @@ public class WGRegion {
 //
 //    public WGRegion(String key) {
 //
-//        FileConfiguration config = McRPG.getInstance().getFileManager().getFile(FileManager.Files.WORLDGUARD_CONFIG);
+//        FileConfiguration config = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileManager.Files.WORLDGUARD_CONFIG);
 //        expMultiplier = config.getDouble(key + "RegionExpMultiplier");
 //        enterExpressions = config.getStringList(key + "McRPGLimiters.BanEntry");
 //        List<String> actionExpressions = config.getStringList(key + "McRPGLimiters.BanAction");

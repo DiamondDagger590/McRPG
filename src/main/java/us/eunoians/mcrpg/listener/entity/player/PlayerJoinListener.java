@@ -7,7 +7,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.task.McRPGPlayerLoadTask;
+import us.eunoians.mcrpg.task.player.McRPGPlayerLoadTask;
 
 /**
  * Starts the {@link McRPGPlayerLoadTask} to load in the player

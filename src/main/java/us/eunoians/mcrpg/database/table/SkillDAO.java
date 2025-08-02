@@ -8,11 +8,12 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
-import us.eunoians.mcrpg.ability.attribute.AbilityAttributeManager;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.OptionalSavingAbilityAttribute;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 
@@ -75,7 +76,7 @@ public class SkillDAO {
                     "(" +
                     "`player_uuid` varchar(36) NOT NULL," +
                     "`skill_id` varchar(32) NOT NULL," +
-                    "`current_level` int(11) NOT NULL DEFAULT 0," +
+                    "`current_level` int(11) NOT NULL DEFAULT 1," +
                     "`current_exp` int(11) NOT NULL DEFAULT 0," +
                     "PRIMARY KEY (`player_uuid`, `skill_id`)" +
                     ");")) {
@@ -161,11 +162,10 @@ public class SkillDAO {
     @NotNull
     public static SkillDataSnapshot getAllPlayerSkillInformation(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
         McRPG mcRPG = McRPG.getInstance();
-        SkillRegistry skillRegistry = mcRPG.getSkillRegistry();
-        if (!skillRegistry.isSkillRegistered(skillKey)) {
+        SkillRegistry skillRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL);
+        if (!skillRegistry.registered(skillKey)) {
             throw new SkillNotRegisteredException(skillKey);
         }
-
         return getAbilityAttributes(connection, uuid, getPlayerSkillLevelingData(connection, uuid, skillKey));
     }
 
@@ -238,8 +238,8 @@ public class SkillDAO {
      */
     @NotNull
     public static SkillDataSnapshot getAbilityAttributes(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
-        AbilityAttributeManager abilityAttributeManager = McRPG.getInstance().getAbilityAttributeManager();
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        AbilityAttributeRegistry abilityAttributeRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT key, value FROM " + ABILITY_ATTRIBUTE_TABLE_NAME + " WHERE player_uuid = ? AND ability_id = ?;")) {
             if (!abilityRegistry.doesSkillHaveAbilities(skillDataSnapshot.getSkillKey())) {
@@ -262,7 +262,7 @@ public class SkillDAO {
                         String attributeName = resultSet.getString("key");
                         String attributeValue = resultSet.getString("value");
 
-                        Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeManager.getAttribute(attributeName);
+                        Optional<AbilityAttribute<?>> attributeOptional = abilityAttributeRegistry.getAttribute(attributeName);
                         AbilityAttribute<?> returnValue;
 
                         if (attributeOptional.isPresent()) {
@@ -309,7 +309,7 @@ public class SkillDAO {
      */
     @NotNull
     public static List<PreparedStatement> savePlayerAbilityAttributes(@NotNull Connection connection, @NotNull SkillHolder skillHolder) {
-        return savePlayerAbilityAttributes(connection, skillHolder, McRPG.getInstance().getAbilityRegistry().getAllAbilities());
+        return savePlayerAbilityAttributes(connection, skillHolder, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getAllAbilities());
     }
 
     /**
@@ -325,8 +325,8 @@ public class SkillDAO {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         McRPG mcRPG = McRPG.getInstance();
         UUID playerUUID = skillHolder.getUUID();
-        AbilityRegistry abilityRegistry = mcRPG.getAbilityRegistry();
-        AbilityAttributeManager abilityAttributeManager = mcRPG.getAbilityAttributeManager();
+        AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
+        AbilityAttributeRegistry abilityAttributeRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         try {
             for (NamespacedKey abilityKey : abilityKeys) {
                 Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(abilityKey);
@@ -375,7 +375,7 @@ public class SkillDAO {
     @NotNull
     public static List<PreparedStatement> savePlayerSkillData(@NotNull Connection connection, @NotNull SkillHolder skillHolder) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
-        for (Skill skill : McRPG.getInstance().getSkillRegistry().getRegisteredSkills()) {
+        for (Skill skill : McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkills()) {
             preparedStatements.addAll(savePlayerSkillData(connection, skillHolder, skill.getSkillKey()));
         }
         return preparedStatements;
@@ -397,7 +397,7 @@ public class SkillDAO {
             skillDataStatement.setString(1, skillHolder.getUUID().toString());
             PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?");
             deleteStatement.setString(1, skillHolder.getUUID().toString());
-            SkillRegistry skillRegistry = McRPG.getInstance().getSkillRegistry();
+            SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
             Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skillKey);
             if (skillHolderDataOptional.isPresent()) {
                 SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();

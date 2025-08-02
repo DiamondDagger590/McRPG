@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.skill.impl.swords;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -14,10 +14,15 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.component.OnAttackLevelableComponent;
+import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
 /**
  * A collection of all {@link us.eunoians.mcrpg.skill.component.EventLevelableComponent}s used for the
@@ -25,7 +30,6 @@ import java.util.Map;
  */
 public class SwordsSkillComponents {
 
-    private static final Map<Material, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
     private static final Map<EntityType, Route> ENTITY_TYPE_EXPERIENCE_ROUTE_MAP = new HashMap<>();
 
     public static final SwordsLevelOnAttackComponent SWORDS_LEVEL_ON_ATTACK_COMPONENT = new SwordsLevelOnAttackComponent();
@@ -34,13 +38,17 @@ public class SwordsSkillComponents {
 
         @Override
         public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
+            McRPG mcRPG = McRPG.getInstance();
             EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast since can only be called after checks are done
+            Swords swords = (Swords) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(Swords.SWORDS_KEY);
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
             double damage = entityDamageByEntityEvent.getFinalDamage();
+            int baseExperience = (int) (getDamageToAwardExperienceFor(entityDamageByEntityEvent) * getBaseExperienceForEntity(skillHolder, damaged));
+            EntityDamageContext entityDamageContext = new EntityDamageContext(skillHolder, swords, baseExperience, entityDamageByEntityEvent);
 
             if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
-                return (int) ((damage * getExperienceForMob(damaged.getType())) * getMaterialBonus(livingDamager.getEquipment().getItemInMainHand().getType()));
+                return (int) (baseExperience * McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).calculateModifierForContext(entityDamageContext));
             }
 
             return 0;
@@ -69,20 +77,14 @@ public class SwordsSkillComponents {
             return false;
         }
 
-        private double getMaterialBonus(@NotNull Material material) {
-            // Cache so we don't constantly rebuild routes (especially if players are spam clicking or smth)
-            if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(material)) {
-                MATERIAL_BONUS_ROUTE_MAP.put(material, Route.addTo(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, material.toString()));
-            }
-            YamlDocument swordsFile = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
-            return swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(material), 1.0d);
-        }
-
-        private int getExperienceForMob(@NotNull EntityType entityType) {
+        @Override
+        public int getBaseExperienceForEntity(@NotNull SkillHolder skillHolder, @NotNull Entity attackedEntity) {
+            EntityType entityType = attackedEntity.getType();
+            // TODO https://github.com/DiamondDagger590/McRPG/issues/117
             if (!ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.containsKey(entityType)) {
-                ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.put(entityType, Route.addTo(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, entityType.toString()));
+                ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.put(entityType, Route.fromString(toRoutePath(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, entityType.toString())));
             }
-            YamlDocument swordsFile = McRPG.getInstance().getFileManager().getFile(FileType.SWORDS_CONFIG);
+            YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
             return swordsFile.getInt(ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.get(entityType), 0);
         }
     }

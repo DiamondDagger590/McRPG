@@ -37,7 +37,6 @@ repositories {
     mavenLocal()
 
     maven("https://jitpack.io")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
     maven("https://maven.enginehub.org/repo/") //WorldGuard
     maven("https://nexus.wesjd.net/repository/thirdparty/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -45,6 +44,7 @@ repositories {
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven("https://repo.opencollab.dev/main/")
     maven("https://repo.lunarclient.dev") //Lunar client
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
 
     //Spigot
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -52,7 +52,6 @@ repositories {
     maven("https://repo.md-5.net/content/repositories/snapshots/")
     maven("https://repo.md-5.net/content/repositories/releases/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots")
-
 
 }
 
@@ -62,21 +61,17 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val mccoreVersion = "1.0.0.10-SNAPSHOT"
+    val mccoreVersion = "1.0.0.16-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
 
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
-    val glowingEntitiesVersion = "1.4.2"
+    val glowingEntitiesVersion = "1.4.5"
     implementation("fr.skytasul:glowingentities:$glowingEntitiesVersion")
 
     val customBlockDataVersion = "2.2.2"
     implementation("com.jeff-media:custom-block-data:$customBlockDataVersion")
-
-    val placeholderAPIVersion = "2.11.6"
-    compileOnly("me.clip:placeholderapi:$placeholderAPIVersion")
-    testImplementation("me.clip:placeholderapi:$placeholderAPIVersion")
 
     val worldGuardVersion = "7.0.7"
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:$worldGuardVersion")
@@ -84,8 +79,11 @@ dependencies {
     val geyserVersion = "2.4.2-SNAPSHOT"
     compileOnly("org.geysermc.geyser:api:$geyserVersion")
 
-    val apolloVersion = "1.1.5"
+    val apolloVersion = "1.1.8"
     compileOnly("com.lunarclient:apollo-api:$apolloVersion")
+
+    val landsVersion = "7.10.13"
+    compileOnly("com.github.angeschossen:LandsAPI:$landsVersion")
 
     // Test deps
     val mockBukkitVersion = "3.80.0"

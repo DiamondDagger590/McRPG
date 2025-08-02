@@ -29,6 +29,8 @@ public class ContentPackFailedProcessingException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return String.format("A Content Pack from the %s expansion was unable to be registered. A likely cause is a developer forgot to register a ContentHandler for this content pack.", contentPack.getContentExpansion().getExpansionKey());
+        return String.format("A Content Pack %s from the %s expansion was unable to be registered. A likely cause is a developer forgot to register a ContentHandler for this content pack.",
+                contentPack.getClass().getName(),
+                contentPack.getContentExpansion().getExpansionKey());
     }
 }

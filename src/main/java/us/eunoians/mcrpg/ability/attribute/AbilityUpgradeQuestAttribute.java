@@ -13,11 +13,11 @@ public class AbilityUpgradeQuestAttribute extends OptionalSavingAbilityAttribute
     private static final UUID DEFAULT_UUID = UUID.fromString("b94b32a4-09e8-4378-905b-0df7805916c1");
 
     AbilityUpgradeQuestAttribute() {
-        super("quest", AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE);
+        super("quest", AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
     }
 
     public AbilityUpgradeQuestAttribute(@NotNull UUID content) {
-        super("quest", AbilityAttributeManager.ABILITY_QUEST_ATTRIBUTE, content);
+        super("quest", AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE, content);
     }
 
     @NotNull

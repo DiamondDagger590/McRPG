@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.listener.entity.player;
 
-import com.diamonddagger590.mccore.player.PlayerManager;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Item;
@@ -14,9 +15,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.DenySlotSetting;
-import us.eunoians.mcrpg.setting.PlayerSetting;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,10 +31,10 @@ public class PlayerPickupItemListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerPickupItem(@NotNull EntityPickupItemEvent event) {
-        PlayerManager playerManager = McRPG.getInstance().getPlayerManager();
+        McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
         if (event.getEntity() instanceof Player player
-                && playerManager.getPlayer(player.getUniqueId()).isPresent()
-                && playerManager.getPlayer(player.getUniqueId()).get() instanceof McRPGPlayer mcRPGPlayer) {
+                && playerManager.getPlayer(player.getUniqueId()).isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerManager.getPlayer(player.getUniqueId()).get();
             Set<Integer> ignoredSlots = new HashSet<>();
             Inventory inventory = player.getInventory();
             // Populate ignored slots
@@ -130,8 +132,7 @@ public class PlayerPickupItemListener implements Listener {
                     // Deal with lodged projectiles
                     if (item instanceof Arrow arrow) {
                         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
-                    }
-                    else if (item instanceof Trident trident) {
+                    } else if (item instanceof Trident trident) {
                         trident.setPickupStatus(Trident.PickupStatus.DISALLOWED);
                     }
                 }

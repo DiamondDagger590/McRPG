@@ -1,22 +1,17 @@
 package us.eunoians.mcrpg.ability.attribute;
 
-import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,11 +21,11 @@ import java.util.Optional;
 public class AbilityToggledOffAttribute extends OptionalSavingAbilityAttribute<Boolean> implements GuiModifiableAttribute {
 
     AbilityToggledOffAttribute() {
-        super("toggled", AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
+        super("toggled", AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
     }
 
     public AbilityToggledOffAttribute(@NotNull Boolean content) {
-        super("toggled", AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY, content);
+        super("toggled", AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY, content);
     }
 
     @NotNull
@@ -56,42 +51,29 @@ public class AbilityToggledOffAttribute extends OptionalSavingAbilityAttribute<B
         return getContent();
     }
 
-    @NotNull
-    @Override
-    public List<Component> getGuiLore(@NotNull McRPGPlayer player, @NotNull Ability ability) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        return List.of(miniMessage.deserialize(String.format("<gray>Ability is currently %s.</gray>", getContent() ? "<red>DISABLED</red>" : "<green>ENABLED</green>")),
-                miniMessage.deserialize(String.format("<gray>Click to %s this ability.", getContent() ? "<green>enable</green>" : "<red>disable</red>")));
-    }
-
     @Override
     @NotNull
-    public Slot getSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        return new Slot() {
+    public McRPGSlot getSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
+        return new McRPGSlot() {
             @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer1, @NotNull ClickType clickType) {
                 SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
                 skillHolder.getAbilityData(ability).ifPresent(abilityData -> {
-                    Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeManager.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
+                    Optional<AbilityAttribute<?>> abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
                     if (abilityAttributeOptional.isPresent() && abilityAttributeOptional.get() instanceof AbilityToggledOffAttribute toggledOffAttribute) {
                         AbilityToggledOffAttribute abilityToggledOffAttribute = new AbilityToggledOffAttribute(!toggledOffAttribute.getContent());
                         abilityData.addAttribute(abilityToggledOffAttribute);
                     }
                 });
-                CorePlugin.getInstance().getGuiTracker().getOpenedGui(corePlayer).ifPresent(Gui::refreshGUI);
+                mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer1).ifPresent(Gui::refreshGUI);
                 return true;
             }
 
             @NotNull
             @Override
-            public ItemStack getItem() {
-                MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-                ItemStack itemStack = new ItemStack(getContent() ? Material.REDSTONE_BLOCK : Material.EMERALD_BLOCK);
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                itemMeta.displayName(miniMessage.deserialize("<gold>Ability Toggle Status</gold>"));
-                itemMeta.lore(getGuiLore(mcRPGPlayer, ability));
-                itemStack.setItemMeta(itemMeta);
-                return itemStack;
+            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+                return ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                        .getLocalizedSection(getContent() ? LocalizationKey.ABILITY_TOGGLED_OFF_ATTRIBUTE_DISPLAY_ITEM : LocalizationKey.ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM));
             }
         };
     }

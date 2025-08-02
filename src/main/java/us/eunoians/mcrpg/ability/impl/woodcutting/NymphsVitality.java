@@ -1,38 +1,40 @@
 package us.eunoians.mcrpg.ability.impl.woodcutting;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
-import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.NymphsVitalityActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +42,8 @@ import java.util.stream.Collectors;
  * Nymphs Vitality is an ability that prevents players from losing hunger in a wooded biome
  * and lets players regain hunger up to a certain point as they move in a wooded biome.
  */
-public class NymphsVitality extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public class NymphsVitality extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
+        ReloadableContentAbility, SkillAbility {
 
     public static final NamespacedKey NYMPHS_VITALITY_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "nymphs_vitality");
 
@@ -79,32 +82,14 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Woodcutting.WOODCUTTING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Woodcutting.WOODCUTTING_KEY;
     }
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("nymphs_vitality");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of("<gray>Will prevent your hunger from dropping past a certain point when in wooded biomes.");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Nymph's Vitality";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.ACACIA_SAPLING, 1);
+    public String getDatabaseName() {
+        return "nymphs_vitality";
     }
 
     @Override
@@ -148,7 +133,13 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
+        return getPlugin().registryAccess().registry(com.diamonddagger590.mccore.registry.RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.NYMPHS_VITALITY_DISPLAY_ITEM_HEADER;
     }
 
     /**
@@ -180,5 +171,14 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @Override
     public Set<ReloadableContent<?>> getReloadableContent() {
         return Set.of(VALID_BIOMES);
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.MINIMUM_HUNGER.getKey(),
+                Integer.toString(getMinimumHunger(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

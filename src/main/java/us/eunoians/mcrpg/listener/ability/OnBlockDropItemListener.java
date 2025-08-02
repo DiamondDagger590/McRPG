@@ -1,20 +1,22 @@
 package us.eunoians.mcrpg.listener.ability;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.impl.DropMultiplierAbility;
+import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 public class OnBlockDropItemListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void handleDropItem(BlockDropItemEvent blockDropItemEvent) {
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         abilityRegistry.getAllAbilities().stream()
                 .map(abilityRegistry::getRegisteredAbility)
                 .filter(ability -> ability instanceof DropMultiplierAbility)
@@ -25,12 +27,9 @@ public class OnBlockDropItemListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void handleDropMultiplierEvent(BlockDropItemEvent blockDropItemEvent) {
         // Handle remote transfer (cuz she special)
-        AbilityRegistry abilityRegistry = McRPG.getInstance().getAbilityRegistry();
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         RemoteTransfer remoteTransfer = (RemoteTransfer) abilityRegistry.getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
-        var abilityHolderOptional = McRPG.getInstance().getEntityManager().getAbilityHolder(blockDropItemEvent.getPlayer().getUniqueId());
-        if (abilityHolderOptional.isPresent()) {
-            AbilityHolder abilityHolder = abilityHolderOptional.get();
-            remoteTransfer.activateAbility(abilityHolder, blockDropItemEvent);
-        }
+        var abilityHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(blockDropItemEvent.getPlayer().getUniqueId());
+        abilityHolderOptional.ifPresent(abilityHolder -> remoteTransfer.activateAbility(abilityHolder, blockDropItemEvent));
     }
 }

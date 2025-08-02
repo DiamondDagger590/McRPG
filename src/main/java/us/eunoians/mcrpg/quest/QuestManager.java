@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.quest;
 
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.exception.quest.QuestNotActiveException;
 
@@ -12,13 +14,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public class QuestManager {
+public class QuestManager extends Manager<McRPG> {
 
     private final Map<UUID, Quest> activeQuests;
     private final Map<UUID, Set<UUID>> questsToHolders;
     private final Map<UUID, Set<UUID>> holdersToQuests;
 
-    public QuestManager() {
+    public QuestManager(@NotNull McRPG plugin) {
+        super(plugin);
         this.activeQuests = new HashMap<>();
         this.questsToHolders = new HashMap<>();
         this.holdersToQuests = new HashMap<>();

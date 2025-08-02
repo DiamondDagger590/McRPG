@@ -1,18 +1,16 @@
 package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
@@ -21,8 +19,10 @@ import us.eunoians.mcrpg.gui.slot.loadout.LoadoutAbilitySlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutHomeSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayHomeSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,7 +31,6 @@ import java.util.Set;
  */
 public class LoadoutGui extends PaginatedSortedAbilityGui {
 
-    private static final Slot FILLER_GLASS_SLOT;
     private static final int ABILITY_DISPLAY_SIZE = 18;
     private static final int NAVIGATION_ROW_START_INDEX = ABILITY_DISPLAY_SIZE;
     private static final int LOADOUT_SELECTION_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -39,28 +38,6 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
     private static final int LOADOUT_DISPLAY_EDIT_SLOT = NAVIGATION_ROW_START_INDEX + 8;
-
-    // Create static slots
-    static {
-        // Create filler glass
-        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
-        fillerGlassMeta.setDisplayName(" ");
-        fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new Slot() {
-
-            @Override
-            public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemStack getItem() {
-                return fillerGlass;
-            }
-        };
-    }
 
     private final Loadout loadout;
 
@@ -77,7 +54,10 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @NotNull
     @Override
     protected Inventory getInventoryForPage(int page) {
-        return Bukkit.createInventory(getPlayer(), 27, McRPG.getInstance().getMiniMessage().deserialize("<gold>Editing Loadout " + loadout.getLoadoutSlot()));
+        String loadoutName = loadout.getDisplay().getDisplayName().orElse(Integer.toString(loadout.getLoadoutSlot()));
+        return Bukkit.createInventory(getPlayer(), 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_GUI_TITLE, Map.of("loadout-name", loadoutName)));
     }
 
     @Override
@@ -97,9 +77,9 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         int totalLoadoutSize = loadout.getAbilities().size() + loadout.getRemainingLoadoutSize() - difference;
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedAbilities.size()) {
-                setSlot(i, new LoadoutAbilitySlot(getMcRPGPlayer(), loadout, sortedAbilities.get(i)));
+                setSlot(i, new LoadoutAbilitySlot(getCreatingPlayer(), loadout, sortedAbilities.get(i)));
             } else if (i < totalLoadoutSize) {
-                setSlot(i, new LoadoutAbilitySlot(getMcRPGPlayer(), loadout));
+                setSlot(i, new LoadoutAbilitySlot(getCreatingPlayer(), loadout));
             } else {
                 setSlot(i, new InvalidLoadoutSlot());
             }
@@ -109,20 +89,21 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @Override
     protected void paintNavigationBar(int page) {
         // Paint the nav bar with filler glass
+        Slot<McRPGPlayer> fillerSlot = getFillerItemSlot();
         for (int i = 0; i < 9; i++) {
-            setSlot(NAVIGATION_ROW_START_INDEX + i, FILLER_GLASS_SLOT);
+            setSlot(NAVIGATION_ROW_START_INDEX + i, fillerSlot);
         }
         // Set the back slot
-        setSlot(LOADOUT_SELECTION_SLOT_INDEX, new LoadoutHomeSlot(getMcRPGPlayer()));
+        setSlot(LOADOUT_SELECTION_SLOT_INDEX, new LoadoutHomeSlot(getCreatingPlayer()));
         // Set the sort slot
         setSlot(SORT_SLOT_INDEX, getAbilitySortNode().getNodeValue().getSlot());
         // If the page is not the first page, then we need to put a previous arrow button
         if (page > 1) {
-            setSlot(PREVIOUS_PAGE_SLOT_INDEX, PREVIOUS_PAGE_SLOT);
+            setSlot(PREVIOUS_PAGE_SLOT_INDEX, getPreviousPageSlot());
         }
         // If the page is not the max page, then we need to put a next arrow button
         if (page < getMaximumPage()) {
-            setSlot(NEXT_PAGE_SLOT_INDEX, NEXT_PAGE_SLOT);
+            setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
         // Set the toggle loadout slot
         setSlot(LOADOUT_DISPLAY_EDIT_SLOT, new LoadoutDisplayHomeSlot(getLoadout()));
@@ -140,6 +121,6 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
 
     @Override
     protected @NotNull Set<AbilitySortType> getSkippedSortTypes() {
-        return Set.of(AbilitySortType.DEFAULT_ABILITIES, AbilitySortType.UNLOCKED_ABILITIES, AbilitySortType.UPGRADEABLE_ABILITIES);
+        return Set.of(AbilitySortType.INNATE_ABILITIES, AbilitySortType.UNLOCKED_ABILITIES, AbilitySortType.UPGRADEABLE_ABILITIES);
     }
 }

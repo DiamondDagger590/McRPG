@@ -6,6 +6,9 @@ import us.eunoians.mcrpg.event.ability.mining.ExtraOreActivateEvent;
 
 import java.util.UUID;
 
+/**
+ * This listener handles activating any abilities that rely on the {@link ExtraOreActivateEvent}.
+ */
 public class OnExtraOreActivateListener implements AbilityListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

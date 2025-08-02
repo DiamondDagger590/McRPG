@@ -1,29 +1,26 @@
 package us.eunoians.mcrpg.gui.slot.home;
 
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.Gui;
-import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.player.CorePlayer;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.HomeGui;
-import us.eunoians.mcrpg.gui.PlayerSettingGui;
+import us.eunoians.mcrpg.gui.home.HomeGui;
+import us.eunoians.mcrpg.gui.setting.PlayerSettingGui;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 /**
  * This slot is used in the {@link HomeGui} to open a settings gui when clicked.
  */
-public class HomeSettingsSlot extends Slot {
+public class HomeSettingsSlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Player player;
@@ -38,28 +35,22 @@ public class HomeSettingsSlot extends Slot {
     }
 
     @Override
-    public boolean onClick(@NotNull CorePlayer corePlayer, @NotNull ClickType clickType) {
-        PlayerSettingGui playerSettingGui = new PlayerSettingGui(mcRPGPlayer, McRPG.getInstance());
-        McRPG.getInstance().getGuiTracker().trackPlayerGui(mcRPGPlayer, playerSettingGui);
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        PlayerSettingGui playerSettingGui = new PlayerSettingGui(mcRPGPlayer);
+        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, playerSettingGui);
         player.openInventory(playerSettingGui.getInventory());
         return true;
     }
 
     @NotNull
     @Override
-    public ItemStack getItem() {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta itemMeta = (SkullMeta) itemStack.getItemMeta();
-        itemMeta.setOwningPlayer(player);
-        itemMeta.displayName(miniMessage.deserialize("<red>Settings"));
-        itemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to edit your McRPG settings.")));
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_SETTINGS_SLOT_DISPLAY_ITEM));
     }
 
     @Override
-    public Set<Class<? extends Gui>> getValidGuiTypes() {
+    public Set<Class<?>> getValidGuiTypes() {
         return Set.of(HomeGui.class);
     }
 }

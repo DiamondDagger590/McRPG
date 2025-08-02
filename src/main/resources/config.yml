@@ -9,12 +9,14 @@ configuration:
   # What worlds should McRPG be disabled in
   disabled-worlds:
     - 'test'
-  # This is how often the plugin saves player data (async) in minutes
-  save-interval: 1
-  # What language file you want to use. Do not include the .yml
-  language-file: en
-  # If set to true, then players will not receive McRPG gameplay tips
-  disable-tips: false
+  # Configure the
+  save-task:
+    # This is how often the save task runs in seconds
+    frequency: 300
+  localization:
+    # Language support will go in the order of user's local language -> server default -> english
+    # User local language is determined by their minecraft client
+    server-default-locale: en
   # Configure all admin features
   admin:
     # If enabled, admins with the permission node 'mcrpg.ability.spy' will be alerted when abilities are unlocked and upgraded
@@ -22,9 +24,9 @@ configuration:
   # Modify various features for skill experience
   experience:
     # The maximum amount of damage allowed for giving experience. Any damage above this threshold will be ignored when calculating exp to award.
-    max-damage-cap-to-award-exp: 1000000
+    max-damage-cap-to-award-exp: 100
     # The maximum amount of exp multiplier that a player should be able to get from various exp modifiers when combined.
-    exp-multiplier-limit: 3.0
+    exp-multiplier-limit: 10.0
     # How much the experience gain should be modified if the target is blocking with a shield.
     shield-blocking-modifier: 0.5
     # Allows disabling of experience gain when taking damage from ender pearls.
@@ -33,13 +35,65 @@ configuration:
     boosted-experience:
       # When a player gains exp, this equation is factored in and if there is remaining boosted exp,
       # then it will add this equation value to the gained amount
-      usage-rate: '((gained_exp)*2.25)'
+      usage-rate: 2.25
+    # Rested Experience allows players to passively gain an experience boost.
+    # This experience boost is measured in Levels. So as an example, a player might have 1.2 Levels worth of Rested Experience.
+    # Rested Experience is relative in terms of how much experience it multiplies as a result.
+    # If a player needs 1000 experience to level up, then doubling an experience gain of 100 will consume 0.1 L=levels of Rested Experience.
+    # If a player needs 10000 experience to level up, then doubling an experience gain of 100 will consume 0.01 levels of Rested Experience.
+    rested-experience:
+      # How fast can a player accumulate rested experience. Time is measured in seconds
+      accumulation-rate: '0.00027*time'
+      # What should the multiplier be when using rested experience?
+      usage-rate: 3.0
+      # How many levels worth of rested experience can a player have at once
+      maximum-accumulation: 1.5
+      # This can be ENABLED, SAFE_ZONE, or DISABLED
+      # ENABLED: Allows accumulation of rested experience while online
+      # SAFE_ZONE: Only allow rested experience accumulation while online in a safe zone
+      # DISABLED: Don't allow accumulation of rested experience while online
+      allow-online-accumulation: SAFE_ZONE
+      # Configure the task that will give rested experience while players are online
+      online-accumulator-task:
+        # How often in seconds should the task run
+        frequency: 30
+      # Allow for faster accumulation to occur if a player is in a "safe zone"
+      safe-zone:
+        # Enables safe zone rested experience accumulation
+        allow-safe-zone-accumulation: true
+        # How fast can a player accumulate rested experience if they are in a safe zone? Time is measured in seconds
+        safe-zone-accumulation-rate: '0.00056*time'
+        # 3rd party plugin support for defining a safe zone.
+        # If a player is standing in a location such that multiple plugins can provide a definition for a "safe zone",
+        # then the final result will be the OR of all the valid plugins.
+        safe-zone-hooks:
+          # A WorldGuard region with the flag 'mcrpg-safe-zone' will be treated as a safe zone
+          # To set this flag, use the command '/rf flag'
+          world-guard:
+            # If WorldGuard support should be enabled
+            enabled: true
+          # Allows configuring the definition of a safe zone based on different land types.
+          lands:
+            # If a player owns the land they are standing in, will it count as a safe zone?
+            owned-lands: true
+            # If a player is trusted in the land they are standing in, will it count as a safe zone?
+            trusted-lands: true
+            # If a player is a tenant of the land they are standing in, will it count as a safe zone?
+            tenant-lands: true
+            # If a player is standing in any land, will it count as a safe zone?
+            any-lands: false
+            # If a player is not standing in any land, will it be counted as a safe zone?
+            wild-zone: false
     # Modify the exp worth of mobs from spawners and eggs
     modify-mob-spawn-experience:
-      # The multiplier to apply whenever a mob from spawners gives experience
-      spawner: 0.5
-      # The multiplier to apply whenever a mob from spawn eggs gives experience
-      spawn-eggs: 0.5
+      # The following format is SpawnReason: Modifier
+      # The spawn reason can be selected from any in the following list
+      # https://jd.papermc.io/paper/1.21.4/org/bukkit/event/entity/CreatureSpawnEvent.SpawnReason.html
+      # The modifier is how much experience gained should be multiplied by for that spawn reason.
+      # Please note the above link may be for an older version of Minecraft than the one you are using,
+      # make sure the version represents the version you are trying to use.
+      SPAWNER: 0.5
+      SPAWNER_EGG: 05
     # If when players redeem levels, should this reset the amount of exp needed to level up.
     # Ex) Player has gained 5,000 experience in Swords and uses a redeemable level. If this is enabled,
     # then the experience gained will be reset to 0 whenever the level is added. Otherwise, the 5,000 is kept.
@@ -51,31 +105,31 @@ configuration:
   # Configure various displays (scoreboard, actionbar, and bossbar) for McRPG
   display:
     # Configure displays for whenever experience is gained
-    exp-updates:
+    experience-updates:
       # If set to true, players will get a visual update whenever experience is gained (unless their setting disables this)
       enabled: true
-      # What type should the display be. Accepted values are: BOSSBAR, SCOREBOARD, or ACTIONBAR
+      # What type should the display be. Accepted values are: BOSSBAR or ACTIONBAR
       display-type: BOSSBAR
-      # Duration of the reminder in seconds. Only used for scoreboard and bossbar
-      display-duration: 3
+      # Configure additional attributes about a boss bar
+      boss-bar:
+        display-duration: 3
+        # Can be any value found here: https://javadoc.io/doc/net.kyori/adventure-api/4.1.0/net/kyori/adventure/bossbar/BossBar.Color.html
+        color: PURPLE
+        # Can be any value found here: https://javadoc.io/doc/net.kyori/adventure-api/4.1.0/net/kyori/adventure/bossbar/BossBar.Overlay.html
+        style: NOTCHED_10
+
   # Configure various gameplay mechanics
   gameplay:
     loadout:
       max-loadout-amount: 3
       max-loadout-size: 15
+      loadout-display-name-response-timeout: 10
     # If enabled, players will be required to have an empty off hand in order to ready their abilities
     require-empty-off-hand-to-ready: false
     # If enabled, then a player will not be able to gain experience past a certain level.
     # An example is if we set a player to have the permission 'mcrpg.swords.500'. This player would gain no exp past level 500 in swords
     # Use mcrpg.%skill%.%level% as the perm
     enable-level-up-permissions: false
-    # Configure the health bars that appear above mobs when they are attacked
-    mob-health-bar:
-      # If set to true, mobs will have a healthbar displaying their current health over their heads
-      # The type of display is configured per player in their player settings
-      enabled: true
-      # How long should the health bars be displayed for in seconds
-      health-bar-display-duration: 5
 
 # Configure McMMO integration
 mcmmo:

@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.exception.ability;
 
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 
 /**
  * This exception is fired whenever an {@link Event} is checked for activation,

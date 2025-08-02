@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.command.quest;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
@@ -15,18 +16,20 @@ import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.objective.BlockBreakQuestObjective;
 import us.eunoians.mcrpg.quest.objective.QuestObjective;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.UUID;
 
 public class TestQuestStartCommand {
 
         public static void registerCommand() {
-        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().getCommandManager().getCommandManager();
+        CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMMAND).getCommandManager();
         commandManager.command(commandManager.commandBuilder("quest").literal("start").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             Player player = (Player) commandSender;
-            QuestManager questManager = McRPG.getInstance().getQuestManager();
-            var questHolder = McRPG.getInstance().getEntityManager().getQuestHolder(player.getUniqueId());
+            QuestManager questManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
+            var questHolder = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getQuestHolder(player.getUniqueId());
             Quest quest = new Quest("test");
             BlockBreakQuestObjective objective1 = new BlockBreakQuestObjective(quest, 10);
             objective1.addAllowedBlocks(Material.GRASS_BLOCK);
@@ -48,8 +51,8 @@ public class TestQuestStartCommand {
                 audience.sendMessage(miniMessage.deserialize("<gray>Displaying all active quests:"));
                 audience.sendMessage(newline);
 
-                QuestManager questManager = McRPG.getInstance().getQuestManager();
-                QuestHolder questHolder = McRPG.getInstance().getEntityManager().getQuestHolder(player.getUniqueId()).get();
+                QuestManager questManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
+                QuestHolder questHolder = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getQuestHolder(player.getUniqueId()).get();
 
                 for (UUID questUUID : questHolder.getActiveQuests()) {
                     Quest quest = questManager.getActiveQuest(questUUID).get();

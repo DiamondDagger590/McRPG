@@ -1,34 +1,36 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableActiveAbility;
-import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
-import us.eunoians.mcrpg.event.ability.mining.OreScannerActivateEvent;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.mining.OreScannerActivateEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.task.glow.BlockRemoveGlowTask;
 import us.eunoians.mcrpg.task.glow.BlockStartGlowTask;
@@ -37,16 +39,18 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RANGE;
 
 /**
  * Ore Scanner is an active ability that will scan the blocks around the player, informing the player of
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
-public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility, ReloadableContentAbility {
+public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility, ReloadableContentAbility, SkillAbility {
 
     public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ore_scanner");
     private final ReloadableOreScannerBlocks ORE_SCANNER_BLOCK_TYPES = new ReloadableOreScannerBlocks(getYamlDocument(), MiningConfigFile.ORE_SCANNER_BLOCK_TYPES);
@@ -69,7 +73,13 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.MINING_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.ORE_SCANNER_DISPLAY_ITEM_HEADER;
     }
 
     @Override
@@ -79,32 +89,14 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Mining.MINING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Mining.MINING_KEY;
     }
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("ore_scanner");
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Ore Scanner";
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        return List.of();
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.DIAMOND_ORE);
+    public String getDatabaseName() {
+        return "ore_scanner";
     }
 
     @Override
@@ -228,5 +220,14 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
         return ConfigurableActiveAbility.super.getApplicableAttributes();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(RANGE.getKey(), Integer.toString(getRange(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        return placeholders;
     }
 }

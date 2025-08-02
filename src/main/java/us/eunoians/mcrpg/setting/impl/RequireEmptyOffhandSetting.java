@@ -1,12 +1,13 @@
 package us.eunoians.mcrpg.setting.impl;
 
+import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.setting.PlayerSettingSlot;
+import us.eunoians.mcrpg.gui.slot.setting.RequireEmptyOffhandSettingSlot;
 import us.eunoians.mcrpg.setting.McRPGSetting;
-import us.eunoians.mcrpg.setting.PlayerSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Arrays;
@@ -16,7 +17,7 @@ import java.util.Optional;
 
 /**
  * This setting allows players to require an empty offhand in order to ready their abilities.
- *
+ * <p>
  * This is useful as that way players don't get spammed with notifications as they try to place torches while holding a sword,
  * while still allowing players to disable the feature if they for example, want to hold food on their offhand while using unarmed.
  */
@@ -70,12 +71,12 @@ public enum RequireEmptyOffhandSetting implements McRPGSetting {
 
     @NotNull
     @Override
-    public PlayerSettingSlot<? extends PlayerSetting> getSettingSlot(@NotNull McRPGPlayer player) {
-        return null;
+    public RequireEmptyOffhandSettingSlot getSettingSlot(@NotNull McRPGPlayer player) {
+        return new RequireEmptyOffhandSettingSlot(player, this);
     }
 
     @Override
-    public void onSettingChange(@NotNull McRPGPlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
+    public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
         // No-op
     }
 

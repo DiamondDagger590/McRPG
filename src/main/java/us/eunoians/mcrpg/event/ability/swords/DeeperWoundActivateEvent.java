@@ -5,10 +5,11 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * This event is called whenever {@link DeeperWound} activates.
@@ -16,7 +17,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 public class DeeperWoundActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability DEEPER_WOUND = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(DeeperWound.DEEPER_WOUND_KEY);
+    private static final Ability DEEPER_WOUND = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(DeeperWound.DEEPER_WOUND_KEY);
 
     private final LivingEntity entity;
     private int additionalBleedCycles;

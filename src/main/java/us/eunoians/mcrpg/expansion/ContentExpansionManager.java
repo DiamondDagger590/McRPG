@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.expansion;
 
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -24,14 +25,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * be registered here. Additionally, the handlers must be registered before the content gets registered, otherwise
  * the content won't actually be properly registered.
  */
-public class ContentExpansionManager {
+public class ContentExpansionManager extends Manager<McRPG> {
 
-    private final McRPG mcRPG;
     private final Set<ContentPackProcessor> contentPackProcessors;
     private final Map<NamespacedKey, ContentExpansion> contentExpansions;
 
     public ContentExpansionManager(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+        super(mcRPG);
         contentPackProcessors = new HashSet<>();
         contentExpansions = new HashMap<>();
     }
@@ -82,16 +82,17 @@ public class ContentExpansionManager {
 
     /**
      * Attempts to process the provided {@link McRPGContentPack} using all the registered {@link ContentPackProcessor}s.
-     *
+     * <p>
      * If the pack is properly processed, a {@link ContentPackRegisteredEvent} will be fired. Otherwise, an {@link ContentPackFailedProcessingException}
      * will be thrown.
+     *
      * @param content The {@link McRPGContentPack} to process.
      * @throws ContentPackFailedProcessingException If the {@link McRPGContentPack} was unable to be processed.
      */
     private void processContent(@NotNull McRPGContentPack<? extends McRPGContent> content) {
         final AtomicBoolean processed = new AtomicBoolean(false);
         contentPackProcessors.forEach(mcRPGContentContentPackProcessor -> {
-            if (mcRPGContentContentPackProcessor.processContentPack(mcRPG, content) && !processed.get()) {
+            if (mcRPGContentContentPackProcessor.processContentPack(plugin(), content) && !processed.get()) {
                 processed.set(true);
             }
         });
@@ -99,7 +100,6 @@ public class ContentExpansionManager {
             Bukkit.getPluginManager().callEvent(new ContentPackRegisteredEvent(content));
         } else {
             throw new ContentPackFailedProcessingException(content);
-
         }
     }
 }

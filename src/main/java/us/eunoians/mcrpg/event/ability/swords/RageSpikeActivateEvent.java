@@ -4,10 +4,11 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.impl.Ability;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
-import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
  * This event is fired whenever {@link RageSpike} activates.
@@ -15,7 +16,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 public class RageSpikeActivateEvent extends AbilityActivateEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private static final Ability RAGE_SPIKE = McRPG.getInstance().getAbilityRegistry().getRegisteredAbility(RageSpike.RAGE_SPIKE_KEY);
+    private static final Ability RAGE_SPIKE = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RageSpike.RAGE_SPIKE_KEY);
 
     private boolean cancelled = false;
 

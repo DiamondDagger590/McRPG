@@ -1,7 +1,8 @@
 package us.eunoians.mcrpg.ability.impl.woodcutting;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
-import com.diamonddagger590.mccore.configuration.ReloadableSet;
+import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
@@ -15,23 +16,27 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.ability.impl.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.ReloadableContentAbility;
-import us.eunoians.mcrpg.event.ability.woodcutting.HeavySwingActivateEvent;
-import us.eunoians.mcrpg.event.ability.woodcutting.HeavySwingFakeBlockBreakEvent;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.woodcutting.HeavySwingActivateEvent;
+import us.eunoians.mcrpg.event.ability.woodcutting.HeavySwingFakeBlockBreakEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
-import us.eunoians.mcrpg.world.WorldManager;
 
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +44,8 @@ import java.util.stream.Collectors;
  * Heavy Swing is an ability that has a chance to activate when a player breaks wood using an axe. This ability will
  * break wood in an area around the broken block.
  */
-public class HeavySwing extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ReloadableContentAbility {
+public class HeavySwing extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
+        ReloadableContentAbility, SkillAbility {
 
     public static final NamespacedKey HEAVY_SWING_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "heavy_swing");
 
@@ -68,34 +74,14 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
 
     @NotNull
     @Override
-    public Optional<NamespacedKey> getSkill() {
-        return Optional.of(Woodcutting.WOODCUTTING_KEY);
+    public NamespacedKey getSkillKey() {
+        return Woodcutting.WOODCUTTING_KEY;
     }
 
     @NotNull
     @Override
-    public Optional<String> getDatabaseName() {
-        return Optional.of("heavy_swing");
-    }
-
-    @NotNull
-    @Override
-    public List<String> getDescription(@NotNull McRPGPlayer mcRPGPlayer) {
-        int currentTier = getCurrentAbilityTier(mcRPGPlayer.asSkillHolder());
-        return List.of("<gray>Has a chance to break wood in an area of where you mined",
-                "<gray>Activation Chance: <gold>" + getActivationChance(currentTier));
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Heavy Swing";
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getGuiItem(@NotNull AbilityHolder abilityHolder) {
-        return new ItemStack(Material.NETHERITE_AXE, 1);
+    public String getDatabaseName() {
+        return "heavy_swing";
     }
 
     @Override
@@ -112,7 +98,7 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
                     Location possibleBlockLocation = new Location(origin.getWorld(), origin.getX() + x, origin.getY() + y, origin.getZ() + z);
                     Block possibleBlock = possibleBlockLocation.getBlock();
                     // Only trigger on natural blocks and whenever the block is valid
-                    if (!origin.equals(possibleBlockLocation) && WorldManager.isBlockNatural(possibleBlock) && isBlockValid(possibleBlock)) {
+                    if (!origin.equals(possibleBlockLocation) && McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isBlockNatural(possibleBlock) && isBlockValid(possibleBlock)) {
                         // Throw a fake block break event to check for protection checks
                         HeavySwingFakeBlockBreakEvent heavySwingFakeBlockBreakEvent = new HeavySwingFakeBlockBreakEvent(player, possibleBlock);
                         Bukkit.getPluginManager().callEvent(heavySwingFakeBlockBreakEvent);
@@ -154,7 +140,13 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {
-        return getPlugin().getFileManager().getFile(FileType.WOODCUTTING_CONFIG);
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.HEAVY_SWING_DISPLAY_ITEM_HEADER;
     }
 
     /**
@@ -196,5 +188,16 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
      */
     public boolean isBlockValid(@NotNull Block block) {
         return VALID_BLOCK_TYPES.getContent().contains(block.getType());
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
+                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(AbilityItemPlaceholderKeys.RADIUS.getKey(),
+                Integer.toString(getRadius(getCurrentAbilityTier(player.asSkillHolder()))));
+        return placeholders;
     }
 }

@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.swords.bleed;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -10,10 +12,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.event.ability.swords.BleedDamageEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.swords.BleedDamageEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,18 +28,13 @@ import java.util.UUID;
 /**
  * This class is used to handle all the specific mechanics required for bleed to work.
  */
-public final class BleedManager {
+public final class BleedManager extends Manager<McRPG> {
 
     private final Map<UUID, Optional<AbilityHolder>> ENTITIES_BLEEDING = new HashMap<>();
     private final Set<UUID> BLEED_IMMUNE_ENTITIES = new HashSet<>();
-    private final McRPG mcRPG;
 
     public BleedManager(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
-    }
-
-    public McRPG getPlugin() {
-        return mcRPG;
+        super(mcRPG);
     }
 
     /**
@@ -90,7 +88,7 @@ public final class BleedManager {
      * @param entity The {@link LivingEntity} to start the bleeding process for
      */
     public void startBleeding(@NotNull LivingEntity entity) {
-        YamlDocument swordsConfig = getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        YamlDocument swordsConfig = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
         startBleeding(null, entity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
     }
 
@@ -99,7 +97,7 @@ public final class BleedManager {
     }
 
     public void startBleeding(@Nullable AbilityHolder abilityHolder, @NotNull LivingEntity entity) {
-        YamlDocument swordsConfig = getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG);
+        YamlDocument swordsConfig = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
         startBleeding(abilityHolder, entity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
     }
 
@@ -107,13 +105,13 @@ public final class BleedManager {
         if (canEntityStartBleeding(entity)) {
 
             ENTITIES_BLEEDING.put(entity.getUniqueId(), Optional.ofNullable(abilityHolder));
-            McRPG mcRPG = getPlugin();
+            McRPG mcRPG = plugin();
 
-            ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(mcRPG, 0.5, getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG).getDouble(SwordsConfigFile.BLEED_BASE_FREQUENCY), bleedCycles) {
+            ExpireableCoreTask expireableCoreTask = new ExpireableCoreTask(mcRPG, 0.5, mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getDouble(SwordsConfigFile.BLEED_BASE_FREQUENCY), bleedCycles) {
                 @Override
                 protected void onTaskExpire() {
                     stopEntityBleeding(entity);
-                    if (mcRPG.getFileManager().getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_GRANT_IMMUNITY_AFTER_EXPIRE)) {
+                    if (mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_GRANT_IMMUNITY_AFTER_EXPIRE)) {
                         startBleedImmunity(entity);
                     }
                 }
@@ -121,7 +119,7 @@ public final class BleedManager {
                 @Override
                 protected void onCancel() {
                     stopEntityBleeding(entity);
-                    if (mcRPG.getFileManager().getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_GRANT_IMMUNITY_AFTER_EXPIRE)) {
+                    if (mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_GRANT_IMMUNITY_AFTER_EXPIRE)) {
                         startBleedImmunity(entity);
                     }
                 }
@@ -141,10 +139,10 @@ public final class BleedManager {
                             return;
                         }
 
-                        int minimumHealthAllowed = mcRPG.getFileManager().getFile(FileType.SWORDS_CONFIG).getInt(SwordsConfigFile.BLEED_MINIMUM_HEALTH_ALLOWED);
+                        int minimumHealthAllowed = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getInt(SwordsConfigFile.BLEED_MINIMUM_HEALTH_ALLOWED);
                         if (entity.getHealth() > minimumHealthAllowed) {
 
-                            BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, bleedDamage, mcRPG.getFileManager().getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_DAMAGE_PIERCE_ARMOR));
+                            BleedDamageEvent bleedDamageEvent = new BleedDamageEvent(ENTITIES_BLEEDING.get(entity.getUniqueId()), entity, bleedDamage, mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getBoolean(SwordsConfigFile.BLEED_DAMAGE_PIERCE_ARMOR));
                             Bukkit.getPluginManager().callEvent(bleedDamageEvent);
 
                             if(bleedDamageEvent.isCancelled()) { //If bleed damage is cancelled, skip this interval
@@ -276,7 +274,7 @@ public final class BleedManager {
      */
     public void startBleedImmunity(@NotNull UUID uuid) {
         BLEED_IMMUNE_ENTITIES.add(uuid);
-        new DelayableCoreTask(getPlugin(), getPlugin().getFileManager().getFile(FileType.SWORDS_CONFIG).getInt(SwordsConfigFile.BLEED_IMMUNITY_DURATION)) {
+        new DelayableCoreTask(plugin(), plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG).getInt(SwordsConfigFile.BLEED_IMMUNITY_DURATION)) {
             @Override
             public void run() {
                 BLEED_IMMUNE_ENTITIES.remove(uuid);
