@@ -2,22 +2,18 @@ package us.eunoians.mcrpg.gui.slot.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 import us.eunoians.mcrpg.gui.loadout.LoadoutSelectionGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -54,12 +50,8 @@ public class LoadoutHomeSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack previousGuiItem = new ItemStack(Material.BARRIER);
-        ItemMeta previousGuiItemMeta = previousGuiItem.getItemMeta();
-        previousGuiItemMeta.displayName(miniMessage.deserialize("<red>Return to loadout selection</red>"));
-        previousGuiItemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to return to the loadout selection screen.</gray>.")));
-        previousGuiItem.setItemMeta(previousGuiItemMeta);
-        return ItemBuilder.from(previousGuiItem);
+        return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_LOADOUT_HOME_SLOT_DISPLAY_ITEM));
     }
 }

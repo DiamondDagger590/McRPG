@@ -2,17 +2,21 @@ package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectionSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +46,9 @@ public class LoadoutSelectionGui extends McRPGPaginatedGui {
     @NotNull
     @Override
     protected Inventory getInventoryForPage(int page) {
-        return Bukkit.createInventory(player, 18, McRPG.getInstance().getMiniMessage().deserialize("<gold>Viewing loadouts"));
+        return Bukkit.createInventory(player, 18, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_SELECTION_GUI_TITLE));
     }
 
     @Override

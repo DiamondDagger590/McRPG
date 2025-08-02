@@ -300,15 +300,278 @@ gui:
       display-item:
         material: CHEST
         name: "<gold>Block Filter"
+  # This GUI allows for players to view the current state of their loadout
+  loadout-gui:
+    # The title of the gui.
+    # Supported placeholders: <loadout-name>
+    title: "<gold>Editing Loadout: <loadout-name>"
+    # This slot shows a slot that players
+    invalid-slot:
+      display-item:
+        material: RED_STAINED_GLASS_PANE
+        name: " "
+    # Configure the slot players click to change an ability that is already in their loadout.
+    ability-slot:
+      # The item displayed is from the ability's display, but this lore is appended to let players know what to do
+      additional-lore:
+        - ''
+        - '<gray>Click to change what ability is in this slot.'
+    # Configure the slot players can click to add an ability to an empty slot in the loadout.
+    free-ability-slot:
+      display-item:
+        material: CYAN_STAINED_GLASS_PANE
+        name: '<gold>Empty Loadout Slot'
+        lore:
+          - ''
+          - '<gray>Click to change what ability is in this slot.'
+    # Configure the slot players can click to open the menu to edit their loadout displays
+    loadout-display-open-slot:
+      display-item:
+        material: OAK_HANGING_SIGN
+        name: '<gold>Edit Loadout Display'
+        lore:
+          - '<gold>Click <gray>to change how this loadout is displayed.'
+    # Configure the slot players can click to go from the loadout gui back to the loadout select gui.
+    loadout-home-slot:
+      display-item:
+        material: BARRIER
+        name: '<red>Return to loadout selection</red>'
+        lore: '<gray>Click to return to the loadout selection screen.</gray>'
+  # This GUI allows for players to choose which loadout they want to set as active or edit
+  loadout-selection-gui:
+    # The title of the gui
+    title: '<gold>Viewing loadouts'
+    # Configure the slot for any bedrock players using geyser
+    # Uses the loadout's display item for the slot so the <material> field will do nothing here.
+    loadout-selection-slot-geyser:
+      # Configure the slot for any bedrock players using geyser when the current loadout is active
+      active-loadout:
+        name: '<gold><name>'
+        lore:
+          - '<gray>Click to edit this loadout.'
+          - '<gray>This is your currently selected loadout.'
+        enchantments:
+          POWER: 1
+        item-flags:
+          - 'HIDE_ENCHANTS'
+      # Configure the slot for any bedrock players using geyser when the current loadout is inactive
+      inactive-loadout:
+        name: '<gold><name>'
+        lore:
+          - '<gray>Click to edit this loadout.'
+    # Configure the slot for any players not using geyser
+    # Uses the loadout's display item for the slot so the <material> field will do nothing here.
+    loadout-selection-slot:
+      # Configure the slot for any players not using geyser when the current loadout is active
+      active-loadout:
+        name: '<gold><name>'
+        lore:
+          - '<gray>Left click to edit this loadout.'
+          - '<gray>Right click to set this loadout as active.'
+          - '<gray>This is your currently selected loadout.'
+        enchantments:
+          POWER: 1
+        item-flags:
+          - 'HIDE_ENCHANTS'
+      # Configure the slot for any players not using geyser when the current loadout is inactive
+      inactive-loadout:
+        name: '<gold><name>'
+        lore:
+          - '<gray>Left click to edit this loadout.'
+          - '<gray>Right click to set this loadout as active.'
+  # This GUI allows for selecting different editing options for a given loadout
   loadout-display-home-gui:
+    # The title of the GUI
+    # Supports the following placeholders: <loadout-name>
     title: "<gold>Editing Loadout <loadout-name>"
+    # Configure the slot players can click to edit the name of their loadout
     edit-name-slot:
+      # What message should be sent to players to prompt them for a new name in chat?
       name-input-request-prompt: '<gray>Please type in chat the name you want this loadout to be called, or type <gold>cancel</gold> to cancel:'
+      # How to display this slot in a GUI?
       display-item:
         material: OAK_HANGING_SIGN
         name: '<gold>Loadout Display Name'
         lore:
           - "<gold>Click <gray>to change what the loadout's name is."
+    # Configure the slot players can click to edit the display item of their loadout
+    edit-display-item-slot:
+      # This display item doesn't use the `material` key, instead the value is pulled from whatever
+      # item is currently being used as the display for the loadout,
+      display-item:
+        name: '<gold>Loadout Display Item'
+        lore:
+          - '<gold>Click <gray>to change what item is used to display the loadout.'
+    # Configure the slot players can click to toggle the laodout being active
+    toggle-loadout-slot:
+      # Configure the slot to be shown to players when the loadout they're viewing is currently active.
+      active-display-item:
+        material: GREEN_STAINED_GLASS_PANE
+        name: '<gold>Loadout Active State'
+        lore:
+          - '<gray>This loadout is currently <green>active</green>.'
+      # Configure the slot to be shown to players when the loadout they're viewing is currently inactive.
+      inactive-display-item:
+        material: RED_STAINED_GLASS_PANE
+        name: '<gold>Loadout Active State'
+        lore:
+          - '<gray>This loadout is currently <red>inactive</red>.'
+          - '<gray>Click to set this loadout as your active loadout.'
+  # This GUI allows for players to put an item into the GUI to set it as the display item for their GUI
+  loadout-display-item-input-gui:
+    title: '<gold>Input Loadout Display Item'
+    # Configure the slot that surrounds the input slot
+    item-input-highlight-slot:
+      display-item:
+        material: PURPLE_STAINED_GLASS_PANE
+        name: ""
+    # Configure the slot players can click to cancel editing the loadout's display item
+    cancel-item-edit-slot:
+      display-item:
+        material: BARRIER
+        name: '<gold>Cancel editing loadout display item.'
+        lore:
+          - '<gold>Click <gray>to cancel editing loadout display item.'
+    # Configure the slot players can click to confirm the loadout's new display item
+    confirm-item-edit-slot:
+      display-item:
+        material: GREEN_STAINED_GLASS_PANE
+        name: '<gold>Loadout Display Item'
+        lore:
+          - '<gold>Click <gray>to change what item is used to display the loadout.'
+  # This GUI allows players to select abilities to put into their loadouts.
+  loadout-ability-select-gui:
+    title: '<gold>Select ability to use.'
+    # Configure the slot players click to add an ability to their loadout.
+    ability-select-slot:
+      # The item displayed is from the ability's display, but this lore is appended to let players know what to do
+      additional-lore:
+        - '<gray>Click to add this ability to your loadout.</gray>'
+  # This GUI allows players to toggle their different settings.
+  player-setting-gui:
+    # The title of the gui
+    title: '<gold>Editing Settings'
+    # Configure the slot representing the experience display setting controlling how players can get experience updates visually.
+    experience-display-setting-slot:
+      # Configure the setting display for when the setting is set to BOSS_BAR
+      boss-bar:
+        display-item:
+          material: DRAGON_HEAD
+          name: '<gold>Experience Display'
+          lore:
+            - '<gray>Displays gained experience through a boss bar.'
+            - ''
+            - '<gold>Click <gray>to change this display setting.'
+      # Configure the setting display for when the setting is set to ACTION_BAR
+      action-bar:
+        display-item:
+          material: BLAZE_ROD
+          name: '<gold>Experience Display'
+          lore:
+            - '<gray>Displays gained experience through an action abr.'
+            - ''
+            - '<gold>Click <gray>to change this display setting.'
+    # Configure the slot representing the setting controlling if picked up items will go into a player's empty hand or not.
+    keep-hand-empty-setting-slot:
+      # Configure the setting display for when the setting is ENABLED
+      enabled:
+        display-item:
+          material: GREEN_STAINED_GLASS_PANE
+          name: '<gold>Keep Hand Empty'
+          lore:
+            - '<gray>Status: <green>Enabled</green>.'
+            - '<gray>Prevents picked up items from going into your hand if it is empty.'
+            - ''
+            - '<gold>Click <gray>to change this setting.'
+      # Configure the setting display for when the setting is DISABLED
+      disabled:
+        display-item:
+          material: RED_STAINED_GLASS_PANE
+          name: '<gold>Keep Hand Empty'
+          lore:
+            - '<gray>Status: <red>Disabled</red>.'
+            - '<gray>Lets picked up items go into your hand.'
+            - ''
+            - '<gold>Click <gray>to change this setting.'
+    # Configure the slot representing the setting controlling if a dedicated hotbar slot will skip having items automatically added to it.
+    keep-hotbar-slot-empty-setting-slot:
+      # Configure the setting display for when the setting is DISABLED
+      disabled:
+        display-item:
+          material: RED_SHULKER_BOX
+          name: '<gold>Keep Hotbar Slot Empty'
+          lore:
+            - '<gray>Status: <red>Disabled</red>.'
+            - ''
+            - '<gold>Click <gray>to enable this setting.'
+      # Configure the setting display for when the setting is ENABLED for a specific slot
+      enabled:
+        # The count of the display item will be automatically incremented to indicate what slot is being reserved.
+        # Ex) an item stack count of 8 to represent the 8th hotbar slot.
+        # Supported placeholders: <slot>
+        display-item:
+          material: GREEN_SHULKER_BOX
+          name: '<gold>Keep Hotbar Slot Empty'
+          lore:
+            - '<gray>Empty Slot: <gold><slot></gold>.'
+            - '<gray>Prevents picked up items going into the designated slot.'
+            - ''
+            - '<gold>Click <gray>to change this setting.'
+    # Configure the slot representing the setting controlling the player's McRPG locale
+    locale-setting-slot:
+      # Configure the setting display for when the setting is set to use the player's client locale.
+      client-locale:
+        display-item:
+          material: DIRT
+          name: '<gold>Client Language'
+          lore:
+            - '<gray>Tries to use your client language for McRPG where possible.'
+            - ''
+            - '<gold>Click <gray>to change this display setting.'
+      # Configure the setting display for when the setting is set to use the server's default locale.
+      server-locale:
+        display-item:
+          material: COMPASS
+          name: '<gold>Server Language'
+          lore:
+            - '<gray>Tries to use the server default language for McRPG where possible.'
+            - ''
+            - '<gold>Click <gray>to change this display setting.'
+      # Configure the setting display for when no other locale option is used
+      fallback-locale:
+        display-item:
+          material: OAK_HANGING_SIGN
+          name: "<gold><locale>"
+          lore:
+            - "<gray>Tries to use <locale> for McRPG where possible."
+            - ''
+            - '<gold>Click <gray>to change this display setting.'
+    # Configure the slot representing the setting if the player needs an empty offhand to activate an ability
+    require-empty-offhand-to-active-ability-slot:
+      # Configure the setting display for when the setting is DISABLED
+      disabled:
+        display-item:
+          material: RED_STAINED_GLASS_PANE
+          name: '<gold>Require Empty Offhand'
+          lore:
+            - '<gray>Status: <red>Disabled</red>.'
+            - '<gray>Abilities can not be readied if you have an item in your offhand.'
+            - ''
+            - '<gold>Click <gray>to enable this setting.'
+      # Configure the setting display for when the setting is ENABLED for a specific slot
+      enabled:
+        # The count of the display item will be automatically incremented to indicate what slot is being reserved.
+        # Ex) an item stack count of 8 to represent the 8th hotbar slot.
+        # Supported placeholders: <slot>
+        display-item:
+          material: GREEN_STAINED_GLASS_PANE
+          name: '<gold>Require Empty Offhand'
+          lore:
+            - '<gray>Status: <green>Enabled</green>.'
+            - '<gray>Abilities can be readied even with an item in your offhand.'
+            - ''
+            - '<gold>Click <gray>to change this setting.'
+  # This GUI allows players to configure the allow list of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"
     # These categories should match exactly to the ones in the mining_configuration.yml.
@@ -386,6 +649,7 @@ gui:
     # This will be all the allowed items configured in the mining_configuration.yml
     # The display item will be the item configured over there with no edits to the name.
     category-item-option:
+      # What lore to add if the option is currently enabled.
       option-enabled:
         # Supports the following placeholders: <remote-transfer-category>
         display-item:
@@ -393,6 +657,7 @@ gui:
             - '<gray>Click to toggle the filter state for this item.'
             - '<gray>Item is currently <green>enabled</green>.'
             - '<gray>Category: <gold><remote-transfer-category>'
+      # What lore to add if the option is currently disabled.
       option-disabled:
         # Supports the following placeholders: <remote-transfer-category>
         display-item:
@@ -400,7 +665,23 @@ gui:
             - '<gray>Click to toggle the filter state for this item.'
             - '<gray>Item is currently <red>disabled</red>.'
             - '<gray>Category: <gold><remote-transfer-category>'
-# Configure generic ability strings.
+    # Configure the slot to toggle all blocks in an entire category
+    toggle-entire-category-slot:
+      # Configure the slot to be displayed to enable all items in the category.
+      toggle-to-be-enabled:
+        display-item:
+          material: GREEN_STAINED_GLASS_PANE
+          name: '<gold>Click to toggle all items</gold>'
+          lore:
+            - '<gray>Click to toggle all items in the current category to be <green>enabled</green>.'
+      # Configure the slot to be displayed to disabled all items in the category.
+      toggle-to-be-disabled:
+        display-item:
+          material: RED_STAINED_GLASS_PANE
+          name: '<gold>Click to toggle all items</gold>'
+          lore:
+            - '<gray>Click to toggle all items in the current category to be <red>disabled</red>.'
+# Configure ability placeholders, display items and other text/items.
 ability:
   # Configure messages relating to abilities that can be on cooldown
   cooldown:

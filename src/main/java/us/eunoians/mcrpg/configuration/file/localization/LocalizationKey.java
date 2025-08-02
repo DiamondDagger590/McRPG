@@ -20,11 +20,11 @@ public final class LocalizationKey extends ConfigFile {
     private static final String GIVE_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "give");
     private static final String GIVE_EXPERIENCE_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "experience");
     public static final Route GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
-    public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
     private static final String GIVE_LEVELS_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "levels");
     public static final Route GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "recipient-message"));
-    public static final Route GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-error-message"));
 
     private static final String LINK_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "link");
@@ -33,7 +33,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LINK_COMMAND_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "link-success-message"));
 
     private static final String UNLINK_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "unlink");
-    public static final Route UNLINK_COMMAND_SUCCESS_MESSAGE =  Route.fromString(toRoutePath(UNLINK_COMMAND_HEADER, "unlink-success-message"));
+    public static final Route UNLINK_COMMAND_SUCCESS_MESSAGE = Route.fromString(toRoutePath(UNLINK_COMMAND_HEADER, "unlink-success-message"));
     public static final Route UNLINK_COMMAND_NO_LINKED_CHEST_MESSAGE = Route.fromString(toRoutePath(UNLINK_COMMAND_HEADER, "no-linked-chest-message"));
 
     private static final String LOADOUT_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "loadout");
@@ -69,7 +69,7 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String SKILLS_HEADER = "skills";
     private static final String SWORDS_HEADER = toRoutePath(SKILLS_HEADER, "swords");
-    public static final Route SWORDS_DISPLAY_ITEM  = Route.fromString(toRoutePath(SWORDS_HEADER, "display-item"));
+    public static final Route SWORDS_DISPLAY_ITEM = Route.fromString(toRoutePath(SWORDS_HEADER, "display-item"));
     private static final String MINING_HEADER = toRoutePath(SKILLS_HEADER, "mining");
     public static final Route MINING_DISPLAY_ITEM = Route.fromString(toRoutePath(MINING_HEADER, "display-item"));
     private static final String WOODCUTTING_HEADER = toRoutePath(SKILLS_HEADER, "woodcutting");
@@ -98,13 +98,13 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route SKILL_SORT_EXPERIENCE_TO_LEVEL_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_SORT_TYPE_HEADER, "experience-to-level.display-item"));
 
     private static final String ABILITY_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-gui");
-    public static final Route ABILITY_GUI_TITLE =  Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "title"));
+    public static final Route ABILITY_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "title"));
 
     private static final String SKILL_GUI_HEADER = toRoutePath(GUI_HEADER, "skill-gui");
-    public static final Route SKILL_GUI_TITLE =  Route.fromString(toRoutePath(SKILL_GUI_HEADER, "title"));
+    public static final Route SKILL_GUI_TITLE = Route.fromString(toRoutePath(SKILL_GUI_HEADER, "title"));
 
     private static final String HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "home-gui");
-    public static final Route HOME_GUI_TITLE =  Route.fromString(toRoutePath(HOME_GUI_HEADER, "title"));
+    public static final Route HOME_GUI_TITLE = Route.fromString(toRoutePath(HOME_GUI_HEADER, "title"));
     public static final Route HOME_GUI_SETTINGS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "settings-slot.display-item"));
     public static final Route HOME_GUI_ABILITIES_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "abilities-slot.display-item"));
     public static final Route HOME_GUI_SKILLS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "skills-slot.display-item"));
@@ -116,6 +116,9 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route REMOTE_TRANSFER_GUI_CATEGORIES_HEADER = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "categories"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-enabled.display-item"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-disabled.display-item"));
+    private static final String REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER = toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "toggle-entire-category-slot");
+    public static final Route REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_ENABLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER, "toggle-to-be-enabled"));
+    public static final Route REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_DISABLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER, "toggle-to-be-disabled"));
 
     private static final String ABILITY_EDIT_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-edit-gui");
     public static final Route ABILITY_EDIT_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "title"));
@@ -128,11 +131,62 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(TOGGLED_OFF_HEADER, "toggled-on.display-item"));
     public static final Route REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "remote-transfer-block-toggle-attribute"));
 
+    private static final String LOADOUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-gui");
+    public static final Route LOADOUT_GUI_TITLE =  Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "title"));
+    public static final Route LOADOUT_GUI_INVALID_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "invalid-slot.display-item"));
+    public static final Route LOADOUT_GUI_ABILITY_SLOT_ADDITIONAL_LORE = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "ability-slot.additional-lore"));
+    public static final Route LOADOUT_GUI_FREE_ABILITY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "free-ability-slot.display-item"));
+    public static final Route LOADOUT_GUI_OPEN_LOADOUT_DISPLAY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "loadout-display-open-slot.display-item"));
+    public static final Route LOADOUT_GUI_LOADOUT_HOME_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "loadout-home-slot.display-item"));
+
+    private static final String LOADOUT_SELECTION_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-selection-gui");
+    public static final Route LOADOUT_SELECTION_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "title"));
+    private final static String LOADOUT_SELECTION_GUI_SELECTION_SLOT_GEYSER_HEADER = toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "loadout-selection-slot-geyser");
+    private final static String LOADOUT_SELECTION_GUI_SELECTION_SLOT_HEADER = toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "loadout-selection-slot");
+    public static final Route LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_GEYSER_HEADER, "active-loadout"));
+    public static final Route LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_GEYSER_HEADER, "inactive-loadout"));
+    public static final Route LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_HEADER, "active-loadout"));
+    public static final Route LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_HEADER, "inactive-loadout"));
+
     private static final String LOADOUT_DISPLAY_HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-display-home-gui");
     public static final Route LOADOUT_DISPLAY_HOME_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "title"));
     private static final String LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER = toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "edit-name-slot");
-    public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_PROMPT = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "name-input-request-prompt"));
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_PROMPT = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "name-input-request-prompt"));
     public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "display-item"));
+    private static final String LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_HEADER = toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "edit-display-item-slot");
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_HEADER, "display-item"));
+    private static final String LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_SLOT_HEADER = toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "toggle-loadout-slot");
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_ACTIVE_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_SLOT_HEADER, "active-display-item"));
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_INACTIVE_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_SLOT_HEADER, "inactive-display-item"));
+
+    private static final String LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-display-item-input-gui");
+    public static final Route LOADOUT_DISPLAY_ITEM_INPUT_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER, "title"));
+    public static final Route LOADOUT_DISPLAY_ITEM_INPUT_GUI_INPUT_HIGHLIGHT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER, "item-input-highlight-slot.display-item"));
+    public static final Route LOADOUT_DISPLAY_ITEM_INPUT_GUI_CANCEL_ITEM_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER, "cancel-item-edit-slot.display-item"));
+    public static final Route LOADOUT_DISPLAY_ITEM_INPUT_GUI_CONFIRM_ITEM_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER, "confirm-item-edit-slot.display-item"));
+
+    private static final String LOADOUT_ABILITY_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-abilities-select");
+    public static final Route LOADOUT_ABILITY_SELECT_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "title"));
+    public static final Route LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "ability-select-slot.lore-to-append"));
+
+    private static final String PLAYER_SETTINGS_GUI_HEADER = toRoutePath(GUI_HEADER, "player-setting-gui");
+    public static final Route PLAYER_SETTINGS_GUI_TITLE = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "title"));
+    private static final String PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "experience-display-setting-slot");
+    public static final Route PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_BOSS_BAR_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_HEADER, "boss-bar.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_ACTION_BAR_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_HEADER, "action-bar.display-item"));
+    private static final String PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "keep-hand-empty-setting-slot");
+    public static final Route PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_HEADER, "enabled.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_KEEP_HAND_EMPTY_SETTING_HEADER, "disabled.display-item"));
+    private static final String PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "keep-hotbar-slot-empty-setting-slot");
+    public static final Route PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_HEADER, "enabled.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_HEADER, "disabled.display-item"));
+    private static final String PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "locale-setting-slot");
+    public static final Route PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_CLIENT_LOCALE_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_HEADER, "client-locale.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_SERVER_LOCALE_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_HEADER, "server-locale.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_FALLBACK_LOCALE_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_HEADER, "fallback-locale.display-item"));
+    private static final String PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "require-empty-offhand-to-active-ability-slot");
+    public static final Route PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER, "enabled.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER, "disabled.display-item"));
 
     private static final String ABILITY_HEADER = "ability";
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-still-on-cooldown"));

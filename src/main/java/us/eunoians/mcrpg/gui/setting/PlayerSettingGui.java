@@ -2,6 +2,8 @@ package us.eunoians.mcrpg.gui.setting;
 
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -9,8 +11,10 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.util.Comparator;
@@ -43,7 +47,9 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
     @NotNull
     @Override
     protected Inventory getInventoryForPage(int i) {
-        return Bukkit.createInventory(getPlayer(), 27, McRPG.getInstance().getMiniMessage().deserialize("<gold>Editing Settings"));
+        return Bukkit.createInventory(getPlayer(), 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.PLAYER_SETTINGS_GUI_TITLE));
     }
 
     @Override

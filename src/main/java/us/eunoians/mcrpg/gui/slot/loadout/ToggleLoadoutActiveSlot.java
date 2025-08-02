@@ -2,24 +2,18 @@ package us.eunoians.mcrpg.gui.slot.loadout;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayHomeGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,18 +41,11 @@ public class ToggleLoadoutActiveSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack itemStack = new ItemStack(isLoadoutActive() ? Material.GREEN_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(miniMessage.deserialize("<red>Loadout Active State"));
-        List<Component> lore = new ArrayList<>();
-        lore.add(miniMessage.deserialize("<gray>This loadout is currently " + (isLoadoutActive() ? "<green>active</green>" : "<red>inactive</red>") + "."));
-        if (!isLoadoutActive()) {
-            lore.add(miniMessage.deserialize("<gray>Click to set this loadout as your active loadout."));
-        }
-        itemMeta.lore(lore);
-        itemStack.setItemMeta(itemMeta);
-        return ItemBuilder.from(itemStack);
+        return ItemBuilder.from(RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedSection(mcRPGPlayer, isLoadoutActive() ? LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_ACTIVE_DISPLAY_ITEM
+                        : LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_INACTIVE_DISPLAY_ITEM));
     }
 
     @Override
@@ -71,7 +58,7 @@ public class ToggleLoadoutActiveSlot implements McRPGSlot {
         var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
         guiOptional.ifPresent(gui -> {
             if (!isLoadoutActive()) {
-                player.performCommand("loadout set " + loadout.getLoadoutSlot());
+                player.performCommand("mcrpg loadout set " + loadout.getLoadoutSlot());
             }
             gui.refreshGUI();
         });

@@ -54,7 +54,7 @@ public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements Fille
             String loadoutName = loadout.getDisplay().getDisplayName().orElse(Integer.toString(loadout.getLoadoutSlot()));
             this.inventory = Bukkit.createInventory(player, 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                     .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TITLE, Map.of()));
+                    .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TITLE, Map.of("loadout-name", loadoutName)));
             paintInventory();
         }
     }

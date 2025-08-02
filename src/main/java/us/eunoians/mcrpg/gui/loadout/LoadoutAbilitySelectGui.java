@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.gui.slot.Slot;
-import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
-import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -12,11 +12,13 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectAbilitySlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.filter.core.McRPGChainPlayerContextFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyInLoadoutFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyUnlockedFilter;
@@ -103,20 +105,10 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
 
     @NotNull
     @Override
-    public PreviousPageSlot<McRPGPlayer> getPreviousPageSlot() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public NextPageSlot<McRPGPlayer> getNextPageSlot() {
-        return null;
-    }
-
-    @NotNull
-    @Override
     protected Inventory getInventoryForPage(int page) {
-        return Bukkit.createInventory(getPlayer(), 54, McRPG.getInstance().getMiniMessage().deserialize("<gold>Select ability to use."));
+        return Bukkit.createInventory(getPlayer(), 54, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_ABILITY_SELECT_GUI_TITLE));
     }
 
     @Override

@@ -39,7 +39,7 @@ public class LoadoutDisplayNameEditSlot implements McRPGSlot {
             McRPG mcRPG = McRPG.getInstance();
             MiniMessage miniMessage = mcRPG.getMiniMessage();
             Audience audience = mcRPG.getAdventure().player(player);
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_PROMPT));
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_PROMPT));
             LoadoutDisplayNameChatResponse loadoutDisplayNameChatResponse = new LoadoutDisplayNameChatResponse(player.getUniqueId(), loadout);
             mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.CHAT_RESPONSE).addPendingResponse(player.getUniqueId(), loadoutDisplayNameChatResponse);
         });

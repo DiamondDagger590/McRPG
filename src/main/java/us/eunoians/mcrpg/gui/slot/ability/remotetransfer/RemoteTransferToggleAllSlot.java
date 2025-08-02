@@ -1,21 +1,15 @@
 package us.eunoians.mcrpg.gui.slot.ability.remotetransfer;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-
-import java.util.List;
 
 /**
  * This slot is used to toggle the allow state for all materials for a given player's {@link us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer}.
@@ -45,14 +39,11 @@ public class RemoteTransferToggleAllSlot implements McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack itemStack = new ItemStack(enableAll ? Material.GREEN_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(miniMessage.deserialize("<red>Click to toggle all items</red>"));
-        itemMeta.lore(List.of(miniMessage.deserialize("<gray>Click to toggle all items in the current category to be " + (enableAll ? "<green>enabled</green>" : "<red>disabled</red>") + ".")));
-        itemStack.setItemMeta(itemMeta);
-        return ItemBuilder.from(itemStack);
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedSection(mcRPGPlayer, enableAll ? LocalizationKey.REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_ENABLE :
+                        LocalizationKey.REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_DISABLE));
     }
 
     /**

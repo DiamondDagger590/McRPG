@@ -5,6 +5,8 @@ import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
 import com.diamonddagger590.mccore.gui.BaseGui;
 import com.diamonddagger590.mccore.gui.ClosableGui;
+import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,12 +15,11 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayCancelItemEditSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayItemConfirmSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
@@ -30,55 +31,12 @@ import java.util.Set;
 /**
  * This GUI is used to allow players to input an item that they want to display
  */
-public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
+public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer>, FillerItemGui {
 
-    private static final McRPGSlot FILLER_GLASS_SLOT;
-    private static final McRPGSlot PURPLE_GLASS_SLOT;
     private static final int INPUT_SLOT = 13;
     private static final Set<Integer> PURPLE_SLOTS = Set.of(INPUT_SLOT - 9, INPUT_SLOT - 1, INPUT_SLOT + 1, INPUT_SLOT + 9);
     private static final int RETURN_SLOT = 18;
     private static final int CONFIRM_SLOT = 26;
-
-    // Create static slots
-    static {
-        // Create filler glass
-        ItemStack fillerGlass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerGlassMeta = fillerGlass.getItemMeta();
-        fillerGlassMeta.setDisplayName(" ");
-        fillerGlass.setItemMeta(fillerGlassMeta);
-        FILLER_GLASS_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(fillerGlass);
-            }
-        };
-
-        // Create purple glass
-        ItemStack purpleGlass = new ItemStack(Material.PURPLE_STAINED_GLASS_PANE);
-        ItemMeta purpleGlassMeta = fillerGlass.getItemMeta();
-        purpleGlassMeta.setDisplayName(" ");
-        purpleGlass.setItemMeta(purpleGlassMeta);
-        PURPLE_GLASS_SLOT = new McRPGSlot() {
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(purpleGlass);
-            }
-        };
-    }
 
     private final Player player;
     private final Loadout loadout;
@@ -99,21 +57,25 @@ public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements 
         if (this.inventory != null) {
             throw new InventoryAlreadyExistsForGuiException(this);
         } else {
-            this.inventory = Bukkit.createInventory(player, 27, McRPG.getInstance().getMiniMessage().deserialize("<gold>Input Loadout Display Item"));
+            this.inventory = Bukkit.createInventory(player, 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_DISPLAY_ITEM_INPUT_GUI_TITLE));
             paintInventory();
         }
     }
 
     @Override
     public void paintInventory() {
+        Slot<McRPGPlayer> fillerSlot = getFillerItemSlot();
+        Slot<McRPGPlayer> highlightSlot = getInputHighlightSlot();
         for (int i = 0; i < inventory.getSize(); i++) {
             if (i == INPUT_SLOT) {
                 continue;
             }
-            setSlot(i, FILLER_GLASS_SLOT);
+            setSlot(i, fillerSlot);
         }
         for (int i : PURPLE_SLOTS) {
-            setSlot(i, PURPLE_GLASS_SLOT);
+            setSlot(i, highlightSlot);
         }
         setSlot(RETURN_SLOT, new LoadoutDisplayCancelItemEditSlot(loadout));
         setSlot(CONFIRM_SLOT, new LoadoutDisplayItemConfirmSlot());
@@ -171,5 +133,28 @@ public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements 
      */
     public void cancelSave() {
         save = false;
+    }
+
+    /**
+     * Gets the {@link Slot} used to highlight the item input slot.
+     *
+     * @return The {@link Slot} used to highlight the item input slot.
+     */
+    @NotNull
+    public Slot<McRPGPlayer> getInputHighlightSlot() {
+        return new Slot<>() {
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public ItemBuilder getItem(@NotNull McRPGPlayer corePlayer) {
+                return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getLocalizedSection(corePlayer, LocalizationKey.LOADOUT_DISPLAY_ITEM_INPUT_GUI_INPUT_HIGHLIGHT_DISPLAY_ITEM));
+            }
+        };
     }
 }

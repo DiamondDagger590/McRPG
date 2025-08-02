@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.gui.loadout;
 
 import com.diamonddagger590.mccore.gui.slot.Slot;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -8,6 +10,7 @@ import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
@@ -16,8 +19,10 @@ import us.eunoians.mcrpg.gui.slot.loadout.LoadoutAbilitySlot;
 import us.eunoians.mcrpg.gui.slot.loadout.LoadoutHomeSlot;
 import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayHomeSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,7 +54,10 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @NotNull
     @Override
     protected Inventory getInventoryForPage(int page) {
-        return Bukkit.createInventory(getPlayer(), 27, McRPG.getInstance().getMiniMessage().deserialize("<gold>Editing Loadout " + loadout.getLoadoutSlot()));
+        String loadoutName = loadout.getDisplay().getDisplayName().orElse(Integer.toString(loadout.getLoadoutSlot()));
+        return Bukkit.createInventory(getPlayer(), 27, RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.LOADOUT_GUI_TITLE, Map.of("loadout-name", loadoutName)));
     }
 
     @Override

@@ -1,17 +1,13 @@
 package us.eunoians.mcrpg.gui.slot.setting;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
-
-import java.util.List;
 
 /**
  * A {@link McRPGSettingSlot} that displays {@link KeepHotbarSlotEmptySetting}s.
@@ -24,24 +20,20 @@ public class KeepHotbarSlotEmptySettingSlot extends McRPGSettingSlot<KeepHotbarS
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        ItemBuilder itemBuilder;
         if (getSetting() == KeepHotbarSlotEmptySetting.DISABLED) {
-            ItemStack itemStack = new ItemStack(Material.RED_SHULKER_BOX);
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.displayName(miniMessage.deserialize("<gold>Keep Hotbar Slot Empty"));
-            itemMeta.lore(List.of(miniMessage.deserialize("<gray>Status: <red>Disabled</red>."), miniMessage.deserialize("<gray>"), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to enable this setting.")));
-            itemStack.setItemMeta(itemMeta);
-            return ItemBuilder.from(itemStack);
+            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_DISABLED_DISPLAY_ITEM));
+        } else {
+            int userSlot = getSetting().getSlot() + 1;
+            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_ENABLED_DISPLAY_ITEM))
+                    .setAmount(userSlot)
+                    .addPlaceholder("slot", Integer.toString(userSlot));
         }
-        ItemStack itemStack = new ItemStack(Material.GREEN_SHULKER_BOX);
-        int userSlot = getSetting().getSlot() + 1;
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setMaxStackSize(userSlot);
-        itemMeta.displayName(miniMessage.deserialize("<gold>Keep Hotbar Slot Empty"));
-        itemMeta.lore(List.of(miniMessage.deserialize("<gray>Empty Slot: <gold>" + userSlot + "</gold>."), miniMessage.deserialize("<gray>Prevents picked up items going into the designated slot."), miniMessage.deserialize(""), miniMessage.deserialize("<gold>Click <gray>to change this setting.")));
-        itemStack.setItemMeta(itemMeta);
-        itemStack.setAmount(userSlot);
-        return ItemBuilder.from(itemStack);
+        return itemBuilder;
     }
 }

@@ -1,20 +1,17 @@
 package us.eunoians.mcrpg.gui.slot.loadout.display;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayItemInputGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,14 +32,10 @@ public class LoadoutDisplayItemConfirmSlot implements McRPGSlot {
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@Nullable McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        ItemStack itemStack = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(miniMessage.deserialize("<gold>Loadout Display Item"));
-        itemMeta.lore(List.of(miniMessage.deserialize("<gold>Click <gray>to change what item is used to display the loadout.")));
-        itemStack.setItemMeta(itemMeta);
-        return ItemBuilder.from(itemStack);
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_DISPLAY_ITEM_INPUT_GUI_CONFIRM_ITEM_EDIT_DISPLAY_ITEM));
     }
 
     @Override
