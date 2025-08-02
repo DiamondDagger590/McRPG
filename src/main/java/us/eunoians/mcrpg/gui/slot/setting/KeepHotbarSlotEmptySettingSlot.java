@@ -31,6 +31,7 @@ public class KeepHotbarSlotEmptySettingSlot extends McRPGSettingSlot<KeepHotbarS
             itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                     .manager(McRPGManagerKey.LOCALIZATION)
                     .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_ENABLED_DISPLAY_ITEM))
+                    .setMaxStackSize(userSlot)
                     .setAmount(userSlot)
                     .addPlaceholder("slot", Integer.toString(userSlot));
         }

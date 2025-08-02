@@ -65,15 +65,14 @@ public class LoadoutSelectionSlot implements McRPGSlot {
                     .manager(McRPGManagerKey.LOCALIZATION)
                     .getLocalizedSection(mcRPGPlayer,
                             isLoadoutActive() ? LocalizationKey.LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM :
-                                    LocalizationKey.LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM));
+                                    LocalizationKey.LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem());
         } else {
             itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                     .manager(McRPGManagerKey.LOCALIZATION)
                     .getLocalizedSection(mcRPGPlayer,
                             isLoadoutActive() ? LocalizationKey.LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM :
-                                    LocalizationKey.LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM));
+                                    LocalizationKey.LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem());
         }
-        itemBuilder.setItemStack(loadout.getDisplay().getDisplayItem());
         itemBuilder.addPlaceholder("name", loadout.getDisplay().getDisplayName().orElse(Integer.toString(loadout.getLoadoutSlot())));
         return itemBuilder;
     }
