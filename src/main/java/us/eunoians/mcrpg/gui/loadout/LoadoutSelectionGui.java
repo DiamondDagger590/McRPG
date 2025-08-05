@@ -14,7 +14,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
-import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectionSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.LoadoutSelectionSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

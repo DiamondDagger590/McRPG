@@ -20,8 +20,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
-import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayCancelItemEditSlot;
-import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayItemConfirmSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayCancelItemEditSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayItemConfirmSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

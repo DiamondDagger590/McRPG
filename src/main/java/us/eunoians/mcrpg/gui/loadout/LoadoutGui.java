@@ -14,10 +14,10 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
-import us.eunoians.mcrpg.gui.slot.loadout.InvalidLoadoutSlot;
-import us.eunoians.mcrpg.gui.slot.loadout.LoadoutAbilitySlot;
-import us.eunoians.mcrpg.gui.slot.loadout.LoadoutHomeSlot;
-import us.eunoians.mcrpg.gui.slot.loadout.display.LoadoutDisplayHomeSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.InvalidLoadoutSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.LoadoutAbilitySlot;
+import us.eunoians.mcrpg.gui.loadout.slot.LoadoutHomeSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayHomeSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

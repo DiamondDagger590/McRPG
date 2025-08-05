@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
-import us.eunoians.mcrpg.gui.slot.ability.AbilitySlot;
+import us.eunoians.mcrpg.gui.ability.slot.AbilitySlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;

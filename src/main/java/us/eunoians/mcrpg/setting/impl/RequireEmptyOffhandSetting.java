@@ -6,7 +6,7 @@ import com.diamonddagger590.mccore.util.LinkedNode;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.setting.RequireEmptyOffhandSettingSlot;
+import us.eunoians.mcrpg.gui.setting.slot.RequireEmptyOffhandSettingSlot;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 

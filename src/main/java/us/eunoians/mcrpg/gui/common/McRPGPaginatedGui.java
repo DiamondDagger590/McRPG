@@ -5,8 +5,8 @@ import com.diamonddagger590.mccore.gui.slot.pagination.NextPageSlot;
 import com.diamonddagger590.mccore.gui.slot.pagination.PreviousPageSlot;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.common.McRPGNextPageSlot;
-import us.eunoians.mcrpg.gui.slot.common.McRPGPreviousPageSlot;
+import us.eunoians.mcrpg.gui.common.slot.McRPGNextPageSlot;
+import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousPageSlot;
 
 /**
  * A helper class for any McRPG gui that uses pagination by providing common

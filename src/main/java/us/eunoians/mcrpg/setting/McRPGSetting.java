@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
-import us.eunoians.mcrpg.gui.slot.setting.McRPGSettingSlot;
+import us.eunoians.mcrpg.gui.setting.slot.McRPGSettingSlot;
 
 import java.util.Optional;
 

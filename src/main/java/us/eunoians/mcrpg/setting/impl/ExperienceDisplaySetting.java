@@ -11,7 +11,7 @@ import us.eunoians.mcrpg.display.impl.ActionBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.BossBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.setting.ExperienceDisplaySettingSlot;
+import us.eunoians.mcrpg.gui.setting.slot.ExperienceDisplaySettingSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;

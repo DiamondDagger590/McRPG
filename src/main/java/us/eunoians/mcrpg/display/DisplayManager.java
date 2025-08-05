@@ -1,12 +1,17 @@
 package us.eunoians.mcrpg.display;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.persistent.PersistentExperienceDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 
 import java.util.HashMap;
@@ -77,6 +82,12 @@ public class DisplayManager extends Manager<McRPG> {
      */
     public void sendExperienceUpdate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {
         UUID uuid = mcRPGPlayer.getUUID();
+
+        if (RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                .getBoolean(MainConfigFile.DISPLAY_EXPERIENCE_UPDATES_ENABLED, false)) {
+            return;
+        }
 
         // If they don't have an active display, set one
         if (!hasActiveDisplay(uuid)) {

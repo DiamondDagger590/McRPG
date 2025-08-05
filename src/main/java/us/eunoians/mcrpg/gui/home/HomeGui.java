@@ -14,10 +14,10 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
-import us.eunoians.mcrpg.gui.slot.home.HomeAbilitiesSlot;
-import us.eunoians.mcrpg.gui.slot.home.HomeLoadoutSlot;
-import us.eunoians.mcrpg.gui.slot.home.HomeSettingsSlot;
-import us.eunoians.mcrpg.gui.slot.home.HomeSkillsSlot;
+import us.eunoians.mcrpg.gui.home.slot.HomeAbilitiesSlot;
+import us.eunoians.mcrpg.gui.home.slot.HomeLoadoutSlot;
+import us.eunoians.mcrpg.gui.home.slot.HomeSettingsSlot;
+import us.eunoians.mcrpg.gui.home.slot.HomeSkillsSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;

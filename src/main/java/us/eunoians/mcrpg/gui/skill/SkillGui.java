@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
-import us.eunoians.mcrpg.gui.slot.skill.SkillSlot;
+import us.eunoians.mcrpg.gui.skill.slot.SkillSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 

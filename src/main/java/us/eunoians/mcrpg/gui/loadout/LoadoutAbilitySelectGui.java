@@ -16,7 +16,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
-import us.eunoians.mcrpg.gui.slot.loadout.LoadoutSelectAbilitySlot;
+import us.eunoians.mcrpg.gui.loadout.slot.LoadoutSelectAbilitySlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.filter.core.McRPGChainPlayerContextFilter;

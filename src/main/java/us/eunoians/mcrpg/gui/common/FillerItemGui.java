@@ -4,7 +4,7 @@ import com.diamonddagger590.mccore.gui.Gui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.slot.common.McRPGFillerSlot;
+import us.eunoians.mcrpg.gui.common.slot.McRPGFillerSlot;
 
 /**
  * A helper class for any McRPG gui that uses a filler item slot to indicate

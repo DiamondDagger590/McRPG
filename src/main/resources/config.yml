@@ -42,8 +42,13 @@ configuration:
     # If a player needs 1000 experience to level up, then doubling an experience gain of 100 will consume 0.1 L=levels of Rested Experience.
     # If a player needs 10000 experience to level up, then doubling an experience gain of 100 will consume 0.01 levels of Rested Experience.
     rested-experience:
-      # How fast can a player accumulate rested experience. Time is measured in seconds
-      accumulation-rate: '0.00027*time'
+      accumulation-rates:
+        # How fast can a player accumulate rested experience while offline. Time is measured in seconds
+        offline: '0.00027*time'
+        # How fast can a player accumulate rested experience if allow-online-accumulation is set to ENABLED. Time is measured in seconds
+        online: '0.00013*time'
+        # How fast can a player accumulate rested experience if they are in a safe zone and safe zones are enabled? Time is measured in seconds
+        safe-zone: '0.00056*time'
       # What should the multiplier be when using rested experience?
       usage-rate: 3.0
       # How many levels worth of rested experience can a player have at once
@@ -61,8 +66,6 @@ configuration:
       safe-zone:
         # Enables safe zone rested experience accumulation
         allow-safe-zone-accumulation: true
-        # How fast can a player accumulate rested experience if they are in a safe zone? Time is measured in seconds
-        safe-zone-accumulation-rate: '0.00056*time'
         # 3rd party plugin support for defining a safe zone.
         # If a player is standing in a location such that multiple plugins can provide a definition for a "safe zone",
         # then the final result will be the OR of all the valid plugins.

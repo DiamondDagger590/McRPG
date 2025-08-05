@@ -681,6 +681,37 @@ gui:
           name: '<gold>Click to toggle all items</gold>'
           lore:
             - '<gray>Click to toggle all items in the current category to be <red>disabled</red>.'
+  experience-bank-gui:
+    redeemable-experience-slot:
+      display-item:
+        name: "<gold>Redeemable Experience"
+        material: EXPERIENCE_BOTTLE
+        lore:
+          - '<gray>Redeemable Experience: <gold><redeemable-experience>'
+          - ''
+          - '<gold>Click <gray>to spend your redeemable experience.'
+    redeemable-levels-slot:
+      display-item:
+        name: "<gold>Redeemable Levels"
+        material: DIAMOND_SWORD
+        lore:
+          - '<gray>Redeemable Experience: <gold><redeemable-levels>'
+          - ''
+          - '<gold>Click <gray>to spend your redeemable levels.'
+    boosted-experience-slot:
+      example-base-amount: 100
+      display-item:
+        name: "<gold>Boosted Experience Bank"
+        material: CHEST
+        lore:
+          - '<gray>Boosted Experience: <gold><boosted-experience>'
+          - '<gray>Usage Rate: <gold><boosted-experience-usage-rate>'
+          - ''
+          - '<gray>Whenever you gain McRPG experience, Boosted Exp will be consumed'
+          - '<gray>and used to multiply your experience gain.'
+          - '<gray>If you gain <gold><example-base-amount> exp</gold> in Swords then'
+          - '<gray>it will add up to <gold><example-boosted-amount> exp</gold> to what you gain'
+          - '<gray>and remove that much from your bank.'
 # Configure ability placeholders, display items and other text/items.
 ability:
   # Configure messages relating to abilities that can be on cooldown
