@@ -41,23 +41,34 @@ configuration:
     # Rested Experience is relative in terms of how much experience it multiplies as a result.
     # If a player needs 1000 experience to level up, then doubling an experience gain of 100 will consume 0.1 L=levels of Rested Experience.
     # If a player needs 10000 experience to level up, then doubling an experience gain of 100 will consume 0.01 levels of Rested Experience.
+    #
+    # Players can gain rested experience primarily while offline. There are configuration options to allow players to gain rested experience
+    # while online as well in something called "safe zones". Safe zones are defined by hooking into other plugins such as Lands.
+    # If a player logs out in a safe zone AND safe zone accumulation is enabled, then they will use the safe zone equation
+    # to calculate rested experience. Otherwise, the offline equation is used.
     rested-experience:
       accumulation-rates:
         # How fast can a player accumulate rested experience while offline. Time is measured in seconds
         offline: '0.00027*time'
-        # How fast can a player accumulate rested experience if allow-online-accumulation is set to ENABLED. Time is measured in seconds
+        # How fast can a player accumulate rested experience if allow-online-accumulation is set to ENABLED
+        # and players either are not in a safe zone or safe zone accumulation is disabled. Time is measured in seconds
         online: '0.00013*time'
-        # How fast can a player accumulate rested experience if they are in a safe zone and safe zones are enabled? Time is measured in seconds
+        # How fast can a player accumulate rested experience if they are in a safe zone and safe zones are enabled?
+        # Can be offline or online and is prioritized if safe-zone accumulation is enabled.T ime is measured in seconds
         safe-zone: '0.00056*time'
       # What should the multiplier be when using rested experience?
       usage-rate: 3.0
       # How many levels worth of rested experience can a player have at once
       maximum-accumulation: 1.5
       # This can be ENABLED, SAFE_ZONE, or DISABLED
-      # ENABLED: Allows accumulation of rested experience while online
+      # ENABLED: Allows accumulation of rested experience while online (also includes safe zones)
       # SAFE_ZONE: Only allow rested experience accumulation while online in a safe zone
       # DISABLED: Don't allow accumulation of rested experience while online
       allow-online-accumulation: SAFE_ZONE
+      # If a player is marked as AFK with any afk plugin McRPG integrates with, should
+      # their accumulation be disabled?
+      # If there's a plugin that isn't integrated, please reach out to developers for support.
+      disable-afk-accumulation: false
       # Configure the task that will give rested experience while players are online
       online-accumulator-task:
         # How often in seconds should the task run

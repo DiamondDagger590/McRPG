@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceAccumulationType;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 
 import java.util.Arrays;
@@ -75,22 +76,30 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
                 currentPlayers.add(corePlayer.getUUID());
                 // If the player was online last time, then we can award experience
                 if (playersLastUpdated.contains(corePlayer.getUUID()) && corePlayer instanceof McRPGPlayer mcRPGPlayer) {
+                    // If player is afk and afk rested experience accumulation is disabled, then skip.
+                    if (mcRPGPlayer.isAfk() && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                            .getBoolean(MainConfigFile.DISABLE_AFK_RESTED_EXPERIENCE_ACCUMULATION)) {
+                        continue;
+                    }
                     var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
                     if (playerOptional.isPresent()) {
                         Player player = playerOptional.get();
+                        RestedExperienceAccumulationType accumulationType = RestedExperienceAccumulationType.ONLINE;
                         boolean inSafeZone = false;
                         // ENABLED and SAFE_ZONE_ONLY support safe zones so we can first check for
                         // safe zone accumulation
                         if (mcRPGPlayer.isStandingInSafeZone()
                                 && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.SAFE_ZONE).isPlayerInSafeZone(player)
-                                && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
+                                && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                                .getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
                             inSafeZone = true;
+                            accumulationType = RestedExperienceAccumulationType.SAFE_ZONE;
                         }
                         // If normal online accumulation isn't enabled and we aren't in a safe zone, then we aren't going to award anything.
                         else if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != OnlineAccumulationType.ENABLED) {
                             continue;
                         }
-                        restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, inSafeZone);
+                        restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, accumulationType);
                         mcRPGPlayer.setStandingInSafeZone(inSafeZone);
                     }
                 }

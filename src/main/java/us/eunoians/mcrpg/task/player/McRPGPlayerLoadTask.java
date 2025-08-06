@@ -36,6 +36,7 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceAccumulationType;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 
 import java.sql.Connection;
@@ -160,7 +161,8 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     @NotNull
     private UpdatePlayerDataSyncFunction awardRestedExperience(@NotNull Connection connection) {
         var logoutTimeOptional = PlayerLoginTimeDAO.getLastLogoutTime(connection, getCorePlayer().getUUID());
-        boolean safeZoneLogout = PlayerLoginTimeDAO.didPlayerLogoutInSafeZone(connection, getCorePlayer().getUUID());
+        RestedExperienceAccumulationType accumulationType = PlayerLoginTimeDAO.didPlayerLogoutInSafeZone(connection, getCorePlayer().getUUID())
+                ? RestedExperienceAccumulationType.SAFE_ZONE : RestedExperienceAccumulationType.OFFLINE;
         return () -> {
             if (logoutTimeOptional.isPresent()) {
                 Instant logoutTime = logoutTimeOptional.get();
@@ -168,7 +170,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
                 double difference = Duration.between(now, logoutTime).abs().toSeconds();
                 RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
                 // Award rested experience
-                restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, safeZoneLogout);
+                restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, accumulationType);
             }
         };
     }
