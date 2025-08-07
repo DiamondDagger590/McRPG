@@ -15,12 +15,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.exception.external.worldguard.WorldGuardFlagRegisterException;
+import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
 
 /**
  * A hook for containing all code related to <a href="https://modrinth.com/plugin/worldguard/versions">WorldGuard</a> that McRPG
  * needs in order to support it.
  */
-public class WorldGuardHook extends PluginHook<McRPG> {
+public class WorldGuardHook extends PluginHook<McRPG> implements SafeZonePluginHook {
 
     private static final String SAFE_ZONE_FLAG_KEY = "mcrpg-safe-zone";
     private StateFlag safeZoneFlag;
@@ -50,12 +51,7 @@ public class WorldGuardHook extends PluginHook<McRPG> {
         }
     }
 
-    /**
-     * Checks to see if a {@link Player} is in what McRPG considers a safe zone.
-     *
-     * @param player The {@link Player} to check.
-     * @return {@code true} if the player is in a safe zone.
-     */
+    @Override
     public boolean isPlayerInSafeZone(@NotNull Player player) {
         Location location = BukkitAdapter.adapt(player.getLocation());
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();

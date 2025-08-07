@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.skill.experience.rested;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
-import com.diamonddagger590.mccore.configuration.parser.ReloadableParser;
+import com.diamonddagger590.mccore.configuration.common.ReloadableParser;
 import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;

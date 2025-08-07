@@ -85,14 +85,12 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
                     if (playerOptional.isPresent()) {
                         Player player = playerOptional.get();
                         RestedExperienceAccumulationType accumulationType = RestedExperienceAccumulationType.ONLINE;
-                        boolean inSafeZone = false;
                         // ENABLED and SAFE_ZONE_ONLY support safe zones so we can first check for
                         // safe zone accumulation
                         if (mcRPGPlayer.isStandingInSafeZone()
                                 && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.SAFE_ZONE).isPlayerInSafeZone(player)
                                 && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
                                 .getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
-                            inSafeZone = true;
                             accumulationType = RestedExperienceAccumulationType.ONLINE_SAFE_ZONE;
                         }
                         // If normal online accumulation isn't enabled and we aren't in a safe zone, then we aren't going to award anything.
@@ -100,7 +98,6 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
                             continue;
                         }
                         restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, accumulationType, false);
-                        mcRPGPlayer.setStandingInSafeZone(inSafeZone);
                     }
                 }
             }
