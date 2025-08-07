@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileManager;
@@ -13,6 +14,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
+import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -31,7 +33,8 @@ public class RestedExperienceManager extends Manager<McRPG> {
         FileManager fileManager = plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         accumulationRates.put(RestedExperienceAccumulationType.ONLINE, new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.ONLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE));
         accumulationRates.put(RestedExperienceAccumulationType.OFFLINE, new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.OFFLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE));
-        accumulationRates.put(RestedExperienceAccumulationType.SAFE_ZONE, new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE));
+        accumulationRates.put(RestedExperienceAccumulationType.ONLINE_SAFE_ZONE, new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.ONLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE));
+        accumulationRates.put(RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE, new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.OFFLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE));
         ReloadableContentManager reloadableContentManager = plugin.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT);
         accumulationRates.values().forEach(reloadableContentManager::trackReloadableContent);
 
@@ -60,13 +63,17 @@ public class RestedExperienceManager extends Manager<McRPG> {
      * @param mcRPGPlayer      The {@link McRPGPlayer} to award experience to.
      * @param timeInSeconds    The amount of time in seconds to give rested experience for.
      * @param accumulationType The type of rested accumulation to use for calculating amount to award.
+     * @param notifyPlayer     If the player should be notified of their experience gain.
      */
-    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, int timeInSeconds, @NotNull RestedExperienceAccumulationType accumulationType) {
-        if (accumulationType == RestedExperienceAccumulationType.SAFE_ZONE && !plugin().registryAccess().registry(RegistryKey.MANAGER)
+    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, int timeInSeconds, @NotNull RestedExperienceAccumulationType accumulationType, boolean notifyPlayer) {
+        if (accumulationType == RestedExperienceAccumulationType.ONLINE_SAFE_ZONE && !plugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
             accumulationType = RestedExperienceAccumulationType.ONLINE;
+        } else if (accumulationType == RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE && !plugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
+            accumulationType = RestedExperienceAccumulationType.OFFLINE;
         }
-        awardRestedExperience(mcRPGPlayer, getRestedExperience(timeInSeconds, accumulationType));
+        awardRestedExperience(mcRPGPlayer, getRestedExperience(timeInSeconds, accumulationType), notifyPlayer);
     }
 
     /**
@@ -75,8 +82,12 @@ public class RestedExperienceManager extends Manager<McRPG> {
      *
      * @param mcRPGPlayer      The {@link McRPGPlayer} to award experience to.
      * @param restedExperience The amount of rested experience to give.
+     * @param notifyPlayer     If the player should be notified of their experience gain.
      */
-    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience) {
+    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience, boolean notifyPlayer) {
+        if (restedExperience == 0) {
+            return;
+        }
         PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
         double currentRestedExperience = playerExperienceExtras.getRestedExperience();
         double maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
@@ -85,6 +96,13 @@ public class RestedExperienceManager extends Manager<McRPG> {
             return;
         }
         restedExperience = Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
+        PlayerAwardedRestedExperienceEvent playerAwardedRestedExperienceEvent = new PlayerAwardedRestedExperienceEvent(mcRPGPlayer, restedExperience, maxAccumulation);
+        Bukkit.getPluginManager().callEvent(playerAwardedRestedExperienceEvent);
+        if (playerAwardedRestedExperienceEvent.isCancelled()) {
+            return;
+        }
+        restedExperience = playerAwardedRestedExperienceEvent.getRestedExperience();
+
         playerExperienceExtras.setRestedExperience((int) restedExperience);
     }
 }

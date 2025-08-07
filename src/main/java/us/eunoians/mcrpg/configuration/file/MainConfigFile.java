@@ -55,7 +55,9 @@ public final class MainConfigFile extends ConfigFile {
     private static final String RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER = toRoutePath(RESTED_EXPERIENCE_HEADER, "accumulation-rates");
     public static final Route ONLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER, "online"));
     public static final Route OFFLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER, "offline"));
-    public static final Route SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER, "safe-zone"));
+    public static final Route ONLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER, "online-safe-zone"));
+    public static final Route OFFLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER, "offline-safe-zone"));
+    public static final Route RESTED_EXPERIENCE_OFFLINE_WAIT_PERIOD_BEFORE_ACCUMULATION = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "offline-wait-period-before-accumulation"));
     public static final Route DISABLE_AFK_RESTED_EXPERIENCE_ACCUMULATION = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "disable-afk-accumulation"));
     public static final Route RESTED_EXPERIENCE_USAGE_RATE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "usage-rate"));
     public static final Route RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "maximum-accumulation"));

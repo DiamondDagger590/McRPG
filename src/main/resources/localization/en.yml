@@ -104,6 +104,12 @@ expansion:
 login:
   # The message to send a player whenever there is an issue loading their McRPG data.
   unable-to-load-data: "<red>There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!"
+experience:
+  rested-experience:
+    maximum-rested-experience-reached: '<gray>You currently have reached your limit of how much rested experience. Gain experience with McRPG to use it to level up faster!'
+    entering-safe-zone: '<gray>You have entered a safe zone, you will now begin gaining rested experience.'
+    leaving-safe-zone: '<gray>You have left a safe zone, you will no longer be gaining rested experience.'
+    offline-rested-experience-awarded: '<gray>You have gained <gold><rested-experience-gained> levels</gold> worth of rested experience while offline. Gain experience with McRPG to use it to level up faster!'
 # Configure experience display localization
 experience-display:
   # The message to send to a player's action bar whenever they gain experience.

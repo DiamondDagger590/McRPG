@@ -55,7 +55,6 @@ import java.util.logging.Level;
 /**
  * A {@link PlayerLoadTask} that loads McRPG player data
  */
-//TODO javadoc
 public final class McRPGPlayerLoadTask extends PlayerLoadTask {
 
     public McRPGPlayerLoadTask(@NotNull McRPG plugin, @NotNull McRPGPlayer mcRPGPlayer) {
@@ -162,15 +161,18 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     private UpdatePlayerDataSyncFunction awardRestedExperience(@NotNull Connection connection) {
         var logoutTimeOptional = PlayerLoginTimeDAO.getLastLogoutTime(connection, getCorePlayer().getUUID());
         RestedExperienceAccumulationType accumulationType = PlayerLoginTimeDAO.didPlayerLogoutInSafeZone(connection, getCorePlayer().getUUID())
-                ? RestedExperienceAccumulationType.SAFE_ZONE : RestedExperienceAccumulationType.OFFLINE;
+                ? RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE : RestedExperienceAccumulationType.OFFLINE;
         return () -> {
             if (logoutTimeOptional.isPresent()) {
                 Instant logoutTime = logoutTimeOptional.get();
                 Instant now = Instant.now();
-                double difference = Duration.between(now, logoutTime).abs().toSeconds();
+                double waitTimeBeforeAccumulation = getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                        .getDouble(MainConfigFile.RESTED_EXPERIENCE_OFFLINE_WAIT_PERIOD_BEFORE_ACCUMULATION, 0.0d);
+                double difference = Math.max(0, Duration.between(now, logoutTime).abs().toSeconds() - waitTimeBeforeAccumulation);
                 RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
                 // Award rested experience
-                restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, accumulationType);
+                restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, accumulationType, true);
             }
         };
     }

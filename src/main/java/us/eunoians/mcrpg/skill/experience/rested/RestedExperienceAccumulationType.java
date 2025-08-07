@@ -7,5 +7,6 @@ package us.eunoians.mcrpg.skill.experience.rested;
 public enum RestedExperienceAccumulationType {
     ONLINE,
     OFFLINE,
-    SAFE_ZONE
+    ONLINE_SAFE_ZONE,
+    OFFLINE_SAFE_ZONE
 }
