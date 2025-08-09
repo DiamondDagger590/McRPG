@@ -6,15 +6,18 @@ import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -60,12 +63,12 @@ public class RestedExperienceManager extends Manager<McRPG> {
      * <p>
      * This method also will override the safe zone setting if safe zone accumulation is disabled in the config.
      *
-     * @param mcRPGPlayer      The {@link McRPGPlayer} to award experience to.
-     * @param timeInSeconds    The amount of time in seconds to give rested experience for.
-     * @param accumulationType The type of rested accumulation to use for calculating amount to award.
-     * @param notifyPlayer     If the player should be notified of their experience gain.
+     * @param mcRPGPlayer               The {@link McRPGPlayer} to award experience to.
+     * @param timeInSeconds             The amount of time in seconds to give rested experience for.
+     * @param accumulationType          The type of rested accumulation to use for calculating amount to award.
+     * @param notifyPlayerOfOfflineGain If the player should be notified of their experience gain.
      */
-    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, int timeInSeconds, @NotNull RestedExperienceAccumulationType accumulationType, boolean notifyPlayer) {
+    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, int timeInSeconds, @NotNull RestedExperienceAccumulationType accumulationType, boolean notifyPlayerOfOfflineGain) {
         if (accumulationType == RestedExperienceAccumulationType.ONLINE_SAFE_ZONE && !plugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
             accumulationType = RestedExperienceAccumulationType.ONLINE;
@@ -73,26 +76,32 @@ public class RestedExperienceManager extends Manager<McRPG> {
                 .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
             accumulationType = RestedExperienceAccumulationType.OFFLINE;
         }
-        awardRestedExperience(mcRPGPlayer, getRestedExperience(timeInSeconds, accumulationType), notifyPlayer);
+        awardRestedExperience(mcRPGPlayer, getRestedExperience(timeInSeconds, accumulationType), notifyPlayerOfOfflineGain);
     }
 
     /**
      * Awards rested experience to the provided {@link McRPGPlayer}. If the player currently has more rested experience than
      * the current limit, then this method turns into a no-op.
      *
-     * @param mcRPGPlayer      The {@link McRPGPlayer} to award experience to.
-     * @param restedExperience The amount of rested experience to give.
-     * @param notifyPlayer     If the player should be notified of their experience gain.
+     * @param mcRPGPlayer               The {@link McRPGPlayer} to award experience to.
+     * @param restedExperience          The amount of rested experience to give.
+     * @param notifyPlayerOfOfflineGain If the player should be notified of their experience gain.
      */
-    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience, boolean notifyPlayer) {
+    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience, boolean notifyPlayerOfOfflineGain) {
         if (restedExperience == 0) {
             return;
         }
         PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
+        McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        Audience audience = mcRPGPlayer.getPlugin().getAdventure().player(mcRPGPlayer.getUUID());
         double currentRestedExperience = playerExperienceExtras.getRestedExperience();
         double maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
         // If they have over the limit (theyve accumulated before and the limit got lowered or something), then leave it alone
         if (currentRestedExperience >= maxAccumulation) {
+            // If they have just logged in, let them know they are at the experience cap
+            if (notifyPlayerOfOfflineGain) {
+                audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.MAXIMUM_RESTED_EXPERIENCE_REACHED_MESSAGE));
+            }
             return;
         }
         restedExperience = Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
@@ -102,7 +111,13 @@ public class RestedExperienceManager extends Manager<McRPG> {
             return;
         }
         restedExperience = playerAwardedRestedExperienceEvent.getRestedExperience();
-
+        // If the updated amount is at the max accumulation
+        if (restedExperience >= maxAccumulation) {
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.MAXIMUM_RESTED_EXPERIENCE_REACHED_MESSAGE));
+        } else if (notifyPlayerOfOfflineGain) {
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE,
+                    Map.of("rested-experience-gained", Integer.toString((int) restedExperience))));
+        }
         playerExperienceExtras.setRestedExperience((int) restedExperience);
     }
 }
