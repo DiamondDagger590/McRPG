@@ -39,13 +39,14 @@ configuration:
     # Rested Experience allows players to passively gain an experience boost.
     # This experience boost is measured in Levels. So as an example, a player might have 1.2 Levels worth of Rested Experience.
     # Rested Experience is relative in terms of how much experience it multiplies as a result.
-    # If a player needs 1000 experience to level up, then doubling an experience gain of 100 will consume 0.1 L=levels of Rested Experience.
-    # If a player needs 10000 experience to level up, then doubling an experience gain of 100 will consume 0.01 levels of Rested Experience.
+    # If a player needs 1,000 experience to level up, then doubling an experience gain of 100 will consume 0.1 L=levels of Rested Experience.
+    # If a player needs 10,000 experience to level up, then doubling an experience gain of 100 will consume 0.01 levels of Rested Experience.
     #
     # Players can gain rested experience primarily while offline. There are configuration options to allow players to gain rested experience
     # while online as well in something called "safe zones". Safe zones are defined by hooking into other plugins such as Lands.
     # If a player logs out in a safe zone AND safe zone accumulation is enabled, then they will use the safe zone equation
     # to calculate rested experience. Otherwise, the offline equation is used.
+    # McRPG Safe Zones have no purpose besides the rested experience feature
     rested-experience:
       accumulation-rates:
         # How fast can a player accumulate rested experience while offline. Time is measured in seconds
@@ -82,6 +83,22 @@ configuration:
       safe-zone:
         # Enables safe zone rested experience accumulation
         allow-safe-zone-accumulation: true
+        # This task is responsible for updating a player's state of if they are or aren't in a safe zone.
+        # This task is designed to target processing playerCount/ideal-ticks-before-player-is-checked-again.
+        # This value is then clamped between the maximum and minimum checks per tick.
+        # If you have 100 players online while targeting 20 tick task length, then the target count is 5 players per tick.
+        # This value then gets clamped between 10 and 100, resulting in 10 players being processed per tick.
+        # This approach allows for servers with smaller player count to target higher fidelity checks while a high player count
+        # performance as much due to the cap per tick with the trade-off of running over the ideal tick count.
+        player-in-safe-zone-update-task:
+          # How often in seconds should this task tick
+          tick-frequency-in-seconds: 0.05
+          # How many ticks is the ideal target for when a player is updated again after being previously updated?
+          ideal-ticks-before-player-is-updated-again: 20
+          # What is the minimum amount of players that can be processed in a task tick?
+          minimum-player-checks-per-tick: 10
+          # What is the maximum amount of players that can be processed in a task tick?
+          maximum-player-checks-per-tick: 100
         # 3rd party plugin support for defining a safe zone.
         # If a player is standing in a location such that multiple plugins can provide a definition for a "safe zone",
         # then the final result will be the OR of all the valid plugins.

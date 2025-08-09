@@ -13,7 +13,6 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 import us.eunoians.mcrpg.world.WorldManager;
-import us.eunoians.mcrpg.world.safezone.SafeZoneManager;
 
 import static com.diamonddagger590.mccore.registry.manager.ManagerKeyImpl.create;
 
@@ -32,7 +31,6 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<McRPGGuiManager> GUI = create(McRPGGuiManager.class);
     ManagerKey<EntityManager> ENTITY = create(EntityManager.class);
     ManagerKey<DisplayManager> DISPLAY = create(DisplayManager.class);
-    ManagerKey<SafeZoneManager> SAFE_ZONE = create(SafeZoneManager.class);
     ManagerKey<QuestManager> QUEST = create(QuestManager.class);
     ManagerKey<ContentExpansionManager> CONTENT_EXPANSION = create(ContentExpansionManager.class);
     ManagerKey<BleedManager> BLEED = create(BleedManager.class);

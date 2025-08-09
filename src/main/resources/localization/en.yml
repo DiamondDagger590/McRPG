@@ -104,19 +104,29 @@ expansion:
 login:
   # The message to send a player whenever there is an issue loading their McRPG data.
   unable-to-load-data: "<red>There was an issue loading your McRPG data, logging back into the server may fix this issue. If that does not fix the issue, please contact a server admin!"
+# Configure messages and localization related to experience things
 experience:
+  # Configure messages related to the rested experience feature
   rested-experience:
+    # The message to send to a player whenever they reach the maximum amount of rested experience they can accumulate.
     maximum-rested-experience-reached: '<gray>You currently have reached your limit of how much rested experience. Gain experience with McRPG to use it to level up faster!'
-    entering-safe-zone: '<gray>You have entered a safe zone, you will now begin gaining rested experience.'
-    leaving-safe-zone: '<gray>You have left a safe zone, you will no longer be gaining rested experience.'
+    # The message to send via action bar to a player whenever they enter an area that's registered as an McRPG safe zone and online accumulation is allowed.
+    entering-safe-zone-online-accumulation: '<gray>You have entered a rest zone, you will now begin gaining rested experience.'
+    # The message to send via action bar to a player whenever they leave an area that's registered as an McRPG safe zone and online accumulation is allowed.
+    leaving-safe-zone-online-accumulation: '<gray>You have left a rest zone, you will no longer be gaining rested experience.'
+    # The message to send via action bar to a player whenever they enter an area that's registered as an McRPG safe zone and offline accumulation is allowed.
+    entering-safe-zone-offline-accumulation: '<gray>You have entered a rest zone, you will now begin gaining rested experience.'
+    # The message to send via action bar to a player whenever they leave an area that's registered as an McRPG safe zone and offline accumulation is allowed.
+    leaving-safe-zone-offline-accumulation: '<gray>You have left a rest zone, you will no longer be gaining rested experience.'
+    # The message to send to a player whenever they log in and have gained rested experience whilst they were offline.
     offline-rested-experience-awarded: '<gray>You have gained <gold><rested-experience-gained> levels</gold> worth of rested experience while offline. Gain experience with McRPG to use it to level up faster!'
-# Configure experience display localization
-experience-display:
-  # The message to send to a player's action bar whenever they gain experience.
-  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
-  action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
-  # The message to send to display as the boss bar's name when sent to a player.
-  # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
+  # Configure experience display localization
+  experience-display:
+    # The message to send to a player's action bar whenever they gain experience.
+    # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
+    action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
+    # The message to send to display as the boss bar's name when sent to a player.
+    # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
   boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
 gui:
   # Allows for configuring slots that are shared commonly across many guis.

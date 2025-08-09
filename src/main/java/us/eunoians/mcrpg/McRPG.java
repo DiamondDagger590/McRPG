@@ -74,6 +74,7 @@ import us.eunoians.mcrpg.listener.entity.player.CorePlayerUnloadListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerPickupItemListener;
+import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
@@ -94,9 +95,9 @@ import us.eunoians.mcrpg.skill.experience.modifier.RestedExperienceModifier;
 import us.eunoians.mcrpg.skill.experience.modifier.SpawnReasonModifier;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 import us.eunoians.mcrpg.task.experience.RestedExperienceAccumulationTask;
+import us.eunoians.mcrpg.task.player.McRPGPlayerSafeZoneCheckTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSaveTask;
 import us.eunoians.mcrpg.world.WorldManager;
-import us.eunoians.mcrpg.world.safezone.SafeZoneManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -132,7 +133,6 @@ public class McRPG extends CorePlugin {
         registryAccess().registry(RegistryKey.MANAGER).register(new BleedManager(this));
         registryAccess().registry(RegistryKey.MANAGER).register(new ContentExpansionManager(this));
         registryAccess().registry(RegistryKey.MANAGER).register(new WorldManager(this));
-        registryAccess().registry(RegistryKey.MANAGER).register(new SafeZoneManager(this));
         registryAccess().register(new ExperienceModifierRegistry(this));
         registryAccess().registry(RegistryKey.MANAGER).register(new RestedExperienceManager(this));
         registryAccess().registry(RegistryKey.MANAGER).register(new McRPGGuiManager(this));
@@ -255,6 +255,9 @@ public class McRPG extends CorePlugin {
         // Setting listener
         Bukkit.getPluginManager().registerEvents(new PlayerSettingChangeListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerPickupItemListener(), this);
+
+        // Safe zones
+        Bukkit.getPluginManager().registerEvents(new PlayerSafeZoneStateChangeListener(), this);
     }
 
     @Override
@@ -325,15 +328,21 @@ public class McRPG extends CorePlugin {
         FileManager fileManager = registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         ReloadableTask<McRPGPlayerSaveTask> saveTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.SAVE_TASK_FREQUENCY,
                 (yamlDocument, route) -> {
-                    int frequency = yamlDocument.getInt(route);
+                    double frequency = yamlDocument.getDouble(route);
                     return new McRPGPlayerSaveTask(this, frequency, frequency);
                 }, true);
-        ReloadableTask<RestedExperienceAccumulationTask> safeZoneUpdateTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.ONLINE_RESTED_EXPERIENCE_TASK_FREQUENCY,
+        ReloadableTask<RestedExperienceAccumulationTask> restedExperienceAccumulationTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.ONLINE_RESTED_EXPERIENCE_TASK_FREQUENCY,
                 (yamlDocument, route) -> {
-                    int frequency = yamlDocument.getInt(route);
+                    double frequency = yamlDocument.getDouble(route);
                     return new RestedExperienceAccumulationTask(this, frequency, frequency);
                 }, false);
-        registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT).trackReloadableContent(Set.of(saveTask, safeZoneUpdateTask));
+        ReloadableTask<McRPGPlayerSafeZoneCheckTask> safeZoneCheckTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.SAFE_ZONE_UPDATE_TASK_TICK_FREQUENCY,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    return new McRPGPlayerSafeZoneCheckTask(this, frequency, frequency);
+                }, false);
+        registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask));
     }
 
     /**

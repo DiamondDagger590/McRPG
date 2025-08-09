@@ -4,6 +4,9 @@ import com.diamonddagger590.mccore.database.table.impl.PlayerSettingDAO;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,6 +15,8 @@ import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
@@ -19,6 +24,8 @@ import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.event.entity.player.PlayerSafeZoneStateChangeEvent;
+import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
 import us.eunoians.mcrpg.quest.Quest;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -26,6 +33,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -173,27 +181,61 @@ public class McRPGPlayer extends CorePlayer {
     }
 
     /**
-     * Updates if the player is currently standing in a safe zone or not.
-     * <p>
-     * This value will not actually be saved to the database, but is meant to serve as a frequently
-     * updated in memory copy.
-     *
-     * @param standingInSafeZone If the player is currently standing in a safe zone or not.
-     */
-    public void setStandingInSafeZone(boolean standingInSafeZone) {
-        this.standingInSafeZone = standingInSafeZone;
-    }
-
-    /**
      * Checks to see if the player is currently standing in a safe zone or not.
      * <p>
-     * This value is updated periodically while the player is online. If the player is offline,
+     * This value is updated periodically while the player is online. If you want to get
+     * a live-updated version, then call {@link #isStandingInSafeZone(boolean)}.
+     * <p>
+     * If the player is offline,
      * then check {@link us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO#didPlayerLogoutInSafeZone(Connection, UUID)}.
      *
      * @return {@code true} if the player is currently standing in a safe zone or not.
      */
     public boolean isStandingInSafeZone() {
         return standingInSafeZone;
+    }
+
+    /**
+     * Checks to see if the player is currently standing in a safe zone or not. If force
+     * update is set to true, then it will call {@link #refreshSafeZoneState()} before
+     * returning the state.
+     * <p>
+     * If the player is offline,
+     * then check {@link us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO#didPlayerLogoutInSafeZone(Connection, UUID)}.
+     *
+     * @param forceUpdate If the cached state should be updated or not.
+     * @return {@code true} if the player is currently standing in a safe zone or not.
+     */
+    public boolean isStandingInSafeZone(boolean forceUpdate) {
+        return forceUpdate ? refreshSafeZoneState() : isStandingInSafeZone();
+    }
+
+    /**
+     * Forcibly refreshes the player's safe zone state if they are online.
+     *
+     * @return The updated safe zone state.
+     */
+    public boolean refreshSafeZoneState() {
+        var playerOptional = this.getAsBukkitPlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            List<SafeZonePluginHook> safeZonePluginHooks = RegistryAccess.registryAccess()
+                    .registry(RegistryKey.PLUGIN_HOOK).pluginHooks(SafeZonePluginHook.class);
+            boolean safeZoneAllowed = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE)
+                    .getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION);
+            boolean isPlayerInSafeZone = safeZonePluginHooks.stream()
+                    .map(safeZonePluginHook -> safeZonePluginHook.isPlayerInSafeZone(player))
+                    .reduce(Boolean::logicalOr)
+                    .orElse(false) && safeZoneAllowed;
+            boolean wasPlayerInSafeZone = isStandingInSafeZone();
+            if (isPlayerInSafeZone != wasPlayerInSafeZone) {
+                this.standingInSafeZone = isPlayerInSafeZone;
+                PlayerSafeZoneStateChangeEvent playerSafeZoneStateChangeEvent = new PlayerSafeZoneStateChangeEvent(this,
+                        standingInSafeZone ? PlayerSafeZoneStateChangeEvent.SafeZoneStateChangeType.ENTERED : PlayerSafeZoneStateChangeEvent.SafeZoneStateChangeType.LEFT);
+                Bukkit.getPluginManager().callEvent(playerSafeZoneStateChangeEvent);
+            }
+        }
+        return this.standingInSafeZone;
     }
 
     /**

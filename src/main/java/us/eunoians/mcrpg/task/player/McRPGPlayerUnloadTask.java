@@ -8,7 +8,6 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
@@ -25,7 +24,7 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
     public McRPGPlayerUnloadTask(@NotNull McRPG mcRPG, @NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPG, mcRPGPlayer);
         // Do this on main thread
-        playerLogoutInSafeZone = mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.SAFE_ZONE).isPlayerInSafeZone(mcRPGPlayer);
+        playerLogoutInSafeZone = mcRPGPlayer.isStandingInSafeZone(true);
     }
 
     @Override

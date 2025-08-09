@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -15,10 +14,9 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceAccumulationType;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
+import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceOnlineAccumulationSetting;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,11 +25,12 @@ import java.util.UUID;
  */
 public final class RestedExperienceAccumulationTask extends CancellableCoreTask {
 
-    private static final ReloadableContent<OnlineAccumulationType> ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT = new ReloadableContent<>(RegistryAccess.registryAccess()
+    private static final ReloadableContent<RestedExperienceOnlineAccumulationSetting> ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT = new ReloadableContent<>(RegistryAccess.registryAccess()
             .registry(RegistryKey.MANAGER)
             .manager(McRPGManagerKey.FILE)
             .getFile(FileType.MAIN_CONFIG), MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION,
-            (yamlDocument, route) -> OnlineAccumulationType.fromString(yamlDocument.getString(route)).orElse(OnlineAccumulationType.DISABLED));
+            (yamlDocument, route) -> RestedExperienceOnlineAccumulationSetting.fromString(yamlDocument.getString(route))
+                    .orElse(RestedExperienceOnlineAccumulationSetting.DISABLED));
 
     static {
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT).trackReloadableContent(ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT);
@@ -68,9 +67,8 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
     protected void onIntervalComplete() {
         Set<UUID> currentPlayers = new HashSet<>();
         RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
-        double duration = getTaskFrequency();
         // Ensure we allow online accumulation
-        if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != OnlineAccumulationType.DISABLED) {
+        if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != RestedExperienceOnlineAccumulationSetting.DISABLED) {
             // Check all players
             for (CorePlayer corePlayer : getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
                 currentPlayers.add(corePlayer.getUUID());
@@ -81,24 +79,17 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
                             .getBoolean(MainConfigFile.DISABLE_AFK_RESTED_EXPERIENCE_ACCUMULATION)) {
                         continue;
                     }
-                    var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
-                    if (playerOptional.isPresent()) {
-                        Player player = playerOptional.get();
-                        RestedExperienceAccumulationType accumulationType = RestedExperienceAccumulationType.ONLINE;
-                        // ENABLED and SAFE_ZONE_ONLY support safe zones so we can first check for
-                        // safe zone accumulation
-                        if (mcRPGPlayer.isStandingInSafeZone()
-                                && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.SAFE_ZONE).isPlayerInSafeZone(player)
-                                && getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
-                                .getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)) {
-                            accumulationType = RestedExperienceAccumulationType.ONLINE_SAFE_ZONE;
-                        }
-                        // If normal online accumulation isn't enabled and we aren't in a safe zone, then we aren't going to award anything.
-                        else if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != OnlineAccumulationType.ENABLED) {
-                            continue;
-                        }
-                        restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, accumulationType, false);
+                    RestedExperienceAccumulationType accumulationType = RestedExperienceAccumulationType.ONLINE;
+                    // ENABLED and SAFE_ZONE_ONLY support safe zones so we can first check for
+                    // safe zone accumulation
+                    if (mcRPGPlayer.isStandingInSafeZone()) {
+                        accumulationType = RestedExperienceAccumulationType.ONLINE_SAFE_ZONE;
                     }
+                    // If normal online accumulation isn't enabled, and we aren't in a safe zone, then we aren't going to award anything.
+                    else if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != RestedExperienceOnlineAccumulationSetting.ENABLED) {
+                        continue;
+                    }
+                    restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, accumulationType, false);
                 }
             }
             playersLastUpdated = currentPlayers;
@@ -115,13 +106,5 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
 
     }
 
-    private enum OnlineAccumulationType {
-        ENABLED,
-        SAFE_ZONE_ONLY,
-        DISABLED;
 
-        public static Optional<OnlineAccumulationType> fromString(@NotNull String string) {
-            return Arrays.stream(values()).filter(type -> type.toString().equalsIgnoreCase(string)).findFirst();
-        }
-    }
 }

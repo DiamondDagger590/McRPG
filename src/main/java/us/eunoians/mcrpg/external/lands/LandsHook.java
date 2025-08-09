@@ -89,23 +89,10 @@ public class LandsHook extends PluginHook<McRPG> implements SafeZonePluginHook {
     @Override
     public boolean isPlayerInSafeZone(@NotNull Player player) {
         YamlDocument config = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
-        boolean ownedLandsAreSafeZone = config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_OWNED_LANDS, false);
-        boolean trustedLandsAreSafeZone = config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_TRUSTED_LANDS, false);
-        boolean tenantLandsAreSafeZone = config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_TENANT_LANDS, false);
-        boolean anyLandsAreSafeZone = config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_ANY_LANDS, false);
-        boolean wildZonesAreSafeZone = config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_WILD_ZONE, false);
-        if (ownedLandsAreSafeZone && isPlayerStandingInOwnedLand(player)) {
-            return true;
-        }
-        else if (trustedLandsAreSafeZone && isPlayerStandingInTrustedLand(player)) {
-            return true;
-        }
-        else if (tenantLandsAreSafeZone && isPlayerStandingInTenantLand(player)) {
-            return true;
-        }
-        else if (anyLandsAreSafeZone && isPlayerStandingInLand(player)) {
-            return true;
-        }
-        else return wildZonesAreSafeZone && !isPlayerStandingInLand(player);
+        return (isPlayerStandingInOwnedLand(player) && config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_OWNED_LANDS, false))
+                || (isPlayerStandingInTrustedLand(player) && config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_TRUSTED_LANDS, false))
+                || (isPlayerStandingInTenantLand(player) && config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_TENANT_LANDS, false))
+                || ((isPlayerStandingInLand(player) && config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_ANY_LANDS, false)
+                || config.getBoolean(MainConfigFile.SAFE_ZONE_HOOKS_LANDS_WILD_ZONE, false)));
     }
 }

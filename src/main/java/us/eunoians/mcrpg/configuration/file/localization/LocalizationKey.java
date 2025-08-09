@@ -63,9 +63,17 @@ public final class LocalizationKey extends ConfigFile {
     private static final String EXPANSION_HEADER = "expansion";
     public static final Route MCRPG_EXPANSION_NAME = Route.fromString(toRoutePath(EXPANSION_HEADER, "mcrpg"));
 
-    private static final String DISPLAY_HEADER = "experience-display";
-    public static final Route ACTION_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(DISPLAY_HEADER, "action-bar-display-message"));
-    public static final Route BOSS_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(DISPLAY_HEADER, "boss-bar-display-message"));
+    private static final String EXPERIENCE_HEADER = "experience";
+    private static final String RESTED_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "rested-experience");
+    public static final Route MAXIMUM_RESTED_EXPERIENCE_REACHED_MESSAGE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "maximum-rested-experience-reached"));
+    public static final Route ENTERING_SAFE_ZONE_ONLINE_ACCUMULATION_MESSAGE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "entering-safe-zone-online-accumulation"));
+    public static final Route LEAVING_SAFE_ZONE_ONLINE_ACCUMULATION_MESSAGE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "leaving-safe-zone-online-accumulation"));
+    public static final Route ENTERING_SAFE_ZONE_OFFLINE_ACCUMULATION_MESSAGE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "entering-safe-zone-offline-accumulation"));
+    public static final Route LEAVING_SAFE_ZONE_OFFLINE_ACCUMULATION_MESSAGE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "leaving-safe-zone-offline-accumulation"));
+    public static final Route OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "offline-rested-experience-awarded"));
+    private static final String EXPERIENCE_DISPLAY_HEADER = toRoutePath(EXPERIENCE_HEADER, "experience-display");
+    public static final Route ACTION_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(EXPERIENCE_DISPLAY_HEADER, "action-bar-display-message"));
+    public static final Route BOSS_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(EXPERIENCE_DISPLAY_HEADER, "boss-bar-display-message"));
 
     private static final String SKILLS_HEADER = "skills";
     private static final String SWORDS_HEADER = toRoutePath(SKILLS_HEADER, "swords");

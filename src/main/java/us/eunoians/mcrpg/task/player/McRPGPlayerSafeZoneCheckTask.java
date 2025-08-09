@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.task.player;
 import com.diamonddagger590.mccore.configuration.common.ReloadableInteger;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
@@ -10,14 +11,19 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
-import us.eunoians.mcrpg.event.entity.player.PlayerSafeZoneStateChangeEvent;
-import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * This task is responsible for updating a {@link us.eunoians.mcrpg.entity.player.McRPGPlayer}'s
+ * safe zone status on a periodic basis
+ */
 public class McRPGPlayerSafeZoneCheckTask extends CancellableCoreTask {
 
     private List<Player> players;
@@ -29,14 +35,15 @@ public class McRPGPlayerSafeZoneCheckTask extends CancellableCoreTask {
     private final ReloadableInteger maxChecksPerTick;
     private int currentIndex = 0;
 
-    public McRPGPlayerSafeZoneCheckTask(@NotNull McRPG mcRPG) {
-        super(mcRPG, 0, 0.2);
+    public McRPGPlayerSafeZoneCheckTask(@NotNull McRPG mcRPG, double delay, double frequency) {
+        super(mcRPG, delay, frequency);
         resetQueue();
+        // Setup reloadable content and register it
         YamlDocument config = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
-        // TODO add actual config fields
-        this.ticksBetweenChecks = new ReloadableInteger(config, null);
-        this.baseChecksPerTick  = new ReloadableInteger(config, null);
-        this.maxChecksPerTick  = new ReloadableInteger(config, null);
+        this.ticksBetweenChecks = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_IDEAL_TICKS);
+        this.baseChecksPerTick  = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_MINIMUM_CHECKS_PER_TICK);
+        this.maxChecksPerTick  = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_MAXIMUM_CHECKS_PER_TICK);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).trackReloadableContent(Set.of(ticksBetweenChecks, baseChecksPerTick, maxChecksPerTick));
     }
 
     @Override
@@ -52,26 +59,19 @@ public class McRPGPlayerSafeZoneCheckTask extends CancellableCoreTask {
         }
 
         McRPGPlayerManager playerManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
-        List<SafeZonePluginHook> safeZonePluginHooks = RegistryAccess.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHooks(SafeZonePluginHook.class);
         // Run the actual checks
         for (int i = 0; i < actualChecksPerTick && !players.isEmpty(); i++) {
-            Player player = players.get(currentIndex);
-            playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
-                boolean isPlayerInSafeZone = safeZonePluginHooks.stream()
-                        .map(safeZonePluginHook -> safeZonePluginHook.isPlayerInSafeZone(player))
-                        .reduce(Boolean::logicalOr)
-                        .orElse(false);
-                boolean wasPlayerInSafeZone = mcRPGPlayer.isStandingInSafeZone();
-                if (isPlayerInSafeZone != wasPlayerInSafeZone) {
-                    PlayerSafeZoneStateChangeEvent playerSafeZoneStateChangeEvent = new PlayerSafeZoneStateChangeEvent(mcRPGPlayer,
-                            isPlayerInSafeZone ? PlayerSafeZoneStateChangeEvent.SafeZoneStateChangeType.ENTERED : PlayerSafeZoneStateChangeEvent.SafeZoneStateChangeType.LEFT);
-                    Bukkit.getPluginManager().callEvent(playerSafeZoneStateChangeEvent);
-                    mcRPGPlayer.setStandingInSafeZone(isPlayerInSafeZone);
-                }
+            // Ensure we don't get an index out of bounds exception
+            if (currentIndex == players.size()) {
+                resetQueue();
+                return;
+            }
 
-            });
+            Player player = players.get(currentIndex);
+            playerManager.getPlayer(player.getUniqueId()).ifPresent(McRPGPlayer::refreshSafeZoneState);
             currentIndex++;
         }
+        // If we've reached the end of the list, reset
         if (currentIndex == players.size()) {
             resetQueue();
         }

@@ -50,6 +50,7 @@ public final class MainConfigFile extends ConfigFile {
     private static final String SAFE_ZONE_HEADER = toRoutePath(RESTED_EXPERIENCE_HEADER, "safe-zone");
     private static final String ONLINE_RESTED_EXPERIENCE_TASK_HEADER = toRoutePath(RESTED_EXPERIENCE_HEADER, "");
     private static final String SAFE_ZONE_HOOKS_HEADER = toRoutePath(SAFE_ZONE_HEADER, "safe-zone-hooks");
+    private static final String PLAYER_IN_SAFE_ZONE_UPDATE_TASK_HEADER = toRoutePath(SAFE_ZONE_HEADER, "player-in-safe-zone-update-task");
     private static final String SAFE_ZONE_HOOKS_WORLD_GUARD_HEADER = toRoutePath(SAFE_ZONE_HOOKS_HEADER, "world-guard");
     private static final String SAFE_ZONE_HOOKS_LANDS_HEADER = toRoutePath(SAFE_ZONE_HOOKS_HEADER, "lands");
     private static final String RESTED_EXPERIENCE_ACCUMULATION_RATES_HEADER = toRoutePath(RESTED_EXPERIENCE_HEADER, "accumulation-rates");
@@ -64,6 +65,10 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION = Route.fromString(toRoutePath(RESTED_EXPERIENCE_HEADER, "allow-online-accumulation"));
     public static final Route ONLINE_RESTED_EXPERIENCE_TASK_FREQUENCY = Route.fromString(toRoutePath(ONLINE_RESTED_EXPERIENCE_TASK_HEADER, "frequency"));
     public static final Route SAFE_ZONE_ALLOW_ACCUMULATION = Route.fromString(toRoutePath(SAFE_ZONE_HEADER, "allow-safe-zone-accumulation"));
+    public static final Route SAFE_ZONE_UPDATE_TASK_TICK_FREQUENCY = Route.fromString(toRoutePath(PLAYER_IN_SAFE_ZONE_UPDATE_TASK_HEADER, "tick-frequency-in-seconds"));
+    public static final Route SAFE_ZONE_UPDATE_TASK_IDEAL_TICKS = Route.fromString(toRoutePath(PLAYER_IN_SAFE_ZONE_UPDATE_TASK_HEADER, "ideal-ticks-before-player-is-updated-again"));
+    public static final Route SAFE_ZONE_UPDATE_TASK_MINIMUM_CHECKS_PER_TICK = Route.fromString(toRoutePath(PLAYER_IN_SAFE_ZONE_UPDATE_TASK_HEADER, "minimum-player-checks-per-tick"));
+    public static final Route SAFE_ZONE_UPDATE_TASK_MAXIMUM_CHECKS_PER_TICK = Route.fromString(toRoutePath(PLAYER_IN_SAFE_ZONE_UPDATE_TASK_HEADER, "maximum-player-checks-per-tick"));
     public static final Route SAFE_ZONE_HOOKS_WORLD_GUARD_ENABLED = Route.fromString(toRoutePath(SAFE_ZONE_HOOKS_WORLD_GUARD_HEADER, "enabled"));
     public static final Route SAFE_ZONE_HOOKS_LANDS_OWNED_LANDS = Route.fromString(toRoutePath(SAFE_ZONE_HOOKS_LANDS_HEADER, "owned-lands"));
     public static final Route SAFE_ZONE_HOOKS_LANDS_TRUSTED_LANDS = Route.fromString(toRoutePath(SAFE_ZONE_HOOKS_LANDS_HEADER, "trusted_lands"));
