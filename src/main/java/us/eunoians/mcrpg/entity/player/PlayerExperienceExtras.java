@@ -86,6 +86,7 @@ public class PlayerExperienceExtras {
 
     /**
      * Sets the amount of redeemable levels a player has to spend.
+     *
      * @param redeemableLevels The amount of redeemable levels to a player will have to spend. This
      *                         number can't be a negative value.
      */
@@ -94,37 +95,78 @@ public class PlayerExperienceExtras {
     }
 
     /**
-     * Modifies the amount of rede
-     * @param redeemableLevels
+     * Modifies the amount of redeemable levels the player has to spend by adding the provided
+     * count of levels to their current count. The result will be clamped at zero at minimum.
+     *
+     * @param redeemableLevels The amount of redeemable levels to modify the player's count by.
+     *                         This value can be negative.
      */
     public void modifyRedeemableLevels(int redeemableLevels) {
         this.redeemableLevels = Math.max(0, this.redeemableLevels + redeemableLevels);
     }
 
+    /**
+     * Gets the amount of boosted experience the player has.
+     *
+     * @return The amount of boosted experience the player has.
+     */
     public int getBoostedExperience() {
         return boostedExperience;
     }
 
+    /**
+     * Sets the amount of boosted experience the player has.
+     *
+     * @param boostedExperience The amount of boosted experience to set for the player.
+     */
     public void setBoostedExperience(int boostedExperience) {
         this.boostedExperience = Math.max(0, boostedExperience);
     }
 
+    /**
+     * Modifies the amount of boosted experience the player has by adding the provided
+     * amount to the player's current amount. The result will be clamped at zero at minimum.
+     *
+     * @param boostedExperience The amount of boosted experience to modify the player's count by.
+     *                          This value can be negative.
+     */
     public void modifyBoostedExperience(int boostedExperience) {
         this.boostedExperience = Math.max(0, this.boostedExperience + boostedExperience);
     }
 
+    /**
+     * Gets the amount of rested experience the player has.
+     *
+     * @return The amount of rested experience the player has.
+     */
     public float getRestedExperience() {
         return restedExperience;
     }
 
+    /**
+     * Sets the amount of rested experience the player has.
+     *
+     * @param restedExperience The amount of rested experience to set for the player.
+     */
     public void setRestedExperience(float restedExperience) {
         this.restedExperience = Math.max(0, restedExperience);
     }
 
+    /**
+     * Modifies the amount of rested experience the player has by adding the provided
+     * amount to the player's current amount. The result will be clamped at zero at minimum.
+     *
+     * @param restedExperience The amount of rested experience to modify the player's count by.
+     *                         This value can be negative.
+     */
     public void modifyRestedExperience(float restedExperience) {
         this.restedExperience = Math.max(0, this.restedExperience + restedExperience);
     }
 
+    /**
+     * Resets all of a player's extra experience info including their redeemable, rested and boosted
+     * experience.
+     */
     public void reset() {
         this.redeemableExperience = 0;
         this.redeemableLevels = 0;
@@ -132,6 +174,12 @@ public class PlayerExperienceExtras {
         this.restedExperience = 0;
     }
 
+    /**
+     * Copies the provided {@link PlayerExperienceExtras} and overwrites this instance to
+     * contain the same internal values.
+     *
+     * @param playerExperienceExtras The extras to copy into this instance.
+     */
     public void copyExtras(@NotNull PlayerExperienceExtras playerExperienceExtras) {
         this.redeemableExperience = playerExperienceExtras.getRedeemableExperience();
         this.redeemableLevels = playerExperienceExtras.getRedeemableLevels();

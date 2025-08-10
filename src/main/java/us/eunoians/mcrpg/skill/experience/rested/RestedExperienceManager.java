@@ -51,10 +51,10 @@ public class RestedExperienceManager extends Manager<McRPG> {
      * @param accumulationType The type of accumulation rate to get the rested experience from.
      * @return The amount of rested experience that should be awarded for the period of time provided.
      */
-    public double getRestedExperience(int timeInSeconds, @NotNull RestedExperienceAccumulationType accumulationType) {
+    public float getRestedExperience(int timeInSeconds, @NotNull RestedExperienceAccumulationType accumulationType) {
         Parser parser = accumulationRates.get(accumulationType).getContent();
         parser.setVariable("time", timeInSeconds);
-        return parser.getValue();
+        return (float) parser.getValue();
     }
 
     /**
@@ -87,7 +87,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
      * @param restedExperience          The amount of rested experience to give.
      * @param notifyPlayerOfOfflineGain If the player should be notified of their experience gain.
      */
-    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience, boolean notifyPlayerOfOfflineGain) {
+    public void awardRestedExperience(@NotNull McRPGPlayer mcRPGPlayer, float restedExperience, boolean notifyPlayerOfOfflineGain) {
         if (restedExperience == 0) {
             return;
         }
@@ -104,7 +104,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
             }
             return;
         }
-        restedExperience = Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
+        restedExperience = (float) Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
         PlayerAwardedRestedExperienceEvent playerAwardedRestedExperienceEvent = new PlayerAwardedRestedExperienceEvent(mcRPGPlayer, restedExperience, maxAccumulation);
         Bukkit.getPluginManager().callEvent(playerAwardedRestedExperienceEvent);
         if (playerAwardedRestedExperienceEvent.isCancelled()) {
@@ -116,8 +116,8 @@ public class RestedExperienceManager extends Manager<McRPG> {
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.MAXIMUM_RESTED_EXPERIENCE_REACHED_MESSAGE));
         } else if (notifyPlayerOfOfflineGain) {
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE,
-                    Map.of("rested-experience-gained", Integer.toString((int) restedExperience))));
+                    Map.of("rested-experience-gained", Float.toString(restedExperience))));
         }
-        playerExperienceExtras.setRestedExperience((int) restedExperience);
+        playerExperienceExtras.setRestedExperience(restedExperience);
     }
 }

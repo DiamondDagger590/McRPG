@@ -6,11 +6,21 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.external.papi.McRPGPapiExpansion;
 import us.eunoians.mcrpg.external.papi.placeholder.ability.AbilityTierPlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.experience.BoostedExperiencePlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.experience.RedeemableExperiencePlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.experience.RedeemableLevelsPlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.experience.RestedExperiencePlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.skill.SkillCurrentExperiencePlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.skill.SkillCurrentLevelPlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.skill.SkillRemainingExperiencePlaceholder;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
+/**
+ * This enum is responsible for registering PAPI placeholders
+ * as a single {@link McRPGPlaceholder} might be designed to be generic enough
+ * to support multiple registrations (such as {@link SkillCurrentLevelPlaceholder} being
+ * registered one per skill).
+ */
 public enum McRPGPlaceHolderType {
 
     SKILL_CURRENT_LEVEL((mcRPG, mcRPGPapiExpansion) -> {
@@ -36,6 +46,18 @@ public enum McRPGPlaceHolderType {
             }
         });
     }),
+    BOOSTED_EXPERIENCE((mcRPG, mcRPGPapiExpansion) -> {
+        mcRPGPapiExpansion.registerPlaceholder(new BoostedExperiencePlaceholder());
+    }),
+    REDEEMABLE_EXPERIENCE((mcRPG, mcRPGPapiExpansion) -> {
+        mcRPGPapiExpansion.registerPlaceholder(new RedeemableExperiencePlaceholder());
+    }),
+    REDEEMABLE_LEVELS((mcRPG, mcRPGPapiExpansion) -> {
+        mcRPGPapiExpansion.registerPlaceholder(new RedeemableLevelsPlaceholder());
+    }),
+    RESTED_EXPERIENCE((mcRPG, mcRPGPapiExpansion) -> {
+        mcRPGPapiExpansion.registerPlaceholder(new RestedExperiencePlaceholder());
+    }),
     ;
 
     private final PlaceholderRegisterFunction placeholderRegisterFunction;
@@ -44,6 +66,12 @@ public enum McRPGPlaceHolderType {
         this.placeholderRegisterFunction = placeholderRegisterFunction;
     }
 
+    /**
+     * Registers the placeholders this enum value is in charge of registering.
+     *
+     * @param mcRPG              The plugin instance to use for registering.
+     * @param mcRPGPapiExpansion The expansion being used for registration.
+     */
     public void registerPlaceholders(@NotNull McRPG mcRPG, @NotNull McRPGPapiExpansion mcRPGPapiExpansion) {
         placeholderRegisterFunction.registerPlaceholders(mcRPG, mcRPGPapiExpansion);
     }

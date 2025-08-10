@@ -13,10 +13,10 @@ public class PlayerAwardedRestedExperienceEvent extends McRPGPlayerEvent impleme
 
     private static final HandlerList handlers = new HandlerList();
     private boolean cancelled = false;
-    private double restedExperience;
+    private float restedExperience;
     private final double maxAccumulation;
 
-    public PlayerAwardedRestedExperienceEvent(@NotNull McRPGPlayer mcRPGPlayer, double restedExperience, double maxAccumulation) {
+    public PlayerAwardedRestedExperienceEvent(@NotNull McRPGPlayer mcRPGPlayer, float restedExperience, double maxAccumulation) {
         super(mcRPGPlayer);
         this.restedExperience = Math.max(restedExperience, 0);
         this.maxAccumulation = Math.max(maxAccumulation, 0);
@@ -27,7 +27,7 @@ public class PlayerAwardedRestedExperienceEvent extends McRPGPlayerEvent impleme
      *
      * @return The amount of rested experience to be awarded.
      */
-    public double getRestedExperience() {
+    public float getRestedExperience() {
         return restedExperience;
     }
 
@@ -38,7 +38,7 @@ public class PlayerAwardedRestedExperienceEvent extends McRPGPlayerEvent impleme
      * @param restedExperience The amount of rested experience to be awarded.
      */
     public void setRestedExperience(double restedExperience) {
-        this.restedExperience = Math.clamp(restedExperience, 0, maxAccumulation);
+        this.restedExperience = (float) Math.clamp(restedExperience, 0, maxAccumulation);
     }
 
     /**
