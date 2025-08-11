@@ -23,7 +23,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.3.14-SNAPSHOT"
+version = "1.5.3.15-SNAPSHOT"
 group = "us.eunoians"
 
 java {
@@ -57,10 +57,10 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     implementation("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val spigotVersion = "1.21.7-R0.1-SNAPSHOT"
+    val spigotVersion = "1.21.8-R0.1-SNAPSHOT"
     compileOnly("org.spigotmc:spigot-api:$spigotVersion")
 
-    val nbtAPIVersion = "2.15.0"
+    val nbtAPIVersion = "2.15.1"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val bstatsVersion = "2.2.1"
