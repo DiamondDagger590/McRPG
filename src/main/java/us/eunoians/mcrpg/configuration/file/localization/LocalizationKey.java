@@ -117,6 +117,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route HOME_GUI_ABILITIES_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "abilities-slot.display-item"));
     public static final Route HOME_GUI_SKILLS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "skills-slot.display-item"));
     public static final Route HOME_GUI_LOADOUTS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "loadouts-slot.display-item"));
+    public static final Route HOME_GUI_EXPERIENCE_BANK_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "experience-bank-slot.display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
@@ -195,6 +196,17 @@ public final class LocalizationKey extends ConfigFile {
     private static final String PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "require-empty-offhand-to-active-ability-slot");
     public static final Route PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER, "enabled.display-item"));
     public static final Route PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER, "disabled.display-item"));
+
+    private static final String EXPERIENCE_BANK_GUI_HEADER = toRoutePath(GUI_HEADER, "experience-bank-gui");
+    public static final Route EXPERIENCE_BANK_GUI_TITLE = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "title"));
+    public static final Route EXPERIENCE_BANK_GUI_REDEEMABLE_EXPERIENCE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "redeemable-experience-slot.display-item"));
+    public static final Route EXPERIENCE_BANK_GUI_REDEEMABLE_LEVELS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "redeemable-levels-slot.display-item"));
+    private static final String EXPERIENCE_BANK_GUI_BOOSTED_EXPERIENCE_SLOT_HEADER = toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "boosted-experience-slot");
+    public static final Route EXPERIENCE_BANK_GUI_BOOSTED_EXPERIENCE_SLOT_EXAMPLE_BASE_AMOUNT = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_BOOSTED_EXPERIENCE_SLOT_HEADER, "example-base-amount"));
+    public static final Route EXPERIENCE_BANK_GUI_BOOSTED_EXPERIENCE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_BOOSTED_EXPERIENCE_SLOT_HEADER, "display-item"));
+    private static final String EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER = toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "rested-experience-slot");
+    public static final Route EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_EXAMPLE_BASE_AMOUNT = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER, "example-base-amount"));
+    public static final Route EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER, "display-item"));
 
     private static final String ABILITY_HEADER = "ability";
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-still-on-cooldown"));

@@ -59,7 +59,8 @@ public final class BoostedExperienceModifier extends ExperienceModifier {
                 PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
                 int playerBoostedExperience = playerExperienceExtras.getBoostedExperience();
                 try {
-                    double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE);
+                    double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                            .getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE);
                     double boostedExperience = skillExperienceContext.getBaseExperience() * boostToApply;
                     // If the end result is larger than the amount of experience we can give, then we need to find the multiplier of base exp that gets us to the remaining exp
                     if (boostedExperience > playerBoostedExperience) {

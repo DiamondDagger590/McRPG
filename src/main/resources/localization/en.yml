@@ -188,6 +188,21 @@ gui:
         name: "<red>Loadouts"
         lore:
           - '<gray>Click to edit your loadouts.'
+    # The slot that takes players to the experience bank gui.
+    experience-bank-slot:
+      display-item:
+        material: EXPERIENCE_BOTTLE
+        name: "<red>Experience Bank"
+        # Supported placeholders: <redeemable-experience>, <redeemable-levels>,
+        # <rested-experience> and <boosted-experience>
+        lore:
+          - '<gray>Click to view banked experience and redeem'
+          - '<gray>redeemable experience.'
+          - ''
+          - '<gray>Redeemable Experience: <gold><redeemable-experience>'
+          - '<gray>Redeemable Levels: <gold><redeemable-levels>'
+          - '<gray>Rested Experience: <gold><rested-experience>'
+          - '<gray>Boosted Experience: <gold><boosted-experience>'
   # This GUI allows players to view and edit their abilities.
   ability-gui:
     title: '<gold>Viewing Abilities'
@@ -587,7 +602,7 @@ gui:
             - '<gray>Abilities can be readied even with an item in your offhand.'
             - ''
             - '<gold>Click <gray>to change this setting.'
-  # This GUI allows players to configure the allow list of blocks for Remote Transfer.
+  # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"
     # These categories should match exactly to the ones in the mining_configuration.yml.
@@ -697,7 +712,12 @@ gui:
           name: '<gold>Click to toggle all items</gold>'
           lore:
             - '<gray>Click to toggle all items in the current category to be <red>disabled</red>.'
+  # This GUI allows players to view all of their banked special types of exp
+  # such as rested, boosted, redeemable, etc.
   experience-bank-gui:
+    # What should the displayed title of this GUI be
+    title: '<gold>Experience Bank'
+    # This slot allows players to open the GUI for redeeming redeemable experience
     redeemable-experience-slot:
       display-item:
         name: "<gold>Redeemable Experience"
@@ -706,28 +726,50 @@ gui:
           - '<gray>Redeemable Experience: <gold><redeemable-experience>'
           - ''
           - '<gold>Click <gray>to spend your redeemable experience.'
+    # This slot allows players to open the GUI for redeeming redeemable levels
     redeemable-levels-slot:
       display-item:
         name: "<gold>Redeemable Levels"
-        material: DIAMOND_SWORD
+        material: ENCHANTED_BOOK
         lore:
           - '<gray>Redeemable Experience: <gold><redeemable-levels>'
           - ''
           - '<gold>Click <gray>to spend your redeemable levels.'
+        settings:
+          glowing: true
+    # This slot allows players to view information about their boosted experience
     boosted-experience-slot:
       example-base-amount: 100
       display-item:
         name: "<gold>Boosted Experience Bank"
-        material: CHEST
+        material: BEACON
         lore:
           - '<gray>Boosted Experience: <gold><boosted-experience>'
           - '<gray>Usage Rate: <gold><boosted-experience-usage-rate>'
           - ''
-          - '<gray>Whenever you gain McRPG experience, Boosted Exp will be consumed'
-          - '<gray>and used to multiply your experience gain.'
-          - '<gray>If you gain <gold><example-base-amount> exp</gold> in Swords then'
-          - '<gray>it will add up to <gold><example-boosted-amount> exp</gold> to what you gain'
-          - '<gray>and remove that much from your bank.'
+          - '<gray>All experience gained is boosted. This lasts'
+          - '<gray>until your banked experience is drained.'
+          - '<gray>Example: Gaining <gold><example-base-amount></gold> exp will be boosted to'
+          - '<gray>to <gold><example-boosted-amount></gold>, taking <gold><example-consumed-amount></gold> exp from the bank.'
+    # This slot allows players to view information about their rested experience
+    rested-experience-slot:
+      example-base-amount: 100
+      display-item:
+        name: "<gold>Rested Experience Bank"
+        material: LIME_BED
+        lore:
+          - '<gray>Rested Experience: <gold><rested-experience> Level(s)'
+          - '<gray>Usage Rate: <gold><rested-experience-usage-rate>'
+          - ''
+          - '<gray>All experience gained is boosted. This lasts'
+          - '<gray>until your banked experience is drained.'
+          - '<gray>Example: Gaining <gold><example-base-amount></gold> exp will be boosted to'
+          - '<gray>to <gold><example-boosted-amount></gold>, taking <gold><example-consumed-amount></gold> exp from the bank.'
+          - ''
+          - '<gray>Rested Experience is stored as "levels". This means the if you require'
+          - '<gold>1000 exp</gold><gray> to reach the next level and you gain <gold>100 bonus exp'
+          - '<gray>due to Rested Experience, then it will count as using <gold>0.1</gold> of your total'
+          - '<gray>Rested Experience.'
 # Configure ability placeholders, display items and other text/items.
 ability:
   # Configure messages relating to abilities that can be on cooldown

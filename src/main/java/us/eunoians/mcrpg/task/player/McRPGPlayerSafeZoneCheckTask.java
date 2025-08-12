@@ -26,32 +26,35 @@ import java.util.Set;
  */
 public class McRPGPlayerSafeZoneCheckTask extends CancellableCoreTask {
 
-    private List<Player> players;
     // How often do we want to best case check every player
-    private final ReloadableInteger ticksBetweenChecks;
+    private static final ReloadableInteger TICKS_BETWEEN_CHECKS;
     // How much work does a tick start with
-    private final ReloadableInteger baseChecksPerTick;
+    private static final ReloadableInteger BASE_CHECKS_PER_TICK;
     // What is the hard cap of players we can process per tick to prevent runaway lag
-    private final ReloadableInteger maxChecksPerTick;
+    private static final ReloadableInteger MAX_CHECKS_PER_TICK;
+
+    static {
+        YamlDocument config = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
+        TICKS_BETWEEN_CHECKS = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_IDEAL_TICKS);
+        BASE_CHECKS_PER_TICK = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_MINIMUM_CHECKS_PER_TICK);
+        MAX_CHECKS_PER_TICK = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_MAXIMUM_CHECKS_PER_TICK);
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).trackReloadableContent(Set.of(TICKS_BETWEEN_CHECKS, BASE_CHECKS_PER_TICK, MAX_CHECKS_PER_TICK));
+    }
+
+    private List<Player> players;
     private int currentIndex = 0;
 
     public McRPGPlayerSafeZoneCheckTask(@NotNull McRPG mcRPG, double delay, double frequency) {
         super(mcRPG, delay, frequency);
         resetQueue();
-        // Setup reloadable content and register it
-        YamlDocument config = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
-        this.ticksBetweenChecks = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_IDEAL_TICKS);
-        this.baseChecksPerTick  = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_MINIMUM_CHECKS_PER_TICK);
-        this.maxChecksPerTick  = new ReloadableInteger(config, MainConfigFile.SAFE_ZONE_UPDATE_TASK_MAXIMUM_CHECKS_PER_TICK);
-        mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).trackReloadableContent(Set.of(ticksBetweenChecks, baseChecksPerTick, maxChecksPerTick));
     }
 
     @Override
     protected void onIntervalComplete() {
         int playerCount = players.size();
         // Figure out how far behind we are
-        int idealChecksPerTick = Math.max(baseChecksPerTick.getContent(), (int) Math.ceil((double) playerCount / ticksBetweenChecks.getContent()));
-        int actualChecksPerTick = Math.min(idealChecksPerTick, maxChecksPerTick.getContent());
+        int idealChecksPerTick = Math.max(BASE_CHECKS_PER_TICK.getContent(), (int) Math.ceil((double) playerCount / TICKS_BETWEEN_CHECKS.getContent()));
+        int actualChecksPerTick = Math.min(idealChecksPerTick, MAX_CHECKS_PER_TICK.getContent());
 
         double tps = Bukkit.getTPS()[0];
         if (tps < 17.0) {

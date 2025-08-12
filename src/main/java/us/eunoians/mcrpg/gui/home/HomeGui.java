@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.home.slot.HomeAbilitiesSlot;
+import us.eunoians.mcrpg.gui.home.slot.HomeExperienceBankSlot;
 import us.eunoians.mcrpg.gui.home.slot.HomeLoadoutSlot;
 import us.eunoians.mcrpg.gui.home.slot.HomeSettingsSlot;
 import us.eunoians.mcrpg.gui.home.slot.HomeSkillsSlot;
@@ -27,10 +28,11 @@ import java.util.Optional;
  */
 public class HomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
 
-    private static final int SETTINGS_SLOT_INDEX = 10;
-    private static final int SKILLS_SLOT_INDEX = 12;
-    private static final int ABILITIES_SLOT_INDEX = 14;
-    private static final int LOADOUT_SLOT_INDEX = 16;
+    private static final int SETTINGS_SLOT_INDEX = 9;
+    private static final int SKILLS_SLOT_INDEX = 11;
+    private static final int ABILITIES_SLOT_INDEX = 13;
+    private static final int LOADOUT_SLOT_INDEX = 15;
+    private static final int EXPERIENCE_BANK_SLOT_INDEX = 17;
 
     private final Player player;
 
@@ -69,6 +71,7 @@ public class HomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
         setSlot(SKILLS_SLOT_INDEX, new HomeSkillsSlot());
         setSlot(ABILITIES_SLOT_INDEX, new HomeAbilitiesSlot());
         setSlot(LOADOUT_SLOT_INDEX, new HomeLoadoutSlot());
+        setSlot(EXPERIENCE_BANK_SLOT_INDEX, new HomeExperienceBankSlot());
     }
 
     @Override

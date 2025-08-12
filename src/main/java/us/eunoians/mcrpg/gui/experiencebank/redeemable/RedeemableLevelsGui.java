@@ -5,12 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
 
-/**
- * This GUI allows players to spend their redeemable experience.
- */
-public class RedeemableExperienceGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
+public class RedeemableLevelsGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
 
-    public RedeemableExperienceGui(@NotNull McRPGPlayer creatingPlayer) {
+    public RedeemableLevelsGui(@NotNull McRPGPlayer creatingPlayer) {
         super(creatingPlayer);
     }
 
