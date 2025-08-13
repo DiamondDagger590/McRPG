@@ -40,7 +40,6 @@ public class RestedExperienceManager extends Manager<McRPG> {
         accumulationRates.put(RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE, new ReloadableParser(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.OFFLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE));
         ReloadableContentManager reloadableContentManager = plugin.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT);
         accumulationRates.values().forEach(reloadableContentManager::trackReloadableContent);
-
     }
 
     /**

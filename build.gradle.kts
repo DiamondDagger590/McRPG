@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     java
     `java-library`
+    `java-test-fixtures`
     `maven-publish`
     id("io.github.goooler.shadow") version "8.1.7"
     kotlin("jvm")
@@ -63,6 +64,8 @@ dependencies {
 
     val mccoreVersion = "1.0.0.16-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
+    testImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
+    testFixturesImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
 
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
@@ -88,11 +91,12 @@ dependencies {
     // Test deps
     val mockBukkitVersion = "3.80.0"
     testImplementation("com.github.seeseemelk:MockBukkit-v1.20:$mockBukkitVersion")
-    val junitVersion = "5.8.2";
+    val junitVersion = "5.11.0";
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     val mockitoVersion = "3.12.2";
     testImplementation("org.mockito:mockito-inline:$mockitoVersion")
+    testFixturesImplementation("org.mockito:mockito-inline:$mockitoVersion")
 
     //Jar deps
     compileOnly(files("libs/Sickle.jar"))
@@ -116,24 +120,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-//tasks.jar {
-//
-//    manifest.attributes["Manifest-Version"] = "1.0"
-//    manifest.attributes["Main-Class"] = "us.eunoians.mcrpg.McRPG"
-//    manifest.attributes["Class-Path"] = "McRPG/libs/h2.jar"
-//
-//    // Open git
-//    val git = org.ajoberstar.grgit.Grgit.open(file("."))
-//    // Use abbreviated id from git head
-//    archiveAppendix.set(git.head().abbreviatedId)
-//
-//    // check if classifier is present before adding an unnecessary '-'.
-//    val classifier = archiveClassifier.get()
-//
-//    // Set our desired formatting for the file name
-//    archiveFileName.set("${archiveBaseName.get()}-${archiveVersion.get()}-${archiveAppendix.get()}${if (classifier.isEmpty()) "" else "-$classifier"}.${archiveExtension.get()}")
-//}
-
 tasks {
     shadowJar {
         // Open git
@@ -155,12 +141,8 @@ tasks {
     }
 }
 
-tasks {
-    build {
-        dependsOn(compileJava)
-        dependsOn(shadowJar)
-    }
-    jar {
-        dependsOn(shadowJar)
-    }
+tasks.register("verifiedShadowJar") {
+    group = "build"
+    description = "Runs tests, then builds the shaded jar."
+    dependsOn("test", "shadowJar")
 }

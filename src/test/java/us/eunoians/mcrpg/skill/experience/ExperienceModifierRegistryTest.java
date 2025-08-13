@@ -1,28 +1,40 @@
 package us.eunoians.mcrpg.skill.experience;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.McRPGMockFixture;
+import us.eunoians.mcrpg.McRPGPlayerFixture;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
-import us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier;
+import us.eunoians.mcrpg.skill.experience.context.BlockBreakContext;
+import us.eunoians.mcrpg.skill.experience.context.MockExperienceContext;
+import us.eunoians.mcrpg.skill.experience.modifier.MockModifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(RegistryResetExtension.class)
+@ExtendWith(McRPGPlayerFixture.class)
 public class ExperienceModifierRegistryTest {
 
-    private static final McRPG mcRPG = mock(McRPG.class);
+    private static final McRPG mcRPG = McRPGMockFixture.mcRPG;
+
     private static final RegistryAccess registryAccess = RegistryAccess.registryAccess();
-    private static final ExperienceModifierRegistry modifierRegistry = new ExperienceModifierRegistry(mcRPG);
+    private static ExperienceModifierRegistry modifierRegistry;
+
+    private static MockModifier mockModifier;
 
     @BeforeAll
     public static void setUpClass() {
+        // Setup registries
+        modifierRegistry = new ExperienceModifierRegistry(mcRPG);
         RegistryAccess.registryAccess().register(modifierRegistry);
-        doReturn(registryAccess).when(mcRPG).registryAccess();
+        mockModifier = new MockModifier(mcRPG);
     }
 
     @Test
@@ -43,8 +55,19 @@ public class ExperienceModifierRegistryTest {
 
     @Test
     public void register_withValidModifier_addsModifierToRegistry() {
-        ExperienceModifier mockModifier = mock(ExperienceModifier.class);
         modifierRegistry.register(mockModifier);
         assertTrue(modifierRegistry.registered(mockModifier));
+    }
+
+    @Test
+    public void givenMockSkillContext_whenCalculateModifierForContext_thenReturn11() {
+        MockExperienceContext mockExperienceContext = mock(MockExperienceContext.class);
+        assertEquals(11, modifierRegistry.calculateModifierForContext(mockExperienceContext));
+    }
+
+    @Test
+    public void givenInvalidMockSkillContext_whenCalculateModifierForContext_thenReturn1() {
+        BlockBreakContext blockBreakContext = mock(BlockBreakContext.class);
+        assertEquals(1, modifierRegistry.calculateModifierForContext(blockBreakContext));
     }
 }
