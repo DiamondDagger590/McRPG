@@ -67,6 +67,11 @@ dependencies {
     testImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
     testFixturesImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
 
+    val paperVersion = "1.21.8-R0.1-SNAPSHOT"
+    compileOnly("io.papermc.paper:paper-api:$paperVersion")
+    testImplementation("io.papermc.paper:paper-api:$paperVersion")
+    testFixturesImplementation("io.papermc.paper:paper-api:$paperVersion")
+
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
@@ -89,11 +94,18 @@ dependencies {
     compileOnly("com.github.angeschossen:LandsAPI:$landsVersion")
 
     // Test deps
-    val mockBukkitVersion = "3.80.0"
-    testImplementation("com.github.seeseemelk:MockBukkit-v1.20:$mockBukkitVersion")
+    val mockBukkitVersion = "4.72.7"
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
+    testFixturesImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
+
+    // Gotta be explicit (MockBukkit is throwing a fit)
     val junitVersion = "5.11.0";
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testFixturesImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testImplementation(platform("org.junit:junit-bom:$junitVersion"))
+    testFixturesImplementation(platform("org.junit:junit-bom:$junitVersion"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     val mockitoVersion = "3.12.2";
     testImplementation("org.mockito:mockito-inline:$mockitoVersion")
     testFixturesImplementation("org.mockito:mockito-inline:$mockitoVersion")

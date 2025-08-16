@@ -45,9 +45,14 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
      * @return The modifier that should be applied to gained experience.
      */
     public double calculateModifierForContext(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
-        return experienceModifiers.stream()
+        return 1d + experienceModifiers.stream()
                 .filter(experienceModifier -> experienceModifier.canProcessContext(skillExperienceContext))
                 .map(experienceModifier -> experienceModifier.getModifier(skillExperienceContext))
-                .reduce(1.0, Double::sum);
+                .mapToDouble(Double::doubleValue)
+                .sum();
+    }
+
+    private void reset() {
+        experienceModifiers.clear();
     }
 }

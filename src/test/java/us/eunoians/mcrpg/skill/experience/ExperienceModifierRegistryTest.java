@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.McRPGMockFixture;
-import us.eunoians.mcrpg.McRPGPlayerFixture;
+import us.eunoians.mcrpg.McRPGMockExtension;
+import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.BlockBreakContext;
 import us.eunoians.mcrpg.skill.experience.context.MockExperienceContext;
@@ -19,10 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(RegistryResetExtension.class)
-@ExtendWith(McRPGPlayerFixture.class)
+@ExtendWith(McRPGPlayerExtension.class)
+@ExtendWith(ExperienceModifierRegistryExtension.class)
 public class ExperienceModifierRegistryTest {
 
-    private static final McRPG mcRPG = McRPGMockFixture.mcRPG;
+    private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
 
     private static final RegistryAccess registryAccess = RegistryAccess.registryAccess();
     private static ExperienceModifierRegistry modifierRegistry;
@@ -31,9 +32,8 @@ public class ExperienceModifierRegistryTest {
 
     @BeforeAll
     public static void setUpClass() {
-        // Setup registries
-        modifierRegistry = new ExperienceModifierRegistry(mcRPG);
-        RegistryAccess.registryAccess().register(modifierRegistry);
+        // Pulls from an extension
+        modifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         mockModifier = new MockModifier(mcRPG);
     }
 

@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg;
+package us.eunoians.mcrpg.entity.player;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
@@ -10,8 +10,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Objects;
@@ -25,32 +25,45 @@ import static org.mockito.Mockito.spy;
  * <p>
  * This player will be passed in as a fixture and can be used by having a {@link McRPGPlayer} parameter on a method.
  */
-public class McRPGPlayerFixture implements BeforeAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver, McRPGMockFixture {
+public class McRPGPlayerExtension extends McRPGMockExtension implements BeforeAllCallback, BeforeEachCallback,
+        AfterEachCallback, ParameterResolver {
 
-    private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(McRPGPlayerFixture.class);
+    private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(McRPGPlayerExtension.class);
 
     public record Fixture(@NotNull McRPGPlayer mcRPGPlayer) {
     }
 
     @Override
     public void beforeAll(@NotNull ExtensionContext context) {
-        McRPGMockFixture.super.beforeAll(context);
+        super.beforeAll(context);
         McRPGPlayerManager mcRPGPlayerManager = new McRPGPlayerManager(mcRPG);
-        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mcRPGPlayerManager);
+        try {
+            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mcRPGPlayerManager);
+        }
+        catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Attempted to register an already registered manager. " +
+                    "Ensure your class also uses the RegistryResetExtension before this one.",e);
+        }
     }
 
     @Override
     public void beforeEach(@NotNull ExtensionContext context) {
         ExtensionContext.Store store = context.getStore(NAMESPACE);
         McRPGPlayer mcRPGPlayer = spy(new McRPGPlayer(UUID.randomUUID(), mcRPG));
-        store.put(McRPGPlayer.class, mcRPGPlayer);
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).addPlayer(mcRPGPlayer);
+        store.put(Fixture.class, new Fixture(mcRPGPlayer));
     }
 
     @Override
     public void afterEach(@NotNull ExtensionContext context) {
         ExtensionContext.Store store = context.getStore(NAMESPACE);
-        McRPGPlayer mcRPGPlayer = (McRPGPlayer) store.remove(McRPGPlayer.class);
-        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).removePlayer(mcRPGPlayer.getUUID());
+        Fixture fixture = store.remove(Fixture.class, Fixture.class);
+        if (fixture != null) {
+            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.PLAYER)
+                    .removePlayer(fixture.mcRPGPlayer().getUUID());
+        }
     }
 
     @Override

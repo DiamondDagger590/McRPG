@@ -68,7 +68,7 @@ public final class BoostedExperienceModifier extends ExperienceModifier {
                         boostedExperience = playerBoostedExperience;
                     }
                     // Consume boosted experience
-                    playerExperienceExtras.modifyRedeemableExperience((int) (boostedExperience * -1));
+                    playerExperienceExtras.modifyBoostedExperience((int) (boostedExperience * -1));
                     // Normalize the boost
                     return boostToApply - 1;
                 } catch (ParseError | EvaluationException e) {
