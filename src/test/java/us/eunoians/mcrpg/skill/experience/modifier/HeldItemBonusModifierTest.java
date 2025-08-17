@@ -9,6 +9,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import us.eunoians.mcrpg.McRPG;
@@ -52,25 +53,29 @@ public class HeldItemBonusModifierTest extends McRPGBaseTest {
     }
 
     @Test
-    public void givenInvalidSkillExperienceContext_whenCanProcessContext_returnsFalse() {
+    @DisplayName("Given an invalid skill experience context, when checking canProcessContext, then it returns false")
+    public void canProcessContext_returnsFalse_whenContextInvalid() {
         MockExperienceContext mockExperienceContext = mock(MockExperienceContext.class);
         assertFalse(heldItemBonusModifier.canProcessContext(mockExperienceContext));
     }
 
     @Test
-    public void givenValidSkillExperienceContext_whenCanProcessContext_returnsTrue(@NotNull McRPGPlayer mcRPGPlayer) {
+    @DisplayName("Given a valid skill experience context, when checking canProcessContext, then it returns true")
+    public void canProcessContext_returnsTrue_whenContextValid(@NotNull McRPGPlayer mcRPGPlayer) {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 2d, false);
         assertTrue(heldItemBonusModifier.canProcessContext(entityDamageContext));
     }
 
     @Test
-    public void givenInvalidSkillExperienceContext_whenCalculateModifierForContext_returnsOne() {
+    @DisplayName("Given an invalid skill experience context, when calculating modifier, then it returns 1.0")
+    public void modifier_returnsOne_whenContextInvalid() {
         MockExperienceContext mockExperienceContext = mock(MockExperienceContext.class);
         assertEquals(1d, experienceModifierRegistry.calculateModifierForContext(mockExperienceContext));
     }
 
     @Test
-    public void givenValidSkillExperienceContext_whenCalculateModifierForContext_returnsFive(@NotNull McRPGPlayer mcRPGPlayer) {
+    @DisplayName("Given a valid skill experience context where held items match the bonus rule, when calculating modifier, then it returns 5.0")
+    public void heldItemBonusModifier_returnsFive_whenItemsMatch(@NotNull McRPGPlayer mcRPGPlayer) {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 5d, true);
         assertEquals(5d, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
     }
@@ -99,5 +104,4 @@ public class HeldItemBonusModifierTest extends McRPGBaseTest {
         }
         return new EntityDamageContext(mcRPGPlayer.asSkillHolder(), heldItemBonusSkill, 100, entityDamageByEntityEvent);
     }
-
 }

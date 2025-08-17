@@ -5,6 +5,11 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import us.eunoians.mcrpg.McRPGMockExtension;
 
+/**
+ * This extension sets up the {@link ExperienceModifierRegistry} to be pulled out of {@link RegistryAccess}
+ * for ease of use with unit tests. This test assumes Registry Access is already set up, likely with
+ * {@link com.diamonddagger590.mccore.testing.RegistryResetExtension}.
+ */
 public class ExperienceModifierRegistryExtension extends McRPGMockExtension implements BeforeAllCallback {
 
     @Override

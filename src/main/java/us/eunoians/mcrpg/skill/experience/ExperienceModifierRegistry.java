@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.skill.experience;
 
 import com.diamonddagger590.mccore.registry.Registry;
+import org.apiguardian.api.API;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -52,6 +53,11 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
                 .sum();
     }
 
+    /**
+     * This function only exists to be used by unit tests to reset the internals
+     * of this registry.
+     */
+    @API(status = API.Status.INTERNAL)
     private void reset() {
         experienceModifiers.clear();
     }
