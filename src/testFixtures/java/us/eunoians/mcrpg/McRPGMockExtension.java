@@ -3,6 +3,7 @@ package us.eunoians.mcrpg;
 import com.diamonddagger590.mccore.localization.LocalizationManager;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -34,6 +35,7 @@ public class McRPGMockExtension implements BeforeAllCallback, AfterAllCallback {
         }
         doReturn("McRPG").when(mcRPG).getName();
         doReturn("mcrpg").when(mcRPG).namespace();
+        doReturn(MiniMessage.miniMessage()).when(mcRPG).getMiniMessage();
         doReturn(logger).when(mcRPG).getLogger();
         doReturn(RegistryAccess.registryAccess()).when(mcRPG).registryAccess();
         try {

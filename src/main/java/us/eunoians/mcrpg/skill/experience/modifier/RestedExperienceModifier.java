@@ -60,16 +60,23 @@ public class RestedExperienceModifier extends ExperienceModifier {
                 if (skillHolderDataOptional.isPresent()) {
                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
                     PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
+                    // 1000
                     int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
+                    // 0.1
                     double playerRestedExperience = playerExperienceExtras.getRestedExperience();
+                    // 200
+                    int baseExperience = skillExperienceContext.getBaseExperience();
                     try {
-                        double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE);
-                        double boostedExperience = skillExperienceContext.getBaseExperience() * boostToApply;
+                        // 3.0
+                        double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                                .getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE);
+                        // 600
+                        double boostedExperience = baseExperience * boostToApply;
+                        // 600/1000 = .6
                         double consumedRestedExperience = boostedExperience / experienceForNextLevel;
                         // Since rested experience scales based on level, we want to make sure that if we have .5 levels of experience then we don't end up adding more than 50% of the current level's required experience
                         if (consumedRestedExperience > playerRestedExperience) {
-                            // (1000 * .5)/experience
-                            boostToApply = (experienceForNextLevel * playerRestedExperience) / skillExperienceContext.getBaseExperience();
+                            boostToApply = ((experienceForNextLevel * playerRestedExperience) / baseExperience) + 1 ;
                             consumedRestedExperience = playerRestedExperience;
                         }
                         playerExperienceExtras.modifyRestedExperience((float) (consumedRestedExperience * -1));

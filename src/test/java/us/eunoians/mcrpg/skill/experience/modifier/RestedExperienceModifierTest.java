@@ -16,16 +16,20 @@ import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.skill.MockSkill;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistryExtension;
 import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
 import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,24 +39,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-/**
- * This unit test covers implementation of {@link BoostedExperienceModifier}
- * being registered and being used to calculate experience modifier.
- */
 @ExtendWith(RegistryResetExtension.class)
 @ExtendWith(ExperienceModifierRegistryExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
-public class BoostedExperienceModifierTest extends McRPGBaseTest {
+public class RestedExperienceModifierTest extends McRPGBaseTest {
 
     private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
     private static ExperienceModifierRegistry experienceModifierRegistry;
-    private static BoostedExperienceModifier boostedExperienceModifier;
+    private static RestedExperienceModifier restedExperienceModifier;
 
     @BeforeAll
     public static void setup() {
         experienceModifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
-        boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
-        experienceModifierRegistry.register(boostedExperienceModifier);
+        restedExperienceModifier = new RestedExperienceModifier(mcRPG);
+        experienceModifierRegistry.register(restedExperienceModifier);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class BoostedExperienceModifierTest extends McRPGBaseTest {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 100);
         PlayerExperienceExtras playerExperienceExtras = new PlayerExperienceExtras(0, 0, 0, 0);
         mcRPGPlayer.getExperienceExtras().copyExtras(playerExperienceExtras);
-        assertFalse(boostedExperienceModifier.canProcessContext(entityDamageContext));
+        assertFalse(restedExperienceModifier.canProcessContext(entityDamageContext));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class BoostedExperienceModifierTest extends McRPGBaseTest {
     public void canProcessContext_returnsTrue_whenContextValid(@NotNull McRPGPlayer mcRPGPlayer) {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 100);
         mcRPGPlayer.getExperienceExtras().setBoostedExperience(10);
-        assertTrue(boostedExperienceModifier.canProcessContext(entityDamageContext));
+        assertTrue(restedExperienceModifier.canProcessContext(entityDamageContext));
     }
 
     @Test
@@ -80,33 +80,41 @@ public class BoostedExperienceModifierTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given a valid skill experience context with insufficient boosted XP, when calculating modifier, then it returns 1.1 and player has 0 remaining boosted XP")
-    public void boostedXpModifier_returnsOnePointOne_whenInsufficientXp(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void restedXpModifier_returnsOnePointOne_whenInsufficientXp(@NotNull McRPGPlayer mcRPGPlayer) {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 100);
         addPlayerToServer(mcRPGPlayer);
+        addSkillHolderData(mcRPGPlayer, 1000);
         FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         YamlDocument mockConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
-        when(mockConfig.getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE)).thenReturn(3.0);
+        when(mockConfig.getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE)).thenReturn(3.0);
 
-        mcRPGPlayer.getExperienceExtras().setBoostedExperience(10);
+        mcRPGPlayer.getExperienceExtras().setRestedExperience(0.1f);
         assertEquals(1.1, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
-        assertEquals(0, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
+        assertEquals(0, mcRPGPlayer.getExperienceExtras().getRestedExperience());
     }
 
     @Test
-    @DisplayName("Given a valid skill experience context with enough boosted XP, when calculating modifier, then it returns 4.0 and deducts boosted XP accordingly")
-    public void boostedXpModifier_returnsFour_whenSufficientXp(@NotNull McRPGPlayer mcRPGPlayer) {
+    @DisplayName("Given a valid skill experience context with enough rested XP, when calculating modifier, then it returns 4.0 and deducts rested XP accordingly")
+    public void restedXpModifier_returnsFour_whenSufficientXp(@NotNull McRPGPlayer mcRPGPlayer) {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 100);
         addPlayerToServer(mcRPGPlayer);
         FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         YamlDocument mockConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
-        when(mockConfig.getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE)).thenReturn(4.0);
+        when(mockConfig.getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE)).thenReturn(4.0);
 
         mcRPGPlayer.getExperienceExtras().setBoostedExperience(400);
         assertEquals(4, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
         assertEquals(100, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
+    }
+
+    private void addSkillHolderData(@NotNull McRPGPlayer mcRPGPlayer, int experienceForNextLevel) {
+        SkillHolder.SkillHolderData skillHolderData = mock(SkillHolder.SkillHolderData.class);
+        SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
+        MockSkill mockSkill = spy(new MockSkill());
+        when(skillHolder.getSkillHolderData(mockSkill)).thenReturn(Optional.of(skillHolderData));
+        doReturn(experienceForNextLevel).when(skillHolderData.getExperienceForNextLevel());
     }
 
     @NotNull
