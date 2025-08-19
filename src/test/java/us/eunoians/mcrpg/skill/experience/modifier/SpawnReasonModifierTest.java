@@ -83,6 +83,13 @@ public class SpawnReasonModifierTest extends McRPGBaseTest {
         assertEquals(5d, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
     }
 
+    @Test
+    @DisplayName("Given a valid skill experience context tagged with a spawn reason bonus of 0.5, when calculating modifier, then it returns 0.5")
+    public void spawnReasonModifier_returnsPointFive_whenTagPresent(@NotNull McRPGPlayer mcRPGPlayer) {
+        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, 0.5, true);
+        assertEquals(0.5, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
+    }
+
     @NotNull
     private EntityDamageContext constructEntityDamageContext(@NotNull McRPGPlayer mcRPGPlayer, double bonus, boolean tag) {
         EntityDamageByEntityEvent entityDamageByEntityEvent = mock(EntityDamageByEntityEvent.class);

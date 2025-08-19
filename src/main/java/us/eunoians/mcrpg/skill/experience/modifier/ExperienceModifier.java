@@ -28,6 +28,15 @@ public abstract class ExperienceModifier {
     public abstract NamespacedKey getModifierKey();
 
     /**
+     * Checks to see if this modifier should be combined with others additively or by multiplication.
+     *
+     * @return {@code true} if this modifier should be combined with others additively.
+     */
+    public boolean isAdditive() {
+        return true;
+    }
+
+    /**
      * Checks to see if the provided {@link SkillExperienceContext} can be processed by this modifier.
      *
      * @param skillExperienceContext The {@link SkillExperienceContext} to validate.
@@ -38,15 +47,22 @@ public abstract class ExperienceModifier {
     /**
      * Gets the total modifier that experience gain should be increased by for this modifier.
      * <p>
-     * As all modifiers are summed, a result of {@code 0.0} means no change, while {@code 1.0} means to increase
+     * If {@link #isAdditive()} is {@code true}, then a result of {@code 0.0} means no change, while {@code 1.0} means to increase
      * the experience gain by 100%. Returning a value such as {@code -0.25} means to reduce the experience gain by
      * 25%.
      * <p>
+     * Otherwise, this modifier will be applied to the base experience of the {@link SkillExperienceContext} to get an updated
+     * base amount of experience to calculate on which is passed in as the second argument of this method.
+     * <p>
+     * Any non-additive modifiers get applied to the base experience first, from which additive modifiers get added
+     * up before being applied in one batch at the end, and that result will be what is used. For more info,
+     * see {@link us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry#calculateModifierForContext(SkillExperienceContext)}.
+     * <p>
      * This method assumes that the passed in {@link SkillExperienceContext} passed the check of {@link #canProcessContext(SkillExperienceContext)}.
      *
-     * @param skillExperienceContext The {@link SkillExperienceContext} to consume to calculate modifier total from.
-     * @return The total modifier that experience gain should be increased by for this modifier. A return value of {@code 0.0}
-     * means no change, a positive result will increase the total modifier amount and a negative result will decrease the total modifier
+     * @param skillExperienceContext  The {@link SkillExperienceContext} to consume to calculate modifier total from.
+     * @param experienceToCalculateOn The up-to-date amount of experience to do calculations on. Use over {@link SkillExperienceContext#getBaseExperience()}.
+     * @return The total modifier that experience gain should be modified by.
      */
-    public abstract double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext);
+    public abstract double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext, int experienceToCalculateOn);
 }

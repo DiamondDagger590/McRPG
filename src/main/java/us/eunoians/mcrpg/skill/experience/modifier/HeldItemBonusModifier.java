@@ -33,7 +33,7 @@ public final class HeldItemBonusModifier extends ExperienceModifier {
     }
 
     @Override
-    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
+    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext, int experienceToCalculateOn) {
         EntityDamageContext damageContext = (EntityDamageContext) skillExperienceContext;
         HeldItemBonusSkill heldItemBonusSkill = (HeldItemBonusSkill) damageContext.getSkill();
         LivingEntity attacker = (LivingEntity) damageContext.getEvent().getDamager();

@@ -30,7 +30,7 @@ public class MockModifier extends ExperienceModifier {
     }
 
     @Override
-    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
+    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext, int experienceToCalculateOn) {
         return 10;
     }
 }

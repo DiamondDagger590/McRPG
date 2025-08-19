@@ -27,15 +27,20 @@ public final class SpawnReasonModifier extends ExperienceModifier {
     }
 
     @Override
+    public boolean isAdditive() {
+        return false;
+    }
+
+    @Override
     public boolean canProcessContext(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
         return skillExperienceContext instanceof EntityDamageContext;
     }
 
     @Override
-    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
+    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext, int experienceToCalculateOn) {
         EntityDamageContext damageContext = (EntityDamageContext) skillExperienceContext;
         Entity entity = damageContext.getEvent().getEntity();
         return entity.getPersistentDataContainer().has(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY) ?
-                entity.getPersistentDataContainer().get(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY, PersistentDataType.DOUBLE) - 1 : 0.0;
+                entity.getPersistentDataContainer().get(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY, PersistentDataType.DOUBLE) : 1.0;
     }
 }

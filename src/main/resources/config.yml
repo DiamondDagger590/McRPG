@@ -129,7 +129,7 @@ configuration:
       # Please note the above link may be for an older version of Minecraft than the one you are using,
       # make sure the version represents the version you are trying to use.
       SPAWNER: 0.5
-      SPAWNER_EGG: 05
+      SPAWNER_EGG: 0.5
     # If when players redeem levels, should this reset the amount of exp needed to level up.
     # Ex) Player has gained 5,000 experience in Swords and uses a redeemable level. If this is enabled,
     # then the experience gained will be reset to 0 whenever the level is added. Otherwise, the 5,000 is kept.

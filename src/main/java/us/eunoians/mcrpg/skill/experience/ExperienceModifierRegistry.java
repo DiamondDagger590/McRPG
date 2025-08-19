@@ -9,7 +9,9 @@ import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 import us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This registry is used for registering {@link ExperienceModifier}s to modify
@@ -46,11 +48,24 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
      * @return The modifier that should be applied to gained experience.
      */
     public double calculateModifierForContext(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
-        return 1d + experienceModifiers.stream()
-                .filter(experienceModifier -> experienceModifier.canProcessContext(skillExperienceContext))
-                .map(experienceModifier -> experienceModifier.getModifier(skillExperienceContext))
-                .mapToDouble(Double::doubleValue)
-                .sum();
+        double modifier = 1.0;
+        int baseExperience = skillExperienceContext.getBaseExperience();
+        Map<ExperienceModifier, Double> modifiers = new HashMap<>();
+        // Do multiplication on the base experience before additive
+        for  (ExperienceModifier experienceModifier : experienceModifiers) {
+            if (!experienceModifier.isAdditive() && experienceModifier.canProcessContext(skillExperienceContext)) {
+                double multiplierModifier = experienceModifier.getModifier(skillExperienceContext, baseExperience);
+                baseExperience = (int) (baseExperience * multiplierModifier);
+                modifier *= multiplierModifier;
+            }
+        }
+        // Add to the multiplier (has to come after so the base experience being passed in is accurate
+        for (ExperienceModifier experienceModifier : experienceModifiers) {
+            if (experienceModifier.isAdditive() && experienceModifier.canProcessContext(skillExperienceContext)) {
+                modifier +=  experienceModifier.getModifier(skillExperienceContext, baseExperience);
+            }
+        }
+        return modifier;
     }
 
     /**

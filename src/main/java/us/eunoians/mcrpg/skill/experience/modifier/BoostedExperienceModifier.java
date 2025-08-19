@@ -49,7 +49,7 @@ public final class BoostedExperienceModifier extends ExperienceModifier {
     }
 
     @Override
-    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
+    public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext, int experienceToCalculateOn) {
         UUID uuid = skillExperienceContext.getSkillHolder().getUUID();
         var playerOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(uuid);
         Player player = Bukkit.getPlayer(uuid);
@@ -61,15 +61,14 @@ public final class BoostedExperienceModifier extends ExperienceModifier {
                 try {
                     double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
                             .getDouble(MainConfigFile.BOOSTED_EXPERIENCE_USAGE_RATE);
-                    int baseExperience = skillExperienceContext.getBaseExperience();
-                    double boostedExperience = baseExperience * boostToApply;
+                    double boostedExperience = experienceToCalculateOn * boostToApply;
                     // If the end result is larger than the amount of experience we can give, then we need to find the multiplier of base exp that gets us to the remaining exp
                     if (boostedExperience > playerBoostedExperience) {
-                        boostToApply = 1 + (double) playerBoostedExperience / baseExperience;
+                        boostToApply = 1 + (double) playerBoostedExperience / experienceToCalculateOn;
                         boostedExperience = playerBoostedExperience;
                     } else {
                         // Normalize how much we actually take away from the player
-                        boostedExperience = boostedExperience - baseExperience;
+                        boostedExperience = boostedExperience - experienceToCalculateOn;
                     }
                     // Consume boosted experience
                     playerExperienceExtras.modifyBoostedExperience((int) (boostedExperience * -1));

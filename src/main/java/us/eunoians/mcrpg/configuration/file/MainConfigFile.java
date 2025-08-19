@@ -37,7 +37,7 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route SAVE_TASK_FREQUENCY = Route.fromString(toRoutePath(SAVE_TASK_HEADER, "frequency"));
 
     // Experience fields
-    public static final Route MODIFY_MOB_SPAWN_EXPERIENCE_CONFIGURATION = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, ".modify-mob-spawn-experience"));
+    public static final Route MODIFY_MOB_SPAWN_EXPERIENCE_CONFIGURATION = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, "modify-mob-spawn-experience"));
     public static final Route MAX_DAMAGE_CAP_TO_AWARD_EXPERIENCE = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, "max-damage-cap-to-award-exp"));
     public static final Route EXPERIENCE_MULTIPLIER_LIMIT = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, "exp-multiplier-limit"));
     public static final Route SHIELD_BLOCKING_MODIFIER = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, "shield-blocking-modifier"));

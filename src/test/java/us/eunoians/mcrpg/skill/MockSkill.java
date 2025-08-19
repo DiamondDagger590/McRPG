@@ -1,19 +1,15 @@
 package us.eunoians.mcrpg.skill;
 
-import com.diamonddagger590.mccore.parser.Parser;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGMockExtension;
-import us.eunoians.mcrpg.builder.item.skill.SkillItemBuilder;
-import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.util.Optional;
 
-public class MockSkill implements Skill {
+public abstract class MockSkill implements Skill {
 
     @NotNull
     @Override
@@ -65,28 +61,6 @@ public class MockSkill implements Skill {
     @Override
     public boolean isSkillEnabled() {
         return true;
-    }
-
-    @NotNull
-    @Override
-    public SkillItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-        throw new UnsupportedOperationException("Mock this behavior for your specific test");
-    }
-
-    @NotNull
-    @Override
-    public Parser getLevelUpEquation() {
-        throw new UnsupportedOperationException("Mock this behavior for your specific test");
-    }
-
-    @Override
-    public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
-        throw new UnsupportedOperationException("Mock this behavior for your specific test");
-    }
-
-    @Override
-    public boolean canEventLevelSkill(@NotNull Event event) {
-        throw new UnsupportedOperationException("Mock this behavior for your specific test");
     }
 
     @NotNull
