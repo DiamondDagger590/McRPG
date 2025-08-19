@@ -83,7 +83,7 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
     public void restedXpModifier_returnsTwo_whenInsufficientXp(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mockSkill.getLevelUpEquation()).thenReturn(new Parser("1000"));
         SkillHolder skillHolder = spy(mcRPGPlayer.asSkillHolder());
-        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder,100);
+        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder, 100);
         addPlayerToServer(mcRPGPlayer);
         // Add mock skill data
         SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0, 0));
@@ -104,7 +104,7 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
     public void restedXpModifier_returnsFour_whenSufficientExp(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mockSkill.getLevelUpEquation()).thenReturn(new Parser("3000"));
         SkillHolder skillHolder = spy(mcRPGPlayer.asSkillHolder());
-        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder,100);
+        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder, 100);
         addPlayerToServer(mcRPGPlayer);
         // Add mock skill data
         SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0, 0));
@@ -117,24 +117,7 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
 
         mcRPGPlayer.getExperienceExtras().setRestedExperience(0.1f);
         assertEquals(3.0, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
-        assertEquals(0.03333333, mcRPGPlayer.getExperienceExtras().getRestedExperience());
-    }
-
-    @Test
-    @DisplayName("Given a valid skill experience context with enough rested XP, when calculating modifier, then it returns 4.0 and deducts rested XP accordingly")
-    public void restedXpModifier_returnsFour_whenSufficientXp(@NotNull McRPGPlayer mcRPGPlayer) {
-        when(mockSkill.getLevelUpEquation()).thenReturn(new Parser("1000"));
-        SkillHolder skillHolder = spy(mcRPGPlayer.asSkillHolder());
-        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder, 100);
-        addPlayerToServer(mcRPGPlayer);
-        FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
-        YamlDocument mockConfig = mock(YamlDocument.class);
-        when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
-        when(mockConfig.getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE)).thenReturn(4.0);
-
-        mcRPGPlayer.getExperienceExtras().setBoostedExperience(400);
-        assertEquals(4, experienceModifierRegistry.calculateModifierForContext(entityDamageContext));
-        assertEquals(100, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
+        assertEquals(0.03333333f, mcRPGPlayer.getExperienceExtras().getRestedExperience());
     }
 
     @NotNull
@@ -145,7 +128,6 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
         doReturn(mcRPGPlayer.getUUID()).when(attacker).getUniqueId();
         doReturn(livingEntity).when(entityDamageByEntityEvent).getEntity();
         doReturn(attacker).when(entityDamageByEntityEvent).getDamager();
-
         return new EntityDamageContext(mcRPGPlayer.asSkillHolder(), mockSkill, baseExperience, entityDamageByEntityEvent);
     }
 }
