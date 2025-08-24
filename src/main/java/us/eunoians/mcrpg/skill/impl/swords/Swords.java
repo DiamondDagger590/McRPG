@@ -78,7 +78,7 @@ public final class Swords extends McRPGSkill implements HeldItemBonusSkill, Conf
                 MATERIAL_BONUS_ROUTE_MAP.put(material, Route.fromString(toRoutePath(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, material.toString())));
             }
             YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
-            modifier += (swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(material), 1.0d) - 1);
+            modifier += (swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(material), 1.0d));
         }
         return modifier;
     }

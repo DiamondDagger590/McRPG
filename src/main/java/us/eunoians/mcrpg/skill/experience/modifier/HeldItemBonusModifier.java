@@ -25,6 +25,11 @@ public final class HeldItemBonusModifier extends ExperienceModifier {
     }
 
     @Override
+    public boolean isAdditive() {
+        return false;
+    }
+
+    @Override
     public boolean canProcessContext(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
         return skillExperienceContext instanceof EntityDamageContext damageContext
                 && damageContext.getEvent().getDamager() instanceof LivingEntity livingEntity

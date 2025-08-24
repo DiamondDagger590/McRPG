@@ -1,17 +1,17 @@
 package us.eunoians.mcrpg.skill.experience;
 
 import com.diamonddagger590.mccore.registry.Registry;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.apiguardian.api.API;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 import us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This registry is used for registering {@link ExperienceModifier}s to modify
@@ -50,7 +50,6 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
     public double calculateModifierForContext(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext) {
         double modifier = 1.0;
         int baseExperience = skillExperienceContext.getBaseExperience();
-        Map<ExperienceModifier, Double> modifiers = new HashMap<>();
         // Do multiplication on the base experience before additive
         for  (ExperienceModifier experienceModifier : experienceModifiers) {
             if (!experienceModifier.isAdditive() && experienceModifier.canProcessContext(skillExperienceContext)) {
@@ -60,11 +59,14 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
             }
         }
         // Add to the multiplier (has to come after so the base experience being passed in is accurate
+        double additiveModifier = 0d;
+        boolean first = false;
         for (ExperienceModifier experienceModifier : experienceModifiers) {
             if (experienceModifier.isAdditive() && experienceModifier.canProcessContext(skillExperienceContext)) {
-                modifier +=  experienceModifier.getModifier(skillExperienceContext, baseExperience);
+                additiveModifier += experienceModifier.getModifier(skillExperienceContext, baseExperience);
             }
         }
+        modifier *= (additiveModifier == 0 ? 1 :additiveModifier);
         return modifier;
     }
 
@@ -73,7 +75,7 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
      * of this registry.
      */
     @API(status = API.Status.INTERNAL)
-    private void reset() {
-        experienceModifiers.clear();
+    private static void reset() {
+        RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).experienceModifiers.clear();
     }
 }

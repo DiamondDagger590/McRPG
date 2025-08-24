@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.skill.experience;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.testing.InternalResetTestTools;
 import com.diamonddagger590.mccore.testing.RegistryResetExtension;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,8 +29,8 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(ExperienceModifierRegistryExtension.class)
 public class ExperienceModifierRegistryTest {
 
+    private static final String EXPERIENCE_MODIFIER_REGISTRY_CLASS_PATH = "us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry";
     private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
-
     private static final RegistryAccess registryAccess = RegistryAccess.registryAccess();
     private static ExperienceModifierRegistry modifierRegistry;
 
@@ -39,6 +41,11 @@ public class ExperienceModifierRegistryTest {
         // Pulls from an extension
         modifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         mockModifier = new MockModifier(mcRPG);
+    }
+
+    @AfterEach
+    public void cleanUpRegistry() {
+        InternalResetTestTools.resetRegistryAccess(EXPERIENCE_MODIFIER_REGISTRY_CLASS_PATH);
     }
 
     @Test
@@ -71,10 +78,11 @@ public class ExperienceModifierRegistryTest {
     }
 
     @Test
-    @DisplayName("Given a mock experience context handled by MockModifier, when calculating the modifier, then it returns 11")
-    public void calculateModifier_returnsEleven_forMockContext() {
+    @DisplayName("Given a mock experience context handled by MockModifier, when calculating the modifier, then it returns 10")
+    public void calculateModifier_returnsTen_forMockContext() {
         MockExperienceContext mockExperienceContext = mock(MockExperienceContext.class);
-        assertEquals(11, modifierRegistry.calculateModifierForContext(mockExperienceContext));
+        modifierRegistry.register(mockModifier);
+        assertEquals(10, modifierRegistry.calculateModifierForContext(mockExperienceContext));
     }
 
     @Test

@@ -40,6 +40,7 @@ public final class SpawnReasonModifier extends ExperienceModifier {
     public double getModifier(@NotNull SkillExperienceContext<? extends Event> skillExperienceContext, int experienceToCalculateOn) {
         EntityDamageContext damageContext = (EntityDamageContext) skillExperienceContext;
         Entity entity = damageContext.getEvent().getEntity();
+        boolean contains = entity.getPersistentDataContainer().has(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY);
         return entity.getPersistentDataContainer().has(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY) ?
                 entity.getPersistentDataContainer().get(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY, PersistentDataType.DOUBLE) : 1.0;
     }

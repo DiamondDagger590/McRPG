@@ -28,26 +28,26 @@ public class McRPGMockExtension implements BeforeAllCallback, AfterAllCallback {
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        Logger logger = Logger.getLogger("McRPG Test");
         if (staticMcRPG == null) {
+            Logger logger = Logger.getLogger("McRPG Test");
             staticMcRPG = mockStatic(McRPG.class);
             staticMcRPG.when(McRPG::getInstance).thenReturn(mcRPG);
-        }
-        doReturn("McRPG").when(mcRPG).getName();
-        doReturn("mcrpg").when(mcRPG).namespace();
-        doReturn(MiniMessage.miniMessage()).when(mcRPG).getMiniMessage();
-        doReturn(logger).when(mcRPG).getLogger();
-        doReturn(RegistryAccess.registryAccess()).when(mcRPG).registryAccess();
-        try {
-            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(FileManager.class));
-            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(LocalizationManager.class));
-        }
-        catch (IllegalArgumentException e) {
+            doReturn("McRPG").when(mcRPG).getName();
+            doReturn("mcrpg").when(mcRPG).namespace();
+            doReturn(MiniMessage.miniMessage()).when(mcRPG).getMiniMessage();
+            doReturn(logger).when(mcRPG).getLogger();
+            doReturn(RegistryAccess.registryAccess()).when(mcRPG).registryAccess();
+            try {
+                RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(FileManager.class));
+                RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(LocalizationManager.class));
+            }
+            catch (IllegalArgumentException e) {
             /*
             Silent fail since multiple extensions might use this, and
             we want to ensure the same contract of what is and isn't set
             up no matter what extensions are used.
              */
+            }
         }
     }
 

@@ -64,12 +64,12 @@ public class RestedExperienceModifier extends ExperienceModifier {
                     float playerRestedExperience = playerExperienceExtras.getRestedExperience();
                     try {
                         double boostToApply = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
-                                .getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE) - 1;
-                        double boostedExperience = experienceToCalculateOn * boostToApply;
+                                .getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE);
+                        double boostedExperience = experienceToCalculateOn * (boostToApply - 1);
                         double consumedRestedExperience = boostedExperience / experienceForNextLevel;
                         // Since rested experience scales based on level, we want to make sure that if we have .5 levels of experience then we don't end up adding more than 50% of the current level's required experience
                         if (consumedRestedExperience > playerRestedExperience) {
-                            boostToApply = ((experienceForNextLevel * playerRestedExperience) / experienceToCalculateOn);
+                            boostToApply = ((experienceForNextLevel * playerRestedExperience) / experienceToCalculateOn) + 1;
                             consumedRestedExperience = playerRestedExperience;
                         }
                         playerExperienceExtras.modifyRestedExperience((float) (consumedRestedExperience * -1));

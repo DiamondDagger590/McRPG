@@ -3,10 +3,12 @@ package us.eunoians.mcrpg.skill.experience.rested;
 import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.configuration.common.ReloadableParser;
 import com.diamonddagger590.mccore.parser.Parser;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import net.kyori.adventure.audience.Audience;
+import org.apiguardian.api.API;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -18,6 +20,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -118,5 +121,14 @@ public class RestedExperienceManager extends Manager<McRPG> {
                     Map.of("rested-experience-gained", Float.toString(restedExperience))));
         }
         playerExperienceExtras.setRestedExperience(restedExperience);
+    }
+
+    /**
+     * This function only exists to be used by unit tests to reset the internals
+     * of this manager.
+     */
+    @API(status = API.Status.INTERNAL)
+    private static void reset() {
+        RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE).accumulationRates.clear();
     }
 }

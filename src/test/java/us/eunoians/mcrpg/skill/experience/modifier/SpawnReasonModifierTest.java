@@ -91,7 +91,12 @@ public class SpawnReasonModifierTest extends McRPGBaseTest {
     }
 
     @NotNull
-    private EntityDamageContext constructEntityDamageContext(@NotNull McRPGPlayer mcRPGPlayer, double bonus, boolean tag) {
+    public static EntityDamageContext constructEntityDamageContext(@NotNull McRPGPlayer mcRPGPlayer, double bonus, boolean tag) {
+        return constructEntityDamageContext(mcRPGPlayer, mock(Skill.class), bonus, tag);
+    }
+
+    @NotNull
+    public static EntityDamageContext constructEntityDamageContext(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill, double bonus, boolean tag) {
         EntityDamageByEntityEvent entityDamageByEntityEvent = mock(EntityDamageByEntityEvent.class);
         WorldMock world = new WorldMock(Material.DIRT, 5);
         Entity entity = world.spawnEntity(new Location(world, 0, 0, 0), EntityType.SKELETON);
@@ -102,6 +107,6 @@ public class SpawnReasonModifierTest extends McRPGBaseTest {
                     .set(EntityKeys.SPAWN_REASON_EXPERIENCE_MODIFIER_KEY, PersistentDataType.DOUBLE, bonus);
         }
 
-        return new EntityDamageContext(mcRPGPlayer.asSkillHolder(), mock(Skill.class), 100, entityDamageByEntityEvent);
+        return new EntityDamageContext(mcRPGPlayer.asSkillHolder(), skill, 100, entityDamageByEntityEvent);
     }
 }

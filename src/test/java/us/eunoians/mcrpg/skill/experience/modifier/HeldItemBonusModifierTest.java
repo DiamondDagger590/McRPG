@@ -100,7 +100,7 @@ public class HeldItemBonusModifierTest extends McRPGBaseTest {
         HeldItemBonusSkill heldItemBonusSkill = mock(HeldItemBonusSkill.class);
         ItemStack[] itemStacks = new ItemStack[]{diamondSword, air};
         if (match) {
-            when(heldItemBonusSkill.getHeldItemBonus(itemStacks)).thenReturn(heldItemBonus - 1);
+            when(heldItemBonusSkill.getHeldItemBonus(itemStacks)).thenReturn(heldItemBonus);
         }
         return new EntityDamageContext(mcRPGPlayer.asSkillHolder(), heldItemBonusSkill, 100, entityDamageByEntityEvent);
     }
