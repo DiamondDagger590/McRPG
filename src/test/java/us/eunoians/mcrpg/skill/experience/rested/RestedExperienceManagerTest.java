@@ -3,22 +3,31 @@ package us.eunoians.mcrpg.skill.experience.rested;
 import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.testing.InternalResetTestTools;
 import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
+import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasFiredEventInstance;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -28,25 +37,65 @@ import static org.mockito.Mockito.when;
 @ExtendWith(McRPGPlayerExtension.class)
 public class RestedExperienceManagerTest extends McRPGBaseTest {
 
-    private static final String RESTED_EXPERIENCE_MANAGER_CLASS_PATH = "us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager";
     private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
+    private static RestedExperienceManager restedExperienceManager;
+    private static YamlDocument mockConfig;
 
-    @BeforeEach
-    public void setup() {
+    @BeforeAll
+    public static void beforeAll() {
+        FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        mockConfig = mock(YamlDocument.class);
+        when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
+        when(mockConfig.getString(MainConfigFile.ONLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.1*time'");
+        when(mockConfig.getString(MainConfigFile.OFFLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.2*time");
+        when(mockConfig.getString(MainConfigFile.ONLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.3*time");
+        when(mockConfig.getString(MainConfigFile.OFFLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.4*time");
         ReloadableContentManager reloadableContentManager = new ReloadableContentManager(mcRPG);
         RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).register(reloadableContentManager);
-        RestedExperienceManager restedExperienceManager = spy(new RestedExperienceManager(mcRPG));
-        FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
-        YamlDocument mockConfig = mock(YamlDocument.class);
-        when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
-        when(mockConfig.getString(MainConfigFile.ONLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.00013*time'");
-        when(mockConfig.getString(MainConfigFile.OFFLINE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.00027*time");
-        when(mockConfig.getString(MainConfigFile.ONLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.00027*time");
-        when(mockConfig.getString(MainConfigFile.OFFLINE_SAFE_ZONE_RESTED_EXPERIENCE_ACCUMULATION_RATE)).thenReturn("0.00027*time");
+        restedExperienceManager = spy(new RestedExperienceManager(mcRPG));
+        RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).register(restedExperienceManager);
     }
 
-    @AfterEach
-    public void tearDown() {
-        InternalResetTestTools.resetRegistryAccess(RESTED_EXPERIENCE_MANAGER_CLASS_PATH);
+    @Test
+    public void getRestedExperience_returnsOne_forOnlineAccumulation() {
+        float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.ONLINE);
+        assertEquals(1, restedExperience);
     }
+
+    @Test
+    public void getRestedExperience_returnsTwo_forOfflineAccumulation() {
+        float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.OFFLINE);
+        assertEquals(2, restedExperience);
+    }
+
+    @Test
+    public void getRestedExperience_returnsThree_forOnlineSafeZoneAccumulation() {
+        float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.ONLINE_SAFE_ZONE);
+        assertEquals(3, restedExperience);
+    }
+
+    @Test
+    public void getRestedExperience_returnsFour_forOfflineSafeZoneAccumulation() {
+        float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE);
+        assertEquals(4, restedExperience);
+    }
+
+    @Test
+    public void awardRestedExperience_awardsFour_forEnabledSafeZone(McRPGPlayer mcRPGPlayer) {
+        McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
+        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE))
+                .thenReturn(component);
+        addPlayerToServer(mcRPGPlayer);
+        PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
+        when(mockConfig.getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)).thenReturn(true);
+        when(mockConfig.getFloat(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION)).thenReturn(5f);
+        assertEquals(0, mcRPGPlayer.getExperienceExtras().getRestedExperience());
+        restedExperienceManager.awardRestedExperience(mcRPGPlayer, 10, RestedExperienceAccumulationType.OFFLINE, true);
+        hasFiredEventInstance(PlayerAwardedRestedExperienceEvent.class);
+        assertEquals(3, mcRPGPlayer.getExperienceExtras().getRestedExperience());
+        assertEquals(component, playerMock.nextComponentMessage());
+    }
+
 }

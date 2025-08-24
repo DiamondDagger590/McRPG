@@ -97,7 +97,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
         McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Audience audience = mcRPGPlayer.getPlugin().getAdventure().player(mcRPGPlayer.getUUID());
         double currentRestedExperience = playerExperienceExtras.getRestedExperience();
-        double maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
+        float maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getFloat(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
         // If they have over the limit (theyve accumulated before and the limit got lowered or something), then leave it alone
         if (currentRestedExperience >= maxAccumulation) {
             // If they have just logged in, let them know they are at the experience cap
@@ -106,7 +106,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
             }
             return;
         }
-        restedExperience = (float) Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
+        restedExperience = Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
         PlayerAwardedRestedExperienceEvent playerAwardedRestedExperienceEvent = new PlayerAwardedRestedExperienceEvent(mcRPGPlayer, restedExperience, maxAccumulation);
         Bukkit.getPluginManager().callEvent(playerAwardedRestedExperienceEvent);
         if (playerAwardedRestedExperienceEvent.isCancelled()) {
