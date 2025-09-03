@@ -3,16 +3,13 @@ package us.eunoians.mcrpg.skill.experience.rested;
 import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -25,24 +22,24 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasFiredEventInstance;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(RegistryResetExtension.class)
-@ExtendWith(McRPGMockExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
 public class RestedExperienceManagerTest extends McRPGBaseTest {
 
-    private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
-    private static RestedExperienceManager restedExperienceManager;
-    private static YamlDocument mockConfig;
+    private RestedExperienceManager restedExperienceManager;
+    private YamlDocument mockConfig;
 
-    @BeforeAll
-    public static void beforeAll() {
+    @BeforeEach
+    public void beforeEach() {
         FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         mockConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
@@ -81,11 +78,11 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
     }
 
     @Test
-    public void awardRestedExperience_awardsFour_forEnabledSafeZone(McRPGPlayer mcRPGPlayer) {
+    public void awardPlayerRestedExperience_awardsTwo_forOffline(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
-        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE))
+        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), any(Map.class)))
                 .thenReturn(component);
         addPlayerToServer(mcRPGPlayer);
         PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
@@ -94,7 +91,7 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertEquals(0, mcRPGPlayer.getExperienceExtras().getRestedExperience());
         restedExperienceManager.awardRestedExperience(mcRPGPlayer, 10, RestedExperienceAccumulationType.OFFLINE, true);
         hasFiredEventInstance(PlayerAwardedRestedExperienceEvent.class);
-        assertEquals(3, mcRPGPlayer.getExperienceExtras().getRestedExperience());
+        assertEquals(2, mcRPGPlayer.getExperienceExtras().getRestedExperience());
         assertEquals(component, playerMock.nextComponentMessage());
     }
 

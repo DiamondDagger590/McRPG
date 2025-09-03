@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.database.table.impl.PlayerSettingDAO;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.task.core.CoreTask;
@@ -78,7 +79,8 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         Instant loginTime = Instant.now();
 
         // TODO move this into the skill holder
-        try (Connection connection = getPlugin().getDatabase().getConnection()) {
+        try (Connection connection = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE).getDatabase().getConnection()) {
             List<UpdatePlayerDataSyncFunction> updatePlayerDataSyncFunctions = new ArrayList<>();
             updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
             updatePlayerDataSyncFunctions.add(loadPlayerSkills(connection));

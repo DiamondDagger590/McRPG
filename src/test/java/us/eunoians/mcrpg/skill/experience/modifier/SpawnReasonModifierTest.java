@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.skill.experience.modifier;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
-import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -9,14 +8,12 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockbukkit.mockbukkit.MockBukkitExtension;
 import org.mockbukkit.mockbukkit.world.WorldMock;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -39,17 +36,15 @@ import static org.mockito.Mockito.mock;
  * being registered and being used to calculate experience modifier.
  */
 @ExtendWith(MockBukkitExtension.class)
-@ExtendWith(RegistryResetExtension.class)
 @ExtendWith(ExperienceModifierRegistryExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
 public class SpawnReasonModifierTest extends McRPGBaseTest {
 
-    private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
-    private static ExperienceModifierRegistry experienceModifierRegistry;
-    private static SpawnReasonModifier spawnReasonModifier;
+    private ExperienceModifierRegistry experienceModifierRegistry;
+    private SpawnReasonModifier spawnReasonModifier;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         experienceModifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         spawnReasonModifier = new SpawnReasonModifier();
         experienceModifierRegistry.register(spawnReasonModifier);

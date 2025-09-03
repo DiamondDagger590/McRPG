@@ -10,8 +10,8 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 import us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This registry is used for registering {@link ExperienceModifier}s to modify
@@ -20,11 +20,11 @@ import java.util.List;
 public final class ExperienceModifierRegistry implements Registry<ExperienceModifier> {
 
     private final McRPG mcRPG;
-    private final List<ExperienceModifier> experienceModifiers;
+    private final Set<ExperienceModifier> experienceModifiers;
 
     public ExperienceModifierRegistry(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
-        experienceModifiers = new ArrayList<>();
+        experienceModifiers = new HashSet<>();
     }
 
     /**

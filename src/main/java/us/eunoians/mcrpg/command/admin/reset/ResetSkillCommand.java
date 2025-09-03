@@ -86,7 +86,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                         senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_SKILL_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
                                     }
 
-                                    Database database = McRPG.getInstance().getDatabase();
+                                    Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
                                     database.getDatabaseExecutorService().submit(() -> {
                                         try (Connection connection = database.getConnection()) {
                                             FailSafeTransaction failsafeTransaction = new FailSafeTransaction(connection);

@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.task.glow;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import org.bukkit.Location;
@@ -7,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Set;
 
@@ -51,7 +54,8 @@ public class BlockRemoveGlowTask extends DelayableCoreTask {
 
     @Override
     public void run() {
-        GlowingBlocks glowingBlocks = McRPG.getInstance().getGlowingBlocks();
+        GlowingBlocks glowingBlocks = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.GLOWING).getGlowingBlocks();
         for (Location location : locations) {
             try {
                 glowingBlocks.unsetGlowing(location, player);

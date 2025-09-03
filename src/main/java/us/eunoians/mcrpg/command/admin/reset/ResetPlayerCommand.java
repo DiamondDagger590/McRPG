@@ -74,7 +74,7 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                                     senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
                                 }
 
-                                Database database = mcRPG.getDatabase();
+                                Database database = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
                                 database.getDatabaseExecutorService().submit(() -> {
                                     try (Connection connection = database.getConnection()) {
                                         new FailSafeTransaction(connection, SkillDAO.saveAllSkillHolderInformation(connection, skillHolder)).executeTransaction();

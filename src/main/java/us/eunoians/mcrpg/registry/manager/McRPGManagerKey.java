@@ -4,10 +4,12 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.configuration.FileManager;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.expansion.ContentExpansionManager;
+import us.eunoians.mcrpg.external.glowing.GlowingManager;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
@@ -36,4 +38,6 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<BleedManager> BLEED = create(BleedManager.class);
     ManagerKey<WorldManager> WORLD = create(WorldManager.class);
     ManagerKey<RestedExperienceManager> RESTED_EXPERIENCE = create(RestedExperienceManager.class);
+    ManagerKey<McRPGDatabaseManager> DATABASE = create(McRPGDatabaseManager.class);
+    ManagerKey<GlowingManager> GLOWING = create(GlowingManager.class);
 }

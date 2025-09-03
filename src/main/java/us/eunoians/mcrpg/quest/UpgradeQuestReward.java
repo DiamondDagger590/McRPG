@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.quest;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.NamespacedKey;
@@ -42,7 +43,7 @@ public class UpgradeQuestReward implements QuestReward {
                         int newTier = Math.min(tierableAbility.getMaxTier(), (int) abilityAttribute.getContent() + 1);
                         abilityData.addAttribute(new AbilityTierAttribute(newTier));
                         abilityData.removeAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
-                        Database database = McRPG.getInstance().getDatabase();
+                        Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
                         database.getDatabaseExecutorService().submit(() -> {
                             try (Connection connection = database.getConnection()) {
                                 new FailSafeTransaction(connection, SkillDAO.savePlayerAbilityAttributes(connection, skillHolder)).executeTransaction();

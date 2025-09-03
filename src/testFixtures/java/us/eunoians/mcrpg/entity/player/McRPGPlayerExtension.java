@@ -4,13 +4,12 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
-import us.eunoians.mcrpg.McRPGMockExtension;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.spy;
  * <p>
  * This player will be passed in as a fixture and can be used by having a {@link McRPGPlayer} parameter on a method.
  */
-public class McRPGPlayerExtension extends McRPGMockExtension implements BeforeAllCallback, BeforeEachCallback,
+public class McRPGPlayerExtension implements BeforeEachCallback,
         AfterEachCallback, ParameterResolver {
 
     private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(McRPGPlayerExtension.class);
@@ -34,9 +33,8 @@ public class McRPGPlayerExtension extends McRPGMockExtension implements BeforeAl
     }
 
     @Override
-    public void beforeAll(@NotNull ExtensionContext context) {
-        super.beforeAll(context);
-        McRPGPlayerManager mcRPGPlayerManager = new McRPGPlayerManager(mcRPG);
+    public void beforeEach(@NotNull ExtensionContext context) {
+        McRPGPlayerManager mcRPGPlayerManager = new McRPGPlayerManager(McRPG.getInstance());
         try {
             RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mcRPGPlayerManager);
         }
@@ -44,12 +42,8 @@ public class McRPGPlayerExtension extends McRPGMockExtension implements BeforeAl
             throw new IllegalStateException("Attempted to register an already registered manager. " +
                     "Ensure your class also uses the RegistryResetExtension before this one.",e);
         }
-    }
-
-    @Override
-    public void beforeEach(@NotNull ExtensionContext context) {
         ExtensionContext.Store store = context.getStore(NAMESPACE);
-        McRPGPlayer mcRPGPlayer = spy(new McRPGPlayer(UUID.randomUUID(), mcRPG));
+        McRPGPlayer mcRPGPlayer = spy(new McRPGPlayer(UUID.randomUUID(), McRPG.getInstance()));
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER).addPlayer(mcRPGPlayer);
         store.put(Fixture.class, new Fixture(mcRPGPlayer));
@@ -60,20 +54,29 @@ public class McRPGPlayerExtension extends McRPGMockExtension implements BeforeAl
         ExtensionContext.Store store = context.getStore(NAMESPACE);
         Fixture fixture = store.remove(Fixture.class, Fixture.class);
         if (fixture != null) {
-            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.PLAYER)
-                    .removePlayer(fixture.mcRPGPlayer().getUUID());
+            try {
+                RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.PLAYER)
+                        .removePlayer(fixture.mcRPGPlayer().getUUID());
+            }
+            catch (Exception e) {
+                /*
+                Swallow in case the registry access has already been reset
+                 */
+            }
         }
     }
 
     @Override
-    public boolean supportsParameter(@NotNull ParameterContext parameterContext, @NotNull ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(@NotNull ParameterContext parameterContext, @NotNull ExtensionContext extensionContext)
+            throws ParameterResolutionException {
         Class<?> clazz = parameterContext.getParameter().getType();
         return clazz == Fixture.class || clazz == McRPGPlayer.class;
     }
 
     @Override
-    public Object resolveParameter(@NotNull ParameterContext parameterContext, @NotNull ExtensionContext extensionContext) throws ParameterResolutionException {
+    public Object resolveParameter(@NotNull ParameterContext parameterContext, @NotNull ExtensionContext extensionContext)
+            throws ParameterResolutionException {
         Fixture fixture = extensionContext.getStore(NAMESPACE).get(Fixture.class, Fixture.class);
         Objects.requireNonNull(fixture, "PlayerFixtureExtension not initialized");
         if (parameterContext.getParameter().getType() == McRPGPlayer.class) {

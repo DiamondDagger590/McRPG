@@ -3,17 +3,11 @@ package us.eunoians.mcrpg.skill.experience.modifier;
 import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.testing.InternalResetTestTools;
-import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -33,29 +27,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(RegistryResetExtension.class)
 @ExtendWith(ExperienceModifierRegistryExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
 public class ExperienceModifiersContractTest extends McRPGBaseTest {
 
-    private static final String EXPERIENCE_MODIFIER_REGISTRY_CLASS_PATH = "us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry";
-    private static ExperienceModifierRegistry experienceModifierRegistry;
-    private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
+    private ExperienceModifierRegistry experienceModifierRegistry;
     private MockSkill mockSkill;
-
-    @BeforeAll
-    public static void setup(){
-        experienceModifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
-    }
 
     @BeforeEach
     public void setupBeforeEach(){
+        experienceModifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         mockSkill = spy(MockSkill.class);
-    }
-
-    @AfterEach
-    public void cleanUpRegistry() {
-        InternalResetTestTools.resetRegistryAccess(EXPERIENCE_MODIFIER_REGISTRY_CLASS_PATH);
     }
 
     @Test

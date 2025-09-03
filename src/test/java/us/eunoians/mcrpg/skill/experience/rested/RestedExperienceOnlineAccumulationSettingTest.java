@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.skill.experience.rested;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(RegistryResetExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
 public class RestedExperienceOnlineAccumulationSettingTest extends McRPGBaseTest {
 

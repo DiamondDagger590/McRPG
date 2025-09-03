@@ -1,15 +1,10 @@
 package us.eunoians.mcrpg.skill.experience;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
-import com.diamonddagger590.mccore.testing.InternalResetTestTools;
-import com.diamonddagger590.mccore.testing.RegistryResetExtension;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.BlockBreakContext;
@@ -24,28 +19,20 @@ import static org.mockito.Mockito.mock;
 /**
  * Tests the functionality of the {@link ExperienceModifierRegistry}.
  */
-@ExtendWith(RegistryResetExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
 @ExtendWith(ExperienceModifierRegistryExtension.class)
-public class ExperienceModifierRegistryTest {
+public class ExperienceModifierRegistryTest extends McRPGBaseTest {
 
-    private static final String EXPERIENCE_MODIFIER_REGISTRY_CLASS_PATH = "us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry";
-    private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
     private static final RegistryAccess registryAccess = RegistryAccess.registryAccess();
-    private static ExperienceModifierRegistry modifierRegistry;
+    private ExperienceModifierRegistry modifierRegistry;
 
-    private static MockModifier mockModifier;
+    private MockModifier mockModifier;
 
-    @BeforeAll
-    public static void setUpClass() {
+    @BeforeEach
+    public void setUp() {
         // Pulls from an extension
         modifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         mockModifier = new MockModifier(mcRPG);
-    }
-
-    @AfterEach
-    public void cleanUpRegistry() {
-        InternalResetTestTools.resetRegistryAccess(EXPERIENCE_MODIFIER_REGISTRY_CLASS_PATH);
     }
 
     @Test

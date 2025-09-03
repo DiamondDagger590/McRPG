@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.task.player;
 
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.player.PlayerUnloadTask;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +48,8 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
         if (corePlayerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = corePlayerOptional.get();
 
-            try (Connection connection = getPlugin().getDatabase().getConnection()) {
+            try (Connection connection = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.DATABASE).getDatabase().getConnection()) {
                 mcRPGPlayer.savePlayer(connection);
             /*
              We don't want to include the last seen time or the last logout time with saving general information about

@@ -1,19 +1,16 @@
 package us.eunoians.mcrpg.skill.experience.modifier;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
-import com.diamonddagger590.mccore.testing.RegistryResetExtension;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.McRPGMockExtension;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -36,17 +33,15 @@ import static org.mockito.Mockito.when;
  * This unit test covers implementation of {@link HeldItemBonusModifier}
  * being registered and being used to calculate experience modifier.
  */
-@ExtendWith(RegistryResetExtension.class)
 @ExtendWith(ExperienceModifierRegistryExtension.class)
 @ExtendWith(McRPGPlayerExtension.class)
 public class HeldItemBonusModifierTest extends McRPGBaseTest {
 
-    private static final McRPG mcRPG = McRPGMockExtension.mcRPG;
-    private static ExperienceModifierRegistry experienceModifierRegistry;
-    private static HeldItemBonusModifier heldItemBonusModifier;
+    private ExperienceModifierRegistry experienceModifierRegistry;
+    private HeldItemBonusModifier heldItemBonusModifier;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         experienceModifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         heldItemBonusModifier = new HeldItemBonusModifier();
         experienceModifierRegistry.register(heldItemBonusModifier);
