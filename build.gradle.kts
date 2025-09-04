@@ -62,7 +62,7 @@ dependencies {
     val intellijAnnotationVersion = "12.0"
     compileOnlyApi("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val mccoreVersion = "1.0.0.16-SNAPSHOT"
+    val mccoreVersion = "1.0.0.17-SNAPSHOT"
     implementation("com.diamonddagger590:McCore:$mccoreVersion")
     testImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
     testFixturesImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))

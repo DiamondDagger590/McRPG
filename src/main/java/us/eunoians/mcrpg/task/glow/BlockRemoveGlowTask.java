@@ -1,12 +1,12 @@
 package us.eunoians.mcrpg.task.glow;
 
+import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -26,7 +26,7 @@ public class BlockRemoveGlowTask extends DelayableCoreTask {
         this(player, locations, McRPG.getInstance());
     }
 
-    public BlockRemoveGlowTask(@NotNull Player player, @NotNull Set<Location> locations, @NotNull Plugin plugin) {
+    public BlockRemoveGlowTask(@NotNull Player player, @NotNull Set<Location> locations, @NotNull CorePlugin plugin) {
         super(plugin, 10);
         this.player = player;
         this.locations = locations;

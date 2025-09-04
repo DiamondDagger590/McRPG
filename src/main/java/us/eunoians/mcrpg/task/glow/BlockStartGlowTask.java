@@ -1,12 +1,12 @@
 package us.eunoians.mcrpg.task.glow;
 
+import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
@@ -29,7 +29,7 @@ public class BlockStartGlowTask extends CoreTask {
         this(player, oreScannerBlockType, locations, McRPG.getInstance());
     }
 
-    public BlockStartGlowTask(@NotNull Player player, @NotNull OreScannerBlockType oreScannerBlockType, @NotNull Set<Location> locations, @NotNull Plugin plugin) {
+    public BlockStartGlowTask(@NotNull Player player, @NotNull OreScannerBlockType oreScannerBlockType, @NotNull Set<Location> locations, @NotNull CorePlugin plugin) {
         super(plugin);
         this.player = player;
         this.scannerBlockType = oreScannerBlockType;

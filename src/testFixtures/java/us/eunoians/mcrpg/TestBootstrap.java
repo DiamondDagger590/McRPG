@@ -4,11 +4,15 @@ import com.diamonddagger590.mccore.bootstrap.CoreBootstrap;
 import com.diamonddagger590.mccore.bootstrap.StartupProfile;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.TimeProvider;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 
+import java.time.Clock;
+
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 
 /**
@@ -39,5 +43,11 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
     @Override
     public void stop(@NotNull StartupProfile startupProfile) {
 
+    }
+
+    @NotNull
+    @Override
+    public TimeProvider getTimeProvider() {
+        return spy(new TimeProvider(Clock.systemUTC()));
     }
 }
