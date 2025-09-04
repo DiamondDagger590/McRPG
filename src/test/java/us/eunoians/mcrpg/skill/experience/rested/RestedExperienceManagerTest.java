@@ -20,7 +20,7 @@ import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
+import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.util.Map;
 

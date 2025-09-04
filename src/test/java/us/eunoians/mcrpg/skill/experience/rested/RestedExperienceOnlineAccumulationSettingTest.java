@@ -10,7 +10,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
+import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.util.Optional;
 

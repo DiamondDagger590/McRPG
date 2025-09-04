@@ -21,8 +21,8 @@ public class McRPG extends CorePlugin {
     public void onEnable() {
         super.onEnable();
         CoreBootstrap<?> bootstrap = BootstrapFactory.getBootstrap();
-        bootstrap.start(resolveProfile());
         timeProvider = bootstrap.getTimeProvider();
+        bootstrap.start(resolveProfile());
     }
 
     @Override

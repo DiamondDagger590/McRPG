@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.BlockBreakContext;

@@ -16,7 +16,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistryExtension;
-import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
+import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
 import us.eunoians.mcrpg.skill.experience.context.MockExperienceContext;
 import us.eunoians.mcrpg.skill.impl.type.HeldItemBonusSkill;

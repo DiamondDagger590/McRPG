@@ -23,7 +23,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.MockSkill;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistryExtension;
-import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
+import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.skill.experience.context.EntityDamageContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

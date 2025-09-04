@@ -19,7 +19,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.experience.McRPGBaseTest;
+import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceAccumulationType;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceOnlineAccumulationSetting;

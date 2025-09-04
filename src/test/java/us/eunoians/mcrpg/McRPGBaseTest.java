@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.skill.experience;
+package us.eunoians.mcrpg;
 
 import com.diamonddagger590.mccore.bootstrap.StartupProfile;
 import org.jetbrains.annotations.NotNull;
@@ -6,8 +6,6 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.mockito.MockedStatic;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.TestBootstrap;
 import us.eunoians.mcrpg.bootstrap.BootstrapFactory;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 

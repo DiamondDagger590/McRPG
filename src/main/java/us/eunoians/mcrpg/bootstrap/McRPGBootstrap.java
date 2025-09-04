@@ -52,24 +52,24 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         super.start(startupProfile);
 
         registryAccess.registry(RegistryKey.MANAGER).register(new FileManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new McRPGLocalizationManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new ContentExpansionManager(mcRPG));
+        registryAccess.register(new AbilityRegistry(mcRPG));
+        registryAccess.register(new AbilityAttributeRegistry(mcRPG));
+        registryAccess.register(new SkillRegistry(mcRPG));
+        new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(mcRPG));
-        registryAccess.register(new AbilityRegistry(mcRPG));
-        registryAccess.register(new SkillRegistry(mcRPG));
-        registryAccess.register(new AbilityAttributeRegistry(mcRPG));
-        registryAccess.registry(RegistryKey.MANAGER).register(new McRPGLocalizationManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new DisplayManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new BleedManager(mcRPG));
-        registryAccess.registry(RegistryKey.MANAGER).register(new ContentExpansionManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new WorldManager(mcRPG));
         registryAccess.register(new ExperienceModifierRegistry(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new RestedExperienceManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGGuiManager(mcRPG));
 
         new McRPGListenerRegistrar().register(bootstrapContext);
-        new McRPGExpansionRegistrar().register(bootstrapContext);
         new McRPGHooksRegistrar().register(bootstrapContext);
 
         if (startupProfile == StartupProfile.PROD) {
