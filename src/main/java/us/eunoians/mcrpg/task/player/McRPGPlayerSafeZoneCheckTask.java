@@ -4,7 +4,7 @@ import com.diamonddagger590.mccore.configuration.common.ReloadableInteger;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
-import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
+import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -24,7 +24,7 @@ import java.util.Set;
  * This task is responsible for updating a {@link us.eunoians.mcrpg.entity.player.McRPGPlayer}'s
  * safe zone status on a periodic basis
  */
-public class McRPGPlayerSafeZoneCheckTask extends CancellableCoreTask {
+public class McRPGPlayerSafeZoneCheckTask extends CancelableCoreTask {
 
     // How often do we want to best case check every player
     private static final ReloadableInteger TICKS_BETWEEN_CHECKS;

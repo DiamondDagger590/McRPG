@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg;
 
 import com.diamonddagger590.mccore.CorePlugin;
+import com.diamonddagger590.mccore.bootstrap.CoreBootstrap;
+import com.diamonddagger590.mccore.util.TimeProvider;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.bootstrap.BootstrapFactory;
 import us.eunoians.mcrpg.database.McRPGDatabase;
@@ -13,16 +15,25 @@ public class McRPG extends CorePlugin {
     private static final int id = 6386;
 
     private McRPGDatabase database;
+    private TimeProvider timeProvider;
 
     @Override
     public void onEnable() {
         super.onEnable();
-        BootstrapFactory.getBootstrap().start(resolveProfile());
+        CoreBootstrap<?> bootstrap = BootstrapFactory.getBootstrap();
+        bootstrap.start(resolveProfile());
+        timeProvider = bootstrap.getTimeProvider();
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
+    }
+
+    @NotNull
+    @Override
+    public TimeProvider getTimeProvider() {
+        return timeProvider;
     }
 
     /**

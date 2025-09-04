@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.task.player;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
+import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
@@ -20,7 +20,7 @@ import java.util.Set;
  * This task will run continually in the background to save player data
  * on a timer.
  */
-public final class McRPGPlayerSaveTask extends CancellableCoreTask {
+public final class McRPGPlayerSaveTask extends CancelableCoreTask {
 
     public McRPGPlayerSaveTask(@NotNull McRPG plugin, double taskDelay, double taskFrequency) {
         super(plugin, taskDelay, taskFrequency);

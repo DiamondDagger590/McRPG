@@ -1,10 +1,9 @@
 package us.eunoians.mcrpg.task.experience;
 
-import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.task.core.CancellableCoreTask;
+import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -23,23 +22,20 @@ import java.util.UUID;
 /**
  * This task runs in the background and will periodically award experience
  */
-public final class RestedExperienceAccumulationTask extends CancellableCoreTask {
+public final class RestedExperienceAccumulationTask extends CancelableCoreTask {
 
-    private static final ReloadableContent<RestedExperienceOnlineAccumulationSetting> ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT = new ReloadableContent<>(RegistryAccess.registryAccess()
-            .registry(RegistryKey.MANAGER)
-            .manager(McRPGManagerKey.FILE)
-            .getFile(FileType.MAIN_CONFIG), MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION,
-            (yamlDocument, route) -> RestedExperienceOnlineAccumulationSetting.fromString(yamlDocument.getString(route))
-                    .orElse(RestedExperienceOnlineAccumulationSetting.DISABLED));
-
-    static {
-        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT).trackReloadableContent(ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT);
-    }
     private Set<UUID> playersLastUpdated;
+    private RestedExperienceOnlineAccumulationSetting onlineAccumulationSetting;
 
     public RestedExperienceAccumulationTask(@NotNull McRPG mcRPG, double taskDelay, double taskFrequency) {
         super(mcRPG, taskDelay, taskFrequency);
         this.playersLastUpdated = new HashSet<>();
+        this.onlineAccumulationSetting = RestedExperienceOnlineAccumulationSetting.fromString(RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.MAIN_CONFIG)
+                .getString(MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION))
+                .orElse(RestedExperienceOnlineAccumulationSetting.DISABLED);
     }
 
     @NotNull
@@ -68,7 +64,7 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
         Set<UUID> currentPlayers = new HashSet<>();
         RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
         // Ensure we allow online accumulation
-        if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != RestedExperienceOnlineAccumulationSetting.DISABLED) {
+        if (onlineAccumulationSetting != RestedExperienceOnlineAccumulationSetting.DISABLED) {
             // Check all players
             for (CorePlayer corePlayer : getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
                 currentPlayers.add(corePlayer.getUUID());
@@ -86,7 +82,7 @@ public final class RestedExperienceAccumulationTask extends CancellableCoreTask 
                         accumulationType = RestedExperienceAccumulationType.ONLINE_SAFE_ZONE;
                     }
                     // If normal online accumulation isn't enabled, and we aren't in a safe zone, then we aren't going to award anything.
-                    else if (ONLINE_ACCUMULATION_TYPE_RELOADABLE_CONTENT.getContent() != RestedExperienceOnlineAccumulationSetting.ENABLED) {
+                    else if (onlineAccumulationSetting != RestedExperienceOnlineAccumulationSetting.ENABLED) {
                         continue;
                     }
                     restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, accumulationType, false);
