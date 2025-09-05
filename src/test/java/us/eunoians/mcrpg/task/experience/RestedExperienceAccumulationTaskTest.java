@@ -8,6 +8,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockbukkit.mockbukkit.MockBukkit;
@@ -57,8 +58,9 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
 
     }
 
+    @DisplayName("Given a player not in the previously updated cache, when the interval completes, then no rested XP is awarded and the interval callback fires once")
     @Test
-    public void whenIntervalComplete_doNotAwardRestedExperience_forNonCachedPlayer(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_skipsAward_whenPlayerNotCached(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());
         when(mockConfig.getString(MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION))
@@ -79,8 +81,9 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
         verify(restedExperienceAccumulationTask, times(1)).onIntervalComplete();
     }
 
+    @DisplayName("Given online accumulation enabled, when the interval completes twice, then rested XP is awarded once and the interval callback fires twice")
     @Test
-    public void whenIntervalComplete_awardRestedExperience_forOnlineAccumulationEnabled(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_awardsRestedExperience_whenOnlineEnabled(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());
         when(mockConfig.getString(MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION))
@@ -101,12 +104,13 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
         MockBukkit.getMock().getScheduler().performOneTick();
 
         verify(timeProvider, times(7)).now();
-        verify(restedExperienceManager, times(1)).awardRestedExperience(any(), anyInt(), eq(RestedExperienceAccumulationType.ONLINE), anyBoolean());
+        verify(restedExperienceManager, times(1)).awardRestedExperience(any(), eq(1), eq(RestedExperienceAccumulationType.ONLINE), anyBoolean());
         verify(restedExperienceAccumulationTask, times(2)).onIntervalComplete();
     }
 
+    @DisplayName("Given player is AFK and AFK accumulation is disabled, when the interval completes twice, then no rested XP is awarded and interval callback fires twice")
     @Test
-    public void whenIntervalComplete_doNotAwardExperience_forAfkPlayer(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_skipsAward_whenAfkAndAfkDisabled(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         when(mcRPGPlayer.isAfk()).thenReturn(true);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());
@@ -134,8 +138,9 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
         verify(restedExperienceAccumulationTask, times(2)).onIntervalComplete();
     }
 
+    @DisplayName("Given player is AFK and AFK accumulation is enabled, when the interval completes twice, then rested XP is awarded once and interval callback fires twice")
     @Test
-    public void whenIntervalComplete_awardExperience_forAfkPlayer(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_awardsExperience_whenAfkAndAfkEnabled(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         when(mcRPGPlayer.isAfk()).thenReturn(true);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());
@@ -159,12 +164,13 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
         MockBukkit.getMock().getScheduler().performOneTick();
 
         verify(timeProvider, times(7)).now();
-        verify(restedExperienceManager, times(1)).awardRestedExperience(any(), anyInt(), eq(RestedExperienceAccumulationType.ONLINE), anyBoolean());
+        verify(restedExperienceManager, times(1)).awardRestedExperience(any(), eq(1), eq(RestedExperienceAccumulationType.ONLINE), anyBoolean());
         verify(restedExperienceAccumulationTask, times(2)).onIntervalComplete();
     }
 
+    @DisplayName("Given online accumulation disabled, when the interval completes twice, then no rested XP is awarded and the interval callback fires twice")
     @Test
-    public void whenIntervalComplete_doNotAwardRestedExperience_forOnlineAccumulationDisabled(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_skipsAward_whenOnlineDisabled(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());
         when(mockConfig.getString(MainConfigFile.RESTED_EXPERIENCE_ALLOW_ONLINE_ACCUMULATION))
@@ -189,8 +195,9 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
         verify(restedExperienceAccumulationTask, times(2)).onIntervalComplete();
     }
 
+    @DisplayName("Given safe-zone-only accumulation and player outside safe zone, when the interval completes twice, then no rested XP is awarded and callback fires twice")
     @Test
-    public void whenIntervalComplete_doNotAwardRestedExperience_forOnlineAccumulationSafeZoneAndPlayerNotInSafeZone(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_skipsAward_whenSafeZoneOnlyAndOutside(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         when(mcRPGPlayer.isStandingInSafeZone()).thenReturn(false);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());
@@ -216,8 +223,9 @@ public class RestedExperienceAccumulationTaskTest extends McRPGBaseTest {
         verify(restedExperienceAccumulationTask, times(2)).onIntervalComplete();
     }
 
+    @DisplayName("Given safe-zone-only accumulation and player inside safe zone, when the interval completes twice, then rested XP is awarded once and callback fires twice")
     @Test
-    public void whenIntervalComplete_awardRestedExperience_forOnlineAccumulationSafeZoneAndPlayerInSafeZone(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void onIntervalComplete_awardsRestedExperience_whenSafeZoneOnlyAndInside(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         when(mcRPGPlayer.isStandingInSafeZone()).thenReturn(true);
         doNothing().when(restedExperienceManager).awardRestedExperience(any(), anyInt(), any(), anyBoolean());

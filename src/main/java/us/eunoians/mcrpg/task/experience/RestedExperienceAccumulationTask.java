@@ -85,7 +85,7 @@ public final class RestedExperienceAccumulationTask extends CancelableCoreTask {
                     else if (onlineAccumulationSetting != RestedExperienceOnlineAccumulationSetting.ENABLED) {
                         continue;
                     }
-                    restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskDelay, accumulationType, false);
+                    restedExperienceManager.awardRestedExperience(mcRPGPlayer, (int) taskFrequency, accumulationType, false);
                 }
             }
             playersLastUpdated = currentPlayers;

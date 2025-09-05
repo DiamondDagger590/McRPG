@@ -34,13 +34,14 @@ import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 public final class Swords extends McRPGSkill implements HeldItemBonusSkill, ConfigurableSkill {
 
     public static final NamespacedKey SWORDS_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "swords");
-    private static final Map<Material, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
 
+    private final Map<Material, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
     private final McRPG mcRPG;
+
     public Swords(@NotNull McRPG mcRPG) {
         super(SWORDS_KEY);
         this.mcRPG = mcRPG;
-        addLevelableComponent(SwordsSkillComponents.SWORDS_LEVEL_ON_ATTACK_COMPONENT, EntityDamageByEntityEvent.class, 0);
+        addLevelableComponent(new SwordsLevelOnAttackComponent(), EntityDamageByEntityEvent.class, 0);
     }
 
     @NotNull

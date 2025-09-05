@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import us.eunoians.mcrpg.configuration.FileManager;
@@ -16,7 +17,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.MockSkill;
+import us.eunoians.mcrpg.skill.impl.MockSkill;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistryExtension;
 import us.eunoians.mcrpg.McRPGBaseTest;
@@ -35,15 +36,16 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
     private MockSkill mockSkill;
 
     @BeforeEach
-    public void setupBeforeEach(){
+    public void setupBeforeEach() {
         experienceModifierRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER);
         mockSkill = spy(MockSkill.class);
     }
 
+    @DisplayName("Given boosted XP available and a non-spawner entity, when calculating the modifier, then it returns 3.0 and consumes 200 boosted XP")
     @Test
-    public void modifierCombination_returnsThree_whenSpawnerModifierIsNotApplied(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void calculateModifier_returns3_whenSpawnerNotApplied(@NotNull McRPGPlayer mcRPGPlayer) {
         SpawnReasonModifier spawnReasonModifier = new SpawnReasonModifier();
-        BoostedExperienceModifier  boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
+        BoostedExperienceModifier boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
         experienceModifierRegistry.register(spawnReasonModifier);
         experienceModifierRegistry.register(boostedExperienceModifier);
 
@@ -60,10 +62,12 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
         assertEquals(100, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
     }
 
+    @DisplayName("Given boosted XP available and a spawner-sourced entity, when calculating the modifier," +
+            " then it returns 1.5 and consumes 100 boosted XP")
     @Test
-    public void modifierCombination_returnsOnePointFive_whenSpawnerModifierIsApplied(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void calculateModifier_returns1Point5_whenSpawnerApplied(@NotNull McRPGPlayer mcRPGPlayer) {
         SpawnReasonModifier spawnReasonModifier = new SpawnReasonModifier();
-        BoostedExperienceModifier  boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
+        BoostedExperienceModifier boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
         experienceModifierRegistry.register(spawnReasonModifier);
         experienceModifierRegistry.register(boostedExperienceModifier);
 
@@ -79,10 +83,12 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
         assertEquals(200, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
     }
 
+    @DisplayName("Given boosted and rested XP available and a non-spawner entity, when calculating the modifier," +
+            " then it returns 6.0, reduces rested to ~0.0333 and consumes 200 boosted XP")
     @Test
-    public void modifierCombinationWithSufficientXp_returnsSix_whenMultipleModifiersAreApplied(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void calculateModifier_returns6_whenBoostedAndRestedApplied_andSpawnerNotApplied(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mockSkill.getLevelUpEquation()).thenReturn(new Parser("3000"));
-        BoostedExperienceModifier boostedExperienceModifier =  new BoostedExperienceModifier(mcRPG);
+        BoostedExperienceModifier boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
         RestedExperienceModifier restedExperienceModifier = new RestedExperienceModifier(mcRPG);
         SpawnReasonModifier spawnReasonModifier = new SpawnReasonModifier();
         experienceModifierRegistry.register(restedExperienceModifier);
@@ -112,10 +118,12 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
         assertEquals(100, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
     }
 
+    @DisplayName("Given boosted and rested XP available and a spawner-sourced entity, when calculating the modifier," +
+            " then it returns 3.0, reduces rested to ~0.0666 and consumes 100 boosted XP")
     @Test
-    public void modifierCombinationWithSufficientXp_returnsX_whenMultipleModifiersAreAppliedWithSpawnerModifier(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void calculateModifier_returns3_whenBoostedAndRestedApplied_andSpawnerApplied(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mockSkill.getLevelUpEquation()).thenReturn(new Parser("3000"));
-        BoostedExperienceModifier boostedExperienceModifier =  new BoostedExperienceModifier(mcRPG);
+        BoostedExperienceModifier boostedExperienceModifier = new BoostedExperienceModifier(mcRPG);
         RestedExperienceModifier restedExperienceModifier = new RestedExperienceModifier(mcRPG);
         SpawnReasonModifier spawnReasonModifier = new SpawnReasonModifier();
         experienceModifierRegistry.register(restedExperienceModifier);
@@ -144,5 +152,4 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
         assertEquals(0.06666666f, mcRPGPlayer.getExperienceExtras().getRestedExperience());
         assertEquals(200, mcRPGPlayer.getExperienceExtras().getBoostedExperience());
     }
-
 }

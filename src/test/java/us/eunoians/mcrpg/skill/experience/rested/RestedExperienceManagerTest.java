@@ -7,6 +7,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
@@ -55,32 +56,37 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).register(restedExperienceManager);
     }
 
+    @DisplayName("Given ONLINE accumulation and time=10, when computing rested experience, then it returns 1.0")
     @Test
-    public void getRestedExperience_returnsOne_forOnlineAccumulation() {
+    public void getRestedExperience_returnsOne_whenOnline() {
         float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.ONLINE);
         assertEquals(1, restedExperience);
     }
 
+    @DisplayName("Given OFFLINE accumulation and time=10, when computing rested experience, then it returns 2.0")
     @Test
-    public void getRestedExperience_returnsTwo_forOfflineAccumulation() {
+    public void getRestedExperience_returnsTwo_whenOffline() {
         float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.OFFLINE);
         assertEquals(2, restedExperience);
     }
 
+    @DisplayName("Given ONLINE safe-zone accumulation and time=10, when computing rested experience, then it returns 3.0")
     @Test
-    public void getRestedExperience_returnsThree_forOnlineSafeZoneAccumulation() {
+    public void getRestedExperience_returnsThree_whenOnlineSafeZone() {
         float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.ONLINE_SAFE_ZONE);
         assertEquals(3, restedExperience);
     }
 
+    @DisplayName("Given OFFLINE safe-zone accumulation and time=10, when computing rested experience, then it returns 4.0")
     @Test
-    public void getRestedExperience_returnsFour_forOfflineSafeZoneAccumulation() {
+    public void getRestedExperience_returnsFour_whenOfflineSafeZone() {
         float restedExperience = restedExperienceManager.getRestedExperience(10, RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE);
         assertEquals(4, restedExperience);
     }
 
+    @DisplayName("Given OFFLINE accumulation and notifications ENABLED with max=5 and safe-zone allowed, when awarding for time=10, then it awards 2, fires the event, and sends a message")
     @Test
-    public void awardPlayerRestedExperience_awardsTwo_forOfflineAccumulation(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_awardsTwo_whenOfflineNotifyTrue(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
@@ -97,8 +103,9 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertEquals(component, playerMock.nextComponentMessage());
     }
 
+    @DisplayName("Given OFFLINE accumulation and notifications DISABLED with max=5 and safe-zone allowed, when awarding for time=10, then it awards 2, fires the event, and sends no message")
     @Test
-    public void awardPlayerRestedExperience_awardsTwoWithNoMessage_forOfflineAccumulation(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_awardsTwo_whenOfflineNotifyFalse(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         addPlayerToServer(mcRPGPlayer);
@@ -112,8 +119,9 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertNull(playerMock.nextComponentMessage());
     }
 
+    @DisplayName("Given OFFLINE safe-zone accumulation while safe-zone accrual DISABLED and notifications ENABLED, when awarding for time=10, then it awards 2, fires the event, and sends a message")
     @Test
-    public void awardPlayerRestedExperience_awardsTwo_forOfflineSafeZoneAccumulationWithSafeZoneDisabled(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_awardsTwo_whenOfflineSafeZoneDisabledNotifyTrue(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
@@ -130,8 +138,9 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertEquals(component, playerMock.nextComponentMessage());
     }
 
+    @DisplayName("Given ONLINE safe-zone accumulation while safe-zone accrual DISABLED and notifications DISABLED, when awarding for time=10, then it awards 1, fires the event, and sends no message")
     @Test
-    public void awardPlayerRestedExperience_awardsOne_forOnlineSafeZoneAccumulationWithSafeZoneDisabled(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_awardsOne_whenOnlineSafeZoneDisabledNotifyFalse(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         addPlayerToServer(mcRPGPlayer);
@@ -145,8 +154,9 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertNull(playerMock.nextComponentMessage());
     }
 
+    @DisplayName("Given OFFLINE safe-zone accumulation while safe-zone accrual ENABLED and notifications ENABLED, when awarding for time=10, then it awards 4, fires the event, and sends a message")
     @Test
-    public void awardPlayerRestedExperience_awardsFour_forOfflineSafeZoneAccumulationWithSafeZoneEnabled(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_awardsFour_whenOfflineSafeZoneEnabledNotifyTrue(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
@@ -163,8 +173,9 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertEquals(component, playerMock.nextComponentMessage());
     }
 
+    @DisplayName("Given rested experience already at MAX=5 and notifications ENABLED, when awarding additional OFFLINE safe-zone accumulation, then it awards none, does not fire the event, and notifies the player")
     @Test
-    public void awardPlayerRestedExperience_awardsNoneAndNotifies_whenExperienceIsMax(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_awardsNone_whenAtMaxNotifyTrue(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You have reached the maximum accumulation");
@@ -182,8 +193,9 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         assertEquals(component, playerMock.nextComponentMessage());
     }
 
+    @DisplayName("Given accumulation that would EXCEED MAX=5 and notifications ENABLED, when awarding OFFLINE safe-zone rested experience, then it caps at max, does not fire the event, and notifies the player")
     @Test
-    public void awardPlayerRestedExperience_awardsNoneAndNotifies_whenExperienceIsAccumulatedAboveMax(McRPGPlayer mcRPGPlayer) {
+    public void awardRestedExperience_capsAtMax_whenExceedsMaxNotifyTrue(McRPGPlayer mcRPGPlayer) {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You have reached the maximum accumulation");

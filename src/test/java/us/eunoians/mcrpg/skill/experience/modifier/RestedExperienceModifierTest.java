@@ -20,7 +20,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.MockSkill;
+import us.eunoians.mcrpg.skill.impl.MockSkill;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistryExtension;
 import us.eunoians.mcrpg.McRPGBaseTest;

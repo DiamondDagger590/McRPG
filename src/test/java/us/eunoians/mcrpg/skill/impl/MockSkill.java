@@ -1,10 +1,11 @@
-package us.eunoians.mcrpg.skill;
+package us.eunoians.mcrpg.skill.impl;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.Optional;
 

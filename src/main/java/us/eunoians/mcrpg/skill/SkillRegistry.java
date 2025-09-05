@@ -44,6 +44,9 @@ public class SkillRegistry implements Registry<Skill> {
      * @param skill The {@link Skill} to track
      */
     public void register(@NotNull Skill skill) {
+        if (skills.containsKey(skill.getSkillKey())) {
+            throw new IllegalArgumentException("Skill " + skill.getSkillKey() + " already registered");
+        }
         skills.put(skill.getSkillKey(), skill);
         Bukkit.getPluginManager().callEvent(new SkillRegisterEvent(skill));
     }
@@ -60,7 +63,6 @@ public class SkillRegistry implements Registry<Skill> {
         if (!registered(skillKey)) {
             throw new SkillNotRegisteredException(skillKey);
         }
-
         return skills.get(skillKey);
     }
 
