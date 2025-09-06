@@ -19,8 +19,8 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExtraLumber extends McRPGAbility implements PassiveAbility, ConfigurableAbility,
-        ReloadableContentAbility, DropMultiplierAbility, SkillAbility {
+        ReloadableContentAbility, DropMultiplierAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey EXTRA_LUMBER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "extra_lumber");
 
@@ -106,9 +106,10 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
         }
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(WoodcuttingConfigFile.EXTRA_LUMBER_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return WoodcuttingConfigFile.EXTRA_LUMBER_ENABLED;
     }
 
     public double getActivationChance(@NotNull SkillHolder skillHolder) {

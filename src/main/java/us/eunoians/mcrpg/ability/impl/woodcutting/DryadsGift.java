@@ -17,7 +17,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * wood. Whenever the ability activates, vanilla experience is dropped.
  */
 public class DryadsGift extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
-        ReloadableContentAbility, SkillAbility {
+        ReloadableContentAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey DRYADS_GIFT_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "dryads_gift");
 
@@ -89,9 +89,10 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
         }
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(WoodcuttingConfigFile.DRYADS_GIFT_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return WoodcuttingConfigFile.DRYADS_GIFT_ENABLED;
     }
 
     @Override

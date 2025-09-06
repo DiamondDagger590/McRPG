@@ -18,7 +18,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * and lets players regain hunger up to a certain point as they move in a wooded biome.
  */
 public class NymphsVitality extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
-        ReloadableContentAbility, SkillAbility {
+        ReloadableContentAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey NYMPHS_VITALITY_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "nymphs_vitality");
 
@@ -114,9 +114,10 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
         }
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(WoodcuttingConfigFile.NYMPHS_VITALITY_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return WoodcuttingConfigFile.NYMPHS_VITALITY_ENABLED;
     }
 
     @Override
