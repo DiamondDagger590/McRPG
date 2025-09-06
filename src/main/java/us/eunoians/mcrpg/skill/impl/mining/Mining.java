@@ -31,7 +31,7 @@ public final class Mining extends McRPGSkill implements ConfigurableSkill {
     public Mining(@NotNull McRPG mcRPG) {
         super(MINING_KEY);
         this.mcRPG = mcRPG;
-        addLevelableComponent(MiningSkillComponents.MINING_LEVEL_ON_BLOCK_BREAK_COMPONENT, BlockBreakBlockEvent.class, 0);
+        addLevelableComponent(new MiningLevelOnBlockBreakComponent(), BlockBreakBlockEvent.class, 0);
     }
 
     @NotNull
@@ -56,10 +56,5 @@ public final class Mining extends McRPGSkill implements ConfigurableSkill {
     @Override
     public String getDatabaseName() {
         return "mining";
-    }
-
-    @Override
-    public int getMaxLevel() {
-        return 1000;
     }
 }

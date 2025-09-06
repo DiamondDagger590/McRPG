@@ -23,4 +23,6 @@ public interface OnBlockBreakLevelableComponent extends EventLevelableComponent 
         }
         return false;
     }
+
+    int getBaseExperienceForBlock(@NotNull SkillHolder skillHolder, @NotNull Block block);
 }
