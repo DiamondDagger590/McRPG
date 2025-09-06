@@ -39,6 +39,14 @@ public interface ConfigurableAbility extends Ability {
     @NotNull
     Route getDisplayItemRoute();
 
+    /**
+     * Gets the {@link Route} used to check if this ability is enabled or not.
+     *
+     * @return The {@link Route} used to check if this ability is enabled or not.
+     */
+    @NotNull
+    Route getAbilityEnabledRoute();
+
     @NotNull
     @Override
     default String getName(@NotNull McRPGPlayer player) {
@@ -47,7 +55,7 @@ public interface ConfigurableAbility extends Ability {
 
     @NotNull
     @Override
-    default String getName(){
+    default String getName() {
         return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(Route.addTo(getDisplayItemRoute(), "ability-name"));
     }
 
@@ -75,4 +83,8 @@ public interface ConfigurableAbility extends Ability {
                 .getLocalizedMessageAsComponent(Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME), Map.of("ability", getName()));
     }
 
+    @Override
+    default boolean isAbilityEnabled() {
+        return getYamlDocument().getBoolean(getAbilityEnabledRoute());
+    }
 }

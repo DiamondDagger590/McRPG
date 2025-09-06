@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -33,7 +33,7 @@ import java.util.Set;
  * This ability is an unlockable ability for {@link Swords} that
  * can increase the damage per tick for the {@link Bleed} ability
  */
-public final class EnhancedBleed extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, SkillAbility {
+public final class EnhancedBleed extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey ENHANCED_BLEED_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "enhanced_bleed");
     private static final Random RANDOM = new Random();
@@ -95,9 +95,10 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
         return getYamlDocument().getInt(SwordsConfigFile.ENHANCED_BLEED_AMOUNT_OF_TIERS);
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(SwordsConfigFile.ENHANCED_BLEED_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return SwordsConfigFile.ENHANCED_BLEED_ENABLED;
     }
 
     public int getBaseBleedDamageIncrease(int tier) {

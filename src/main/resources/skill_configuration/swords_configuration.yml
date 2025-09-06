@@ -1,4 +1,6 @@
 config-version: 1
+# Is this skill enabled or not. If disabled, players won't be able to gain experience
+# and this will turn off any abilities belonging to the skill.
 skill-enabled: true
 permissions:
   restrict-skill-to-permission: false
@@ -8,13 +10,30 @@ leveling:
   level-up-equation: '2000+(20*(skill_level))'
   maximum-skill-level: 1000
 experience:
+  # Configure how much experience gain should be multiplied by based
+  # on what item the player is holding in their main hand.
+  #
+  # These modifiers can be either material values such as WOODEN_SWORD
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
   material-modifiers:
-    WOODEN_SWORD: 1.0
-    STONE_SWORD: 1.05
-    GOLDEN_SWORD: 1.5
-    IRON_SWORD: 1.1
-    DIAMOND_SWORD: 1.15
-    NETHERITE_SWORD: 1.25
+    WOODEN_SWORD: 1.5
+    STONE_SWORD: 1.3
+    GOLDEN_SWORD: 2.0
+    IRON_SWORD: 1.2
+    DIAMOND_SWORD: 1.1
+    NETHERITE_SWORD: 1.0
+  # Configure what items a player can use to attack mobs with in order to gain experience.
+  # These items can be either material values such as WOODEN_SWORD
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  allowed-items-for-experience-gain:
+    - WOODEN_SWORD
+    - STONE_SWORD
+    - GOLDEN_SWORD
+    - IRON_SWORD
+    - DIAMOND_SWORD
+    - NETHERITE_SWORD
   sources:
     CHICKEN: 5
     COW: 10

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -32,7 +32,7 @@ import java.util.Set;
  * This ability is an unlockable ability for {@link Swords} that
  * can increase the duration of the {@link Bleed} ability
  */
-public final class DeeperWound extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, SkillAbility {
+public final class DeeperWound extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey DEEPER_WOUND_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "deeper_wound");
 
@@ -87,9 +87,10 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
         return SwordsConfigFile.DEEPER_WOUND_TIER_CONFIGURATION_HEADER;
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(SwordsConfigFile.DEEPER_WOUND_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return SwordsConfigFile.DEEPER_WOUND_ENABLED;
     }
 
     /**

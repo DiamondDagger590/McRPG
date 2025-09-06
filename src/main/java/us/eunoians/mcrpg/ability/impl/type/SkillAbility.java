@@ -1,8 +1,11 @@
 package us.eunoians.mcrpg.ability.impl.type;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.skill.SkillRegistry;
 
 /**
  * This interface signifies that an {@link Ability} belongs
@@ -21,4 +24,13 @@ public interface SkillAbility extends Ability {
      */
     @NotNull
     NamespacedKey getSkillKey();
+
+    @Override
+    default boolean isAbilityEnabled() {
+        SkillRegistry skillRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.SKILL);
+        if (skillRegistry.registered(getSkillKey())) {
+            return skillRegistry.getRegisteredSkill(getSkillKey()).isSkillEnabled();
+        }
+        return false;
+    }
 }

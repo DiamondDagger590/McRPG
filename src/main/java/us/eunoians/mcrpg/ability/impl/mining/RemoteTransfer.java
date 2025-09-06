@@ -23,16 +23,16 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
-import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.attribute.RemoteTransferItemSetAttribute;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
-import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
-import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.ReloadableRemoteTransferMap;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
@@ -59,7 +59,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * has it enabled.
  */
 public final class RemoteTransfer extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
-        ReloadableContentAbility, SkillAbility {
+        ReloadableContentAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey REMOTE_TRANSFER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "remote_transfer");
     private static final ReloadableRemoteTransferMap REMOTE_TRANSFER_CATEGORIES = new ReloadableRemoteTransferMap();
@@ -227,9 +227,10 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
         }
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(MiningConfigFile.REMOTE_TRANSFER_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return MiningConfigFile.REMOTE_TRANSFER_ENABLED;
     }
 
     /**

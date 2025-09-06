@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -32,7 +32,7 @@ import java.util.Set;
  * This is a passive ability that has a chance to activate when {@link ExtraOre} activates,
  * turning the double drop into a triple drop.
  */
-public final class ItsATriple extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, SkillAbility {
+public final class ItsATriple extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "its_a_triple");
 
@@ -69,9 +69,10 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
         }
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(MiningConfigFile.ITS_A_TRIPLE_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return MiningConfigFile.ITS_A_TRIPLE_ENABLED;
     }
 
     @Override

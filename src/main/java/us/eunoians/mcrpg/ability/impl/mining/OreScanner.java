@@ -17,11 +17,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
-import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
-import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
+import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -50,7 +50,8 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * Ore Scanner is an active ability that will scan the blocks around the player, informing the player of
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
-public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility, ReloadableContentAbility, SkillAbility {
+public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility,
+        ReloadableContentAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ore_scanner");
     private final ReloadableOreScannerBlocks ORE_SCANNER_BLOCK_TYPES = new ReloadableOreScannerBlocks(getYamlDocument(), MiningConfigFile.ORE_SCANNER_BLOCK_TYPES);
@@ -154,9 +155,10 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
         });
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(MiningConfigFile.ORE_SCANNER_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return MiningConfigFile.ORE_SCANNER_ENABLED;
     }
 
     /**

@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.skill.impl.swords;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -35,7 +35,7 @@ public final class Swords extends McRPGSkill implements HeldItemBonusSkill, Conf
 
     public static final NamespacedKey SWORDS_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "swords");
 
-    private final Map<Material, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
+    private final Map<CustomItemWrapper, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
     private final McRPG mcRPG;
 
     public Swords(@NotNull McRPG mcRPG) {
@@ -71,16 +71,16 @@ public final class Swords extends McRPGSkill implements HeldItemBonusSkill, Conf
     @Override
     public double getHeldItemBonus(@NotNull ItemStack... items) {
         double modifier = 0.0;
-        for (ItemStack itemStack : items) {
-            // TODO https://github.com/DiamondDagger590/McRPG/issues/117
-            Material material = itemStack.getType();
-            // Cache so we don't constantly rebuild routes (especially if players are spam clicking or smth)
-            if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(material)) {
-                MATERIAL_BONUS_ROUTE_MAP.put(material, Route.fromString(toRoutePath(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, material.toString())));
-            }
-            YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
-            modifier += (swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(material), 1.0d));
+        // We only care about the main hand item which would be the first item in the array.
+        ItemStack itemStack = items[0];
+        CustomItemWrapper customItemWrapper = new CustomItemWrapper(itemStack);
+        // Cache so we don't constantly rebuild routes (especially if players are spam clicking or smth)
+        if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(customItemWrapper)) {
+            String materialValue = customItemWrapper.customItem().isPresent() ? customItemWrapper.customItem().get() : customItemWrapper.material().get().toString();
+            MATERIAL_BONUS_ROUTE_MAP.put(customItemWrapper, Route.fromString(toRoutePath(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, materialValue)));
         }
+        YamlDocument swordsFile = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
+        modifier += (swordsFile.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(customItemWrapper), 1.0d));
         return modifier;
     }
 }

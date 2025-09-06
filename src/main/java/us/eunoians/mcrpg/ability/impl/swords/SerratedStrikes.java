@@ -13,8 +13,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -40,7 +40,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * This ability activates by attacking an enemy after readying the user's sword. The ability
  * increases the activation rate of {@link Bleed} while active.
  */
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, SkillAbility {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
@@ -102,9 +102,10 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         }
     }
 
+    @NotNull
     @Override
-    public boolean isAbilityEnabled() {
-        return getYamlDocument().getBoolean(SwordsConfigFile.SERRATED_STRIKES_ENABLED);
+    public Route getAbilityEnabledRoute() {
+        return SwordsConfigFile.SERRATED_STRIKES_ENABLED;
     }
 
     @NotNull
