@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
@@ -59,15 +58,13 @@ public class GiveExperienceCommand extends GiveCommandBase {
                             CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
                             int experienceAmount = commandContext.get(amountKey);
 
-                            BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(commandContext.sender().getSender());
-                            Audience receiverAudience = adventure.player(player);
+                            Audience senderAudience = commandContext.sender().getSender();
                             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                             Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                             Optional<McRPGPlayer> senderOptional = commandContext.sender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                                     .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
-                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, receiverAudience, experienceAmount, skill, senderOptional.orElse(null));
-                            Map<String, String> receiverPlaceholders = getPlaceholders(receiverAudience, senderAudience, receiverAudience, experienceAmount, skill, playerOptional.orElse(null));
+                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, experienceAmount, skill, senderOptional.orElse(null));
+                            Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, experienceAmount, skill, playerOptional.orElse(null));
 
                             if (playerOptional.isPresent()) {
                                 McRPGPlayer mcRPGPlayer = playerOptional.get();
@@ -76,7 +73,7 @@ public class GiveExperienceCommand extends GiveCommandBase {
                                 if (skillHolderDataOptional.isPresent()) {
                                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
                                     skillHolderData.addExperience(experienceAmount);
-                                    receiverAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
+                                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
                                         senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));

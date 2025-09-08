@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.display;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -83,7 +84,7 @@ public class DisplayManager extends Manager<McRPG> {
     public void sendExperienceUpdate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {
         UUID uuid = mcRPGPlayer.getUUID();
 
-        if (RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+        if (!RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
                 .getBoolean(MainConfigFile.DISPLAY_EXPERIENCE_UPDATES_ENABLED, false)) {
             return;

@@ -5,11 +5,65 @@ permissions:
   use-permissions-to-unlock-abilities: false
   use-permissions-to-activate-abilities: false
 leveling:
-  level-up-equation: '2000+(20*(skill_level))'
+  level-up-equation: '200+(0.17*(skill_level^1.669))'
   maximum-skill-level: 1000
 experience:
+  # Configure what items a player can use to break blocks with in order to gain experience.
+  # These items can be either material values such as WOODEN_AXE
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  allowed-items-for-experience-gain:
+    - WOODEN_AXE
+    - STONE_AXE
+    - GOLDEN_AXE
+    - IRON_AXE
+    - DIAMOND_AXE
+    - NETHERITE_AXE
+    - AIR
+  # Configure how much experience gain should be multiplied by based
+  # on what item the player is holding in their main hand. If an item
+  # isn't in this list but is allowed, then the default value of 1.0 is used.
+  #
+  # These modifiers can be either material values such as WOODEN_AXE
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  material-modifiers:
+    GOLDEN_AXE: 2.0
+  # Configure what blocks a player can break to gain experience and how
+  # much experience breaking that block will give.
+  #
+  # These sources can be either material values such as ANDESITE
+  # or the custom block id for whatever custom block plugin you might be using
+  # if you want to allow custom blocks.
   sources:
-    OAK_LOG: 2
+    ACACIA_LOG: 40
+    BAMBOO: 2
+    BIRCH_LOG: 25
+    CHERRY_LOG: 40
+    CREAKING_HEART: 2000
+    CRIMSON_HYPHAE: 40
+    CRIMSON_STEM: 40
+    DARK_OAK_LOG: 25
+    JUNGLE_LOG: 25
+    MANGROVE_LOG: 40
+    OAK_LOG: 25
+    PALE_OAK_LOG: 40
+    SPRUCE_LOG: 25
+    STRIPPED_ACACIA_LOG: 40
+    STRIPPED_BIRCH_LOG: 25
+    STRIPPED_CHERRY_LOG: 40
+    STRIPPED_CRIMSON_HYPHAE: 40
+    STRIPPED_CRIMSON_STEM: 40
+    STRIPPED_DARK_OAK_LOG: 25
+    STRIPPED_JUNGLE_LOG: 25
+    STRIPPED_MANGROVE_LOG: 40
+    STRIPPED_OAK_LOG: 25
+    STRIPPED_PALE_OAK_LOG: 40
+    STRIPPED_SPRUCE_LOG: 25
+    STRIPPED_WARPED_HYPHAE: 40
+    STRIPPED_WARPED_STEM: 40
+    WARPED_HYPHAE: 40
+    WARPED_STEM: 40
 ability-configuration:
   extra-lumber:
     enabled: true

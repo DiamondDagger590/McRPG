@@ -24,7 +24,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "2.0.0.0-SNAPSHOT"
+version = "2.0.0.1-SNAPSHOT"
 group = "us.eunoians"
 
 java {
@@ -156,5 +156,5 @@ tasks {
 tasks.register("verifiedShadowJar") {
     group = "build"
     description = "Runs tests, then builds the shaded jar."
-    dependsOn("test", "shadowJar")
+    dependsOn("clean", "test", "shadowJar")
 }

@@ -17,3 +17,4 @@ soft-depend:
   - ItemsAdder
   - Nexo
   - MythicMobs
+  - Citizens

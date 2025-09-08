@@ -2,8 +2,6 @@ package us.eunoians.mcrpg.command.admin;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
@@ -38,19 +36,13 @@ public class DebugCommand {
                             CommandSender sender = commandContext.sender().getSender();
                             Player player = commandContext.getOrDefault(playerKey, (Player) sender);
 
-                            BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(player);
-
-                            Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(player.getUniqueId());
+                    Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(player.getUniqueId());
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
-                                senderAudience.sendMessage(miniMessage.deserialize(String.format("<gray>Printing debug information for player <gold>%s", player.getDisplayName())));
-                                senderAudience.sendMessage(miniMessage.deserialize(String.format("<gray>Upgrade Points: <gold>%s", skillHolder.getUpgradePoints())));
+                                player.sendMessage(miniMessage.deserialize(String.format("<gray>Printing debug information for player <gold>%s", player.getDisplayName())));
+                                player.sendMessage(miniMessage.deserialize(String.format("<gray>Upgrade Points: <gold>%s", skillHolder.getUpgradePoints())));
                                 for (NamespacedKey skill : skillHolder.getSkills()) {
                                     Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
-                                    if (skillHolderDataOptional.isPresent()) {
-                                        SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
-                                        senderAudience.sendMessage(miniMessage.deserialize(String.format("<gray>Skill: <gold>%s <gray>Level: <gold>%d <gray>Exp: <gold>%d", skillHolderData.getSkillKey().value(), skillHolderData.getCurrentLevel(), skillHolderData.getCurrentExperience())));
-                                    }
+                                    skillHolderDataOptional.ifPresent(skillHolderData -> player.sendMessage(miniMessage.deserialize(String.format("<gray>Skill: <gold>%s <gray>Level: <gold>%d <gray>Exp: <gold>%d", skillHolderData.getSkillKey().value(), skillHolderData.getCurrentLevel(), skillHolderData.getCurrentExperience()))));
                                 }
                             }
                         }

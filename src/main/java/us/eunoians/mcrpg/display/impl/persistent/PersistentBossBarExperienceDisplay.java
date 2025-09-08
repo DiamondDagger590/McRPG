@@ -14,6 +14,7 @@ import java.util.Optional;
  * This is a type of boss bar experience display that also is persistent, meaning it doesn't auto decay and will
  * take priority until it expires or is manually removed.
  */
+// TODO https://github.com/DiamondDagger590/McRPG/issues/156
 public class PersistentBossBarExperienceDisplay extends BossBarExperienceDisplay implements PersistentExperienceDisplay {
 
     private final Long expireTime;

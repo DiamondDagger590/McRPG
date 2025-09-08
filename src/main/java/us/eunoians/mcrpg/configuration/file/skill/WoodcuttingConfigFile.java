@@ -4,6 +4,7 @@ import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.route.Route;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +14,7 @@ import java.util.Set;
 import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
 /**
- * The configuration file for {@link us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting}.
+ * The configuration file for {@link WoodCutting}.
  */
 public class WoodcuttingConfigFile extends SkillConfigFile {
 
@@ -22,6 +23,7 @@ public class WoodcuttingConfigFile extends SkillConfigFile {
     public static final Route SKILL_ENABLED = Route.fromString("skill-enabled");
 
     public static final String BLOCK_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
+    public static final Route ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN = Route.fromString(toRoutePath(EXPERIENCE_HEADER, "allowed-items-for-experience-gain"));
 
     // Extra Lumber
     private static final String EXTRA_LUMBER_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "extra-lumber");

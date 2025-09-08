@@ -23,6 +23,7 @@ public class MiningConfigFile extends SkillConfigFile {
 
     // Experience
     public static final String BLOCK_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
+    public static final Route ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN = Route.fromString(toRoutePath(EXPERIENCE_HEADER, "allowed-items-for-experience-gain"));
 
     // Extra Ore
     private static final String EXTRA_ORE_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "extra-ore");

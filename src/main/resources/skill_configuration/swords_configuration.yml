@@ -6,23 +6,14 @@ permissions:
   restrict-skill-to-permission: false
   use-permissions-to-unlock-abilities: false
   use-permissions-to-activate-abilities: false
+# Configure leveling requirements for this skill.
 leveling:
-  level-up-equation: '2000+(20*(skill_level))'
+  # Configure the equation to calculate the player's experience for the next level
+  level-up-equation: '200+(0.17*(skill_level^1.669))'
+  # Configure the maximum level this skill can be
   maximum-skill-level: 1000
+# Configure experience gain for this skill
 experience:
-  # Configure how much experience gain should be multiplied by based
-  # on what item the player is holding in their main hand.
-  #
-  # These modifiers can be either material values such as WOODEN_SWORD
-  # or the custom item id for whatever custom item plugin you might be using
-  # if you want to allow custom items.
-  material-modifiers:
-    WOODEN_SWORD: 1.5
-    STONE_SWORD: 1.3
-    GOLDEN_SWORD: 2.0
-    IRON_SWORD: 1.2
-    DIAMOND_SWORD: 1.1
-    NETHERITE_SWORD: 1.0
   # Configure what items a player can use to attack mobs with in order to gain experience.
   # These items can be either material values such as WOODEN_SWORD
   # or the custom item id for whatever custom item plugin you might be using
@@ -34,9 +25,105 @@ experience:
     - IRON_SWORD
     - DIAMOND_SWORD
     - NETHERITE_SWORD
+  # Configure how much experience gain should be multiplied by based
+  # on what item the player is holding in their main hand. If an item
+  # isn't in this list but is allowed, then the default value of 1.0 is used.
+  #
+  # These modifiers can be either material values such as WOODEN_SWORD
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  material-modifiers:
+    GOLDEN_SWORD: 2.0
+  # Configure what mobs a player can attack to gain experience and how
+  # much experience attacking that mob will give per 1 damage dealt.
+  #
+  # These sources can be either entity type values such as CHICKEN
+  # or the custom entity id for whatever custom entity plugin you might be using
+  # if you want to allow custom entity.
   sources:
+    ALLAY: 10
+    AXOLOTL: 10
+    BAT: 10
+    BEE: 10
+    BLAZE: 30
+    BOGGED: 20
+    BREEZE: 30
+    CAMEL: 10
+    CAT: 5
+    CAVE_SPIDER: 15
     CHICKEN: 5
-    COW: 10
+    COD: 5
+    COW: 5
+    CREAKING: 50
+    CREEPER: 20
+    DOLPHIN: 10
+    DONKEY: 5
+    DROWNED: 20
+    ELDER_GUARDIAN: 100
+    ENDER_DRAGON: 100
+    ENDERMAN: 30
+    ENDERMITE: 20
+    EVOKER: 50
+    FOX: 10
+    FROG: 10
+    GHAST: 50
+    GIANT: 50
+    GLOW_SQUID: 10
+    GUARDIAN: 30
+    HAPPY_GHAST: 10
+    HOGLIN: 15
+    HORSE: 5
+    HUSK: 20
+    ILLUSIONER: 50
+    IRON_GOLEM: 20
+    LLAMA: 10
+    MAGMA_CUBE: 20
+    MOOSHROOM: 5
+    MULE: 10
+    OCELOT: 10
+    PANDA: 10
+    PARROT: 5
+    PHANTOM: 15
+    PIG: 5
+    PIGLIN: 15
+    PIGLIN_BRUTE: 30
+    PILLAGER: 20
+    PLAYER: 10
+    POLAR_BEAR: 10
+    PUFFERFISH: 10
+    RABBIT: 10
+    RAVAGER: 20
+    SALMON: 5
+    SHEEP: 5
+    SHULKER: 30
+    SILVERFISH: 5
+    SKELETON: 15
+    SKELETON_HORSE: 10
+    SLIME: 15
+    SNIFFER: 10
+    SNOW_GOLEM: 5
+    SPIDER: 15
+    SQUID: 10
+    STRAY: 20
+    STRIDER: 10
+    TADPOLE: 10
+    TRADER_LLAMA: 20
+    TROPICAL_FISH: 5
+    TURTLE: 10
+    VEX: 15
+    VILLAGER: 5
+    VINDICATOR: 20
+    WANDERING_TRADER: 10
+    WARDEN: 50
+    WITCH: 20
+    WITHER: 100
+    WITHER_SKELETON: 50
+    WOLF: 5
+    ZOGLIN: 15
+    ZOMBIE: 15
+    ZOMBIE_HORSE: 10
+    ZOMBIE_VILLAGER: 20
+    ZOMBIFIED_PIGLIN: 15
 ability-configuration:
   bleed:
     enabled: true

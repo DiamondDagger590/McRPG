@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -44,18 +43,17 @@ public class LoadoutSetCommand extends McRPGCommandBase {
                     CloudKey<Integer> amountKey = CloudKey.of("slot", Integer.class);
                     int loadoutSlot = commandContext.get(amountKey);
                     if (commandSender instanceof Player player) {
-                        Audience audience = McRPG.getInstance().getAdventure().player(player);
                         McRPGPlayerManager playerManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
                         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                         Map<String, String> placeholders = getPlaceholders(loadoutSlot);
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
                             LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();
                             if (!loadoutHolder.hasLoadout(loadoutSlot)) {
-                                audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LOADOUT_SET_COMMAND_NO_LOADOUT_MATCHES_MESSAGE, placeholders));
+                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_SET_COMMAND_NO_LOADOUT_MATCHES_MESSAGE, placeholders));
                                 return;
                             }
                             loadoutHolder.setCurrentLoadoutSlot(loadoutSlot);
-                            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE, placeholders));
+                            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE, placeholders));
                         });
                     }
                 }));

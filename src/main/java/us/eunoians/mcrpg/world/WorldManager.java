@@ -38,8 +38,12 @@ public class WorldManager extends Manager<McRPG> {
 
     public WorldManager(@NotNull McRPG plugin) {
         super(plugin);
-        this.worlds = new ReloadableSet<>(plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG), MainConfigFile.DISABLED_WORLDS,
-                (strings -> strings.stream().map(string -> string.toLowerCase(Locale.ROOT)).collect(Collectors.toSet())));
+        this.worlds = new ReloadableSet<>(plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE)
+                .getFile(FileType.MAIN_CONFIG), MainConfigFile.DISABLED_WORLDS,
+                (strings -> strings.stream()
+                        .map(string -> string.toLowerCase(Locale.ROOT))
+                        .collect(Collectors.toSet())
+                ));
         plugin().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).trackReloadableContent(worlds);
     }
 

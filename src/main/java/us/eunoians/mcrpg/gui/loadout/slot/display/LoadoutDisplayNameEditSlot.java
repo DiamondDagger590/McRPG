@@ -4,7 +4,6 @@ package us.eunoians.mcrpg.gui.loadout.slot.display;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
@@ -38,8 +37,7 @@ public class LoadoutDisplayNameEditSlot implements McRPGSlot {
             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             McRPG mcRPG = McRPG.getInstance();
             MiniMessage miniMessage = mcRPG.getMiniMessage();
-            Audience audience = mcRPG.getAdventure().player(player);
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_PROMPT));
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_PROMPT));
             LoadoutDisplayNameChatResponse loadoutDisplayNameChatResponse = new LoadoutDisplayNameChatResponse(player.getUniqueId(), loadout);
             mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.CHAT_RESPONSE).addPendingResponse(player.getUniqueId(), loadoutDisplayNameChatResponse);
         });

@@ -1,9 +1,10 @@
 package us.eunoians.mcrpg.ability.ready;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
 /**
- * Ready data used for the {@link us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting} skill.
+ * Ready data used for the {@link WoodCutting} skill.
  */
 public class WoodcuttingReadyData extends ReadyData {
 

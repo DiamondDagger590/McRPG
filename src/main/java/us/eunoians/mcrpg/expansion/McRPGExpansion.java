@@ -35,7 +35,7 @@ import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
-import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Arrays;
@@ -77,7 +77,7 @@ public final class McRPGExpansion extends ContentExpansion {
         SkillContentPack skillContent = new SkillContentPack(this);
         skillContent.addContent(new Swords(mcRPG));
         skillContent.addContent(new Mining(mcRPG));
-        skillContent.addContent(new Woodcutting(mcRPG));
+        skillContent.addContent(new WoodCutting(mcRPG));
         return skillContent;
     }
 

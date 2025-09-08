@@ -31,7 +31,7 @@ import us.eunoians.mcrpg.event.ability.woodcutting.HeavySwingActivateEvent;
 import us.eunoians.mcrpg.event.ability.woodcutting.HeavySwingFakeBlockBreakEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
@@ -75,7 +75,7 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
     @NotNull
     @Override
     public NamespacedKey getSkillKey() {
-        return Woodcutting.WOODCUTTING_KEY;
+        return WoodCutting.WOODCUTTING_KEY;
     }
 
     @NotNull

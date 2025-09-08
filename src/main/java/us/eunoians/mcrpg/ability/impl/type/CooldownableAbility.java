@@ -1,8 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.type;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -77,9 +75,7 @@ public interface CooldownableAbility extends Ability {
         playerOptional.ifPresent(player -> {
             McRPG mcRPG = mcRPGPlayer.getPlugin();
             McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            MiniMessage miniMessage = mcRPG.getMiniMessage();
-            Audience audience = mcRPG.getAdventure().player(player);
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getName(mcRPGPlayer))));
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_STILL_ON_COOLDOWN, Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), getName(mcRPGPlayer))));
         });
     }
 

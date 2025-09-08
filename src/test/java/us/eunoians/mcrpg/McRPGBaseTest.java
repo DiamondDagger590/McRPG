@@ -1,6 +1,9 @@
 package us.eunoians.mcrpg;
 
 import com.diamonddagger590.mccore.bootstrap.StartupProfile;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
@@ -12,6 +15,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import static com.diamonddagger590.mccore.testing.RegistryResetExtension.resetRegistry;
 import static com.diamonddagger590.mccore.testing.RegistryResetExtension.setupRegistry;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 
 /**
  * A base test that provides some utility methods as well as
@@ -41,5 +45,11 @@ public class McRPGBaseTest {
         PlayerMock playerMock = new PlayerMock(server, "Verum", mcRPGPlayer.getUUID());
         server.addPlayer(playerMock);
         return playerMock;
+    }
+
+    @NotNull
+    public <T extends Entity> T spawnEntity(Class<T> entityClass) {
+        World world = server.getWorld("world");
+        return spy(world.spawn(new Location(world, 0, 0, 0), entityClass));
     }
 }

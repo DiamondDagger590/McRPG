@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
-import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -59,8 +58,7 @@ public class RemoteTransferComponents {
                     }
                     // If it isn't a chest, alert player and remove the location attribute
                     else {
-                        Audience audience = McRPG.getInstance().getAdventure().player(player);
-                        audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer is missing... unlinking."));
+                        player.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer is missing... unlinking."));
                         abilityData.removeAttribute(attribute);
                         return false;
                     }
@@ -68,8 +66,7 @@ public class RemoteTransferComponents {
                     FakeChestOpenEvent fakeChestOpenEvent = new FakeChestOpenEvent(player, block.getLocation());
                     Bukkit.getPluginManager().callEvent(fakeChestOpenEvent);
                     if (fakeChestOpenEvent.useInteractedBlock() == Event.Result.DENY) {
-                        Audience audience = McRPG.getInstance().getAdventure().player(player);
-                        audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer was blocked from your usage... unlinking."));
+                        player.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer was blocked from your usage... unlinking."));
                         abilityData.removeAttribute(attribute);
                         return false;
                     }

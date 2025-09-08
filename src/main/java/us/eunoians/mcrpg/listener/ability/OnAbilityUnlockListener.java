@@ -24,10 +24,14 @@ public class OnAbilityUnlockListener implements Listener {
         AbilityHolder abilityHolder = abilityUnlockEvent.getAbilityHolder();
         UnlockableAbility unlockableAbility = abilityUnlockEvent.getAbility();
         MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-        Audience player = McRPG.getInstance().getAdventure().player(abilityHolder.getUUID());
-        var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID()).map(corePlayer -> (McRPGPlayer) corePlayer);
-
-        playerOptional.ifPresent(mcRPGPlayer -> player.sendMessage(miniMessage.deserialize(String.format("<green>You have unlocked a new ability! <gold>%s<green> is now available for use.", abilityUnlockEvent.getAbility().getDisplayName(mcRPGPlayer)))));
+        var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID());
+        if (playerOptional.isEmpty() || playerOptional.get().getAsBukkitPlayer().isEmpty()) {
+            return;
+        }
+        McRPGPlayer mcRPGPlayer = playerOptional.get();
+        Audience player = mcRPGPlayer.getAsBukkitPlayer().get();
+        player.sendMessage(miniMessage.deserialize(String.format("<green>You have unlocked a new ability! <gold>%s<green> is now available for use.", abilityUnlockEvent.getAbility().getDisplayName(mcRPGPlayer))));
 
         if (abilityHolder instanceof LoadoutHolder loadoutHolder) {
             Loadout loadout = loadoutHolder.getLoadout();
@@ -35,11 +39,10 @@ public class OnAbilityUnlockListener implements Listener {
                 if (loadout.canAbilityBeInLoadout(unlockableAbility.getAbilityKey())) {
                     loadout.addAbility(unlockableAbility.getAbilityKey());
                     player.sendMessage(miniMessage.deserialize("<green>The new ability has automatically been added to your current loadout."));
-                }
-                else if (unlockableAbility instanceof SkillAbility skillAbility){
+                } else if (unlockableAbility instanceof SkillAbility skillAbility) {
                     Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillAbility.getSkillKey());
-                    playerOptional.ifPresent(mcRPGPlayer -> player.sendMessage(miniMessage.deserialize("<red>You already have an active ability for the skill " + skill.getDisplayName(mcRPGPlayer) + " in your loadout, so "
-                            + unlockableAbility.getDisplayName(mcRPGPlayer) + " was not automatically added.")));
+                    player.sendMessage(miniMessage.deserialize("<red>You already have an active ability for the skill " + skill.getDisplayName(mcRPGPlayer) + " in your loadout, so "
+                            + unlockableAbility.getDisplayName(mcRPGPlayer) + " was not automatically added."));
                 }
             }
         }

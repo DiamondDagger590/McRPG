@@ -51,7 +51,7 @@ public class UpgradeQuestReward implements QuestReward {
                                 e.printStackTrace();
                             }
                         });
-                        Audience audience = McRPG.getInstance().getAdventure().player(uuid);
+                        Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
                         audience.sendMessage(McRPG.getInstance().getMiniMessage().deserialize(String.format("<green>You have completed the upgrade quest for your <gold>%s ability<green>! It is now tier <gold>%d<green>.", ability.getDisplayName(mcRPGPlayer), newTier)));
                     }
                 });

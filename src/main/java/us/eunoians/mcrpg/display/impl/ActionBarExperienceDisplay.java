@@ -2,11 +2,11 @@ package us.eunoians.mcrpg.display.impl;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.builder.item.skill.SkillItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -38,22 +38,21 @@ public class ActionBarExperienceDisplay extends ExperienceDisplay {
         var dataOptional = skillHolder.getSkillHolderData(skillKey);
         var playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         SkillRegistry skillRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL);
-        MiniMessage miniMessage = mcRPG.getMiniMessage();
         Skill skill = skillRegistry.getRegisteredSkill(skillKey);
         if (dataOptional.isPresent() && playerOptional.isPresent()) {
-            cleanDisplay();
-            Audience audience = mcRPG.getAdventure().player(playerOptional.get());
+            Audience audience = playerOptional.get();
             var skillHolderData = dataOptional.get();
             int currentLevel = skillHolderData.getCurrentLevel();
             int currentExperience = skillHolderData.getCurrentExperience();
             int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
+            int remainingExperienceForNextLevel = skillHolderData.getRemainingExperienceForNextLevel();
             audience.sendActionBar(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ACTION_BAR_DISPLAY_MESSAGE, Map.of(
-                    "skill", skill.getName(mcRPGPlayer),
-                    "level", Integer.toString(currentLevel),
-                    "current-experience", Integer.toString(currentExperience),
-                    "required-experience-for-next-level", Integer.toString(experienceForNextLevel),
-                    "remaining-experience-for-next-level", Integer.toString(experienceForNextLevel, currentExperience))
-            ));
+                    SkillItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer),
+                    SkillItemPlaceholderKeys.LEVEL.getKey(), Integer.toString(currentLevel),
+                    SkillItemPlaceholderKeys.CURRENT_EXPERIENCE.getKey(), Integer.toString(currentExperience),
+                    SkillItemPlaceholderKeys.REQUIRED_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(experienceForNextLevel),
+                    SkillItemPlaceholderKeys.REMAINING_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(remainingExperienceForNextLevel)
+            )));
         }
     }
 

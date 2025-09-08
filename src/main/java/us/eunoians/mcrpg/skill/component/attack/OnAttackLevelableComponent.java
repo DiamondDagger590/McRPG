@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.skill.component;
+package us.eunoians.mcrpg.skill.component.attack;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.entity.Entity;
@@ -9,7 +9,10 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.skill.component.EventLevelableComponent;
+import us.eunoians.mcrpg.world.WorldManager;
 
 /**
  * An {@link EventLevelableComponent} that awards experience whenever a {@link SkillHolder}
@@ -32,8 +35,9 @@ public interface OnAttackLevelableComponent extends EventLevelableComponent {
         if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent) {
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
-            double damage = entityDamageByEntityEvent.getDamage();
-            return damager.getUniqueId().equals(skillHolder.getUUID()) && affectsEntity(damaged);
+            WorldManager worldManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD);
+            return !entityDamageByEntityEvent.isCancelled() && damager.getUniqueId().equals(skillHolder.getUUID())
+                    && affectsEntity(damaged) && worldManager.isMcRPGEnabledForHolder(skillHolder);
         }
         return false;
     }

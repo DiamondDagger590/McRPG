@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.skill.impl.mining;
+package us.eunoians.mcrpg.skill.impl.woodcutting;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
@@ -18,7 +18,6 @@ import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.impl.type.ConfigurableSkill;
 import us.eunoians.mcrpg.skill.impl.type.HeldItemBonusSkill;
-import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,34 +25,22 @@ import java.util.Map;
 import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
 /**
- * A {@link Skill} that focuses on the usage of pickaces to mine.
+ * A {@link Skill} that focuses on the usage of breaking wood with an axe.
  * <p>
- * Players will gain experience by mining ores and stone and unlock abilities focused
- * on increasing the yield/ease of mining.
+ * Players will gain experience by breaking wood with an axe and unlock abilities focused
+ * on increasing the yield/ease of woodcutting.
  */
-public final class Mining extends McRPGSkill implements ConfigurableSkill, HeldItemBonusSkill {
+public class WoodCutting extends McRPGSkill implements ConfigurableSkill, HeldItemBonusSkill {
 
-    public static final NamespacedKey MINING_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mining");
+    public static final NamespacedKey WOODCUTTING_KEY = new NamespacedKey(McRPG.getInstance(), "woodcutting");
 
     private final Map<CustomItemWrapper, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
     private final McRPG mcRPG;
 
-    public Mining(@NotNull McRPG mcRPG) {
-        super(MINING_KEY);
+    public WoodCutting(@NotNull McRPG mcRPG) {
+        super(WOODCUTTING_KEY);
         this.mcRPG = mcRPG;
-        addLevelableComponent(new MiningLevelOnBlockBreakComponent(), BlockBreakEvent.class, 0);
-    }
-
-    @NotNull
-    @Override
-    public YamlDocument getYamlDocument() {
-        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
-    }
-
-    @NotNull
-    @Override
-    public Route getDisplayItemRoute() {
-        return LocalizationKey.MINING_DISPLAY_ITEM;
+        addLevelableComponent(new WoodCuttingLevelOnBlockBreakComponent(), BlockBreakEvent.class, 0);
     }
 
     @NotNull
@@ -65,7 +52,19 @@ public final class Mining extends McRPGSkill implements ConfigurableSkill, HeldI
     @NotNull
     @Override
     public String getDatabaseName() {
-        return "mining";
+        return "woodcutting";
+    }
+
+    @NotNull
+    @Override
+    public YamlDocument getYamlDocument() {
+        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.WOODCUTTING_DISPLAY_ITEM;
     }
 
     @Override
@@ -79,8 +78,8 @@ public final class Mining extends McRPGSkill implements ConfigurableSkill, HeldI
             String materialValue = customItemWrapper.customItem().isPresent() ? customItemWrapper.customItem().get() : customItemWrapper.material().get().toString();
             MATERIAL_BONUS_ROUTE_MAP.put(customItemWrapper, Route.fromString(toRoutePath(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, materialValue)));
         }
-        YamlDocument miningConfig = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
-        modifier += (miningConfig.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(customItemWrapper), 1.0d));
+        YamlDocument woodcuttingConfig = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
+        modifier += (woodcuttingConfig.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(customItemWrapper), 1.0d));
         return modifier;
     }
 }

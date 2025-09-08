@@ -10,7 +10,7 @@ import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
-import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
 import java.util.Random;
 
@@ -39,7 +39,7 @@ public class ExtraLumberComponents {
             Block block = blockBreakEvent.getBlock();
             ExtraLumber extraLumber = (ExtraLumber) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraLumber.EXTRA_LUMBER_KEY);
             if (abilityHolder instanceof SkillHolder skillHolder) {
-                var skillHolderDataOptional = skillHolder.getSkillHolderData(Woodcutting.WOODCUTTING_KEY);
+                var skillHolderDataOptional = skillHolder.getSkillHolderData(WoodCutting.WOODCUTTING_KEY);
                 if (skillHolderDataOptional.isPresent()) {
                     return extraLumber.getActivationChance(skillHolder) * 1000 > RANDOM.nextInt(100000);
                 }

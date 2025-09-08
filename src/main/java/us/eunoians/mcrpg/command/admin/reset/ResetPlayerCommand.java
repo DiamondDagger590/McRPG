@@ -7,7 +7,6 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
@@ -52,11 +51,9 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                             CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                             Player player = commandContext.get(playerKey);
 
-                            BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(commandContext.sender().getSender());
-                            Audience receiverAudience = adventure.player(player);
-                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, receiverAudience);
-                            Map<String, String> receiverPlaceholders = getPlaceholders(receiverAudience, senderAudience, receiverAudience);
+                            Audience senderAudience = commandContext.sender().getSender();
+                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player);
+                            Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player);
                             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                             McRPG mcRPG = McRPG.getInstance();
 
@@ -68,7 +65,7 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                                 skillHolder.getAvailableAbilities().stream().map(skillHolder::getAbilityData).filter(Optional::isPresent).map(Optional::get).forEach(AbilityData::resetAbility);
                                 // Reset timers
                                 skillHolder.cleanupHolder();
-                                receiverAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(receiverAudience, LocalizationKey.RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
+                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                 // Only send a message if the sender is not the receiver or the sender is console
                                 if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
                                     senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));

@@ -28,7 +28,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.NymphsVitalityActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
@@ -83,7 +83,7 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     @NotNull
     @Override
     public NamespacedKey getSkillKey() {
-        return Woodcutting.WOODCUTTING_KEY;
+        return WoodCutting.WOODCUTTING_KEY;
     }
 
     @NotNull

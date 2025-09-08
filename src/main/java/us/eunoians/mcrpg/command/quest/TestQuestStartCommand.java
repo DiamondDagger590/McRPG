@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.command.quest;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
@@ -45,27 +44,26 @@ public class TestQuestStartCommand {
         commandManager.command(commandManager.commandBuilder("quest").literal("info").handler(commandContext -> {
             CommandSender commandSender = commandContext.sender().getSender();
             if (commandSender instanceof Player player) {
-                Audience audience = McRPG.getInstance().getAdventure().player(player);
                 MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
                 Component newline = miniMessage.deserialize("");
-                audience.sendMessage(miniMessage.deserialize("<gray>Displaying all active quests:"));
-                audience.sendMessage(newline);
+                player.sendMessage(miniMessage.deserialize("<gray>Displaying all active quests:"));
+                player.sendMessage(newline);
 
                 QuestManager questManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
                 QuestHolder questHolder = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getQuestHolder(player.getUniqueId()).get();
 
                 for (UUID questUUID : questHolder.getActiveQuests()) {
                     Quest quest = questManager.getActiveQuest(questUUID).get();
-                    audience.sendMessage(miniMessage.deserialize("<gray>  Quest " + quest.getUUID() + " Info</gray>"));
-                    audience.sendMessage(miniMessage.deserialize("<gray>  Completed: " + (quest.isCompleted() ? "<green>true<green>" : "<red>false</red>") + "</gray>"));
-                    audience.sendMessage(miniMessage.deserialize("<gray>  Current Progression - ").append(Methods.getProgressBar(quest.getQuestProgress(), 20)));
+                    player.sendMessage(miniMessage.deserialize("<gray>  Quest " + quest.getUUID() + " Info</gray>"));
+                    player.sendMessage(miniMessage.deserialize("<gray>  Completed: " + (quest.isCompleted() ? "<green>true<green>" : "<red>false</red>") + "</gray>"));
+                    player.sendMessage(miniMessage.deserialize("<gray>  Current Progression - ").append(Methods.getProgressBar(quest.getQuestProgress(), 20)));
                     int objectiveCounter = 1;
                     for (QuestObjective objective : quest.getQuestObjectives()) {
-                        audience.sendMessage(newline);
+                        player.sendMessage(newline);
                         Component spacing = miniMessage.deserialize("    ");
-                        audience.sendMessage(spacing.append(miniMessage.deserialize("<gray>Objective " + objectiveCounter + ": </gray>")).append(objective.getObjectiveTitle()));
-                        audience.sendMessage(spacing.append(miniMessage.deserialize("<gray>Progress (<gold>" + objective.getCurrentProgression() + "<gray>/</gray>" + objective.getRequiredProgression() + "</gold>) ").append(Methods.getProgressBar(objective.getObjectiveProgress(), 30))));
-                        objective.getObjectiveInfoText().forEach(component -> audience.sendMessage(spacing.append(component)));
+                        player.sendMessage(spacing.append(miniMessage.deserialize("<gray>Objective " + objectiveCounter + ": </gray>")).append(objective.getObjectiveTitle()));
+                        player.sendMessage(spacing.append(miniMessage.deserialize("<gray>Progress (<gold>" + objective.getCurrentProgression() + "<gray>/</gray>" + objective.getRequiredProgression() + "</gold>) ").append(Methods.getProgressBar(objective.getObjectiveProgress(), 30))));
+                        objective.getObjectiveInfoText().forEach(component -> player.sendMessage(spacing.append(component)));
                         objectiveCounter++;
                     }
                 }

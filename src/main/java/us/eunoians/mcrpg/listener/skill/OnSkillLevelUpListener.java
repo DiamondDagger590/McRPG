@@ -52,7 +52,7 @@ public class OnSkillLevelUpListener implements Listener {
         if (playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
-            Audience player = McRPG.getInstance().getAdventure().player(uuid);
+            Audience player = mcRPGPlayer.getAsBukkitPlayer().get();
             player.sendMessage(miniMessage.deserialize(String.format("<green>You have gone up <gold>%d levels<green> in <gold>%s<green>.", levels, skill.getDisplayName(mcRPGPlayer))));
         }
     }
@@ -115,8 +115,7 @@ public class OnSkillLevelUpListener implements Listener {
         var playerOptional = playerManager.getPlayer(skillHolder.getUUID());
         Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillGainExpEvent.getSkillKey());
 
-        if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline()
-                && playerOptional.isPresent()) {
+        if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline() && playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
             McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY).sendExperienceUpdate(mcRPGPlayer, skill.getSkillKey());
         }

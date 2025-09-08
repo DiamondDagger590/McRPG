@@ -14,11 +14,12 @@ import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.ability.component.readyable.RightClickReadyComponent;
 import us.eunoians.mcrpg.ability.ready.WoodcuttingReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
 import java.util.Set;
 
 /**
- * Common activation components shared among {@link us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting} abilities.
+ * Common activation components shared among {@link WoodCutting} abilities.
  */
 public class WoodcuttingComponents {
 

@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -49,7 +48,6 @@ public class LoadoutEditCommand extends McRPGCommandBase {
                     CommandSender commandSender = commandContext.sender().getSender();
                     CloudKey<Integer> slotKey = CloudKey.of("slot", Integer.class);
                     if (commandSender instanceof Player player) {
-                        Audience audience = McRPG.getInstance().getAdventure().player(player);
                         McRPGPlayerManager playerManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
                         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
@@ -57,7 +55,7 @@ public class LoadoutEditCommand extends McRPGCommandBase {
                             int loadoutSlot = commandContext.getOrDefault(slotKey, loadoutHolder.getCurrentLoadoutSlot());
                             Map<String, String> placeholders = getPlaceholders(loadoutSlot);
                             if (!loadoutHolder.hasLoadout(loadoutSlot)) {
-                                audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LOADOUT_EDIT_COMMAND_NO_LOADOUT_MATCHES_MESSAGE, placeholders));
+                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_EDIT_COMMAND_NO_LOADOUT_MATCHES_MESSAGE, placeholders));
                                 return;
                             }
                             LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadoutHolder.getLoadout(loadoutSlot));

@@ -23,6 +23,7 @@ public final class SwordsConfigFile extends SkillConfigFile {
     // Experience
     public static final String MATERIAL_MODIFIERS_HEADER = toRoutePath(EXPERIENCE_HEADER, "material-modifiers");
     public static final String ENTITY_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
+    public static final Route ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN = Route.fromString(toRoutePath(EXPERIENCE_HEADER, "allowed-items-for-experience-gain"));
 
     // Bleed
     private static final String BLEED_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "bleed");

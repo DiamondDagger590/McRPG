@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.command.admin;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.permission.Permission;
@@ -30,8 +29,7 @@ public class ReloadPluginCommand extends McRPGCommandBase {
                 .literal("reload")
                 .permission(Permission.anyOf(ROOT_PERMISSION, ADMIN_BASE_PERMISSION, RELOAD_PLUGIN_PERMISSION))
                 .handler(commandContext -> {
-                            BukkitAudiences adventure = McRPG.getInstance().getAdventure();
-                            Audience senderAudience = adventure.sender(commandContext.sender().getSender());
+                            Audience senderAudience = commandContext.sender().getSender();
                             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
                             senderAudience.sendMessage(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
                                     .getLocalizedMessageAsComponent(LocalizationKey.RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE));

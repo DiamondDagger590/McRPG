@@ -30,7 +30,7 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.woodcutting.ExtraLumberActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.skill.impl.woodcutting.Woodcutting;
+import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
@@ -87,7 +87,7 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
     @NotNull
     @Override
     public NamespacedKey getSkillKey() {
-        return Woodcutting.WOODCUTTING_KEY;
+        return WoodCutting.WOODCUTTING_KEY;
     }
 
     @NotNull
@@ -113,7 +113,7 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
     }
 
     public double getActivationChance(@NotNull SkillHolder skillHolder) {
-        var skillHolderDataOptional = skillHolder.getSkillHolderData(Woodcutting.WOODCUTTING_KEY);
+        var skillHolderDataOptional = skillHolder.getSkillHolderData(WoodCutting.WOODCUTTING_KEY);
         if (skillHolderDataOptional.isPresent()) {
             Parser parser = new Parser(getYamlDocument().getString(WoodcuttingConfigFile.EXTRA_LUMBER_ACTIVATION_EQUATION));
             parser.setVariable("woodcutting_level", skillHolderDataOptional.get().getCurrentLevel());

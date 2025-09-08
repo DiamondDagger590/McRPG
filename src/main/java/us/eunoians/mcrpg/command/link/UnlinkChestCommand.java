@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -39,7 +38,6 @@ public class UnlinkChestCommand {
                 .handler(commandContext -> {
                     CommandSender commandSender = commandContext.sender().getSender();
                     if (commandSender instanceof Player player) {
-                        Audience audience = McRPG.getInstance().getAdventure().player(player);
                         McRPGPlayerManager playerManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
                         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
@@ -52,9 +50,9 @@ public class UnlinkChestCommand {
                                 var abilityAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE);
                                 if (abilityAttributeOptional.isPresent()) {
                                     abilityData.removeAttribute(abilityAttributeOptional.get());
-                                    audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.UNLINK_COMMAND_SUCCESS_MESSAGE, placeholders));
+                                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.UNLINK_COMMAND_SUCCESS_MESSAGE, placeholders));
                                 } else {
-                                    audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.UNLINK_COMMAND_NO_LINKED_CHEST_MESSAGE, placeholders));
+                                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.UNLINK_COMMAND_NO_LINKED_CHEST_MESSAGE, placeholders));
                                 }
                             }
                         });

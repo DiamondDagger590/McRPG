@@ -1,15 +1,132 @@
 config-version: 1
+# Is this skill enabled or not. If disabled, players won't be able to gain experience
+# and this will turn off any abilities belonging to the skill.
 skill-enabled: true
 permissions:
   restrict-skill-to-permission: false
   use-permissions-to-unlock-abilities: false
   use-permissions-to-activate-abilities: false
+# Configure leveling requirements for this skill.
 leveling:
-  level-up-equation: '2000+(20*(skill_level))'
+  # Configure the equation to calculate the player's experience for the next level
+  level-up-equation: '200+(0.17*(skill_level^1.669))'
+  # Configure the maximum level this skill can be
   maximum-skill-level: 1000
+# Configure experience gain for this skill
 experience:
+  # Configure what items a player can use to break blocks with in order to gain experience.
+  # These items can be either material values such as WOODEN_PICKAXE
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  allowed-items-for-experience-gain:
+    - WOODEN_PICKAXE
+    - STONE_PICKAXE
+    - GOLDEN_PICKAXE
+    - IRON_PICKAXE
+    - DIAMOND_PICKAXE
+    - NETHERITE_PICKAXE
+  # Configure how much experience gain should be multiplied by based
+  # on what item the player is holding in their main hand. If an item
+  # isn't in this list but is allowed, then the default value of 1.0 is used.
+  #
+  # These modifiers can be either material values such as WOODEN_PICKAXE
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  material-modifiers:
+    GOLDEN_PICKAXE: 2.0
+  # Configure what blocks a player can break to gain experience and how
+  # much experience breaking that block will give.
+  #
+  # These sources can be either material values such as ANDESITE
+  # or the custom block id for whatever custom block plugin you might be using
+  # if you want to allow custom blocks.
   sources:
+    ANCIENT_DEBRIS: 3000
+    ANDESITE: 2
+    COBBLESTONE: 2
+    AMETHYST_BLOCK: 100
+    AMETHYST_CLUSTER: 200
+    BUDDING_AMETHYST: 150
+    BASALT: 5
+    BLACK_TERRACOTTA: 20
+    BLACKSTONE: 5
+    BLUE_ICE: 20
+    BLUE_TERRACOTTA: 20
+    BONE_BLOCK: 100
+    BRICKS: 10
+    BROWN_TERRACOTTA: 20
+    CALCITE: 10
+    COAL_ORE: 50
+    COPPER_ORE: 50
+    COBBLED_DEEPSLATE: 2
+    CRACKED_DEEPSLATE_BRICKS: 10
+    CRACKED_DEEPSLATE_TILES: 10
+    CRACKED_NETHER_BRICKS: 10
+    CRACKED_POLISHED_BLACKSTONE_BRICKS: 10
+    CRACKED_STONE_BRICKS: 10
+    CRYING_OBSIDIAN: 200
+    CYAN_TERRACOTTA: 20
+    DEEPSLATE_BRICKS: 10
+    DEEPSLATE_COAL_ORE: 100
+    DEEPSLATE_COPPER_ORE: 100
+    DEEPSLATE_DIAMOND_ORE: 1500
+    DEEPSLATE_EMERALD_ORE: 3000
+    DEEPSLATE_GOLD_ORE: 500
+    DEEPSLATE_IRON_ORE: 200
+    DEEPSLATE_LAPIS_ORE: 400
+    DEEPSLATE_REDSTONE_ORE: 300
+    DIAMOND_ORE: 750
+    DIORITE: 2
+    DRIPSTONE_BLOCK: 5
+    EMERALD_ORE: 1500
+    END_CRYSTAL: 3000
+    END_STONE: 20
+    GILDED_BLACKSTONE: 10
+    GLOWSTONE: 20
+    GOLD_ORE: 250
+    GRANITE: 2
+    GRAY_TERRACOTTA: 20
+    GREEN_TERRACOTTA: 20
+    ICE: 10
+    INFESTED_COBBLESTONE: 2
+    INFESTED_DEEPSLATE: 2
+    INFESTED_STONE: 2
+    IRON_ORE: 100
+    LAPIS_ORE: 200
+    LIGHT_BLUE_TERRACOTTA: 20
+    LIGHT_GRAY_TERRACOTTA: 20
+    LIME_TERRACOTTA: 20
+    MAGENTA_TERRACOTTA: 20
+    MAGMA_BLOCK: 20
+    MOSSY_COBBLESTONE: 5
+    MOSSY_STONE_BRICKS: 5
+    NETHER_BRICK: 5
+    NETHER_GOLD_ORE: 125
+    NETHER_QUARTZ_ORE: 100
+    NETHERRACK: 2
+    OBSIDIAN: 200
+    ORANGE_TERRACOTTA: 20
+    PACKED_ICE: 20
+    PINK_TERRACOTTA: 20
+    POINTED_DRIPSTONE: 5
+    PRISMARINE: 20
+    PRISMARINE_BRICKS: 20
+    PURPLE_TERRACOTTA: 20
+    PURPUR_BLOCK: 20
+    PURPUR_PILLAR: 20
+    RED_NETHER_BRICKS: 10
+    RED_SANDSTONE: 5
+    RED_TERRACOTTA: 20
+    SANDSTONE: 5
+    SCULK: 5
+    SEA_LANTERN: 50
+    SPAWNER: 2000
     STONE: 2
+    STONE_BRICKS: 2
+    TERRACOTTA: 5
+    TUFF: 2
+    WHITE_TERRACOTTA: 20
+    YELLOW_TERRACOTTA: 20
 ability-configuration:
   extra-ore:
     enabled: true

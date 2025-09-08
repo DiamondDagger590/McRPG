@@ -29,7 +29,7 @@ public class OnAbilityCooldownExpireListener implements Listener {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            Audience audience = McRPG.getInstance().getAdventure().player(mcRPGPlayer.getUUID());
+            Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer,
                     LocalizationKey.ABILITY_NO_LONGER_ON_COOLDOWN,
                     Map.of(AbilityItemPlaceholderKeys.ABILITY.getKey(), abilityCooldownExpireEvent.getAbility().getName(mcRPGPlayer))));

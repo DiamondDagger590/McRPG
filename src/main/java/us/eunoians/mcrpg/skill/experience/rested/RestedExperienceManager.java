@@ -95,7 +95,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
         }
         PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
         McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-        Audience audience = mcRPGPlayer.getPlugin().getAdventure().player(mcRPGPlayer.getUUID());
+        Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
         double currentRestedExperience = playerExperienceExtras.getRestedExperience();
         float maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getFloat(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
         // If they have over the limit (theyve accumulated before and the limit got lowered or something), then leave it alone

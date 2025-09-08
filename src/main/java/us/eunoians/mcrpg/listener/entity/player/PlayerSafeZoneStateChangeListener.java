@@ -32,7 +32,7 @@ public class PlayerSafeZoneStateChangeListener implements Listener {
             PlayerSafeZoneStateChangeEvent.SafeZoneStateChangeType changeType = playerSafeZoneStateChangeEvent.getSafeZoneStateChangeType();
             McRPGPlayer mcRPGPlayer = playerSafeZoneStateChangeEvent.getMcRPGPlayer();
             McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            Audience audience = mcRPGPlayer.getPlugin().getAdventure().player(mcRPGPlayer.getUUID());
+            Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
             RestedExperienceOnlineAccumulationSetting restedExperienceOnlineAccumulationSetting = RestedExperienceOnlineAccumulationSetting.getCurrentSetting()
                     .orElseThrow(() -> new IllegalArgumentException("Invalid rested experience setting was provided. Please reach out to a developer to resolve."));
             Route localizationRoute = restedExperienceOnlineAccumulationSetting != RestedExperienceOnlineAccumulationSetting.DISABLED

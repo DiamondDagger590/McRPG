@@ -124,8 +124,9 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         Optional<Player> player = getCorePlayer().getAsBukkitPlayer();
 
         if (player.isPresent() && player.get().isOnline()) {
-            Audience audience = getPlugin().getAdventure().player(player.get());
-            audience.sendMessage(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessageAsComponent(getCorePlayer(), LocalizationKey.LOGIN_UNABLE_TO_LOAD_DATA));
+            Audience audience = player.get();
+            audience.sendMessage(getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedMessageAsComponent(getCorePlayer(), LocalizationKey.LOGIN_UNABLE_TO_LOAD_DATA));
         }
     }
 

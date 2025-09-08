@@ -124,10 +124,10 @@ experience:
   experience-display:
     # The message to send to a player's action bar whenever they gain experience.
     # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
-    action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
+    action-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Remaining Exp <gold><remaining-experience-to-level-up></gold>"
     # The message to send to display as the boss bar's name when sent to a player.
     # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
-  boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Needed Exp <gold><remaining-experience-to-level-up></gold>"
+    boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Remaining Exp <gold><remaining-experience-to-level-up></gold>"
 gui:
   # Allows for configuring slots that are shared commonly across many guis.
   common:

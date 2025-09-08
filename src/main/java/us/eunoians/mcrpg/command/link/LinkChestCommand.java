@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -47,7 +46,6 @@ public class LinkChestCommand {
                 .handler(commandContext -> {
                     CommandSender commandSender = commandContext.sender().getSender();
                     if (commandSender instanceof Player player) {
-                        Audience audience = McRPG.getInstance().getAdventure().player(player);
                         McRPGPlayerManager playerManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
                         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
@@ -55,11 +53,11 @@ public class LinkChestCommand {
                             RemoteTransfer remoteTransfer = (RemoteTransfer) RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
                             Block block = player.getTargetBlock(null, 100);
                             if (block.getType() != Material.CHEST) {
-                                audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LINK_COMMAND_NOT_LOOKING_AT_CHEST_MESSAGE, placeholders));
+                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LINK_COMMAND_NOT_LOOKING_AT_CHEST_MESSAGE, placeholders));
                                 return;
                             }
                             else if (!remoteTransfer.isAbilityEnabled()) {
-                                audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LINK_COMMAND_REMOTE_TRANSFER_NOT_ENABLED_MESSAGE, placeholders));
+                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LINK_COMMAND_REMOTE_TRANSFER_NOT_ENABLED_MESSAGE, placeholders));
                                 return;
                             }
                             FakeChestOpenEvent fakeChestOpenEvent = new FakeChestOpenEvent(player, block.getLocation());
@@ -70,7 +68,7 @@ public class LinkChestCommand {
                                 if (abilityDataOptional.isPresent()) {
                                     AbilityData abilityData = abilityDataOptional.get();
                                     abilityData.addAttribute(new AbilityLocationAttribute(block.getLocation()));
-                                    audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.LINK_COMMAND_SUCCESS_MESSAGE, placeholders));
+                                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LINK_COMMAND_SUCCESS_MESSAGE, placeholders));
                                 }
                             }
                         });

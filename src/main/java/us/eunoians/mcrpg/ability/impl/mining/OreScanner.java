@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
-import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -144,14 +143,13 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
             player.teleport(Methods.lookAt(playerLocation, toPoint));
         });
 
-        Audience audience = getPlugin().getAdventure().player(player);
         instancesOfBlocks.keySet().forEach(oreScannerBlockType -> {
             Set<Location> locations = instancesOfBlocks.get(oreScannerBlockType);
             BlockStartGlowTask blockStartGlowTask = new BlockStartGlowTask(player, oreScannerBlockType, locations);
             blockStartGlowTask.runTask();
             BlockRemoveGlowTask blockRemoveGlowTask = new BlockRemoveGlowTask(player, locations);
             blockRemoveGlowTask.runTask();
-            audience.sendMessage(getPlugin().getMiniMessage().deserialize("<gray>You've detected <gold>" + locations.size() + " " + oreScannerBlockType.typeName() + "</gold> near you."));
+            player.sendMessage(getPlugin().getMiniMessage().deserialize("<gray>You've detected <gold>" + locations.size() + " " + oreScannerBlockType.typeName() + "</gold> near you."));
         });
     }
 
