@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.skill.component.attack;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +36,9 @@ public interface OnAttackLevelableComponent extends EventLevelableComponent {
     default boolean shouldGiveExperience(@NotNull SkillHolder skillHolder, @NotNull Event event) {
         if (event instanceof EntityDamageByEntityEvent entityDamageByEntityEvent) {
             Entity damager = entityDamageByEntityEvent.getDamager();
+            if (damager instanceof Player player && player.getGameMode() == GameMode.CREATIVE) {
+                return false;
+            }
             Entity damaged = entityDamageByEntityEvent.getEntity();
             WorldManager worldManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD);
             return !entityDamageByEntityEvent.isCancelled() && damager.getUniqueId().equals(skillHolder.getUUID())

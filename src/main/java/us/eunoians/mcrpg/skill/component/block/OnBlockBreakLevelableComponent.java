@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.component.block;
 
+import org.bukkit.GameMode;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -24,8 +25,8 @@ public interface OnBlockBreakLevelableComponent extends EventLevelableComponent 
             Player player = blockBreakEvent.getPlayer();
             Block block = blockBreakEvent.getBlock();
             WorldManager worldManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD);
-            return !blockBreakEvent.isCancelled() && player.getUniqueId().equals(skillHolder.getUUID()) && affectsBlock(block)
-                    && worldManager.isMcRPGEnabledForHolder(skillHolder) && worldManager.isBlockNatural(block);
+            return player.getGameMode() != GameMode.CREATIVE && !blockBreakEvent.isCancelled() && player.getUniqueId().equals(skillHolder.getUUID())
+                    && affectsBlock(block) && worldManager.isMcRPGEnabledForHolder(skillHolder) && worldManager.isBlockNatural(block);
         }
         return false;
     }

@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
@@ -237,6 +238,29 @@ public class SwordsTest extends McRPGBaseTest {
         when(entityDamageByEntityEvent.getFinalDamage()).thenReturn(10d);
 
         assertEquals(15, swords.calculateExperienceToGive(mcRPGPlayer.asSkillHolder(), entityDamageByEntityEvent));
+    }
+
+    @DisplayName("Given a player in creative mode, when calculating experience, then it returns zero")
+    @Test
+    public void calculateExperienceToGive_returnsZero_whenPlayerInCreative(@NotNull McRPGPlayer mcRPGPlayer) {
+        addPlayerToServer(mcRPGPlayer);
+        World world = server.getWorld("world");
+        Skeleton skeleton = spawnEntity(Skeleton.class);
+        Route route = Route.fromString(toRoutePath(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, skeleton.getType().toString()));
+        when(swordsConfig.getInt(eq(route), anyInt())).thenReturn(5);
+        when(swordsConfig.contains(route)).thenReturn(true);
+        when(swordsConfig.getStringList(SwordsConfigFile.ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN)).thenReturn(List.of("DIAMOND_SWORD"));
+        when(mainConfig.getDouble(MainConfigFile.MAX_DAMAGE_CAP_TO_AWARD_EXPERIENCE)).thenReturn(3d);
+
+        EntityDamageByEntityEvent entityDamageByEntityEvent = mock(EntityDamageByEntityEvent.class);
+        Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+        player.setGameMode(GameMode.CREATIVE);
+        player.getEquipment().setItemInMainHand(ItemType.DIAMOND_SWORD.createItemStack());
+        when(entityDamageByEntityEvent.getDamager()).thenReturn(player);
+        when(entityDamageByEntityEvent.getEntity()).thenReturn(skeleton);
+        when(entityDamageByEntityEvent.getFinalDamage()).thenReturn(10d);
+
+        assertEquals(0, swords.calculateExperienceToGive(mcRPGPlayer.asSkillHolder(), entityDamageByEntityEvent));
     }
 
     @DisplayName("Given no configured material modifier, when getting held item bonus, then it returns zero")

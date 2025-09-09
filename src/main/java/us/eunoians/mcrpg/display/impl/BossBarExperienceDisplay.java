@@ -56,7 +56,8 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
 
                 @Override
                 public void run() {
-                    if (getActiveDisplay().isPresent() && getActiveDisplay().get() == bossBar) {
+                    BossBar toRemoveBossBar = bossBar;
+                    if (getActiveDisplay().isPresent() && getActiveDisplay().get() == toRemoveBossBar) {
                         cleanDisplay();
                     }
                 }

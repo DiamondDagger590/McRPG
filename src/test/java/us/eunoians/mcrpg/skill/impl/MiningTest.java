@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -222,6 +223,26 @@ public class MiningTest extends McRPGBaseTest {
         player.getEquipment().setItemInMainHand(ItemType.DIAMOND_PICKAXE.createItemStack());
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
         assertEquals(2, mining.calculateExperienceToGive(mcRPGPlayer.asSkillHolder(), blockBreakEvent));
+    }
+
+    @DisplayName("Given a player in creative mode, when calculating experience, then it returns zero")
+    @Test
+    public void calculateExperienceToGive_returnsZero_whenPlayerInCreative(@NotNull McRPGPlayer mcRPGPlayer) {
+        addPlayerToServer(mcRPGPlayer);
+        Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+        player.setGameMode(GameMode.CREATIVE);
+        World world = server.getWorld("world");
+        Block block = world.getBlockAt(0, 0, 0);
+        block.setType(Material.STONE);
+
+        Route route = Route.fromString(toRoutePath(MiningConfigFile.BLOCK_EXPERIENCE_HEADER, block.getType().toString()));
+        when(miningConfig.getInt(eq(route), anyInt())).thenReturn(2);
+        when(miningConfig.contains(route)).thenReturn(true);
+        when(miningConfig.getStringList(MiningConfigFile.ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN)).thenReturn(List.of("DIAMOND_PICKAXE"));
+
+        player.getEquipment().setItemInMainHand(ItemType.DIAMOND_PICKAXE.createItemStack());
+        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
+        assertEquals(0, mining.calculateExperienceToGive(mcRPGPlayer.asSkillHolder(), blockBreakEvent));
     }
 
     @DisplayName("Given a non-natural block, when calculating experience, then it returns zero")
