@@ -35,6 +35,7 @@ import java.util.UUID;
  */
 public class BossBarExperienceDisplay extends ExperienceDisplay {
 
+    int taskId;
     protected BossBar bossBar;
 
     public BossBarExperienceDisplay(@NotNull McRPGPlayer mcRPGPlayer) {
@@ -57,12 +58,13 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
                 @Override
                 public void run() {
                     BossBar toRemoveBossBar = bossBar;
-                    if (getActiveDisplay().isPresent() && getActiveDisplay().get() == toRemoveBossBar) {
+                    if (getActiveDisplay().isPresent() && taskId == this.getBukkitTaskId()) {
                         cleanDisplay();
                     }
                 }
             };
             delayableCoreTask.runTask();
+            taskId = delayableCoreTask.getBukkitTaskId();
         }
     }
 
@@ -70,8 +72,8 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
      * Displays an experience update.
      *
      * @param skillKey        The {@link NamespacedKey} to get the {@link Skill} info for.
-     * @param mcRPGPlayer          The {@link McRPGPlayer} to display to.
-     * @param skillHolderData The {@link us.eunoians.mcrpg.entity.holder.SkillHolder.SkillHolderData} containing data.
+     * @param mcRPGPlayer     The {@link McRPGPlayer} to display to.
+     * @param skillHolderData The {@link SkillHolder.SkillHolderData} containing data.
      */
     protected void displayUpdate(@NotNull NamespacedKey skillKey, @NotNull McRPGPlayer mcRPGPlayer, @NotNull SkillHolder.SkillHolderData skillHolderData) {
         McRPG mcRPG = getMcRPGPlayer().getPlugin();
@@ -102,7 +104,6 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
     public void cleanDisplay() {
         if (bossBar != null) {
             McRPGPlayer mcRPGPlayer = getMcRPGPlayer();
-            McRPG mcRPG = mcRPGPlayer.getPlugin();
             Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
             audience.hideBossBar(bossBar);
             bossBar = null;
@@ -111,6 +112,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
 
     /**
      * Gets an {@link Optional} containing the currently displayed {@link BossBar}.
+     *
      * @return An {@link Optional} containing the currently displayed {@link BossBar}, or an empty
      * one if there is no boss bar being displayed.
      */
