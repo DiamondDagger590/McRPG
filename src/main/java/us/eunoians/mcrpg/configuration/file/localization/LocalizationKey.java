@@ -25,7 +25,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
     public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
-    private static final String GIVE_LEVELS_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "levels");
+    private static final String GIVE_LEVELS_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "level");
     public static final Route GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "recipient-message"));
     public static final Route GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-error-message"));
@@ -50,7 +50,7 @@ public final class LocalizationKey extends ConfigFile {
     private static final String RELOAD_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reload");
     public static final Route RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RELOAD_COMMAND_HEADER, "sender-success-message"));
 
-    private static final String RESET_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "reset");
+    private static final String RESET_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reset");
     private static final String RESET_PLAYER_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "player");
     public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "recipient-message"));
     public static final Route RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-success-message"));
@@ -177,7 +177,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LOADOUT_DISPLAY_ITEM_INPUT_GUI_CANCEL_ITEM_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER, "cancel-item-edit-slot.display-item"));
     public static final Route LOADOUT_DISPLAY_ITEM_INPUT_GUI_CONFIRM_ITEM_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_ITEM_INPUT_GUI_HEADER, "confirm-item-edit-slot.display-item"));
 
-    private static final String LOADOUT_ABILITY_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-abilities-select");
+    private static final String LOADOUT_ABILITY_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-ability-select-gui");
     public static final Route LOADOUT_ABILITY_SELECT_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "title"));
     public static final Route LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "ability-select-slot.lore-to-append"));
 
