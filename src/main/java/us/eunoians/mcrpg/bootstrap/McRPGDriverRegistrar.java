@@ -17,6 +17,5 @@ final class McRPGDriverRegistrar implements Registrar<McRPG> {
     public void register(@NotNull BootstrapContext<McRPG> context) {
         context.plugin().registryAccess().registry(RegistryKey.DRIVER)
                 .register(new McRPGSqliteDriver(context.plugin()));
-
     }
 }

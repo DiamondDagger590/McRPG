@@ -85,18 +85,21 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
 
     @Override
     public void stop(@NotNull StartupProfile startupProfile) {
-        RegistryAccess registryAccess = getPlugin().registryAccess();
-        registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
-        if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.DATABASE)) {
-            Database database = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
-            try (Connection connection = database.getConnection()) {
-                var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
-                for (McRPGPlayer mcRPGPlayer : registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
-                    mcRPGPlayer.savePlayer(connection);
-                    lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
+        if (startupProfile == StartupProfile.PROD) {
+            RegistryAccess registryAccess = getPlugin().registryAccess();
+            registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
+            if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.DATABASE)) {
+                Database database = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
+                try (Connection connection = database.getConnection()) {
+                    var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
+                    for (McRPGPlayer mcRPGPlayer : registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
+                        mcRPGPlayer.savePlayer(connection);
+                        lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
+                database.shutdown();
             }
         }
     }
