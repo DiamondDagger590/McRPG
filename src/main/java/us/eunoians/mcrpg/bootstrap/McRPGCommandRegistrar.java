@@ -28,6 +28,7 @@ import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
 import us.eunoians.mcrpg.command.quest.TestQuestStartCommand;
+import us.eunoians.mcrpg.command.redeem.RedeemLevelsCommand;
 import us.eunoians.mcrpg.command.setting.SettingGuiCommand;
 import us.eunoians.mcrpg.command.skill.SkillGuiCommand;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -62,6 +63,9 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Reset commands
         ResetSkillCommand.registerCommand();
         ResetPlayerCommand.registerCommand();
+
+        // Redeem commands
+        RedeemLevelsCommand.registerCommand();
 
         // Debug Command
         DebugCommand.registerCommand();

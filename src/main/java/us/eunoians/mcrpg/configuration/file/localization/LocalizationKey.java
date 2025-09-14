@@ -63,6 +63,12 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route RESET_SKILL_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "sender-error-message"));
     public static final Route RESET_SKILL_COMMAND_SENDER_ERROR_SAVING_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "sender-error-saving-message"));
 
+    private static final String REDEEM_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "redeem");
+    private static final String REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(REDEEM_COMMAND_HEADER, "levels");
+    public static final Route REDEEMABLE_LEVELS_NOT_ENOUGH_LEVELS_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "not-enough-levels"));
+    public static final Route REDEEMABLE_LEVELS_SKILL_ALREADY_MAXED_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "skill-already-maxed"));
+    public static final Route REDEEMABLE_LEVELS_REDEEMED_LEVELS_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "redeemed-levels"));
+
     private static final String EXPANSION_HEADER = "expansion";
     public static final Route MCRPG_EXPANSION_NAME = Route.fromString(toRoutePath(EXPANSION_HEADER, "mcrpg"));
 

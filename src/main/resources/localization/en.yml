@@ -16,6 +16,14 @@ config-version: 1
 commands:
   # The name of console to use if the sender of a command is ever console and the <sender> placeholder is used
   console-name: "console"
+  # Configure messages to surrounding /mcrpg confirm
+  # This command will be used to confirm important commands such as resetting a player
+  confirmation:
+    # The message to send if the player doesn't have any pending confirmations and they run the
+    # confirm command.
+    no-pending-confirmations: "<gray>You do not have any pending commands to confirm."
+    # The message to send to players when they run a command that they need to confirm.
+    confirmation-required: "<gray>Please run <click:run_command:/mcrpg confirm><hover:show_text:'<gray>Click this to run <gold>/mcrpg confirm</gold></gray>'><gold><underlined>/mcrpg confirm</gold></click> to run confirm you want to run this command."
   # Configure /mcrpg give commmands
   give:
     # Configure the experience give command
@@ -96,6 +104,19 @@ commands:
         sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
         sender-error-message: "<red>Unable to reset McRPG data for <target>."
+  # Configure commands to redeem things such as experience or levels.
+  redeem:
+    # Configure the redeemable levels command.
+    levels:
+      # The message to send to the player if they are trying to redeem an amount of levels more than
+      # the amount they have.
+      not-enough-levels: "<red>You do not have enough levels to redeem the requested amount."
+      # The message to send to the player if they are trying to redeem levels into a skill that is already maxed.
+      # Supports the following placeholders: <skill>
+      skill-already-maxed: "<red>You can not redeem levels into <gold><skill></gold> as that skill is already max level."
+      # The message to send players if they successfully redeem levels.
+      # Supports the following placeholders: <redeemed-levels>, <skill>
+      redeemed-levels: "<gray>You have redeemed <gold><redeemed-levels> levels</gold> into <gold><skill></gold>."
 # Configure McRPG expansions
 expansion:
   # What is the display name for the McRPG content expansion?
