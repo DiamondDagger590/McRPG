@@ -2,8 +2,16 @@ package us.eunoians.mcrpg.bootstrap;
 
 import com.diamonddagger590.mccore.bootstrap.BootstrapContext;
 import com.diamonddagger590.mccore.bootstrap.registrar.Registrar;
+import com.diamonddagger590.mccore.command.CoreCommandManager;
 import com.diamonddagger590.mccore.command.DisplayNameCommand;
 import com.diamonddagger590.mccore.command.LoreCommand;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.processors.cache.SimpleCache;
+import org.incendo.cloud.processors.confirmation.ConfirmationManager;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.HomeGUICommand;
@@ -22,6 +30,11 @@ import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
 import us.eunoians.mcrpg.command.quest.TestQuestStartCommand;
 import us.eunoians.mcrpg.command.setting.SettingGuiCommand;
 import us.eunoians.mcrpg.command.skill.SkillGuiCommand;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import java.time.Duration;
 
 /**
  * This registrar is in charge of registering commands for McRPG.
@@ -30,6 +43,7 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
 
     @Override
     public void register(@NotNull BootstrapContext<McRPG> context) {
+        registerConfirmationCommandManager();
         // Home GUI command
         HomeGUICommand.registerCommand();
         // Home Sub Menu GUI Commands
@@ -65,5 +79,24 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Test commands
         LoreCommand.registerCommand();
         DisplayNameCommand.registerCommand();
+
+    }
+
+    /**
+     * Register the {@link ConfirmationManager} for the plugin.
+     */
+    private void registerConfirmationCommandManager() {
+        CoreCommandManager coreCommandManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND);
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ConfirmationManager<CommandSourceStack> confirmationManager = ConfirmationManager.confirmationManager(builder ->
+                builder.cache(SimpleCache.of())
+                        .noPendingCommandNotifier(sender -> sender.getSender()
+                                .sendMessage(localizationManager.getLocalizedMessageAsComponent(sender.getSender(), LocalizationKey.NO_PENDING_CONFIRMATION_COMMANDS)))
+                        .confirmationRequiredNotifier((sender, ctx) -> sender.getSender()
+                                .sendMessage(localizationManager.getLocalizedMessageAsComponent(sender.getSender(), LocalizationKey.CONFIRMATION_COMMAND_REQUIRED)))
+                        .expiration(Duration.ofSeconds(15)));
+        CommandManager<CommandSourceStack> commandManager = coreCommandManager.getCommandManager();
+        commandManager.registerCommandPostProcessor(confirmationManager.createPostprocessor());
+        commandManager.commandBuilder("mcrpg").literal("confirm").handler(confirmationManager.createExecutionHandler());
     }
 }

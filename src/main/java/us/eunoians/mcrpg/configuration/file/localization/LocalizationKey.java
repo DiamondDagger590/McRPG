@@ -17,6 +17,9 @@ public final class LocalizationKey extends ConfigFile {
     private static final String COMMAND_HEADER = "commands";
     public static final Route CONSOLE_NAME = Route.fromString(toRoutePath(COMMAND_HEADER, "console-name"));
 
+    private static final String CONFIRMATION_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "confirmation");
+    public static final Route NO_PENDING_CONFIRMATION_COMMANDS = Route.fromString(toRoutePath(CONFIRMATION_COMMAND_HEADER, "no-pending-confirmations"));
+    public static final Route CONFIRMATION_COMMAND_REQUIRED = Route.fromString(toRoutePath(CONFIRMATION_COMMAND_HEADER, "confirmation-required"));
     private static final String GIVE_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "give");
     private static final String GIVE_EXPERIENCE_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "experience");
     public static final Route GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));

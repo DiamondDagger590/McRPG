@@ -79,7 +79,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
                                      */
                                     int levelAmount = Math.min(commandContext.get(amountKey), skill.getMaxLevel() - skillHolderData.getCurrentLevel());
 
-                                    skillHolderData.addLevel(levelAmount, resetExperience);
+                                    skillHolderData.addLevels(levelAmount, resetExperience);
                                     player.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {

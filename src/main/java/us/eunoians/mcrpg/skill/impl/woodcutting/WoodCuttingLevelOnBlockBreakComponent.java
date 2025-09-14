@@ -10,6 +10,10 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.component.block.ConfigurableOnBlockBreakLevelableComponent;
 
+/**
+ * This component handles calculating how much experience can be given when
+ * a skill holder breaks a block.
+ */
 final class WoodCuttingLevelOnBlockBreakComponent extends ConfigurableOnBlockBreakLevelableComponent {
 
     @NotNull

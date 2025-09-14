@@ -220,21 +220,36 @@ public class SkillHolder extends LoadoutHolder {
         /**
          * Adds the provided amount of experience to the {@link Skill}.
          * <p>
-         * This method will call a {@link SkillGainExpEvent}, and only award experience if the event is not cancelled. The method will
-         * then also call {@link #checkForLevelups()}.
+         * This method will call a {@link SkillGainExpEvent}, and only award experience if the event is not canceled.
          *
          * @param experience The amount of experience to add.
+         * @return The amount of experience that was unused in leveling up the player.
          */
-        public void addExperience(int experience) {
+        public int addExperience(int experience) {
+            if (currentLevel >= skill.getMaxLevel()) {
+                return experience;
+            }
             SkillGainExpEvent skillGainExpEvent = new SkillGainExpEvent(getSkillHolder(), getSkillKey(), Math.max(0, experience));
             Bukkit.getPluginManager().callEvent(skillGainExpEvent);
-
             if (skillGainExpEvent.isCancelled()) {
-                return;
+                return experience;
             }
-            currentExperience += skillGainExpEvent.getExperience();
-            checkForLevelups();
+            // Calculate levels
+            experience = skillGainExpEvent.getExperience();
+            int expNeeded = experienceForNextLevel - currentExperience;
+            int leftoverExperience = 0;
+            // If we need more experience than we actually have
+            if (experience >= expNeeded) {
+                LevelUpCalculationResult calculationResult = calculateLevelsGainedForExperience(experience);
+                addLevels(calculationResult.amountOfLevelUps());
+                currentExperience = calculationResult.experienceLeftToLevel();
+                leftoverExperience = calculationResult.leftoverExperience();
+            }
+            else {
+                currentExperience += skillGainExpEvent.getExperience();
+            }
             Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey()));
+            return leftoverExperience;
         }
 
         /**
@@ -254,10 +269,10 @@ public class SkillHolder extends LoadoutHolder {
          * <p>
          * This method will not add levels past the max level for a given skill.
          *
-         * @param level The amount of levels to add.
+         * @param levels The amount of levels to add.
          */
-        public int addLevel(int level) {
-            return addLevel(level, false);
+        public int addLevels(int levels) {
+            return addLevels(levels, false);
         }
 
         /**
@@ -268,28 +283,27 @@ public class SkillHolder extends LoadoutHolder {
          * <p>
          * This method will also call a {@link SkillGainLevelEvent} and then also call {@link #checkForLevelups()} as well.
          *
-         * @param level             The amount of levels to add.
+         * @param levels             The amount of levels to add.
          * @param resetExpOnLevelUp If the current experience should be reset on level up or not.
          * @return The amount of levels that were actually added (Amount may differ based on event results/max level)
          */
-        public int addLevel(int level, boolean resetExpOnLevelUp) {
+        public int addLevels(int levels, boolean resetExpOnLevelUp) {
             int amountOfLevelups = 0;
-            level = Math.min(level, skill.getMaxLevel() - getCurrentLevel());
-            SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), level);
+            levels = Math.min(levels, skill.getMaxLevel() - getCurrentLevel());
+            SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), levels);
             Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
-            level = Math.min(skillGainLevelEvent.getLevels(), skill.getMaxLevel() - getCurrentLevel());
-            currentLevel += level;
-
-            amountOfLevelups += level;
+            levels = Math.min(skillGainLevelEvent.getLevels(), skill.getMaxLevel() - getCurrentLevel());
+            currentLevel += levels;
+            amountOfLevelups += levels;
             // Update the amount of experience needed for the next level and check if there is enough experience to do a level up
             updateExperienceForNextLevel();
             amountOfLevelups += checkForLevelups();
             // If we are resetting experience, reset it
-            if (resetExpOnLevelUp) {
+            if (resetExpOnLevelUp || currentLevel >= skill.getMaxLevel()) {
                 currentExperience = 0;
             }
-            if (level >= 0) {
-                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), getCurrentLevel() - level, getCurrentLevel()));
+            if (levels >= 0) {
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), getCurrentLevel() - levels, getCurrentLevel()));
             }
             return amountOfLevelups;
         }
@@ -311,11 +325,60 @@ public class SkillHolder extends LoadoutHolder {
             //do level ups
             while (currentExperience >= experienceForNextLevel) {
                 currentExperience -= experienceForNextLevel;
-                addLevel(1);
+                addLevels(1);
                 amountOfLevelups++;
                 updateExperienceForNextLevel();
             }
             return amountOfLevelups;
         }
+
+        @NotNull
+        private LevelUpCalculationResult calculateLevelsGainedForExperience(int experience) {
+            int amountOfLevelups = 0;
+            Parser skillParser =  skill.getLevelUpEquation();
+            int remainingExperienceToConsume = experience;
+            skillParser.setVariable("skill_level", currentLevel + amountOfLevelups);
+            int experienceToLevel = (int) skillParser.getValue() - currentExperience;
+            // How much experience is needed to level-up
+            int experienceLeftToLevel = experienceToLevel;
+            while (remainingExperienceToConsume > 0) {
+                // If we reached the max level, then we should break
+                if (currentLevel + amountOfLevelups >= skill.getMaxLevel()) {
+                    break;
+                }
+                // If there's enough experience to give a full level, do so
+                if (remainingExperienceToConsume >= experienceToLevel) {
+                    remainingExperienceToConsume -= experienceToLevel;
+                    // We leveled up so set this to 0
+                    experienceLeftToLevel = 0;
+                    amountOfLevelups++;
+                }
+                // If there isn't enough experience for a full level, do a partial one.
+                else {
+                    experienceLeftToLevel = experienceToLevel - remainingExperienceToConsume;
+                    break;
+                }
+                skillParser.setVariable("skill_level", currentLevel + amountOfLevelups);
+                experienceToLevel = (int) skillParser.getValue();
+            }
+            return new LevelUpCalculationResult(amountOfLevelups, experienceLeftToLevel, remainingExperienceToConsume);
+        }
+
+        public int calculateExperienceNeededToGainLevels(int levels) {
+            int experienceNeededToGainLevels = 0;
+            for (int i = 0; i < levels ; i++) {
+                int level = currentLevel + i;
+                if (level >= skill.getMaxLevel()) {
+                    break;
+                }
+                Parser skillParser =  skill.getLevelUpEquation();
+                skillParser.setVariable("skill_level", currentLevel + i);
+                experienceNeededToGainLevels += (int) skillParser.getValue();
+            }
+            return experienceNeededToGainLevels;
+        }
+    }
+
+    private record LevelUpCalculationResult(int amountOfLevelUps, int experienceLeftToLevel, int leftoverExperience) {
     }
 }
