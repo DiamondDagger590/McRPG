@@ -68,6 +68,10 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route REDEEMABLE_LEVELS_NOT_ENOUGH_LEVELS_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "not-enough-levels"));
     public static final Route REDEEMABLE_LEVELS_SKILL_ALREADY_MAXED_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "skill-already-maxed"));
     public static final Route REDEEMABLE_LEVELS_REDEEMED_LEVELS_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "redeemed-levels"));
+    private static final String REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(REDEEM_COMMAND_HEADER, "levels");
+    public static final Route REDEEMABLE_EXPERIENCE_NOT_ENOUGH_EXPERIENCE_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "not-enough-experience"));
+    public static final Route REDEEMABLE_EXPERIENCE_SKILL_ALREADY_MAXED_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "skill-already-maxed"));
+    public static final Route REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "redeemed-experience"));
 
     private static final String EXPANSION_HEADER = "expansion";
     public static final Route MCRPG_EXPANSION_NAME = Route.fromString(toRoutePath(EXPANSION_HEADER, "mcrpg"));

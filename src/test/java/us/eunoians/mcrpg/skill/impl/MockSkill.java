@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.skill.impl;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -68,6 +69,12 @@ public abstract class MockSkill implements Skill {
     @Override
     public boolean isSkillEnabled() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public Parser getLevelUpEquation() {
+        return new Parser("1000+(20*level)");
     }
 
     @NotNull

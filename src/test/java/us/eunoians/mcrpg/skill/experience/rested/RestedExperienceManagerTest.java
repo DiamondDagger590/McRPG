@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
+import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -21,7 +22,6 @@ import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.util.Map;
 

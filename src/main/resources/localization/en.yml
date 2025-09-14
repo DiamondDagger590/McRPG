@@ -117,6 +117,17 @@ commands:
       # The message to send players if they successfully redeem levels.
       # Supports the following placeholders: <redeemed-levels>, <skill>
       redeemed-levels: "<gray>You have redeemed <gold><redeemed-levels> levels</gold> into <gold><skill></gold>."
+    # Configure the redeemable experience command.
+    experience:
+      # The message to send to the player if they are trying to redeem an amount of experience more than
+      # the amount they have.
+      not-enough-experience: "<red>You do not have enough experience to redeem the requested amount."
+      # The message to send to the player if they are trying to redeem experience into a skill that is already maxed.
+      # Supports the following placeholders: <skill>
+      skill-already-maxed: "<red>You can not redeem experience into <gold><skill></gold> as that skill is already max level."
+      # The message to send players if they successfully redeem experience.
+      # Supports the following placeholders: <redeemed-experience>, <skill>
+      redeemed-experience: "<gray>You have redeemed <gold><redeemed-experience> experience</gold> into <gold><skill></gold>."
 # Configure McRPG expansions
 expansion:
   # What is the display name for the McRPG content expansion?

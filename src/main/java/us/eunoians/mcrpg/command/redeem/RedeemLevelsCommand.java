@@ -29,6 +29,9 @@ import us.eunoians.mcrpg.skill.Skill;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * This class manages the /mcrpg redeem levels command
+ */
 public class RedeemLevelsCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
@@ -78,6 +81,12 @@ public class RedeemLevelsCommand extends McRPGCommandBase {
                 }));
     }
 
+    /**
+     * Redeems redeemable levels into the provided {@link Skill}.
+     * @param mcRPGPlayer The player to redeem levels for.
+     * @param skill The skill to redeem levels into.
+     * @param amount The amount of levels to redeem.
+     */
     public static void redeemLevels(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill, int amount) {
         PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
@@ -96,7 +105,7 @@ public class RedeemLevelsCommand extends McRPGCommandBase {
                 }
 
                 int gainedLevels = skillData.addLevels(amount);
-                int levelsToTakeAway = amount >= gainedLevels ? amount - gainedLevels : amount;
+                int levelsToTakeAway = Math.min(gainedLevels, amount);
                 playerExperienceExtras.modifyRedeemableLevels(levelsToTakeAway * -1);
                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_REDEEMED_LEVELS_MESSAGE, Map.of("skill", skill.getName(mcRPGPlayer),
                         "redeemed-levels", Integer.toString(levelsToTakeAway))));
