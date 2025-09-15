@@ -18,12 +18,14 @@ import us.eunoians.mcrpg.command.HomeGUICommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
+import us.eunoians.mcrpg.command.admin.bank.BoostedExperienceModifyCommand;
+import us.eunoians.mcrpg.command.admin.bank.RestedExperienceModifyCommand;
+import us.eunoians.mcrpg.command.admin.bank.redeemable.RedeemableExperienceModifyCommand;
+import us.eunoians.mcrpg.command.admin.bank.redeemable.RedeemableLevelsModifyCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetPlayerCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
-import us.eunoians.mcrpg.command.admin.bank.redeemable.RedeemableExperienceModifyCommand;
-import us.eunoians.mcrpg.command.admin.bank.redeemable.RedeemableLevelsModifyCommand;
 import us.eunoians.mcrpg.command.link.LinkChestCommand;
 import us.eunoians.mcrpg.command.link.UnlinkChestCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
@@ -62,12 +64,6 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Give Commands
         GiveLevelsCommand.registerCommand();
         GiveExperienceCommand.registerCommand();
-        RedeemableExperienceModifyCommand.registerCommand();
-        RedeemableLevelsModifyCommand.registerCommand();
-
-        // Reset commands
-        ResetSkillCommand.registerCommand();
-        ResetPlayerCommand.registerCommand();
 
         // Redeem commands
         RedeemLevelsCommand.registerCommand();
@@ -81,6 +77,16 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
 
         // Reload command
         ReloadPluginCommand.registerCommand();
+
+        // Reset commands
+        ResetSkillCommand.registerCommand();
+        ResetPlayerCommand.registerCommand();
+
+        // Experience Bank Modify Commands
+        RedeemableExperienceModifyCommand.registerCommand();
+        RedeemableLevelsModifyCommand.registerCommand();
+        RestedExperienceModifyCommand.registerCommand();
+        BoostedExperienceModifyCommand.registerCommand();
 
         // Link commands
         LinkChestCommand.registerCommand();

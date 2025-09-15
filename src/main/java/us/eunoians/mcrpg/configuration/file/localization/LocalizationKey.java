@@ -74,7 +74,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route RESET_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
 
     private static final String REDEEMABLE_LEVELS_EXP_BANK_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "levels");
-    private static final String GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "give");
+    private static final String GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(REDEEMABLE_LEVELS_EXP_BANK_COMMAND_HEADER, "give");
     public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
     public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
@@ -86,6 +86,34 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route RESET_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
     public static final Route RESET_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
     public static final Route RESET_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
+
+    private static final String RESTED_EXP_BANK_COMMAND_HEADER = toRoutePath(EXP_BANK_COMMAND_HEADER, "rested-experience");
+    private static final String GIVE_RESTED_EXP_COMMAND_HEADER = toRoutePath(RESTED_EXP_BANK_COMMAND_HEADER, "give");
+    public static final Route GIVE_RESTED_EXP_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_RESTED_EXP_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_RESTED_EXP_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_RESTED_EXP_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_RESTED_EXP_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_RESTED_EXP_COMMAND_HEADER, "sender-error-message"));
+    private static final String REMOVE_RESTED_EXP_COMMAND_HEADER = toRoutePath(RESTED_EXP_BANK_COMMAND_HEADER, "remove");
+    public static final Route REMOVE_RESTED_EXP_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(REMOVE_RESTED_EXP_COMMAND_HEADER, "recipient-message"));
+    public static final Route REMOVE_RESTED_EXP_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(REMOVE_RESTED_EXP_COMMAND_HEADER, "sender-success-message"));
+    public static final Route REMOVE_RESTED_EXP_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(REMOVE_RESTED_EXP_COMMAND_HEADER, "sender-error-message"));
+    private static final String RESET_RESTED_EXP_COMMAND_HEADER = toRoutePath(RESTED_EXP_BANK_COMMAND_HEADER, "reset");
+    public static final Route RESET_RESTED_EXP_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_RESTED_EXP_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_RESTED_EXP_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_RESTED_EXP_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_RESTED_EXP_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_RESTED_EXP_COMMAND_HEADER, "sender-error-message"));
+
+    private static final String BOOSTED_EXP_BANK_COMMAND_HEADER = toRoutePath(EXP_BANK_COMMAND_HEADER, "boosted-experience");
+    private static final String GIVE_BOOSTED_EXP_COMMAND_HEADER = toRoutePath(BOOSTED_EXP_BANK_COMMAND_HEADER, "give");
+    public static final Route GIVE_BOOSTED_EXP_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_BOOSTED_EXP_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_BOOSTED_EXP_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_BOOSTED_EXP_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_BOOSTED_EXP_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_BOOSTED_EXP_COMMAND_HEADER, "sender-error-message"));
+    private static final String REMOVE_BOOSTED_EXP_COMMAND_HEADER = toRoutePath(BOOSTED_EXP_BANK_COMMAND_HEADER, "remove");
+    public static final Route REMOVE_BOOSTED_EXP_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(REMOVE_BOOSTED_EXP_COMMAND_HEADER, "recipient-message"));
+    public static final Route REMOVE_BOOSTED_EXP_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(REMOVE_BOOSTED_EXP_COMMAND_HEADER, "sender-success-message"));
+    public static final Route REMOVE_BOOSTED_EXP_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(REMOVE_BOOSTED_EXP_COMMAND_HEADER, "sender-error-message"));
+    private static final String RESET_BOOSTED_EXP_COMMAND_HEADER = toRoutePath(BOOSTED_EXP_BANK_COMMAND_HEADER, "reset");
+    public static final Route RESET_BOOSTED_EXP_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_BOOSTED_EXP_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_BOOSTED_EXP_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_BOOSTED_EXP_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_BOOSTED_EXP_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_BOOSTED_EXP_COMMAND_HEADER, "sender-error-message"));
 
 
     private static final String RESET_SKILL_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "skill");

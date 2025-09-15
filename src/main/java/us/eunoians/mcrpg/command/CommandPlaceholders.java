@@ -12,6 +12,8 @@ public enum CommandPlaceholders {
     EXPERIENCE("experience"),
     REDEEMABLE_EXPERIENCE("redeemable-experience"),
     REDEEMABLE_LEVELS("redeemable-levels"),
+    RESTED_EXPERIENCE("rested-experience"),
+    BOOSTED_EXPERIENCE("boosted-experience"),
     REDEEMED_EXPERIENCE("redeemed-experience"),
     REDEEMED_LEVELS("redeemed-levels"),
     LEVEL("level"),

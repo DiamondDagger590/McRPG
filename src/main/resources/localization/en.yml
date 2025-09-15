@@ -83,6 +83,7 @@ commands:
     reload:
       # The message to send to the sender when the command works.
       sender-success-message: "<gray>You have reloaded all McRPG files."
+    # Configure the reset commands
     reset:
       # Supports the following placeholders: <target>, <sender>
       player:
@@ -104,8 +105,9 @@ commands:
         sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
         sender-error-message: "<red>Unable to reset McRPG data for <target>."
+    # Configure admin commands for modifying the experience bank of a player
     exp-bank:
-      # Configure redeemable give commands
+      # Configure redeemable modify commands
       redeemable:
         experience:
           # Configure the give redeemable experience command
@@ -163,6 +165,64 @@ commands:
             sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
             # The message to send to the sender when the command fails.
             sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable levels at the moment."
+      # Configure rested experience modify commands.
+      rested-experience:
+        # Configure the give rested experience command
+        # Supports the following placeholders: <rested-experience>, <target>, <sender>
+        give:
+          # The message to send to the player getting rested experience.
+          recipient-message: "<gray>You have been given <gold><rested-experience></gold> rested experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You gave <gold><rested-experience></gold> rested experience to <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to give <gray><player></gray> rested experience at the moment."
+        # Configure the remove rested experience command
+        # Supports the following placeholders: <rested-experience>, <target>, <sender>
+        remove:
+          # The message to send to the player losing rested experience.
+          recipient-message: "<gray>You have lost <gold><rested-experience></gold> rested experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You removed <gold><rested-experience></gold> rested experience from <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to remove <gray><player></gray>'s rested experience at the moment."
+        # Configure the reset rested experience command
+        # Supports the following placeholders: <target>, <sender>
+        reset:
+          # The message to send to the player having their rested experience reset.
+          recipient-message: "<gray>You have had your rested experience reset."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You reset <gold><target></gold>'s rested experience."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to reset <gray><player></gray>'s rested experience at the moment."
+      # Configure boosted experience modify commands.
+      boosted-experience:
+        # Configure the give boosted experience command
+        # Supports the following placeholders: <boosted-experience>, <target>, <sender>
+        give:
+          # The message to send to the player getting boosted experience.
+          recipient-message: "<gray>You have been given <gold><boosted-experience></gold> boosted experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You gave <gold><boosted-experience></gold> boosted experience to <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to give <gray><player></gray> boosted experience at the moment."
+        # Configure the remove rested experience command
+        # Supports the following placeholders: <boosted-experience>, <target>, <sender>
+        remove:
+          # The message to send to the player losing boosted experience.
+          recipient-message: "<gray>You have lost <gold><boosted-experience></gold> boosted experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You removed <gold><boosted-experience></gold> boosted experience from <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to remove <gray><player></gray>'s boosted experience at the moment."
+        # Configure the reset boosted experience command
+        # Supports the following placeholders: <target>, <sender>
+        reset:
+          # The message to send to the player having their boosted experience reset.
+          recipient-message: "<gray>You have had your boosted experience reset."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You reset <gold><target></gold>'s boosted experience."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to reset <gray><player></gray>'s boosted experience at the moment."
   # Configure commands to redeem things such as experience or levels.
   redeem:
     # Configure the redeemable levels command.
