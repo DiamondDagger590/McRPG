@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.command.redeem;
 
 import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
-import dev.dejvokep.boostedyaml.YamlDocument;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +23,6 @@ import us.eunoians.mcrpg.skill.impl.MockSkill;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +30,6 @@ import static org.mockito.Mockito.when;
 public class RedeemLevelsCommandTest extends McRPGBaseTest {
 
     private MockSkill skill;
-    private YamlDocument localization;
     private McRPGLocalizationManager localizationManager;
 
     @BeforeEach
@@ -42,7 +39,6 @@ public class RedeemLevelsCommandTest extends McRPGBaseTest {
         skill = spy(MockSkill.class);
         skillRegistry.register(skill);
 
-        localization = mock(YamlDocument.class);
         localizationManager = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
     }
 

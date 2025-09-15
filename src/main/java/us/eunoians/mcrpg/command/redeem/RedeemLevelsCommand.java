@@ -29,6 +29,9 @@ import us.eunoians.mcrpg.skill.Skill;
 import java.util.Map;
 import java.util.Optional;
 
+import static us.eunoians.mcrpg.command.CommandPlaceholders.REDEEMED_LEVELS;
+import static us.eunoians.mcrpg.command.CommandPlaceholders.SKILL;
+
 /**
  * This class manages the /mcrpg redeem levels command
  */
@@ -100,15 +103,15 @@ public class RedeemLevelsCommand extends McRPGCommandBase {
             if (skillDataOptional.isPresent()) {
                 SkillHolder.SkillHolderData skillData = skillDataOptional.get();
                 if (skillData.getCurrentLevel() >= skill.getMaxLevel()) {
-                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_SKILL_ALREADY_MAXED_MESSAGE, Map.of("skill", skill.getName(mcRPGPlayer))));
+                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_SKILL_ALREADY_MAXED_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getName(mcRPGPlayer))));
                     return;
                 }
 
                 int gainedLevels = skillData.addLevels(amount);
                 int levelsToTakeAway = Math.min(gainedLevels, amount);
                 playerExperienceExtras.modifyRedeemableLevels(levelsToTakeAway * -1);
-                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_REDEEMED_LEVELS_MESSAGE, Map.of("skill", skill.getName(mcRPGPlayer),
-                        "redeemed-levels", Integer.toString(levelsToTakeAway))));
+                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_REDEEMED_LEVELS_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getName(mcRPGPlayer),
+                        REDEEMED_LEVELS.getPlaceholder(), Integer.toString(levelsToTakeAway))));
             }
         });
     }

@@ -30,6 +30,16 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-error-message"));
 
+    private static final String GIVE_REDEEMABLE_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "redeemable");
+    private static final String GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(GIVE_REDEEMABLE_COMMAND_HEADER, "experience");
+    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
+    private static final String GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(GIVE_REDEEMABLE_COMMAND_HEADER, "levels");
+    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
+
     private static final String LINK_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "link");
     public static final Route LINK_COMMAND_NOT_LOOKING_AT_CHEST_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "not-looking-at-chest-message"));
     public static final Route LINK_COMMAND_REMOTE_TRANSFER_NOT_ENABLED_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "remote-transfer-not-enabled-message"));
@@ -68,7 +78,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route REDEEMABLE_LEVELS_NOT_ENOUGH_LEVELS_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "not-enough-levels"));
     public static final Route REDEEMABLE_LEVELS_SKILL_ALREADY_MAXED_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "skill-already-maxed"));
     public static final Route REDEEMABLE_LEVELS_REDEEMED_LEVELS_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_COMMAND_HEADER, "redeemed-levels"));
-    private static final String REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(REDEEM_COMMAND_HEADER, "levels");
+    private static final String REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(REDEEM_COMMAND_HEADER, "experience");
     public static final Route REDEEMABLE_EXPERIENCE_NOT_ENOUGH_EXPERIENCE_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "not-enough-experience"));
     public static final Route REDEEMABLE_EXPERIENCE_SKILL_ALREADY_MAXED_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "skill-already-maxed"));
     public static final Route REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "redeemed-experience"));

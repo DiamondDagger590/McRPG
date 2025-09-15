@@ -3,6 +3,9 @@ package us.eunoians.mcrpg.command.give;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 
+/**
+ * A base command for all {@code /mcrpg give} commands.
+ */
 public abstract class GiveCommandBase extends McRPGCommandBase {
 
     protected static final Permission GIVE_COMMAND_ROOT_PERMISSION = Permission.of("mcrpg.give.*");

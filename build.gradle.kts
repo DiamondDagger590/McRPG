@@ -158,3 +158,9 @@ tasks.register("verifiedShadowJar") {
     description = "Runs tests, then builds the shaded jar."
     dependsOn("clean", "test", "shadowJar")
 }
+
+tasks.register("fastShadowJar") {
+    group = "build"
+    description = "Builds the shaded jar without tests."
+    dependsOn("clean", "shadowJar")
+}

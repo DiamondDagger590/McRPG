@@ -67,7 +67,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
                             Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                            Optional<McRPGPlayer> senderOptional = commandContext.sender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                            Optional<McRPGPlayer> senderOptional = commandContext.sender().getSender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                                     .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
                             Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, skill, senderOptional.orElse(null));
                             Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, skill, playerOptional.orElse(null));
@@ -81,7 +81,7 @@ public class ResetSkillCommand extends ResetBaseCommand {
                                     skillHolder.getAllAbilityDataForSkill(skill).forEach(AbilityData::resetAbility);
                                     player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.RESET_SKILL_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
-                                    if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
+                                    if (!(commandContext.sender().getSender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
                                         senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_SKILL_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
                                     }
 

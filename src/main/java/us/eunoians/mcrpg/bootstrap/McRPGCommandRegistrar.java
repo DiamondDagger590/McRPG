@@ -22,6 +22,8 @@ import us.eunoians.mcrpg.command.admin.reset.ResetPlayerCommand;
 import us.eunoians.mcrpg.command.admin.reset.ResetSkillCommand;
 import us.eunoians.mcrpg.command.give.GiveExperienceCommand;
 import us.eunoians.mcrpg.command.give.GiveLevelsCommand;
+import us.eunoians.mcrpg.command.give.redeemable.GiveRedeemableExperienceCommand;
+import us.eunoians.mcrpg.command.give.redeemable.GiveRedeemableLevelsCommand;
 import us.eunoians.mcrpg.command.link.LinkChestCommand;
 import us.eunoians.mcrpg.command.link.UnlinkChestCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
@@ -60,6 +62,8 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Give Commands
         GiveLevelsCommand.registerCommand();
         GiveExperienceCommand.registerCommand();
+        GiveRedeemableExperienceCommand.registerCommand();
+        GiveRedeemableLevelsCommand.registerCommand();
 
         // Reset commands
         ResetSkillCommand.registerCommand();

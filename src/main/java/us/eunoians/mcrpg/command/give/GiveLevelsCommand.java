@@ -61,7 +61,7 @@ public class GiveLevelsCommand extends GiveCommandBase {
 
                             Audience senderAudience = commandContext.sender().getSender();
                             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-                            Optional<McRPGPlayer> senderOptional = commandContext.sender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                            Optional<McRPGPlayer> senderOptional = senderAudience instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                                     .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
                             Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
 
@@ -80,9 +80,9 @@ public class GiveLevelsCommand extends GiveCommandBase {
                                     int levelAmount = Math.min(commandContext.get(amountKey), skill.getMaxLevel() - skillHolderData.getCurrentLevel());
 
                                     skillHolderData.addLevels(levelAmount, resetExperience);
-                                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
+                                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
-                                    if (!(commandContext.sender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
+                                    if (!(senderAudience instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
                                         senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
                                     }
                                     return;
