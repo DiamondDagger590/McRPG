@@ -248,7 +248,7 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String LOADOUT_ABILITY_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-ability-select-gui");
     public static final Route LOADOUT_ABILITY_SELECT_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "title"));
-    public static final Route LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "ability-select-slot.lore-to-append"));
+    public static final Route LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "ability-select-slot.additional-lore"));
 
     private static final String PLAYER_SETTINGS_GUI_HEADER = toRoutePath(GUI_HEADER, "player-setting-gui");
     public static final Route PLAYER_SETTINGS_GUI_TITLE = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "title"));
