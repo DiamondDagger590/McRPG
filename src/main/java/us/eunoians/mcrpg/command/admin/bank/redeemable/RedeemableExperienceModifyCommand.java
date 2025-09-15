@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.command.admin.AdminBaseCommand;
+import us.eunoians.mcrpg.command.admin.bank.AdminBankCommandBase;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -34,10 +35,9 @@ import static us.eunoians.mcrpg.command.CommandPlaceholders.REDEEMABLE_EXPERIENC
  */
 public class RedeemableExperienceModifyCommand extends RedeemableModifyCommandBase {
 
-    private static final Permission GIVE_REDEEMABLE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.admin.exp-bank.redeemable.give.experience");
-    private static final Permission REMOVE_REDEEMABLE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.admin.exp-bank.redeemable.remove.experience");
-    private static final Permission RESET_REDEEMABLE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.admin.exp-bank.redeemable.reset.experience");
-
+    private static final Permission GIVE_REDEEMABLE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.admin.exp-bank.give.redeemable.experience");
+    private static final Permission REMOVE_REDEEMABLE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.admin.exp-bank.remove.redeemable.experience");
+    private static final Permission RESET_REDEEMABLE_EXPERIENCE_PERMISSION = Permission.of("mcrpg.admin.exp-bank.reset.redeemable.experience");
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
@@ -51,8 +51,9 @@ public class RedeemableExperienceModifyCommand extends RedeemableModifyCommandBa
                 .literal("experience", "exp")
                 .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to give something to")))
                 .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable experience to give")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, GIVE_REDEEMABLE_EXPERIENCE_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_GIVE_ROOT_PERMISSION)).handler(commandContext -> {
+                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
+                        AdminBankCommandBase.BANK_GIVE_COMMAND_ROOT_PERMISSION, GIVE_REDEEMABLE_EXPERIENCE_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_GIVE_ROOT_PERMISSION))
+                .handler(commandContext -> {
                     CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                     Player player = commandContext.get(playerKey);
                     CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
@@ -88,45 +89,9 @@ public class RedeemableExperienceModifyCommand extends RedeemableModifyCommandBa
                 .literal("experience", "exp")
                 .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to remove something from")))
                 .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable experience to remove")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, REMOVE_REDEEMABLE_EXPERIENCE_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_REMOVE_ROOT_PERMISSION)).handler(commandContext -> {
-                    CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
-                    Player player = commandContext.get(playerKey);
-                    CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
-                    int experienceAmount = commandContext.get(amountKey);
-
-                    Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-                    Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Optional<McRPGPlayer> senderOptional = senderAudience instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                            .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
-                    Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, experienceAmount, senderOptional.orElse(null));
-                    Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, experienceAmount, playerOptional.orElse(null));
-
-                    if (playerOptional.isPresent()) {
-                        McRPGPlayer mcRPGPlayer = playerOptional.get();
-                        removeRedeemableExperience(mcRPGPlayer, experienceAmount, receiverPlaceholders);
-                        // Only send a message if the sender is not the receiver or the sender is console
-                        if (!(commandContext.sender().getSender() instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {
-                            senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE, senderPlaceholders));
-                        }
-                        return;
-                    }
-                    senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE, senderPlaceholders));
-
-                })
-        );
-
-        commandManager.command(commandManager.commandBuilder("mcrpg")
-                .literal("admin")
-                .literal("exp-bank", "experience-bank", "bank")
-                .literal("remove")
-                .literal("redeemable", "redeem")
-                .literal("experience", "exp")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to remove something from")))
-                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable experience to remove")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, REMOVE_REDEEMABLE_EXPERIENCE_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_REMOVE_ROOT_PERMISSION)).handler(commandContext -> {
+                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
+                        AdminBankCommandBase.BANK_REMOVE_COMMAND_ROOT_PERMISSION, REMOVE_REDEEMABLE_EXPERIENCE_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_REMOVE_ROOT_PERMISSION))
+                .handler(commandContext -> {
                     CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                     Player player = commandContext.get(playerKey);
                     CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
@@ -161,8 +126,9 @@ public class RedeemableExperienceModifyCommand extends RedeemableModifyCommandBa
                 .literal("redeemable", "redeem")
                 .literal("experience", "exp")
                 .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to remove something from")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, RESET_REDEEMABLE_EXPERIENCE_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_RESET_ROOT_PERMISSION)).handler(commandContext -> {
+                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
+                        AdminBankCommandBase.BANK_RESET_COMMAND_ROOT_PERMISSION, RESET_REDEEMABLE_EXPERIENCE_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_RESET_ROOT_PERMISSION))
+                .handler(commandContext -> {
                     CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                     Player player = commandContext.get(playerKey);
 

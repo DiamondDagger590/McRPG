@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.command.admin.AdminBaseCommand;
+import us.eunoians.mcrpg.command.admin.bank.AdminBankCommandBase;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -49,8 +50,8 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                 .literal("levels", "lv", "lvs")
                 .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to give something to")))
                 .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable levels to give")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, GIVE_REDEEMABLE_LEVELS_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_GIVE_ROOT_PERMISSION))
+                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
+                        AdminBankCommandBase.BANK_GIVE_COMMAND_ROOT_PERMISSION, GIVE_REDEEMABLE_LEVELS_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_GIVE_ROOT_PERMISSION))
                 .handler(commandContext -> {
                     CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                     Player player = commandContext.get(playerKey);
@@ -60,8 +61,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                     Audience senderAudience = commandContext.sender().getSender();
                     McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Optional<McRPGPlayer> senderOptional = commandContext.sender().getSender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                            .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, levelAmount);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, levelAmount);
                     if (playerOptional.isPresent()) {
@@ -86,8 +85,8 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                 .literal("levels", "lv", "lvs")
                 .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to remove something from")))
                 .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable levels to remove")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, REMOVE_REDEEMABLE_LEVELS_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_REMOVE_ROOT_PERMISSION))
+                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
+                        AdminBankCommandBase.BANK_REMOVE_COMMAND_ROOT_PERMISSION, REMOVE_REDEEMABLE_LEVELS_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_REMOVE_ROOT_PERMISSION))
                 .handler(commandContext -> {
                     CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                     Player player = commandContext.get(playerKey);
@@ -97,8 +96,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                     Audience senderAudience = commandContext.sender().getSender();
                     McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Optional<McRPGPlayer> senderOptional = commandContext.sender().getSender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                            .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, levelAmount);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, levelAmount);
                     if (playerOptional.isPresent()) {
@@ -122,8 +119,8 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                 .literal("redeemable", "redeem")
                 .literal("levels", "lv", "lvs")
                 .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to reset")))
-                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ROOT_PERMISSION, RESET_REDEEMABLE_LEVELS_PERMISSION,
-                        RedeemableModifyCommandBase.REDEEMABLE_BANK_ROOT_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_RESET_ROOT_PERMISSION))
+                .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
+                        AdminBankCommandBase.BANK_RESET_COMMAND_ROOT_PERMISSION, RESET_REDEEMABLE_LEVELS_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_RESET_ROOT_PERMISSION))
                 .handler(commandContext -> {
                     CloudKey<Player> playerKey = CloudKey.of("player", Player.class);
                     Player player = commandContext.get(playerKey);
@@ -131,8 +128,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                     Audience senderAudience = commandContext.sender().getSender();
                     McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Optional<McRPGPlayer> senderOptional = commandContext.sender().getSender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                            .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, 0);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, 0);
                     if (playerOptional.isPresent()) {
@@ -148,8 +143,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
 
                 })
         );
-
-
     }
 
     /**
