@@ -44,26 +44,6 @@ commands:
       sender-success-message: "<gray>You gave <gold><level> level(s)</gold> in <gold><skill></gold> to <gold><target></gold>."
       # The message to send to the sender when the command fails.
       sender-error-message: "<red>Unable to give <gray><player></gray> levels at the moment."
-    # Configure redeemable give commands
-    redeemable:
-      # Configure the give redeemable experience command
-      # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
-      experience:
-        # The message to send to the player getting redeemable experience.
-        recipient-message: "<gray>You have been given <gold><redeemable-experience></gold> redeemable experience."
-        # The message to send to the sender when the command works.
-        sender-success-message: "<gray>You gave <gold><redeemable-experience></gold> redeemable experience to <gold><target></gold>."
-        # The message to send to the sender when the command fails.
-        sender-error-message: "<red>Unable to give <gray><player></gray> redeemable experience at the moment."
-      # Configure the give redeemable levels command
-      # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
-      levels:
-        # The message to send to the player getting redeemable levels.
-        recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
-        # The message to send to the sender when the command works.
-        sender-success-message: "<gray>You gave <gold><redeemable-levels></gold> redeemable levels to <gold><target></gold>."
-        # The message to send to the sender when the command fails.
-        sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
   # Configure the link command for Remote Transfer
   # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
   link:
@@ -124,6 +104,65 @@ commands:
         sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
         sender-error-message: "<red>Unable to reset McRPG data for <target>."
+    exp-bank:
+      # Configure redeemable give commands
+      redeemable:
+        experience:
+          # Configure the give redeemable experience command
+          # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
+          give:
+            # The message to send to the player getting redeemable experience.
+            recipient-message: "<gray>You have been given <gold><redeemable-experience></gold> redeemable experience."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You gave <gold><redeemable-experience></gold> redeemable experience to <gold><target></gold>."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable experience at the moment."
+          # Configure the remove redeemable experience command
+          # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
+          remove:
+            # The message to send to the player losing redeemable experience.
+            recipient-message: "<gray>You have lost <gold><redeemable-experience></gold> redeemable experience."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You removed <gold><redeemable-experience></gold> redeemable experience from <gold><target></gold>."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to remove <gray><player></gray>'s redeemable experience at the moment."
+          # Configure the reset redeemable experience command
+          # Supports the following placeholders: <target>, <sender>
+          reset:
+            # The message to send to the player having their redeemable experience reset.
+            recipient-message: "<gray>You have had your redeemable experience reset."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable experience."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable experience at the moment."
+        levels:
+          # Configure the give redeemable levels command
+          # Supports the following placeholders: <redeemable-levels>, <target>, <sender>
+          give:
+            # The message to send to the player getting redeemable levels.
+            recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You gave <gold><redeemable-levels></gold> redeemable levels to <gold><target></gold>."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
+          # Configure the remove redeemable levels command
+          # Supports the following placeholders: <redeemable-levels>, <target>, <sender>
+          remove:
+            # The message to send to the player losing redeemable levels.
+            recipient-message: "<gray>You have had your redeemable levels reset."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
+          # Configure the give redeemable levels command
+          # Supports the following placeholders: <target>, <sender>
+          reset:
+            # The message to send to the player having their redeemable levels reset.
+            recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable levels at the moment."
   # Configure commands to redeem things such as experience or levels.
   redeem:
     # Configure the redeemable levels command.

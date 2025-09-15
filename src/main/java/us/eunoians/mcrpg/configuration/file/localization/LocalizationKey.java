@@ -30,16 +30,6 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route GIVE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-success-message"));
     public static final Route GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_LEVELS_COMMAND_HEADER, "sender-error-message"));
 
-    private static final String GIVE_REDEEMABLE_COMMAND_HEADER = toRoutePath(GIVE_COMMAND_HEADER, "redeemable");
-    private static final String GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(GIVE_REDEEMABLE_COMMAND_HEADER, "experience");
-    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
-    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
-    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
-    private static final String GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(GIVE_REDEEMABLE_COMMAND_HEADER, "levels");
-    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
-    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
-    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
-
     private static final String LINK_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "link");
     public static final Route LINK_COMMAND_NOT_LOOKING_AT_CHEST_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "not-looking-at-chest-message"));
     public static final Route LINK_COMMAND_REMOTE_TRANSFER_NOT_ENABLED_MESSAGE = Route.fromString(toRoutePath(LINK_COMMAND_HEADER, "remote-transfer-not-enabled-message"));
@@ -66,6 +56,37 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route RESET_PLAYER_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-success-message"));
     public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-error-message"));
     public static final Route RESET_PLAYER_COMMAND_SENDER_ERROR_SAVING_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "sender-error-saving-message"));
+
+    private static final String EXP_BANK_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "exp-bank");
+    private static final String REDEEMABLE_EXP_BANK_COMMAND_HEADER = toRoutePath(EXP_BANK_COMMAND_HEADER, "redeemable");
+    private static final String REDEEMABLE_EXPERIENCE_EXP_BANK_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "experience");
+    private static final String GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXPERIENCE_EXP_BANK_COMMAND_HEADER, "give");
+    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
+    private static final String REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXPERIENCE_EXP_BANK_COMMAND_HEADER, "remove");
+    public static final Route REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
+    public static final Route REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
+    public static final Route REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(REMOVE_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
+    private static final String RESET_REDEEMABLE_EXPERIENCE_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXPERIENCE_EXP_BANK_COMMAND_HEADER, "reset");
+    public static final Route RESET_REDEEMABLE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_REDEEMABLE_EXPERIENCE_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_EXPERIENCE_COMMAND_HEADER, "sender-error-message"));
+
+    private static final String REDEEMABLE_LEVELS_EXP_BANK_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "levels");
+    private static final String GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "give");
+    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
+    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
+    public static final Route GIVE_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(GIVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
+    private static final String REMOVE_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "remove");
+    public static final Route REMOVE_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(REMOVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
+    public static final Route REMOVE_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(REMOVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
+    public static final Route REMOVE_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(REMOVE_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
+    private static final String RESET_REDEEMABLE_LEVELS_COMMAND_HEADER = toRoutePath(REDEEMABLE_EXP_BANK_COMMAND_HEADER, "reset");
+    public static final Route RESET_REDEEMABLE_LEVELS_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_LEVELS_COMMAND_HEADER, "recipient-message"));
+    public static final Route RESET_REDEEMABLE_LEVELS_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-success-message"));
+    public static final Route RESET_REDEEMABLE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE = Route.fromString(toRoutePath(RESET_REDEEMABLE_LEVELS_COMMAND_HEADER, "sender-error-message"));
+
 
     private static final String RESET_SKILL_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "skill");
     public static final Route RESET_SKILL_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_SKILL_COMMAND_HEADER, "recipient-message"));
