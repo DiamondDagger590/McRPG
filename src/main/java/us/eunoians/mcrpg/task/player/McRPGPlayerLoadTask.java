@@ -1,7 +1,7 @@
 package us.eunoians.mcrpg.task.player;
 
 import com.diamonddagger590.mccore.database.table.impl.PlayerSettingDAO;
-import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
+import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
@@ -10,6 +10,7 @@ import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import com.diamonddagger590.mccore.task.player.PlayerLoadTask;
 import net.kyori.adventure.audience.Audience;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -162,17 +163,21 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
      */
     @NotNull
     private UpdatePlayerDataSyncFunction awardRestedExperience(@NotNull Connection connection) {
+        Bukkit.broadcastMessage("1");
         var logoutTimeOptional = PlayerLoginTimeDAO.getLastLogoutTime(connection, getCorePlayer().getUUID());
         RestedExperienceAccumulationType accumulationType = PlayerLoginTimeDAO.didPlayerLogoutInSafeZone(connection, getCorePlayer().getUUID())
                 ? RestedExperienceAccumulationType.OFFLINE_SAFE_ZONE : RestedExperienceAccumulationType.OFFLINE;
         return () -> {
+            Bukkit.broadcastMessage("2");
             if (logoutTimeOptional.isPresent()) {
+                Bukkit.broadcastMessage("3");
                 Instant logoutTime = logoutTimeOptional.get();
                 Instant now = Instant.now();
                 double waitTimeBeforeAccumulation = getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
                         .getDouble(MainConfigFile.RESTED_EXPERIENCE_OFFLINE_WAIT_PERIOD_BEFORE_ACCUMULATION, 0.0d);
                 double difference = Math.max(0, Duration.between(now, logoutTime).abs().toSeconds() - waitTimeBeforeAccumulation);
+                Bukkit.broadcastMessage("4: " + waitTimeBeforeAccumulation + " " + difference);
                 RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
                 // Award rested experience
                 restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, accumulationType, true);
@@ -292,7 +297,8 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         UUID uuid = getCorePlayer().getUUID();
         // Check if the player has logged in before
         boolean hasPlayerLoggedInBefore = PlayerLoginTimeDAO.hasPlayerLoggedInBefore(connection, uuid);
-        BatchTransaction loginInfoTransaction = new BatchTransaction(connection);
+        System.out.println("Has player logged in before: " + hasPlayerLoggedInBefore);
+        FailSafeTransaction loginInfoTransaction = new FailSafeTransaction(connection);
         if (!hasPlayerLoggedInBefore) {
             loginInfoTransaction.addAll(PlayerLoginTimeDAO.saveFirstLoginTime(connection, uuid, loginTime));
         }

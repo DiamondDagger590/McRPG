@@ -249,7 +249,7 @@ public class PlayerLoginTimeDAO {
     public static List<PreparedStatement> saveFirstLoginTime(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Instant firstLoginTime) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, first_login_time) VALUES (?, ?);");
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + TABLE_NAME + " SET uuid = ?, first_login_time = ? WHERE first_login_time IS NULL;");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setTimestamp(2, Timestamp.from(firstLoginTime));
             preparedStatements.add(preparedStatement);
@@ -269,6 +269,7 @@ public class PlayerLoginTimeDAO {
      */
     @NotNull
     public static List<PreparedStatement> saveLastLogoutTime(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Instant lastLogoutTime) {
+        System.out.println("Saving logout time");
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, last_logout_time) VALUES (?, ?);");

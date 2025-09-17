@@ -8,12 +8,12 @@ import org.jetbrains.annotations.NotNull;
  * Typically, when experience is mentioned in McRPG, it is tied directly to something like a
  * {@link us.eunoians.mcrpg.skill.Skill}. This class contains all experience that belongs to the player
  * but not some further specific attribute of a player. These types of experience tend to be "consumed"
- * in order to accelerate the progress of leveling some attribute of a player such as a Skill.
+ *  to speed up the progress of leveling some attribute of a player such as a Skill.
  * <p>
- * Redeemable experience/levels are directly spent by the player in order to increase the experience and level
+ * The player directly consumes redeemable experience/levels to increase the experience and level
  * of their given skills.
  * <p>
- * Boosted experience represents a "bank" of experience that will be used in order to accelerate experience gain from
+ * Boosted experience represents a "bank" of experience that will be used to speed up experience gain from
  * skills. Given a scenario where boosted experience has a 2x consumption rate, 1000 boosted experience stored and 100 experience
  * gained in a skill, the experience gained will be increased to a total of 200 while the remaining boosted experience is decremented
  * to a total of 900. For more on how boosted experience works, see {@link us.eunoians.mcrpg.skill.experience.modifier.BoostedExperienceModifier}.

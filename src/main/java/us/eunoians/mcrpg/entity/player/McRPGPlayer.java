@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
+import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -33,6 +34,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.sql.Connection;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -254,5 +256,19 @@ public class McRPGPlayer extends CorePlayer {
         batchTransaction.addAll(PlayerSettingDAO.savePlayerSettings(connection, getUUID(), getPlayerSettings()));
         failsafeTransaction.executeTransaction();
         batchTransaction.executeTransaction();
+    }
+
+    /**
+     * Saves the player data relating to logout times using the provided {@link Connection}.
+     *
+     * @param connection The {@link Connection} to use to save data to.
+     */
+    public void savePlayerLogoutTime(@NotNull Connection connection) {
+        FailSafeTransaction lastLogoutTransaction = new FailSafeTransaction(connection);
+        Instant logoutTime = Instant.now();
+        lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLastLogoutTime(connection, this.getUUID(), logoutTime));
+        lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLastSeenTime(connection, this.getUUID(), logoutTime));
+        lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLoggedOutInSafeZone(connection, this.getUUID(), this.isStandingInSafeZone(true)));
+        lastLogoutTransaction.executeTransaction();
     }
 }

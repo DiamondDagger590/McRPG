@@ -27,10 +27,8 @@ public class McRPG extends CorePlugin {
 
     @Override
     public void onDisable() {
-        System.out.println("Disabling plugin");
         super.onDisable();
         CoreBootstrap<?> bootstrap = BootstrapFactory.getBootstrap();
-        System.out.println("Startup Profile: " + resolveProfile());
         bootstrap.stop(resolveProfile());
     }
 
