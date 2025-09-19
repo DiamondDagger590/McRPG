@@ -56,9 +56,9 @@ public class PlayerLoginTimeDAO {
         try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "`" +
                 "(" +
                 "`uuid` varchar(36) NOT NULL," +
-                "`first_login_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP," +
-                "`last_login_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP," +
-                "`last_seen_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                "`first_login_time` DATETIME NOT NULL," +
+                "`last_login_time` DATETIME NOT NULL," +
+                "`last_seen_time` DATETIME NOT NULL, " +
                 "`logged_out_in_safezone` INTEGER NOT NULL DEFAULT 0," +
                 "`last_logout_time` DATETIME," +
                 "PRIMARY KEY (`uuid`)" +
@@ -249,9 +249,16 @@ public class PlayerLoginTimeDAO {
     public static List<PreparedStatement> saveFirstLoginTime(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Instant firstLoginTime) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + TABLE_NAME + " SET uuid = ?, first_login_time = ? WHERE first_login_time IS NULL;");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME
+                    + " (uuid, first_login_time, last_login_time, last_seen_time, logged_out_in_safezone) VALUES (?, ?, ?, ?, 0) " +
+                    "ON CONFLICT(uuid) DO UPDATE SET " +
+                    " first_login_time = " + TABLE_NAME + ".first_login_time, " +
+                    " last_login_time = excluded.last_login_time, " +
+                    " last_seen_time = excluded.last_seen_time;");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setTimestamp(2, Timestamp.from(firstLoginTime));
+            preparedStatement.setTimestamp(3, Timestamp.from(firstLoginTime));
+            preparedStatement.setTimestamp(4, Timestamp.from(firstLoginTime));
             preparedStatements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -269,12 +276,18 @@ public class PlayerLoginTimeDAO {
      */
     @NotNull
     public static List<PreparedStatement> saveLastLogoutTime(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Instant lastLogoutTime) {
-        System.out.println("Saving logout time");
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, last_logout_time) VALUES (?, ?);");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME +
+                    " (uuid, first_login_time, last_login_time, last_seen_time, logged_out_in_safezone, last_logout_time) " +
+                    "VALUES (?, ?, ?, ?, 0, ?) " +
+                    "ON CONFLICT(uuid) DO UPDATE SET " +
+                    "  last_logout_time = excluded.last_logout_time");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setTimestamp(2, Timestamp.from(lastLogoutTime));
+            preparedStatement.setTimestamp(3, Timestamp.from(lastLogoutTime));
+            preparedStatement.setTimestamp(4, Timestamp.from(lastLogoutTime));
+            preparedStatement.setTimestamp(5, Timestamp.from(lastLogoutTime));
             preparedStatements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -294,9 +307,16 @@ public class PlayerLoginTimeDAO {
     public static List<PreparedStatement> saveLastLoginTime(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Instant lastLoginTime) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, last_login_time) VALUES (?, ?);");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME +
+                    " (uuid, first_login_time, last_login_time, last_seen_time, logged_out_in_safezone) " +
+                    "VALUES (?, ?, ?, ?, 0) " +
+                    "ON CONFLICT(uuid) DO UPDATE SET " +
+                    "  last_login_time = excluded.last_login_time, " +
+                    "  last_seen_time  = excluded.last_seen_time");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setTimestamp(2, Timestamp.from(lastLoginTime));
+            preparedStatement.setTimestamp(3, Timestamp.from(lastLoginTime));
+            preparedStatement.setTimestamp(4, Timestamp.from(lastLoginTime));
             preparedStatements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -316,9 +336,15 @@ public class PlayerLoginTimeDAO {
     public static List<PreparedStatement> saveLastSeenTime(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Instant lastSeenTime) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, last_seen_time) VALUES (?, ?);");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME +
+                    " (uuid, first_login_time, last_login_time, last_seen_time, logged_out_in_safezone) " +
+                    "VALUES (?, ?, ?, ?, 0) " +
+                    "ON CONFLICT(uuid) DO UPDATE SET " +
+                    "  last_seen_time = excluded.last_seen_time");
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setTimestamp(2, Timestamp.from(lastSeenTime));
+            preparedStatement.setTimestamp(3, Timestamp.from(lastSeenTime));
+            preparedStatement.setTimestamp(4, Timestamp.from(lastSeenTime));
             preparedStatements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -339,9 +365,17 @@ public class PlayerLoginTimeDAO {
     public static List<PreparedStatement> saveLoggedOutInSafeZone(@NotNull Connection connection, @NotNull UUID uuid, boolean loggedOutInSafeZone) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (uuid, logged_out_in_safezone) VALUES (?, ?);");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME +
+                    " (uuid, first_login_time, last_login_time, last_seen_time, logged_out_in_safezone) " +
+                    "VALUES (?, ?, ?, ?, ?) " +
+                    "ON CONFLICT(uuid) DO UPDATE SET " +
+                    "  logged_out_in_safezone = excluded.logged_out_in_safezone");
+            Instant now = Instant.now();
             preparedStatement.setString(1, uuid.toString());
-            preparedStatement.setBoolean(2, loggedOutInSafeZone);
+            preparedStatement.setTimestamp(2, Timestamp.from(now));
+            preparedStatement.setTimestamp(3, Timestamp.from(now));
+            preparedStatement.setTimestamp(4, Timestamp.from(now));
+            preparedStatement.setBoolean(5, loggedOutInSafeZone);
             preparedStatements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();

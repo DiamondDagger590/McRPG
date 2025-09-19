@@ -88,15 +88,11 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         if (startupProfile == StartupProfile.PROD) {
             RegistryAccess registryAccess = getPlugin().registryAccess();
             registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
-            System.out.println("shutting down mcrpg");
             if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.DATABASE)) {
-                System.out.println("shutting down mcRPG database");
                 Database database = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
                 try (Connection connection = database.getConnection()) {
-                    System.out.println("found connection");
                     var lunarClientHook = McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT);
                     for (McRPGPlayer mcRPGPlayer : registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()) {
-                        System.out.println("saving data for player");
                         mcRPGPlayer.savePlayer(connection);
                         mcRPGPlayer.savePlayerLogoutTime(connection);
                         lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));

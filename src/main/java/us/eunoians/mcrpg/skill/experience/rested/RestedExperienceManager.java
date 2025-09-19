@@ -98,7 +98,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
         Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
         double currentRestedExperience = playerExperienceExtras.getRestedExperience();
         float maxAccumulation = plugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getFloat(MainConfigFile.RESTED_EXPERIENCE_MAXIMUM_ACCUMULATION);
-        // If they have over the limit (theyve accumulated before and the limit got lowered or something), then leave it alone
+        // If they have over the limit (they've accumulated before and the limit got lowered or something), then leave it alone
         if (currentRestedExperience >= maxAccumulation) {
             // If they have just logged in, let them know they are at the experience cap
             if (notifyPlayerOfOfflineGain) {
@@ -112,11 +112,8 @@ public class RestedExperienceManager extends Manager<McRPG> {
         if (playerAwardedRestedExperienceEvent.isCancelled()) {
             return;
         }
-        restedExperience = playerAwardedRestedExperienceEvent.getRestedExperience();
-        // If the updated amount is at the max accumulation
-        if (restedExperience >= maxAccumulation) {
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.MAXIMUM_RESTED_EXPERIENCE_REACHED_MESSAGE));
-        } else if (notifyPlayerOfOfflineGain) {
+        restedExperience = Math.min(maxAccumulation, playerAwardedRestedExperienceEvent.getRestedExperience());
+        if (notifyPlayerOfOfflineGain) {
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE,
                     Map.of("rested-experience-gained", Float.toString(restedExperience))));
         }

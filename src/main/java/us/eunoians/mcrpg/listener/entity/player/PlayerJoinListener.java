@@ -20,7 +20,6 @@ public class PlayerJoinListener implements Listener {
         McRPG mcRPG = McRPG.getInstance();
         Player player = playerJoinEvent.getPlayer();
         McRPGPlayer mcRPGPlayer = new McRPGPlayer(player, mcRPG);
-
         new McRPGPlayerLoadTask(mcRPG, mcRPGPlayer).runTask();
     }
 }
