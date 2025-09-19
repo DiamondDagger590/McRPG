@@ -33,8 +33,8 @@ public class LoadoutAbilityDAO {
     /**
      * Attempts to create a new table for this DAO provided that the table does not already exist.
      *
-     * @param connection      The {@link Connection} to use to attempt the creation
-     * @param database The {@link Database} being used to attempt to create the table
+     * @param connection The {@link Connection} to use to attempt the creation
+     * @param database   The {@link Database} being used to attempt to create the table
      * @return {@code true} if a new table was made or {@code false} otherwise.
      */
     public static boolean attemptCreateTable(@NotNull Connection connection, @NotNull Database database) {
@@ -94,15 +94,13 @@ public class LoadoutAbilityDAO {
             // Create an index to group by UUIDs
             try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX holder_uuid_index_loadout_ability ON " + TABLE_NAME + " (holder_uuid)")) {
                 preparedStatement.executeUpdate();
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
             // Create an index to group by UUIDs and loadout ids
             try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX holder_uuid_and_loadout_index ON " + TABLE_NAME + " (holder_uuid, loadout_id)")) {
                 preparedStatement.executeUpdate();
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
@@ -110,13 +108,24 @@ public class LoadoutAbilityDAO {
         }
     }
 
+    /**
+     * Gets a {@link Loadout} with the provided id that belongs to the provided {@link UUID}. This loadout will
+     * have any {@link us.eunoians.mcrpg.ability.Ability Abilities} that are stored in the database loaded into it.
+     * If there are no stored abilities, then the loadout will be empty.
+     *
+     * @param connection The {@link Connection} to get the loadout from.
+     * @param holderUUID The {@link UUID} of the {@link LoadoutHolder}.
+     * @param loadoutId  The id of the {@link Loadout}.
+     * @return A {@link Loadout} made from the provided {@link UUID} and loadout id along
+     * with any saved {@link us.eunoians.mcrpg.ability.Ability Abilities}.
+     */
     @NotNull
-    public static Loadout getLoadout(@NotNull Connection connection, @NotNull UUID playerUUID, int loadoutNumber) {
+    public static Loadout getLoadout(@NotNull Connection connection, @NotNull UUID holderUUID, int loadoutId) {
         AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
-        Loadout loadout = new Loadout(playerUUID, loadoutNumber);
+        Loadout loadout = new Loadout(holderUUID, loadoutId);
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ability_id FROM " + TABLE_NAME + " WHERE holder_uuid = ? AND loadout_id = ?;")) {
-            preparedStatement.setString(1, playerUUID.toString());
-            preparedStatement.setInt(2, loadoutNumber);
+            preparedStatement.setString(1, holderUUID.toString());
+            preparedStatement.setInt(2, loadoutId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     String abilityId = resultSet.getString("ability_id");
@@ -132,6 +141,15 @@ public class LoadoutAbilityDAO {
         return loadout;
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run in order to save all the {@link Loadout}s for the provided
+     * {@link LoadoutHolder}.
+     *
+     * @param connection    The {@link Connection} to save on.
+     * @param loadoutHolder The {@link Loadout} to save {@link Loadout}'s for.
+     * @return A {@link List} of {@link PreparedStatement}s to be run in order to save all the {@link Loadout}s for the provided
+     * {@link LoadoutHolder}.
+     */
     @NotNull
     public static List<PreparedStatement> saveAllLoadouts(@NotNull Connection connection, @NotNull LoadoutHolder loadoutHolder) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
@@ -143,6 +161,14 @@ public class LoadoutAbilityDAO {
         return preparedStatements;
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run in order to save the provided {@link Loadout}.
+     *
+     * @param connection The {@link Connection} to save on.
+     * @param uuid       The {@link UUID} of the {@link LoadoutHolder} owning the loadout.
+     * @param loadout    The {@link Loadout} to save.
+     * @return A {@link List} of {@link PreparedStatement}s to be run in order to save the provided {@link Loadout}.
+     */
     @NotNull
     public static List<PreparedStatement> saveLoadout(@NotNull Connection connection, @NotNull UUID uuid, @NotNull Loadout loadout) {
         List<PreparedStatement> preparedStatements = new ArrayList<>(deleteLoadout(connection, uuid, loadout.getLoadoutSlot()));
@@ -159,13 +185,21 @@ public class LoadoutAbilityDAO {
                 preparedStatement.setString(3, abilityRegistry.getRegisteredAbility(namespacedKey).getDatabaseName());
                 preparedStatements.add(preparedStatement);
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return preparedStatements;
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run to delete the {@link Loadout} belonging to the provided {@link UUID} and loadout id.
+     *
+     * @param connection The {@link Connection} to delete on.
+     * @param uuid       The {@link UUID} of the {@link LoadoutHolder} owning the loadout.
+     * @param loadoutId  The id of the {@link Loadout} to be deleted.
+     * @return A {@link List} of {@link PreparedStatement}s to be run to delete the {@link Loadout} belonging to the provided {@link UUID}
+     * and loadout id.
+     */
     @NotNull
     public static List<PreparedStatement> deleteLoadout(@NotNull Connection connection, @NotNull UUID uuid, int loadoutId) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
@@ -174,8 +208,7 @@ public class LoadoutAbilityDAO {
             deleteSlotsStatement.setString(1, uuid.toString());
             deleteSlotsStatement.setInt(2, loadoutId);
             preparedStatements.add(deleteSlotsStatement);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return preparedStatements;

@@ -16,8 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasFiredEventInstance;
-import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasNotFiredEventInstance;
 import static org.mockito.Mockito.spy;
 
 public class SkillRegistryTest extends McRPGBaseTest {
@@ -26,6 +24,7 @@ public class SkillRegistryTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() {
+        server.getPluginManager().clearEvents();
         skillRegistry = spy(new SkillRegistry(mcRPG));
         RegistryAccess.registryAccess().register(skillRegistry);
     }
@@ -44,7 +43,7 @@ public class SkillRegistryTest extends McRPGBaseTest {
         MockSkill mockSkill = spy(MockSkill.class);
         skillRegistry.register(mockSkill);
         assertTrue(skillRegistry.registered(mockSkill));
-        hasFiredEventInstance(SkillRegisterEvent.class);
+        server.getPluginManager().assertEventFired(SkillRegisterEvent.class);
     }
 
     @DisplayName("Given an unregistered skill, when checking registered, then it returns false and does not fire register event")
@@ -52,7 +51,7 @@ public class SkillRegistryTest extends McRPGBaseTest {
     public void registered_returnsFalse_whenSkillNotRegistered() {
         MockSkill mockSkill = spy(MockSkill.class);
         assertFalse(skillRegistry.registered(mockSkill));
-        hasNotFiredEventInstance(SkillRegisterEvent.class);
+        server.getPluginManager().assertEventNotFired(SkillRegisterEvent.class);
     }
 
     @DisplayName("Given a registered skill, when getting by key, then it returns the same skill")
@@ -104,7 +103,7 @@ public class SkillRegistryTest extends McRPGBaseTest {
         MockSkill mockSkill = spy(MockSkill.class);
         skillRegistry.register(mockSkill);
         skillRegistry.unregisterSkill(mockSkill);
-        hasFiredEventInstance(SkillUnregisterEvent.class);
+        server.getPluginManager().assertEventFired(SkillUnregisterEvent.class);
         assertEquals(Set.of(), skillRegistry.getRegisteredSkills());
     }
 
@@ -112,6 +111,7 @@ public class SkillRegistryTest extends McRPGBaseTest {
     @Test
     public void unregisterSkill_doesNotFireEvent_whenSkillNotRegistered() {
         MockSkill mockSkill = spy(MockSkill.class);
-        hasNotFiredEventInstance(SkillUnregisterEvent.class);
+        skillRegistry.unregisterSkill(mockSkill);
+        server.getPluginManager().assertEventNotFired(SkillUnregisterEvent.class);
     }
 }

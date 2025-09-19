@@ -67,7 +67,7 @@ dependencies {
     testImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
     testFixturesImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
 
-    val paperVersion = "1.21.8-R0.1-20250822.103624-38"
+    val paperVersion = "1.21.8-R0.1-SNAPSHOT"
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
     testImplementation("io.papermc.paper:paper-api:$paperVersion")
     testFixturesImplementation("io.papermc.paper:paper-api:$paperVersion")
@@ -94,7 +94,7 @@ dependencies {
     compileOnly("com.github.angeschossen:LandsAPI:$landsVersion")
 
     // Test deps
-    val mockBukkitVersion = "4.72.8"
+    val mockBukkitVersion = "4.76.1"
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
     testFixturesImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
 

@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
@@ -30,8 +29,8 @@ public class LoadoutDisplayDAO {
     /**
      * Attempts to create a new table for this DAO provided that the table does not already exist.
      *
-     * @param connection      The {@link Connection} to use to attempt the creation
-     * @param database The {@link Database} being used to attempt to create the table
+     * @param connection The {@link Connection} to use to attempt the creation
+     * @param database   The {@link Database} being used to attempt to create the table
      * @return {@code true} if a new table was made or {@code false} otherwise.
      */
     public static boolean attemptCreateTable(@NotNull Connection connection, @NotNull Database database) {
@@ -90,8 +89,7 @@ public class LoadoutDisplayDAO {
                 // Create an index to group by UUIDs
                 try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX holder_uuid_index_loadout_display ON " + TABLE_NAME + " (holder_uuid)")) {
                     preparedStatement.executeUpdate();
-                }
-                catch (SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
                 TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
@@ -100,6 +98,13 @@ public class LoadoutDisplayDAO {
         }
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run in order to save all the {@link LoadoutDisplay}s for the provided {@link LoadoutHolder}.
+     *
+     * @param connection    The {@link Connection} to save on.
+     * @param loadoutHolder The {@link LoadoutHolder} to save {@link LoadoutDisplay}s for.
+     * @return A {@link List} of {@link PreparedStatement}s to be run in order to save all the {@link LoadoutDisplay}s for the provided {@link LoadoutHolder}.
+     */
     @NotNull
     public static List<PreparedStatement> saveAllLoadoutDisplays(@NotNull Connection connection, @NotNull LoadoutHolder loadoutHolder) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
@@ -110,11 +115,28 @@ public class LoadoutDisplayDAO {
         return preparedStatements;
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run in order to save the provided {@link Loadout}'s {@link LoadoutDisplay}.
+     *
+     * @param connection        The connection to save on.
+     * @param loadoutHolderUUID The {@link UUID} of the holder of the loadout.
+     * @param loadout           The {@link Loadout} to save.
+     * @return A {@link List} of {@link PreparedStatement}s to be run in order to save the provided {@link Loadout}'s {@link LoadoutDisplay}.
+     */
     @NotNull
     public static List<PreparedStatement> saveLoadoutDisplay(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, @NotNull Loadout loadout) {
         return loadout.shouldSaveDisplay() ? saveLoadoutDisplay(connection, loadoutHolderUUID, loadout.getLoadoutSlot(), loadout.getDisplay()) : List.of();
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run in order to save the provided {@link LoadoutDisplay}.
+     *
+     * @param connection        The connection to save on.
+     * @param loadoutHolderUUID The {@link UUID} of the holder of the loadout.
+     * @param loadoutSlot       The slot of the {@link Loadout} for the holder.
+     * @param loadoutDisplay    The {@link LoadoutDisplay} to be displayed.
+     * @return A {@link List} of {@link PreparedStatement}s to be run in order to save the provided {@link LoadoutDisplay}.
+     */
     @NotNull
     public static List<PreparedStatement> saveLoadoutDisplay(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, int loadoutSlot, @NotNull LoadoutDisplay loadoutDisplay) {
         List<PreparedStatement> statements = new ArrayList<>();
@@ -126,13 +148,22 @@ public class LoadoutDisplayDAO {
             preparedStatement.setInt(4, loadoutDisplay.getCustomModelData().orElse(0));
             preparedStatement.setString(5, loadoutDisplay.getDisplayName().isPresent() ? loadoutDisplay.getDisplayName().get() : null);
             statements.add(preparedStatement);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return statements;
     }
 
+    /**
+     * Gets a {@link List} of {@link PreparedStatement}s to be run in order to delete the {@link LoadoutDisplay}
+     * belonging to the provided {@link UUID} and {@link Loadout} slot.
+     *
+     * @param connection        The connection to delete on.
+     * @param loadoutHolderUUID The {@link UUID} of the holder of the loadout.
+     * @param loadoutSlot       The slot of the {@link Loadout} for the holder.
+     * @return A {@link List} of {@link PreparedStatement}s to be run in order to delete the {@link LoadoutDisplay}
+     * belonging to the provided {@link UUID} and {@link Loadout} slot.
+     */
     @NotNull
     public static List<PreparedStatement> deleteLoadoutDisplay(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, int loadoutSlot) {
         List<PreparedStatement> statements = new ArrayList<>();
@@ -141,13 +172,21 @@ public class LoadoutDisplayDAO {
             preparedStatement.setString(1, loadoutHolderUUID.toString());
             preparedStatement.setInt(2, loadoutSlot);
             statements.add(preparedStatement);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return statements;
     }
 
+    /**
+     * Gets the {@link LoadoutDisplay} belonging to the provided {@link UUID}.
+     *
+     * @param connection        The {@link Connection} to read from.
+     * @param loadoutHolderUUID The {@link UUID} of the holder of the loadout.
+     * @param loadoutSlot       The slot of the {@link Loadout} for the holder.
+     * @return An {@link Optional} containing the {@link LoadoutDisplay} belonging to the provided {@link UUID}
+     * and {@link Loadout} slot. If there is not a saved display, the optional will be empty.
+     */
     @NotNull
     public static Optional<LoadoutDisplay> getLoadoutDisplay(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, int loadoutSlot) {
         Optional<LoadoutDisplay> loadoutDisplayOptional = Optional.empty();
@@ -163,8 +202,7 @@ public class LoadoutDisplayDAO {
                     loadoutDisplayOptional = Optional.of(new LoadoutDisplay(material, customModelData, displayName));
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return loadoutDisplayOptional;
