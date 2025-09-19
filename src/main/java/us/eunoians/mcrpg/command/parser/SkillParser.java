@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.command.parser;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.incendo.cloud.caption.Caption;
@@ -32,11 +31,17 @@ public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggest
     public @NonNull ArgumentParseResult<@NonNull Skill> parse(@NonNull CommandContext<@NonNull C> commandContext, @NonNull CommandInput commandInput) {
         String input = commandInput.peekString();
         SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
-        NamespacedKey skillKey = new NamespacedKey(McRPG.getInstance(), input);
-
-        if (skillRegistry.registered(skillKey)) {
-            commandInput.readString();
-            return ArgumentParseResult.success(skillRegistry.getRegisteredSkill(skillKey));
+        Optional<McRPGPlayer> playerOptional = commandContext.sender() instanceof Player player ?
+                RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()) : Optional.empty();
+        if (playerOptional.isPresent()) {
+            McRPGPlayer mcRPGPlayer = playerOptional.get();
+            Player player = (Player) commandContext.sender();
+            for(Skill skill : skillRegistry.getRegisteredSkills()) {
+                if (skill.getName(mcRPGPlayer).equalsIgnoreCase(input)) {
+                    commandInput.readString();
+                    return ArgumentParseResult.success(skill);
+                }
+            }
         }
         return ArgumentParseResult.failure(new SkillParseException(input, commandContext));
     }

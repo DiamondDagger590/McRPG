@@ -280,6 +280,14 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_EXAMPLE_BASE_AMOUNT = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER, "example-base-amount"));
     public static final Route EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER, "display-item"));
 
+    private static final String REDEEMABLE_EXPERIENCE_GUI_HEADER = toRoutePath(GUI_HEADER, "redeemable-experience-gui");
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_TITLE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "title"));
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_AMOUNT_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-amount.display-item"));
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_ALL_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-all.display-item"));
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_CUSTOM_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-custom.display-item"));
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_CUSTOM_PROMPT_MESSAGE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-custom.prompt"));
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_INVALID_INPUT = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-custom.invalid-input"));
+
     private static final String ABILITY_HEADER = "ability";
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-still-on-cooldown"));
     public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-no-longer-on-cooldown"));

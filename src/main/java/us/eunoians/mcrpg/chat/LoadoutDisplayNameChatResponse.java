@@ -1,11 +1,11 @@
 package us.eunoians.mcrpg.chat;
 
 import com.diamonddagger590.mccore.chat.ChatResponse;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayHomeGui;
@@ -30,7 +30,7 @@ public class LoadoutDisplayNameChatResponse extends ChatResponse {
 
     @Override
     public long getResponseWaitTime() {
-        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.LOADOUT_DISPLAY_NAME_RESPONSE_TIMEOUT, 10);
+        return RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.LOADOUT_DISPLAY_NAME_RESPONSE_TIMEOUT, 10);
     }
 
     @Override
@@ -38,9 +38,9 @@ public class LoadoutDisplayNameChatResponse extends ChatResponse {
         LoadoutDisplay loadoutDisplay = loadout.getDisplay();
         loadoutDisplay.setDisplayName(playerChatEvent.getMessage());
         Player player = playerChatEvent.getPlayer();
-        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
             LoadoutDisplayHomeGui loadoutDisplayHomeGui = new LoadoutDisplayHomeGui(mcRPGPlayer, loadout);
-            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutDisplayHomeGui);
+            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutDisplayHomeGui);
             player.openInventory(loadoutDisplayHomeGui.getInventory());
         });
     }

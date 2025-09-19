@@ -8,7 +8,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.experiencebank.ExperienceBankGui;
-import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableExperienceGui;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.experience.slot.RedeemableExperienceGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 

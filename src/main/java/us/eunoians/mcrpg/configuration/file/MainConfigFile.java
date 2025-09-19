@@ -88,6 +88,9 @@ public final class MainConfigFile extends ConfigFile {
     // Gameplay
     private static final String LOADOUT_HEADER = toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "loadout");
     public static final Route LOADOUT_DISPLAY_NAME_RESPONSE_TIMEOUT = Route.fromString(toRoutePath(LOADOUT_HEADER, "display-name-response-timeout"));
+    private static final String REDEEMABLE_HEADER = toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "redeemable");
+    public static final Route REDEEMABLE_EXPERIENCE_CUSTOM_AMOUNT_RESPONSE_TIMEOUT = Route.fromString(toRoutePath(REDEEMABLE_HEADER, "custom-experience-amount-response-timeout"));
+    public static final Route REDEEMABLE_LEVELS_CUSTOM_AMOUNT_RESPONSE_TIMEOUT = Route.fromString(toRoutePath(REDEEMABLE_HEADER, "custom-levels-amount-response-timeout"));
 
     public static final Route DISABLE_SKILL_BOOKS_IN_END = Route.fromString(toRoutePath(SKILL_BOOKS_CONFIGURATION_HEADER, "disable-books-in-end"));
     public static final Route EXPERIENCE_UPDATES_ENABLED = Route.fromString(toRoutePath(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "enabled"));

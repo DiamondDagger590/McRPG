@@ -4,10 +4,8 @@ package us.eunoians.mcrpg.gui.loadout.slot.display;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.chat.LoadoutDisplayNameChatResponse;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -35,11 +33,9 @@ public class LoadoutDisplayNameEditSlot implements McRPGSlot {
             player.closeInventory();
             // Notify player to send a response for the new name of the loadout
             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            McRPG mcRPG = McRPG.getInstance();
-            MiniMessage miniMessage = mcRPG.getMiniMessage();
             player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_PROMPT));
             LoadoutDisplayNameChatResponse loadoutDisplayNameChatResponse = new LoadoutDisplayNameChatResponse(player.getUniqueId(), loadout);
-            mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.CHAT_RESPONSE).addPendingResponse(player.getUniqueId(), loadoutDisplayNameChatResponse);
+            RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.CHAT_RESPONSE).addPendingResponse(player.getUniqueId(), loadoutDisplayNameChatResponse);
         });
         return true;
     }
