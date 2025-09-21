@@ -105,6 +105,7 @@ public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribu
                         .getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE));
             }
 
+            @NotNull
             @Override
             public Set<Class<?>> getValidGuiTypes() {
                 return Set.of(AbilityAttributeEditGui.class);

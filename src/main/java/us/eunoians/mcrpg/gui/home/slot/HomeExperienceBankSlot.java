@@ -42,6 +42,7 @@ public class HomeExperienceBankSlot implements McRPGSlot {
                 .addPlaceholders(getPlaceholders(mcRPGPlayer));
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(HomeGui.class);

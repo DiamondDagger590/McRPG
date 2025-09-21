@@ -57,6 +57,7 @@ public class RemoteTransferToggleSlot implements McRPGSlot {
         return builder;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(RemoteTransferGui.class);

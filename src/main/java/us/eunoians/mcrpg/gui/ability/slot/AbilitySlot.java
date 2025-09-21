@@ -97,6 +97,7 @@ public class AbilitySlot implements McRPGSlot {
         return itemBuilder;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(AbilityGui.class);

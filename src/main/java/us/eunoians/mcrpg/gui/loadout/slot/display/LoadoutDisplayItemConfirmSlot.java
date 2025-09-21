@@ -38,6 +38,7 @@ public class LoadoutDisplayItemConfirmSlot implements McRPGSlot {
                 .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_DISPLAY_ITEM_INPUT_GUI_CONFIRM_ITEM_EDIT_DISPLAY_ITEM));
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutDisplayItemInputGui.class);

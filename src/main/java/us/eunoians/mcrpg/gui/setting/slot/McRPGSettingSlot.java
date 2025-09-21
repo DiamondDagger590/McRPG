@@ -15,6 +15,7 @@ public class McRPGSettingSlot<T extends PlayerSetting> extends PlayerSettingSlot
         super(corePlayer, setting);
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(PlayerSettingGui.class);

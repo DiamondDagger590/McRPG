@@ -46,6 +46,7 @@ public class RedeemExperienceAllSlot implements McRPGSlot {
         return true;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(RedeemableExperienceGui.class);

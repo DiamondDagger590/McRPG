@@ -35,7 +35,7 @@ public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
 
     @NotNull
     @Override
-    protected Inventory getInventoryForPage(int i) {
+    protected Inventory getInventoryForPage(int page) {
         return Bukkit.createInventory(getPlayer(), 54,
                 RegistryAccess.registryAccess()
                         .registry(RegistryKey.MANAGER)
@@ -77,7 +77,7 @@ public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
         List<Skill> sortedSkills = getSortedSkillsForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedSkills.size()) {
-                setSlot(i, new SkillSlot(getCreatingPlayer(), sortedSkills.get(i)));
+                setSlot(i, new SkillSlot(sortedSkills.get(i)));
             } else {
                 removeSlot(i);
             }

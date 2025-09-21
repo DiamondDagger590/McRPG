@@ -41,6 +41,7 @@ public final class RedeemableLevelsSlot implements McRPGSlot {
         return true;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(ExperienceBankGui.class);

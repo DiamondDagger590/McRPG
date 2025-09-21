@@ -36,6 +36,7 @@ public class HomeAbilitiesSlot implements McRPGSlot {
                 .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_ABILITIES_SLOT_DISPLAY_ITEM));
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(HomeGui.class);

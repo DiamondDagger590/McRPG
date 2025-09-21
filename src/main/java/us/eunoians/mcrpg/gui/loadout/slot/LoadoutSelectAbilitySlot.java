@@ -70,6 +70,7 @@ public class LoadoutSelectAbilitySlot implements McRPGSlot {
         return abilityItemBuilder;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutAbilitySelectGui.class);

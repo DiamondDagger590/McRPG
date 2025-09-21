@@ -328,6 +328,7 @@ public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<
                     return remoteTransferCategory.getItemBuilder(mcRPGPlayer);
                 }
 
+                @NotNull
                 @Override
                 public Set<Class<?>> getValidGuiTypes() {
                     return Set.of(RemoteTransferGui.class);

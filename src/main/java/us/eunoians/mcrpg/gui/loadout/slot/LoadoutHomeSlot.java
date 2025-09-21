@@ -42,6 +42,7 @@ public class LoadoutHomeSlot implements McRPGSlot {
         return true;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutGui.class);

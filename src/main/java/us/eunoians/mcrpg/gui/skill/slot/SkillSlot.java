@@ -16,22 +16,10 @@ import java.util.Set;
  */
 public class SkillSlot implements McRPGSlot {
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Skill skill;
 
-    public SkillSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
-        this.mcRPGPlayer = mcRPGPlayer;
+    public SkillSlot(@NotNull Skill skill) {
         this.skill = skill;
-    }
-
-    /**
-     * Gets the {@link McRPGPlayer} creating this slot.
-     *
-     * @return The {@link McRPGPlayer} creating this slot.
-     */
-    @NotNull
-    public McRPGPlayer getMcRPGPlayer() {
-        return mcRPGPlayer;
     }
 
     /**
@@ -55,6 +43,7 @@ public class SkillSlot implements McRPGSlot {
         return skill.getDisplayItemBuilder(mcRPGPlayer);
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(SkillGui.class);

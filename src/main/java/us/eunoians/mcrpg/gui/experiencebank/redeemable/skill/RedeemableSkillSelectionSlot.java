@@ -12,9 +12,11 @@ import java.util.Set;
 public class RedeemableSkillSelectionSlot implements McRPGSlot {
 
     private final Skill skill;
+    private boolean redeemableExperience;
 
-    public RedeemableSkillSelectionSlot(@NotNull Skill skill){
+    public RedeemableSkillSelectionSlot(@NotNull Skill skill, boolean redeemableExperience){
         this.skill = skill;
+        this.redeemableExperience = redeemableExperience;
     }
 
     @NotNull
@@ -28,6 +30,7 @@ public class RedeemableSkillSelectionSlot implements McRPGSlot {
         return false;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(RedeemableSkillSelectionGui.class);

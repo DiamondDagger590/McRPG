@@ -77,6 +77,7 @@ public class LoadoutSelectionSlot implements McRPGSlot {
         return itemBuilder;
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutSelectionGui.class);

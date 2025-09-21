@@ -48,6 +48,7 @@ public class ToggleLoadoutActiveSlot implements McRPGSlot {
                         : LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_INACTIVE_DISPLAY_ITEM));
     }
 
+    @NotNull
     @Override
     public Set<Class<?>> getValidGuiTypes() {
         return Set.of(LoadoutDisplayHomeGui.class);
