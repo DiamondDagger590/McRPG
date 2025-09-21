@@ -24,10 +24,10 @@ import java.util.Set;
  */
 public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
 
-    private static final int NAVIGATION_ROW_START_INDEX = 45;
-    private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
-    private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
-    private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
+    protected static final int NAVIGATION_ROW_START_INDEX = 45;
+    protected static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
+    protected static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
+    protected static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
 
     public SkillGui(@NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPGPlayer);
