@@ -21,7 +21,7 @@ public class RedeemableSkillSelectionGui extends SkillGui {
         List<Skill> sortedSkills = getSortedSkillsForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedSkills.size()) {
-                setSlot(i, new RedeemableSkillSelectionSlot(sortedSkills.get(i)));
+                setSlot(i, new RedeemableSkillSelectionSlot(sortedSkills.get(i), redeemableExperience));
             } else {
                 removeSlot(i);
             }

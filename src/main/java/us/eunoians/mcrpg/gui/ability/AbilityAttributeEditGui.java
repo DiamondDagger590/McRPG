@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -60,7 +61,7 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Clo
             int size = getModifiableAttributes().size();
             this.inventory = Bukkit.createInventory(player, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size)),
                     getCreatingPlayer().getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
-                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.ABILITY_EDIT_GUI_TITLE));
+                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.ABILITY_EDIT_GUI_TITLE, Map.of("ability", ability.getName(getCreatingPlayer()))));
             paintInventory();
         }
     }

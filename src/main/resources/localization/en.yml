@@ -482,6 +482,9 @@ gui:
       display-item:
         material: CHEST
         name: "<gold>Block Filter"
+        lore:
+          - "<gray><gold>Click</gold> to edit what blocks can"
+          - "<gray>and can't be transferred."
   # This GUI allows for players to view the current state of their loadout
   loadout-gui:
     # The title of the gui.
@@ -767,66 +770,58 @@ gui:
           # The material to use for the category-button when displaying this category.
           material: ENDER_CHEST
           # Supports the following placeholders: <remote-transfer-category>
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       nether:
         name: "Nether"
         display-item:
           material: MAGMA_BLOCK
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       caves:
         name: "Caves"
         display-item:
           material: AMETHYST_BLOCK
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       end:
         name: "End"
         display-item:
           material: ENDER_PEARL
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       ocean:
         name: "Ocean"
         display-item:
           material: PRISMARINE
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       ores:
         name: "Ores"
         display-item:
           material: DIAMOND_ORE
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       overworld:
         name: "Overworld"
         display-item:
           material: MOSSY_COBBLESTONE
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
       terracotta:
         name: "Terracotta"
         display-item:
           material: TERRACOTTA
-          display-item:
-            name: "<red>Click to change sort category."
-            lore:
-              - "<gray>Current Category: <gold><remote-transfer-category>"
+          name: "<red>Click to change sort category."
+          lore:
+            - "<gray>Current Category: <gold><remote-transfer-category>"
     # What button should be used to display an option for a category
     # This will be all the allowed items configured in the mining_configuration.yml
     # The display item will be the item configured over there with no edits to the name.
@@ -835,6 +830,9 @@ gui:
       option-enabled:
         # Supports the following placeholders: <remote-transfer-category>
         display-item:
+          name: '<gold><item-type>'
+          settings:
+            glowing: true
           lore:
             - '<gray>Click to toggle the filter state for this item.'
             - '<gray>Item is currently <green>enabled</green>.'
@@ -843,6 +841,7 @@ gui:
       option-disabled:
         # Supports the following placeholders: <remote-transfer-category>
         display-item:
+          name: '<gold><item-type>'
           lore:
             - '<gray>Click to toggle the filter state for this item.'
             - '<gray>Item is currently <red>disabled</red>.'
@@ -917,6 +916,18 @@ gui:
           - "<gray>Example: If you're <gold>50%</gold> towards next level,"
           - "<gray>your exp gain will be <gold>x<rested-experience-usage-rate></gold> until you level up."
           - '<gray>This will consume <gold>0.5</gold> from your banked levels'
+  redeemable-experience-skill-select-gui:
+    title: "<gray>Select Skill"
+    lore:
+      - '<gray><gold>Click</gold> to spend redeemable experience into this skill'
+  redeemable-experience-gui:
+    title: "<gray>Redeeming Experience into <skill>"
+    redeem-amount:
+      display-item:
+        material: GREEN_STAINED_GLASS_PANE
+        lore:
+          -
+
 # Configure ability placeholders, display items and other text/items.
 ability:
   # Configure messages relating to abilities that can be on cooldown

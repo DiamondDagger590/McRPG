@@ -32,12 +32,12 @@ public final class RedeemableExperienceSlot implements McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-        RedeemableExperienceGui redeemableExperienceGui = new RedeemableExperienceGui(mcRPGPlayer);
-        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI)
-                    .trackPlayerGui(player, redeemableExperienceGui);
-            player.openInventory(redeemableExperienceGui.getInventory());
-        });
+//        RedeemableExperienceGui redeemableExperienceGui = new RedeemableExperienceGui(mcRPGPlayer, );
+//        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
+//            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI)
+//                    .trackPlayerGui(player, redeemableExperienceGui);
+//            player.openInventory(redeemableExperienceGui.getInventory());
+//        });
         return true;
     }
 

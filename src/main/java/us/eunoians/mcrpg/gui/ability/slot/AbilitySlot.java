@@ -94,6 +94,11 @@ public class AbilitySlot implements McRPGSlot {
         var loreAppender = AbilityLoreAppender.getAppendLore(mcRPGPlayer, ability);
         itemBuilder.addDisplayLore(loreAppender.getLeft());
         itemBuilder.addPlaceholders(loreAppender.getRight());
+        SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
+        skillHolder.getAbilityData(ability).flatMap(abilityData -> abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY))
+                .ifPresent(abilityToggledOffAttribute -> {
+                    itemBuilder.setEnchantGlint(!((AbilityToggledOffAttribute) abilityToggledOffAttribute).getContent());
+                });
         return itemBuilder;
     }
 

@@ -13,6 +13,8 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
+
 public class RemoteTransferCategory {
 
     private final String categoryKey;
@@ -49,12 +51,14 @@ public class RemoteTransferCategory {
 
     @NotNull
     public String getName(@NotNull McRPGPlayer player){
-        return player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, Route.addTo(LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORIES_HEADER, categoryKey + ".name"));
+        return player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedMessage(player, Route.fromString(toRoutePath(LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORIES_HEADER, categoryKey, "name")));
     }
 
     @NotNull
     public ItemBuilder getItemBuilder(@NotNull McRPGPlayer player){
-        ItemBuilder itemBuilder = ItemBuilder.from(player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(player, Route.addTo(LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORIES_HEADER, categoryKey + ".display-item")));
+        ItemBuilder itemBuilder = ItemBuilder.from(player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                .getLocalizedSection(player, Route.fromString(toRoutePath(LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORIES_HEADER, categoryKey, "display-item"))));
         itemBuilder.addPlaceholder("remote-transfer-category", getName(player));
         return itemBuilder;
     }

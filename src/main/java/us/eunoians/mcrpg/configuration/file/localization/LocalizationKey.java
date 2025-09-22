@@ -194,7 +194,7 @@ public final class LocalizationKey extends ConfigFile {
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
     public static final Route REMOTE_TRANSFER_GUI_TITLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "title"));
-    public static final Route REMOTE_TRANSFER_GUI_CATEGORIES_HEADER = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "categories"));
+    public static final String REMOTE_TRANSFER_GUI_CATEGORIES_HEADER = toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "categories");
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-enabled.display-item"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-disabled.display-item"));
     private static final String REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER = toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "toggle-entire-category-slot");
@@ -207,10 +207,10 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM = Route.fromString(toRoutePath(LOCATION_ATTRIBUTE_HEADER, "no-location-saved.display-item"));
     public static final Route LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM = Route.fromString(toRoutePath(LOCATION_ATTRIBUTE_HEADER, "location-saved.display-item"));
     public static final Route TIER_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "tier-attribute.display-item"));
-    private static final String TOGGLED_OFF_HEADER = toRoutePath(ABILITY_EDIT_GUI_HEADER, "toggle-off-attribute");
+    private static final String TOGGLED_OFF_HEADER = toRoutePath(ABILITY_EDIT_GUI_HEADER, "toggled-off-attribute");
     public static final Route ABILITY_TOGGLED_OFF_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(TOGGLED_OFF_HEADER, "toggled-off.display-item"));
     public static final Route ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(TOGGLED_OFF_HEADER, "toggled-on.display-item"));
-    public static final Route REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "remote-transfer-block-toggle-attribute"));
+    public static final Route REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "remote-transfer-block-toggle-attribute.display-item"));
 
     private static final String LOADOUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-gui");
     public static final Route LOADOUT_GUI_TITLE =  Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "title"));

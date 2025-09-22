@@ -16,9 +16,11 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.RemoteTransferGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -49,9 +51,12 @@ public class RemoteTransferToggleSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        McRPGLocalizationManager mcRPGLocalizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         boolean materialDisabled = isItemDisallowed();
-        ItemBuilder builder = customItemWrapper.itemBuilder();
         Route localizationRoute = materialDisabled ? LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM : LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM;
+        ItemBuilder itemBuilder = ItemBuilder.from(mcRPGLocalizationManager.getLocalizedSection(mcRPGPlayer, localizationRoute));
+        customItemWrapper.customItem().ifPresentOrElse(itemBuilder::withCustomItem, () -> itemBuilder.withType(Objects.requireNonNull(customItemWrapper.material().get().asItemType())));
+        ItemBuilder builder = customItemWrapper.itemBuilder();
         builder.withDisplayLore(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessages(mcRPGPlayer, Route.addTo(localizationRoute, "lore")));
         builder.addPlaceholder("remote-transfer-category", remoteTransferCategory.getName(mcRPGPlayer));
         return builder;
