@@ -8,7 +8,9 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.experiencebank.ExperienceBankGui;
-import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableLevelsGui;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableType;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.levels.RedeemableLevelsGui;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.skill.RedeemableSkillSelectionGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -17,7 +19,7 @@ import java.util.Set;
 
 /**
  * This slot is used by the {@link ExperienceBankGui} in order to open a
- * {@link us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableLevelsGui}.
+ * {@link RedeemableLevelsGui}.
  */
 public final class RedeemableLevelsSlot implements McRPGSlot {
 
@@ -32,11 +34,11 @@ public final class RedeemableLevelsSlot implements McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-        RedeemableLevelsGui redeemableLevelsGui = new RedeemableLevelsGui(mcRPGPlayer);
+        RedeemableSkillSelectionGui redeemableSkillSelectionGui = new RedeemableSkillSelectionGui(mcRPGPlayer, RedeemableType.LEVELS);
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI)
-                    .trackPlayerGui(player, redeemableLevelsGui);
-            player.openInventory(redeemableLevelsGui.getInventory());
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.GUI).trackPlayerGui(player, redeemableSkillSelectionGui);
+            player.openInventory(redeemableSkillSelectionGui.getInventory());
         });
         return true;
     }

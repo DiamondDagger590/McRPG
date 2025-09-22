@@ -16,24 +16,24 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 /**
- * This response allows a player to provide how much rested experience
+ * This response allows a player to provide how many rested levels
  * they want to redeem in a given {@link Skill}.
  */
-public class RedeemableExperienceChatResponse extends ChatResponse {
+public class RedeemableLevelsChatResponse extends ChatResponse {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Skill skill;
 
-    public RedeemableExperienceChatResponse(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
+    public RedeemableLevelsChatResponse(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
         super(mcRPGPlayer.getUUID());
         this.mcRPGPlayer = mcRPGPlayer;
         this.skill = skill;
     }
 
     /**
-     * Gets the {@link Skill} that's having experience redeemed into.
+     * Gets the {@link Skill} that's having levels redeemed into.
      *
-     * @return The {@link Skill} that's having experience redeemed into.
+     * @return The {@link Skill} that's levels experience redeemed into.
      */
     @NotNull
     public Skill getSkill() {
@@ -43,7 +43,7 @@ public class RedeemableExperienceChatResponse extends ChatResponse {
     @Override
     public long getResponseWaitTime() {
         return RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.REDEEMABLE_EXPERIENCE_CUSTOM_AMOUNT_RESPONSE_TIMEOUT, 10);
+                .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.REDEEMABLE_LEVELS_CUSTOM_AMOUNT_RESPONSE_TIMEOUT, 10);
     }
 
     @Override
@@ -53,9 +53,9 @@ public class RedeemableExperienceChatResponse extends ChatResponse {
         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         if (Methods.isInt(message)) {
             int amount = Integer.parseInt(message);
-            player.performCommand("mcrpg redeem experience " + skill.getName(mcRPGPlayer) + " " + amount);
+            player.performCommand("mcrpg redeem levels " + skill.getName(mcRPGPlayer) + " " + amount);
         } else {
-            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_REDEEM_INVALID_INPUT));
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_GUI_REDEEM_INVALID_INPUT));
         }
     }
 

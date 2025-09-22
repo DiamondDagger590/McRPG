@@ -1,33 +1,52 @@
 package us.eunoians.mcrpg.gui.experiencebank.redeemable.skill;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.gui.Gui;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableType;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.levels.RedeemableLevelsGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.Set;
 
+/**
+ * This slot is used in the {@link RedeemableSkillSelectionGui} to
+ * allow players to choose a skill to redeem experience or levels into.
+ * <p>
+ * Clicking this slot will open the {@link RedeemableLevelsGui}
+ * or the {@link us.eunoians.mcrpg.gui.experiencebank.redeemable.experience.RedeemableExperienceGui}.
+ */
 public class RedeemableSkillSelectionSlot implements McRPGSlot {
 
     private final Skill skill;
-    private boolean redeemableExperience;
+    private final RedeemableType redeemableType;
 
-    public RedeemableSkillSelectionSlot(@NotNull Skill skill, boolean redeemableExperience){
+    public RedeemableSkillSelectionSlot(@NotNull Skill skill, @NotNull RedeemableType redeemableType) {
         this.skill = skill;
-        this.redeemableExperience = redeemableExperience;
+        this.redeemableType = redeemableType;
     }
 
     @NotNull
     @Override
-    public ItemBuilder getItem(@NotNull McRPGPlayer corePlayer) {
-        return McRPGSlot.super.getItem(corePlayer);
+    public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        return skill.getDisplayItemBuilder(mcRPGPlayer);
     }
 
     @Override
-    public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
-        return false;
+    public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
+            Gui<McRPGPlayer> gui = redeemableType.createGui(mcRPGPlayer, skill);
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.GUI).trackPlayerGui(player, gui);
+            player.openInventory(gui.getInventory());
+        });
+        return true;
     }
 
     @NotNull

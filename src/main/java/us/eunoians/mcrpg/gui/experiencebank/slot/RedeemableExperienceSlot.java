@@ -8,7 +8,9 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.experiencebank.ExperienceBankGui;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableType;
 import us.eunoians.mcrpg.gui.experiencebank.redeemable.experience.RedeemableExperienceGui;
+import us.eunoians.mcrpg.gui.experiencebank.redeemable.skill.RedeemableSkillSelectionGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -32,12 +34,12 @@ public final class RedeemableExperienceSlot implements McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-//        RedeemableExperienceGui redeemableExperienceGui = new RedeemableExperienceGui(mcRPGPlayer, );
-//        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-//            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI)
-//                    .trackPlayerGui(player, redeemableExperienceGui);
-//            player.openInventory(redeemableExperienceGui.getInventory());
-//        });
+        RedeemableSkillSelectionGui redeemableSkillSelectionGui = new RedeemableSkillSelectionGui(mcRPGPlayer, RedeemableType.EXPERIENCE);
+        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
+            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.GUI).trackPlayerGui(player, redeemableSkillSelectionGui);
+            player.openInventory(redeemableSkillSelectionGui.getInventory());
+        });
         return true;
     }
 
