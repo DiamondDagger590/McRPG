@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.command.parser;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.incendo.cloud.caption.Caption;
 import org.incendo.cloud.caption.CaptionVariable;
 import org.incendo.cloud.context.CommandContext;
@@ -12,6 +12,7 @@ import org.incendo.cloud.parser.ArgumentParseResult;
 import org.incendo.cloud.parser.ArgumentParser;
 import org.incendo.cloud.parser.ParserDescriptor;
 import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -21,21 +22,20 @@ import us.eunoians.mcrpg.skill.SkillRegistry;
 
 import java.util.Optional;
 
-public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggestionProvider.Strings<C> {
+public class SkillParser implements ArgumentParser<CommandSourceStack, Skill>, BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
-    public static <C> @NonNull ParserDescriptor<C, Skill> skillParser() {
-        return ParserDescriptor.of(new SkillParser<>(), Skill.class);
+    public static @NotNull ParserDescriptor<CommandSourceStack, Skill> skillParser() {
+        return ParserDescriptor.of(new SkillParser(), Skill.class);
     }
 
     @Override
-    public @NonNull ArgumentParseResult<@NonNull Skill> parse(@NonNull CommandContext<@NonNull C> commandContext, @NonNull CommandInput commandInput) {
+    public @NotNull ArgumentParseResult<Skill> parse(@NotNull CommandContext<CommandSourceStack> commandContext, @NotNull CommandInput commandInput) {
         String input = commandInput.peekString();
         SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
-        Optional<McRPGPlayer> playerOptional = commandContext.sender() instanceof Player player ?
+        Optional<McRPGPlayer> playerOptional = commandContext.sender().getSender() instanceof Player player ?
                 RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()) : Optional.empty();
         if (playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
-            Player player = (Player) commandContext.sender();
             for(Skill skill : skillRegistry.getRegisteredSkills()) {
                 if (skill.getName(mcRPGPlayer).equalsIgnoreCase(input)) {
                     commandInput.readString();
@@ -47,11 +47,11 @@ public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggest
     }
 
     @Override
-    public @NonNull Iterable<@NonNull String> stringSuggestions(@NonNull CommandContext<C> commandContext, @NonNull CommandInput input) {
-        Optional<McRPGPlayer> playerOptional = commandContext.sender() instanceof Player player ?
+    public @NotNull Iterable<String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> commandContext, @NotNull CommandInput input) {
+        Optional<McRPGPlayer> playerOptional = commandContext.sender().getSender() instanceof Player player ?
                 RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()) : Optional.empty();
         return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkills().stream()
-                .map(skill -> playerOptional.isPresent() ? skill.getName(playerOptional.get()) : skill.getName())
+                .map(skill -> playerOptional.map(skill::getName).orElseGet(skill::getName))
                 .map(String::toLowerCase)
                 .toList();
     }
@@ -66,10 +66,7 @@ public class SkillParser<C> implements ArgumentParser<C, Skill>, BlockingSuggest
          * @param input   String input
          * @param context Command context
          */
-        public SkillParseException(
-                final @NonNull String input,
-                final @NonNull CommandContext<?> context
-        ) {
+        public SkillParseException(final @NotNull String input, final @NotNull CommandContext<?> context) {
             super(
                     SkillParser.class,
                     context,

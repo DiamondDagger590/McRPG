@@ -228,6 +228,8 @@ public class SkillHolder extends LoadoutHolder {
         public int addExperience(int experience) {
             if (currentLevel >= skill.getMaxLevel()) {
                 return experience;
+            } else if (experience <= 0) {
+                return 0;
             }
             SkillGainExpEvent skillGainExpEvent = new SkillGainExpEvent(getSkillHolder(), getSkillKey(), Math.max(0, experience));
             Bukkit.getPluginManager().callEvent(skillGainExpEvent);
@@ -288,6 +290,9 @@ public class SkillHolder extends LoadoutHolder {
          * @return The amount of levels that were actually added (Amount may differ based on event results/max level)
          */
         public int addLevels(int levels, boolean resetExpOnLevelUp) {
+            if (levels <= 0) {
+                return 0;
+            }
             int amountOfLevelups = 0;
             levels = Math.min(levels, skill.getMaxLevel() - getCurrentLevel());
             SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), levels);
@@ -308,6 +313,9 @@ public class SkillHolder extends LoadoutHolder {
             return amountOfLevelups;
         }
 
+        /**
+         * Resets this skill back to level 0.
+         */
         public void resetSkill() {
             currentExperience = 0;
             currentLevel = 0;
@@ -356,6 +364,7 @@ public class SkillHolder extends LoadoutHolder {
                 // If there isn't enough experience for a full level, do a partial one.
                 else {
                     experienceLeftToLevel = experienceToLevel - remainingExperienceToConsume;
+                    remainingExperienceToConsume = 0;
                     break;
                 }
                 skillParser.setVariable("skill_level", currentLevel + amountOfLevelups);

@@ -42,7 +42,7 @@ public class RedeemExperienceAmountSlot implements McRPGSlot {
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            player.performCommand("mcrpg redeem experience " + skill.getName(mcRPGPlayer)+ " " + amountToSpend);
+            player.performCommand("mcrpg redeem experience " + skill.getName(mcRPGPlayer)+ " " + Math.min(amountToSpend, mcRPGPlayer.getExperienceExtras().getRedeemableExperience()));
             player.closeInventory();
         });
         return true;

@@ -83,7 +83,8 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
         assertEquals(1000, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
     }
 
-    @DisplayName("Given enough redeemable experience to pass the max level, when redeeming experience, then excess experience is refunded after reaching max level")
+    @DisplayName("Given enough redeemable experience to pass the max level, when redeeming experience, then excess experience is" +
+            " refunded after reaching max level")
     @Test
     public void redeemExperience_refundsUnusedExperience_whenMaxLevelReached(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
@@ -106,8 +107,8 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
         assertEquals(950, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
     }
 
-    @DisplayName("Given insufficient redeemable experience to reach the next level, when redeeming experience, then all redeemable " +
-            "experience is consumed and progress increases without leveling up")
+    @DisplayName("Given insufficient redeemable experience to reach the next level, when redeeming experience, then all redeemable "
+            + "experience is consumed and progress increases without leveling up")
     @Test
     public void redeemExperience_consumesAllExperience_whenMaxLevelNotReached(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
@@ -128,5 +129,28 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
         assertEquals(25, skillHolderData.getCurrentExperience());
         assertEquals(1, skillHolderData.getCurrentLevel());
         assertEquals(0, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
+    }
+
+    @DisplayName("Given a high max level and non-linear cost, when redeeming five hundred experience, then it spends the full request, "
+            + "levels up twice, and carries over one hundred one experience into the next level")
+    @Test
+    public void redeemExperience_consumesFullExperience_whenLevelingPartialLevel(@NotNull McRPGPlayer mcRPGPlayer) {
+        PlayerMock player = addPlayerToServer(mcRPGPlayer);
+        when(skill.getMaxLevel()).thenReturn(1000);
+        when(skill.getLevelUpEquation()).thenReturn(new Parser("200+(0.17*(skill_level^1.669))"));
+        mcRPGPlayer.getExperienceExtras().setRedeemableExperience(1000);
+        mcRPGPlayer.asSkillHolder().addSkillHolderData(skill);
+        SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
+
+        Component message = mcRPG.getMiniMessage().deserialize("You redeemed experience!");
+        when(localizationManager.getLocalizedMessageAsComponent(eq(player), eq(LocalizationKey.REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE), any())).thenReturn(message);
+        assertEquals(0, skillHolderData.getCurrentExperience());
+        assertEquals(1, skillHolderData.getCurrentLevel());
+        assertEquals(1000, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
+        RedeemExperienceCommand.redeemExperience(mcRPGPlayer, skill, 500);
+        assertEquals(message, player.nextComponentMessage());
+        assertEquals(101, skillHolderData.getCurrentExperience());
+        assertEquals(3, skillHolderData.getCurrentLevel());
+        assertEquals(500, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
     }
 }

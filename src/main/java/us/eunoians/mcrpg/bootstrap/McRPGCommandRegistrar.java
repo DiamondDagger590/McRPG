@@ -9,8 +9,10 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.processors.cache.SimpleCache;
+import org.incendo.cloud.processors.confirmation.ConfirmationContext;
 import org.incendo.cloud.processors.confirmation.ConfirmationManager;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -105,7 +107,13 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         CoreCommandManager coreCommandManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND);
         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         ConfirmationManager<CommandSourceStack> confirmationManager = ConfirmationManager.confirmationManager(builder ->
-                builder.cache(SimpleCache.of())
+                builder.cache(SimpleCache.<Object, ConfirmationContext<CommandSourceStack>>of().keyExtractingView(commandSourceStack -> {
+                            if (commandSourceStack.getSender() instanceof Player player) {
+                                return player.getUniqueId();
+                            } else {
+                                return "CONSOLE: " + commandSourceStack.getSender().getName();
+                            }
+                        }))
                         .noPendingCommandNotifier(sender -> sender.getSender()
                                 .sendMessage(localizationManager.getLocalizedMessageAsComponent(sender.getSender(), LocalizationKey.NO_PENDING_CONFIRMATION_COMMANDS)))
                         .confirmationRequiredNotifier((sender, ctx) -> sender.getSender()
@@ -113,6 +121,6 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
                         .expiration(Duration.ofSeconds(15)));
         CommandManager<CommandSourceStack> commandManager = coreCommandManager.getCommandManager();
         commandManager.registerCommandPostProcessor(confirmationManager.createPostprocessor());
-        commandManager.commandBuilder("mcrpg").literal("confirm").handler(confirmationManager.createExecutionHandler());
+        commandManager.command(commandManager.commandBuilder("mcrpg").literal("confirm").handler(confirmationManager.createExecutionHandler()));
     }
 }

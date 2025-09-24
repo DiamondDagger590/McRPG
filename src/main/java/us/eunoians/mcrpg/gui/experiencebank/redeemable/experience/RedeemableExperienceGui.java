@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.gui.experiencebank.redeemable.experience.slot.RedeemExp
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -55,7 +56,7 @@ public class RedeemableExperienceGui extends BaseGui<McRPGPlayer> implements Fil
                     RegistryAccess.registryAccess()
                             .registry(RegistryKey.MANAGER)
                             .manager(McRPGManagerKey.LOCALIZATION)
-                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_TITLE));
+                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_TITLE, Map.of("skill", skill.getName(getCreatingPlayer()))));
             paintInventory();
         }
     }

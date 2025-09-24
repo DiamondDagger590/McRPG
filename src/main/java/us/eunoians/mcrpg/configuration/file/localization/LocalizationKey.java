@@ -280,6 +280,10 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_EXAMPLE_BASE_AMOUNT = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER, "example-base-amount"));
     public static final Route EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_HEADER, "display-item"));
 
+    private static final String REDEEMABLE_SKILL_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "redeemable-skill-select-gui");
+    public static final Route REDEEMABLE_SKILL_SELECT_GUI_TITLE = Route.fromString(toRoutePath(REDEEMABLE_SKILL_SELECT_GUI_HEADER, "title"));
+    public static final Route REDEEMABLE_SKILL_SELECT_GUI_LORE = Route.fromString(toRoutePath(REDEEMABLE_SKILL_SELECT_GUI_HEADER, "lore-to-append"));
+
     private static final String REDEEMABLE_EXPERIENCE_GUI_HEADER = toRoutePath(GUI_HEADER, "redeemable-experience-gui");
     public static final Route REDEEMABLE_EXPERIENCE_GUI_TITLE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "title"));
     public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_AMOUNT_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-amount.display-item"));

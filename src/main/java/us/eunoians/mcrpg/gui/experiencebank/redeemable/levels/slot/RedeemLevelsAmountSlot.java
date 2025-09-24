@@ -42,7 +42,7 @@ public class RedeemLevelsAmountSlot implements McRPGSlot {
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-            player.performCommand("mcrpg redeem levels " + skill.getName(mcRPGPlayer)+ " " + amountToSpend);
+            player.performCommand("mcrpg redeem levels " + skill.getName(mcRPGPlayer)+ " " + Math.min(amountToSpend, mcRPGPlayer.getExperienceExtras().getRedeemableLevels()));
             player.closeInventory();
         });
         return true;

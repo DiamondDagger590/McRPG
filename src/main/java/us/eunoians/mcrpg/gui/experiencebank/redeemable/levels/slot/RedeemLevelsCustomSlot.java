@@ -48,7 +48,7 @@ public class RedeemLevelsCustomSlot implements McRPGSlot {
             player.closeInventory();
             // Prompt the player for a response
             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_GUI_REDEEM_CUSTOM_PROMPT_MESSAGE));
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_GUI_REDEEM_CUSTOM_PROMPT_MESSAGE, getPlaceholders(mcRPGPlayer)));
             // Start the response
             RedeemableLevelsChatResponse redeemableLevelsChatResponse = new RedeemableLevelsChatResponse(mcRPGPlayer, skill);
             RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.CHAT_RESPONSE).addPendingResponse(player.getUniqueId(), redeemableLevelsChatResponse);

@@ -1,9 +1,15 @@
 package us.eunoians.mcrpg.gui.experiencebank.redeemable.skill;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.Bukkit;
+import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableType;
 import us.eunoians.mcrpg.gui.skill.SkillGui;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.List;
@@ -18,6 +24,16 @@ public class RedeemableSkillSelectionGui extends SkillGui {
     public RedeemableSkillSelectionGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull RedeemableType redeemableType) {
         super(mcRPGPlayer);
         this.redeemableType = redeemableType;
+    }
+
+    @NotNull
+    @Override
+    protected Inventory getInventoryForPage(int page) {
+        return Bukkit.createInventory(getPlayer(), 54,
+                RegistryAccess.registryAccess()
+                        .registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.REDEEMABLE_SKILL_SELECT_GUI_TITLE));
     }
 
     @Override

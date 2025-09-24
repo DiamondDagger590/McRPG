@@ -2,10 +2,13 @@ package us.eunoians.mcrpg.gui.experiencebank.redeemable.skill;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.Gui;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import net.kyori.adventure.text.Component;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.experiencebank.redeemable.RedeemableType;
 import us.eunoians.mcrpg.gui.experiencebank.redeemable.levels.RedeemableLevelsGui;
@@ -13,6 +16,7 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,7 +39,13 @@ public class RedeemableSkillSelectionSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return skill.getDisplayItemBuilder(mcRPGPlayer);
+        ItemBuilder itemBuilder = skill.getDisplayItemBuilder(mcRPGPlayer);
+        mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
+            List<Component> appendedLore = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessageAsComponents(player, LocalizationKey.REDEEMABLE_SKILL_SELECT_GUI_LORE);
+            itemBuilder.addDisplayLoreComponent(appendedLore);
+        });
+        return itemBuilder;
     }
 
     @Override

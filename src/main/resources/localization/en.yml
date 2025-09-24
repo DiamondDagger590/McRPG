@@ -866,7 +866,7 @@ gui:
   # such as rested, boosted, redeemable, etc.
   experience-bank-gui:
     # What should the displayed title of this GUI be
-    title: '<gold>Experience Bank'
+    title: '<black>Experience Bank'
     # This slot allows players to open the GUI for redeeming redeemable experience
     redeemable-experience-slot:
       display-item:
@@ -916,18 +916,61 @@ gui:
           - "<gray>Example: If you're <gold>50%</gold> towards next level,"
           - "<gray>your exp gain will be <gold>x<rested-experience-usage-rate></gold> until you level up."
           - '<gray>This will consume <gold>0.5</gold> from your banked levels'
-  redeemable-experience-skill-select-gui:
-    title: "<gray>Select Skill"
-    lore:
-      - '<gray><gold>Click</gold> to spend redeemable experience into this skill'
+  redeemable-skill-select-gui:
+    title: "<black>Select Skill to Redeem Into"
+    lore-to-append:
+      - ''
+      - '<gray><gold>Click</gold> to spend your redeemable resources into this skill.'
   redeemable-experience-gui:
-    title: "<gray>Redeeming Experience into <skill>"
+    title: "<black>Redeeming Experience into <skill>"
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
+        name: '<gold>Redeem <redeemable-experience-to-spend> Experience'
         lore:
-          -
-
+          - '<gray><gold>Click</gold> to redeem <gold><redeemable-experience-to-spend></gold> experience'
+          - '<gray>into <gold><skill></gold>.'
+    redeem-all:
+      display-item:
+        material: PURPLE_STAINED_GLASS_PANE
+        name: '<gold>Redeem All Experience'
+        lore:
+          - '<gray><gold>Click</gold> to redeem all of your redeemable'
+          - '<gray>experience into <gold><skill></gold>.'
+    redeem-custom:
+      display-item:
+        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        name: '<gold>Input Redeem Amount'
+        lore:
+          - '<gray><gold>Click</gold> to type in chat the amount of'
+          - '<gray>redeemable experience you want to redeem into <gold><skill></gold>.'
+      prompt: '<gray>Please type in chat how much rested experience you would like to redeem. You have <gold><redeemable-experience></gold> redeemable experience to spend.'
+      invalid-input: '<red>The input provided not a valid number. Please try redeeming again.'
+  redeemable-levels-gui:
+    title: "<black>Redeeming Levels into <skill>"
+    redeem-amount:
+      display-item:
+        material: GREEN_STAINED_GLASS_PANE
+        name: '<gold>Redeem <redeemable-levels-to-spend> Levels'
+        lore:
+          - '<gray><gold>Click</gold> to redeem <gold><redeemable-levels-to-spend></gold> levels'
+          - '<gray>into <gold><skill></gold>.'
+    redeem-all:
+      display-item:
+        material: PURPLE_STAINED_GLASS_PANE
+        name: '<gold>Redeem All Levels'
+        lore:
+          - '<gray><gold>Click</gold> to redeem all of your redeemable'
+          - '<gray>levels into <gold><skill></gold>.'
+    redeem-custom:
+      display-item:
+        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        name: '<gold>Input Redeem Amount'
+        lore:
+          - '<gray><gold>Click</gold> to type in chat the amount of'
+          - '<gray>redeemable levels you want to redeem into <gold><skill></gold>.'
+      prompt: '<gray>Please type in chat how many rested levels you would like to redeem. You have <gold><redeemable-experience></gold> redeemable levels to spend.'
+      invalid-input: '<red>The input provided not a valid number. Please try redeeming again.'
 # Configure ability placeholders, display items and other text/items.
 ability:
   # Configure messages relating to abilities that can be on cooldown

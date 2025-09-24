@@ -160,6 +160,9 @@ configuration:
       max-loadout-amount: 3
       max-loadout-size: 15
       loadout-display-name-response-timeout: 10
+    redeemable:
+      custom-experience-amount-response-timeout: 10
+      custom-levels-amount-response-timeout: 10
     # If enabled, players will be required to have an empty off hand in order to ready their abilities
     require-empty-off-hand-to-ready: false
     # If enabled, then a player will not be able to gain experience past a certain level.
