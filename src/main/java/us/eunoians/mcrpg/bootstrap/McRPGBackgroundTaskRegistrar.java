@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.experience.RestedExperienceAccumulationTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSafeZoneCheckTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSaveTask;
+import us.eunoians.mcrpg.task.player.PlayerActionBarTask;
 
 import java.util.Set;
 
@@ -43,6 +44,8 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     double frequency = yamlDocument.getDouble(route);
                     return new McRPGPlayerSafeZoneCheckTask(plugin, frequency, frequency);
                 }, false);
+        PlayerActionBarTask playerActionBarTask = new PlayerActionBarTask(plugin);
+        playerActionBarTask.runTask();
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
                 .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask));
     }
