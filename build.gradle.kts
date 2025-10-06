@@ -4,8 +4,11 @@ plugins {
     java
     `java-library`
     `maven-publish`
-    id("io.freefair.lombok") version "6.3.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.gradleup.shadow") version "9.0.0"
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 buildscript {
@@ -23,7 +26,7 @@ apply {
 }
 
 //RECODE.RELEASE.PATCH.DEVELOPMENT
-version = "1.5.3.15-SNAPSHOT"
+version = "1.5.3.16-SNAPSHOT"
 group = "us.eunoians"
 
 java {
@@ -49,18 +52,21 @@ repositories {
     maven("https://repo.md-5.net/content/repositories/snapshots/")
     maven("https://repo.md-5.net/content/repositories/releases/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots")
+    maven("https://repo.papermc.io/repository/maven-public/")
 
 }
 
 dependencies {
+    compileOnly("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
 
     val intellijAnnotationVersion = "12.0"
     implementation("com.intellij:annotations:$intellijAnnotationVersion")
 
-    val spigotVersion = "1.21.8-R0.1-SNAPSHOT"
-    compileOnly("org.spigotmc:spigot-api:$spigotVersion")
+    val paperVersion = "1.21.9-R0.1-SNAPSHOT"
+    compileOnly("io.papermc.paper:paper-api:$paperVersion")
 
-    val nbtAPIVersion = "2.15.1"
+    val nbtAPIVersion = "2.15.3-SNAPSHOT"
     implementation("de.tr7zw:item-nbt-api:$nbtAPIVersion")
 
     val bstatsVersion = "2.2.1"
@@ -113,7 +119,6 @@ tasks.jar {
 
 tasks {
     named<ShadowJar>("shadowJar") {
-
         //My gheto solution to get the commit hash on the shadow'd jar
 
         // Open git
