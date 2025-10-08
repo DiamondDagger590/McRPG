@@ -28,6 +28,7 @@ public class PlayerActionBarTask extends RepeatableCoreTask {
     private static final String FWD_2 = "÷";
     private static final String BACK_1 = "õ";
     private static final String FWD_1 = "ö";
+    private static final String NEGATIVE_STATUS_EFFECT = "ô";
 
     private static final Component SPACE = Component.text(" ");
     private static final Component WIP_COMPONENT = toGlyph(WIP);
@@ -54,12 +55,27 @@ public class PlayerActionBarTask extends RepeatableCoreTask {
         McRPG mcRPG = McRPG.getInstance();
         MiniMessage miniMessage = mcRPG.getMiniMessage();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendActionBar(Component.text().append(toGlyph(WIP)).append(toGlyph(BACK_16)).append(toGlyph(FWD_2)).append(toGlyph(FWD_1))
-                    .append(toGlyph(RIGHT_CLICK_MOUSE)).append(toGlyph(BACK_1)).append(toGlyph(LEFT_CLICK_MOUSE))
-                    .append(Component.text(" ").font(DEFAULT_FONT))
-                    .append(toGlyph(WIP_S1)).append(toGlyph(BACK_16)).append(toGlyph(FWD_2)).append(toGlyph(FWD_1)).append(toGlyph(RIGHT_CLICK_MOUSE))
-                    .append(toGlyph(BACK_1)).append(toGlyph(RIGHT_CLICK_MOUSE)));
+            Component component = Component.text("")
+                    .append(toGlyph(NEGATIVE_STATUS_EFFECT)).append(toGlyph(FWD_1));
+            component = component.append(toGlyph(FWD_2)).append(toGlyph(FWD_16)).append(toGlyph(FWD_8)).append(toGlyph(FWD_16));
+            for (int i = 0; i < 6; i++) {
+                component = component.append(generateAbilityGlyph());
+            }
+            component = component.append(toGlyph(FWD_2)).append(toGlyph(FWD_16)).append(toGlyph(FWD_8)).append(toGlyph(FWD_16)).append(toGlyph(NEGATIVE_STATUS_EFFECT));
+            player.sendActionBar(component);
+//            player.sendActionBar(Component.text().append(toGlyph(WIP)).append(toGlyph(BACK_16)).append(toGlyph(FWD_2)).append(toGlyph(FWD_1))
+//                    .append(toGlyph(RIGHT_CLICK_MOUSE)).append(toGlyph(BACK_1)).append(toGlyph(LEFT_CLICK_MOUSE))
+//                    .append(Component.text(" ").font(DEFAULT_FONT))
+//                    .append(toGlyph(WIP_S1)).append(toGlyph(BACK_16)).append(toGlyph(FWD_2)).append(toGlyph(FWD_1)).append(toGlyph(RIGHT_CLICK_MOUSE))
+//                    .append(toGlyph(BACK_1)).append(toGlyph(RIGHT_CLICK_MOUSE)));
         }
+    }
+
+    @NotNull
+    private Component generateAbilityGlyph() {
+        return Component.text().append(toGlyph(WIP)).append(toGlyph(BACK_16)).append(toGlyph(FWD_2)).append(toGlyph(FWD_1))
+                .append(toGlyph(RIGHT_CLICK_MOUSE)).append(toGlyph(BACK_1)).append(toGlyph(LEFT_CLICK_MOUSE))
+                .append(Component.text(" ").font(DEFAULT_FONT)).build();
     }
 
     @Override
@@ -72,6 +88,7 @@ public class PlayerActionBarTask extends RepeatableCoreTask {
 
     }
 
+    @NotNull
     private static Component toGlyph(@NotNull String string) {
         return Component.text(string).font(ABILITY_FONT).decoration(TextDecoration.ITALIC, false).shadowColor(ShadowColor.shadowColor(0));
     }

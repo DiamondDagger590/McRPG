@@ -31,7 +31,7 @@ public class PlayerJoinListener implements Listener {
         // TODO add some sort of compatibility wrapper around this
         player.addResourcePack(RESOURCE_PACK_UUID,
                 "https://raw.githubusercontent.com/DiamondDagger590/McRPG-ResourcePack/main/mcprg-resource-pack.zip",
-                BaseEncoding.base16().decode("60650836c414f856fa22f3c1095c81e9c36df55d".toUpperCase()), "This pack is required for ability icons", true);
+                BaseEncoding.base16().decode("5ac429bc48d6bd28f72f4b074a830bd5ca9de9ba".toUpperCase()), "This pack is required for ability icons", true);
     }
 
     @EventHandler
