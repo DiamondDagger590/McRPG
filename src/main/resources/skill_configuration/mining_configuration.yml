@@ -21,6 +21,7 @@ experience:
   allowed-items-for-experience-gain:
     - WOODEN_PICKAXE
     - STONE_PICKAXE
+    - COPPER_PICKAXE
     - GOLDEN_PICKAXE
     - IRON_PICKAXE
     - DIAMOND_PICKAXE

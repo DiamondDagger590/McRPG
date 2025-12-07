@@ -21,6 +21,7 @@ experience:
   allowed-items-for-experience-gain:
     - WOODEN_SWORD
     - STONE_SWORD
+    - COPPER_SWORD
     - GOLDEN_SWORD
     - IRON_SWORD
     - DIAMOND_SWORD

@@ -33,6 +33,7 @@ import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
+import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
@@ -78,6 +79,7 @@ public final class McRPGExpansion extends ContentExpansion {
         skillContent.addContent(new Swords(mcRPG));
         skillContent.addContent(new Mining(mcRPG));
         skillContent.addContent(new WoodCutting(mcRPG));
+        skillContent.addContent(new Herbalism(mcRPG));
         return skillContent;
     }
 

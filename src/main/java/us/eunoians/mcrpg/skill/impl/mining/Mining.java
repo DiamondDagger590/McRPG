@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
-import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.impl.McRPGSkill;
@@ -77,7 +77,7 @@ public final class Mining extends McRPGSkill implements ConfigurableSkill, HeldI
         // Cache so we don't constantly rebuild routes (especially if players are spam clicking or smth)
         if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(customItemWrapper)) {
             String materialValue = customItemWrapper.customItem().isPresent() ? customItemWrapper.customItem().get() : customItemWrapper.material().get().toString();
-            MATERIAL_BONUS_ROUTE_MAP.put(customItemWrapper, Route.fromString(toRoutePath(SwordsConfigFile.MATERIAL_MODIFIERS_HEADER, materialValue)));
+            MATERIAL_BONUS_ROUTE_MAP.put(customItemWrapper, Route.fromString(toRoutePath(MiningConfigFile.MATERIAL_MODIFIERS_HEADER, materialValue)));
         }
         YamlDocument miningConfig = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MINING_CONFIG);
         modifier += (miningConfig.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(customItemWrapper), 1.0d));

@@ -15,8 +15,17 @@ import us.eunoians.mcrpg.world.WorldManager;
 
 import java.util.Optional;
 
+/**
+ * This component allows for a {@link us.eunoians.mcrpg.skill.Skill} to gain experience when breaking blocks.
+ */
 public interface OnBlockBreakLevelableComponent extends EventLevelableComponent {
 
+    /**
+     * Checks to see if this component can process the provided {@link Block}.
+     *
+     * @param block The {@link Block} to check.
+     * @return {@code true} if the provided {@link Block} can be processed by this component.
+     */
     boolean affectsBlock(@NotNull Block block);
 
     @Override
@@ -31,8 +40,23 @@ public interface OnBlockBreakLevelableComponent extends EventLevelableComponent 
         return false;
     }
 
+    /**
+     * Gets the amount of experience to award for the provided {@link Block} before any modifiers are applied.
+     *
+     * @param skillHolder The {@link SkillHolder} to get the amount of experience for.
+     * @param block       The {@link Block} to get the base experience amount for.
+     * @return The amount of experience to award for the provided {@link Block} before any modifiers are applied.
+     */
     int getBaseExperienceForBlock(@NotNull SkillHolder skillHolder, @NotNull Block block);
 
+    /**
+     * Gets the amount of {@link Block}s that are going to be broken as a result of the provided block being broken.
+     * <p>
+     * This is typically expected for blocks that can grow vertically such as cacti. To see all supported types, see {@link MultiBlockType}.
+     *
+     * @param block The {@link Block} to get the affected block count from.
+     * @return The amount of {@link Block}s that are going to be broken as a result of the provided block being broken.
+     */
     default int getTotalAffectedBlocks(@NotNull Block block) {
         Optional<MultiBlockType> multiBlockTypeOptional = MultiBlockType.getMultiBlockType(block);
         return multiBlockTypeOptional.map(multiBlockType -> multiBlockType.calculateMultiBlockDrops(block)).orElse(1);

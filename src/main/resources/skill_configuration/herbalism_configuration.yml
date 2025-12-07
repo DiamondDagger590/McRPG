@@ -1,0 +1,81 @@
+config-version: 1
+# Is this skill enabled or not. If disabled, players won't be able to gain experience
+# and this will turn off any abilities belonging to the skill.
+skill-enabled: true
+permissions:
+  restrict-skill-to-permission: false
+  use-permissions-to-unlock-abilities: false
+  use-permissions-to-activate-abilities: false
+# Configure leveling requirements for this skill.
+leveling:
+  # Configure the equation to calculate the player's experience for the next level
+  level-up-equation: '200+(0.17*(skill_level^1.669))'
+  # Configure the maximum level this skill can be
+  maximum-skill-level: 1000
+# Configure experience gain for this skill
+experience:
+  # Configure how much experience gain should be multiplied by based
+  # on what item the player is holding in their main hand. If an item
+  # isn't in this list but is allowed, then the default value of 1.0 is used.
+  #
+  # These modifiers can be either material values such as WOODEN_HOE
+  # or the custom item id for whatever custom item plugin you might be using
+  # if you want to allow custom items.
+  material-modifiers:
+    GOLDEN_HOE: 2.0
+  # Configure what blocks a player can break to gain experience and how
+  # much experience breaking that block will give.
+  #
+  # These sources can be either material values such as ANDESITE
+  # or the custom block id for whatever custom block plugin you might be using
+  # if you want to allow custom blocks.
+  sources:
+  GRASS: 30
+  TALL_GRASS: 45
+  ROSE_BUSH: 100
+  DANDELION: 100
+  POPPY: 100
+  CACTUS: 40
+  SUGAR_CANE: 40
+  VINE: 75
+  POTATOES: 25
+  BROWN_MUSHROOM: 100
+  BROWN_MUSHROOM_BLOCK: 125
+  RED_MUSHROOM: 100
+  RED_MUSHROOM_BLOCK: 125
+  MUSHROOM_STEM: 125
+  MELON: 20
+  PUMPKIN: 20
+  NETHER_WART: 40
+  WHEAT: 25
+  CARROTS: 25
+  PINK_DANDELION: 100
+  ALLIUM: 100
+  PEONY: 100
+  OXEYE_DAISY: 100
+  LILAC: 100
+  ORANGE_TULIP: 100
+  RED_TULIP: 100
+  LILY_PAD: 150
+  LARGE_FERN: 30
+  DEAD_BUSH: 35
+  WHITE_TULIP: 100
+  SUNFLOWER: 100
+  BLUE_ORCHID: 100
+  BEETROOT: 25
+  BEETROOTS: 25
+  AZURE_BLUET: 100
+  SEAGRASS: 10
+  SEA_PICKLE: 20
+  WARPED_FUNGUS: 15
+  WARPED_ROOTS: 15
+  CRIMSON_FUNGUS: 15
+  CRIMSON_ROOTS: 15
+  AZALEA: 15
+  CAVE_VINES: 20
+  CAVE_VINES_PLANT: 20
+  SMALL_DRIPLEAF: 20
+  BIG_DRIPLEAF: 30
+  BIG_DRIPLEAF_STEM: 30
+  GLOW_LICHEN: 20
+  MOSS_BLOCK: 15

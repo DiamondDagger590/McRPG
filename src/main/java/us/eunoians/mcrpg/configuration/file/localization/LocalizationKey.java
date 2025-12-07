@@ -154,6 +154,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route MINING_DISPLAY_ITEM = Route.fromString(toRoutePath(MINING_HEADER, "display-item"));
     private static final String WOODCUTTING_HEADER = toRoutePath(SKILLS_HEADER, "woodcutting");
     public static final Route WOODCUTTING_DISPLAY_ITEM = Route.fromString(toRoutePath(WOODCUTTING_HEADER, "display-item"));
+    private static final String HERBALISM_HEADER = toRoutePath(SKILLS_HEADER, "herbalism");
+    public static final Route HERBALISM_DISPLAY_ITEM = Route.fromString(toRoutePath(HERBALISM_HEADER, "display-item"));
 
     private static final String GUI_HEADER = "gui";
     private static final String COMMON_GUI_HEADER = toRoutePath(GUI_HEADER, "common");

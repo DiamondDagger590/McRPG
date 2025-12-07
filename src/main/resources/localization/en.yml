@@ -1211,6 +1211,18 @@ skills:
         - '<gray>Current Level: <gold><level>'
         - '<gray>Current Experience: <gold><current-experience>'
         - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+  herbalism:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Herbalism'
+      material: DIAMOND_HOE
+      lore:
+        - '<gray>Your expertise in Herbalism grows each time you'
+        - '<gray>harvest crops.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
   woodcutting:
     display-item:
       name: '<red><skill></red>'

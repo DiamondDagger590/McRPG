@@ -59,6 +59,21 @@ public class WorldManager extends Manager<McRPG> {
     }
 
     /**
+     * Updates the state of the provided {@link Block} to mark it as placed or natural.
+     *
+     * This can be overridden by player activity such as breaking or placing blocks. Ensure
+     * the updated value is checked for the same block in the future via {@link #isBlockNatural(Block)} in
+     * case it has since been updated.
+     * @param block The {@link Block} to update the state for.
+     * @param placed {@code true} if the block should be marked as manually placed, or {@code false} to mark
+     *                           it as natural.
+     */
+    public void setBlockPlacedState(@NotNull Block block, boolean placed) {
+        CustomBlockData customBlockData = new CustomBlockData(block, plugin());
+        customBlockData.set(PLACED_KEY, PersistentDataType.BOOLEAN, placed);
+    }
+
+    /**
      * Checks if the provided {@link World} is currently disabled for McRPG usage.
      *
      * @param world The {@link World} to check.

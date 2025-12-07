@@ -22,6 +22,7 @@ public class WoodcuttingConfigFile extends SkillConfigFile {
 
     public static final Route SKILL_ENABLED = Route.fromString("skill-enabled");
 
+    public static final String MATERIAL_MODIFIERS_HEADER = toRoutePath(EXPERIENCE_HEADER, "material-modifiers");
     public static final String BLOCK_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
     public static final Route ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN = Route.fromString(toRoutePath(EXPERIENCE_HEADER, "allowed-items-for-experience-gain"));
 

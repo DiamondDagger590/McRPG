@@ -15,6 +15,7 @@ experience:
   allowed-items-for-experience-gain:
     - WOODEN_AXE
     - STONE_AXE
+    - COPPER_AXE
     - GOLDEN_AXE
     - IRON_AXE
     - DIAMOND_AXE

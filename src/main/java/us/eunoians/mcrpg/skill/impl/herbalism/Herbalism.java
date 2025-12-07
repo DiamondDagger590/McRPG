@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.skill.impl.woodcutting;
+package us.eunoians.mcrpg.skill.impl.herbalism;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
@@ -12,12 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
-import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
+import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.impl.McRPGSkill;
 import us.eunoians.mcrpg.skill.impl.type.ConfigurableSkill;
 import us.eunoians.mcrpg.skill.impl.type.HeldItemBonusSkill;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,22 +26,34 @@ import java.util.Map;
 import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
 /**
- * A {@link Skill} that focuses on the usage of breaking wood with an axe.
+ * A {@link Skill} that focuses on the usage of farming.
  * <p>
- * Players will gain experience by breaking wood with an axe and unlock abilities focused
- * on increasing the yield/ease of woodcutting.
+ * Players will gain experience by breaking crops and other flora and unlock abilities focused
+ * on increasing the yield/ease of gathering crops.
  */
-public class WoodCutting extends McRPGSkill implements ConfigurableSkill, HeldItemBonusSkill {
+public class Herbalism extends McRPGSkill implements ConfigurableSkill, HeldItemBonusSkill {
 
-    public static final NamespacedKey WOODCUTTING_KEY = new NamespacedKey(McRPG.getInstance(), "woodcutting");
+    public static final NamespacedKey HERBALISM_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "herbalism");
 
     private final Map<CustomItemWrapper, Route> MATERIAL_BONUS_ROUTE_MAP = new HashMap<>();
     private final McRPG mcRPG;
 
-    public WoodCutting(@NotNull McRPG mcRPG) {
-        super(WOODCUTTING_KEY);
+    public Herbalism(@NotNull McRPG mcRPG) {
+        super(HERBALISM_KEY);
         this.mcRPG = mcRPG;
-        addLevelableComponent(new WoodCuttingLevelOnBlockBreakComponent(), BlockBreakEvent.class, 0);
+        addLevelableComponent(new HerbalismLevelOnBlockBreakComponent(), BlockBreakEvent.class, 0);
+    }
+
+    @NotNull
+    @Override
+    public YamlDocument getYamlDocument() {
+        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.HERBALISM_CONFIG);
+    }
+
+    @NotNull
+    @Override
+    public Route getDisplayItemRoute() {
+        return LocalizationKey.HERBALISM_DISPLAY_ITEM;
     }
 
     @NotNull
@@ -52,19 +65,7 @@ public class WoodCutting extends McRPGSkill implements ConfigurableSkill, HeldIt
     @NotNull
     @Override
     public String getDatabaseName() {
-        return "woodcutting";
-    }
-
-    @NotNull
-    @Override
-    public YamlDocument getYamlDocument() {
-        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
-    }
-
-    @NotNull
-    @Override
-    public Route getDisplayItemRoute() {
-        return LocalizationKey.WOODCUTTING_DISPLAY_ITEM;
+        return "herbalism";
     }
 
     @Override
@@ -76,10 +77,10 @@ public class WoodCutting extends McRPGSkill implements ConfigurableSkill, HeldIt
         // Cache so we don't constantly rebuild routes (especially if players are spam clicking or smth)
         if (!MATERIAL_BONUS_ROUTE_MAP.containsKey(customItemWrapper)) {
             String materialValue = customItemWrapper.customItem().isPresent() ? customItemWrapper.customItem().get() : customItemWrapper.material().get().toString();
-            MATERIAL_BONUS_ROUTE_MAP.put(customItemWrapper, Route.fromString(toRoutePath(WoodcuttingConfigFile.MATERIAL_MODIFIERS_HEADER, materialValue)));
+            MATERIAL_BONUS_ROUTE_MAP.put(customItemWrapper, Route.fromString(toRoutePath(HerbalismConfigFile.MATERIAL_MODIFIERS_HEADER, materialValue)));
         }
-        YamlDocument woodcuttingConfig = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.WOODCUTTING_CONFIG);
-        modifier += (woodcuttingConfig.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(customItemWrapper), 1.0d));
+        YamlDocument herbalismConfig = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.HERBALISM_CONFIG);
+        modifier += (herbalismConfig.getDouble(MATERIAL_BONUS_ROUTE_MAP.get(customItemWrapper), 1.0d));
         return modifier;
     }
 }

@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.WoodcuttingConfigFile;
@@ -25,6 +26,7 @@ public enum FileType {
     SWORDS_CONFIG("skill_configuration" + "/" + "swords_configuration.yml", new SwordsConfigFile()),
     MINING_CONFIG("skill_configuration" + "/" + "mining_configuration.yml", new MiningConfigFile()),
     WOODCUTTING_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new WoodcuttingConfigFile()),
+    HERBALISM_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new HerbalismConfigFile()),
     ;
 
     private final String filePath;
