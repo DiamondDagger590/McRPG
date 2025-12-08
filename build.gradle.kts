@@ -67,7 +67,7 @@ dependencies {
     testImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
     testFixturesImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
 
-    val paperVersion = "1.21.8-R0.1-SNAPSHOT"
+    val paperVersion = "1.21.10-R0.1-SNAPSHOT"
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
     testImplementation("io.papermc.paper:paper-api:$paperVersion")
     testFixturesImplementation("io.papermc.paper:paper-api:$paperVersion")

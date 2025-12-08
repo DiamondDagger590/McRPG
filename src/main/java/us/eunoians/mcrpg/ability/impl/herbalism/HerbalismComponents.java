@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl.mining;
+package us.eunoians.mcrpg.ability.impl.herbalism;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -12,20 +12,18 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.ability.component.readyable.RightClickReadyComponent;
+import us.eunoians.mcrpg.ability.impl.mining.MiningComponents;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.Set;
 
-/**
- * Common components shared across all mining abilities.
- */
-public class MiningComponents {
+public class HerbalismComponents {
 
-    public static final MiningReadyComponent MINING_READY_COMPONENT = new MiningReadyComponent();
-    public static final MiningActivateOnReadyComponent MINING_ACTIVATE_ON_READY_COMPONENT = new MiningActivateOnReadyComponent();
-    public static final HoldingPickaxeBreakBlockActivateComponent HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT = new HoldingPickaxeBreakBlockActivateComponent();
-    public static final HoldingPickaxeInteractActivateComponent HOLDING_PICKAXE_INTERACT_ACTIVATE_COMPONENT = new HoldingPickaxeInteractActivateComponent();
+    public static final MiningComponents.MiningReadyComponent HERBALISM_READY_COMPONENT = new MiningComponents.MiningReadyComponent();
+    public static final MiningComponents.MiningActivateOnReadyComponent MINING_ACTIVATE_ON_READY_COMPONENT = new MiningComponents.MiningActivateOnReadyComponent();
+    public static final MiningComponents.HoldingPickaxeBreakBlockActivateComponent HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT = new MiningComponents.HoldingPickaxeBreakBlockActivateComponent();
+    public static final MiningComponents.HoldingPickaxeInteractActivateComponent HOLDING_PICKAXE_INTERACT_ACTIVATE_COMPONENT = new MiningComponents.HoldingPickaxeInteractActivateComponent();
 
     private static final Set<Material> PICKAXES = Set.of(Material.WOODEN_PICKAXE, Material.STONE_PICKAXE, Material.IRON_PICKAXE, Material.COPPER_PICKAXE,
             Material.DIAMOND_PICKAXE, Material.GOLDEN_PICKAXE, Material.NETHERITE_PICKAXE);
@@ -70,7 +68,7 @@ public class MiningComponents {
         }
     }
 
-    private static class MiningActivateOnReadyComponent implements EventActivatableComponent {
+    private static class HerbalismActivateOnReadyComponent implements EventActivatableComponent {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             return abilityHolder.getReadiedAbility().isPresent() && abilityHolder.getReadiedAbility().get() instanceof MiningReadyData;

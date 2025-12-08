@@ -24,11 +24,11 @@ import java.util.Set;
 public class WoodcuttingComponents {
 
     public static final WoodcuttingReadyComponent WOODCUTTING_READY_COMPONENT = new WoodcuttingReadyComponent();
-    public static final WoodcuttingActivateOnReadyComponent MWOODCUTTING_ACTIVATE_ON_READY_COMPONENT = new WoodcuttingActivateOnReadyComponent();
+    public static final WoodcuttingActivateOnReadyComponent WOODCUTTING_ACTIVATE_ON_READY_COMPONENT = new WoodcuttingActivateOnReadyComponent();
     public static final HoldingAxeBreakBlockActivateComponent HOLDING_AXE_BREAK_BLOCK_ACTIVATE_COMPONENT = new HoldingAxeBreakBlockActivateComponent();
     public static final HoldingAxeInteractActivateComponent HOLDING_AXE_INTERACT_ACTIVATE_COMPONENT = new HoldingAxeInteractActivateComponent();
 
-    private static final Set<Material> AXES = Set.of(Material.WOODEN_AXE, Material.STONE_AXE, Material.IRON_AXE,
+    private static final Set<Material> AXES = Set.of(Material.WOODEN_AXE, Material.STONE_AXE, Material.IRON_AXE, Material.COPPER_AXE,
             Material.DIAMOND_AXE, Material.GOLDEN_AXE, Material.NETHERITE_AXE);
 
     private static class WoodcuttingReadyComponent implements RightClickReadyComponent {

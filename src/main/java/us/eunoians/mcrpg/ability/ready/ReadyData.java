@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.ability.ready;
 
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 /**
  * The {@link ReadyData} is not tied to a specific ability, instead represents a possibly shared
@@ -15,16 +17,18 @@ public abstract class ReadyData {
     /**
      * Gets the message to send whenever an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} readies.
      *
+     * @param player The player to get the message for
      * @return The message to send whenever an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} readies.
      */
     @NotNull
-    public abstract String getReadyMessage();
+    public abstract Component getReadyMessage(@NotNull McRPGPlayer player);
 
     /**
      * Gets the message to send whenever an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} unreadies.
      *
+     * @param player The player to get the message for.
      * @return The message to send whenever an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} unreadies.
      */
     @NotNull
-    public abstract String getUnreadyMessage();
+    public abstract Component getUnreadyMessage(@NotNull McRPGPlayer player);
 }

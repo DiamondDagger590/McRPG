@@ -24,7 +24,7 @@ public class SwordsComponents {
     public static final SwordsActivateOnReadyComponent SWORDS_ACTIVATE_ON_READY_COMPONENT = new SwordsActivateOnReadyComponent();
     public static final HoldingSwordActivateComponent HOLDING_SWORD_ACTIVATE_COMPONENT = new HoldingSwordActivateComponent();;
 
-    private static final Set<Material> SWORDS = Set.of(Material.WOODEN_SWORD, Material.STONE_SWORD, Material.IRON_SWORD,
+    private static final Set<Material> SWORDS = Set.of(Material.WOODEN_SWORD, Material.STONE_SWORD, Material.IRON_SWORD, Material.COPPER_SWORD,
             Material.DIAMOND_SWORD, Material.GOLDEN_SWORD, Material.NETHERITE_SWORD);
 
     private static class SwordsReadyComponent implements RightClickReadyComponent {

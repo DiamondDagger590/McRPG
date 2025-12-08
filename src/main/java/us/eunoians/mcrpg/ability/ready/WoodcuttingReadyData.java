@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.ability.ready;
 
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
 /**
@@ -10,13 +12,13 @@ public class WoodcuttingReadyData extends ReadyData {
 
     @NotNull
     @Override
-    public String getReadyMessage() {
-        return "You raise your axe.";
+    public Component getReadyMessage(@NotNull McRPGPlayer player) {
+        return Component.text("<gray>You raise your axe.");
     }
 
     @NotNull
     @Override
-    public String getUnreadyMessage() {
-        return "You lower your axe.";
+    public Component getUnreadyMessage(@NotNull McRPGPlayer player) {
+        return Component.text("<gray>You lower your axe.");
     }
 }
