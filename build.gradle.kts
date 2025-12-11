@@ -94,7 +94,7 @@ dependencies {
     compileOnly("com.github.angeschossen:LandsAPI:$landsVersion")
 
     // Test deps
-    val mockBukkitVersion = "4.76.1"
+    val mockBukkitVersion = "4.98.0"
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
     testFixturesImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
 

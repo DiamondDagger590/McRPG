@@ -26,6 +26,8 @@ public enum AbilityItemPlaceholderKeys {
     HEALING_AMOUNT("healing-amount"),
     EXPERIENCE_DROPPED("experience-dropped"),
     MINIMUM_HUNGER("minimum-hunger"),
+    PULSE_COUNT("pulse-count"),
+
     ;
 
     private final String key;

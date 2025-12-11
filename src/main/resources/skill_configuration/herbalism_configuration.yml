@@ -79,3 +79,22 @@ experience:
   BIG_DRIPLEAF_STEM: 30
   GLOW_LICHEN: 20
   MOSS_BLOCK: 15
+ability-configuration:
+  verdant-surge:
+    enabled: true
+    amount-of-tiers: 5
+    tier-configuration:
+      all-tiers:
+        upgrade-point-cost: 1
+        unlock-level: 1*tier
+        pulses: 1+(.5*tier)
+        pulse-radius: 5+(1.6*tier)
+        cooldown: 30-(3.5*tier)
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER

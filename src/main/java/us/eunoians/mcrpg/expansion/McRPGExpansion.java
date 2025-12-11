@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.impl.herbalism.VerdantSurge;
 import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.ability.impl.mining.OreScanner;
@@ -110,6 +111,9 @@ public final class McRPGExpansion extends ContentExpansion {
         abilityContent.addContent(new HeavySwing(mcRPG));
         abilityContent.addContent(new DryadsGift(mcRPG));
         abilityContent.addContent(new NymphsVitality(mcRPG));
+
+        // Herbalism Abilities
+        abilityContent.addContent(new VerdantSurge(mcRPG));
         return abilityContent;
     }
 

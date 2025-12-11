@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.type.configurable;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
@@ -54,7 +55,17 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
 
     @Override
     default int getUnlockLevelForTier(int tier) {
-        return getYamlDocument().getInt(Route.addTo(getRouteForTier(tier), "unlock-level"));
+        YamlDocument yamlDocument = getYamlDocument();
+        Route tierRoute = Route.addTo(getRouteForTier(tier), "unlock-level");
+        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "unlock-level");
+        Parser parser;
+        if (yamlDocument.contains(tierRoute)) {
+            parser = new Parser(yamlDocument.getString(tierRoute));
+        } else {
+            parser = new Parser(yamlDocument.getString(allTiersRoute));
+        }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     @Override
@@ -62,11 +73,14 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
         YamlDocument yamlDocument = getYamlDocument();
         Route tierRoute = Route.addTo(getRouteForTier(tier), "upgrade-point-cost");
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "upgrade-point-cost");
+        Parser parser;
         if (yamlDocument.contains(tierRoute)) {
-            return yamlDocument.getInt(tierRoute);
+            parser = new Parser(yamlDocument.getString(tierRoute));
         } else {
-            return yamlDocument.getInt(allTiersRoute);
+            parser = new Parser(yamlDocument.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     @NotNull

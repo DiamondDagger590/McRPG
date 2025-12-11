@@ -150,6 +150,7 @@ public class MiningTest extends McRPGBaseTest {
         Route route = Route.fromString(toRoutePath(MiningConfigFile.BLOCK_EXPERIENCE_HEADER, block.getType().toString()));
         when(miningConfig.getInt(eq(route), anyInt())).thenReturn(5);
         when(miningConfig.contains(route)).thenReturn(true);
+        when(miningConfig.getStringList(MiningConfigFile.ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN)).thenReturn(List.of("DIAMOND_PICKAXE"));
 
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, mcRPGPlayer.getAsBukkitPlayer().get());
         assertEquals(0, mining.calculateExperienceToGive(mcRPGPlayer.asSkillHolder(), blockBreakEvent));

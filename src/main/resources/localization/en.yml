@@ -39,7 +39,7 @@ commands:
     # Supports the following placeholders: <level>, <skill>, <target>, <sender>
     level:
       # The message to send to the player getting levels.
-      recipient-message: "<gray>You have been given <gold><experience> experience</gold> in <gold><skill></gold>."
+      recipient-message: "<gray>You have been given <gold><levels> level(s)</gold> in <gold><skill></gold>."
       # The message to send to the sender when the command works.
       sender-success-message: "<gray>You gave <gold><level> level(s)</gold> in <gold><skill></gold> to <gold><target></gold>."
       # The message to send to the sender when the command fails.
@@ -1185,6 +1185,19 @@ ability:
           - '<gray>Tier: <gold><tier>'
           - '<gray>Activation Chance: <gold><activation-chance>'
           - '<gray>Radius: <gold><radius>'
+    verdant-surge:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Verdant Surge"
+        material: BONE_MEAL
+        lore:
+          - '<gray>Channels the power of nature to send out'
+          - '<gray>pulses that grow any crop they touch.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
+          - '<gray>Pulse Count: <gold><pulse-count>'
+          - '<gray>Pulse Radius: <gold><radius>'
 skills:
   swords:
     display-item:

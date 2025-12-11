@@ -26,7 +26,7 @@ public enum FileType {
     SWORDS_CONFIG("skill_configuration" + "/" + "swords_configuration.yml", new SwordsConfigFile()),
     MINING_CONFIG("skill_configuration" + "/" + "mining_configuration.yml", new MiningConfigFile()),
     WOODCUTTING_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new WoodcuttingConfigFile()),
-    HERBALISM_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new HerbalismConfigFile()),
+    HERBALISM_CONFIG("skill_configuration" + "/" + "herbalism_configuration.yml", new HerbalismConfigFile()),
     ;
 
     private final String filePath;

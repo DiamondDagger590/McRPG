@@ -13,4 +13,10 @@ public class HerbalismConfigFile extends SkillConfigFile {
     public static final String BLOCK_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
     public static final Route ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN = Route.fromString(toRoutePath(EXPERIENCE_HEADER, "allowed-items-for-experience-gain"));
 
+    // Verdant Surge
+    private static final String VERDANT_SURGE_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "verdant-surge");
+    public static final Route VERDANT_SURGE_ENABLED = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "enabled"));
+    public static final Route VERDANT_SURGE_AMOUNT_OF_TIERS = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "amount-of-tiers"));
+    public static final Route VERDANT_SURGE_TIER_CONFIGURATION_HEADER = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "tier-configuration"));
+
 }

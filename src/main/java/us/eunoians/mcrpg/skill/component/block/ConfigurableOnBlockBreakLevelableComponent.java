@@ -99,7 +99,7 @@ public abstract class ConfigurableOnBlockBreakLevelableComponent implements OnBl
             ItemStack heldItem = player.getEquipment().getItemInMainHand();
             CustomItemWrapper customItemWrapper = new CustomItemWrapper(heldItem);
             YamlDocument config = getSkillConfiguration();
-            List<String> validItems = config.getStringList(getAllowedItemsForExperienceGainRoute(), null);
+            List<String> validItems = config.getStringList(getAllowedItemsForExperienceGainRoute());
             String itemValue = customItemWrapper.customItem().isPresent() ? customItemWrapper.customItem().get() : customItemWrapper.material().get().toString();
             return validItems == null || validItems.isEmpty() || validItems.contains(itemValue);
         }

@@ -20,7 +20,7 @@ public class OnAbilityHolderReadyListener implements Listener {
         AbilityHolder abilityHolder = event.getAbilityHolder();
         Player player = Bukkit.getPlayer(abilityHolder.getUUID());
         var playerOptional = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID());
-        playerOptional.ifPresent(mcRPGPlayer -> player.sendMessage(event.getReadyData().getUnreadyMessage(mcRPGPlayer)));
+        playerOptional.ifPresent(mcRPGPlayer -> player.sendMessage(event.getReadyData().getReadyMessage(mcRPGPlayer)));
     }
 
 }

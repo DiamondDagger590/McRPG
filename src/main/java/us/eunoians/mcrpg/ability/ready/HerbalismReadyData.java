@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.ability.ready;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 /**
@@ -12,12 +14,14 @@ public class HerbalismReadyData extends ReadyData{
     @NotNull
     @Override
     public Component getReadyMessage(@NotNull McRPGPlayer player) {
-        return Component.text("<gray>You ready your hoe.");
+        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        return miniMessage.deserialize("<gray>You raise your hoe.");
     }
 
     @NotNull
     @Override
     public Component getUnreadyMessage(@NotNull McRPGPlayer player) {
-        return Component.text("<gray>You lower your hoe.");
+        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        return miniMessage.deserialize("<gray>You lower your hoe.");
     }
 }

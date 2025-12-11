@@ -345,4 +345,6 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route HEAVY_SWING_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(HEAVY_SWING_HEADER, "display-item"));
     private static final String NYMPHS_VITALITY_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "nymphs-vitality");
     public static final Route NYMPHS_VITALITY_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(NYMPHS_VITALITY_HEADER, "display-item"));
+    private static final String VERDANT_SURGE_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "verdant-surge");
+    public static final Route VERDANT_SURGE_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "display-item"));
 }
