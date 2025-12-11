@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -22,6 +23,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.herbalism.VerdantSurgeActivateEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
@@ -111,8 +113,16 @@ public class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbil
         int pulseCount = getPulseCount(getCurrentAbilityTier(abilityHolder));
         int pulseRadius = getRadius(getCurrentAbilityTier(abilityHolder));
         double delay = 0;
-        for (int i = 0; i < pulseCount; i++) {
-            VerdantSurgePulseTask verdantSurgePulseTask = new VerdantSurgePulseTask(this.getPlugin(), mcRPGPlayer, delay, pulseRadius);
+
+        abilityHolder.removeActiveAbility(this);
+        VerdantSurgeActivateEvent verdantSurgeActivateEvent = new VerdantSurgeActivateEvent(abilityHolder, pulseCount, pulseRadius);
+        Bukkit.getPluginManager().callEvent(verdantSurgeActivateEvent);
+        if (verdantSurgeActivateEvent.isCancelled()) {
+            return;
+        }
+        putHolderOnCooldown(abilityHolder);
+        for (int i = 0; i < verdantSurgeActivateEvent.getPulseCount(); i++) {
+            VerdantSurgePulseTask verdantSurgePulseTask = new VerdantSurgePulseTask(this.getPlugin(), mcRPGPlayer, delay, verdantSurgeActivateEvent.getMaxPulseRadius());
             verdantSurgePulseTask.runTask();
             delay += 1.5;
         }

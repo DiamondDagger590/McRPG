@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability.impl.type.configurable;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
@@ -26,11 +27,14 @@ public interface ConfigurableActiveAbility extends CooldownableAbility, Configur
         int tier = getCurrentAbilityTier(abilityHolder);
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "cooldown");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "cooldown");
+        Parser parser;
         if (yamlDocument.contains(tierRoute)) {
-            return yamlDocument.getLong(tierRoute);
+            parser = new Parser(yamlDocument.getString(tierRoute));
         } else {
-            return yamlDocument.getLong(allTiersRoute);
+            parser = new Parser(yamlDocument.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (long) parser.getValue();
     }
 
     @NotNull
