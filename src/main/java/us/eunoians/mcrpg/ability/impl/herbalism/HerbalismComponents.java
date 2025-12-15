@@ -24,7 +24,7 @@ public class HerbalismComponents {
     public static final HoldingHoeBreakBlockActivateComponent HOLDING_HOE_BREAK_BLOCK_ACTIVATE_COMPONENT = new HoldingHoeBreakBlockActivateComponent();
     public static final HoldingHoeInteractActivateComponent HOLDING_HOE_INTERACT_ACTIVATE_COMPONENT = new HoldingHoeInteractActivateComponent();
 
-    private static final Set<Material> HOES = Set.of(Material.WOODEN_HOE, Material.STONE_HOE, Material.IRON_HOE, Material.COPPER_HOE,
+    protected static final Set<Material> HOES = Set.of(Material.WOODEN_HOE, Material.STONE_HOE, Material.IRON_HOE, Material.COPPER_HOE,
             Material.DIAMOND_HOE, Material.GOLDEN_HOE, Material.NETHERITE_HOE);
 
     private static class HerbalismReadyComponent implements RightClickReadyComponent {

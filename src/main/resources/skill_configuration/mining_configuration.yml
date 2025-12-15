@@ -303,6 +303,7 @@ ability-configuration:
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
+        unlock-level: 1*tier
         upgrade-quest:
           kill-criteria:
             criteria-type: KILL_MOBS

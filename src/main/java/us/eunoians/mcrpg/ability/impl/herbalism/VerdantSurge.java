@@ -102,7 +102,7 @@ public class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbil
     @NotNull
     @Override
     public String getDatabaseName() {
-        return "verdant_surge";
+        return "verdant_surge ";
     }
 
     @Override

@@ -80,6 +80,9 @@ experience:
   GLOW_LICHEN: 20
   MOSS_BLOCK: 15
 ability-configuration:
+  instant-irrigation:
+    enabled: true
+    cooldown: 120-(level/10)
   verdant-surge:
     enabled: true
     amount-of-tiers: 5

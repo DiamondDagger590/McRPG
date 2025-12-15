@@ -4,8 +4,11 @@ import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
@@ -13,12 +16,20 @@ import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.util.McRPGMethods;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
 
 public class InstantIrrigation extends McRPGAbility implements PassiveAbility, ConfigurableSkillAbility, CooldownableAbility {
 
@@ -26,6 +37,8 @@ public class InstantIrrigation extends McRPGAbility implements PassiveAbility, C
 
     public InstantIrrigation(@NotNull McRPG mcRPG) {
         super(mcRPG, INSTANT_IRRIGATION_KEY);
+        addActivatableComponent(InstantIrrigationComponents.HOLDING_HOE_BREAK_BLOCK_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
+        addActivatableComponent(InstantIrrigationComponents.INSTANT_IRRIGATION_BLOCK_BREAK, BlockBreakEvent.class, 1);
     }
 
     @NotNull
@@ -43,7 +56,7 @@ public class InstantIrrigation extends McRPGAbility implements PassiveAbility, C
     @NotNull
     @Override
     public Route getDisplayItemRoute() {
-        return null;
+        return LocalizationKey.INSTANT_IRRIGATION_DISPLAY_ITEM_HEADER;
     }
 
     @NotNull
@@ -60,7 +73,11 @@ public class InstantIrrigation extends McRPGAbility implements PassiveAbility, C
 
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
+        BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
+        blockBreakEvent.setCancelled(true);
+        Block block = blockBreakEvent.getBlock();
+        block.setType(Material.WATER);
+        putHolderOnCooldown(abilityHolder);
     }
 
     @Override
@@ -73,5 +90,19 @@ public class InstantIrrigation extends McRPGAbility implements PassiveAbility, C
             parser.setVariable("level", 0);
         }
         return (long) parser.getValue();
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        return placeholders;
+    }
+
+    @NotNull
+    @Override
+    public Set<NamespacedKey> getApplicableAttributes() {
+        return CooldownableAbility.super.getApplicableAttributes();
     }
 }

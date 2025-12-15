@@ -29,8 +29,13 @@ public interface OnBlockBreakComponent extends EventActivatableComponent {
         if (event instanceof BlockBreakEvent blockBreakEvent) {
             Entity entity = blockBreakEvent.getPlayer();
             Block block = blockBreakEvent.getBlock();
-            return entity.getUniqueId().equals(abilityHolder.getUUID()) && affectsBlock(block) && McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isBlockNatural(block);
+            return entity.getUniqueId().equals(abilityHolder.getUUID()) && affectsBlock(block)
+                    && (affectsUnnaturalBlocks() || McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isBlockNatural(block));
         }
+        return false;
+    }
+
+    default boolean affectsUnnaturalBlocks() {
         return false;
     }
 }
