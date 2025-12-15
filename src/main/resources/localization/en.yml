@@ -1199,7 +1199,7 @@ ability:
           - '<gray>Pulse Count: <gold><pulse-count>'
           - '<gray>Pulse Radius: <gold><radius>'
           - '<gray>Cooldown: <gold><cooldown>'
-    instant_irrigation:
+    instant-irrigation:
       display-item:
         name: "<red><ability></red>"
         ability-name: Instant Irrigation
@@ -1210,6 +1210,7 @@ ability:
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Cooldown: <gold><cooldown>'
+      activation-message: "<gray>You found a water source! You'll be able to do this again in <gold><cooldown> seconds</gold>."
 skills:
   swords:
     display-item:

@@ -35,6 +35,12 @@ public interface OnBlockBreakComponent extends EventActivatableComponent {
         return false;
     }
 
+    /**
+     * Checks to see if this component will affect only naturally generated blocks or if blocks
+     * placed by players can also be affected.
+     *
+     * @return {@code true} if player placed blocks are affected by this component.
+     */
     default boolean affectsUnnaturalBlocks() {
         return false;
     }

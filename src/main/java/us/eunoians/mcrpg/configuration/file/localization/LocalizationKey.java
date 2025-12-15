@@ -347,6 +347,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route NYMPHS_VITALITY_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(NYMPHS_VITALITY_HEADER, "display-item"));
     private static final String VERDANT_SURGE_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "verdant-surge");
     public static final Route VERDANT_SURGE_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "display-item"));
-    private static final String INSTANT_IRRIGATION_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "instant_irrigation");
+    private static final String INSTANT_IRRIGATION_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "instant-irrigation");
     public static final Route INSTANT_IRRIGATION_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "display-item"));
+    public static final Route INSTANT_IRRIGATION_ACTIVATION_NOTIFICATION = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "activation-message"));
 }

@@ -18,22 +18,13 @@ public class InstantIrrigationComponents extends HerbalismComponents {
     private static final Set<CustomBlockWrapper> IRRIGATION_BLOCKS = Set.of(new CustomBlockWrapper(Material.GRASS_BLOCK),
             new CustomBlockWrapper(Material.DIRT), new CustomBlockWrapper(Material.COARSE_DIRT), new CustomBlockWrapper(Material.FARMLAND));
 
-    public static final InstantIrrigationBlockBreakComponent INSTANT_IRRIGATION_BLOCK_BREAK = new InstantIrrigationBlockBreakComponent();
     public static final InstantIrrigationHoldingHoeBreakBlockActivateComponent HOLDING_HOE_BREAK_BLOCK_ACTIVATE_COMPONENT = new InstantIrrigationHoldingHoeBreakBlockActivateComponent();
-
-    private static final class InstantIrrigationBlockBreakComponent implements OnBlockBreakComponent {
-
-        @Override
-        public boolean affectsBlock(@NotNull Block block) {
-            return IRRIGATION_BLOCKS.contains(new CustomBlockWrapper(block));
-        }
-    }
 
     private static class InstantIrrigationHoldingHoeBreakBlockActivateComponent implements OnBlockBreakComponent {
 
         @Override
         public boolean affectsBlock(@NotNull Block block) {
-            return block.getType() != Material.AIR && !block.isLiquid();
+            return IRRIGATION_BLOCKS.contains(new CustomBlockWrapper(block));
         }
 
         @Override

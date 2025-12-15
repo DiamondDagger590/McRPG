@@ -10,6 +10,9 @@ import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 
 import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -48,6 +51,7 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
     @NotNull
     @Override
     public TimeProvider getTimeProvider() {
-        return spy(new TimeProvider(Clock.systemUTC()));
+        Instant instant = ZonedDateTime.of(2025, 12, 7, 0, 0, 0, 0, ZoneId.of("UTC")).toInstant();
+        return spy(new TimeProvider(Clock.fixed(instant, ZoneId.of("UTC"))));
     }
 }

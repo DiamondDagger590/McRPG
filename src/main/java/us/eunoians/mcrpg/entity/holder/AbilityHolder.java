@@ -214,6 +214,7 @@ public class AbilityHolder {
                         abilityData.addAttribute(abilityAttribute);
                     }
                 }
+                abilityDataMap.put(abilityKey, abilityData);
                 return Optional.of(abilityData);
             }
         } else {

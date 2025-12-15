@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This interface represents an {@link Ability} that can be put on cooldowns
@@ -100,9 +101,10 @@ public interface CooldownableAbility extends Ability {
      * {@link #getCooldown(AbilityHolder)} for the duration.
      *
      * @param abilityHolder The {@link AbilityHolder} to put on cooldown.
+     * @return The cooldown that was actually applied.
      */
-    default void putHolderOnCooldown(@NotNull AbilityHolder abilityHolder) {
-        putHolderOnCooldown(abilityHolder, getCooldown(abilityHolder));
+    default long putHolderOnCooldown(@NotNull AbilityHolder abilityHolder) {
+        return putHolderOnCooldown(abilityHolder, getCooldown(abilityHolder));
     }
 
     /**
@@ -111,20 +113,25 @@ public interface CooldownableAbility extends Ability {
      *
      * @param abilityHolder The {@link AbilityHolder} to put on cooldown.
      * @param cooldown      The duration of the cooldown in seconds.
+     * @return The cooldown that was actually applied.
      */
-    default void putHolderOnCooldown(@NotNull AbilityHolder abilityHolder, long cooldown) {
+    default long putHolderOnCooldown(@NotNull AbilityHolder abilityHolder, long cooldown) {
         // Sanity check
         if (getApplicableAttributes().contains(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY)) {
             var abilityDataOptional = abilityHolder.getAbilityData(this);
             if (abilityDataOptional.isPresent()) {
                 AbilityData abilityData = abilityDataOptional.get();
                 var cooldownOptional = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE).getAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
+                AtomicLong cooldownToReturn = new AtomicLong(cooldown);
                 cooldownOptional.ifPresent(abilityAttribute -> {
                     AbilityPutOnCooldownEvent abilityPutOnCooldownEvent = new AbilityPutOnCooldownEvent(abilityHolder, this, cooldown);
                     Bukkit.getPluginManager().callEvent(abilityPutOnCooldownEvent);
-                    abilityData.addAttribute(((AbilityCooldownAttribute) abilityAttribute).create(System.currentTimeMillis() + (abilityPutOnCooldownEvent.getCooldown() * 1000)));
+                    abilityData.addAttribute(((AbilityCooldownAttribute) abilityAttribute).create(McRPG.getInstance().getTimeProvider().now().toEpochMilli() + (abilityPutOnCooldownEvent.getCooldown() * 1000)));
+                    cooldownToReturn.set(abilityPutOnCooldownEvent.getCooldown());
                 });
+                return cooldownToReturn.get();
             }
         }
+        return 0;
     }
 }
