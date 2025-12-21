@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
+import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
@@ -254,6 +255,7 @@ public class McRPGPlayer extends CorePlayer {
         failsafeTransaction.addAll(LoadoutDisplayDAO.saveAllLoadoutDisplays(connection, skillHolder));
         failsafeTransaction.addAll(PlayerExperienceExtrasDAO.savePlayerExperienceExtras(connection, getUUID(), playerExperienceExtras));
         batchTransaction.addAll(PlayerSettingDAO.savePlayerSettings(connection, getUUID(), getPlayerSettings()));
+        batchTransaction.addAll(PlayerLoadoutSelectionDAO.setActiveLoadout(connection, getUUID(), skillHolder.getCurrentLoadoutSlot()));
         failsafeTransaction.executeTransaction();
         batchTransaction.executeTransaction();
     }

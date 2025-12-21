@@ -46,7 +46,7 @@ public class LoadoutInfoDAO {
          *
          *
          * holder_uuid is the {@link UUID} of the {@link LoadoutHolder} being stored
-         * loadout_id is the id of the loadout. Players down the line might be able to have multiple loadouts, so this is an integer representing what loadout this is for them to make lookups easier
+         * loadout_id is the id of the loadout.
          *
          **
          ** Reasoning for structure:

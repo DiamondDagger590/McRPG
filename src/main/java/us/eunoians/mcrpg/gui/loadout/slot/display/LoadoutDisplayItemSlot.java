@@ -42,7 +42,6 @@ public class LoadoutDisplayItemSlot implements McRPGSlot {
         return ItemBuilder.from(RegistryAccess.registryAccess()
                         .registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_DISPLAY_ITEM))
-                .setItemStack(loadout.getDisplay().getDisplayItem());
+                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem().itemBuilder());
     }
 }

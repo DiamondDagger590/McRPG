@@ -238,7 +238,7 @@ public final class Loadout {
      * @return The default {@link LoadoutDisplay} for loadouts.
      */
     private LoadoutDisplay getDefaultDisplayItem() {
-        return new LoadoutDisplay(Material.CHERRY_SIGN, null, "<gray>Loadout <gold>" + getLoadoutSlot());
+        return new LoadoutDisplay(Material.CHERRY_SIGN, "<gray>Loadout <gold>" + getLoadoutSlot());
     }
 
 }

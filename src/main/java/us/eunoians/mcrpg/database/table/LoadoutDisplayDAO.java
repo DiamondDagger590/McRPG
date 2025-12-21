@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
-import org.bukkit.Material;
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.loadout.Loadout;
@@ -45,8 +45,6 @@ public class LoadoutDisplayDAO {
          *
          *
          * loadout_id is the slot of the player's loadout the data belongs to
-         * uuid is an integer representing the slot in the loadout that the ability is stored in
-         * ability_id is the ability id that is used to find the corresponding {@link UnlockedAbilities} value
          **
          ** Reasoning for structure:
          ** PK is the composite of `loadout_id` field, `slot_number` and `uuid`, as a loadout id will be present once for each ability in the loadout,
@@ -58,8 +56,7 @@ public class LoadoutDisplayDAO {
                 "(" +
                 "`holder_uuid` varchar(36) NOT NULL," +
                 "`loadout_id` int(11) NOT NULL DEFAULT 1," +
-                "`display_material` varchar(32) NOT NULL," +
-                "`custom_model_data` varchar(32) NOT NULL DEFAULT 0," +
+                "`display_item` varchar(96) NOT NULL," +
                 "`display_name` varchar(32) NULL," +
                 "PRIMARY KEY (`holder_uuid`, `loadout_id`), " +
                 // Ensure that the loadout is stored in the info table, also if it ever gets removed from that table, ensure it's deleted here
@@ -141,12 +138,11 @@ public class LoadoutDisplayDAO {
     public static List<PreparedStatement> saveLoadoutDisplay(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, int loadoutSlot, @NotNull LoadoutDisplay loadoutDisplay) {
         List<PreparedStatement> statements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (holder_uuid, loadout_id, display_material, custom_model_data, display_name) VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (holder_uuid, loadout_id, display_item, display_name) VALUES (?, ?, ?, ?)");
             preparedStatement.setString(1, loadoutHolderUUID.toString());
             preparedStatement.setInt(2, loadoutSlot);
-            preparedStatement.setString(3, loadoutDisplay.getMaterial().toString());
-            preparedStatement.setInt(4, loadoutDisplay.getCustomModelData().orElse(0));
-            preparedStatement.setString(5, loadoutDisplay.getDisplayName().isPresent() ? loadoutDisplay.getDisplayName().get() : null);
+            preparedStatement.setString(3, loadoutDisplay.getDisplayItem().customItem().orElse(loadoutDisplay.getDisplayItem().material().get().toString()));
+            preparedStatement.setString(4, loadoutDisplay.getDisplayName().isPresent() ? loadoutDisplay.getDisplayName().get() : null);
             statements.add(preparedStatement);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -190,17 +186,15 @@ public class LoadoutDisplayDAO {
     @NotNull
     public static Optional<LoadoutDisplay> getLoadoutDisplay(@NotNull Connection connection, @NotNull UUID loadoutHolderUUID, int loadoutSlot) {
         Optional<LoadoutDisplay> loadoutDisplayOptional = Optional.empty();
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT display_material, custom_model_data, display_name FROM " + TABLE_NAME + " WHERE holder_uuid = ? AND loadout_id = ?");) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT display_item, display_name FROM " + TABLE_NAME + " WHERE holder_uuid = ? AND loadout_id = ?");) {
             preparedStatement.setString(1, loadoutHolderUUID.toString());
             preparedStatement.setInt(2, loadoutSlot);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                Material material = Material.getMaterial(resultSet.getString("display_material"));
-                int customModelData = resultSet.getInt("custom_model_data");
+                String displayItem = resultSet.getString("display_item");
                 String displayName = resultSet.getString("display_name");
-                if (material != null) {
-                    loadoutDisplayOptional = Optional.of(new LoadoutDisplay(material, customModelData, displayName));
-                }
+                loadoutDisplayOptional = Optional.of(new LoadoutDisplay(new CustomItemWrapper(displayItem), displayName));
+
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -25,6 +25,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
+import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
@@ -237,6 +238,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         int loadoutAmount = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_AMOUNT);
         SkillHolder skillHolder = getCorePlayer().asSkillHolder();
         UUID uuid = getCorePlayer().getUUID();
+        skillHolder.setCurrentLoadoutSlot(PlayerLoadoutSelectionDAO.getActiveLoadout(connection, uuid));
         List<Pair<Loadout, Optional<LoadoutDisplay>>> loadouts = new ArrayList<>();
         for (int x = 1; x <= loadoutAmount; x++) {
             Loadout loadout = LoadoutAbilityDAO.getLoadout(connection, uuid, x);

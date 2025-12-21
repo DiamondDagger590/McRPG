@@ -1,8 +1,8 @@
 package us.eunoians.mcrpg.loadout;
 
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
@@ -15,22 +15,22 @@ import java.util.Optional;
  */
 public final class LoadoutDisplay implements Cloneable {
 
-    @NotNull
-    private Material material;
-    @Nullable
-    private Integer customModelData;
+    private CustomItemWrapper displayItem;
     @Nullable
     private String displayName;
 
     public LoadoutDisplay(@NotNull ItemStack itemStack, @NotNull String displayName) {
-        this.material = itemStack.getType();
-        this.customModelData = itemStack.getItemMeta().hasItemName() ? itemStack.getItemMeta().getCustomModelData() : null;
+        this.displayItem = new CustomItemWrapper(itemStack);
         this.displayName = displayName;
     }
 
-    public LoadoutDisplay(@NotNull Material material, @Nullable Integer customModelData, @Nullable String displayName) {
-        this.material = material;
-        this.customModelData = customModelData;
+    public LoadoutDisplay(@NotNull Material material, @Nullable String displayName) {
+        this.displayItem = new CustomItemWrapper(material);
+        this.displayName = displayName;
+    }
+
+    public LoadoutDisplay(@NotNull CustomItemWrapper displayItem, @Nullable String displayName) {
+        this.displayItem = displayItem;
         this.displayName = displayName;
     }
 
@@ -41,8 +41,7 @@ public final class LoadoutDisplay implements Cloneable {
      * @param itemStack The {@link ItemStack} to use as the display item.
      */
     public void setDisplayItem(@NotNull ItemStack itemStack) {
-        material = itemStack.getType();
-        customModelData = itemStack.getItemMeta().hasItemName() ? itemStack.getItemMeta().getCustomModelData() : null;
+        displayItem = new CustomItemWrapper(itemStack);
     }
 
     /**
@@ -50,18 +49,17 @@ public final class LoadoutDisplay implements Cloneable {
      *
      * @param material The {@link Material} to be used in the display.
      */
-    public void setDisplayItemType(@NotNull Material material) {
-        this.material = material;
+    public void setDisplayItem(@NotNull Material material) {
+        this.displayItem = new CustomItemWrapper(material);
     }
 
     /**
-     * Sets the custom model data to be used in this display.
+     * Sets the custom model to be used in this display.
      *
-     * @param customModelData The custom model data to use in this display or {@code null} if none should
-     *                        be used.
+     * @param customModel The custom model to use in this display
      */
-    public void setDisplayItemModelData(@Nullable Integer customModelData) {
-        this.customModelData = customModelData;
+    public void setDisplayItem(@NotNull String customModel) {
+        this.displayItem = new CustomItemWrapper(customModel);
     }
 
     /**
@@ -79,19 +77,8 @@ public final class LoadoutDisplay implements Cloneable {
      * @return The {@link Material} used by this display.
      */
     @NotNull
-    public Material getMaterial() {
-        return material;
-    }
-
-    /**
-     * Gets the custom model data for the item used in the display.
-     *
-     * @return An {@link Optional} containing the custom model data for the item used in the display, or an
-     * empty one if there is no model data.
-     */
-    @NotNull
-    public Optional<Integer> getCustomModelData() {
-        return Optional.ofNullable(customModelData);
+    public CustomItemWrapper getDisplayItem() {
+        return displayItem;
     }
 
     /**
@@ -105,41 +92,27 @@ public final class LoadoutDisplay implements Cloneable {
         return Optional.ofNullable(displayName);
     }
 
-    /**
-     * Constructs an {@link ItemStack} to use to display.
-     *
-     * @return An {@link ItemStack} to be used as a display.
-     */
-    @NotNull
-    public ItemStack getDisplayItem() {
-        ItemStack itemStack = new ItemStack(material);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (customModelData != null) {
-            itemMeta.setCustomModelData(customModelData);
-        }
-        if (displayName != null) {
-            itemMeta.displayName(getMcRPG().getMiniMessage().deserialize(displayName));
-        }
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof LoadoutDisplay loadoutDisplay) {
-            return getMaterial().equals(loadoutDisplay.getMaterial())
-                    && getCustomModelData().equals(loadoutDisplay.getCustomModelData())
+            return getDisplayItem().equals(loadoutDisplay.getDisplayItem())
                     && getDisplayName().equals(loadoutDisplay.getDisplayName());
         }
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        return displayItem.hashCode() * (displayName != null ? displayName.hashCode() : 1);
+    }
+
     @NotNull
     @Override
     protected Object clone() {
-        return new LoadoutDisplay(material, customModelData, displayName);
+        return new LoadoutDisplay(displayItem, displayName);
     }
 
+    @NotNull
     private McRPG getMcRPG() {
         return McRPG.getInstance();
     }

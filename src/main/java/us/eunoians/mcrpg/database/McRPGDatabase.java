@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
+import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 
@@ -79,6 +80,8 @@ public class McRPGDatabase extends Database {
                             + (PlayerLoginTimeDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Player Experience Extras DAO "
                             + (PlayerExperienceExtrasDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Player Loadout Selection DAO "
+                            + (PlayerLoadoutSelectionDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
@@ -101,6 +104,7 @@ public class McRPGDatabase extends Database {
                     LoadoutDisplayDAO.updateTable(connection);
                     PlayerLoginTimeDAO.updateTable(connection);
                     PlayerExperienceExtrasDAO.updateTable(connection);
+                    PlayerLoadoutSelectionDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
