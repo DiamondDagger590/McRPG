@@ -120,7 +120,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         when(herbalismConfig.getBoolean(HerbalismConfigFile.INSTANT_IRRIGATION_ENABLED)).thenReturn(true);
         when(herbalismConfig.getBoolean(HerbalismConfigFile.SKILL_ENABLED)).thenReturn(true);
-        when(herbalismConfig.getString(HerbalismConfigFile.INSTANT_IRRIGATION_COOLDOWN)).thenReturn("120-(level/10)");
+        when(herbalismConfig.getString(HerbalismConfigFile.INSTANT_IRRIGATION_COOLDOWN)).thenReturn("120-(herbalism_level/10)");
 
         Block block = server.getWorld("world").getBlockAt(0, 0, 0);
         block.setType(Material.GRASS_BLOCK);
@@ -156,7 +156,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         when(herbalismConfig.getBoolean(HerbalismConfigFile.INSTANT_IRRIGATION_ENABLED)).thenReturn(true);
         when(herbalismConfig.getBoolean(HerbalismConfigFile.SKILL_ENABLED)).thenReturn(true);
-        when(herbalismConfig.getString(HerbalismConfigFile.INSTANT_IRRIGATION_COOLDOWN)).thenReturn("120-(level/10)");
+        when(herbalismConfig.getString(HerbalismConfigFile.INSTANT_IRRIGATION_COOLDOWN)).thenReturn("120-(herbalism_level/10)");
 
         Block block = server.getWorld("world").getBlockAt(0, 0, 0);
         block.setType(Material.GRASS_BLOCK);
