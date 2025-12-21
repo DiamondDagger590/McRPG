@@ -169,7 +169,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         return () -> {
             if (logoutTimeOptional.isPresent()) {
                 Instant logoutTime = logoutTimeOptional.get();
-                Instant now = Instant.now();
+                Instant now = McRPG.getInstance().getTimeProvider().now();
                 double waitTimeBeforeAccumulation = getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
                         .getDouble(MainConfigFile.RESTED_EXPERIENCE_OFFLINE_WAIT_PERIOD_BEFORE_ACCUMULATION, 0.0d);

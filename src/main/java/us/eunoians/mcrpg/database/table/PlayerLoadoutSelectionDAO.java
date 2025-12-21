@@ -92,8 +92,8 @@ public class PlayerLoadoutSelectionDAO {
     public static List<PreparedStatement> setActiveLoadout(@NotNull Connection connection, @NotNull UUID holderUUID, int loadoutID) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (holder_uuid, active_loadout_id) " +
-                    "VALUES (?, ?) ON CONFLICT (holder_uuid) DO UPDATE SET active_loadout_id = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("REPLACE INTO " + TABLE_NAME + " (holder_uuid, active_loadout_id) " +
+                    "VALUES (?, ?)");
             preparedStatement.setString(1, holderUUID.toString());
             preparedStatement.setInt(2, loadoutID);
             preparedStatements.add(preparedStatement);
