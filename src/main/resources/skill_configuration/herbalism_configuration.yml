@@ -80,9 +80,25 @@ experience:
   GLOW_LICHEN: 20
   MOSS_BLOCK: 15
 ability-configuration:
+  too-many-plants:
+    enabled: true
+    activation-equation: (herbalism_level)*.033
+    valid-drops:
+      - CARROTS
+      - POTATOES
+      - CACTUS
+      - WHEAT
+      - SUGAR_CANE
+      - LILY_PAD
+      - PUMPKIN
+      - MELON
+      - NETHER_WART
+      - BEATROOTS
+      - BROWN_MUSHROOM
+      - RED_MUSHROOM
   instant-irrigation:
     enabled: true
-    cooldown: 120-(level/10)
+    cooldown: 120-(herbalism_level/10)
   verdant-surge:
     enabled: true
     amount-of-tiers: 5

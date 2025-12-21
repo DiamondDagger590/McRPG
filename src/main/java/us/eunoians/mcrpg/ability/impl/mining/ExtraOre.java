@@ -91,7 +91,6 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility,
             parser.setVariable("mining_level", skillHolderDataOptional.get().getCurrentLevel());
             return parser.getValue();
         }
-
         return 0.0;
     }
 

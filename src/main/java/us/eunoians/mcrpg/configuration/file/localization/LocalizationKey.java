@@ -355,4 +355,7 @@ public final class LocalizationKey extends ConfigFile {
     private static final String INSTANT_IRRIGATION_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "instant-irrigation");
     public static final Route INSTANT_IRRIGATION_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "display-item"));
     public static final Route INSTANT_IRRIGATION_ACTIVATION_NOTIFICATION = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "activation-message"));
+    private static final String TOO_MANY_PLANTS_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "too-many-plants");
+    public static final Route TOO_MANY_PLANTS_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(TOO_MANY_PLANTS_HEADER, "display-item"));
+
 }

@@ -45,7 +45,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * It functions by creating multiple {@link VerdantSurgePulseTask}s that emit waves of growth that spread away from the player,
  * growing any crops along the way.
  */
-public class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility {
+public final class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey VERDANT_SURGE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "verdant_surge");
 

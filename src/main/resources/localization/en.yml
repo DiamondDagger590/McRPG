@@ -1229,10 +1229,21 @@ ability:
           - '<gray>Tier: <gold><tier>'
           - '<gray>Pulse Radius: <gold><radius>'
           - '<gray>Cooldown: <gold><cooldown>'
+    too-many-plants:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Too Many Plants"
+        material: CARROT
+        amount: 2
+        lore:
+          - '<gray>Gives a chance to double the drops of crops harvested.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Activation Chance: <gold><activation-chance>'
     instant-irrigation:
       display-item:
         name: "<red><ability></red>"
-        ability-name: Instant Irrigation
+        ability-name: "Instant Irrigation"
         material: WATER_BUCKET
         lore:
           - '<gray>Break dirt with a hoe to bring forth'

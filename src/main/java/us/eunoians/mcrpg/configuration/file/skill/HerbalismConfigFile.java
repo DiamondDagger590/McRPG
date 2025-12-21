@@ -13,6 +13,12 @@ public class HerbalismConfigFile extends SkillConfigFile {
     public static final String BLOCK_EXPERIENCE_HEADER = toRoutePath(EXPERIENCE_HEADER, "sources");
     public static final Route ALLOWED_ITEMS_FOR_EXPERIENCE_GAIN = Route.fromString(toRoutePath(EXPERIENCE_HEADER, "allowed-items-for-experience-gain"));
 
+    // Too Many Plants
+    private static final String TOO_MANY_PLANTS_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "too-many-plants");
+    public static final Route TOO_MANY_PLANTS_ENABLED = Route.fromString(toRoutePath(TOO_MANY_PLANTS_HEADER, "enabled"));
+    public static final Route TOO_MANY_PLANTS_ACTIVATION_EQUATION = Route.fromString(toRoutePath(TOO_MANY_PLANTS_HEADER, "activation-equation"));
+    public static final Route TOO_MANY_PLANTS_VALID_DROPS = Route.fromString(toRoutePath(TOO_MANY_PLANTS_HEADER, "valid-drops"));
+
     // Instant Irrigation
     private static final String INSTANT_IRRIGATION_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "instant-irrigation");
     public static final Route INSTANT_IRRIGATION_ENABLED = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "enabled"));

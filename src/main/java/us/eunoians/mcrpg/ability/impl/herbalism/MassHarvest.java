@@ -48,7 +48,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
 /**
  * This ability allows players to harvest blocks in a radius around them.
  */
-public class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReloadableContentAbility {
+public final class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReloadableContentAbility {
 
     public static final NamespacedKey MASS_HARVEST_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mass_harvest");
     private final ReloadableSet<CustomBlockWrapper> VALID_BLOCK_TYPES;

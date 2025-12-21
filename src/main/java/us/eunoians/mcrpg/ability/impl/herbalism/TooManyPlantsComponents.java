@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.impl.mining;
+package us.eunoians.mcrpg.ability.impl.herbalism;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -10,24 +10,20 @@ import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
-import us.eunoians.mcrpg.skill.impl.mining.Mining;
+import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 
 import java.util.Random;
 
-/**
- * This class houses all the {@link us.eunoians.mcrpg.ability.component.AbilityComponent}s
- * specific to activating {@link ExtraOre}.
- */
-public class ExtraOreComponents {
+public class TooManyPlantsComponents {
 
     private static final Random RANDOM = new Random();
-    public static final ExtraOreOnBreakComponent EXTRA_ORE_ON_BREAK_COMPONENT = new ExtraOreOnBreakComponent();
+    public static final TooManyPlantsOnBreakComponent TOO_MANY_PLANTS_ON_BREAK_COMPONENT = new TooManyPlantsOnBreakComponent();
 
-    private static class ExtraOreOnBreakComponent implements OnBlockBreakComponent {
+    private static class TooManyPlantsOnBreakComponent implements OnBlockBreakComponent {
 
         @Override
         public boolean affectsBlock(@NotNull Block block) {
-            return ((ExtraOre) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraOre.EXTRA_ORE_KEY)).isBlockValid(block);
+            return ((TooManyPlants) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(TooManyPlants.TOO_MANY_PLANTS_KEY)).isBlockValid(block);
         }
 
         @Override
@@ -38,11 +34,11 @@ public class ExtraOreComponents {
             BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
             Player player = blockBreakEvent.getPlayer();
             Block block = blockBreakEvent.getBlock();
-            ExtraOre extraOre = (ExtraOre) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraOre.EXTRA_ORE_KEY);
+            TooManyPlants tooManyPlants = (TooManyPlants) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(TooManyPlants.TOO_MANY_PLANTS_KEY);
             if (abilityHolder instanceof SkillHolder skillHolder) {
-                var skillHolderDataOptional = skillHolder.getSkillHolderData(Mining.MINING_KEY);
+                var skillHolderDataOptional = skillHolder.getSkillHolderData(Herbalism.HERBALISM_KEY);
                 if (skillHolderDataOptional.isPresent()) {
-                    return extraOre.getActivationChance(skillHolder) * 1000 > RANDOM.nextInt(100000);
+                    return tooManyPlants.getActivationChance(skillHolder) * 1000 > RANDOM.nextInt(100000);
                 }
             }
             return false;

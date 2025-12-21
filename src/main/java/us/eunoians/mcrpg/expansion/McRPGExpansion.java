@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.herbalism.InstantIrrigation;
 import us.eunoians.mcrpg.ability.impl.herbalism.MassHarvest;
+import us.eunoians.mcrpg.ability.impl.herbalism.TooManyPlants;
 import us.eunoians.mcrpg.ability.impl.herbalism.VerdantSurge;
 import us.eunoians.mcrpg.ability.impl.mining.ExtraOre;
 import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
@@ -116,6 +117,7 @@ public final class McRPGExpansion extends ContentExpansion {
 
         // Herbalism Abilities
         abilityContent.addContent(new InstantIrrigation(mcRPG));
+        abilityContent.addContent(new TooManyPlants(mcRPG));
         abilityContent.addContent(new VerdantSurge(mcRPG));
         abilityContent.addContent(new MassHarvest(mcRPG));
         return abilityContent;

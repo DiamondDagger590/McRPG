@@ -39,7 +39,7 @@ import java.util.Set;
 
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
 
-public class InstantIrrigation extends McRPGAbility implements PassiveAbility, ConfigurableSkillAbility, CooldownableAbility {
+public final class InstantIrrigation extends McRPGAbility implements PassiveAbility, ConfigurableSkillAbility, CooldownableAbility {
 
     public static final NamespacedKey INSTANT_IRRIGATION_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "instant_irrigation");
 
@@ -105,9 +105,9 @@ public class InstantIrrigation extends McRPGAbility implements PassiveAbility, C
         YamlDocument yamlDocument = getYamlDocument();
         Parser parser = new Parser(yamlDocument.getString(HerbalismConfigFile.INSTANT_IRRIGATION_COOLDOWN));
         if (abilityHolder instanceof SkillHolder skillHolder) {
-            parser.setVariable("level", skillHolder.getSkillHolderData(Herbalism.HERBALISM_KEY).orElseThrow(IllegalStateException::new).getCurrentLevel());
+            parser.setVariable("herbalism_level", skillHolder.getSkillHolderData(Herbalism.HERBALISM_KEY).orElseThrow(IllegalStateException::new).getCurrentLevel());
         } else {
-            parser.setVariable("level", 0);
+            parser.setVariable("herbalism_level", 0);
         }
         return (long) parser.getValue();
     }
