@@ -4,11 +4,11 @@ import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
 import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.item.CustomBlockWrapper;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
@@ -46,23 +46,24 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility,
 
     public static final NamespacedKey EXTRA_ORE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "extra_ore");
 
-    private final ReloadableSet<Material> VALID_BLOCK_TYPES;
+    private final ReloadableSet<CustomBlockWrapper> VALID_BLOCK_TYPES;
     private final Map<Location, Integer> multiplierMap = new HashMap<>();
 
     public ExtraOre(@NotNull McRPG mcRPG) {
         super(mcRPG, EXTRA_ORE_KEY);
         addActivatableComponent(MiningComponents.HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT, BlockBreakEvent.class, 0);
         addActivatableComponent(ExtraOreComponents.EXTRA_ORE_ON_BREAK_COMPONENT, BlockBreakEvent.class, 1);
-        VALID_BLOCK_TYPES = getValidBlockTypes();
+        VALID_BLOCK_TYPES = new ReloadableSet<>(getYamlDocument(), MiningConfigFile.EXTRA_ORE_VALID_DROPS,
+                strings -> strings.stream().map(CustomBlockWrapper::new).collect(Collectors.toSet()));
     }
 
     /**
-     * Get a {@link ReloadableSet} of {@link Material}s that can trigger this ability.
+     * Get a {@link ReloadableSet} of {@link CustomBlockWrapper}s that can trigger this ability.
      *
-     * @return A {@link ReloadableSet} of {@link Material}s that can trigger this ability.
+     * @return A {@link ReloadableSet} of {@link CustomBlockWrapper}s that can trigger this ability.
      */
-    private ReloadableSet<Material> getValidBlockTypes() {
-        return new ReloadableSet<>(getYamlDocument(), MiningConfigFile.EXTRA_ORE_VALID_DROPS, strings -> strings.stream().map(Material::getMaterial).collect(Collectors.toSet()));
+    public ReloadableSet<CustomBlockWrapper> getValidBlockTypes() {
+        return VALID_BLOCK_TYPES;
     }
 
     @NotNull
@@ -134,9 +135,10 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility,
      * @return {@code true} if the provided {@link Block} can be used to activate this ability.
      */
     public boolean isBlockValid(@NotNull Block block) {
-        return VALID_BLOCK_TYPES.getContent().contains(block.getType());
+        return VALID_BLOCK_TYPES.getContent().contains(new CustomBlockWrapper(block));
     }
 
+    @NotNull
     @Override
     public Map<Location, Integer> getMultiplierMap() {
         return multiplierMap;

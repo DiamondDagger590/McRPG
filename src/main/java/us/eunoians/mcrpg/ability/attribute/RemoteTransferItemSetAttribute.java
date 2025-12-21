@@ -28,11 +28,11 @@ import java.util.Set;
 public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribute<Set<CustomItemWrapper>> implements GuiModifiableAttribute {
 
     RemoteTransferItemSetAttribute() {
-        super("material_set", AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE);
+        super("remote_transfer_material_set", AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE);
     }
 
     public RemoteTransferItemSetAttribute(@NotNull Set<CustomItemWrapper> set) {
-        super("material_set", AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE, set);
+        super("remote_transfer_material_set", AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE, set);
     }
 
     @Override

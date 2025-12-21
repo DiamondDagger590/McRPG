@@ -1,6 +1,7 @@
-package us.eunoians.mcrpg.task.ability;
+package us.eunoians.mcrpg.task.ability.herbalism;
 
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -8,15 +9,18 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockFertilizeEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+
+import java.util.List;
 
 /**
  * The task that runs when {@link VerdantSurgePulseTask} is triggered. Each instance
  * of this task will emit a single wave of particles out to the maximum radius, growing all crops along the way.
  */
-public class VerdantSurgePulseTask extends ExpireableCoreTask {
+public final class VerdantSurgePulseTask extends ExpireableCoreTask {
 
     private static final double TASK_FREQUENCY = .05;
     private final Player player;
@@ -155,6 +159,12 @@ public class VerdantSurgePulseTask extends ExpireableCoreTask {
                     int age = ageable.getAge();
                     int max = ageable.getMaximumAge();
                     if (age >= max) {
+                        continue;
+                    }
+
+                    BlockFertilizeEvent blockFertilizeEvent = new BlockFertilizeEvent(block, player, List.of(block.getState()));
+                    Bukkit.getPluginManager().callEvent(blockFertilizeEvent);
+                    if (blockFertilizeEvent.isCancelled()) {
                         continue;
                     }
 

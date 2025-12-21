@@ -74,6 +74,7 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility, Configu
         return LocalizationKey.EXTRA_LUMBER_DISPLAY_ITEM_HEADER;
     }
 
+    @NotNull
     @Override
     public Map<Location, Integer> getMultiplierMap() {
         return multiplierMap;

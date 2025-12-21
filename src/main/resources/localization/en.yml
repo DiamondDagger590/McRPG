@@ -485,6 +485,23 @@ gui:
         lore:
           - "<gray><gold>Click</gold> to edit what blocks can"
           - "<gray>and can't be transferred."
+    mass-harvest-pull-items-attribute:
+      toggled-off:
+        display-item:
+          name: "<gold>Mass Harvest Pull Status</gold>"
+          material: STONE_HOE
+          lore:
+            - "<gray>Mass Harvest <red>will NOT</red> pull</gray>"
+            - "<gray>dropped items towards you.</gray>"
+            - "<gray>Click to <green>ENABLE</green> the pull effect.</gray>"
+      toggled-on:
+        display-item:
+          name: "<gold>Mass Harvest Pull Status</gold>"
+          material: IRON_HOE
+          lore:
+            - "<gray>Mass Harvest <green>will currently</green> pull</gray>"
+            - "<gray>dropped items towards you.</gray>"
+            - "<gray>Click to <red>DISABLE</red> the pull effect.</gray>"
   # This GUI allows for players to view the current state of their loadout
   loadout-gui:
     # The title of the gui.
@@ -1197,6 +1214,19 @@ ability:
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
           - '<gray>Pulse Count: <gold><pulse-count>'
+          - '<gray>Pulse Radius: <gold><radius>'
+          - '<gray>Cooldown: <gold><cooldown>'
+    mass-harvest:
+      display-item:
+        name: "<red><ability></red>"
+        ability-name: "Mass Harvest"
+        material: IRON_HOE
+        lore:
+          - '<gray>Sends out a fierce pulse that harvests all crops'
+          - '<gray>and replants them as it goes.'
+          - ''
+          - '<gray>Skill: <gold><skill>'
+          - '<gray>Tier: <gold><tier>'
           - '<gray>Pulse Radius: <gold><radius>'
           - '<gray>Cooldown: <gold><cooldown>'
     instant-irrigation:

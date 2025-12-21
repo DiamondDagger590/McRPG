@@ -16,6 +16,12 @@ import java.util.Map;
  */
 public interface DropMultiplierAbility extends Ability {
 
+    /**
+     * Get the map containing multipliers to apply for blocks dropped at a specific location.
+     *
+     * @return A map containing multipliers to apply for blocks dropped at a specific location.
+     */
+    @NotNull
     Map<Location, Integer> getMultiplierMap();
 
     /**

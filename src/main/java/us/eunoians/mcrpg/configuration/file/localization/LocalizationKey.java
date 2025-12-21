@@ -213,6 +213,9 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_TOGGLED_OFF_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(TOGGLED_OFF_HEADER, "toggled-off.display-item"));
     public static final Route ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(TOGGLED_OFF_HEADER, "toggled-on.display-item"));
     public static final Route REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "remote-transfer-block-toggle-attribute.display-item"));
+    private static final String MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_HEADER = toRoutePath(ABILITY_EDIT_GUI_HEADER, "mass-harvest-pull-items-attribute");
+    public static final Route MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_HEADER, "toggled-off.display-item"));
+    public static final Route MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_HEADER, "toggled-on.display-item"));
 
     private static final String LOADOUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-gui");
     public static final Route LOADOUT_GUI_TITLE =  Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "title"));
@@ -347,6 +350,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route NYMPHS_VITALITY_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(NYMPHS_VITALITY_HEADER, "display-item"));
     private static final String VERDANT_SURGE_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "verdant-surge");
     public static final Route VERDANT_SURGE_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "display-item"));
+    private static final String MASS_HARVEST_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "mass-harvest");
+    public static final Route MASS_HARVEST_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "display-item"));
     private static final String INSTANT_IRRIGATION_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "instant-irrigation");
     public static final Route INSTANT_IRRIGATION_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "display-item"));
     public static final Route INSTANT_IRRIGATION_ACTIVATION_NOTIFICATION = Route.fromString(toRoutePath(INSTANT_IRRIGATION_HEADER, "activation-message"));

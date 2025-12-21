@@ -11,18 +11,8 @@ import us.eunoians.mcrpg.event.ability.AbilityActivateEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
- * Called when the {@link VerdantSurge} ability is activated and is responsible for managing the state
- * and context of the activation.
- * <p>
- * This event allows developers to interact with and modify the behavior of the Verdant Surge ability
- * during its activation phase. It exposes specific properties such as pulse count and maximum pulse
- * radius, allowing adjustments.
- * <p>
- * This event is cancellable, meaning that the activation of the ability can be prevented by calling
- * {@link #setCancelled(boolean)} with {@code true}.
- * <p>
- * Extends {@link AbilityActivateEvent} to provide additional context specific to ability activations.
- * Implements {@link Cancellable} to allow listeners to potentially cancel the event's execution.
+ * This event is fired whenever {@link VerdantSurge} activates, allowing configuration of the number of pulses
+ * emitted by the activation along with the maximum radius of each pulse.
  */
 public class VerdantSurgeActivateEvent extends AbilityActivateEvent implements Cancellable {
 
@@ -30,10 +20,10 @@ public class VerdantSurgeActivateEvent extends AbilityActivateEvent implements C
     private static final Ability VERDANT_SURGE = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(VerdantSurge.VERDANT_SURGE_KEY);
 
     private int pulseCount;
-    private int maxPulseRadius;
+    private double maxPulseRadius;
     private boolean cancelled;
 
-    public VerdantSurgeActivateEvent(@NotNull AbilityHolder abilityHolder, int pulseCount, int maxPulseRadius) {
+    public VerdantSurgeActivateEvent(@NotNull AbilityHolder abilityHolder, int pulseCount, double maxPulseRadius) {
         super(abilityHolder, VERDANT_SURGE);
         this.pulseCount = Math.max(0, pulseCount);
         this.maxPulseRadius = Math.max(0, maxPulseRadius);
@@ -54,7 +44,7 @@ public class VerdantSurgeActivateEvent extends AbilityActivateEvent implements C
      *
      * @return The maximum radius within which the Verdant Surge pulses can spread. This value is guaranteed to be non-negative.
      */
-    public int getMaxPulseRadius() {
+    public double getMaxPulseRadius() {
         return maxPulseRadius;
     }
 
@@ -75,7 +65,7 @@ public class VerdantSurgeActivateEvent extends AbilityActivateEvent implements C
      *
      * @param maxPulseRadius The desired maximum pulse radius (in blocks). A non-negative value is expected.
      */
-    public void setMaxPulseRadius(int maxPulseRadius) {
+    public void setMaxPulseRadius(double maxPulseRadius) {
         this.maxPulseRadius = Math.max(0, maxPulseRadius);
     }
 

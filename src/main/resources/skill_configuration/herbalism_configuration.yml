@@ -101,3 +101,28 @@ ability-configuration:
             criteria-filter:
               - SPIDER
               - CAVE_SPIDER
+  mass-harvest:
+    enabled: true
+    amount-of-tiers: 5
+    allowed-blocks:
+      - CARROTS
+      - WHEAT
+      - POTATOES
+      - BEETROOTS
+      - NETHER_WART
+      - PUMPKIN
+      - MELON
+    tier-configuration:
+      all-tiers:
+        upgrade-point-cost: 1
+        unlock-level: 1*tier
+        pulse-radius: 5+(1.6*tier)
+        cooldown: 30-(3.5*tier)
+        upgrade-quest:
+          kill-criteria:
+            criteria-type: KILL_MOBS
+            progression-required: 20*(tier^2)
+            criteria-filter-mode: ALLOW
+            criteria-filter:
+              - SPIDER
+              - CAVE_SPIDER

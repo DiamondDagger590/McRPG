@@ -24,4 +24,11 @@ public class HerbalismConfigFile extends SkillConfigFile {
     public static final Route VERDANT_SURGE_AMOUNT_OF_TIERS = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "amount-of-tiers"));
     public static final Route VERDANT_SURGE_TIER_CONFIGURATION_HEADER = Route.fromString(toRoutePath(VERDANT_SURGE_HEADER, "tier-configuration"));
 
+    // Mass Harvest
+    private static final String MASS_HARVEST_HEADER = toRoutePath(ABILITY_CONFIGURATION_HEADER, "mass-harvest");
+    public static final Route MASS_HARVEST_ENABLED = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "enabled"));
+    public static final Route MASS_HARVEST_AMOUNT_OF_TIERS = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "amount-of-tiers"));
+    public static final Route MASS_HARVEST_TIER_CONFIGURATION_HEADER = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "tier-configuration"));
+    public static final Route MASS_HARVEST_VALID_BLOCKS = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "allowed-blocks"));
+
 }
