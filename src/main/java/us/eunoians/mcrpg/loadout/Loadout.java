@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
@@ -13,7 +12,7 @@ import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
-import us.eunoians.mcrpg.exception.loadout.LoadoutAlreadyHasActiveAbilityException;
+import us.eunoians.mcrpg.exception.loadout.InvalidAbilityForLoadoutException;
 import us.eunoians.mcrpg.exception.loadout.LoadoutMaxSizeExceededException;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -36,8 +35,6 @@ public final class Loadout {
     private final UUID loadoutHolder;
     private final int loadoutSlot;
     private final Set<NamespacedKey> abilities;
-    @Nullable
-    private String loadoutName;
     @NotNull
     private LoadoutDisplay loadoutDisplay;
 
@@ -45,7 +42,6 @@ public final class Loadout {
         this.loadoutHolder = loadoutHolder;
         this.loadoutSlot = loadoutSlot;
         this.abilities = new HashSet<>();
-        this.loadoutName = null;
         this.loadoutDisplay = getDefaultDisplayItem();
     }
 
@@ -53,7 +49,6 @@ public final class Loadout {
         this.loadoutHolder = loadoutHolder;
         this.loadoutSlot = loadoutSlot;
         this.abilities = abilities;
-        this.loadoutName = null;
         this.loadoutDisplay = getDefaultDisplayItem();
     }
 
@@ -89,17 +84,17 @@ public final class Loadout {
      * Adds the {@link NamespacedKey} to this loadout.
      *
      * @param key The {@link NamespacedKey} corresponding to the {@link Ability} to add to this loadout.
-     * @throws LoadoutMaxSizeExceededException         If the loadout is at or above the {@link #getMaxLoadoutSize()}.
-     * @throws LoadoutAlreadyHasActiveAbilityException If the loadout already has an {@link ActiveAbility} for the {@link us.eunoians.mcrpg.skill.Skill}
-     *                                                 belonging to the ability.
+     * @throws LoadoutMaxSizeExceededException   If the loadout is at or above the {@link #getMaxLoadoutSize()}.
+     * @throws InvalidAbilityForLoadoutException If the loadout already has an {@link ActiveAbility} for the {@link us.eunoians.mcrpg.skill.Skill}
+     *                                           belonging to the ability.
      */
     public void addAbility(@NotNull NamespacedKey key) {
         if (abilities.size() >= getMaxLoadoutSize()) {
             throw new LoadoutMaxSizeExceededException(this, String.format("Loadout %d for user %s tried to exceed the maximum loadout size of %d. The current loadout size is %d",
                     loadoutSlot, loadoutHolder, getMaxLoadoutSize(), abilities.size()));
         }
-        if (!canAbilityBeInLoadout(key)) {
-            throw new LoadoutAlreadyHasActiveAbilityException(this, key, String.format("Loadout %d for user %s already has an active ability with the same skill as %s.", loadoutSlot, loadoutHolder, key));
+        if (!canAbilityBeAddedToLoadout(key)) {
+            throw new InvalidAbilityForLoadoutException(this, key, String.format("Loadout %d for user %s already has an active ability with the same skill as %s.", loadoutSlot, loadoutHolder, key));
         }
         abilities.add(key);
     }
@@ -120,6 +115,9 @@ public final class Loadout {
      * @param newAbility The {@link NamespacedKey} to add.
      */
     public void replaceAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
+        if (!canAbilityBeReplacedIntoLoadout(oldAbility, newAbility)) {
+            throw new InvalidAbilityForLoadoutException(this, newAbility, String.format("Loadout %d for user %s tried to replace %s with %s, but the replacement is not valid.", loadoutSlot, loadoutHolder, oldAbility, newAbility));
+        }
         removeAbility(oldAbility);
         addAbility(newAbility);
     }
@@ -140,8 +138,7 @@ public final class Loadout {
      * @param key The {@link NamespacedKey} to check.
      * @return {@code true} if the provided {@link NamespacedKey} can be added to this loadout.
      */
-    // TODO this shit broken
-    public boolean canAbilityBeInLoadout(@NotNull NamespacedKey key) {
+    public boolean canAbilityBeAddedToLoadout(@NotNull NamespacedKey key) {
         Ability ability = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(key);
         // Check if it's a default ability
         if (!(ability instanceof UnlockableAbility unlockableAbility)) {
@@ -151,17 +148,42 @@ public final class Loadout {
             if (ability instanceof ActiveAbility && ability instanceof SkillAbility skillAbility) {
                 NamespacedKey skillKey = skillAbility.getSkillKey();
                 Ability abilityInLoadout = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey);
-                // Check for active abilities in the same skill
+                // Check for active abilities in the same skill;
                 if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout instanceof SkillAbility skillAbilityInLoadout && skillAbilityInLoadout.getSkillKey().equals(skillKey)) {
                     return false;
                 }
             }
             // Check for same ability
-            else if (abilityKey.equals(key)) {
+            if (abilityKey.equals(key)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Checks to see if the provided ability key that is being replaced can be replaced by the new ability key.
+     *
+     * @param oldAbilityKey The old ability key that is being replaced.
+     * @param newAbilityKey The new ability key that is replacing the old ability key.
+     * @return {@code true} if the provided ability key that is being replaced can be replaced by the new ability key.
+     */
+    public boolean canAbilityBeReplacedIntoLoadout(@NotNull NamespacedKey oldAbilityKey, @NotNull NamespacedKey newAbilityKey) {
+        Ability newAbility = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(newAbilityKey);
+        Ability oldAbility = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(oldAbilityKey);
+        // Check if it's a default ability
+        if (!(newAbility instanceof UnlockableAbility unlockableAbility)) {
+            return false;
+        } else if (oldAbilityKey.equals(newAbilityKey)) {
+            return false;
+        }
+        // If the abilities being replaced are both actives from the same skill, allow being replaced.
+        if (oldAbility instanceof ActiveAbility && oldAbility instanceof SkillAbility oldSkillAbility
+                && newAbility instanceof ActiveAbility && newAbility instanceof SkillAbility newSkillAbility
+                && oldSkillAbility.getSkillKey().equals(newSkillAbility.getSkillKey())) {
+            return true;
+        }
+        return canAbilityBeAddedToLoadout(newAbilityKey);
     }
 
     /**

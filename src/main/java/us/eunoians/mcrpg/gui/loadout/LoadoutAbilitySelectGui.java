@@ -40,22 +40,24 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
-    private static final McRPGChainPlayerContextFilter<NamespacedKey> ABILITY_KEY_FILTER = new McRPGChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter());
 
     private final Loadout loadout;
     @Nullable
     private final NamespacedKey oldAbilityKey;
+    private final McRPGChainPlayerContextFilter<NamespacedKey> abilityKeyFilter;
 
     public LoadoutAbilitySelectGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
         super(mcRPGPlayer);
         this.loadout = loadout;
         this.oldAbilityKey = null;
+        this.abilityKeyFilter = new McRPGChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter(loadout, null));
     }
 
     public LoadoutAbilitySelectGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull NamespacedKey oldAbilityKey) {
         super(mcRPGPlayer);
         this.loadout = loadout;
         this.oldAbilityKey = oldAbilityKey;
+        this.abilityKeyFilter = new McRPGChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter(loadout, oldAbilityKey));
     }
 
     @Override
@@ -65,7 +67,7 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
 
     @Override
     public @NotNull Set<NamespacedKey> getUnsortedAbilities() {
-        return Set.copyOf(ABILITY_KEY_FILTER.filter(getCreatingPlayer(), getCreatingPlayer().asSkillHolder().getAvailableAbilities()));
+        return Set.copyOf(abilityKeyFilter.filter(getCreatingPlayer(), getCreatingPlayer().asSkillHolder().getAvailableAbilities()));
     }
 
     @Override

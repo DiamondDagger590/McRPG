@@ -36,7 +36,7 @@ public class OnAbilityUnlockListener implements Listener {
         if (abilityHolder instanceof LoadoutHolder loadoutHolder) {
             Loadout loadout = loadoutHolder.getLoadout();
             if (loadout.getRemainingLoadoutSize() > 0) {
-                if (loadout.canAbilityBeInLoadout(unlockableAbility.getAbilityKey())) {
+                if (loadout.canAbilityBeAddedToLoadout(unlockableAbility.getAbilityKey())) {
                     loadout.addAbility(unlockableAbility.getAbilityKey());
                     player.sendMessage(miniMessage.deserialize("<green>The new ability has automatically been added to your current loadout."));
                 } else if (unlockableAbility instanceof SkillAbility skillAbility) {

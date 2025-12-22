@@ -106,18 +106,18 @@ public class RestedExperienceManager extends Manager<McRPG> {
             }
             return;
         }
-        if (notifyPlayerOfOfflineGain) {
-            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE,
-                    Map.of("rested-experience-gained", Float.toString(restedExperience))));
-        }
-        restedExperience = Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, restedExperience), maxAccumulation);
         PlayerAwardedRestedExperienceEvent playerAwardedRestedExperienceEvent = new PlayerAwardedRestedExperienceEvent(mcRPGPlayer, restedExperience, maxAccumulation);
         Bukkit.getPluginManager().callEvent(playerAwardedRestedExperienceEvent);
         if (playerAwardedRestedExperienceEvent.isCancelled()) {
             return;
         }
-        restedExperience = Math.min(maxAccumulation, playerAwardedRestedExperienceEvent.getRestedExperience());
-        playerExperienceExtras.setRestedExperience(restedExperience);
+        float finalExperienceCount = Math.min(playerExperienceExtras.getRestedExperience() + Math.max(0, playerAwardedRestedExperienceEvent.getRestedExperience()), maxAccumulation);
+        float accumulatedExperience = finalExperienceCount - playerExperienceExtras.getRestedExperience();
+        if (notifyPlayerOfOfflineGain && accumulatedExperience > 0) {
+            audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE,
+                    Map.of("rested-experience-gained", Float.toString(accumulatedExperience))));
+        }
+        playerExperienceExtras.setRestedExperience(finalExperienceCount);
     }
 
     /**
