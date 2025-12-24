@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.setting.slot.KeepHotbarSlotEmptySettingSlot;
 import us.eunoians.mcrpg.setting.DenySlotSetting;
-import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Arrays;
@@ -22,7 +21,7 @@ import java.util.Optional;
  * hotbar to prevent items from going into it. This allows the user
  * to create a designated slot for Unarmed abilities.
  */
-public enum KeepHotbarSlotEmptySetting implements McRPGSetting, DenySlotSetting {
+public enum KeepHotbarSlotEmptySetting implements DenySlotSetting {
 
     /**
      * This setting means no slot is blocked.
