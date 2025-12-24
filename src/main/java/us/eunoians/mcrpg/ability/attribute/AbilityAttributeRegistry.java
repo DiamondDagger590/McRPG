@@ -26,12 +26,10 @@ public class AbilityAttributeRegistry implements Registry<AbilityAttribute<?>> {
     public static final NamespacedKey ABILITY_LOCATION_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "ability_location_attribute");
     public static final NamespacedKey REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "remote_transfer_item_set_attribute");
     public static final NamespacedKey MASS_HARVEST_PULL_ITEMS_ATTRIBUTE = new NamespacedKey(McRPG.getInstance(), "mass_harvest_pull_items_attribute");
-    private final McRPG plugin;
     private final Map<String, NamespacedKey> abilityAttributeKeys;
     private final Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes;
 
     public AbilityAttributeRegistry(@NotNull McRPG mcRPG) {
-        this.plugin = mcRPG;
         this.abilityAttributeKeys = new HashMap<>();
         this.abilityAttributes = new HashMap<>();
 
