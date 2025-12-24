@@ -40,8 +40,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasFiredEventInstance;
+import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasNotFiredEventInstance;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -129,7 +132,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         assertEquals(Material.WATER, block.getType());
         assertEquals(message, player.nextComponentMessage());
-        server.getPluginManager().assertEventFired(InstantIrrigationActivateEvent.class);
+        assertThat(server.getPluginManager(), hasFiredEventInstance(InstantIrrigationActivateEvent.class));
         assertEquals(instant.toEpochMilli() + (119 * 1000), ((long) skillHolder.getAbilityData(instantIrrigation).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY).get().getContent()));
     }
 
@@ -165,7 +168,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         assertEquals(Material.WATER, block.getType());
         assertEquals(message, player.nextComponentMessage());
-        server.getPluginManager().assertEventFired(InstantIrrigationActivateEvent.class);
+        assertThat(server.getPluginManager(), hasFiredEventInstance(InstantIrrigationActivateEvent.class));
         assertEquals(instant.toEpochMilli() + (110 * 1000), ((long) skillHolder.getAbilityData(instantIrrigation).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY).get().getContent()));
     }
 
@@ -191,7 +194,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         server.getPluginManager().callEvent(blockBreakEvent);
 
         assertEquals(Material.GRASS_BLOCK, block.getType());
-        server.getPluginManager().assertEventNotFired(InstantIrrigationActivateEvent.class);
+        assertThat(server.getPluginManager(), hasNotFiredEventInstance(InstantIrrigationActivateEvent.class));
         assertNull(player.nextComponentMessage());
         assertEquals(0, ((long) skillHolder.getAbilityData(instantIrrigation).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY).get().getContent()));
     }
@@ -223,7 +226,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         server.getPluginManager().callEvent(blockBreakEvent);
 
         assertEquals(Material.GRASS_BLOCK, block.getType());
-        server.getPluginManager().assertEventNotFired(InstantIrrigationActivateEvent.class);
+        assertThat(server.getPluginManager(), hasNotFiredEventInstance(InstantIrrigationActivateEvent.class));
         assertNull(player.nextComponentMessage());
         assertEquals(0, ((long) skillHolder.getAbilityData(instantIrrigation).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY).get().getContent()));
     }
@@ -255,7 +258,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         server.getPluginManager().callEvent(blockBreakEvent);
 
         assertEquals(Material.GRASS_BLOCK, block.getType());
-        server.getPluginManager().assertEventNotFired(InstantIrrigationActivateEvent.class);
+        assertThat(server.getPluginManager(), hasNotFiredEventInstance(InstantIrrigationActivateEvent.class));
         assertNull(player.nextComponentMessage());
         assertEquals(0, ((long) skillHolder.getAbilityData(instantIrrigation).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY).get().getContent()));
     }
@@ -289,7 +292,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         server.getPluginManager().callEvent(blockBreakEvent);
 
         assertEquals(Material.GRASS_BLOCK, block.getType());
-        server.getPluginManager().assertEventNotFired(InstantIrrigationActivateEvent.class);
+        assertThat(server.getPluginManager(), hasNotFiredEventInstance(InstantIrrigationActivateEvent.class));
         assertNull(player.nextComponentMessage());
         assertEquals(0, ((long) skillHolder.getAbilityData(instantIrrigation).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY).get().getContent()));
     }
