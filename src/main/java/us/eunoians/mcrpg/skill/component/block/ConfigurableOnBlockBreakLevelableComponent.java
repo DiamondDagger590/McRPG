@@ -95,7 +95,6 @@ public abstract class ConfigurableOnBlockBreakLevelableComponent implements OnBl
         if (OnBlockBreakLevelableComponent.super.shouldGiveExperience(skillHolder, event)) {
             BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event; //Safe cast due to super call
             Player player = blockBreakEvent.getPlayer();
-            Block block = blockBreakEvent.getBlock();
             ItemStack heldItem = player.getEquipment().getItemInMainHand();
             CustomItemWrapper customItemWrapper = new CustomItemWrapper(heldItem);
             YamlDocument config = getSkillConfiguration();
