@@ -11,14 +11,11 @@ import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
-import java.util.Random;
-
 /**
  * All the components needed to activate {@link NymphsVitality}.
  */
 public class NymphsVitalityComponents {
 
-    private static final Random RANDOM = new Random();
     public static final NymphsVitalityActivateOnHungerDropComponent NYMPHS_VITALITY_ACTIVATE_ON_HUNGER_DROP_COMPONENT = new NymphsVitalityActivateOnHungerDropComponent();
     public static final NymphsVitalityActivateOnMoveDropComponent NYMPHS_VITALITY_ACTIVATE_ON_MOVE_DROP_COMPONENT = new NymphsVitalityActivateOnMoveDropComponent();
 

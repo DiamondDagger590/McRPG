@@ -21,7 +21,7 @@ public class RageSpikeComponents {
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             // This comes after the check of the player being ready so we can go ahead and assume theyre already ready
             return event instanceof PlayerToggleSneakEvent playerToggleSneakEvent && playerToggleSneakEvent.isSneaking()
-                    && !playerToggleSneakEvent.isCancelled() && Bukkit.getEntity(abilityHolder.getUUID()) instanceof Player player;
+                    && !playerToggleSneakEvent.isCancelled() && Bukkit.getEntity(abilityHolder.getUUID()) instanceof Player;
         }
     }
 }

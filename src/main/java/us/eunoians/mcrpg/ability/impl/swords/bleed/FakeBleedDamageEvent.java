@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * This event is used to check bleed damage since it is a DOT and we want to respect plugins that have safe zones
+ * DamageModifier is deprecated, but has no alternatives so we use it anyway
  */
+@SuppressWarnings("deprecation")
 public class FakeBleedDamageEvent extends EntityDamageEvent {
 
     public FakeBleedDamageEvent(@NotNull Entity damagee, @NotNull DamageCause cause, double damage) {

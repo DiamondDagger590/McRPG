@@ -19,7 +19,6 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
-import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -38,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ExtraLumber extends McRPGAbility implements PassiveAbility, ConfigurableAbility,
+public class ExtraLumber extends McRPGAbility implements PassiveAbility,
         ReloadableContentAbility, DropMultiplierAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey EXTRA_LUMBER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "extra_lumber");
