@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -19,6 +20,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -27,12 +29,14 @@ import us.eunoians.mcrpg.event.ability.AbilityUnlockEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainLevelEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -53,7 +57,13 @@ public class OnSkillLevelUpListener implements Listener {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
             MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             Audience player = mcRPGPlayer.getAsBukkitPlayer().get();
-            player.sendMessage(miniMessage.deserialize(String.format("<green>You have gone up <gold>%d levels<green> in <gold>%s<green>.", levels, skill.getDisplayName(mcRPGPlayer))));
+            McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION);
+            Component skillDisplayName = skill.getDisplayName(mcRPGPlayer);
+            String serializedSkillName = miniMessage.serialize(skillDisplayName);
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.SKILL_LEVEL_UP_MESSAGE,
+                    Map.of("levels", String.valueOf(levels), "skill", serializedSkillName)));
         }
     }
 

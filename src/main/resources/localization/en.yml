@@ -39,7 +39,7 @@ commands:
     # Supports the following placeholders: <level>, <skill>, <target>, <sender>
     level:
       # The message to send to the player getting levels.
-      recipient-message: "<gray>You have been given <gold><levels> level(s)</gold> in <gold><skill></gold>."
+      recipient-message: "<gray>You have been given <gold><level> level(s)</gold> in <gold><skill></gold>."
       # The message to send to the sender when the command works.
       sender-success-message: "<gray>You gave <gold><level> level(s)</gold> in <gold><skill></gold> to <gold><target></gold>."
       # The message to send to the sender when the command fails.
@@ -1085,6 +1085,34 @@ ability:
     # The message to send to the player whenever an ability is no longer on cooldown
     # Supports <ability> as a placeholder for the ability that was on cooldown.
     ability-no-longer-on-cooldown: "<gold><ability> <gray>is now off cooldown!"
+  # Configure messages for when abilities are readied or unreadied.
+  ready:
+    # Messages for the Herbalism skill
+    herbalism:
+      ready-message: "<gray>You raise your hoe."
+      unready-message: "<gray>You lower your hoe."
+    # Messages for the Mining skill
+    mining:
+      ready-message: "<gray>You ready your pickaxe."
+      unready-message: "<gray>You lower your pickaxe."
+    # Messages for the Swords skill
+    swords:
+      ready-message: "<gray>You raise your sword."
+      unready-message: "<gray>You lower your sword."
+    # Messages for the Woodcutting skill
+    woodcutting:
+      ready-message: "<gray>You raise your axe."
+      unready-message: "<gray>You lower your axe."
+  # Configure messages for when abilities are unlocked
+  # Supports <ability> as a placeholder for the ability name
+  unlock:
+    # The message to send when a player unlocks a new ability
+    ability-unlocked: "<green>You have unlocked a new ability! <ability> <green>is now available for use."
+    # The message to send when an ability is automatically added to the player's loadout
+    ability-added-to-loadout: "<green>The new ability has automatically been added to your current loadout."
+    # The message to send when an ability cannot be added because there's already an active ability for that skill
+    # Supports <skill> and <ability> placeholders
+    ability-not-added-duplicate-skill: "<red>You already have an active ability for the skill <skill> <red>in your loadout, so <ability> <red>was not automatically added."
   # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
   lore:
     # Configure ability upgrade quest lore
@@ -1340,6 +1368,11 @@ ability:
           - '<gray>Cooldown: <gold><cooldown>'
       activation-message: "<gray>You found a water source! You'll be able to do this again in <gold><cooldown> seconds</gold>."
 skills:
+  # Configure messages for skill level ups
+  # Supports <levels> and <skill> placeholders
+  level-up:
+    # The message to send when a player levels up a skill
+    level-up-message: "<green>You have gone up <gold><levels> levels<green> in <skill><green>."
   swords:
     display-item:
       name: '<red><skill></red>'
