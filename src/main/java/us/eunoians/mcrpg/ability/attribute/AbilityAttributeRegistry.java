@@ -29,7 +29,7 @@ public class AbilityAttributeRegistry implements Registry<AbilityAttribute<?>> {
     private final Map<String, NamespacedKey> abilityAttributeKeys;
     private final Map<NamespacedKey, AbilityAttribute<?>> abilityAttributes;
 
-    public AbilityAttributeRegistry(@NotNull McRPG mcRPG) {
+    public AbilityAttributeRegistry() {
         this.abilityAttributeKeys = new HashMap<>();
         this.abilityAttributes = new HashMap<>();
 

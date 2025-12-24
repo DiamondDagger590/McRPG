@@ -86,7 +86,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(reloadableContentManager);
         EntityManager entityManager = new EntityManager(mcRPG);
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(entityManager);
-        AbilityAttributeRegistry abilityAttributeRegistry = new AbilityAttributeRegistry(mcRPG);
+        AbilityAttributeRegistry abilityAttributeRegistry = new AbilityAttributeRegistry();
         RegistryAccess.registryAccess().register(abilityAttributeRegistry);
         when(mainConfig.getStringList(MainConfigFile.DISABLED_WORLDS)).thenReturn(List.of(""));
         WorldManager worldManager = spy(new WorldManager(mcRPG));
