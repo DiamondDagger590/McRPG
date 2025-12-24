@@ -37,7 +37,6 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
 
     private final Player player;
-    private final McRPG plugin;
 
     public PlayerSettingGui(@NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPGPlayer);
@@ -46,7 +45,6 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
             throw new CorePlayerOfflineException(mcRPGPlayer);
         }
         this.player = playerOptional.get();
-        this.plugin = mcRPGPlayer.getPlugin();
     }
 
     @NotNull
