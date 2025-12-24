@@ -24,14 +24,13 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasFiredEventInstance;
 import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasNotFiredEventInstance;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -93,7 +92,7 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
-        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), any(Map.class)))
+        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), anyMap()))
                 .thenReturn(component);
         addPlayerToServer(mcRPGPlayer);
         PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
@@ -109,8 +108,6 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
     @DisplayName("Given OFFLINE accumulation and notifications DISABLED with max=5 and safe-zone allowed, when awarding for time=10, then it awards 2, fires the event, and sends no message")
     @Test
     public void awardRestedExperience_awardsTwo_whenOfflineNotifyFalse(McRPGPlayer mcRPGPlayer) {
-        McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         addPlayerToServer(mcRPGPlayer);
         PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
         when(mockConfig.getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)).thenReturn(true);
@@ -128,7 +125,7 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
-        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), any(Map.class)))
+        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), anyMap()))
                 .thenReturn(component);
         addPlayerToServer(mcRPGPlayer);
         PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
@@ -144,8 +141,6 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
     @DisplayName("Given ONLINE safe-zone accumulation while safe-zone accrual DISABLED and notifications DISABLED, when awarding for time=10, then it awards 1, fires the event, and sends no message")
     @Test
     public void awardRestedExperience_awardsOne_whenOnlineSafeZoneDisabledNotifyFalse(McRPGPlayer mcRPGPlayer) {
-        McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         addPlayerToServer(mcRPGPlayer);
         PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
         when(mockConfig.getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION)).thenReturn(false);
@@ -163,7 +158,7 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         McRPGLocalizationManager mcRPGLocalizationManager = mcRPGPlayer.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component component = mcRPG.getMiniMessage().deserialize("You gained x rested experience while offline");
-        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), any(Map.class)))
+        when(mcRPGLocalizationManager.getLocalizedMessageAsComponent(any(Audience.class), eq(LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE), anyMap()))
                 .thenReturn(component);
         addPlayerToServer(mcRPGPlayer);
         PlayerMock playerMock = (PlayerMock) server.getPlayer(mcRPGPlayer.getUUID());
