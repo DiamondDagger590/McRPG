@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.expansion.content;
 
-import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.ContentExpansion;
 
@@ -23,15 +22,15 @@ public abstract class McRPGContentPack<T extends McRPGContent> {
     }
 
     /**
-     * Gets an {@link ImmutableSet} of all {@link McRPGContent} that is being provided by this
+     * Gets an immutable {@link Set} of all {@link McRPGContent} that is being provided by this
      * content pack.
      *
-     * @return An {@link ImmutableSet} of all {@link McRPGContent} that is being provided by this
+     * @return An immutable {@link Set} of all {@link McRPGContent} that is being provided by this
      * content pack.
      */
     @NotNull
     public Set<T> getContent() {
-        return ImmutableSet.copyOf(content);
+        return Set.copyOf(content);
     }
 
     /**
