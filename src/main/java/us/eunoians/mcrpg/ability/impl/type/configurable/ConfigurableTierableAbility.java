@@ -5,7 +5,6 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
@@ -59,15 +58,11 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
         YamlDocument yamlDocument = getYamlDocument();
         Route tierRoute = Route.addTo(getRouteForTier(tier), "unlock-level");
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "unlock-level");
-        Parser parser = null;
-        try {
-            if (yamlDocument.contains(tierRoute)) {
-                parser = new Parser(yamlDocument.getString(tierRoute));
-            } else {
-                parser = new Parser(yamlDocument.getString(allTiersRoute));
-            }
-        } catch (Exception ex) {
-            McRPG.getInstance().getLogger().severe(getName() + " " + ex.getMessage());
+        Parser parser;
+        if (yamlDocument.contains(tierRoute)) {
+            parser = new Parser(yamlDocument.getString(tierRoute));
+        } else {
+            parser = new Parser(yamlDocument.getString(allTiersRoute));
         }
         parser.setVariable("tier", tier);
         return (int) parser.getValue();
