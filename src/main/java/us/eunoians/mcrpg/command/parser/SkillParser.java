@@ -58,10 +58,8 @@ public class SkillParser implements ArgumentParser<CommandSourceStack, Skill>, B
 
     private static class SkillParseException extends ParserException {
 
-        private final String input;
-
         /**
-         * Construct a new UUID parse exception
+         * Construct a new Skill parse exception
          *
          * @param input   String input
          * @param context Command context
@@ -73,16 +71,6 @@ public class SkillParser implements ArgumentParser<CommandSourceStack, Skill>, B
                     Caption.of("argument.parse.failure.skill"),
                     CaptionVariable.of("input", input)
             );
-            this.input = input;
-        }
-
-        /**
-         * Returns the supplied input.
-         *
-         * @return string value
-         */
-        public String input() {
-            return this.input;
         }
     }
 }
