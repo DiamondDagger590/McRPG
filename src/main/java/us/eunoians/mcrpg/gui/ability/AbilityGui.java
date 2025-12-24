@@ -15,7 +15,6 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.ability.slot.AbilitySlot;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.home.HomeGui;
@@ -27,7 +26,7 @@ import java.util.Set;
 /**
  * This gui is the main gui for players to view all their abilities from.
  */
-public class AbilityGui extends PaginatedSortedAbilityGui implements FillerItemGui {
+public class AbilityGui extends PaginatedSortedAbilityGui {
 
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;

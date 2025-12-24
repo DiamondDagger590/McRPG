@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.skill.slot.SkillSlot;
@@ -27,7 +26,7 @@ import java.util.Set;
 /**
  * This gui is the main gui for players to view all their skill from.
  */
-public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
+public class SkillGui extends PaginatedSortedSkillGui {
 
     protected static final int NAVIGATION_ROW_START_INDEX = 45;
     protected static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
