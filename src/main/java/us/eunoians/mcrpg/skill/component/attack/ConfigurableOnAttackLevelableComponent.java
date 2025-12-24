@@ -80,7 +80,6 @@ public abstract class ConfigurableOnAttackLevelableComponent implements OnAttack
     public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
         EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast since can only be called after checks are done
         Skill skill = getSkill();
-        Entity damager = entityDamageByEntityEvent.getDamager();
         Entity damaged = entityDamageByEntityEvent.getEntity();
         int baseExperience = (int) (getDamageToAwardExperienceFor(entityDamageByEntityEvent) * getBaseExperienceForEntity(skillHolder, damaged));
         EntityDamageContext entityDamageContext = new EntityDamageContext(skillHolder, skill, baseExperience, entityDamageByEntityEvent);
@@ -94,7 +93,7 @@ public abstract class ConfigurableOnAttackLevelableComponent implements OnAttack
             EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event; //Safe cast due to super call
             Entity damager = entityDamageByEntityEvent.getDamager();
             Entity damaged = entityDamageByEntityEvent.getEntity();
-            if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity livingDamaged) {
+            if (damager instanceof LivingEntity livingDamager && livingDamager.getEquipment() != null && damaged instanceof LivingEntity) {
                 ItemStack heldItem = livingDamager.getEquipment().getItemInMainHand();
                 CustomItemWrapper customItemWrapper = new CustomItemWrapper(heldItem);
                 YamlDocument config = getSkillConfiguration();
@@ -119,7 +118,6 @@ public abstract class ConfigurableOnAttackLevelableComponent implements OnAttack
         YamlDocument config = getSkillConfiguration();
         List<NpcPluginHook> npcPluginHooks = RegistryAccess.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHooks(NpcPluginHook.class);
         boolean isNpc = npcPluginHooks.stream().anyMatch(npcPluginHook -> npcPluginHook.isEntityNpc(entity));
-        Route route = ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.get(customEntityWrapper);
         return config.contains(ENTITY_TYPE_EXPERIENCE_ROUTE_MAP.get(customEntityWrapper)) && !isNpc;
     }
 
