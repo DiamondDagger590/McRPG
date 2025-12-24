@@ -70,7 +70,6 @@ public class OnSkillLevelUpListener implements Listener {
     @EventHandler
     public void handlePostLevelEvent(PostSkillGainLevelEvent postSkillGainLevelEvent) {
         SkillHolder skillHolder = postSkillGainLevelEvent.getSkillHolder();
-        UUID uuid = skillHolder.getUUID();
         Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
         var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
         // Check to see if we need to unlock any abilities
