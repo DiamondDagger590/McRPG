@@ -6,7 +6,6 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.GameMode;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
@@ -200,7 +199,6 @@ public class SwordsTest extends McRPGBaseTest {
     @Test
     public void calculateExperienceToGive_returnsFifteen_whenValidDamageAtCap(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
-        World world = server.getWorld("world");
         Skeleton skeleton = spawnEntity(Skeleton.class);
         Route route = Route.fromString(toRoutePath(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, skeleton.getType().toString()));
         when(swordsConfig.getInt(eq(route), anyInt())).thenReturn(5);
@@ -222,7 +220,6 @@ public class SwordsTest extends McRPGBaseTest {
     @Test
     public void calculateExperienceToGive_returnsFifteen_whenValidDamageAboveCap(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
-        World world = server.getWorld("world");
         Skeleton skeleton = spawnEntity(Skeleton.class);
         Route route = Route.fromString(toRoutePath(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, skeleton.getType().toString()));
         when(swordsConfig.getInt(eq(route), anyInt())).thenReturn(5);
@@ -244,7 +241,6 @@ public class SwordsTest extends McRPGBaseTest {
     @Test
     public void calculateExperienceToGive_returnsZero_whenPlayerInCreative(@NotNull McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
-        World world = server.getWorld("world");
         Skeleton skeleton = spawnEntity(Skeleton.class);
         Route route = Route.fromString(toRoutePath(SwordsConfigFile.ENTITY_EXPERIENCE_HEADER, skeleton.getType().toString()));
         when(swordsConfig.getInt(eq(route), anyInt())).thenReturn(5);
