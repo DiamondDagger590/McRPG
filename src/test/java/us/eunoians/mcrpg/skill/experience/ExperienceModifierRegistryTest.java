@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(ExperienceModifierRegistryExtension.class)
 public class ExperienceModifierRegistryTest extends McRPGBaseTest {
 
-    private static final RegistryAccess registryAccess = RegistryAccess.registryAccess();
     private ExperienceModifierRegistry modifierRegistry;
 
     private MockModifier mockModifier;
