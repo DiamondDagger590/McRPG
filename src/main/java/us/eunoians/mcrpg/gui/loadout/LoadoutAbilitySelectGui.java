@@ -3,8 +3,11 @@ package us.eunoians.mcrpg.gui.loadout;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +19,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
+import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.LoadoutSelectAbilitySlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -103,6 +107,28 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
         if (page < getMaximumPage()) {
             setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
+    }
+
+    @NotNull
+    public McRPGPreviousGuiSlot getPreviousGuiSlot() {
+        return new McRPGPreviousGuiSlot() {
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                    LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadout);
+                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                    player.openInventory(loadoutGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutGui);
+                }
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public Route getSpecificDisplayItemRoute() {
+                return LocalizationKey.LOADOUT_ABILITY_SELECT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+            }
+        };
     }
 
     @NotNull

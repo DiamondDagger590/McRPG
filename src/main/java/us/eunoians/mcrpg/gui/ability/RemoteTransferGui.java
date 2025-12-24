@@ -3,18 +3,17 @@ package us.eunoians.mcrpg.gui.ability;
 import com.diamonddagger590.mccore.CorePlugin;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
-import com.diamonddagger590.mccore.gui.ClosableGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.LinkedNode;
 import com.diamonddagger590.mccore.util.comparator.ChainComparator;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -22,12 +21,12 @@ import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.mining.remotetransfer.RemoteTransferCategory;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.gui.common.FillerItemGui;
-import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
-import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.gui.ability.slot.remotetransfer.RemoteTransferToggleAllSlot;
 import us.eunoians.mcrpg.gui.ability.slot.remotetransfer.RemoteTransferToggleSlot;
+import us.eunoians.mcrpg.gui.common.FillerItemGui;
+import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.filter.core.McRPGPlayerContextFilter;
@@ -45,7 +44,7 @@ import java.util.stream.Collectors;
 /**
  * This gui is used to let players toggle the allow state for a given material for their {@link RemoteTransfer} ability.
  */
-public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<McRPGPlayer>, FillerItemGui {
+public class RemoteTransferGui extends McRPGPaginatedGui implements FillerItemGui {
 
     private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot ->
             slot.getRemoteTransferCategory().getName(getCreatingPlayer()));
@@ -85,26 +84,32 @@ public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<
 
     @NotNull
     public McRPGPreviousGuiSlot getPreviousGuiSlot() {
-         return new McRPGPreviousGuiSlot() {
+
+        return new McRPGPreviousGuiSlot() {
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
-                    AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer,
-                            McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
+                    AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
                     Player player = mcRPGPlayer.getAsBukkitPlayer().get();
-                    player.closeInventory();
                     player.openInventory(abilityAttributeEditGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityAttributeEditGui);
                 }
                 return true;
             }
 
-             @NotNull
-             @Override
-             public Map<String, String> getPlaceholders(@NotNull McRPGPlayer mcRPGPlayer) {
-                 return Map.of("ability", McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY)
-                         .getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY).getName(mcRPGPlayer));
-             }
-         };
+            @NotNull
+            @Override
+            public Route getSpecificDisplayItemRoute() {
+                return LocalizationKey.REMOTE_TRANSFER_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+            }
+
+            @NotNull
+            @Override
+            public Map<String, String> getPlaceholders(@NotNull McRPGPlayer mcRPGPlayer) {
+                return Map.of("ability", McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY)
+                        .getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY).getName(mcRPGPlayer));
+            }
+        };
     }
 
     @NotNull
@@ -235,20 +240,6 @@ public class RemoteTransferGui extends McRPGPaginatedGui implements ClosableGui<
     @NotNull
     LinkedNode<RemoteTransferSortOption> getSortOption() {
         return sortOption;
-    }
-
-    @Override
-    public void onClose(InventoryCloseEvent inventoryCloseEvent) {
-        Player bukkitPlayer = (Player) inventoryCloseEvent.getPlayer();
-        var corePlayerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(bukkitPlayer.getUniqueId());
-        if (corePlayerOptional.isPresent()) {
-            McRPGPlayer mcRPGPlayer = corePlayerOptional.get();
-            AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer, McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY));
-            Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), () -> {
-                McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityAttributeEditGui);
-                bukkitPlayer.openInventory(abilityAttributeEditGui.getInventory());
-            }, 1L);
-        }
     }
 
     /**

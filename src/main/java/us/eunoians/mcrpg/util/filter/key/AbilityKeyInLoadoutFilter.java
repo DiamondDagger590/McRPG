@@ -30,11 +30,4 @@ public class AbilityKeyInLoadoutFilter implements McRPGPlayerContextFilter<Names
         return list.stream().filter(abilityKey -> abilityBeingReplaced == null ? loadout.canAbilityBeAddedToLoadout(abilityKey)
                 : loadout.canAbilityBeReplacedIntoLoadout(abilityBeingReplaced, abilityKey)).collect(Collectors.toSet());
     }
-
-//    @Override
-//    public Collection<NamespacedKey> filter(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Collection<NamespacedKey> list) {
-//        Bukkit.broadcastMessage("Filtering abilities: " + (abilityBeingReplaced == null ? "null" : abilityBeingReplaced.getKey()));
-//        return abilityBeingReplaced == null ? list : list.stream().filter(namespacedKey -> mcRPGPlayer.asSkillHolder()
-//                .getLoadout().canAbilityBeInLoadout(namespacedKey)).collect(Collectors.toSet());
-//    }
 }

@@ -181,9 +181,11 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String ABILITY_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-gui");
     public static final Route ABILITY_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "title"));
+    public static final Route ABILITY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "previous-gui-button.display-item"));
 
     private static final String SKILL_GUI_HEADER = toRoutePath(GUI_HEADER, "skill-gui");
     public static final Route SKILL_GUI_TITLE = Route.fromString(toRoutePath(SKILL_GUI_HEADER, "title"));
+    public static final Route SKILL_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_GUI_HEADER, "previous-gui-button.display-item"));
 
     private static final String HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "home-gui");
     public static final Route HOME_GUI_TITLE = Route.fromString(toRoutePath(HOME_GUI_HEADER, "title"));
@@ -196,6 +198,7 @@ public final class LocalizationKey extends ConfigFile {
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
     public static final Route REMOTE_TRANSFER_GUI_TITLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "title"));
+    public static final Route REMOTE_TRANSFER_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "previous-gui-button.display-item"));
     public static final String REMOTE_TRANSFER_GUI_CATEGORIES_HEADER = toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "categories");
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-enabled.display-item"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-disabled.display-item"));
@@ -205,6 +208,7 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String ABILITY_EDIT_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-edit-gui");
     public static final Route ABILITY_EDIT_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "title"));
+    public static final Route ABILITY_EDIT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "previous-gui-button.display-item"));
     private static final String LOCATION_ATTRIBUTE_HEADER = toRoutePath(ABILITY_EDIT_GUI_HEADER, "location-attribute");
     public static final Route LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM = Route.fromString(toRoutePath(LOCATION_ATTRIBUTE_HEADER, "no-location-saved.display-item"));
     public static final Route LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM = Route.fromString(toRoutePath(LOCATION_ATTRIBUTE_HEADER, "location-saved.display-item"));
@@ -219,14 +223,15 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String LOADOUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-gui");
     public static final Route LOADOUT_GUI_TITLE =  Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "title"));
+    public static final Route LOADOUT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "previous-gui-button.display-item"));
     public static final Route LOADOUT_GUI_INVALID_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "invalid-slot.display-item"));
     public static final Route LOADOUT_GUI_ABILITY_SLOT_ADDITIONAL_LORE = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "ability-slot.additional-lore"));
     public static final Route LOADOUT_GUI_FREE_ABILITY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "free-ability-slot.display-item"));
     public static final Route LOADOUT_GUI_OPEN_LOADOUT_DISPLAY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "loadout-display-open-slot.display-item"));
-    public static final Route LOADOUT_GUI_LOADOUT_HOME_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "loadout-home-slot.display-item"));
 
     private static final String LOADOUT_SELECTION_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-selection-gui");
     public static final Route LOADOUT_SELECTION_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "title"));
+    public static final Route LOADOUT_SELECTION_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "previous-gui-button.display-item"));
     private final static String LOADOUT_SELECTION_GUI_SELECTION_SLOT_GEYSER_HEADER = toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "loadout-selection-slot-geyser");
     private final static String LOADOUT_SELECTION_GUI_SELECTION_SLOT_HEADER = toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "loadout-selection-slot");
     public static final Route LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_GEYSER_HEADER, "active-loadout"));
@@ -253,10 +258,12 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String LOADOUT_ABILITY_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-ability-select-gui");
     public static final Route LOADOUT_ABILITY_SELECT_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "title"));
+    public static final Route LOADOUT_ABILITY_SELECT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "previous-gui-button.display-item"));
     public static final Route LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND = Route.fromString(toRoutePath(LOADOUT_ABILITY_SELECT_GUI_HEADER, "ability-select-slot.additional-lore"));
 
     private static final String PLAYER_SETTINGS_GUI_HEADER = toRoutePath(GUI_HEADER, "player-setting-gui");
     public static final Route PLAYER_SETTINGS_GUI_TITLE = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "title"));
+    public static final Route PLAYER_SETTINGS_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "previous-gui-button.display-item"));
     private static final String PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "experience-display-setting-slot");
     public static final Route PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_BOSS_BAR_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_HEADER, "boss-bar.display-item"));
     public static final Route PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_ACTION_BAR_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_EXPERIENCE_DISPLAY_SETTING_HEADER, "action-bar.display-item"));
@@ -276,6 +283,7 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String EXPERIENCE_BANK_GUI_HEADER = toRoutePath(GUI_HEADER, "experience-bank-gui");
     public static final Route EXPERIENCE_BANK_GUI_TITLE = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "title"));
+    public static final Route EXPERIENCE_BANK_GUI_PREVIOUS_GUI_BUTTON = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "previous-gui-button.display-item"));
     public static final Route EXPERIENCE_BANK_GUI_REDEEMABLE_EXPERIENCE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "redeemable-experience-slot.display-item"));
     public static final Route EXPERIENCE_BANK_GUI_REDEEMABLE_LEVELS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "redeemable-levels-slot.display-item"));
     private static final String EXPERIENCE_BANK_GUI_BOOSTED_EXPERIENCE_SLOT_HEADER = toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "boosted-experience-slot");
@@ -288,9 +296,11 @@ public final class LocalizationKey extends ConfigFile {
     private static final String REDEEMABLE_SKILL_SELECT_GUI_HEADER = toRoutePath(GUI_HEADER, "redeemable-skill-select-gui");
     public static final Route REDEEMABLE_SKILL_SELECT_GUI_TITLE = Route.fromString(toRoutePath(REDEEMABLE_SKILL_SELECT_GUI_HEADER, "title"));
     public static final Route REDEEMABLE_SKILL_SELECT_GUI_LORE = Route.fromString(toRoutePath(REDEEMABLE_SKILL_SELECT_GUI_HEADER, "lore-to-append"));
+    public static final Route REDEEMABLE_SKILL_SELECT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_SKILL_SELECT_GUI_HEADER, "previous-gui-button.display-item"));
 
     private static final String REDEEMABLE_EXPERIENCE_GUI_HEADER = toRoutePath(GUI_HEADER, "redeemable-experience-gui");
     public static final Route REDEEMABLE_EXPERIENCE_GUI_TITLE = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "title"));
+    public static final Route REDEEMABLE_EXPERIENCE_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "previous-gui-button.display-item"));
     public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_AMOUNT_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-amount.display-item"));
     public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_ALL_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-all.display-item"));
     public static final Route REDEEMABLE_EXPERIENCE_GUI_REDEEM_CUSTOM_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_EXPERIENCE_GUI_HEADER, "redeem-custom.display-item"));
@@ -299,6 +309,7 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String REDEEMABLE_LEVELS_GUI_HEADER = toRoutePath(GUI_HEADER, "redeemable-levels-gui");
     public static final Route REDEEMABLE_LEVELS_GUI_TITLE = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_GUI_HEADER, "title"));
+    public static final Route REDEEMABLE_LEVELS_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_GUI_HEADER, "previous-gui-button.display-item"));
     public static final Route REDEEMABLE_LEVELS_GUI_REDEEM_AMOUNT_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_GUI_HEADER, "redeem-amount.display-item"));
     public static final Route REDEEMABLE_LEVELS_GUI_REDEEM_ALL_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_GUI_HEADER, "redeem-all.display-item"));
     public static final Route REDEEMABLE_LEVELS_GUI_REDEEM_CUSTOM_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_GUI_HEADER, "redeem-custom.display-item"));

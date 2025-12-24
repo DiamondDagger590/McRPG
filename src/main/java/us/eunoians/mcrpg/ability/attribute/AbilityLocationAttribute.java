@@ -70,7 +70,7 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
         return new McRPGSlot() {
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return false;
+                return true;
             }
 
             @NotNull

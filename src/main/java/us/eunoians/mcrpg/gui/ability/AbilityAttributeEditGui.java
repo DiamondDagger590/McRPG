@@ -3,20 +3,22 @@ package us.eunoians.mcrpg.gui.ability;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
 import com.diamonddagger590.mccore.exception.gui.InventoryAlreadyExistsForGuiException;
 import com.diamonddagger590.mccore.gui.BaseGui;
-import com.diamonddagger590.mccore.gui.ClosableGui;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.GuiModifiableAttribute;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.common.FillerItemGui;
+import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
@@ -27,11 +29,10 @@ import java.util.Optional;
 /**
  * This gui is used for whenever an {@link Ability} is having its attributes modified.
  */
-public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer> {
+public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
 
     private final Player player;
     private final Ability ability;
-    private boolean ignoreClose = false;
 
     public AbilityAttributeEditGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
         super(mcRPGPlayer);
@@ -59,7 +60,7 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Clo
             throw new InventoryAlreadyExistsForGuiException(this);
         } else {
             int size = getModifiableAttributes().size();
-            this.inventory = Bukkit.createInventory(player, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size)),
+            this.inventory = Bukkit.createInventory(player, Math.min(54, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size) + 9)),
                     getCreatingPlayer().getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
                             .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.ABILITY_EDIT_GUI_TITLE, Map.of("ability", ability.getName(getCreatingPlayer()))));
             paintInventory();
@@ -86,31 +87,32 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Clo
                 removeSlot(i);
             }
         }
-    }
-
-    @Override
-    public void onClose(@NotNull InventoryCloseEvent inventoryCloseEvent) {
-        if (!ignoreClose) {
-            Player bukkitPlayer = (Player) inventoryCloseEvent.getPlayer();
-            var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(bukkitPlayer.getUniqueId());
-            if (playerOptional.isPresent()) {
-                McRPGPlayer mcRPGPlayer = playerOptional.get();
-                AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(McRPG.getInstance(), () -> {
-                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityGui);
-                    bukkitPlayer.openInventory(abilityGui.getInventory());
-                }, 1L);
-            }
+        setSlot(inventory.getSize() - 9, getPreviousGuiSlot());
+        for (int i = inventory.getSize() - 8; i < inventory.getSize(); i++) {
+            setSlot(i, getFillerItemSlot());
         }
     }
 
-    /**
-     * Set if this gui should not open a new {@link AbilityGui} on close.
-     *
-     * @param ignoreClose If this gui should not open a new {@link AbilityGui} on close.
-     */
-    public void setIgnoreClose(boolean ignoreClose) {
-        this.ignoreClose = ignoreClose;
+    @NotNull
+    public McRPGPreviousGuiSlot getPreviousGuiSlot() {
+        return new McRPGPreviousGuiSlot() {
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                    AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
+                    player.openInventory(abilityGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityGui);
+                }
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public Route getSpecificDisplayItemRoute() {
+                return LocalizationKey.ABILITY_EDIT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+            }
+        };
     }
 
     /**

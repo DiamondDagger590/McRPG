@@ -3,8 +3,11 @@ package us.eunoians.mcrpg.gui.loadout;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
@@ -14,9 +17,9 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
+import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.InvalidLoadoutSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.LoadoutAbilitySlot;
-import us.eunoians.mcrpg.gui.loadout.slot.LoadoutHomeSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayHomeSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -94,7 +97,7 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
             setSlot(NAVIGATION_ROW_START_INDEX + i, fillerSlot);
         }
         // Set the back slot
-        setSlot(LOADOUT_SELECTION_SLOT_INDEX, new LoadoutHomeSlot(getCreatingPlayer()));
+        setSlot(LOADOUT_SELECTION_SLOT_INDEX, getPreviousGuiSlot());
         // Set the sort slot
         setSlot(SORT_SLOT_INDEX, getAbilitySortNode().getNodeValue().getSlot());
         // If the page is not the first page, then we need to put a previous arrow button
@@ -107,6 +110,28 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         }
         // Set the toggle loadout slot
         setSlot(LOADOUT_DISPLAY_EDIT_SLOT, new LoadoutDisplayHomeSlot(getLoadout()));
+    }
+
+    @NotNull
+    public McRPGPreviousGuiSlot getPreviousGuiSlot() {
+        return new McRPGPreviousGuiSlot() {
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                    LoadoutSelectionGui loadoutSelectionGui = new LoadoutSelectionGui(mcRPGPlayer);;
+                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                    player.openInventory(loadoutSelectionGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutSelectionGui);
+                }
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public Route getSpecificDisplayItemRoute() {
+                return LocalizationKey.LOADOUT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+            }
+        };
     }
 
     @Override

@@ -3,8 +3,11 @@ package us.eunoians.mcrpg.gui.skill;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +15,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
+import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
+import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.skill.slot.SkillSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -25,6 +30,7 @@ import java.util.Set;
 public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
 
     protected static final int NAVIGATION_ROW_START_INDEX = 45;
+    protected static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
     protected static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     protected static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     protected static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
@@ -70,6 +76,7 @@ public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
         if (page < getMaximumPage()) {
             setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
+        setSlot(PREVIOUS_GUI_SLOT_INDEX, getPreviousGuiSlot());
     }
 
     @Override
@@ -82,6 +89,28 @@ public class SkillGui extends PaginatedSortedSkillGui implements FillerItemGui {
                 removeSlot(i);
             }
         }
+    }
+
+    @NotNull
+    public McRPGPreviousGuiSlot getPreviousGuiSlot() {
+        return new McRPGPreviousGuiSlot() {
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                    HomeGui homeGui = new HomeGui(mcRPGPlayer);;
+                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                    player.openInventory(homeGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, homeGui);
+                }
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public Route getSpecificDisplayItemRoute() {
+                return LocalizationKey.SKILL_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+            }
+        };
     }
 
     @Override

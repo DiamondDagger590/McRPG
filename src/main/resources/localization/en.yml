@@ -297,11 +297,10 @@ gui:
     # Configure the back button
     previous-gui-button:
       display-item:
-        name: "<red>Return to Editing</red>"
+        name: "<red>Return to Previous GUI</red>"
         material: BARRIER
-        # Supports the following placeholders: <ability>
         lore:
-          - '<gray>Click to return to editing <gold><ability></gold>'
+          - '<gray>Click to return to previous gui.</gold>'
     # Configure the item to be used as a filler for the gui
     filler-item:
       display-item:
@@ -357,6 +356,14 @@ gui:
   # This GUI allows players to view and edit their abilities.
   ability-gui:
     title: '<gold>Viewing Abilities'
+    # Configure the slot players click to go back to the home gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Home Menu</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Home Menu</gray>'
   # Some GUIs (such as the ability gui) have different ability sort options that are provided.
   # This allows for configuring those options.
   ability-sort-types:
@@ -405,6 +412,14 @@ gui:
   # This GUI allows players to view and edit their skills.
   skill-gui:
     title: '<gold>Viewing Skills'
+    # Configure the slot players click to go back to the home gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Home Menu</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Home Menu</gray>'
   # Some GUIs (such as the skills gui) have different skill sort options that are provided.
   # This allows for configuring those options.
   skill-sort-types:
@@ -430,6 +445,14 @@ gui:
   # across multiple GUIs, they are configured under the ability.ability-attribute section.
   ability-edit-gui:
     title: '<gold>Editing <ability>'
+    # Configure the slot players click to go back to the home gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Ability Selection</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Ability Selection</gray>'
     # Allows configuration of displaying different states of a location attribute (such as Remote Transfer)
     location-attribute:
       # What item should be used if there is no location saved for this attribute?
@@ -534,7 +557,7 @@ gui:
         lore:
           - '<gold>Click <gray>to change how this loadout is displayed.'
     # Configure the slot players can click to go from the loadout gui back to the loadout select gui.
-    loadout-home-slot:
+    previous-gui-button:
       display-item:
         material: BARRIER
         name: '<red>Return to loadout selection</red>'
@@ -543,6 +566,14 @@ gui:
   loadout-selection-gui:
     # The title of the gui
     title: '<gold>Viewing loadouts'
+    # Configure the slot players click to go back to the home gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Home Menu</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Home Menu</gray>'
     # Configure the slot for any bedrock players using geyser
     # Uses the loadout's display item for the slot so the <material> field will do nothing here.
     loadout-selection-slot-geyser:
@@ -644,6 +675,14 @@ gui:
   # This GUI allows players to select abilities to put into their loadouts.
   loadout-ability-select-gui:
     title: '<gold>Select ability to use.'
+    # Configure the slot players click to go back to the loadout menu.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to editing Loadout</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to editing your Loadout</gray>'
     # Configure the slot players click to add an ability to their loadout.
     ability-select-slot:
       # The item displayed is from the ability's display, but this lore is appended to let players know what to do
@@ -653,6 +692,14 @@ gui:
   player-setting-gui:
     # The title of the gui
     title: '<gold>Editing Settings'
+    # Configure the slot players click to go back to the home gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Home Menu</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Home Menu</gray>'
     # Configure the slot representing the experience display setting controlling how players can get experience updates visually.
     experience-display-setting-slot:
       # Configure the setting display for when the setting is set to BOSS_BAR
@@ -776,6 +823,13 @@ gui:
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Editing <ability></red>"
+        material: BARRIER
+        # Supports the following placeholders: <ability>
+        lore:
+          - '<gray>Click to return to editing <gold><ability></gold>'
     # These categories should match exactly to the ones in the mining_configuration.yml.
     # The "all" category is an internal concept that acts as the combination of all configured categories.
     # If any category is defined in the mining_configuration.yml but not here, you will get errors.
@@ -884,6 +938,14 @@ gui:
   experience-bank-gui:
     # What should the displayed title of this GUI be
     title: '<black>Experience Bank'
+    # Configure the slot players click to go back to the home gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Home Menu</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Home Menu</gray>'
     # This slot allows players to open the GUI for redeeming redeemable experience
     redeemable-experience-slot:
       display-item:
@@ -935,11 +997,28 @@ gui:
           - '<gray>This will consume <gold>0.5</gold> from your banked levels'
   redeemable-skill-select-gui:
     title: "<black>Select Skill to Redeem Into"
+    # Configure the slot players click to go back to the experience bank gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to the Experience Bank</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Experience Bank</gray>'
+    # The lore to append to the Skill items from the skill-gui
     lore-to-append:
       - ''
       - '<gray><gold>Click</gold> to spend your redeemable resources into this skill.'
   redeemable-experience-gui:
     title: "<black>Redeeming Experience into <skill>"
+    # Configure the slot players click to go back to the redeemable skill selection gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to selecting a Skill</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to selecting a Skill./gray>'
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
@@ -965,6 +1044,14 @@ gui:
       invalid-input: '<red>The input provided not a valid number. Please try redeeming again.'
   redeemable-levels-gui:
     title: "<black>Redeeming Levels into <skill>"
+    # Configure the slot players click to go back to the redeemable skill selection gui.
+    # Remove this to use the common previous gui button instead.
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to selecting a Skill</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to selecting a Skill./gray>'
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
