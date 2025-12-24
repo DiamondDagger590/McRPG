@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.command.admin;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
@@ -22,7 +21,6 @@ public class ReloadPluginCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("admin")

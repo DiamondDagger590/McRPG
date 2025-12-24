@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
@@ -32,7 +31,6 @@ public class UnlinkChestCommand {
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("unlink")
                 .handler(commandContext -> {
