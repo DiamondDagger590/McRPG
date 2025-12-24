@@ -19,11 +19,9 @@ import java.util.Set;
  */
 public final class ExperienceModifierRegistry implements Registry<ExperienceModifier> {
 
-    private final McRPG mcRPG;
     private final Set<ExperienceModifier> experienceModifiers;
 
     public ExperienceModifierRegistry(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
         experienceModifiers = new HashSet<>();
     }
 
@@ -60,7 +58,6 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
         }
         // Add to the multiplier (has to come after so the base experience being passed in is accurate
         double additiveModifier = 0d;
-        boolean first = false;
         for (ExperienceModifier experienceModifier : experienceModifiers) {
             if (experienceModifier.isAdditive() && experienceModifier.canProcessContext(skillExperienceContext)) {
                 additiveModifier += experienceModifier.getModifier(skillExperienceContext, baseExperience);
