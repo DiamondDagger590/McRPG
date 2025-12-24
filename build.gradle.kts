@@ -123,7 +123,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<ProcessResources> {
-    filesMatching("**/*.yml") {
+    filesMatching("**/plugin.yml") {
         expand(project.properties)
     }
 }
