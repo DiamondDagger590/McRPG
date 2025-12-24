@@ -317,8 +317,9 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route REDEEMABLE_LEVELS_GUI_REDEEM_INVALID_INPUT = Route.fromString(toRoutePath(REDEEMABLE_LEVELS_GUI_HEADER, "redeem-custom.invalid-input"));
 
     private static final String ABILITY_HEADER = "ability";
-    public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-still-on-cooldown"));
-    public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_HEADER, "ability-no-longer-on-cooldown"));
+    private static final String ABILITY_COOLDOWN_HEADER = toRoutePath(ABILITY_HEADER, "cooldown");
+    public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_COOLDOWN_HEADER, "ability-still-on-cooldown"));
+    public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_COOLDOWN_HEADER, "ability-no-longer-on-cooldown"));
 
     private static final String ABILITY_LORE_HEADER = toRoutePath(ABILITY_HEADER, "lore");
     private static final String ABILITY_QUEST_LORE_HEADER = toRoutePath(ABILITY_LORE_HEADER, "quest");
