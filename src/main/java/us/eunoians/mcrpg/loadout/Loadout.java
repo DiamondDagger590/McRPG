@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.loadout;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -141,7 +140,7 @@ public final class Loadout {
     public boolean canAbilityBeAddedToLoadout(@NotNull NamespacedKey key) {
         Ability ability = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(key);
         // Check if it's a default ability
-        if (!(ability instanceof UnlockableAbility unlockableAbility)) {
+        if (!(ability instanceof UnlockableAbility)) {
             return false;
         }
         for (NamespacedKey abilityKey : abilities) {
@@ -172,7 +171,7 @@ public final class Loadout {
         Ability newAbility = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(newAbilityKey);
         Ability oldAbility = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(oldAbilityKey);
         // Check if it's a default ability
-        if (!(newAbility instanceof UnlockableAbility unlockableAbility)) {
+        if (!(newAbility instanceof UnlockableAbility)) {
             return false;
         } else if (oldAbilityKey.equals(newAbilityKey)) {
             return false;
@@ -187,13 +186,13 @@ public final class Loadout {
     }
 
     /**
-     * Gets an {@link ImmutableSet} of {@link NamespacedKey}s for all abilities in this loadout.
+     * Gets a {@link Set} of {@link NamespacedKey}s for all abilities in this loadout.
      *
-     * @return An {@link ImmutableSet} of {@link NamespacedKey} for all abilities in this loadout.
+     * @return A {@link Set} of {@link NamespacedKey} for all abilities in this loadout.
      */
     @NotNull
     public Set<NamespacedKey> getAbilities() {
-        return ImmutableSet.copyOf(abilities);
+        return Set.copyOf(abilities);
     }
 
     /**

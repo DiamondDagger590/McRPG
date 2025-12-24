@@ -83,7 +83,7 @@ public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribu
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 var guiOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).getOpenedGui(mcRPGPlayer);
                 if (mcRPGPlayer.getAsBukkitPlayer().isPresent()
-                        && guiOptional.isPresent() && guiOptional.get() instanceof AbilityAttributeEditGui abilityAttributeEditGui) {
+                        && guiOptional.isPresent() && guiOptional.get() instanceof AbilityAttributeEditGui) {
                     RemoteTransferGui remoteTransferGui = new RemoteTransferGui(mcRPGPlayer);
                     Player player = mcRPGPlayer.getAsBukkitPlayer().get();
                     player.closeInventory();

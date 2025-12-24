@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.quest;
 
 import com.diamonddagger590.mccore.registry.manager.Manager;
-import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
@@ -29,7 +28,7 @@ public class QuestManager extends Manager<McRPG> {
 
     @NotNull
     public Set<Quest> getActiveQuests() {
-        return ImmutableSet.copyOf(activeQuests.values());
+        return Set.copyOf(activeQuests.values());
     }
 
     public boolean isQuestActive(@NotNull UUID uuid) {
@@ -48,7 +47,7 @@ public class QuestManager extends Manager<McRPG> {
     public void removeActiveQuest(@NotNull Quest quest) {
         UUID questUUID = quest.getUUID();
         activeQuests.remove(questUUID);
-        Set<UUID> questHolders = questsToHolders.containsKey(questUUID) ? questsToHolders.remove(questUUID) : ImmutableSet.of();
+        Set<UUID> questHolders = questsToHolders.containsKey(questUUID) ? questsToHolders.remove(questUUID) : Set.of();
         for (UUID questHolderUUID : questHolders) {
             removeHolderFromQuest(questHolderUUID, questUUID);
         }
@@ -112,7 +111,7 @@ public class QuestManager extends Manager<McRPG> {
 
     @NotNull
     public Set<UUID> getQuestsForHolder(@NotNull UUID questHolderUUID) {
-        return holdersToQuests.containsKey(questHolderUUID) ? ImmutableSet.copyOf(holdersToQuests.get(questHolderUUID)) : ImmutableSet.of();
+        return holdersToQuests.containsKey(questHolderUUID) ? Set.copyOf(holdersToQuests.get(questHolderUUID)) : Set.of();
     }
     @NotNull
     public Set<UUID> getQuestHoldersForQuest(@NotNull Quest quest) {
@@ -121,6 +120,6 @@ public class QuestManager extends Manager<McRPG> {
 
     @NotNull
     public Set<UUID> getQuestHoldersForQuest(@NotNull UUID questUUID) {
-        return questsToHolders.containsKey(questUUID) ? ImmutableSet.copyOf(questsToHolders.get(questUUID)) : ImmutableSet.of();
+        return questsToHolders.containsKey(questUUID) ? Set.copyOf(questsToHolders.get(questUUID)) : Set.of();
     }
 }

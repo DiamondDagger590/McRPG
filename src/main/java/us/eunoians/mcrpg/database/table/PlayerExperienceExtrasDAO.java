@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 

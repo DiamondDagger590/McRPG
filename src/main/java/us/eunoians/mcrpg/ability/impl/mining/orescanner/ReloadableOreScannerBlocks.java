@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
  * This will pull information from the configuration file and convert each section under the provided {@link Route} into
  * its own {@link OreScannerBlockType}.
  */
+@SuppressWarnings("deprecation") // ChatColor is required by GlowingBlocks library
 public class ReloadableOreScannerBlocks extends ReloadableContent<Set<OreScannerBlockType>> {
 
     public ReloadableOreScannerBlocks(@NotNull YamlDocument yamlDocument, @NotNull Route route) {

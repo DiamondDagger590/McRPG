@@ -2,10 +2,8 @@ package us.eunoians.mcrpg.ability.attribute;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
@@ -106,8 +104,7 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
             @NotNull
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                if (ability instanceof TierableAbility tierableAbility) {
-                    MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+                if (ability instanceof TierableAbility) {
                     ItemBuilder itemBuilder = ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(LocalizationKey.TIER_ATTRIBUTE_DISPLAY_ITEM));
                     var extraLore = AbilityLoreAppender.getAppendLore(mcRPGPlayer, ability);
                     extraLore.getLeft().forEach(itemBuilder::addDisplayLore);

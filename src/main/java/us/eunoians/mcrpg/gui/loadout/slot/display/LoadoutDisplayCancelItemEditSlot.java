@@ -9,7 +9,6 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.display.LoadoutDisplayItemInputGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
-import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
@@ -18,10 +17,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  */
 public class LoadoutDisplayCancelItemEditSlot implements McRPGSlot {
 
-    private final Loadout loadout;
-
-    public LoadoutDisplayCancelItemEditSlot(@NotNull Loadout loadout){
-        this.loadout = loadout;
+    public LoadoutDisplayCancelItemEditSlot(){
     }
 
     @Override

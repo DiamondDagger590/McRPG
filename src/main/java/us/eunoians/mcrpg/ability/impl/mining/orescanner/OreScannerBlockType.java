@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.ability.impl.mining.orescanner;
 
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -22,6 +21,7 @@ import java.util.Set;
  * @param color         The {@link ChatColor} to use when highlighting the blocks (only on paper).
  * @param weight        The weight of this scanner type.
  */
+@SuppressWarnings("deprecation") // ChatColor is required by GlowingBlocks library
 public record OreScannerBlockType(@NotNull Set<Material> scannableOres, @NotNull String typeName,
                                   @NotNull ChatColor color, int weight) {
 
@@ -35,12 +35,12 @@ public record OreScannerBlockType(@NotNull Set<Material> scannableOres, @NotNull
     /**
      * Gets the {@link Set} of {@link Material}s that can be scanned by {@link us.eunoians.mcrpg.ability.impl.mining.OreScanner}.
      *
-     * @return An {@link ImmutableSet} of {@link Material}s that can be scanned by {@link us.eunoians.mcrpg.ability.impl.mining.OreScanner}.
+     * @return An immutable {@link Set} of {@link Material}s that can be scanned by {@link us.eunoians.mcrpg.ability.impl.mining.OreScanner}.
      */
     @Override
     @NotNull
     public Set<Material> scannableOres() {
-        return ImmutableSet.copyOf(scannableOres);
+        return Set.copyOf(scannableOres);
     }
 
     /**

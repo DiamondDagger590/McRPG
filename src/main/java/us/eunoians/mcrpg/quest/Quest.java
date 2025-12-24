@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.quest;
 
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +35,6 @@ public class Quest implements McRPGContent {
     private final UUID uuid;
     private final String configKey;
     private final Set<QuestObjective> questObjectives;
-    private boolean started = false;
-    private boolean abandoned = false;
     private boolean completed = false;
     private QuestReward questReward;
 
@@ -89,7 +86,7 @@ public class Quest implements McRPGContent {
      */
     @NotNull
     public Set<QuestObjective> getQuestObjectives() {
-        return ImmutableSet.copyOf(questObjectives);
+        return Set.copyOf(questObjectives);
     }
 
     /**
@@ -182,7 +179,6 @@ public class Quest implements McRPGContent {
         QuestStartEvent questStartEvent = new QuestStartEvent(this);
         Bukkit.getPluginManager().callEvent(questStartEvent);
         startListeningForProgression();
-        started = true;
     }
 
     public void completeQuest() {

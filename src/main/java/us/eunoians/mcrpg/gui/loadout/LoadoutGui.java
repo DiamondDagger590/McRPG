@@ -80,9 +80,9 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         int totalLoadoutSize = loadout.getAbilities().size() + loadout.getRemainingLoadoutSize() - difference;
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < sortedAbilities.size()) {
-                setSlot(i, new LoadoutAbilitySlot(getCreatingPlayer(), loadout, sortedAbilities.get(i)));
+                setSlot(i, new LoadoutAbilitySlot(loadout, sortedAbilities.get(i)));
             } else if (i < totalLoadoutSize) {
-                setSlot(i, new LoadoutAbilitySlot(getCreatingPlayer(), loadout));
+                setSlot(i, new LoadoutAbilitySlot(loadout));
             } else {
                 setSlot(i, new InvalidLoadoutSlot());
             }

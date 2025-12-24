@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.entity.player;
 
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 /**

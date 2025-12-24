@@ -28,7 +28,7 @@ public class SkillRegistryTest extends McRPGBaseTest {
     @BeforeEach
     public void setup() {
         server.getPluginManager().clearEvents();
-        skillRegistry = spy(new SkillRegistry(mcRPG));
+        skillRegistry = spy(new SkillRegistry());
         RegistryAccess.registryAccess().register(skillRegistry);
     }
 

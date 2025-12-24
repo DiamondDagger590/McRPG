@@ -5,9 +5,6 @@ import com.diamonddagger590.mccore.testing.InternalResetTestTools;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import us.eunoians.mcrpg.McRPG;
-
-import static org.mockito.Mockito.mock;
 
 /**
  * This extension sets up the {@link ExperienceModifierRegistry} to be pulled out of {@link RegistryAccess}
@@ -20,7 +17,7 @@ public class ExperienceModifierRegistryExtension implements BeforeEachCallback, 
 
     @Override
     public void beforeEach(ExtensionContext context)  {
-        ExperienceModifierRegistry experienceModifierRegistry = new ExperienceModifierRegistry(mock(McRPG.class));
+        ExperienceModifierRegistry experienceModifierRegistry = new ExperienceModifierRegistry();
         try {
             RegistryAccess.registryAccess().register(experienceModifierRegistry);
         }

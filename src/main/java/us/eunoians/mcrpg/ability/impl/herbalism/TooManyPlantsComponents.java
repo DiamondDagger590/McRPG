@@ -1,9 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.herbalism;
 
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
@@ -31,9 +29,6 @@ public class TooManyPlantsComponents {
             if (!OnBlockBreakComponent.super.shouldActivate(abilityHolder, event)) {
                 return false;
             }
-            BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
-            Player player = blockBreakEvent.getPlayer();
-            Block block = blockBreakEvent.getBlock();
             TooManyPlants tooManyPlants = (TooManyPlants) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(TooManyPlants.TOO_MANY_PLANTS_KEY);
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Herbalism.HERBALISM_KEY);

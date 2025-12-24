@@ -23,7 +23,6 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.ability.slot.remotetransfer.RemoteTransferToggleAllSlot;
 import us.eunoians.mcrpg.gui.ability.slot.remotetransfer.RemoteTransferToggleSlot;
-import us.eunoians.mcrpg.gui.common.FillerItemGui;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  * This gui is used to let players toggle the allow state for a given material for their {@link RemoteTransfer} ability.
  */
-public class RemoteTransferGui extends McRPGPaginatedGui implements FillerItemGui {
+public class RemoteTransferGui extends McRPGPaginatedGui {
 
     private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot ->
             slot.getRemoteTransferCategory().getName(getCreatingPlayer()));

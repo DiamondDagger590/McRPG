@@ -6,7 +6,6 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -57,7 +56,6 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
 
                 @Override
                 public void run() {
-                    BossBar toRemoveBossBar = bossBar;
                     if (getActiveDisplay().isPresent() && taskId == this.getBukkitTaskId()) {
                         cleanDisplay();
                     }
@@ -87,7 +85,6 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
         int currentExperience = skillHolderData.getCurrentExperience();
         int experienceForNextLevel = skillHolderData.getExperienceForNextLevel();
         int remainingExperienceForNextLevel = skillHolderData.getRemainingExperienceForNextLevel();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         Component component = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.BOSS_BAR_DISPLAY_MESSAGE, Map.of(
                 SkillItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer),
                 SkillItemPlaceholderKeys.LEVEL.getKey(), Integer.toString(currentLevel),

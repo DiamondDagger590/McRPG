@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.ability.impl.mining.remotetransfer;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
-import com.google.common.collect.ImmutableSet;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -37,7 +36,7 @@ public class RemoteTransferCategory {
 
     @NotNull
     public Set<CustomItemWrapper> getCategoryItems(){
-        return ImmutableSet.copyOf(categoryItems);
+        return Set.copyOf(categoryItems);
     }
 
     public void setCategoryBlocks(@NotNull Set<CustomItemWrapper> categoryItems){

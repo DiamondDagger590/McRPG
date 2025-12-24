@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.listener.ability;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -27,7 +26,6 @@ public class OnAbilityCooldownExpireListener implements Listener {
         var playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(abilityCooldownExpireEvent.getAbilityHolder().getUUID());
         if (playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
-            MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
             McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer,

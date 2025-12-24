@@ -1,9 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.woodcutting;
 
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
@@ -34,9 +32,6 @@ public class ExtraLumberComponents {
             if (!OnBlockBreakComponent.super.shouldActivate(abilityHolder, event)) {
                 return false;
             }
-            BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
-            Player player = blockBreakEvent.getPlayer();
-            Block block = blockBreakEvent.getBlock();
             ExtraLumber extraLumber = (ExtraLumber) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraLumber.EXTRA_LUMBER_KEY);
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(WoodCutting.WOODCUTTING_KEY);

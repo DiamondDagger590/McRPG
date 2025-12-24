@@ -22,11 +22,9 @@ import java.util.Set;
  */
 public class HomeSettingsSlot implements McRPGSlot {
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Player player;
 
     public HomeSettingsSlot(@NotNull McRPGPlayer mcRPGPlayer) {
-        this.mcRPGPlayer = mcRPGPlayer;
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
             throw new CorePlayerOfflineException(mcRPGPlayer);

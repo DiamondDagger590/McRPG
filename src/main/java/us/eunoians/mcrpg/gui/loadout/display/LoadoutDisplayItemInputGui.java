@@ -77,7 +77,7 @@ public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements 
         for (int i : PURPLE_SLOTS) {
             setSlot(i, highlightSlot);
         }
-        setSlot(RETURN_SLOT, new LoadoutDisplayCancelItemEditSlot(loadout));
+        setSlot(RETURN_SLOT, new LoadoutDisplayCancelItemEditSlot());
         setSlot(CONFIRM_SLOT, new LoadoutDisplayItemConfirmSlot());
     }
 

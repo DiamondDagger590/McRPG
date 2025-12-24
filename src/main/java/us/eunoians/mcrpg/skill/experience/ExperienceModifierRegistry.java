@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.apiguardian.api.API;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 import us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier;
@@ -19,11 +18,9 @@ import java.util.Set;
  */
 public final class ExperienceModifierRegistry implements Registry<ExperienceModifier> {
 
-    private final McRPG mcRPG;
     private final Set<ExperienceModifier> experienceModifiers;
 
-    public ExperienceModifierRegistry(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+    public ExperienceModifierRegistry() {
         experienceModifiers = new HashSet<>();
     }
 
@@ -60,7 +57,6 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
         }
         // Add to the multiplier (has to come after so the base experience being passed in is accurate
         double additiveModifier = 0d;
-        boolean first = false;
         for (ExperienceModifier experienceModifier : experienceModifiers) {
             if (experienceModifier.isAdditive() && experienceModifier.canProcessContext(skillExperienceContext)) {
                 additiveModifier += experienceModifier.getModifier(skillExperienceContext, baseExperience);

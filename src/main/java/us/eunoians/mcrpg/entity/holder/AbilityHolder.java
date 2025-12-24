@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.entity.holder;
 
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -101,15 +100,15 @@ public class AbilityHolder {
     }
 
     /**
-     * Gets an {@link ImmutableSet} of all available abilities that this holder
+     * Gets an immutable {@link Set} of all available abilities that this holder
      * has access to.
      *
-     * @return An {@link ImmutableSet} of all available abilities that this
+     * @return An immutable {@link Set} of all available abilities that this
      * holder has access to.
      */
     @NotNull
-    public ImmutableSet<NamespacedKey> getAvailableAbilities() {
-        return ImmutableSet.copyOf(availableAbilities);
+    public Set<NamespacedKey> getAvailableAbilities() {
+        return Set.copyOf(availableAbilities);
     }
 
     /**
@@ -380,7 +379,7 @@ public class AbilityHolder {
      */
     @NotNull
     public Set<NamespacedKey> getCurrentlyActiveAbilities() {
-        return ImmutableSet.copyOf(activeAbilities);
+        return Set.copyOf(activeAbilities);
     }
 
     /**
@@ -560,7 +559,7 @@ public class AbilityHolder {
      * @param cooldown   The amount of seconds the cooldown timer should run for
      */
     public void startCooldownExpireNotificationTimer(@NotNull NamespacedKey abilityKey, long cooldown) {
-        if (Bukkit.getEntity(uuid) instanceof Player player) {
+        if (Bukkit.getEntity(uuid) instanceof Player) {
             // Remove any existing cooldown timers
             removeCooldownExpireNotificationTimer(abilityKey);
             AbilityHolder abilityHolder = this;

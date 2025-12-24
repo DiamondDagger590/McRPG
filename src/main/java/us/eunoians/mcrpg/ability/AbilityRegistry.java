@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
 import com.diamonddagger590.mccore.registry.Registry;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -202,11 +201,11 @@ public class AbilityRegistry implements Registry<Ability> {
     }
 
     /**
-     * Gets an {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * Gets an immutable {@link Set} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
      * belonging to the provided {@link Skill}.
      *
      * @param skill The {@link Skill} to get the {@link Ability Abilities} for
-     * @return An {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * @return An immutable {@link Set} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
      * belonging to the provided {@link Skill}.
      */
     @NotNull
@@ -215,38 +214,38 @@ public class AbilityRegistry implements Registry<Ability> {
     }
 
     /**
-     * Gets an {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * Gets an immutable {@link Set} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
      * belonging to the {@link Skill} associated with the provided {@link NamespacedKey}.
      *
      * @param skillKey The {@link NamespacedKey} to get the {@link Ability Abilities} for
-     * @return An {@link ImmutableSet} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
+     * @return An immutable {@link Set} of {@link NamespacedKey NamespacedKeys} representing all {@link Ability Abilities}
      * belonging to the provided {@link NamespacedKey}.
      */
     @NotNull
     public Set<NamespacedKey> getAbilitiesBelongingToSkill(@NotNull NamespacedKey skillKey) {
-        return abilitiesWithSkills.containsKey(skillKey) ? ImmutableSet.copyOf(abilitiesWithSkills.get(skillKey)) : ImmutableSet.of();
+        return abilitiesWithSkills.containsKey(skillKey) ? Set.copyOf(abilitiesWithSkills.get(skillKey)) : Set.of();
     }
 
     /**
-     * Gets an {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to {@link Ability Abilities} that don't
+     * Gets an immutable {@link Set} of all {@link NamespacedKey NamespacedKeys} belonging to {@link Ability Abilities} that don't
      * have any skills associated with them.
      *
-     * @return An {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to {@link Ability Abilities} that don't
+     * @return An immutable {@link Set} of all {@link NamespacedKey NamespacedKeys} belonging to {@link Ability Abilities} that don't
      * have any skills associated with them.
      */
     @NotNull
     public Set<NamespacedKey> getAbilitiesWithoutSkills() {
-        return ImmutableSet.copyOf(abilitiesWithoutSkills);
+        return Set.copyOf(abilitiesWithoutSkills);
     }
 
     /**
-     * Gets an {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to all registered {@link Ability Abilities}.
+     * Gets an immutable {@link Set} of all {@link NamespacedKey NamespacedKeys} belonging to all registered {@link Ability Abilities}.
      *
-     * @return An {@link ImmutableSet} of all {@link NamespacedKey NamespacedKeys} belonging to all registered {@link Ability Abilities}.
+     * @return An immutable {@link Set} of all {@link NamespacedKey NamespacedKeys} belonging to all registered {@link Ability Abilities}.
      */
     @NotNull
     public Set<NamespacedKey> getAllAbilities() {
-        return ImmutableSet.copyOf(abilities.keySet());
+        return Set.copyOf(abilities.keySet());
     }
 
     /**

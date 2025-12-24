@@ -3,9 +3,7 @@ package us.eunoians.mcrpg.gui.setting.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.NativeLocale;
@@ -24,7 +22,6 @@ public class LocaleSettingSlot extends McRPGSettingSlot<LocaleSetting> {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
         switch (getSetting()) {
             case CLIENT_LOCALE -> {
                 return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)

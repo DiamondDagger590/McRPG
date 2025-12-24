@@ -38,7 +38,7 @@ public class DebugCommand {
 
                     Optional<AbilityHolder> abilityHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(player.getUniqueId());
                             if (abilityHolderOptional.isPresent() && abilityHolderOptional.get() instanceof SkillHolder skillHolder) {
-                                player.sendMessage(miniMessage.deserialize(String.format("<gray>Printing debug information for player <gold>%s", player.getDisplayName())));
+                                player.sendMessage(miniMessage.deserialize(String.format("<gray>Printing debug information for player <gold>%s", player.getName())));
                                 player.sendMessage(miniMessage.deserialize(String.format("<gray>Upgrade Points: <gold>%s", skillHolder.getUpgradePoints())));
                                 for (NamespacedKey skill : skillHolder.getSkills()) {
                                     Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);

@@ -32,7 +32,7 @@ public class CorePlayerLoadListener implements Listener {
             for (NamespacedKey abilityKey : skillHolder.getAvailableAbilities()) {
                 Ability ability = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey);
                 var abilityDataOptional = skillHolder.getAbilityData(abilityKey);
-                if (abilityDataOptional.isPresent() && ability instanceof CooldownableAbility cooldownableAbility) {
+                if (abilityDataOptional.isPresent() && ability instanceof CooldownableAbility) {
                     AbilityData abilityData = abilityDataOptional.get();
                     var cooldownAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
                     if (cooldownAttributeOptional.isPresent()) {

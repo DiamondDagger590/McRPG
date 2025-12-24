@@ -1,11 +1,9 @@
 package us.eunoians.mcrpg.skill;
 
 import com.diamonddagger590.mccore.registry.Registry;
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.event.skill.SkillRegisterEvent;
 import us.eunoians.mcrpg.event.skill.SkillUnregisterEvent;
 import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
@@ -30,11 +28,9 @@ import java.util.Set;
  */
 public class SkillRegistry implements Registry<Skill> {
 
-    private final McRPG mcRPG;
     private final Map<NamespacedKey, Skill> skills;
 
-    public SkillRegistry(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+    public SkillRegistry() {
         this.skills = new HashMap<>();
     }
 
@@ -72,7 +68,7 @@ public class SkillRegistry implements Registry<Skill> {
      * @return An immutable copy of all registered skill keys.
      */
     public Set<NamespacedKey> getRegisteredSkillKeys() {
-        return ImmutableSet.copyOf(skills.keySet());
+        return Set.copyOf(skills.keySet());
     }
 
 
@@ -82,7 +78,7 @@ public class SkillRegistry implements Registry<Skill> {
      * @return An immutable copy of all registered skills.
      */
     public Set<Skill> getRegisteredSkills() {
-        return ImmutableSet.copyOf(skills.values());
+        return Set.copyOf(skills.values());
     }
 
     /**

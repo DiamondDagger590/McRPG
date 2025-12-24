@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.ability;
 
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -98,25 +97,25 @@ public class AbilityData {
     }
 
     /**
-     * Gets an {@link ImmutableSet} that contains all {@link NamespacedKey NamespacedKeys} that represent {@link AbilityAttribute AbilityAttributes} that
+     * Gets an immutable {@link Set} that contains all {@link NamespacedKey NamespacedKeys} that represent {@link AbilityAttribute AbilityAttributes} that
      * are stored inside of this data.
      *
-     * @return An {@link ImmutableSet} that contains all {@link NamespacedKey NamespacedKeys} that represents {@link AbilityAttribute AbilityAttributes} that
+     * @return An immutable {@link Set} that contains all {@link NamespacedKey NamespacedKeys} that represents {@link AbilityAttribute AbilityAttributes} that
      * are stored inside of this data.
      */
     @NotNull
     public Set<NamespacedKey> getAllAttributeKeys() {
-        return ImmutableSet.copyOf(abilityAttributes.keySet());
+        return Set.copyOf(abilityAttributes.keySet());
     }
 
     /**
-     * Gets an {@link ImmutableSet} that contains all {@link AbilityAttribute AbilityAttributes} that are stored
+     * Gets an immutable {@link Set} that contains all {@link AbilityAttribute AbilityAttributes} that are stored
      * inside of this data.
      *
-     * @return An {@link ImmutableSet} that contains all {@link AbilityAttribute AbilityAttributes} that are stored inside of this data.
+     * @return An immutable {@link Set} that contains all {@link AbilityAttribute AbilityAttributes} that are stored inside of this data.
      */
     public Set<AbilityAttribute<?>> getAllAttributes() {
-        return ImmutableSet.copyOf(abilityAttributes.values());
+        return Set.copyOf(abilityAttributes.values());
     }
 
     /**
@@ -174,7 +173,7 @@ public class AbilityData {
      * Resets this ability to all of its defaults
      */
     public void resetAbility() {
-        ImmutableSet<NamespacedKey> attributeKeys = ImmutableSet.copyOf(abilityAttributes.keySet());
+        Set<NamespacedKey> attributeKeys = Set.copyOf(abilityAttributes.keySet());
         AbilityAttributeRegistry abilityAttributeRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         for (NamespacedKey namespacedKey : attributeKeys) {
             // Override the existing attribute with the default attribute

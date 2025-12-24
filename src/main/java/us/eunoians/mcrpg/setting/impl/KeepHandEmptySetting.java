@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.setting.slot.KeepHandEmptySettingSlot;
 import us.eunoians.mcrpg.setting.DenySlotSetting;
-import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Arrays;
@@ -21,7 +20,7 @@ import java.util.Optional;
  * A player setting that allows players to keep their held item slot empty
  * in order to be able to more reliably use Unarmed abilities.
  */
-public enum KeepHandEmptySetting implements DenySlotSetting, McRPGSetting {
+public enum KeepHandEmptySetting implements DenySlotSetting {
 
     /**
      * This setting will prevent items from going into the users held item slot.
