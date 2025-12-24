@@ -124,7 +124,6 @@ public class McRPGPlayer extends CorePlayer {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
         if (abilityDataOptional.isPresent()) {
             var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY);
-            var questAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
             // Validate they don't have an ongoing upgrade quest
             if (skillHolder.hasActiveUpgradeQuest(tierableAbility.getAbilityKey())) {
                 return false;
@@ -228,7 +227,7 @@ public class McRPGPlayer extends CorePlayer {
                     .getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION);
             boolean isPlayerInSafeZone = safeZonePluginHooks.stream()
                     .map(safeZonePluginHook -> safeZonePluginHook.isPlayerInSafeZone(player))
-                    .reduce(Boolean::logicalOr)
+                    .reduce((a, b) -> a || b)
                     .orElse(false) && safeZoneAllowed;
             boolean wasPlayerInSafeZone = isStandingInSafeZone();
             if (isPlayerInSafeZone != wasPlayerInSafeZone) {

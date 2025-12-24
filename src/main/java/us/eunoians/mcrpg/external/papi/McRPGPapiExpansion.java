@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.external.papi;
 
-import com.google.common.collect.ImmutableList;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +51,7 @@ public class McRPGPapiExpansion extends PlaceholderExpansion {
 
     @Override
     public @NotNull List<String> getPlaceholders() {
-        return ImmutableList.copyOf(placeholders.keySet());
+        return List.copyOf(placeholders.keySet());
     }
 
     @Nullable

@@ -95,7 +95,6 @@ public class McRPGDatabase extends Database {
     private void populateUpdateFunctions() {
         addUpdateTableFunction(database -> {
             CompletableFuture<Void> completableFuture = new CompletableFuture<>();
-            Logger logger = getPlugin().getLogger();
             database.getDatabaseExecutorService().submit(() -> {
                 try (Connection connection = database.getConnection()) {
                     SkillDAO.updateTable(connection);
