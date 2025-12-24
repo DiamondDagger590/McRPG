@@ -18,10 +18,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  */
 public class LoadoutDisplayCancelItemEditSlot implements McRPGSlot {
 
-    private final Loadout loadout;
-
     public LoadoutDisplayCancelItemEditSlot(@NotNull Loadout loadout){
-        this.loadout = loadout;
     }
 
     @Override
