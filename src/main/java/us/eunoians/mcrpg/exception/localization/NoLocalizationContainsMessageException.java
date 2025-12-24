@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.exception.localization;
 
-import com.google.common.collect.ImmutableSet;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +37,7 @@ public class NoLocalizationContainsMessageException extends RuntimeException {
      */
     @NotNull
     public Set<Locale> getCheckedLocales() {
-        return ImmutableSet.copyOf(checkedLocales);
+        return Set.copyOf(checkedLocales);
     }
 
     @NotNull
