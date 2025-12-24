@@ -173,12 +173,27 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
                 double waitTimeBeforeAccumulation = getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
                         .getDouble(MainConfigFile.RESTED_EXPERIENCE_OFFLINE_WAIT_PERIOD_BEFORE_ACCUMULATION, 0.0d);
-                double difference = Math.max(0, Duration.between(now, logoutTime).abs().toSeconds() - waitTimeBeforeAccumulation);
+                int adjustedOfflineTime = calculateAdjustedOfflineTime(logoutTime, now, waitTimeBeforeAccumulation);
                 RestedExperienceManager restedExperienceManager = getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.RESTED_EXPERIENCE);
                 // Award rested experience
-                restedExperienceManager.awardRestedExperience(getCorePlayer(), (int) difference, accumulationType, true);
+                restedExperienceManager.awardRestedExperience(getCorePlayer(), adjustedOfflineTime, accumulationType, true);
             }
         };
+    }
+
+    /**
+     * Calculates the adjusted offline time for rested experience accumulation,
+     * accounting for the configured wait period before accumulation starts.
+     *
+     * @param logoutTime                  The {@link Instant} when the player logged out.
+     * @param now                         The current {@link Instant}.
+     * @param waitTimeBeforeAccumulation  The wait period in seconds before accumulation starts.
+     * @return The adjusted offline time in seconds, never negative.
+     */
+    @VisibleForTesting
+    static int calculateAdjustedOfflineTime(@NotNull Instant logoutTime, @NotNull Instant now, double waitTimeBeforeAccumulation) {
+        double totalOfflineSeconds = Duration.between(now, logoutTime).abs().toSeconds();
+        return (int) Math.max(0, totalOfflineSeconds - waitTimeBeforeAccumulation);
     }
 
     /**
