@@ -1,7 +1,5 @@
 package us.eunoians.mcrpg.event.ability.mining;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import org.bukkit.Location;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -43,22 +41,22 @@ public class OreScannerActivateEvent extends AbilityActivateEvent implements Can
     /**
      * Gets a map of all {@link OreScannerBlockType}s mapped to block locations that were scanned.
      *
-     * @return An {@link ImmutableMap} of all {@link OreScannerBlockType}s mapped to block locations that were scanned.
+     * @return An immutable {@link Map} of all {@link OreScannerBlockType}s mapped to block locations that were scanned.
      */
     @NotNull
     public Map<OreScannerBlockType, Set<Location>> getInstancesOfBlocks() {
-        return ImmutableMap.copyOf(instancesOfBlocks);
+        return Map.copyOf(instancesOfBlocks);
     }
 
     /**
      * Gets a {@link Set} of all {@link Location}s that were detected for the given {@link OreScannerBlockType}.
      *
      * @param oreScannerBlockType The {@link OreScannerBlockType} to get the locations for.
-     * @return AN {@link ImmutableSet} of all {@link Location}s that were detected for the given {@link OreScannerBlockType}.
+     * @return An immutable {@link Set} of all {@link Location}s that were detected for the given {@link OreScannerBlockType}.
      */
     @NotNull
     public Set<Location> getLocationsOfBlockType(@NotNull OreScannerBlockType oreScannerBlockType) {
-        return instancesOfBlocks.containsKey(oreScannerBlockType) ? ImmutableSet.copyOf(instancesOfBlocks.get(oreScannerBlockType)) : ImmutableSet.of();
+        return instancesOfBlocks.containsKey(oreScannerBlockType) ? Set.copyOf(instancesOfBlocks.get(oreScannerBlockType)) : Set.of();
     }
 
     @Override
