@@ -52,7 +52,8 @@ public class RedeemExperienceCommand extends McRPGCommandBase {
                             CommandSender commandSender = commandContext.sender().getSender();
                             CloudKey<Skill> skillKey = CloudKey.of("skill", Skill.class);
                             Skill skill = commandContext.get(skillKey);
-                            int amount = commandContext.get("amount");
+                            CloudKey<Integer> amountKey = CloudKey.of("amount", Integer.class);
+                            int amount = commandContext.get(amountKey);
                             if (commandSender instanceof Player player) {
                                 Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                                         .manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
