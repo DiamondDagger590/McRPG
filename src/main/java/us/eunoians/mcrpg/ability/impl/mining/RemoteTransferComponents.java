@@ -1,11 +1,9 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
@@ -49,15 +47,9 @@ public class RemoteTransferComponents {
                     if (!attribute.shouldContentBeSaved() || !location.getWorld().equals(player.getWorld()) || location.distanceSquared(player.getLocation()) >= Math.pow(remoteTransfer.getRange(remoteTransfer.getCurrentAbilityTier(abilityHolder)), 2)) {
                         return false;
                     }
-                    Chunk chunk = location.getChunk();
-
-                    Chest chest;
                     Block block = location.getBlock();
-                    if (block.getType() == Material.CHEST) {
-                        chest = (Chest) block.getState();
-                    }
                     // If it isn't a chest, alert player and remove the location attribute
-                    else {
+                    if (block.getType() != Material.CHEST) {
                         player.sendMessage(McRPG.getInstance().getMiniMessage().deserialize("<red>Your linked chest for remote transfer is missing... unlinking."));
                         abilityData.removeAttribute(attribute);
                         return false;

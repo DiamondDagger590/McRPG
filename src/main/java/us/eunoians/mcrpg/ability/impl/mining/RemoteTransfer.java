@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.ability.impl.mining;
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
-import com.google.common.collect.ImmutableSet;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
@@ -15,7 +14,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.Inventory;
@@ -108,7 +106,6 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     @Override
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockDropItemEvent blockDropItemEvent = (BlockDropItemEvent) event;
-        Player player = blockDropItemEvent.getPlayer();
 
         var abilityDataOptional = abilityHolder.getAbilityData(this);
         if (abilityDataOptional.isPresent()) {
@@ -298,7 +295,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
      */
     @NotNull
     public static Set<RemoteTransferCategory> getRemoteTransferCategories() {
-        return ImmutableSet.copyOf(REMOTE_TRANSFER_CATEGORIES.getContent().values());
+        return Set.copyOf(REMOTE_TRANSFER_CATEGORIES.getContent().values());
     }
 
     @NotNull
