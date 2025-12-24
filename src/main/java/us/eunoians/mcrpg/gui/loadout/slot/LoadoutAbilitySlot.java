@@ -26,19 +26,16 @@ import java.util.Set;
  */
 public class LoadoutAbilitySlot implements McRPGSlot {
 
-    private final McRPGPlayer mcRPGPlayer;
     private final Loadout loadout;
     @Nullable
     private final Ability ability;
 
     public LoadoutAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
-        this.mcRPGPlayer = mcRPGPlayer;
         this.loadout = loadout;
         this.ability = null;
     }
 
     public LoadoutAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull Ability ability) {
-        this.mcRPGPlayer = mcRPGPlayer;
         this.loadout = loadout;
         this.ability = ability;
     }
