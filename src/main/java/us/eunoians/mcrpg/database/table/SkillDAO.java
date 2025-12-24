@@ -10,7 +10,6 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.OptionalSavingAbilityAttribute;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.exception.skill.SkillNotRegisteredException;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -27,15 +26,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
-
 /**
  * A DAO used to store data regarding a player's specific data that doesn't really belong in another table
  */
 public class SkillDAO {
-
-    private static final Logger LOGGER = McRPG.getInstance().getLogger();
 
     private static final String SKILL_DATA_TABLE_NAME = "mcrpg_skill_data";
     private static final String ABILITY_ATTRIBUTE_TABLE_NAME = "mcrpg_ability_attributes";
@@ -323,10 +317,7 @@ public class SkillDAO {
     @NotNull
     public static List<PreparedStatement> savePlayerAbilityAttributes(@NotNull Connection connection, @NotNull SkillHolder skillHolder, Set<NamespacedKey> abilityKeys) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
-        McRPG mcRPG = McRPG.getInstance();
         UUID playerUUID = skillHolder.getUUID();
-        AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
-        AbilityAttributeRegistry abilityAttributeRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         try {
             for (NamespacedKey abilityKey : abilityKeys) {
                 Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(abilityKey);
@@ -397,7 +388,6 @@ public class SkillDAO {
             skillDataStatement.setString(1, skillHolder.getUUID().toString());
             PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?");
             deleteStatement.setString(1, skillHolder.getUUID().toString());
-            SkillRegistry skillRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL);
             Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skillKey);
             if (skillHolderDataOptional.isPresent()) {
                 SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
