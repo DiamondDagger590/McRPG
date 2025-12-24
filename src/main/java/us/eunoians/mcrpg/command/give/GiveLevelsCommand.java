@@ -65,8 +65,6 @@ public class GiveLevelsCommand extends GiveCommandBase {
                                     .manager(McRPGManagerKey.PLAYER).getPlayer(sender.getUniqueId()) : Optional.empty();
                             Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
 
-                            Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player);
-                            Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player);
                             if (playerOptional.isPresent()) {
                                 McRPGPlayer mcRPGPlayer = playerOptional.get();
                                 SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
@@ -79,6 +77,9 @@ public class GiveLevelsCommand extends GiveCommandBase {
                                      */
                                     int levelAmount = Math.min(commandContext.get(amountKey), skill.getMaxLevel() - skillHolderData.getCurrentLevel());
 
+                                    Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, levelAmount, skill, senderOptional.orElse(null));
+                                    Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, levelAmount, skill, mcRPGPlayer);
+
                                     skillHolderData.addLevels(levelAmount, resetExperience);
                                     player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.GIVE_LEVELS_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
@@ -88,7 +89,8 @@ public class GiveLevelsCommand extends GiveCommandBase {
                                     return;
                                 }
                             }
-                            senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE, senderPlaceholders));
+                            Map<String, String> errorPlaceholders = getPlaceholders(senderAudience, senderAudience, player, commandContext.get(amountKey), skill, senderOptional.orElse(null));
+                            senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.GIVE_LEVELS_COMMAND_SENDER_ERROR_MESSAGE, errorPlaceholders));
                         }
                 ));
     }

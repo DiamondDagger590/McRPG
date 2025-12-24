@@ -148,6 +148,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route BOSS_BAR_DISPLAY_MESSAGE = Route.fromString(toRoutePath(EXPERIENCE_DISPLAY_HEADER, "boss-bar-display-message"));
 
     private static final String SKILLS_HEADER = "skills";
+    private static final String SKILL_LEVEL_UP_HEADER = toRoutePath(SKILLS_HEADER, "level-up");
+    public static final Route SKILL_LEVEL_UP_MESSAGE = Route.fromString(toRoutePath(SKILL_LEVEL_UP_HEADER, "level-up-message"));
     private static final String SWORDS_HEADER = toRoutePath(SKILLS_HEADER, "swords");
     public static final Route SWORDS_DISPLAY_ITEM = Route.fromString(toRoutePath(SWORDS_HEADER, "display-item"));
     private static final String MINING_HEADER = toRoutePath(SKILLS_HEADER, "mining");
@@ -320,6 +322,25 @@ public final class LocalizationKey extends ConfigFile {
     private static final String ABILITY_COOLDOWN_HEADER = toRoutePath(ABILITY_HEADER, "cooldown");
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_COOLDOWN_HEADER, "ability-still-on-cooldown"));
     public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_COOLDOWN_HEADER, "ability-no-longer-on-cooldown"));
+
+    private static final String ABILITY_READY_HEADER = toRoutePath(ABILITY_HEADER, "ready");
+    private static final String HERBALISM_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "herbalism");
+    public static final Route HERBALISM_READY_MESSAGE = Route.fromString(toRoutePath(HERBALISM_READY_HEADER, "ready-message"));
+    public static final Route HERBALISM_UNREADY_MESSAGE = Route.fromString(toRoutePath(HERBALISM_READY_HEADER, "unready-message"));
+    private static final String MINING_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "mining");
+    public static final Route MINING_READY_MESSAGE = Route.fromString(toRoutePath(MINING_READY_HEADER, "ready-message"));
+    public static final Route MINING_UNREADY_MESSAGE = Route.fromString(toRoutePath(MINING_READY_HEADER, "unready-message"));
+    private static final String SWORDS_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "swords");
+    public static final Route SWORDS_READY_MESSAGE = Route.fromString(toRoutePath(SWORDS_READY_HEADER, "ready-message"));
+    public static final Route SWORDS_UNREADY_MESSAGE = Route.fromString(toRoutePath(SWORDS_READY_HEADER, "unready-message"));
+    private static final String WOODCUTTING_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "woodcutting");
+    public static final Route WOODCUTTING_READY_MESSAGE = Route.fromString(toRoutePath(WOODCUTTING_READY_HEADER, "ready-message"));
+    public static final Route WOODCUTTING_UNREADY_MESSAGE = Route.fromString(toRoutePath(WOODCUTTING_READY_HEADER, "unready-message"));
+
+    private static final String ABILITY_UNLOCK_HEADER = toRoutePath(ABILITY_HEADER, "unlock");
+    public static final Route ABILITY_UNLOCKED_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-unlocked"));
+    public static final Route ABILITY_ADDED_TO_LOADOUT_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-added-to-loadout"));
+    public static final Route ABILITY_NOT_ADDED_DUPLICATE_SKILL_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-not-added-duplicate-skill"));
 
     private static final String ABILITY_LORE_HEADER = toRoutePath(ABILITY_HEADER, "lore");
     private static final String ABILITY_QUEST_LORE_HEADER = toRoutePath(ABILITY_LORE_HEADER, "quest");

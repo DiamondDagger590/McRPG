@@ -30,7 +30,7 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
 
     /**
      * Creates a new instance of this {@link AbilityTierAttribute} class, containing the provided {@link Integer} content as the value
-     *
+     *  
      * @param tier The {@link Integer} content to be used as the value in the returned {@link AbilityTierAttribute}
      * @return A new instance of this {@link AbilityTierAttribute} class, containing the provided {@link Integer} content as the value
      */
