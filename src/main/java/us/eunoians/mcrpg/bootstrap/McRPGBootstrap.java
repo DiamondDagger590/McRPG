@@ -56,7 +56,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.registry(RegistryKey.MANAGER).register(new ContentExpansionManager(mcRPG));
         registryAccess.register(new AbilityRegistry(mcRPG));
         registryAccess.register(new AbilityAttributeRegistry(mcRPG));
-        registryAccess.register(new SkillRegistry(mcRPG));
+        registryAccess.register(new SkillRegistry());
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
@@ -65,7 +65,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new BleedManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new WorldManager(mcRPG));
-        registryAccess.register(new ExperienceModifierRegistry(mcRPG));
+        registryAccess.register(new ExperienceModifierRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new RestedExperienceManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGGuiManager(mcRPG));
 

@@ -56,7 +56,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @BeforeEach
     public void setup(){
         server.getPluginManager().clearEvents();
-        SkillRegistry skillRegistry = new SkillRegistry(mcRPG);
+        SkillRegistry skillRegistry = new SkillRegistry();
         RegistryAccess.registryAccess().register(skillRegistry);
         herbalism = new Herbalism(mcRPG);
         skillRegistry.register(herbalism);

@@ -30,12 +30,12 @@ public class LoadoutAbilitySlot implements McRPGSlot {
     @Nullable
     private final Ability ability;
 
-    public LoadoutAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
+    public LoadoutAbilitySlot(@NotNull Loadout loadout) {
         this.loadout = loadout;
         this.ability = null;
     }
 
-    public LoadoutAbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull Ability ability) {
+    public LoadoutAbilitySlot(@NotNull Loadout loadout, @NotNull Ability ability) {
         this.loadout = loadout;
         this.ability = ability;
     }

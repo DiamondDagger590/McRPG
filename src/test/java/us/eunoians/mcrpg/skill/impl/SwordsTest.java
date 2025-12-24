@@ -58,7 +58,7 @@ public class SwordsTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() {
-        SkillRegistry skillRegistry = new SkillRegistry(mcRPG);
+        SkillRegistry skillRegistry = new SkillRegistry();
         RegistryAccess.registryAccess().register(skillRegistry);
         swords = new Swords(mcRPG);
         skillRegistry.register(swords);
@@ -71,7 +71,7 @@ public class SwordsTest extends McRPGBaseTest {
         mainConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
 
-        ExperienceModifierRegistry experienceModifierRegistry = new ExperienceModifierRegistry(mcRPG);
+        ExperienceModifierRegistry experienceModifierRegistry = new ExperienceModifierRegistry();
         RegistryAccess.registryAccess().register(experienceModifierRegistry);
         ReloadableContentManager reloadableContentManager = new ReloadableContentManager(mcRPG);
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(reloadableContentManager);

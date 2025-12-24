@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.apiguardian.api.API;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 import us.eunoians.mcrpg.skill.experience.modifier.ExperienceModifier;
@@ -21,7 +20,7 @@ public final class ExperienceModifierRegistry implements Registry<ExperienceModi
 
     private final Set<ExperienceModifier> experienceModifiers;
 
-    public ExperienceModifierRegistry(@NotNull McRPG mcRPG) {
+    public ExperienceModifierRegistry() {
         experienceModifiers = new HashSet<>();
     }
 

@@ -34,7 +34,7 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() {
-        SkillRegistry skillRegistry = new SkillRegistry(mcRPG);
+        SkillRegistry skillRegistry = new SkillRegistry();
         RegistryAccess.registryAccess().register(skillRegistry);
         skill = spy(MockSkill.class);
         skillRegistry.register(skill);
