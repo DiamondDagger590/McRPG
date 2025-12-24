@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
-//TODO javadoc
+//TODO javadoc (https://github.com/DiamondDagger590/McRPG/issues/180)
 public interface TargetablePlayerComponent extends EventActivatableComponent {
 
     /**
