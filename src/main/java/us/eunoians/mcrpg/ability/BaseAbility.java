@@ -68,7 +68,7 @@ public abstract class BaseAbility implements Ability {
 
     // TODO finish
     public Optional<EventCancellingComponent> checkIfComponentCancels(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        // TODO: Implement cancellation check logic iterating over cancellingComponents
+        // TODO: Implement cancellation check logic iterating over cancellingComponents (https://github.com/DiamondDagger590/McRPG/issues/179)
         return null;
     }
 
