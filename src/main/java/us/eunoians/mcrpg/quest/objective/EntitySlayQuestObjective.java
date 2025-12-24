@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.quest.objective;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.google.common.collect.ImmutableSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -65,7 +64,7 @@ public class EntitySlayQuestObjective extends QuestObjective {
      */
     @NotNull
     public Set<EntityType> getAllowedEntities() {
-        return ImmutableSet.copyOf(allowedEntities);
+        return Set.copyOf(allowedEntities);
     }
 
     /**
@@ -75,7 +74,7 @@ public class EntitySlayQuestObjective extends QuestObjective {
      */
     @NotNull
     public Set<EntityType> getBannedEntities() {
-        return ImmutableSet.copyOf(bannedEntities);
+        return Set.copyOf(bannedEntities);
     }
 
     @Override

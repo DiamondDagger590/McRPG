@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.quest.objective;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.google.common.collect.ImmutableSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -73,7 +72,7 @@ public class BlockBreakQuestObjective extends QuestObjective {
      */
     @NotNull
     public Set<Material> getAllowedBlocks() {
-        return ImmutableSet.copyOf(allowedBlocks);
+        return Set.copyOf(allowedBlocks);
     }
 
     /**
@@ -83,7 +82,7 @@ public class BlockBreakQuestObjective extends QuestObjective {
      */
     @NotNull
     public Set<Material> getBannedBlocks() {
-        return ImmutableSet.copyOf(bannedBlocks);
+        return Set.copyOf(bannedBlocks);
     }
 
     @Override
