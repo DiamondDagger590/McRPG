@@ -68,10 +68,7 @@ public abstract class BaseAbility implements Ability {
 
     // TODO finish
     public Optional<EventCancellingComponent> checkIfComponentCancels(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
-        for (EventCancellingComponentAttribute eventCancellingComponentAttribute : cancellingComponents) {
-            EventCancellingComponent eventCancellingComponent = eventCancellingComponentAttribute.abilityComponent();
-        }
+        // TODO: Implement cancellation check logic iterating over cancellingComponents
         return null;
     }
 
