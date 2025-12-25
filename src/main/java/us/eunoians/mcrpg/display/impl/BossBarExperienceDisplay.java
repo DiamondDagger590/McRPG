@@ -74,12 +74,16 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
      * @param skillHolderData The {@link SkillHolder.SkillHolderData} containing data.
      */
     protected void displayUpdate(@NotNull NamespacedKey skillKey, @NotNull McRPGPlayer mcRPGPlayer, @NotNull SkillHolder.SkillHolderData skillHolderData) {
+        var audienceOptional = mcRPGPlayer.getAsBukkitPlayer();
+        if (audienceOptional.isEmpty()) {
+            return;
+        }
+        Audience audience = audienceOptional.get();
         McRPG mcRPG = getMcRPGPlayer().getPlugin();
         YamlDocument mainConfig = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
         McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         SkillRegistry skillRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL);
         Skill skill = skillRegistry.getRegisteredSkill(skillKey);
-        Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
         cleanDisplay();
         int currentLevel = skillHolderData.getCurrentLevel();
         int currentExperience = skillHolderData.getCurrentExperience();
@@ -101,8 +105,7 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
     public void cleanDisplay() {
         if (bossBar != null) {
             McRPGPlayer mcRPGPlayer = getMcRPGPlayer();
-            Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
-            audience.hideBossBar(bossBar);
+            mcRPGPlayer.getAsBukkitPlayer().ifPresent(audience -> audience.hideBossBar(bossBar));
             bossBar = null;
         }
     }
