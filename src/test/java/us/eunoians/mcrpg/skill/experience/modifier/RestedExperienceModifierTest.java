@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.impl.DisableBonusExperienceConsumptionSetting;
 import us.eunoians.mcrpg.skill.impl.MockSkill;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistryExtension;
@@ -59,10 +60,28 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given a valid skill experience context with boosted XP, when checking canProcessContext, then it returns true")
+    @DisplayName("Given a valid skill experience context with rested XP, when checking canProcessContext, then it returns true")
     public void canProcessContext_returnsTrue_whenContextValid(@NotNull McRPGPlayer mcRPGPlayer) {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, mcRPGPlayer.asSkillHolder(), 100);
         mcRPGPlayer.getExperienceExtras().setRestedExperience(10);
+        assertTrue(restedExperienceModifier.canProcessContext(entityDamageContext));
+    }
+
+    @Test
+    @DisplayName("Given a valid skill experience context with rested XP but DisableBonusExperienceConsumptionSetting enabled, when checking canProcessContext, then it returns false")
+    public void canProcessContext_returnsFalse_whenSettingEnabled(@NotNull McRPGPlayer mcRPGPlayer) {
+        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, mcRPGPlayer.asSkillHolder(), 100);
+        mcRPGPlayer.getExperienceExtras().setRestedExperience(10);
+        mcRPGPlayer.setPlayerSetting(DisableBonusExperienceConsumptionSetting.ENABLED);
+        assertFalse(restedExperienceModifier.canProcessContext(entityDamageContext));
+    }
+
+    @Test
+    @DisplayName("Given a valid skill experience context with rested XP and DisableBonusExperienceConsumptionSetting disabled, when checking canProcessContext, then it returns true")
+    public void canProcessContext_returnsTrue_whenSettingDisabled(@NotNull McRPGPlayer mcRPGPlayer) {
+        EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, mcRPGPlayer.asSkillHolder(), 100);
+        mcRPGPlayer.getExperienceExtras().setRestedExperience(10);
+        mcRPGPlayer.setPlayerSetting(DisableBonusExperienceConsumptionSetting.DISABLED);
         assertTrue(restedExperienceModifier.canProcessContext(entityDamageContext));
     }
 

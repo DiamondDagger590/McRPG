@@ -32,6 +32,7 @@ import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.localization.NativeLocale;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.impl.DisableBonusExperienceConsumptionSetting;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
@@ -135,6 +136,7 @@ public final class McRPGExpansion extends ContentExpansion {
         playerSettingContent.addContent(KeepHandEmptySetting.values()[0]);
         playerSettingContent.addContent(KeepHotbarSlotEmptySetting.values()[0]);
         playerSettingContent.addContent(RequireEmptyOffhandSetting.values()[0]);
+        playerSettingContent.addContent(DisableBonusExperienceConsumptionSetting.values()[0]);
         playerSettingContent.addContent(LocaleSetting.values()[0]);
         return playerSettingContent;
     }

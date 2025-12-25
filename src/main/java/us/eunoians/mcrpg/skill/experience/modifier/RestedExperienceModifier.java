@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.impl.DisableBonusExperienceConsumptionSetting;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 
 import java.util.UUID;
@@ -42,6 +43,12 @@ public class RestedExperienceModifier extends ExperienceModifier {
         var playerOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(skillExperienceContext.getSkillHolder().getUUID());
         if (playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
+            // Check if the player has disabled bonus experience consumption
+            if (mcRPGPlayer.getPlayerSetting(DisableBonusExperienceConsumptionSetting.SETTING_KEY)
+                    .filter(setting -> setting == DisableBonusExperienceConsumptionSetting.ENABLED)
+                    .isPresent()) {
+                return false;
+            }
             PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
             return playerExperienceExtras.getRestedExperience() > 0;
         }
