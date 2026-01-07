@@ -66,10 +66,29 @@ public abstract class BaseAbility implements Ability {
         return Set.of(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
     }
 
-    // TODO finish
+    /**
+     * Checks to see if the provided {@link Event} has any {@link EventCancellingComponent}s that indicate the event should be cancelled.
+     * <p>
+     * These {@link EventCancellingComponent}s are processed in order of priority and the first component that indicates
+     * the event should be cancelled will be returned in the {@link Optional}. If no components indicate cancellation,
+     * the {@link Optional} returned will be empty.
+     *
+     * @param abilityHolder The {@link AbilityHolder} to check against.
+     * @param event         The {@link Event} to use for checking cancellation components.
+     * @return An {@link Optional} containing the first {@link EventCancellingComponent} that indicates cancellation,
+     *         or empty if no components indicate the event should be cancelled.
+     */
+    @NotNull
     public Optional<EventCancellingComponent> checkIfComponentCancels(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        // TODO: Implement cancellation check logic iterating over cancellingComponents (https://github.com/DiamondDagger590/McRPG/issues/179)
-        return null;
+        for (EventCancellingComponentAttribute attribute : cancellingComponents) {
+            if (attribute.clazz().isInstance(event)) {
+                EventCancellingComponent component = attribute.abilityComponent();
+                if (component.shouldCancel(abilityHolder, event)) {
+                    return Optional.of(component);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -157,7 +176,14 @@ public abstract class BaseAbility implements Ability {
         return Optional.ofNullable(returnComponent);
     }
 
-    // TODO
+    /**
+     * Adds the provided {@link EventCancellingComponent} as a component for cancelling events when this ability activates.
+     * Components are processed in priority order, with the lowest priority being first.
+     *
+     * @param eventCancellingComponent The {@link EventCancellingComponent} to register
+     * @param clazz                    The class of the {@link Event} that this component applies to
+     * @param priority                 The priority of this {@link EventCancellingComponent}
+     */
     public void addCancellingComponent(@NotNull EventCancellingComponent eventCancellingComponent, @NotNull Class<? extends Event> clazz,
                                        int priority) {
         cancellingComponents.add(new EventCancellingComponentAttribute(eventCancellingComponent, clazz, priority));
