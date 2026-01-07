@@ -87,7 +87,9 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
     public void stop(@NotNull StartupProfile startupProfile) {
         if (startupProfile == StartupProfile.PROD) {
             RegistryAccess registryAccess = getPlugin().registryAccess();
-            registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
+            if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.GLOWING)) {
+                registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
+            }
             if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.DATABASE)) {
                 Database database = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
                 try (Connection connection = database.getConnection()) {
