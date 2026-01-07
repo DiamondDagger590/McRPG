@@ -282,6 +282,9 @@ public final class LocalizationKey extends ConfigFile {
     private static final String PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "require-empty-offhand-to-active-ability-slot");
     public static final Route PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER, "enabled.display-item"));
     public static final Route PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_REQUIRE_EMPTY_OFFHAND_SETTING_SLOT_HEADER, "disabled.display-item"));
+    private static final String PLAYER_SETTINGS_GUI_DISABLE_BONUS_EXPERIENCE_CONSUMPTION_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "disable-bonus-experience-consumption-setting-slot");
+    public static final Route PLAYER_SETTINGS_GUI_DISABLE_BONUS_EXPERIENCE_CONSUMPTION_SETTING_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_DISABLE_BONUS_EXPERIENCE_CONSUMPTION_SETTING_HEADER, "enabled.display-item"));
+    public static final Route PLAYER_SETTINGS_GUI_DISABLE_BONUS_EXPERIENCE_CONSUMPTION_SETTING_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(PLAYER_SETTINGS_GUI_DISABLE_BONUS_EXPERIENCE_CONSUMPTION_SETTING_HEADER, "disabled.display-item"));
 
     private static final String EXPERIENCE_BANK_GUI_HEADER = toRoutePath(GUI_HEADER, "experience-bank-gui");
     public static final Route EXPERIENCE_BANK_GUI_TITLE = Route.fromString(toRoutePath(EXPERIENCE_BANK_GUI_HEADER, "title"));

@@ -820,6 +820,30 @@ gui:
             - '<gray>Abilities can be readied even with an item in your offhand.'
             - ''
             - '<gold>Click <gray>to change this setting.'
+    # Configure the slot representing the setting to disable consumption of rested and boosted experience
+    disable-bonus-experience-consumption-setting-slot:
+      # Configure the setting display for when the setting is ENABLED (consumption is disabled)
+      enabled:
+        display-item:
+          material: RED_STAINED_GLASS_PANE
+          name: '<gold>Bonus Experience Consumption'
+          lore:
+            - '<gray>Status: <red>Disabled</red>.'
+            - '<gray>Rested and boosted experience will not be consumed.'
+            - '<gray>You will not receive bonus experience while this is enabled.'
+            - ''
+            - '<gold>Click <gray>to enable bonus experience consumption.'
+      # Configure the setting display for when the setting is DISABLED (consumption is enabled)
+      disabled:
+        display-item:
+          material: GREEN_STAINED_GLASS_PANE
+          name: '<gold>Bonus Experience Consumption'
+          lore:
+            - '<gray>Status: <green>Enabled</green>.'
+            - '<gray>Rested and boosted experience will be consumed normally.'
+            - '<gray>You will receive bonus experience from your pools.'
+            - ''
+            - '<gold>Click <gray>to disable bonus experience consumption.'
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"
