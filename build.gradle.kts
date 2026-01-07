@@ -67,10 +67,12 @@ dependencies {
     testImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
     testFixturesImplementation(testFixtures("com.diamonddagger590:McCore:$mccoreVersion"))
 
-    val paperVersion = "1.21.10-R0.1-SNAPSHOT"
+    val paperVersion = "1.21.11-R0.1-SNAPSHOT"
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
-    testImplementation("io.papermc.paper:paper-api:$paperVersion")
-    testFixturesImplementation("io.papermc.paper:paper-api:$paperVersion")
+    // MockBukkit 4.98.x is built against 1.21.10, so tests need to use that version
+    val testPaperVersion = "1.21.10-R0.1-SNAPSHOT"
+    testImplementation("io.papermc.paper:paper-api:$testPaperVersion")
+    testFixturesImplementation("io.papermc.paper:paper-api:$testPaperVersion")
 
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
@@ -130,6 +132,13 @@ tasks.withType<ProcessResources> {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// Force Paper API version in test configurations to match what MockBukkit expects
+configurations.matching { it.name.startsWith("test") }.configureEach {
+    resolutionStrategy {
+        force("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    }
 }
 
 tasks {
