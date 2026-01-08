@@ -8,7 +8,6 @@ import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -48,14 +47,14 @@ public class ResetSkillCommand extends ResetBaseCommand {
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("admin")
-                .literal("reset").commandDescription(RichDescription.richDescription(miniMessage.deserialize("<gray>The subcommand for all commands that resets a target")))
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to reset something for")))
+                .literal("reset").commandDescription(RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_RESET)))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_RESET_PLAYER)))
                 .literal("skill")
-                .required("reset_skill", SkillParser.skillParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The skill to reset")))
+                .required("reset_skill", SkillParser.skillParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_RESET_SKILL)))
                 .meta(ConfirmationManager.META_CONFIRMATION_REQUIRED, true)
                 .permission(Permission.anyOf(ROOT_PERMISSION, ADMIN_BASE_PERMISSION, RESET_COMMAND_BASE_PERMISSION, RESET_SKILL_PERMISSION))
                 .handler(commandContext -> {
@@ -64,7 +63,6 @@ public class ResetSkillCommand extends ResetBaseCommand {
                             CloudKey<Skill> skillKey = CloudKey.of("reset_skill", Skill.class);
                             Skill skill = commandContext.get(skillKey);
                             Audience senderAudience = commandContext.sender().getSender();
-                            McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
                             Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                             Optional<McRPGPlayer> senderOptional = commandContext.sender().getSender() instanceof Player sender ? McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)

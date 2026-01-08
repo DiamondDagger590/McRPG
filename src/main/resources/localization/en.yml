@@ -16,6 +16,36 @@ config-version: 1
 commands:
   # The name of console to use if the sender of a command is ever console and the <sender> placeholder is used
   console-name: "console"
+  # The message to send when a non-player tries to use a player-only command
+  non-player-error: "<red>Non-players are not allowed to run this command."
+  # Configure command descriptions shown in help text
+  descriptions:
+    redeem: "<gray>The subcommand that allows players to redeem things."
+    redeem-skill: "<gray>The skill to redeem experience in."
+    redeem-experience-amount: "<gray>How much experience to redeem?"
+    redeem-levels-amount: "<gray>How many levels to redeem?"
+    give: "<gray>The subcommand for all commands that give targets something."
+    give-player: "<gray>The player to give something to."
+    give-experience-skill: "<gray>The skill to give experience for."
+    give-experience-amount: "<gray>The amount of experience to give."
+    give-levels-skill: "<gray>The skill to give levels for."
+    give-levels-amount: "<gray>The amount of levels to give."
+    give-levels-reset-experience-flag: "<gray>If the player's current experience should be reset to 0 after levels are given."
+    reset: "<gray>The subcommand for all commands that resets a target."
+    reset-player: "<gray>The player to reset something for."
+    reset-skill: "<gray>The skill to reset."
+    loadout-slot: "<gray>The loadout to set."
+    loadout-edit-slot: "<gray>The loadout to edit."
+    debug-player: "<gray>The player to debug."
+    exp-bank-player: "<gray>The player to modify."
+    exp-bank-amount: "<gray>The amount to modify."
+    exp-bank-rested-amount: "<gray>The amount of rested experience."
+    exp-bank-boosted-amount: "<gray>The amount of boosted experience."
+    exp-bank-redeemable-experience-amount: "<gray>The amount of redeemable experience."
+    exp-bank-redeemable-levels-amount: "<gray>The amount of redeemable levels."
+    exp-bank-reset-player: "<gray>The player to reset."
+    exp-bank-give-player: "<gray>The player to give something to."
+    exp-bank-remove-player: "<gray>The player to remove something from."
   # Configure messages to surrounding /mcrpg confirm
   # This command will be used to confirm important commands such as resetting a player
   confirmation:
@@ -83,6 +113,15 @@ commands:
     reload:
       # The message to send to the sender when the command works.
       sender-success-message: "<gray>You have reloaded all McRPG files."
+    # Configure the debug command
+    # Supports the following placeholders: <target>, <upgrade-points>, <skill>, <level>, <experience>
+    debug:
+      # The header message printed at the start of debug output.
+      header-message: "<gray>Printing debug information for player <gold><target>"
+      # The message showing upgrade points.
+      upgrade-points-message: "<gray>Upgrade Points: <gold><upgrade-points>"
+      # The message showing skill information.
+      skill-info-message: "<gray>Skill: <gold><skill> <gray>Level: <gold><level> <gray>Exp: <gold><experience>"
     # Configure the reset commands
     reset:
       # Supports the following placeholders: <target>, <sender>

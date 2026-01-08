@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -40,7 +39,7 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("admin")
@@ -48,8 +47,8 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                 .literal("give")
                 .literal("redeemable", "redeem")
                 .literal("levels", "lv", "lvs")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to give something to")))
-                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable levels to give")))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_GIVE_PLAYER)))
+                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_REDEEMABLE_LEVELS_AMOUNT)))
                 .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
                         AdminBankCommandBase.BANK_GIVE_COMMAND_ROOT_PERMISSION, GIVE_REDEEMABLE_LEVELS_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_GIVE_ROOT_PERMISSION))
                 .handler(commandContext -> {
@@ -59,7 +58,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                     int levelAmount = commandContext.get(amountKey);
 
                     Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, levelAmount);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, levelAmount);
@@ -83,8 +81,8 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                 .literal("remove", "minus")
                 .literal("redeemable", "redeem")
                 .literal("levels", "lv", "lvs")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to remove something from")))
-                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of redeemable levels to remove")))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_REMOVE_PLAYER)))
+                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_REDEEMABLE_LEVELS_AMOUNT)))
                 .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
                         AdminBankCommandBase.BANK_REMOVE_COMMAND_ROOT_PERMISSION, REMOVE_REDEEMABLE_LEVELS_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_REMOVE_ROOT_PERMISSION))
                 .handler(commandContext -> {
@@ -94,7 +92,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                     int levelAmount = commandContext.get(amountKey);
 
                     Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, levelAmount);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, levelAmount);
@@ -118,7 +115,7 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                 .literal("reset")
                 .literal("redeemable", "redeem")
                 .literal("levels", "lv", "lvs")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to reset")))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_RESET_PLAYER)))
                 .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
                         AdminBankCommandBase.BANK_RESET_COMMAND_ROOT_PERMISSION, RESET_REDEEMABLE_LEVELS_PERMISSION, RedeemableModifyCommandBase.REDEEMABLE_BANK_RESET_ROOT_PERMISSION))
                 .handler(commandContext -> {
@@ -126,7 +123,6 @@ public class RedeemableLevelsModifyCommand extends RedeemableModifyCommandBase {
                     Player player = commandContext.get(playerKey);
 
                     Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, 0);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, 0);

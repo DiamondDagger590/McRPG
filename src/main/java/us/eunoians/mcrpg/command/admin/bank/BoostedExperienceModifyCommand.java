@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.bukkit.parser.PlayerParser;
@@ -39,15 +38,15 @@ public class BoostedExperienceModifyCommand extends AdminBankCommandBase{
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("admin")
                 .literal("exp-bank", "experience-bank", "bank")
                 .literal("give")
                 .literal("boosted-exp", "boosted")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to give something to")))
-                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of boosted experience to give")))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_PLAYER)))
+                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_BOOSTED_AMOUNT)))
                 .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
                         AdminBankCommandBase.BANK_GIVE_COMMAND_ROOT_PERMISSION, GIVE_BOOSTED_EXPERIENCE_PERMISSION))
                 .handler(commandContext -> {
@@ -57,7 +56,6 @@ public class BoostedExperienceModifyCommand extends AdminBankCommandBase{
                     int expAmount = commandContext.get(amountKey);
 
                     Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, expAmount);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, expAmount);
@@ -80,8 +78,8 @@ public class BoostedExperienceModifyCommand extends AdminBankCommandBase{
                 .literal("exp-bank", "experience-bank", "bank")
                 .literal("remove", "minus")
                 .literal("boosted-exp", "boosted")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to remove something from")))
-                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The amount of boosted exp to remove")))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_PLAYER)))
+                .required("amount", IntegerParser.integerParser(1), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_BOOSTED_AMOUNT)))
                 .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
                         AdminBankCommandBase.BANK_REMOVE_COMMAND_ROOT_PERMISSION, REMOVE_BOOSTED_EXPERIENCE_PERMISSION))
                 .handler(commandContext -> {
@@ -91,7 +89,6 @@ public class BoostedExperienceModifyCommand extends AdminBankCommandBase{
                     int expAmount = commandContext.get(amountKey);
 
                     Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, expAmount);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, expAmount);
@@ -114,7 +111,7 @@ public class BoostedExperienceModifyCommand extends AdminBankCommandBase{
                 .literal("exp-bank", "experience-bank", "bank")
                 .literal("reset")
                 .literal("boosted-exp", "boosted")
-                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The player to reset")))
+                .required("player", PlayerParser.playerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_EXP_BANK_RESET_PLAYER)))
                 .permission(Permission.anyOf(McRPGCommandBase.ROOT_PERMISSION, AdminBaseCommand.ADMIN_BASE_PERMISSION, AdminBankCommandBase.BANK_MODIFY_COMMAND_ROOT_PERMISSION,
                         AdminBankCommandBase.BANK_RESET_COMMAND_ROOT_PERMISSION, RESET_BOOSTED_EXPERIENCE_PERMISSION))
                 .handler(commandContext -> {
@@ -122,7 +119,6 @@ public class BoostedExperienceModifyCommand extends AdminBankCommandBase{
                     Player player = commandContext.get(playerKey);
 
                     Audience senderAudience = commandContext.sender().getSender();
-                    McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
                     Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, 0);
                     Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, 0);
