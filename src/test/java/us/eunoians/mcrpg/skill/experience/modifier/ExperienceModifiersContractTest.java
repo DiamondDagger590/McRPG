@@ -98,7 +98,7 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
         addPlayerToServer(mcRPGPlayer);
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         // Add mock skill data
-        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0, 0));
+        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0));
         skillHolder.addSkillHolderData(skillHolderData);
 
         // Setup files
@@ -133,7 +133,7 @@ public class ExperienceModifiersContractTest extends McRPGBaseTest {
         addPlayerToServer(mcRPGPlayer);
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         // Add mock skill data
-        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0, 0));
+        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0));
         skillHolder.addSkillHolderData(skillHolderData);
 
         // Setup files

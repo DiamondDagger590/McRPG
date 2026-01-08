@@ -25,13 +25,11 @@ public class SkillDataSnapshot {
 
     private final UUID uuid;
     private final NamespacedKey skillKey;
-    private int currentExp;
-    private int currentLevel;
+    private int totalExperience;
     private final Map<NamespacedKey, Map<NamespacedKey, AbilityAttribute<?>>> abilityAttributes;
 
     /**
-     * Constructs a new {@link SkillDataSnapshot} with the values for {@link #getCurrentExp()} and {@link #getCurrentLevel()}
-     * both being 0.
+     * Constructs a new {@link SkillDataSnapshot} with the value for {@link #getTotalExperience()} being 0.
      *
      * @param uuid     The {@link UUID} of the player this snapshot is for
      * @param skillKey The {@link NamespacedKey} which represents the {@link us.eunoians.mcrpg.skill.Skill} this snapshot has data for
@@ -39,22 +37,19 @@ public class SkillDataSnapshot {
     public SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
         this.uuid = uuid;
         this.skillKey = skillKey;
-        this.currentExp = 0;
-        this.currentLevel = 0;
+        this.totalExperience = 0;
         this.abilityAttributes = new HashMap<>();
     }
 
     /**
-     * @param uuid         The {@link UUID} of the player this snapshot is for
-     * @param skillKey    The {@link NamespacedKey} which represents the {@link us.eunoians.mcrpg.skill.Skill} this snapshot has data for
-     * @param currentExp   The amount of exp the skill currently has
-     * @param currentLevel The current level of the skill
+     * @param uuid            The {@link UUID} of the player this snapshot is for
+     * @param skillKey        The {@link NamespacedKey} which represents the {@link us.eunoians.mcrpg.skill.Skill} this snapshot has data for
+     * @param totalExperience The total experience ever earned for this skill
      */
-    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey, int currentExp, int currentLevel) {
+    public SkillDataSnapshot(@NotNull UUID uuid, @NotNull NamespacedKey skillKey, int totalExperience) {
         this.uuid = uuid;
         this.skillKey = skillKey;
-        this.currentExp = currentExp;
-        this.currentLevel = currentLevel;
+        this.totalExperience = totalExperience;
         this.abilityAttributes = new HashMap<>();
     }
 
@@ -81,41 +76,21 @@ public class SkillDataSnapshot {
     }
 
     /**
-     * Gets the amount of exp that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has according to this snapshot
+     * Gets the total experience ever earned for the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot.
      *
-     * @return The positive, zero inclusive amount of exp that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has
+     * @return The positive, zero inclusive total experience for the skill.
      */
-    public int getCurrentExp() {
-        return currentExp;
+    public int getTotalExperience() {
+        return totalExperience;
     }
 
     /**
-     * Sets the amount of exp that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has inside this
-     * snapshot.
+     * Sets the total experience for the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot.
      *
-     * @param currentExp The amount of exp that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has. Should be a positive, zero inclusive value
+     * @param totalExperience The total experience. Should be a positive, zero inclusive value.
      */
-    public void setCurrentExp(int currentExp) {
-        this.currentExp = Math.max(0, currentExp);
-    }
-
-    /**
-     * Gets the amount of levels that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has according to this snapshot
-     *
-     * @return The positive, zero inclusive amount of levels that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has
-     */
-    public int getCurrentLevel() {
-        return currentLevel;
-    }
-
-    /**
-     * Sets the amount of levels that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has inside this
-     * snapshot.
-     *
-     * @param currentLevel The amount of levels that the {@link us.eunoians.mcrpg.skill.Skill} represented by this snapshot has. Should be a positive, zero inclusive value
-     */
-    public void setCurrentLevel(int currentLevel) {
-        this.currentLevel = Math.max(0, currentLevel);
+    public void setTotalExperience(int totalExperience) {
+        this.totalExperience = Math.max(0, totalExperience);
     }
 
     /**

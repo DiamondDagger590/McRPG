@@ -5,7 +5,7 @@ permissions:
   use-permissions-to-unlock-abilities: false
   use-permissions-to-activate-abilities: false
 leveling:
-  level-up-equation: '200+(0.17*(skill_level^1.669))'
+  level-up-equation: '100+(skill_level^1.8)'
   maximum-skill-level: 1000
 experience:
   # Configure what items a player can use to break blocks with in order to gain experience.
