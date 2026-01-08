@@ -16,6 +16,36 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String COMMAND_HEADER = "commands";
     public static final Route CONSOLE_NAME = Route.fromString(toRoutePath(COMMAND_HEADER, "console-name"));
+    public static final Route NON_PLAYER_COMMAND_ERROR = Route.fromString(toRoutePath(COMMAND_HEADER, "non-player-error"));
+
+    // Command descriptions for help text
+    private static final String COMMAND_DESCRIPTIONS_HEADER = toRoutePath(COMMAND_HEADER, "descriptions");
+    public static final Route COMMAND_DESCRIPTION_REDEEM = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "redeem"));
+    public static final Route COMMAND_DESCRIPTION_REDEEM_SKILL = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "redeem-skill"));
+    public static final Route COMMAND_DESCRIPTION_REDEEM_EXPERIENCE_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "redeem-experience-amount"));
+    public static final Route COMMAND_DESCRIPTION_REDEEM_LEVELS_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "redeem-levels-amount"));
+    public static final Route COMMAND_DESCRIPTION_GIVE = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give"));
+    public static final Route COMMAND_DESCRIPTION_GIVE_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give-player"));
+    public static final Route COMMAND_DESCRIPTION_GIVE_EXPERIENCE_SKILL = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give-experience-skill"));
+    public static final Route COMMAND_DESCRIPTION_GIVE_EXPERIENCE_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give-experience-amount"));
+    public static final Route COMMAND_DESCRIPTION_GIVE_LEVELS_SKILL = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give-levels-skill"));
+    public static final Route COMMAND_DESCRIPTION_GIVE_LEVELS_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give-levels-amount"));
+    public static final Route COMMAND_DESCRIPTION_GIVE_LEVELS_RESET_EXPERIENCE_FLAG = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "give-levels-reset-experience-flag"));
+    public static final Route COMMAND_DESCRIPTION_RESET = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "reset"));
+    public static final Route COMMAND_DESCRIPTION_RESET_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "reset-player"));
+    public static final Route COMMAND_DESCRIPTION_RESET_SKILL = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "reset-skill"));
+    public static final Route COMMAND_DESCRIPTION_LOADOUT_SLOT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "loadout-slot"));
+    public static final Route COMMAND_DESCRIPTION_LOADOUT_EDIT_SLOT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "loadout-edit-slot"));
+    public static final Route COMMAND_DESCRIPTION_DEBUG_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "debug-player"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-player"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-amount"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_RESTED_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-rested-amount"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_BOOSTED_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-boosted-amount"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_REDEEMABLE_EXPERIENCE_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-redeemable-experience-amount"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_REDEEMABLE_LEVELS_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-redeemable-levels-amount"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_RESET_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-reset-player"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_GIVE_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-give-player"));
+    public static final Route COMMAND_DESCRIPTION_EXP_BANK_REMOVE_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-remove-player"));
 
     private static final String CONFIRMATION_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "confirmation");
     public static final Route NO_PENDING_CONFIRMATION_COMMANDS = Route.fromString(toRoutePath(CONFIRMATION_COMMAND_HEADER, "no-pending-confirmations"));
@@ -49,6 +79,11 @@ public final class LocalizationKey extends ConfigFile {
     private static final String ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "admin");
     private static final String RELOAD_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reload");
     public static final Route RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE = Route.fromString(toRoutePath(RELOAD_COMMAND_HEADER, "sender-success-message"));
+
+    private static final String DEBUG_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "debug");
+    public static final Route DEBUG_COMMAND_HEADER_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "header-message"));
+    public static final Route DEBUG_COMMAND_UPGRADE_POINTS_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "upgrade-points-message"));
+    public static final Route DEBUG_COMMAND_SKILL_INFO_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "skill-info-message"));
 
     private static final String RESET_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reset");
     private static final String RESET_PLAYER_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "player");

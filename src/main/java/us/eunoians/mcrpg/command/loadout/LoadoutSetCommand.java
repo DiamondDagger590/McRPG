@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
@@ -33,18 +32,17 @@ public class LoadoutSetCommand extends McRPGCommandBase {
 
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("loadout")
                 .literal("set")
-                .required("slot", IntegerParser.integerParser(1), RichDescription.richDescription(miniMessage.deserialize("<gray>The loadout to set.")))
+                .required("slot", IntegerParser.integerParser(1), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_LOADOUT_SLOT)))
                 .handler(commandContext -> {
                     CommandSender commandSender = commandContext.sender().getSender();
                     CloudKey<Integer> amountKey = CloudKey.of("slot", Integer.class);
                     int loadoutSlot = commandContext.get(amountKey);
                     if (commandSender instanceof Player player) {
                         McRPGPlayerManager playerManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
-                        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                         Map<String, String> placeholders = getPlaceholders(loadoutSlot);
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
                             LoadoutHolder loadoutHolder = mcRPGPlayer.asSkillHolder();

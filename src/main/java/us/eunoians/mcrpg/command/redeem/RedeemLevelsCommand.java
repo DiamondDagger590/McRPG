@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
@@ -40,14 +39,15 @@ public class RedeemLevelsCommand extends McRPGCommandBase {
     public static void registerCommand() {
         CommandManager<CommandSourceStack> commandManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(ManagerKey.COMMAND).getCommandManager();
-        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
 
         Command.Builder<CommandSourceStack> redeemBuilder = commandManager.commandBuilder("mcrpg")
-                .literal("redeem").commandDescription(RichDescription.richDescription(miniMessage.deserialize("<gray>The subcommand that allows players to redeem things.")))
+                .literal("redeem").commandDescription(RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_REDEEM)))
                 .literal("levels", "lv", "lvs", "level")
-                .required("skill", SkillParser.skillParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>The skill to redeem experience in")));
+                .required("skill", SkillParser.skillParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_REDEEM_SKILL)));
         commandManager.command(redeemBuilder
-                .required("amount", IntegerParser.integerParser(), RichDescription.richDescription(miniMessage.deserialize("<gray>How many levels to redeem?")))
+                .required("amount", IntegerParser.integerParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_REDEEM_LEVELS_AMOUNT)))
                 .handler(commandContext -> {
                             CommandSender commandSender = commandContext.sender().getSender();
                             CloudKey<Skill> skillKey = CloudKey.of("skill", Skill.class);
@@ -61,7 +61,7 @@ public class RedeemLevelsCommand extends McRPGCommandBase {
                                 // If they aren't present, it typically means their data isn't loaded yet so it's fine to just no-op
                             } else {
                                 // Otherwise it's console which isn't supported
-                                commandSender.sendMessage(miniMessage.deserialize("<red>Non-players are not allowed to run this command."));
+                                commandSender.sendMessage(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.NON_PLAYER_COMMAND_ERROR));
                             }
                         }
                 ));
@@ -79,7 +79,7 @@ public class RedeemLevelsCommand extends McRPGCommandBase {
                         playerOptional.ifPresent(mcRPGPlayer -> redeemLevels(mcRPGPlayer, skill, mcRPGPlayer.getExperienceExtras().getRedeemableLevels()));
                         // If they aren't present, it typically means their data isn't loaded yet so it's fine to just no-op
                     } else {
-                        commandSender.sendMessage(miniMessage.deserialize("<red>Non-players are not allowed to run this command."));
+                        commandSender.sendMessage(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.NON_PLAYER_COMMAND_ERROR));
                     }
                 }));
     }
