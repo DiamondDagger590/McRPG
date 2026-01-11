@@ -219,7 +219,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             for (Map.Entry<Skill, SkillDataSnapshot> entry : skillDataSnapshots.entrySet()) {
                 Skill skill = entry.getKey();
                 SkillDataSnapshot skillDataSnapshot = entry.getValue();
-                skillHolder.addSkillHolderData(skill, skillDataSnapshot.getCurrentLevel(), skillDataSnapshot.getCurrentExp());
+                skillHolder.addSkillHolderData(skill, skillDataSnapshot.getTotalExperience());
 
                 for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skill)) {
                     Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);

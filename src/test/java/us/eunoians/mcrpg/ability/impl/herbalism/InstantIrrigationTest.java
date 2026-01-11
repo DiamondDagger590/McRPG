@@ -76,6 +76,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
         when(fileManager.getFile(FileType.HERBALISM_CONFIG)).thenReturn(herbalismConfig);
         when(herbalismConfig.getString(HerbalismConfigFile.LEVEL_UP_EQUATION)).thenReturn("5");
+        when(herbalismConfig.getInt(HerbalismConfigFile.MAXIMUM_SKILL_LEVEL)).thenReturn(1000);
 
         mainConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
@@ -111,7 +112,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(skillHolder);
-        skillHolder.addSkillHolderData(herbalism, 1);
+        skillHolder.addSkillHolderDataAtLevel(herbalism, 1);
         skillHolder.addAvailableAbility(instantIrrigation);
 
         Loadout loadout = new Loadout(mcRPGPlayer.getUUID(), 1, Set.of(instantIrrigation.getAbilityKey()));
@@ -147,7 +148,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(skillHolder);
-        skillHolder.addSkillHolderData(herbalism, 100);
+        skillHolder.addSkillHolderDataAtLevel(herbalism, 100);
         skillHolder.addAvailableAbility(instantIrrigation);
 
         Loadout loadout = new Loadout(mcRPGPlayer.getUUID(), 1, Set.of(instantIrrigation.getAbilityKey()));
@@ -178,7 +179,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(skillHolder);
-        skillHolder.addSkillHolderData(herbalism, 1);
+        skillHolder.addSkillHolderDataAtLevel(herbalism, 1);
         skillHolder.addAvailableAbility(instantIrrigation);
 
         Loadout loadout = new Loadout(mcRPGPlayer.getUUID(), 1, Set.of(instantIrrigation.getAbilityKey()));
@@ -210,7 +211,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(skillHolder);
-        skillHolder.addSkillHolderData(herbalism, 1);
+        skillHolder.addSkillHolderDataAtLevel(herbalism, 1);
         skillHolder.addAvailableAbility(instantIrrigation);
 
         Loadout loadout = new Loadout(mcRPGPlayer.getUUID(), 1, Set.of(instantIrrigation.getAbilityKey()));
@@ -242,7 +243,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(skillHolder);
-        skillHolder.addSkillHolderData(herbalism, 1);
+        skillHolder.addSkillHolderDataAtLevel(herbalism, 1);
         skillHolder.addAvailableAbility(instantIrrigation);
 
         Loadout loadout = new Loadout(mcRPGPlayer.getUUID(), 1, Set.of(instantIrrigation.getAbilityKey()));
@@ -274,7 +275,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
 
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(skillHolder);
-        skillHolder.addSkillHolderData(herbalism, 1);
+        skillHolder.addSkillHolderDataAtLevel(herbalism, 1);
         skillHolder.addAvailableAbility(instantIrrigation);
 
         Loadout loadout = new Loadout(mcRPGPlayer.getUUID(), 1, Set.of(instantIrrigation.getAbilityKey()));

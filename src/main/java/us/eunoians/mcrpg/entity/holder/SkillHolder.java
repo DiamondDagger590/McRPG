@@ -46,36 +46,35 @@ public class SkillHolder extends LoadoutHolder {
     }
 
     /**
-     * Creates and stores a {@link SkillHolderData} with a default level and experience of 0 for the provided
-     * {@link Skill}.
+     * Creates and stores a {@link SkillHolderData} with 0 total experience for the provided {@link Skill}.
      *
      * @param skill The {@link Skill} to create and store data for.
      */
     public void addSkillHolderData(@NotNull Skill skill) {
-        addSkillHolderData(skill, 1, 0);
+        addSkillHolderData(skill, 0);
     }
 
     /**
-     * Creates and stores a {@link SkillHolderData} with a default experience of 0 and the provided level for the provided
-     * {@link Skill}.
+     * Creates and stores a {@link SkillHolderData} with the provided total experience for the provided {@link Skill}.
      *
-     * @param skill        The {@link Skill} to create and store data for.
-     * @param currentLevel The skill level to store in the data.
+     * @param skill           The {@link Skill} to create and store data for.
+     * @param totalExperience The total experience to store in the data.
      */
-    public void addSkillHolderData(@NotNull Skill skill, int currentLevel) {
-        addSkillHolderData(skill, currentLevel, 0);
+    public void addSkillHolderData(@NotNull Skill skill, int totalExperience) {
+        addSkillHolderData(new SkillHolderData(this, skill, totalExperience));
     }
 
     /**
-     * Creates and stores a {@link SkillHolderData} with experience and levels matching those provided for the provided
-     * {@link Skill}.
+     * Creates and stores a {@link SkillHolderData} at the specified level for the provided {@link Skill}.
+     * This is primarily useful for testing scenarios where a player needs to be at a specific level.
      *
-     * @param skill             The {@link Skill} to create and store data for.
-     * @param currentLevel      The skill level to store in the data.
-     * @param currentExperience The skill experience to store in the data.
+     * @param skill The {@link Skill} to create and store data for.
+     * @param level The level to set the skill to.
      */
-    public void addSkillHolderData(@NotNull Skill skill, int currentLevel, int currentExperience) {
-        addSkillHolderData(new SkillHolderData(this, skill, currentLevel, currentExperience));
+    public void addSkillHolderDataAtLevel(@NotNull Skill skill, int level) {
+        SkillHolderData data = new SkillHolderData(this, skill, 0);
+        data.setToLevel(level);
+        addSkillHolderData(data);
     }
 
     /**
@@ -129,33 +128,109 @@ public class SkillHolder extends LoadoutHolder {
         return skillData.containsKey(skillKey);
     }
 
+    /**
+     * Invalidates the level cache for all skills held by this holder.
+     * This should be called when skill leveling equations change (e.g., on plugin reload).
+     */
+    public void invalidateAllLevelCaches() {
+        for (SkillHolderData data : skillData.values()) {
+            data.invalidateLevelCache();
+        }
+    }
+
+    /**
+     * Holds skill-specific data for a {@link SkillHolder}.
+     * <p>
+     * Level is calculated dynamically from total experience using the skill's leveling equation.
+     * This allows server owners to change leveling equations and have player levels update automatically.
+     */
     public static class SkillHolderData {
 
         private final SkillHolder skillHolder;
         private final Skill skill;
-        private int currentExperience;
-        private int experienceForNextLevel;
-        private int currentLevel;
 
-        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int currentLevel) {
-            this(skillHolder, skill, Math.max(0, currentLevel), 0);
-        }
+        // Total experience ever earned - the source of truth
+        private int totalExperience;
 
-        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int currentLevel, int currentExperience) {
+        // Cached values - calculated from totalExperience
+        private int cachedLevel;
+        private int cachedExperienceTowardsNextLevel;
+        private int cachedExperienceForNextLevel;
+        private boolean levelCacheValid;
+
+        /**
+         * Creates a new {@link SkillHolderData} with the provided total experience.
+         *
+         * @param skillHolder     The {@link SkillHolder} that owns this data.
+         * @param skill           The {@link Skill} this data is for.
+         * @param totalExperience The total experience ever earned for this skill.
+         */
+        public SkillHolderData(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int totalExperience) {
             this.skillHolder = skillHolder;
             this.skill = skill;
-            this.currentLevel = Math.max(0, currentLevel);
-            this.currentExperience = Math.max(0, currentExperience);
-            updateExperienceForNextLevel();
+            this.totalExperience = Math.max(0, totalExperience);
+            this.levelCacheValid = false;
+            recalculateLevelCache();
         }
 
         /**
-         * Calculates and updates the amount of experience required for the next level up.
+         * Recalculates the cached level and experience values from total experience.
+         * This is called when experience changes or when the cache is invalidated.
          */
-        public void updateExperienceForNextLevel() {
+        private void recalculateLevelCache() {
+            LevelCalculationResult result = calculateLevelFromTotalExperience();
+            this.cachedLevel = result.level();
+            this.cachedExperienceTowardsNextLevel = result.experienceTowardsNextLevel();
+
+            // Calculate experience needed for next level
             Parser levelParser = skill.getLevelUpEquation();
-            levelParser.setVariable("skill_level", currentLevel);
-            this.experienceForNextLevel = (int) levelParser.getValue();
+            levelParser.setVariable("skill_level", cachedLevel);
+            this.cachedExperienceForNextLevel = (int) levelParser.getValue();
+
+            this.levelCacheValid = true;
+        }
+
+        /**
+         * Calculates the level from total experience using the skill's leveling equation.
+         *
+         * @return A {@link LevelCalculationResult} containing the calculated level and remaining experience
+         */
+        @NotNull
+        private LevelCalculationResult calculateLevelFromTotalExperience() {
+            int remainingExp = this.totalExperience;
+            int level = 0;
+            int maxLevel = skill.getMaxLevel();
+            Parser parser = skill.getLevelUpEquation();
+
+            while (level < maxLevel) {
+                parser.setVariable("skill_level", level);
+                int expForThisLevel = (int) parser.getValue();
+
+                if (remainingExp < expForThisLevel) {
+                    break;
+                }
+                remainingExp -= expForThisLevel;
+                level++;
+            }
+
+            return new LevelCalculationResult(level, remainingExp);
+        }
+
+        /**
+         * Invalidates the level cache, forcing a recalculation on next access.
+         * This should be called when the skill's leveling equation changes (e.g., on plugin reload).
+         */
+        public void invalidateLevelCache() {
+            this.levelCacheValid = false;
+        }
+
+        /**
+         * Ensures the level cache is valid, recalculating if necessary.
+         */
+        private void ensureCacheValid() {
+            if (!levelCacheValid) {
+                recalculateLevelCache();
+            }
         }
 
         /**
@@ -179,12 +254,23 @@ public class SkillHolder extends LoadoutHolder {
         }
 
         /**
-         * Gets the current experience for the {@link Skill} represented by this data.
+         * Gets the total experience ever earned for this skill.
          *
-         * @return The current experience for the {@link Skill} represented by this data.
+         * @return The total experience ever earned for this skill.
+         */
+        public int getTotalExperience() {
+            return totalExperience;
+        }
+
+        /**
+         * Gets the current experience towards the next level for the {@link Skill} represented by this data.
+         * This is the partial progress towards the next level, not the total experience.
+         *
+         * @return The current experience towards the next level.
          */
         public int getCurrentExperience() {
-            return currentExperience;
+            ensureCacheValid();
+            return cachedExperienceTowardsNextLevel;
         }
 
         /**
@@ -193,29 +279,30 @@ public class SkillHolder extends LoadoutHolder {
          * @return The amount of experience required for the next level up.
          */
         public int getExperienceForNextLevel() {
-            return experienceForNextLevel;
+            ensureCacheValid();
+            return cachedExperienceForNextLevel;
         }
 
         /**
-         * Gets the amount of experience the player still has to gain for the next level
-         * up.
+         * Gets the amount of experience the player still has to gain for the next level up.
          *
          * @return The amount of experience required for the next level up.
          */
         public int getRemainingExperienceForNextLevel() {
-            return experienceForNextLevel - currentExperience;
+            ensureCacheValid();
+            return cachedExperienceForNextLevel - cachedExperienceTowardsNextLevel;
         }
 
         /**
          * Gets the current level for the {@link Skill} represented by this data.
+         * The level is dynamically calculated from total experience using the skill's leveling equation.
          *
          * @return The current level for the {@link Skill} represented by this data.
          */
         public int getCurrentLevel() {
-            return currentLevel;
+            ensureCacheValid();
+            return cachedLevel;
         }
-
-        // TODO refactor to SkillHolder?? should the data be responsible for updating itself? probs not lol
 
         /**
          * Adds the provided amount of experience to the {@link Skill}.
@@ -223,171 +310,176 @@ public class SkillHolder extends LoadoutHolder {
          * This method will call a {@link SkillGainExpEvent}, and only award experience if the event is not canceled.
          *
          * @param experience The amount of experience to add.
-         * @return The amount of experience that was unused in leveling up the player.
+         * @return The amount of experience that was unused (when at max level).
          */
         public int addExperience(int experience) {
-            if (currentLevel >= skill.getMaxLevel()) {
+            ensureCacheValid();
+            if (cachedLevel >= skill.getMaxLevel()) {
                 return experience;
             } else if (experience <= 0) {
                 return 0;
             }
+
             SkillGainExpEvent skillGainExpEvent = new SkillGainExpEvent(getSkillHolder(), getSkillKey(), Math.max(0, experience));
             Bukkit.getPluginManager().callEvent(skillGainExpEvent);
             if (skillGainExpEvent.isCancelled()) {
                 return experience;
             }
-            // Calculate levels
+
+            int previousLevel = cachedLevel;
             experience = skillGainExpEvent.getExperience();
-            int expNeeded = experienceForNextLevel - currentExperience;
+
+            // Add to total experience
+            totalExperience += experience;
+
+            // Recalculate level from new total
+            recalculateLevelCache();
+
+            // Calculate leftover experience (experience beyond max level)
             int leftoverExperience = 0;
-            // If we need more experience than we actually have
-            if (experience >= expNeeded) {
-                LevelUpCalculationResult calculationResult = calculateLevelsGainedForExperience(experience);
-                addLevels(calculationResult.amountOfLevelUps());
-                currentExperience = calculationResult.experienceLeftToLevel();
-                leftoverExperience = calculationResult.leftoverExperience();
+            if (cachedLevel >= skill.getMaxLevel()) {
+                // Calculate total XP needed for max level
+                int totalExpForMaxLevel = calculateTotalExperienceForLevel(skill.getMaxLevel());
+                leftoverExperience = Math.max(0, totalExperience - totalExpForMaxLevel);
+                // Cap total experience at max level
+                totalExperience = totalExpForMaxLevel;
+                recalculateLevelCache();
             }
-            else {
-                currentExperience += skillGainExpEvent.getExperience();
+
+            // Fire level up event if level changed
+            int levelsGained = cachedLevel - previousLevel;
+            if (levelsGained > 0) {
+                SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), levelsGained);
+                Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, cachedLevel));
             }
+
             Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey()));
             return leftoverExperience;
         }
 
         /**
-         * Directly sets the amount of experience for the {@link Skill}. This method will NOT call a
-         * {@link SkillGainExpEvent}, but will still call {@link #checkForLevelups()}.
+         * Directly sets the total experience for the {@link Skill}. This method will NOT call a
+         * {@link SkillGainExpEvent}.
          *
-         * @param experience The amount of experience to set.
+         * @param experience The total experience to set.
          */
-        public void setCurrentExperience(int experience) {
-            currentExperience = Math.max(0, experience);
-            checkForLevelups();
+        public void setTotalExperience(int experience) {
+            int previousLevel = getCurrentLevel();
+            totalExperience = Math.max(0, experience);
+            recalculateLevelCache();
+
+            int levelsGained = cachedLevel - previousLevel;
+            if (levelsGained > 0) {
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, cachedLevel));
+            }
             Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey()));
         }
 
         /**
-         * Adds the provided amount of levels to the skill.
+         * Adds the provided amount of levels to the skill by adding the equivalent experience.
          * <p>
          * This method will not add levels past the max level for a given skill.
          *
          * @param levels The amount of levels to add.
+         * @return The amount of levels that were actually added.
          */
         public int addLevels(int levels) {
             return addLevels(levels, false);
         }
 
         /**
-         * Adds the provided amount of levels to the skill. This method can also reset the current experience for a skill
-         * after a level up. This prevents any roll over of experience for whatever reason.
+         * Adds the provided amount of levels to the skill by adding the equivalent experience.
          * <p>
          * This method will not add levels past the max level for a given skill.
-         * <p>
-         * This method will also call a {@link SkillGainLevelEvent} and then also call {@link #checkForLevelups()} as well.
          *
-         * @param levels             The amount of levels to add.
-         * @param resetExpOnLevelUp If the current experience should be reset on level up or not.
-         * @return The amount of levels that were actually added (Amount may differ based on event results/max level)
+         * @param levels            The amount of levels to add.
+         * @param resetExpOnLevelUp If true, sets experience to exactly the start of the new level (no partial progress).
+         * @return The amount of levels that were actually added.
          */
         public int addLevels(int levels, boolean resetExpOnLevelUp) {
             if (levels <= 0) {
                 return 0;
             }
-            int amountOfLevelups = 0;
-            levels = Math.min(levels, skill.getMaxLevel() - getCurrentLevel());
-            SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), levels);
-            Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
-            levels = Math.min(skillGainLevelEvent.getLevels(), skill.getMaxLevel() - getCurrentLevel());
-            currentLevel += levels;
-            amountOfLevelups += levels;
-            // Update the amount of experience needed for the next level and check if there is enough experience to do a level up
-            updateExperienceForNextLevel();
-            amountOfLevelups += checkForLevelups();
-            // If we are resetting experience, reset it
-            if (resetExpOnLevelUp || currentLevel >= skill.getMaxLevel()) {
-                currentExperience = 0;
+
+            ensureCacheValid();
+            int previousLevel = cachedLevel;
+
+            // Calculate how much experience we need to add to gain these levels
+            int targetLevel = Math.min(cachedLevel + levels, skill.getMaxLevel());
+            int experienceToAdd = calculateTotalExperienceForLevel(targetLevel) - totalExperience;
+
+            if (resetExpOnLevelUp) {
+                // Set to exactly the start of the target level
+                totalExperience = calculateTotalExperienceForLevel(targetLevel);
+            } else {
+                // Add just enough to reach the target level, keeping partial progress
+                totalExperience += Math.max(0, experienceToAdd);
             }
-            if (levels >= 0) {
-                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), getCurrentLevel() - levels, getCurrentLevel()));
+
+            recalculateLevelCache();
+
+            int levelsGained = cachedLevel - previousLevel;
+            if (levelsGained > 0) {
+                SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), levelsGained);
+                Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, cachedLevel));
             }
-            return amountOfLevelups;
+
+            return levelsGained;
         }
 
         /**
-         * Resets this skill back to level 0.
+         * Resets this skill back to 0 total experience (level 0).
          */
         public void resetSkill() {
-            currentExperience = 0;
-            currentLevel = 0;
-            updateExperienceForNextLevel();
+            totalExperience = 0;
+            recalculateLevelCache();
         }
 
         /**
-         * Checks to see if there is enough experience to level up. If so, it will continue trying to
-         * level up the skill until there isn't enough experience to level up.
+         * Calculates the total experience needed to reach a specific level.
          *
-         * @return The amount of levels the holder has gone up by
+         * @param targetLevel The level to calculate total experience for.
+         * @return The total experience needed to reach the target level.
          */
-        private int checkForLevelups() {
-            int amountOfLevelups = 0;
-            //do level ups
-            while (currentExperience >= experienceForNextLevel) {
-                currentExperience -= experienceForNextLevel;
-                addLevels(1);
-                amountOfLevelups++;
-                updateExperienceForNextLevel();
+        public int calculateTotalExperienceForLevel(int targetLevel) {
+            int total = 0;
+            Parser parser = skill.getLevelUpEquation();
+            for (int level = 0; level < targetLevel && level < skill.getMaxLevel(); level++) {
+                parser.setVariable("skill_level", level);
+                total += (int) parser.getValue();
             }
-            return amountOfLevelups;
+            return total;
         }
 
-        @NotNull
-        private LevelUpCalculationResult calculateLevelsGainedForExperience(int experience) {
-            int amountOfLevelups = 0;
-            Parser skillParser =  skill.getLevelUpEquation();
-            int remainingExperienceToConsume = experience;
-            skillParser.setVariable("skill_level", currentLevel + amountOfLevelups);
-            int experienceToLevel = (int) skillParser.getValue() - currentExperience;
-            // How much experience is needed to level-up
-            int experienceLeftToLevel = experienceToLevel;
-            while (remainingExperienceToConsume > 0) {
-                // If we reached the max level, then we should break
-                if (currentLevel + amountOfLevelups >= skill.getMaxLevel()) {
-                    break;
-                }
-                // If there's enough experience to give a full level, do so
-                if (remainingExperienceToConsume >= experienceToLevel) {
-                    remainingExperienceToConsume -= experienceToLevel;
-                    // We leveled up so set this to 0
-                    experienceLeftToLevel = 0;
-                    amountOfLevelups++;
-                }
-                // If there isn't enough experience for a full level, do a partial one.
-                else {
-                    experienceLeftToLevel = experienceToLevel - remainingExperienceToConsume;
-                    remainingExperienceToConsume = 0;
-                    break;
-                }
-                skillParser.setVariable("skill_level", currentLevel + amountOfLevelups);
-                experienceToLevel = (int) skillParser.getValue();
-            }
-            return new LevelUpCalculationResult(amountOfLevelups, experienceLeftToLevel, remainingExperienceToConsume);
-        }
-
+        /**
+         * Calculates how much additional experience is needed to gain a specific number of levels from current level.
+         *
+         * @param levels The number of levels to calculate experience for.
+         * @return The experience needed to gain the specified number of levels.
+         */
         public int calculateExperienceNeededToGainLevels(int levels) {
-            int experienceNeededToGainLevels = 0;
-            for (int i = 0; i < levels ; i++) {
-                int level = currentLevel + i;
-                if (level >= skill.getMaxLevel()) {
-                    break;
-                }
-                Parser skillParser =  skill.getLevelUpEquation();
-                skillParser.setVariable("skill_level", currentLevel + i);
-                experienceNeededToGainLevels += (int) skillParser.getValue();
-            }
-            return experienceNeededToGainLevels;
+            ensureCacheValid();
+            int targetLevel = Math.min(cachedLevel + levels, skill.getMaxLevel());
+            return calculateTotalExperienceForLevel(targetLevel) - totalExperience;
         }
-    }
 
-    private record LevelUpCalculationResult(int amountOfLevelUps, int experienceLeftToLevel, int leftoverExperience) {
+        /**
+         * Sets the skill to a specific level by calculating and setting the total experience needed.
+         * This is primarily useful for testing scenarios.
+         *
+         * @param level The level to set the skill to.
+         */
+        public void setToLevel(int level) {
+            totalExperience = calculateTotalExperienceForLevel(Math.min(level, skill.getMaxLevel()));
+            recalculateLevelCache();
+        }
+
+        /**
+         * Record for holding level calculation results.
+         */
+        private record LevelCalculationResult(int level, int experienceTowardsNextLevel) {
+        }
     }
 }

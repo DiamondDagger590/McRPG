@@ -100,7 +100,7 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder, 100);
         addPlayerToServer(mcRPGPlayer);
         // Add mock skill data
-        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0, 0));
+        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0));
         skillHolder.addSkillHolderData(skillHolderData);
         // Mock Configuration
         FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
@@ -121,7 +121,7 @@ public class RestedExperienceModifierTest extends McRPGBaseTest {
         EntityDamageContext entityDamageContext = constructEntityDamageContext(mcRPGPlayer, skillHolder, 100);
         addPlayerToServer(mcRPGPlayer);
         // Add mock skill data
-        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0, 0));
+        SkillHolder.SkillHolderData skillHolderData = spy(new SkillHolder.SkillHolderData(skillHolder, mockSkill, 0));
         skillHolder.addSkillHolderData(skillHolderData);
         // Mock Configuration
         FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);

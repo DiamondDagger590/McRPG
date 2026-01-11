@@ -60,8 +60,7 @@ public class SkillDAO {
              *
              * player_uuid is the {@link java.util.UUID} of the player being stored
              * skill_id is the id of the {@link us.eunoians.mcrpg.types.Skills} that is being stored
-             * current_level is the current level of the player's skill that is being stored
-             * current_exp is the current amount of exp the player's skill that is being stored has
+             * total_experience is the total experience ever earned for the skill (level is calculated dynamically from this)
              **
              ** Reasoning for structure:
              ** The composite key is the `player_uuid` field and the `skill_id` field, as there should only be one unique combination of the two per player and skill
@@ -70,8 +69,7 @@ public class SkillDAO {
                     "(" +
                     "`player_uuid` varchar(36) NOT NULL," +
                     "`skill_id` varchar(32) NOT NULL," +
-                    "`current_level` int(11) NOT NULL DEFAULT 1," +
-                    "`current_exp` int(11) NOT NULL DEFAULT 0," +
+                    "`total_experience` int(11) NOT NULL DEFAULT 0," +
                     "PRIMARY KEY (`player_uuid`, `skill_id`)" +
                     ");")) {
                 statement.executeUpdate();
@@ -170,7 +168,7 @@ public class SkillDAO {
      * @param connection The {@link Connection} to use to run the query
      * @param uuid       The {@link UUID} of the player to get the data for
      * @param skillKey   The {@link NamespacedKey} to get the skill leveling data for
-     * @return A {@link SkillDataSnapshot} updated with the exp and level of the desired skill.
+     * @return A {@link SkillDataSnapshot} updated with the total experience of the desired skill.
      */
     @NotNull
     public static SkillDataSnapshot getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull NamespacedKey skillKey) {
@@ -179,27 +177,24 @@ public class SkillDAO {
 
     /**
      * Gets the player leveling information for a specific player's skill. This method accepts a {@link SkillDataSnapshot} which will be updated utilizing
-     * {@link SkillDataSnapshot#setCurrentExp(int)} and {@link SkillDataSnapshot#setCurrentLevel(int)}.
+     * {@link SkillDataSnapshot#setTotalExperience(int)}.
      * <p>
-     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillKey()} ()}.
+     * The skill that will have data obtained for it will be obtained from {@link SkillDataSnapshot#getSkillKey()}.
      *
      * @param connection        The {@link Connection} to use to run the query
      * @param uuid              The {@link UUID} of the player to get the data for
      * @param skillDataSnapshot The {@link SkillDataSnapshot} to update
-     * @return A {@link SkillDataSnapshot}, updated with the exp and level of the desired skill.
+     * @return A {@link SkillDataSnapshot}, updated with the total experience of the desired skill.
      */
     @NotNull
     public static SkillDataSnapshot getPlayerSkillLevelingData(@NotNull Connection connection, @NotNull UUID uuid, @NotNull SkillDataSnapshot skillDataSnapshot) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT current_level, current_exp FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?;")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT total_experience FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?;")) {
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setString(2, skillDataSnapshot.getSkillKey().getKey().toLowerCase(Locale.ROOT));
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    int currentExp = resultSet.getInt("current_exp");
-                    int currentLevel = resultSet.getInt("current_level");
-
-                    skillDataSnapshot.setCurrentExp(currentExp);
-                    skillDataSnapshot.setCurrentLevel(currentLevel);
+                    int totalExperience = resultSet.getInt("total_experience");
+                    skillDataSnapshot.setTotalExperience(totalExperience);
                 }
             }
         } catch (SQLException e) {
@@ -357,7 +352,7 @@ public class SkillDAO {
     }
 
     /**
-     * Saves {@link Skill} specific information such as exp for the provided {@link SkillHolder} for all skills.
+     * Saves {@link Skill} specific information such as total experience for the provided {@link SkillHolder} for all skills.
      *
      * @param connection  The {@link Connection} to use to save the skill information
      * @param skillHolder The {@link SkillHolder} whose skill information is being saved
@@ -373,7 +368,7 @@ public class SkillDAO {
     }
 
     /**
-     * Saves skill specific information such as exp for the provided {@link SkillHolder} for the {@link Skill} associated with the provided {@link NamespacedKey}.
+     * Saves skill specific information such as total experience for the provided {@link SkillHolder} for the {@link Skill} associated with the provided {@link NamespacedKey}.
      *
      * @param connection  The {@link Connection} to use to save the skill information
      * @param skillHolder The {@link SkillHolder} whose skill information is being saved
@@ -384,21 +379,20 @@ public class SkillDAO {
     public static List<PreparedStatement> savePlayerSkillData(@NotNull Connection connection, @NotNull SkillHolder skillHolder, @NotNull NamespacedKey skillKey) {
         List<PreparedStatement> preparedStatements = new ArrayList<>();
         try {
-            PreparedStatement skillDataStatement = connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, current_level, current_exp) VALUES (?, ?, ?, ?);");
+            PreparedStatement skillDataStatement = connection.prepareStatement("REPLACE INTO " + SKILL_DATA_TABLE_NAME + " (player_uuid, skill_id, total_experience) VALUES (?, ?, ?);");
             skillDataStatement.setString(1, skillHolder.getUUID().toString());
             PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM " + SKILL_DATA_TABLE_NAME + " WHERE player_uuid = ? AND skill_id = ?");
             deleteStatement.setString(1, skillHolder.getUUID().toString());
             Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skillKey);
             if (skillHolderDataOptional.isPresent()) {
                 SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
-                // If there isnt anything to store in the db... clean it
-                if (skillHolderData.getCurrentExperience() == 0 && skillHolderData.getCurrentLevel() == 0) {
+                // If there isn't anything to store in the db... clean it
+                if (skillHolderData.getTotalExperience() == 0) {
                     deleteStatement.setString(2, skillKey.value());
                     preparedStatements.add(deleteStatement);
                 } else {
                     skillDataStatement.setString(2, skillKey.value());
-                    skillDataStatement.setInt(3, skillHolderData.getCurrentLevel());
-                    skillDataStatement.setInt(4, skillHolderData.getCurrentExperience());
+                    skillDataStatement.setInt(3, skillHolderData.getTotalExperience());
                     preparedStatements.add(skillDataStatement);
                 }
             }
@@ -407,96 +401,4 @@ public class SkillDAO {
         }
         return preparedStatements;
     }
-
-//    /**
-//     * Gets the player leaderboard rankings for the provided {@link Skills} skill type.
-//     *
-//     * @param connection The {@link Connection} to use to get the player leaderboard rankings
-//     * @param skillType  The {@link Skills} skill type to use to get the player leaderboard rankings for
-//     * @return A {@link CompletableFuture} completed with a {@link LeaderboardData} which stores all of the player rankings for the given {@link Skills} skill type or will
-//     * be completed exceptionally with an {@link SQLException} if an error occurs.
-//     */
-//    @NotNull
-//    public static CompletableFuture<LeaderboardData> getPlayerLeaderboardRankings(@NotNull Connection connection, @NotNull Skills skillType) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<LeaderboardData> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            List<PlayerLeaderboardData> playerLeaderboardData = new ArrayList<>();
-//            Map<UUID, Integer> playerRankings = new HashMap<>();
-//
-//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT player_uuid, current_level FROM " + SKILL_DATA_TABLE_NAME + " WHERE skill_id = ? ORDER BY current_level DESC;")) {
-//
-//                preparedStatement.setString(1, skillType.getName().toLowerCase());
-//
-//                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//
-//                    while (resultSet.next()) {
-//
-//                        UUID uuid = UUID.fromString(resultSet.getString("player_uuid"));
-//                        int level = resultSet.getInt("current_level");
-//
-//                        playerLeaderboardData.add(new PlayerLeaderboardData(uuid, level));
-//                        playerRankings.put(uuid, playerLeaderboardData.size() + 1);
-//                    }
-//                }
-//
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//                return;
-//            }
-//
-//            completableFuture.complete(new LeaderboardData(playerLeaderboardData, playerRankings));
-//        });
-//
-//        return completableFuture;
-//    }
-
-//    /**
-//     * Gets the player leaderboard power level rankings.
-//     *
-//     * @param connection The {@link Connection} to use to get the player leaderboard rankings
-//     * @return A {@link CompletableFuture} completed with a {@link LeaderboardData} which stores all of the player power level rankings or will
-//     * be completed exceptionally with an {@link SQLException} if an error occurs.
-//     */
-//    @NotNull
-//    public static CompletableFuture<LeaderboardData> getPlayerPowerLeaderboardRankings(@NotNull Connection connection) {
-//
-//        McRPGDatabaseManager databaseManager = McRPG.getInstance().getDatabaseManager();
-//        CompletableFuture<LeaderboardData> completableFuture = new CompletableFuture<>();
-//
-//        databaseManager.getDatabaseExecutorService().submit(() -> {
-//
-//            List<PlayerLeaderboardData> playerLeaderboardData = new ArrayList<>();
-//            Map<UUID, Integer> playerRankings = new HashMap<>();
-//
-//            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT player_uuid, SUM(current_level) AS total_level_sum FROM " + SKILL_DATA_TABLE_NAME + " GROUP BY player_uuid ORDER BY total_level_sum DESC;")) {
-//
-//                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//
-//                    while (resultSet.next()) {
-//
-//                        UUID uuid = UUID.fromString(resultSet.getString("player_uuid"));
-//                        int powerLevel = resultSet.getInt("total_level_sum");
-//
-//                        playerLeaderboardData.add(new PlayerLeaderboardData(uuid, powerLevel));
-//                        playerRankings.put(uuid, playerLeaderboardData.size() + 1);
-//                    }
-//                }
-//
-//            }
-//            catch (SQLException e) {
-//                completableFuture.completeExceptionally(e);
-//                return;
-//            }
-//
-//            completableFuture.complete(new LeaderboardData(playerLeaderboardData, playerRankings));
-//
-//        });
-//
-//        return completableFuture;
-//    }
 }

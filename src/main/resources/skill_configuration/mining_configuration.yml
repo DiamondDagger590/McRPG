@@ -9,7 +9,7 @@ permissions:
 # Configure leveling requirements for this skill.
 leveling:
   # Configure the equation to calculate the player's experience for the next level
-  level-up-equation: '200+(0.17*(skill_level^1.669))'
+  level-up-equation: '100+(skill_level^1.8)'
   # Configure the maximum level this skill can be
   maximum-skill-level: 1000
 # Configure experience gain for this skill

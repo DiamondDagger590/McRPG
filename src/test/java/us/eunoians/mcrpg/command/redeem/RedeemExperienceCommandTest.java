@@ -46,7 +46,7 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
     @Test
     public void redeemExperience_sendsNotEnoughMessage_whenNoRedeemableExperience(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
-        mcRPGPlayer.asSkillHolder().addSkillHolderData(skill);
+        mcRPGPlayer.asSkillHolder().addSkillHolderDataAtLevel(skill, 1);
         SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
         Component message = mcRPG.getMiniMessage().deserialize("You do not have enough redeemable experience");
         when(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_NOT_ENOUGH_EXPERIENCE_MESSAGE)).thenReturn(message);
@@ -65,7 +65,7 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
     public void redeemExperience_sendsMaxLevelMessage_whenSkillAtMaxLevel(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
         mcRPGPlayer.getExperienceExtras().setRedeemableExperience(1000);
-        mcRPGPlayer.asSkillHolder().addSkillHolderData(skill);
+        mcRPGPlayer.asSkillHolder().addSkillHolderDataAtLevel(skill, 1);
         SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
         skillHolderData.addLevels(999);
         when(skill.getMaxLevel()).thenReturn(1000);
@@ -89,10 +89,11 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
     public void redeemExperience_refundsUnusedExperience_whenMaxLevelReached(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
         mcRPGPlayer.getExperienceExtras().setRedeemableExperience(1000);
-        mcRPGPlayer.asSkillHolder().addSkillHolderData(skill);
-        SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
+        // Set up mocks BEFORE creating skill holder data
         when(skill.getMaxLevel()).thenReturn(2);
         when(skill.getLevelUpEquation()).thenReturn(new Parser("50"));
+        mcRPGPlayer.asSkillHolder().addSkillHolderDataAtLevel(skill, 1);
+        SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
 
         Component message = mcRPG.getMiniMessage().deserialize("You redeemed experience!");
         when(localizationManager.getLocalizedMessageAsComponent(eq(player), eq(LocalizationKey.REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE), any())).thenReturn(message);
@@ -113,10 +114,11 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
     public void redeemExperience_consumesAllExperience_whenMaxLevelNotReached(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
         mcRPGPlayer.getExperienceExtras().setRedeemableExperience(25);
-        mcRPGPlayer.asSkillHolder().addSkillHolderData(skill);
-        SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
+        // Set up mocks BEFORE creating skill holder data
         when(skill.getMaxLevel()).thenReturn(2);
         when(skill.getLevelUpEquation()).thenReturn(new Parser("50"));
+        mcRPGPlayer.asSkillHolder().addSkillHolderDataAtLevel(skill, 1);
+        SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
 
         Component message = mcRPG.getMiniMessage().deserialize("You redeemed experience!");
         when(localizationManager.getLocalizedMessageAsComponent(eq(player), eq(LocalizationKey.REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE), any())).thenReturn(message);
@@ -136,10 +138,11 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
     @Test
     public void redeemExperience_consumesFullExperience_whenLevelingPartialLevel(@NotNull McRPGPlayer mcRPGPlayer) {
         PlayerMock player = addPlayerToServer(mcRPGPlayer);
+        // Set up mocks BEFORE creating skill holder data
         when(skill.getMaxLevel()).thenReturn(1000);
         when(skill.getLevelUpEquation()).thenReturn(new Parser("200+(0.17*(skill_level^1.669))"));
         mcRPGPlayer.getExperienceExtras().setRedeemableExperience(1000);
-        mcRPGPlayer.asSkillHolder().addSkillHolderData(skill);
+        mcRPGPlayer.asSkillHolder().addSkillHolderDataAtLevel(skill, 1);
         SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
 
         Component message = mcRPG.getMiniMessage().deserialize("You redeemed experience!");
@@ -149,7 +152,7 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
         assertEquals(1000, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
         RedeemExperienceCommand.redeemExperience(mcRPGPlayer, skill, 500);
         assertEquals(message, player.nextComponentMessage());
-        assertEquals(101, skillHolderData.getCurrentExperience());
+        assertEquals(100, skillHolderData.getCurrentExperience());
         assertEquals(3, skillHolderData.getCurrentLevel());
         assertEquals(500, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
     }

@@ -29,6 +29,11 @@ public class ReloadPluginCommand extends McRPGCommandBase {
                 .handler(commandContext -> {
                             Audience senderAudience = commandContext.sender().getSender();
                             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
+
+                            // Invalidate level caches for all online players since leveling equations may have changed
+                            McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()
+                                    .forEach(player -> player.asSkillHolder().invalidateAllLevelCaches());
+
                             senderAudience.sendMessage(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
                                     .getLocalizedMessageAsComponent(LocalizationKey.RELOAD_COMMAND_SENDER_SUCCESS_MESSAGE));
                         }

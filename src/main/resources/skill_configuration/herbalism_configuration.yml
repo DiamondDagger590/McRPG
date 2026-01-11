@@ -9,7 +9,7 @@ permissions:
 # Configure leveling requirements for this skill.
 leveling:
   # Configure the equation to calculate the player's experience for the next level
-  level-up-equation: '200+(0.17*(skill_level^1.669))'
+  level-up-equation: '100+(skill_level^1.8)'
   # Configure the maximum level this skill can be
   maximum-skill-level: 1000
 # Configure experience gain for this skill
@@ -18,7 +18,7 @@ experience:
   # on what item the player is holding in their main hand. If an item
   # isn't in this list but is allowed, then the default value of 1.0 is used.
   #
-  # These modifiers can be either material values such as WOODEN_HOE
+  # These modifiers can bew either material values such as WOODEN_HOE
   # or the custom item id for whatever custom item plugin you might be using
   # if you want to allow custom items.
   material-modifiers:
