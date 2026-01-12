@@ -69,15 +69,13 @@ dependencies {
 
     val paperVersion = "1.21.11-R0.1-SNAPSHOT"
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
-    // MockBukkit 4.98.x is built against 1.21.10, so tests need to use that version
-    val testPaperVersion = "1.21.10-R0.1-SNAPSHOT"
-    testImplementation("io.papermc.paper:paper-api:$testPaperVersion")
-    testFixturesImplementation("io.papermc.paper:paper-api:$testPaperVersion")
+    testImplementation("io.papermc.paper:paper-api:$paperVersion")
+    testFixturesImplementation("io.papermc.paper:paper-api:$paperVersion")
 
     val bstatsVersion = "2.2.1"
     implementation("org.bstats:bstats-bukkit:$bstatsVersion")
 
-    val glowingEntitiesVersion = "1.4.9"
+    val glowingEntitiesVersion = "1.4.10"
     implementation("fr.skytasul:glowingentities:$glowingEntitiesVersion")
 
     val customBlockDataVersion = "2.2.2"
@@ -96,12 +94,12 @@ dependencies {
     compileOnly("com.github.angeschossen:LandsAPI:$landsVersion")
 
     // Test deps
-    val mockBukkitVersion = "4.98.0"
+    val mockBukkitVersion = "4.100.0"
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
     testFixturesImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:$mockBukkitVersion")
 
     // Gotta be explicit (MockBukkit is throwing a fit)
-    val junitVersion = "5.11.0";
+    val junitVersion = "6.0.2";
     testImplementation(platform("org.junit:junit-bom:$junitVersion"))
     testFixturesImplementation(platform("org.junit:junit-bom:$junitVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -113,10 +111,7 @@ dependencies {
     testFixturesImplementation("org.mockito:mockito-inline:$mockitoVersion")
 
     //Jar deps
-    compileOnly(files("libs/Sickle.jar"))
-    compileOnly(files("libs/SpartanAPI.jar"))
     compileOnly(files("libs/mcMMO.jar"))
-    compileOnly(files("libs/NoCheatPlus.jar")) //3.16.0-RC-sMD5NET-b1134
     //implementation(kotlin("stdlib-jdk8"))
 }
 
@@ -132,13 +127,6 @@ tasks.withType<ProcessResources> {
 
 tasks.test {
     useJUnitPlatform()
-}
-
-// Force Paper API version in test configurations to match what MockBukkit expects
-configurations.matching { it.name.startsWith("test") }.configureEach {
-    resolutionStrategy {
-        force("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
-    }
 }
 
 tasks {

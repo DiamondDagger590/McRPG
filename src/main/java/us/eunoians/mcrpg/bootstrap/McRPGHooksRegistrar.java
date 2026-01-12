@@ -11,9 +11,7 @@ import us.eunoians.mcrpg.external.geyser.GeyserHook;
 import us.eunoians.mcrpg.external.lands.LandsHook;
 import us.eunoians.mcrpg.external.lunar.LunarClientHook;
 import us.eunoians.mcrpg.external.mcmmo.McMMOHook;
-import us.eunoians.mcrpg.external.nocheatplus.NoCheatPlusHook;
 import us.eunoians.mcrpg.external.papi.McRPGPapiHook;
-import us.eunoians.mcrpg.external.sickle.SickleHook;
 import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
 
 import java.util.logging.Logger;
@@ -29,16 +27,9 @@ final class McRPGHooksRegistrar implements Registrar<McRPG> {
         McRPG plugin = context.plugin();
         Logger logger = plugin.getLogger();
         PluginHookRegistry pluginHookRegistry = plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK);
-        if (Bukkit.getPluginManager().isPluginEnabled("Sickle")) {
-            pluginHookRegistry.register(new SickleHook(plugin));
-        }
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             logger.info("PlaceholderAPI found... registering placeholders");
             pluginHookRegistry.register(new McRPGPapiHook(plugin));
-        }
-        if (Bukkit.getPluginManager().isPluginEnabled("NoCheatPlus")) {
-            logger.info("NoCheatPlus found... will enable anticheat support");
-            pluginHookRegistry.register(new NoCheatPlusHook(plugin));
         }
         if (Bukkit.getPluginManager().isPluginEnabled("mcMMO")) {
             logger.info("McMMO found... ready to convert.");
