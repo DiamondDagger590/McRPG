@@ -30,7 +30,7 @@ import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
-import us.eunoians.mcrpg.localization.NativeLocale;
+import us.eunoians.mcrpg.localization.DynamicLocale;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.DisableBonusExperienceConsumptionSetting;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
@@ -44,7 +44,6 @@ import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -143,12 +142,16 @@ public final class McRPGExpansion extends ContentExpansion {
 
     /**
      * Gets the native {@link LocalizationContentPack} for McRPG.
+     * <p>
+     * Locale files are dynamically loaded from the localization folder.
      *
      * @return The native {@link LocalizationContentPack} for McRPG.
      */
     public LocalizationContentPack getLocalizationContent() {
         LocalizationContentPack localizationContent = new LocalizationContentPack(this);
-        Arrays.stream(NativeLocale.values()).forEach(localizationContent::addContent);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE)
+                .getLocalizationFiles()
+                .forEach(yamlDocument -> localizationContent.addContent(new DynamicLocale(yamlDocument)));
         return localizationContent;
     }
 }

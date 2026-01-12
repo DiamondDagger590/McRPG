@@ -11,6 +11,10 @@
 #
 #######################################
 #
+# The locale code for this file (e.g., en, en_US, fr, de)
+locale: en
+# The display name for this locale (shown in the settings GUI)
+locale-name: English
 config-version: 1
 # Configure messages for McRPG commands
 commands:
