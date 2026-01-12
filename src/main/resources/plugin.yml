@@ -7,7 +7,6 @@ api-version: 1.21
 soft-depend:
   - PlaceholderAPI
   - WorldGuard
-  - NoCheatPlus
   - mcMMO
   - Geyser
   - Apollo-Bukkit

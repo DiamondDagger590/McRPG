@@ -1,0 +1,45 @@
+name: McRPG
+version: ${version}
+description: A RPG plugin for 1.21
+author: Eunoians
+main: us.eunoians.mcrpg.McRPG
+api-version: "1.21"
+
+dependencies:
+  server:
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    WorldGuard:
+      load: BEFORE
+      required: false
+    mcMMO:
+      load: BEFORE
+      required: false
+    Geyser-Spigot:
+      load: BEFORE
+      required: false
+    apollo-bukkit:
+      load: BEFORE
+      required: false
+    Lands:
+      load: BEFORE
+      required: false
+    CMI:
+      load: BEFORE
+      required: false
+    ModelEngine:
+      load: BEFORE
+      required: false
+    ItemsAdder:
+      load: BEFORE
+      required: false
+    Nexo:
+      load: BEFORE
+      required: false
+    MythicMobs:
+      load: BEFORE
+      required: false
+    Citizens:
+      load: BEFORE
+      required: false
