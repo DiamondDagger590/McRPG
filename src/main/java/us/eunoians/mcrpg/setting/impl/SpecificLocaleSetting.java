@@ -1,22 +1,18 @@
 package us.eunoians.mcrpg.setting.impl;
 
-import com.diamonddagger590.mccore.player.CorePlayer;
-import com.diamonddagger590.mccore.registry.RegistryAccess;
-import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
-import dev.dejvokep.boostedyaml.YamlDocument;
-import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.setting.slot.LocaleSettingSlot;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.setting.McRPGSetting;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A locale setting that stores a specific locale code rather than using an enum constant.
@@ -24,7 +20,7 @@ import java.util.Optional;
  * This allows players to select any available locale dynamically, not just predefined options.
  * The setting stores the locale code (e.g., "en", "fr") as the value.
  */
-public final class SpecificLocaleSetting implements McRPGSetting {
+public final class SpecificLocaleSetting implements LocalePlayerSetting {
 
     private final String localeCode;
     private final Locale locale;
@@ -66,12 +62,6 @@ public final class SpecificLocaleSetting implements McRPGSetting {
 
     @NotNull
     @Override
-    public NamespacedKey getSettingKey() {
-        return LocaleSetting.SETTING_KEY;
-    }
-
-    @NotNull
-    @Override
     public LinkedNode<? extends PlayerSetting> getFirstSetting() {
         return LocaleSetting.CLIENT_LOCALE.getFirstSetting();
     }
@@ -105,17 +95,15 @@ public final class SpecificLocaleSetting implements McRPGSetting {
         return new LocaleSettingSlot(player, this);
     }
 
-    @Override
-    public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
-        LocaleSetting.refreshPlayerSettingGui(player);
-    }
-
     @NotNull
     @Override
     public Optional<? extends PlayerSetting> fromString(@NotNull String setting) {
         // Check if it's one of the enum values first
-        if (setting.equalsIgnoreCase("CLIENT_LOCALE") || setting.equalsIgnoreCase("SERVER_LOCALE")) {
-            return LocaleSetting.CLIENT_LOCALE.fromString(setting);
+        if (setting.equalsIgnoreCase("CLIENT_LOCALE")) {
+            return Optional.of(LocaleSetting.CLIENT_LOCALE);
+        }
+        if (setting.equalsIgnoreCase("SERVER_LOCALE")) {
+            return Optional.of(LocaleSetting.SERVER_LOCALE);
         }
 
         // Check if it's a valid locale code from available locales
@@ -136,7 +124,10 @@ public final class SpecificLocaleSetting implements McRPGSetting {
     }
 
     /**
-     * Gets a list of all unique available locale codes from the loaded localization files.
+     * Gets a list of all unique available locale codes.
+     * <p>
+     * This queries the localization manager for all registered locales, which includes
+     * both dynamically loaded locale files and any locales registered by third-party plugins.
      * <p>
      * Multiple files can share the same locale code (e.g., en_commands.yml and en_gui.yml
      * both with {@code locale: en}). This method returns each unique locale code only once.
@@ -145,17 +136,20 @@ public final class SpecificLocaleSetting implements McRPGSetting {
      */
     @NotNull
     public static List<String> getAvailableLocaleCodes() {
-        List<YamlDocument> localizationFiles = RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE)
-                .getLocalizationFiles();
+        // Query the localization manager for all registered locales
+        // This includes both file-based locales and any registered by third-party plugins
+        Set<Locale> registeredLocales = McRPG.getInstance()
+                .registryAccess()
+                .registry(com.diamonddagger590.mccore.registry.RegistryKey.MANAGER)
+                .manager(us.eunoians.mcrpg.registry.manager.McRPGManagerKey.LOCALIZATION)
+                .getRegisteredLocales();
 
-        return localizationFiles.stream()
-                .map(doc -> doc.getString("locale"))
-                .filter(Objects::nonNull)
+        return registeredLocales.stream()
+                .map(Locale::toString)
                 .filter(code -> !code.isBlank())
                 .distinct()
-                .toList();
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @Override

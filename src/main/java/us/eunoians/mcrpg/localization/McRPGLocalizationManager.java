@@ -16,8 +16,10 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Any messages sent for McRPG should pass through here in order to be translated.
@@ -35,8 +37,38 @@ import java.util.Optional;
  */
 public final class McRPGLocalizationManager extends LocalizationManager<McRPG, McRPGPlayer> {
 
+    private final Set<Locale> registeredLocales = new HashSet<>();
+
     public McRPGLocalizationManager(McRPG mcRPG) {
         super(mcRPG);
+    }
+
+    /**
+     * Registers a language file and tracks its locale.
+     * <p>
+     * This overrides the parent method to track all registered locales,
+     * allowing {@link #getRegisteredLocales()} to return all available languages
+     * including those registered by third-party plugins.
+     *
+     * @param localization The localization to register.
+     */
+    @Override
+    public void registerLanguageFile(@NotNull com.diamonddagger590.mccore.localization.Localization localization) {
+        super.registerLanguageFile(localization);
+        registeredLocales.add(localization.getLocale());
+    }
+
+    /**
+     * Gets all locales that have been registered with this manager.
+     * <p>
+     * This includes locales from dynamically loaded locale files as well as
+     * any locales registered by third-party plugins via {@link #registerLanguageFile(com.diamonddagger590.mccore.localization.Localization)}.
+     *
+     * @return An unmodifiable set of all registered locales.
+     */
+    @NotNull
+    public Set<Locale> getRegisteredLocales() {
+        return Set.copyOf(registeredLocales);
     }
 
     /**

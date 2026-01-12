@@ -12,6 +12,7 @@ import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.localization.BundledLocale;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public final class FileManager extends Manager<McRPG> {
      * Locale files are organized in subfolders by language name (e.g., {@code localization/english/}).
      * Each subfolder can contain multiple {@code .yml} files that share the same {@code locale} key.
      * <p>
-     * If the folder doesn't exist or has no subfolders, copies the default English locale from resources.
+     * If the folder doesn't exist or has no subfolders, copies the bundled locales from resources.
      */
     private void loadLocalizationFiles() {
         File localizationFolder = new File(plugin().getDataFolder(), LOCALIZATION_FOLDER);
@@ -98,11 +99,13 @@ public final class FileManager extends Manager<McRPG> {
             localizationFolder.mkdirs();
         }
 
-        // Copy default English locale folder if it doesn't exist
-        File englishFolder = new File(localizationFolder, "english");
-        if (!englishFolder.exists()) {
-            englishFolder.mkdirs();
-            copyDefaultLocaleFolder("english");
+        // Copy all bundled locale folders if they don't exist
+        for (BundledLocale bundledLocale : BundledLocale.values()) {
+            File localeFolder = new File(localizationFolder, bundledLocale.getFolderName());
+            if (!localeFolder.exists()) {
+                localeFolder.mkdirs();
+                copyBundledLocaleFolder(bundledLocale);
+            }
         }
 
         // Scan all subfolders for locale files
@@ -115,49 +118,25 @@ public final class FileManager extends Manager<McRPG> {
     }
 
     /**
-     * Copies all default locale files from resources for a given language folder.
+     * Copies all locale files from resources for a bundled locale.
      *
-     * @param languageFolderName The name of the language folder (e.g., "english").
+     * @param bundledLocale The {@link BundledLocale} to copy files for.
      */
-    private void copyDefaultLocaleFolder(@NotNull String languageFolderName) {
-        // We need to know what files exist in the resources folder
-        // Since we can't list resources directly, we try to copy known default files
-        String resourcePath = LOCALIZATION_FOLDER + "/" + languageFolderName + "/";
+    private void copyBundledLocaleFolder(@NotNull BundledLocale bundledLocale) {
+        String resourcePath = LOCALIZATION_FOLDER + "/" + bundledLocale.getFolderName() + "/";
         File targetFolder = new File(plugin().getDataFolder(), resourcePath);
 
-        // Try to copy each file that might exist in resources
-        // The resource stream will be null if the file doesn't exist
-        String[] possibleFiles = getResourceLocaleFiles(languageFolderName);
-        for (String fileName : possibleFiles) {
+        for (String fileName : bundledLocale.getFileNames()) {
             try (InputStream resourceStream = plugin().getResource(resourcePath + fileName)) {
                 if (resourceStream != null) {
                     File targetFile = new File(targetFolder, fileName);
                     Files.copy(resourceStream, targetFile.toPath());
-                    Bukkit.getLogger().info("Copied default locale file: " + languageFolderName + "/" + fileName);
+                    Bukkit.getLogger().info("Copied bundled locale file: " + bundledLocale.getFolderName() + "/" + fileName);
                 }
             } catch (IOException e) {
-                Bukkit.getLogger().warning("Failed to copy default locale file " + languageFolderName + "/" + fileName + ": " + e.getMessage());
+                Bukkit.getLogger().warning("Failed to copy bundled locale file " + bundledLocale.getFolderName() + "/" + fileName + ": " + e.getMessage());
             }
         }
-    }
-
-    /**
-     * Gets the list of locale files that exist in resources for a given language.
-     * <p>
-     * Since Java cannot list resources in a folder directly, this method returns
-     * a list of known locale file patterns to check.
-     *
-     * @param languageFolderName The language folder name.
-     * @return An array of potential file names to check.
-     */
-    @NotNull
-    private String[] getResourceLocaleFiles(@NotNull String languageFolderName) {
-        // For the default English locale, we know the exact files
-        if ("english".equals(languageFolderName)) {
-            return new String[]{"en.yml", "en_commands.yml", "en_gui.yml", "en_abilities.yml", "en_skills.yml"};
-        }
-        // For other languages, return empty - they'll be loaded from disk if present
-        return new String[]{};
     }
 
     /**

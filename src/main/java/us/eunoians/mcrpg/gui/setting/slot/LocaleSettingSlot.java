@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.setting.McRPGSetting;
+import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
@@ -21,20 +21,16 @@ import java.util.Map;
  * Supports both {@link LocaleSetting} (CLIENT_LOCALE, SERVER_LOCALE) and
  * {@link SpecificLocaleSetting} (specific locale codes like "en", "fr").
  */
-public class LocaleSettingSlot extends McRPGSettingSlot<McRPGSetting> {
+public class LocaleSettingSlot extends McRPGSettingSlot<LocalePlayerSetting> {
 
-    public LocaleSettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull LocaleSetting setting) {
-        super(mcRPGPlayer, setting);
-    }
-
-    public LocaleSettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull SpecificLocaleSetting setting) {
+    public LocaleSettingSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull LocalePlayerSetting setting) {
         super(mcRPGPlayer, setting);
     }
 
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        McRPGSetting setting = getSetting();
+        LocalePlayerSetting setting = getSetting();
 
         if (setting instanceof LocaleSetting localeSetting) {
             return switch (localeSetting) {
