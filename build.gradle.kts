@@ -120,7 +120,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<ProcessResources> {
-    filesMatching("**/plugin.yml") {
+    filesMatching(listOf("**/plugin.yml", "**/paper-plugin.yml")) {
         expand(project.properties)
     }
 }
