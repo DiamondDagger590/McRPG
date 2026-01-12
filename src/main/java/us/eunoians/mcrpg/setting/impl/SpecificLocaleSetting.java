@@ -107,7 +107,7 @@ public final class SpecificLocaleSetting implements McRPGSetting {
 
     @Override
     public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
-        // No callback needed
+        LocaleSetting.refreshPlayerSettingGui(player);
     }
 
     @NotNull
