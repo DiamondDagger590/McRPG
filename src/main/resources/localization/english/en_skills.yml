@@ -1,0 +1,63 @@
+#######################################
+#
+# English localization for McRPG skills.
+# This file is part of the English (en) locale.
+#
+#######################################
+locale: en
+config-version: 1
+skills:
+  # Configure messages for skill level ups
+  # Supports <levels> and <skill> placeholders
+  level-up:
+    # The message to send when a player levels up a skill
+    level-up-message: "<green>You have gone up <gold><levels> levels<green> in <skill><green>."
+  swords:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Swords'
+      material: DIAMOND_SWORD
+      lore:
+        - '<gray>Your strength in Swords grows each time you use a'
+        - '<gray>sword in combat. How much you gain will depend'
+        - '<gray>on the weapon you wield.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+  mining:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Mining'
+      material: DIAMOND_PICKAXE
+      lore:
+        - '<gray>Your expertise in Mining grows each time you'
+        - '<gray>break blocks with a pickaxe.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+  herbalism:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Herbalism'
+      material: DIAMOND_HOE
+      lore:
+        - '<gray>Your expertise in Herbalism grows each time you'
+        - '<gray>harvest crops.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+  woodcutting:
+    display-item:
+      name: '<red><skill></red>'
+      skill-name: 'Woodcutting'
+      material: DIAMOND_AXE
+      lore:
+        - '<gray>Your expertise in Woodcutting grows each time you'
+        - '<gray>break wood with an axe.'
+        - ''
+        - '<gray>Current Level: <gold><level>'
+        - '<gray>Current Experience: <gold><current-experience>'
+        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
