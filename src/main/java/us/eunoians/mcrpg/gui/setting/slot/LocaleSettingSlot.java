@@ -14,7 +14,6 @@ import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * A {@link McRPGSettingSlot} that displays locale settings.
@@ -64,7 +63,10 @@ public class LocaleSettingSlot extends McRPGSettingSlot<McRPGSetting> {
     }
 
     /**
-     * Gets the display name for a locale code from its locale file.
+     * Gets the display name for a locale code from its locale files.
+     * <p>
+     * Multiple files can share the same locale code. This method searches through
+     * all files with the matching locale code until it finds one with a {@code locale-name} key.
      *
      * @param localeCode The locale code (e.g., "en", "fr").
      * @return The display name from the locale file, or the locale code if not found.
@@ -76,14 +78,13 @@ public class LocaleSettingSlot extends McRPGSettingSlot<McRPGSetting> {
                 .manager(McRPGManagerKey.FILE)
                 .getLocalizationFiles();
 
-        Optional<YamlDocument> matchingDoc = localizationFiles.stream()
-                .filter(doc -> localeCode.equals(doc.getString("locale")))
-                .findFirst();
-
-        if (matchingDoc.isPresent()) {
-            String localeName = matchingDoc.get().getString("locale-name");
-            if (localeName != null && !localeName.isBlank()) {
-                return localeName;
+        // Search through all files with this locale code for one that has locale-name
+        for (YamlDocument doc : localizationFiles) {
+            if (localeCode.equals(doc.getString("locale"))) {
+                String localeName = doc.getString("locale-name");
+                if (localeName != null && !localeName.isBlank()) {
+                    return localeName;
+                }
             }
         }
 

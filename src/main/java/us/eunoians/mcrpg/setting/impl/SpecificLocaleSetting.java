@@ -136,9 +136,12 @@ public final class SpecificLocaleSetting implements McRPGSetting {
     }
 
     /**
-     * Gets a list of all available locale codes from the loaded localization files.
+     * Gets a list of all unique available locale codes from the loaded localization files.
+     * <p>
+     * Multiple files can share the same locale code (e.g., en_commands.yml and en_gui.yml
+     * both with {@code locale: en}). This method returns each unique locale code only once.
      *
-     * @return A list of locale codes (e.g., "en", "fr").
+     * @return A list of unique locale codes (e.g., "en", "fr").
      */
     @NotNull
     public static List<String> getAvailableLocaleCodes() {
@@ -151,6 +154,7 @@ public final class SpecificLocaleSetting implements McRPGSetting {
                 .map(doc -> doc.getString("locale"))
                 .filter(Objects::nonNull)
                 .filter(code -> !code.isBlank())
+                .distinct()
                 .toList();
     }
 

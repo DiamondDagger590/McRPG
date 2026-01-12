@@ -85,7 +85,10 @@ public final class FileManager extends Manager<McRPG> {
     /**
      * Loads all locale files from the localization folder.
      * <p>
-     * If the folder doesn't exist or is empty, copies the default en.yml from resources.
+     * Locale files are organized in subfolders by language name (e.g., {@code localization/english/}).
+     * Each subfolder can contain multiple {@code .yml} files that share the same {@code locale} key.
+     * <p>
+     * If the folder doesn't exist or has no subfolders, copies the default English locale from resources.
      */
     private void loadLocalizationFiles() {
         File localizationFolder = new File(plugin().getDataFolder(), LOCALIZATION_FOLDER);
@@ -95,40 +98,99 @@ public final class FileManager extends Manager<McRPG> {
             localizationFolder.mkdirs();
         }
 
-        // Copy default en.yml if folder is empty
-        File defaultLocale = new File(localizationFolder, "en.yml");
-        if (!defaultLocale.exists()) {
-            try (InputStream defaultStream = plugin().getResource(LOCALIZATION_FOLDER + "/en.yml")) {
-                if (defaultStream != null) {
-                    Files.copy(defaultStream, defaultLocale.toPath());
-                }
-            } catch (IOException e) {
-                Bukkit.getLogger().warning("Failed to copy default locale file: " + e.getMessage());
-            }
+        // Copy default English locale folder if it doesn't exist
+        File englishFolder = new File(localizationFolder, "english");
+        if (!englishFolder.exists()) {
+            englishFolder.mkdirs();
+            copyDefaultLocaleFolder("english");
         }
 
-        // Load all .yml files in the folder
-        File[] files = localizationFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-        if (files != null) {
-            for (File file : files) {
-                try {
-                    Bukkit.getLogger().info("Loading locale file: " + file.getName());
-                    YamlDocument document = YamlDocument.create(
-                            file,
-                            plugin().getResource(LOCALIZATION_FOLDER + "/" + file.getName()),
-                            GeneralSettings.builder()
-                                    .setKeyFormat(GeneralSettings.KeyFormat.STRING)
-                                    .setSerializer(SpigotSerializer.getInstance())
-                                    .build(),
-                            LoaderSettings.builder().setAutoUpdate(true).build(),
-                            UpdaterSettings.builder()
-                                    .setVersioning(new BasicVersioning("config-version"))
-                                    .build()
-                    );
-                    localizationFiles.add(document);
-                } catch (IOException e) {
-                    Bukkit.getLogger().warning("Failed to load locale file " + file.getName() + ": " + e.getMessage());
+        // Scan all subfolders for locale files
+        File[] languageFolders = localizationFolder.listFiles(File::isDirectory);
+        if (languageFolders != null) {
+            for (File languageFolder : languageFolders) {
+                loadLocaleFilesFromFolder(languageFolder);
+            }
+        }
+    }
+
+    /**
+     * Copies all default locale files from resources for a given language folder.
+     *
+     * @param languageFolderName The name of the language folder (e.g., "english").
+     */
+    private void copyDefaultLocaleFolder(@NotNull String languageFolderName) {
+        // We need to know what files exist in the resources folder
+        // Since we can't list resources directly, we try to copy known default files
+        String resourcePath = LOCALIZATION_FOLDER + "/" + languageFolderName + "/";
+        File targetFolder = new File(plugin().getDataFolder(), resourcePath);
+
+        // Try to copy each file that might exist in resources
+        // The resource stream will be null if the file doesn't exist
+        String[] possibleFiles = getResourceLocaleFiles(languageFolderName);
+        for (String fileName : possibleFiles) {
+            try (InputStream resourceStream = plugin().getResource(resourcePath + fileName)) {
+                if (resourceStream != null) {
+                    File targetFile = new File(targetFolder, fileName);
+                    Files.copy(resourceStream, targetFile.toPath());
+                    Bukkit.getLogger().info("Copied default locale file: " + languageFolderName + "/" + fileName);
                 }
+            } catch (IOException e) {
+                Bukkit.getLogger().warning("Failed to copy default locale file " + languageFolderName + "/" + fileName + ": " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Gets the list of locale files that exist in resources for a given language.
+     * <p>
+     * Since Java cannot list resources in a folder directly, this method returns
+     * a list of known locale file patterns to check.
+     *
+     * @param languageFolderName The language folder name.
+     * @return An array of potential file names to check.
+     */
+    @NotNull
+    private String[] getResourceLocaleFiles(@NotNull String languageFolderName) {
+        // For the default English locale, we know the exact files
+        if ("english".equals(languageFolderName)) {
+            return new String[]{"en.yml", "en_commands.yml", "en_gui.yml", "en_abilities.yml", "en_skills.yml"};
+        }
+        // For other languages, return empty - they'll be loaded from disk if present
+        return new String[]{};
+    }
+
+    /**
+     * Loads all {@code .yml} files from a language folder.
+     *
+     * @param languageFolder The folder containing locale files for a language.
+     */
+    private void loadLocaleFilesFromFolder(@NotNull File languageFolder) {
+        File[] files = languageFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null) {
+            return;
+        }
+
+        String languageName = languageFolder.getName();
+        for (File file : files) {
+            try {
+                Bukkit.getLogger().info("Loading locale file: " + languageName + "/" + file.getName());
+                String resourcePath = LOCALIZATION_FOLDER + "/" + languageName + "/" + file.getName();
+                YamlDocument document = YamlDocument.create(
+                        file,
+                        plugin().getResource(resourcePath),
+                        GeneralSettings.builder()
+                                .setKeyFormat(GeneralSettings.KeyFormat.STRING)
+                                .setSerializer(SpigotSerializer.getInstance())
+                                .build(),
+                        LoaderSettings.builder().setAutoUpdate(true).build(),
+                        UpdaterSettings.builder()
+                                .setVersioning(new BasicVersioning("config-version"))
+                                .build()
+                );
+                localizationFiles.add(document);
+            } catch (IOException e) {
+                Bukkit.getLogger().warning("Failed to load locale file " + languageName + "/" + file.getName() + ": " + e.getMessage());
             }
         }
     }
