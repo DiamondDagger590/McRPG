@@ -9,7 +9,6 @@ import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.localization.BundledLocale;
@@ -163,7 +162,7 @@ public final class FileManager extends Manager<McRPG> {
     private void loadLocaleFile(@NotNull File file, String resourcePath) {
         try {
             String displayPath = file.getParentFile().getName() + "/" + file.getName();
-            Bukkit.getLogger().info("Loading locale file: " + displayPath);
+            plugin().getLogger().info("Loading locale file: " + displayPath);
             YamlDocument document = YamlDocument.create(
                     file,
                     resourcePath != null ? plugin().getResource(resourcePath) : null,
@@ -179,7 +178,7 @@ public final class FileManager extends Manager<McRPG> {
             localizationFiles.add(document);
         } catch (IOException e) {
             String displayPath = file.getParentFile().getName() + "/" + file.getName();
-            Bukkit.getLogger().warning("Failed to load locale file " + displayPath + ": " + e.getMessage());
+            plugin().getLogger().warning("Failed to load locale file " + displayPath + ": " + e.getMessage());
         }
     }
 
