@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.exception.localization.LocaleParseException;
 import us.eunoians.mcrpg.exception.localization.NoLocalizationContainsMessageException;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
+import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
 import java.util.HashSet;
@@ -43,15 +44,6 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
         super(mcRPG);
     }
 
-    /**
-     * Registers a language file and tracks its locale.
-     * <p>
-     * This overrides the parent method to track all registered locales,
-     * allowing {@link #getRegisteredLocales()} to return all available languages
-     * including those registered by third-party plugins.
-     *
-     * @param localization The localization to register.
-     */
     @Override
     public void registerLanguageFile(@NotNull com.diamonddagger590.mccore.localization.Localization localization) {
         super.registerLanguageFile(localization);
@@ -87,7 +79,7 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
     @NotNull
     @Override
     public LinkedNode<Locale> getLocaleChain(@NotNull McRPGPlayer corePlayer) {
-        Optional<? extends PlayerSetting> settingOptional = corePlayer.getPlayerSetting(LocaleSetting.SETTING_KEY);
+        Optional<? extends PlayerSetting> settingOptional = corePlayer.getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
 
         if (settingOptional.isPresent()) {
             PlayerSetting setting = settingOptional.get();
