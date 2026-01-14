@@ -60,7 +60,7 @@ public interface LocalePlayerSetting extends McRPGSetting {
      *
      * @param player The player whose GUI should be refreshed.
      */
-    static void refreshPlayerSettingGui(@NotNull CorePlayer player) {
+    private static void refreshPlayerSettingGui(@NotNull CorePlayer player) {
         if (!(player instanceof McRPGPlayer mcRPGPlayer)) {
             return;
         }
