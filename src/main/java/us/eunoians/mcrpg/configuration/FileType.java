@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.configuration;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
@@ -43,7 +42,7 @@ public enum FileType {
     @NotNull
     public YamlDocument initializeFile() {
         try {
-            Bukkit.getLogger().info("Loading " + filePath);
+            McRPG.getInstance().getLogger().info("Loading " + filePath);
             return YamlDocument.create(new File(McRPG.getInstance().getDataFolder(), filePath), Objects.requireNonNull(McRPG.getInstance().getResource(filePath)), configFile.getGeneralSettings(),
                     configFile.getLoaderSettings(), configFile.getDumperSettings(), configFile.getUpdaterSettings());
         } catch (IOException e) {
