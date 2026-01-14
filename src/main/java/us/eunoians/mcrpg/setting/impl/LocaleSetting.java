@@ -40,7 +40,7 @@ public enum LocaleSetting implements LocalePlayerSetting {
      *   <li>Any locale code (e.g., "en", "lt", "fr") - Force a specific language</li>
      * </ul>
      *
-     * @return A {@link LinkedNode} containing the default setting.
+     * @return A {@link LinkedNode} containing the default setting, connected to the full settings chain.
      */
     @NotNull
     @Override
@@ -53,38 +53,27 @@ public enum LocaleSetting implements LocalePlayerSetting {
 
         // Check if it's one of the enum values
         if (configDefault.equalsIgnoreCase("CLIENT_LOCALE")) {
-            return new LinkedNode<>(CLIENT_LOCALE);
+            return LocaleSettingChain.getNodeForSetting(CLIENT_LOCALE);
         } else if (configDefault.equalsIgnoreCase("SERVER_LOCALE")) {
-            return new LinkedNode<>(SERVER_LOCALE);
+            return LocaleSettingChain.getNodeForSetting(SERVER_LOCALE);
         }
 
         // Check if it's a valid locale code
         List<String> availableLocales = SpecificLocaleSetting.getAvailableLocaleCodes();
         for (String code : availableLocales) {
             if (code.equalsIgnoreCase(configDefault)) {
-                return new LinkedNode<>(new SpecificLocaleSetting(code));
+                return LocaleSettingChain.getNodeForSetting(new SpecificLocaleSetting(code));
             }
         }
 
         // Fallback to CLIENT_LOCALE if config value is invalid
-        return new LinkedNode<>(CLIENT_LOCALE);
+        return LocaleSettingChain.getNodeForSetting(CLIENT_LOCALE);
     }
 
     @NotNull
     @Override
     public LinkedNode<? extends PlayerSetting> getNextSetting() {
-        return switch (this) {
-            case CLIENT_LOCALE -> new LinkedNode<>(SERVER_LOCALE);
-            case SERVER_LOCALE -> {
-                // After SERVER_LOCALE, go to the first available specific locale
-                List<String> availableLocales = SpecificLocaleSetting.getAvailableLocaleCodes();
-                if (!availableLocales.isEmpty()) {
-                    yield new LinkedNode<>(new SpecificLocaleSetting(availableLocales.getFirst()));
-                }
-                // If no locales available, wrap back to CLIENT_LOCALE
-                yield new LinkedNode<>(CLIENT_LOCALE);
-            }
-        };
+        return LocaleSettingChain.getNextSettingNode(this);
     }
 
     @NotNull
