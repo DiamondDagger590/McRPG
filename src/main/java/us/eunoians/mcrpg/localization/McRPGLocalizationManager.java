@@ -17,7 +17,6 @@ import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -38,16 +37,8 @@ import java.util.Set;
  */
 public final class McRPGLocalizationManager extends LocalizationManager<McRPG, McRPGPlayer> {
 
-    private final Set<Locale> registeredLocales = new HashSet<>();
-
     public McRPGLocalizationManager(McRPG mcRPG) {
         super(mcRPG);
-    }
-
-    @Override
-    public void registerLanguageFile(@NotNull com.diamonddagger590.mccore.localization.Localization localization) {
-        super.registerLanguageFile(localization);
-        registeredLocales.add(localization.getLocale());
     }
 
     /**
@@ -60,7 +51,7 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
      */
     @NotNull
     public Set<Locale> getRegisteredLocales() {
-        return Set.copyOf(registeredLocales);
+        return Set.copyOf(localizations.keySet());
     }
 
     /**
