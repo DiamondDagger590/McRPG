@@ -57,10 +57,18 @@ public final class FileManager extends Manager<McRPG> {
     }
 
     /**
-     * Reloads all the configuration files for McRPG.
+     * Reloads all the configuration files for McRPG, including localization files.
      */
     public void reloadFiles() {
         for (YamlDocument yamlDocument : loadedFiles.values()) {
+            try {
+                yamlDocument.reload();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        // Reload localization files
+        for (YamlDocument yamlDocument : localizationFiles) {
             try {
                 yamlDocument.reload();
             } catch (IOException e) {
@@ -177,10 +185,10 @@ public final class FileManager extends Manager<McRPG> {
     /**
      * Gets all loaded localization files.
      *
-     * @return A {@link List} of {@link YamlDocument}s representing all loaded locale files.
+     * @return An unmodifiable {@link List} of {@link YamlDocument}s representing all loaded locale files.
      */
     @NotNull
     public List<YamlDocument> getLocalizationFiles() {
-        return localizationFiles;
+        return List.copyOf(localizationFiles);
     }
 }
