@@ -69,24 +69,7 @@ public final class SpecificLocaleSetting implements LocalePlayerSetting {
     @NotNull
     @Override
     public LinkedNode<? extends PlayerSetting> getNextSetting() {
-        // Get all available locale codes and find the next one
-        List<String> availableLocaleCodes = getAvailableLocaleCodes();
-        int currentIndex = -1;
-
-        for (int i = 0; i < availableLocaleCodes.size(); i++) {
-            if (availableLocaleCodes.get(i).equals(this.localeCode)) {
-                currentIndex = i;
-                break;
-            }
-        }
-
-        // If this is the last locale or not found, wrap around to CLIENT_LOCALE
-        if (currentIndex == -1 || currentIndex >= availableLocaleCodes.size() - 1) {
-            return new LinkedNode<>(LocaleSetting.CLIENT_LOCALE);
-        }
-
-        // Return the next available locale
-        return new LinkedNode<>(new SpecificLocaleSetting(availableLocaleCodes.get(currentIndex + 1)));
+        return LocaleSettingChain.getNextSettingNode(this);
     }
 
     @NotNull
