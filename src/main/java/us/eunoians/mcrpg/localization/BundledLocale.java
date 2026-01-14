@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Enumerates the bundled locale files that ship with McRPG.
@@ -34,7 +35,7 @@ public enum BundledLocale {
      */
     BundledLocale(@NotNull String folderName, @NotNull String... fileNames) {
         this.folderName = folderName;
-        this.fileNames = Arrays.asList(fileNames);
+        this.fileNames = List.copyOf(Arrays.asList(fileNames));
     }
 
     /**
@@ -61,14 +62,15 @@ public enum BundledLocale {
      * Finds a bundled locale by its folder name.
      *
      * @param folderName The folder name to search for.
-     * @return The matching {@link BundledLocale}, or {@code null} if not found.
+     * @return An {@link Optional} containing the matching {@link BundledLocale}, or empty if not found.
      */
-    public static BundledLocale fromFolderName(@NotNull String folderName) {
+    @NotNull
+    public static Optional<BundledLocale> fromFolderName(@NotNull String folderName) {
         for (BundledLocale locale : values()) {
             if (locale.folderName.equalsIgnoreCase(folderName)) {
-                return locale;
+                return Optional.of(locale);
             }
         }
-        return null;
+        return Optional.empty();
     }
 }
