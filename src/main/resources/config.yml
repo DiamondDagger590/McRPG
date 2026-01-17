@@ -17,6 +17,12 @@ configuration:
     # Language support will go in the order of user's local language -> server default -> english
     # User local language is determined by their minecraft client
     server-default-locale: en
+    # The default locale setting for new players. Valid options are:
+    # - CLIENT_LOCALE: Use the player's Minecraft client language (default behavior)
+    # - SERVER_LOCALE: Use the server's default locale (configured above)
+    # - Any locale code (e.g., 'en', 'lt', 'fr'): Force a specific language
+    # This only affects new players - existing players keep their chosen setting.
+    default-player-locale-setting: CLIENT_LOCALE
   # Configure all admin features
   admin:
     # If enabled, admins with the permission node 'mcrpg.ability.spy' will be alerted when abilities are unlocked and upgraded

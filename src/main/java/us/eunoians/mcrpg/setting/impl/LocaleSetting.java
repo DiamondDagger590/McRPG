@@ -1,19 +1,18 @@
 package us.eunoians.mcrpg.setting.impl;
 
-import com.diamonddagger590.mccore.player.CorePlayer;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
-import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.setting.slot.LocaleSettingSlot;
-import us.eunoians.mcrpg.localization.NativeLocale;
-import us.eunoians.mcrpg.setting.McRPGSetting;
-import us.eunoians.mcrpg.util.McRPGMethods;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,72 +20,60 @@ import java.util.Optional;
  * <p>
  * The default order of localization goes (on best effort basis): locale setting -> client locale -> server default -> english.
  * If any localization is missing a string, then it goes to the next locale in the chain until it eventually defaults to english.
+ * <p>
+ * The setting cycles through: CLIENT_LOCALE -> SERVER_LOCALE -> [each available locale] -> back to CLIENT_LOCALE
  */
-public enum LocaleSetting implements McRPGSetting {
+public enum LocaleSetting implements LocalePlayerSetting {
 
-    CLIENT_LOCALE(),
-    SERVER_LOCALE(),
-    ENGLISH(NativeLocale.ENGLISH),
+    CLIENT_LOCALE,
+    SERVER_LOCALE,
     ;
 
-    private static final LinkedNode<LocaleSetting> FIRST_SETTING = new LinkedNode<>(CLIENT_LOCALE);
-    private static final Map<LocaleSetting, LinkedNode<LocaleSetting>> SETTINGS = new HashMap<>();
-    public static final NamespacedKey SETTING_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "locale-setting");
-
-    static {
-        SETTINGS.put(FIRST_SETTING.getNodeValue(), FIRST_SETTING);
-        LinkedNode<LocaleSetting> prev = FIRST_SETTING;
-        for (LocaleSetting localeSetting : LocaleSetting.values()) {
-            if (localeSetting != FIRST_SETTING.getNodeValue()) {
-                LinkedNode<LocaleSetting> next = new LinkedNode<>(localeSetting);
-                prev.setNext(next);
-                prev = next;
-                SETTINGS.put(localeSetting, prev);
-            }
-        }
-        prev.setNext(FIRST_SETTING);
-    }
-
-    private final NativeLocale locale;
-
-    LocaleSetting() {
-        this.locale = null;
-    }
-
-    LocaleSetting(@NotNull NativeLocale locale) {
-        this.locale = locale;
-    }
-
     /**
-     * Gets the {@link NativeLocale} represented by this setting.
+     * Gets the first (default) setting for new players.
      * <p>
-     * Some settings do not represent a specific locale, only ones that
-     * map to a {@link NativeLocale}.
+     * The default is determined by the config option {@code configuration.localization.default-player-locale-setting}.
+     * Valid values are:
+     * <ul>
+     *   <li>{@code CLIENT_LOCALE} - Use the player's Minecraft client language</li>
+     *   <li>{@code SERVER_LOCALE} - Use the server's default locale</li>
+     *   <li>Any locale code (e.g., "en", "lt", "fr") - Force a specific language</li>
+     * </ul>
      *
-     * @return An {@link Optional} containing the {@link NativeLocale} represented by this setting. The optional
-     * will be empty if the setting does not represent a specific locale.
+     * @return A {@link LinkedNode} containing the default setting, connected to the full settings chain.
      */
-    @NotNull
-    public Optional<NativeLocale> getNativeLocale() {
-        return Optional.ofNullable(locale);
-    }
-
-    @NotNull
-    @Override
-    public NamespacedKey getSettingKey() {
-        return SETTING_KEY;
-    }
-
     @NotNull
     @Override
     public LinkedNode<? extends PlayerSetting> getFirstSetting() {
-        return FIRST_SETTING;
+        String configDefault = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.MAIN_CONFIG)
+                .getString(MainConfigFile.DEFAULT_PLAYER_LOCALE_SETTING, "CLIENT_LOCALE");
+
+        // Check if it's one of the enum values
+        if (configDefault.equalsIgnoreCase("CLIENT_LOCALE")) {
+            return LocaleSettingChain.getNodeForSetting(CLIENT_LOCALE);
+        } else if (configDefault.equalsIgnoreCase("SERVER_LOCALE")) {
+            return LocaleSettingChain.getNodeForSetting(SERVER_LOCALE);
+        }
+
+        // Check if it's a valid locale code
+        List<String> availableLocales = SpecificLocaleSetting.getAvailableLocaleCodes();
+        for (String code : availableLocales) {
+            if (code.equalsIgnoreCase(configDefault)) {
+                return LocaleSettingChain.getNodeForSetting(new SpecificLocaleSetting(code));
+            }
+        }
+
+        // Fallback to CLIENT_LOCALE if config value is invalid
+        return LocaleSettingChain.getNodeForSetting(CLIENT_LOCALE);
     }
 
     @NotNull
     @Override
     public LinkedNode<? extends PlayerSetting> getNextSetting() {
-        return SETTINGS.get(this).getNextNode();
+        return LocaleSettingChain.getNextSettingNode(this);
     }
 
     @NotNull
@@ -95,14 +82,26 @@ public enum LocaleSetting implements McRPGSetting {
         return new LocaleSettingSlot(player, this);
     }
 
-    @Override
-    public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
-        // No callback needed
-    }
-
     @NotNull
     @Override
     public Optional<? extends PlayerSetting> fromString(@NotNull String setting) {
-        return Arrays.stream(values()).filter(localeSetting -> localeSetting.toString().equalsIgnoreCase(setting)).findFirst();
+        // Check if it's one of the enum values
+        Optional<LocaleSetting> enumMatch = Arrays.stream(values())
+                .filter(localeSetting -> localeSetting.toString().equalsIgnoreCase(setting))
+                .findFirst();
+
+        if (enumMatch.isPresent()) {
+            return enumMatch;
+        }
+
+        // Check if it's a valid locale code
+        List<String> availableLocales = SpecificLocaleSetting.getAvailableLocaleCodes();
+        for (String code : availableLocales) {
+            if (code.equalsIgnoreCase(setting)) {
+                return Optional.of(new SpecificLocaleSetting(code));
+            }
+        }
+
+        return Optional.empty();
     }
 }

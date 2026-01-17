@@ -1,0 +1,282 @@
+#######################################
+#
+# English localization for McRPG commands.
+# This file is part of the English (en) locale.
+#
+#######################################
+locale: en
+config-version: 1
+# Configure messages for McRPG commands
+commands:
+  # The name of console to use if the sender of a command is ever console and the <sender> placeholder is used
+  console-name: "console"
+  # The message to send when a non-player tries to use a player-only command
+  non-player-error: "<red>Non-players are not allowed to run this command."
+  # Configure command descriptions shown in help text
+  descriptions:
+    redeem: "<gray>The subcommand that allows players to redeem things."
+    redeem-skill: "<gray>The skill to redeem experience in."
+    redeem-experience-amount: "<gray>How much experience to redeem?"
+    redeem-levels-amount: "<gray>How many levels to redeem?"
+    give: "<gray>The subcommand for all commands that give targets something."
+    give-player: "<gray>The player to give something to."
+    give-experience-skill: "<gray>The skill to give experience for."
+    give-experience-amount: "<gray>The amount of experience to give."
+    give-levels-skill: "<gray>The skill to give levels for."
+    give-levels-amount: "<gray>The amount of levels to give."
+    give-levels-reset-experience-flag: "<gray>If the player's current experience should be reset to 0 after levels are given."
+    reset: "<gray>The subcommand for all commands that resets a target."
+    reset-player: "<gray>The player to reset something for."
+    reset-skill: "<gray>The skill to reset."
+    loadout-slot: "<gray>The loadout to set."
+    loadout-edit-slot: "<gray>The loadout to edit."
+    debug-player: "<gray>The player to debug."
+    exp-bank-player: "<gray>The player to modify."
+    exp-bank-amount: "<gray>The amount to modify."
+    exp-bank-rested-amount: "<gray>The amount of rested experience."
+    exp-bank-boosted-amount: "<gray>The amount of boosted experience."
+    exp-bank-redeemable-experience-amount: "<gray>The amount of redeemable experience."
+    exp-bank-redeemable-levels-amount: "<gray>The amount of redeemable levels."
+    exp-bank-reset-player: "<gray>The player to reset."
+    exp-bank-give-player: "<gray>The player to give something to."
+    exp-bank-remove-player: "<gray>The player to remove something from."
+  # Configure messages to surrounding /mcrpg confirm
+  # This command will be used to confirm important commands such as resetting a player
+  confirmation:
+    # The message to send if the player doesn't have any pending confirmations and they run the
+    # confirm command.
+    no-pending-confirmations: "<gray>You do not have any pending commands to confirm."
+    # The message to send to players when they run a command that they need to confirm.
+    confirmation-required: "<gray>Please run <click:run_command:/mcrpg confirm><hover:show_text:'<gray>Click this to run <gold>/mcrpg confirm</gold></gray>'><gold><underlined>/mcrpg confirm</gold></click> to run confirm you want to run this command."
+  # Configure /mcrpg give commmands
+  give:
+    # Configure the experience give command
+    # Supports the following placeholders: <experience>, <skill>, <target>, <sender>
+    experience:
+      # The message to send to the player getting experience.
+      recipient-message: "<gray>You have been given <gold><experience></gold> in <gold><skill></gold>."
+      # The message to send to the sender when the command works.
+      sender-success-message: "<gray>You gave <gold><experience></gold> in <gold><skill></gold> to <gold><target></gold>."
+      # The message to send to the sender when the command fails.
+      sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+    # Configure the level give command
+    # Supports the following placeholders: <level>, <skill>, <target>, <sender>
+    level:
+      # The message to send to the player getting levels.
+      recipient-message: "<gray>You have been given <gold><level> level(s)</gold> in <gold><skill></gold>."
+      # The message to send to the sender when the command works.
+      sender-success-message: "<gray>You gave <gold><level> level(s)</gold> in <gold><skill></gold> to <gold><target></gold>."
+      # The message to send to the sender when the command fails.
+      sender-error-message: "<red>Unable to give <gray><player></gray> levels at the moment."
+  # Configure the link command for Remote Transfer
+  # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
+  link:
+    # The message to be sent if the command is run while the player isn't looking at a chest
+    not-looking-at-chest-message: '<red>You must be looking at a chest in order to link <skill>.'
+    # The message to be sent if the command is run and the Remote Transfer ability is disabled
+    remote-transfer-not-enabled-message: '<red><skill> is not currently enabled.'
+    # The message to be sent if the linking worked successfully.
+    link-success-message: '<gray>Successfully linked chest to your <skill> ability.'
+  # Configure the unlink command for Remote Transfer
+  # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
+  unlink:
+    # The message to be sent if unlinking worked successfully.
+    unlink-success-message: '<gray>You have unlinked your chest.'
+    # The message to be sent if the command is run but the player doesn't have a linked chest.
+    no-linked-chest-message: "<gray>You don't have a linked chest."
+  # Configure the different /mcrpg loadout commands.
+  loadout:
+    # Configure the loadout edit command.
+    edit:
+      # The message to be sent to the player who ran the command if they don't have a loadout
+      # with the provided slot.
+      # Supports the following placeholders: <loadout-slot>
+      no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
+    # Configure the loadout set command.
+    set:
+      # The message to be sent to the player who ran the command if they don't have a loadout
+      # with the provided slot.
+      # Supports the following placeholders: <loadout-slot>
+      no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
+      # The message to be sent if the loadout was set successfully.
+      # Supports the following placeholders: <loadout-slot>
+      loadout-set-success-message: "<gray>Your active loadout is now <gold>loadout #<loadout-slot></gold>.</gray>"
+  # Configure /mcrpg admin commands
+  admin:
+    # Configure the reload command
+    reload:
+      # The message to send to the sender when the command works.
+      sender-success-message: "<gray>You have reloaded all McRPG files."
+    # Configure the debug command
+    # Supports the following placeholders: <target>, <upgrade-points>, <skill>, <level>, <experience>
+    debug:
+      # The header message printed at the start of debug output.
+      header-message: "<gray>Printing debug information for player <gold><target>"
+      # The message showing upgrade points.
+      upgrade-points-message: "<gray>Upgrade Points: <gold><upgrade-points>"
+      # The message showing skill information.
+      skill-info-message: "<gray>Skill: <gold><skill> <gray>Level: <gold><level> <gray>Exp: <gold><experience>"
+    # Configure the reset commands
+    reset:
+      # Supports the following placeholders: <target>, <sender>
+      player:
+        # The message to send to the player being reset.
+        recipient-message: "<gray>You have had your McRPG data reset."
+        # The message to send to the sender when the command works.
+        sender-success-message: "<gray>You have reset <gold><target>'s <gray>McRPG data."
+        # The message to send to the sender when the command fails to save updated data.
+        sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
+        # The message to send to the sender when the command fails.
+        sender-error-message: "<red>Unable to reset McRPG data for <target>."
+      # Supports the following placeholders: <skill>, <target>, <sender>
+      skill:
+        # The message to send to the player being reset.
+        recipient-message: "<gray>You have had your <gold><skill> skill <gray>reset."
+        # The message to send to the sender when the command works.
+        sender-success-message: "<gray>You have reset <gold><target>'s <skill> skill<gray>."
+        # The message to send to the sender when the command fails to save updated data.
+        sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
+        # The message to send to the sender when the command fails.
+        sender-error-message: "<red>Unable to reset McRPG data for <target>."
+    # Configure admin commands for modifying the experience bank of a player
+    exp-bank:
+      # Configure redeemable modify commands
+      redeemable:
+        experience:
+          # Configure the give redeemable experience command
+          # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
+          give:
+            # The message to send to the player getting redeemable experience.
+            recipient-message: "<gray>You have been given <gold><redeemable-experience></gold> redeemable experience."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You gave <gold><redeemable-experience></gold> redeemable experience to <gold><target></gold>."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable experience at the moment."
+          # Configure the remove redeemable experience command
+          # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
+          remove:
+            # The message to send to the player losing redeemable experience.
+            recipient-message: "<gray>You have lost <gold><redeemable-experience></gold> redeemable experience."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You removed <gold><redeemable-experience></gold> redeemable experience from <gold><target></gold>."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to remove <gray><player></gray>'s redeemable experience at the moment."
+          # Configure the reset redeemable experience command
+          # Supports the following placeholders: <target>, <sender>
+          reset:
+            # The message to send to the player having their redeemable experience reset.
+            recipient-message: "<gray>You have had your redeemable experience reset."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable experience."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable experience at the moment."
+        levels:
+          # Configure the give redeemable levels command
+          # Supports the following placeholders: <redeemable-levels>, <target>, <sender>
+          give:
+            # The message to send to the player getting redeemable levels.
+            recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You gave <gold><redeemable-levels></gold> redeemable levels to <gold><target></gold>."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
+          # Configure the remove redeemable levels command
+          # Supports the following placeholders: <redeemable-levels>, <target>, <sender>
+          remove:
+            # The message to send to the player losing redeemable levels.
+            recipient-message: "<gray>You have had your redeemable levels reset."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
+          # Configure the give redeemable levels command
+          # Supports the following placeholders: <target>, <sender>
+          reset:
+            # The message to send to the player having their redeemable levels reset.
+            recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
+            # The message to send to the sender when the command works.
+            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
+            # The message to send to the sender when the command fails.
+            sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable levels at the moment."
+      # Configure rested experience modify commands.
+      rested-experience:
+        # Configure the give rested experience command
+        # Supports the following placeholders: <rested-experience>, <target>, <sender>
+        give:
+          # The message to send to the player getting rested experience.
+          recipient-message: "<gray>You have been given <gold><rested-experience></gold> rested experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You gave <gold><rested-experience></gold> rested experience to <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to give <gray><player></gray> rested experience at the moment."
+        # Configure the remove rested experience command
+        # Supports the following placeholders: <rested-experience>, <target>, <sender>
+        remove:
+          # The message to send to the player losing rested experience.
+          recipient-message: "<gray>You have lost <gold><rested-experience></gold> rested experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You removed <gold><rested-experience></gold> rested experience from <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to remove <gray><player></gray>'s rested experience at the moment."
+        # Configure the reset rested experience command
+        # Supports the following placeholders: <target>, <sender>
+        reset:
+          # The message to send to the player having their rested experience reset.
+          recipient-message: "<gray>You have had your rested experience reset."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You reset <gold><target></gold>'s rested experience."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to reset <gray><player></gray>'s rested experience at the moment."
+      # Configure boosted experience modify commands.
+      boosted-experience:
+        # Configure the give boosted experience command
+        # Supports the following placeholders: <boosted-experience>, <target>, <sender>
+        give:
+          # The message to send to the player getting boosted experience.
+          recipient-message: "<gray>You have been given <gold><boosted-experience></gold> boosted experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You gave <gold><boosted-experience></gold> boosted experience to <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to give <gray><player></gray> boosted experience at the moment."
+        # Configure the remove rested experience command
+        # Supports the following placeholders: <boosted-experience>, <target>, <sender>
+        remove:
+          # The message to send to the player losing boosted experience.
+          recipient-message: "<gray>You have lost <gold><boosted-experience></gold> boosted experience."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You removed <gold><boosted-experience></gold> boosted experience from <gold><target></gold>."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to remove <gray><player></gray>'s boosted experience at the moment."
+        # Configure the reset boosted experience command
+        # Supports the following placeholders: <target>, <sender>
+        reset:
+          # The message to send to the player having their boosted experience reset.
+          recipient-message: "<gray>You have had your boosted experience reset."
+          # The message to send to the sender when the command works.
+          sender-success-message: "<gray>You reset <gold><target></gold>'s boosted experience."
+          # The message to send to the sender when the command fails.
+          sender-error-message: "<red>Unable to reset <gray><player></gray>'s boosted experience at the moment."
+  # Configure commands to redeem things such as experience or levels.
+  redeem:
+    # Configure the redeemable levels command.
+    levels:
+      # The message to send to the player if they are trying to redeem an amount of levels more than
+      # the amount they have.
+      not-enough-levels: "<red>You do not have enough levels to redeem the requested amount."
+      # The message to send to the player if they are trying to redeem levels into a skill that is already maxed.
+      # Supports the following placeholders: <skill>
+      skill-already-maxed: "<red>You can not redeem levels into <gold><skill></gold> as that skill is already max level."
+      # The message to send players if they successfully redeem levels.
+      # Supports the following placeholders: <redeemed-levels>, <skill>
+      redeemed-levels: "<gray>You have redeemed <gold><redeemed-levels> levels</gold> into <gold><skill></gold>."
+    # Configure the redeemable experience command.
+    experience:
+      # The message to send to the player if they are trying to redeem an amount of experience more than
+      # the amount they have.
+      not-enough-experience: "<red>You do not have enough experience to redeem the requested amount."
+      # The message to send to the player if they are trying to redeem experience into a skill that is already maxed.
+      # Supports the following placeholders: <skill>
+      skill-already-maxed: "<red>You can not redeem experience into <gold><skill></gold> as that skill is already max level."
+      # The message to send players if they successfully redeem experience.
+      # Supports the following placeholders: <redeemed-experience>, <skill>
+      redeemed-experience: "<gray>You have redeemed <gold><redeemed-experience> experience</gold> into <gold><skill></gold>."

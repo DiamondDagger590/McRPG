@@ -1,12 +1,10 @@
 package us.eunoians.mcrpg.configuration;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
@@ -22,7 +20,6 @@ import java.util.Objects;
 public enum FileType {
 
     MAIN_CONFIG("config.yml", new MainConfigFile()),
-    ENGLISH_LANGUAGE_FILE("localization" + "/" + "en.yml", new LocalizationKey()),
     SWORDS_CONFIG("skill_configuration" + "/" + "swords_configuration.yml", new SwordsConfigFile()),
     MINING_CONFIG("skill_configuration" + "/" + "mining_configuration.yml", new MiningConfigFile()),
     WOODCUTTING_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new WoodcuttingConfigFile()),
@@ -45,7 +42,7 @@ public enum FileType {
     @NotNull
     public YamlDocument initializeFile() {
         try {
-            Bukkit.getLogger().info("Loading " + filePath);
+            McRPG.getInstance().getLogger().info("Loading " + filePath);
             return YamlDocument.create(new File(McRPG.getInstance().getDataFolder(), filePath), Objects.requireNonNull(McRPG.getInstance().getResource(filePath)), configFile.getGeneralSettings(),
                     configFile.getLoaderSettings(), configFile.getDumperSettings(), configFile.getUpdaterSettings());
         } catch (IOException e) {

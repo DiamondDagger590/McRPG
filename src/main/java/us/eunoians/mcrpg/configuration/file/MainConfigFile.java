@@ -32,6 +32,7 @@ public final class MainConfigFile extends ConfigFile {
 
     // Localization
     public static final Route SERVER_DEFAULT_LOCALE = Route.fromString(toRoutePath(LOCALIZATION_HEADER, "server-default-locale"));
+    public static final Route DEFAULT_PLAYER_LOCALE_SETTING = Route.fromString(toRoutePath(LOCALIZATION_HEADER, "default-player-locale-setting"));
 
     // Save task fields
     public static final Route SAVE_TASK_FREQUENCY = Route.fromString(toRoutePath(SAVE_TASK_HEADER, "frequency"));
