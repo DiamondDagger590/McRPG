@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.type.DropMultiplierAbility;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -28,7 +29,7 @@ public class OnBlockDropItemListener implements Listener {
     public void handleDropMultiplierEvent(BlockDropItemEvent blockDropItemEvent) {
         // Handle remote transfer (cuz she special)
         AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
-        RemoteTransfer remoteTransfer = (RemoteTransfer) abilityRegistry.getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = abilityRegistry.ability(McRPGAbilityKey.REMOTE_TRANSFER);
         var abilityHolderOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).getAbilityHolder(blockDropItemEvent.getPlayer().getUniqueId());
         abilityHolderOptional.ifPresent(abilityHolder -> remoteTransfer.activateAbility(abilityHolder, blockDropItemEvent));
     }

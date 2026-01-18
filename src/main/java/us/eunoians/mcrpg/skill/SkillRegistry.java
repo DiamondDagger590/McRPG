@@ -29,9 +29,11 @@ import java.util.Set;
 public class SkillRegistry implements Registry<Skill> {
 
     private final Map<NamespacedKey, Skill> skills;
+    private final Map<Class<? extends Skill>, Skill> skillsByClass;
 
     public SkillRegistry() {
         this.skills = new HashMap<>();
+        this.skillsByClass = new HashMap<>();
     }
 
     /**
@@ -44,6 +46,7 @@ public class SkillRegistry implements Registry<Skill> {
             throw new IllegalArgumentException("Skill " + skill.getSkillKey() + " already registered");
         }
         skills.put(skill.getSkillKey(), skill);
+        skillsByClass.put(skill.getClass(), skill);
         Bukkit.getPluginManager().callEvent(new SkillRegisterEvent(skill));
     }
 
@@ -118,8 +121,40 @@ public class SkillRegistry implements Registry<Skill> {
     public void unregisterSkill(@NotNull NamespacedKey skillKey) {
         Skill skill = skills.remove(skillKey);
         if (skill != null) {
+            skillsByClass.remove(skill.getClass());
             Bukkit.getPluginManager().callEvent(new SkillUnregisterEvent(skill));
         }
+    }
+
+    /**
+     * Gets the {@link Skill} belonging to the provided {@link SkillKey}.
+     * <p>
+     * This method provides type-safe access to skills without requiring casting.
+     *
+     * @param skillKey The key to get the corresponding {@link Skill}.
+     * @param <T>      The implementation of {@link Skill} which is being returned.
+     * @return The {@link Skill} belonging to the provided {@link SkillKey}.
+     * @throws IllegalStateException If the provided {@link SkillKey} doesn't have
+     *                               a corresponding {@link Skill} registered.
+     */
+    @NotNull
+    @SuppressWarnings("unchecked")
+    public <T extends Skill> T skill(@NotNull SkillKey<T> skillKey) {
+        Skill skill = skillsByClass.get(skillKey.skillClass());
+        if (skill == null) {
+            throw new IllegalStateException("Skill not registered: " + skillKey.skillClass().getSimpleName());
+        }
+        return (T) skill;
+    }
+
+    /**
+     * Checks to see if the provided {@link SkillKey} has a corresponding {@link Skill} registered.
+     *
+     * @param skillKey The {@link SkillKey} to check.
+     * @return {@code true} if the skill is registered, {@code false} otherwise.
+     */
+    public boolean registered(@NotNull SkillKey<?> skillKey) {
+        return skillsByClass.containsKey(skillKey.skillClass());
     }
 
 }

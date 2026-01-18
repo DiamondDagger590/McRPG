@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityLocationAttribute;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.fake.FakeChestOpenEvent;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
@@ -30,7 +31,7 @@ public class RemoteTransferComponents {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             BlockDropItemEvent blockDropItemEvent = (BlockDropItemEvent) event;
-            RemoteTransfer remoteTransfer = (RemoteTransfer) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+            RemoteTransfer remoteTransfer = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.REMOTE_TRANSFER);
             if (!remoteTransfer.isAbilityEnabled() || !abilityHolder.getUUID().equals(blockDropItemEvent.getPlayer().getUniqueId())) {
                 return false;
             }

@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
@@ -24,7 +25,7 @@ public class ExtraLumberComponents {
 
         @Override
         public boolean affectsBlock(@NotNull Block block) {
-            return ((ExtraLumber) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraLumber.EXTRA_LUMBER_KEY)).isBlockValid(block);
+            return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.EXTRA_LUMBER).isBlockValid(block);
         }
 
         @Override
@@ -32,7 +33,7 @@ public class ExtraLumberComponents {
             if (!OnBlockBreakComponent.super.shouldActivate(abilityHolder, event)) {
                 return false;
             }
-            ExtraLumber extraLumber = (ExtraLumber) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraLumber.EXTRA_LUMBER_KEY);
+            ExtraLumber extraLumber = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.EXTRA_LUMBER);
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(WoodCutting.WOODCUTTING_KEY);
                 if (skillHolderDataOptional.isPresent()) {

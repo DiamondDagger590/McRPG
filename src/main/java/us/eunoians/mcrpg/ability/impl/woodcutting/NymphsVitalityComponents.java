@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
@@ -25,7 +26,7 @@ public class NymphsVitalityComponents {
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof FoodLevelChangeEvent foodLevelChangeEvent) {
                 HumanEntity humanEntity = foodLevelChangeEvent.getEntity();
-                NymphsVitality nymphsVitality = (NymphsVitality) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(NymphsVitality.NYMPHS_VITALITY_KEY);
+                NymphsVitality nymphsVitality = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.NYMPHS_VITALITY);
                 return humanEntity.getUniqueId().equals(abilityHolder.getUUID())
                         && humanEntity.getFoodLevel() <= nymphsVitality.getMinimumHunger(nymphsVitality.getCurrentAbilityTier(abilityHolder))
                         && nymphsVitality.isBiomeValid(humanEntity.getLocation().getBlock().getBiome());
@@ -40,7 +41,7 @@ public class NymphsVitalityComponents {
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof PlayerMoveEvent playerMoveEvent) {
                 Player player = playerMoveEvent.getPlayer();
-                NymphsVitality nymphsVitality = (NymphsVitality) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(NymphsVitality.NYMPHS_VITALITY_KEY);
+                NymphsVitality nymphsVitality = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.NYMPHS_VITALITY);
                 return player.getUniqueId().equals(abilityHolder.getUUID())
                         && player.getFoodLevel() <= nymphsVitality.getMinimumHunger(nymphsVitality.getCurrentAbilityTier(abilityHolder))
                         && nymphsVitality.isBiomeValid(player.getLocation().getBlock().getBiome());
