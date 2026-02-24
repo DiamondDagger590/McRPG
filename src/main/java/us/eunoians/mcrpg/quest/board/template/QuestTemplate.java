@@ -3,12 +3,15 @@ package us.eunoians.mcrpg.quest.board.template;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarity;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -22,7 +25,7 @@ import java.util.Set;
  * {@code QuestTemplateEngine} transforms a template into a concrete
  * {@code QuestDefinition} at generation time.
  */
-public final class QuestTemplate {
+public final class QuestTemplate implements McRPGContent {
 
     private final NamespacedKey key;
     private final Route displayNameRoute;
@@ -33,6 +36,7 @@ public final class QuestTemplate {
     private final Map<String, TemplateVariable> variables;
     private final List<TemplatePhaseDefinition> phases;
     private final List<TemplateRewardDefinition> rewards;
+    private final NamespacedKey expansionKey;
 
     public QuestTemplate(@NotNull NamespacedKey key,
                          @NotNull Route displayNameRoute,
@@ -43,6 +47,20 @@ public final class QuestTemplate {
                          @NotNull Map<String, TemplateVariable> variables,
                          @NotNull List<TemplatePhaseDefinition> phases,
                          @NotNull List<TemplateRewardDefinition> rewards) {
+        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
+                rarityOverrides, variables, phases, rewards, null);
+    }
+
+    public QuestTemplate(@NotNull NamespacedKey key,
+                         @NotNull Route displayNameRoute,
+                         boolean boardEligible,
+                         @NotNull NamespacedKey scopeProviderKey,
+                         @NotNull Set<NamespacedKey> supportedRarities,
+                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
+                         @NotNull Map<String, TemplateVariable> variables,
+                         @NotNull List<TemplatePhaseDefinition> phases,
+                         @NotNull List<TemplateRewardDefinition> rewards,
+                         @Nullable NamespacedKey expansionKey) {
         this.key = key;
         this.displayNameRoute = displayNameRoute;
         this.boardEligible = boardEligible;
@@ -52,6 +70,13 @@ public final class QuestTemplate {
         this.variables = Map.copyOf(variables);
         this.phases = List.copyOf(phases);
         this.rewards = List.copyOf(rewards);
+        this.expansionKey = expansionKey;
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.ofNullable(expansionKey);
     }
 
     /**
