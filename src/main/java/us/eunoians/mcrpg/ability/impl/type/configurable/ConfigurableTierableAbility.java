@@ -5,6 +5,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
