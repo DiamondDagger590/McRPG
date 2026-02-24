@@ -3,6 +3,10 @@ slot-layout:
 
 max-accepted-quests: 3
 
+quest-source-weights:
+  hand-crafted: 50
+  template: 50
+
 rarities:
   COMMON:
     weight: 60

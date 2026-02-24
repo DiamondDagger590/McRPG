@@ -88,6 +88,27 @@ public final class SlotGenerationLogic {
     }
 
     /**
+     * Computes how many slots a single category should receive, using the same
+     * min/max/chancePerSlot logic as {@link #computeSlotCounts}. Used by
+     * {@link PersonalOfferingGenerator} where each category is processed individually
+     * per-player with its own seeded random.
+     *
+     * @param category the category to compute slots for
+     * @param random   the random source
+     * @return the number of slots for this category (at least {@code category.getMin()})
+     */
+    public static int computeSlotCountForCategory(@NotNull BoardSlotCategory category,
+                                                   @NotNull Random random) {
+        int slots = category.getMin();
+        for (int i = slots; i < category.getMax(); i++) {
+            if (random.nextDouble() < category.getChancePerSlot()) {
+                slots++;
+            }
+        }
+        return slots;
+    }
+
+    /**
      * Selects a random quest from a list of eligible definitions.
      *
      * @param eligibleDefinitions the eligible definition keys

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
 import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
@@ -57,6 +58,7 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         scopeProviderRegistry.register(new PermissionQuestScopeProvider());
         registryAccess.register(new QuestObjectiveTypeRegistry());
         registryAccess.register(new QuestRewardTypeRegistry());
+        registryAccess.register(new QuestTemplateRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
     }
 

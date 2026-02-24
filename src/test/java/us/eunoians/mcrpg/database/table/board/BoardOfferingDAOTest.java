@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -209,6 +210,119 @@ public class BoardOfferingDAOTest extends McRPGBaseTest {
         assertTrue(offering.isTemplateGenerated());
         assertEquals(new NamespacedKey("mcrpg", "daily_mining"), offering.getTemplateKey().orElseThrow());
         assertEquals(generatedDef, offering.getGeneratedDefinition().orElseThrow());
+    }
+
+    @DisplayName("loadPersonalOfferingsForRotation returns empty when no results")
+    @Test
+    void loadPersonalOfferingsForRotation_returnsEmpty() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(false);
+
+        List<BoardOffering> result = BoardOfferingDAO.loadPersonalOfferingsForRotation(
+                mockConnection, UUID.randomUUID(), UUID.randomUUID());
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @DisplayName("loadPersonalOfferingsForRotation returns personal offerings for player")
+    @Test
+    void loadPersonalOfferingsForRotation_returnsOfferings() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+
+        UUID offeringId = UUID.randomUUID();
+        UUID rotId = UUID.randomUUID();
+        UUID playerUUID = UUID.randomUUID();
+
+        when(mockResultSet.next()).thenReturn(true, false);
+        when(mockResultSet.getString("offering_id")).thenReturn(offeringId.toString());
+        when(mockResultSet.getString("rotation_id")).thenReturn(rotId.toString());
+        when(mockResultSet.getString("category_key")).thenReturn("mcrpg:personal_daily");
+        when(mockResultSet.getInt("slot_index")).thenReturn(0);
+        when(mockResultSet.getString("quest_definition_key")).thenReturn("mcrpg:gen_daily_mining_a1b2");
+        when(mockResultSet.getString("rarity_key")).thenReturn("mcrpg:common");
+        when(mockResultSet.getString("scope_target_id")).thenReturn(playerUUID.toString());
+        when(mockResultSet.getString("state")).thenReturn("VISIBLE");
+        when(mockResultSet.getLong("accepted_at")).thenReturn(0L);
+        when(mockResultSet.wasNull()).thenReturn(true);
+        when(mockResultSet.getString("quest_instance_uuid")).thenReturn(null);
+        when(mockResultSet.getLong("completion_time_ms")).thenReturn(86400000L);
+        when(mockResultSet.getString("generated_definition")).thenReturn("{\"key\":\"test\"}");
+        when(mockResultSet.getString("template_key")).thenReturn("mcrpg:daily_mining");
+
+        List<BoardOffering> result = BoardOfferingDAO.loadPersonalOfferingsForRotation(
+                mockConnection, rotId, playerUUID);
+
+        assertEquals(1, result.size());
+        BoardOffering offering = result.get(0);
+        assertEquals(offeringId, offering.getOfferingId());
+        assertEquals(rotId, offering.getRotationId());
+        assertTrue(offering.isTemplateGenerated());
+        assertEquals(new NamespacedKey("mcrpg", "daily_mining"), offering.getTemplateKey().orElseThrow());
+    }
+
+    @DisplayName("loadOfferingByQuestInstanceUUID returns empty when not found")
+    @Test
+    void loadOfferingByQuestInstanceUUID_returnsEmpty() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(false);
+
+        Optional<BoardOffering> result = BoardOfferingDAO.loadOfferingByQuestInstanceUUID(
+                mockConnection, UUID.randomUUID());
+
+        assertTrue(result.isEmpty());
+    }
+
+    @DisplayName("loadOfferingByQuestInstanceUUID returns offering when found")
+    @Test
+    void loadOfferingByQuestInstanceUUID_returnsOffering() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+
+        UUID offeringId = UUID.randomUUID();
+        UUID rotId = UUID.randomUUID();
+        UUID questInstanceId = UUID.randomUUID();
+
+        when(mockResultSet.next()).thenReturn(true);
+        when(mockResultSet.getString("offering_id")).thenReturn(offeringId.toString());
+        when(mockResultSet.getString("rotation_id")).thenReturn(rotId.toString());
+        when(mockResultSet.getString("category_key")).thenReturn("mcrpg:daily_personal");
+        when(mockResultSet.getInt("slot_index")).thenReturn(0);
+        when(mockResultSet.getString("quest_definition_key")).thenReturn("mcrpg:gen_tmpl_abc12345");
+        when(mockResultSet.getString("rarity_key")).thenReturn("mcrpg:common");
+        when(mockResultSet.getString("scope_target_id")).thenReturn(null);
+        when(mockResultSet.getString("state")).thenReturn("ACCEPTED");
+        when(mockResultSet.getLong("accepted_at")).thenReturn(1000L);
+        when(mockResultSet.wasNull()).thenReturn(false);
+        when(mockResultSet.getString("quest_instance_uuid")).thenReturn(questInstanceId.toString());
+        when(mockResultSet.getLong("completion_time_ms")).thenReturn(86400000L);
+        when(mockResultSet.getString("generated_definition")).thenReturn("{\"key\":\"mcrpg:gen_tmpl_abc12345\"}");
+        when(mockResultSet.getString("template_key")).thenReturn("mcrpg:some_template");
+
+        Optional<BoardOffering> result = BoardOfferingDAO.loadOfferingByQuestInstanceUUID(
+                mockConnection, questInstanceId);
+
+        assertTrue(result.isPresent());
+        BoardOffering offering = result.get();
+        assertEquals(offeringId, offering.getOfferingId());
+        assertEquals(BoardOffering.State.ACCEPTED, offering.getState());
+        assertTrue(offering.isTemplateGenerated());
+        assertEquals(new NamespacedKey("mcrpg", "some_template"), offering.getTemplateKey().orElseThrow());
     }
 
     @DisplayName("updateOfferingState returns prepared statements")

@@ -194,6 +194,60 @@ public class BoardOfferingDAO {
         return statements;
     }
 
+    /**
+     * Loads personal offerings for a specific rotation and player.
+     *
+     * @param connection the database connection
+     * @param rotationId the rotation UUID
+     * @param playerUUID the player UUID (matched against {@code scope_target_id})
+     * @return the list of personal offerings for the player
+     */
+    @NotNull
+    public static List<BoardOffering> loadPersonalOfferingsForRotation(@NotNull Connection connection,
+                                                                       @NotNull UUID rotationId,
+                                                                       @NotNull UUID playerUUID) {
+        List<BoardOffering> offerings = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM " + TABLE_NAME
+                        + " WHERE rotation_id = ? AND scope_target_id = ? ORDER BY slot_index")) {
+            ps.setString(1, rotationId.toString());
+            ps.setString(2, playerUUID.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    offerings.add(buildOffering(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return offerings;
+    }
+
+    /**
+     * Loads the offering associated with a specific quest instance UUID. Used during
+     * server restart to recover template-generated definitions for ephemeral re-registration.
+     *
+     * @param connection        the database connection
+     * @param questInstanceUUID the quest instance UUID
+     * @return the matching offering, or empty if not found
+     */
+    @NotNull
+    public static Optional<BoardOffering> loadOfferingByQuestInstanceUUID(@NotNull Connection connection,
+                                                                          @NotNull UUID questInstanceUUID) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM " + TABLE_NAME + " WHERE quest_instance_uuid = ?")) {
+            ps.setString(1, questInstanceUUID.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(buildOffering(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
     private static void setOfferingParams(@NotNull PreparedStatement ps,
                                            @NotNull BoardOffering offering) throws SQLException {
         ps.setString(1, offering.getOfferingId().toString());

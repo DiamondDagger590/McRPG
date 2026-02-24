@@ -10,30 +10,38 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.BoardCategoryConfigLoader;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.event.board.BoardOfferingAcceptEvent;
 import us.eunoians.mcrpg.event.board.BoardOfferingExpireEvent;
 import us.eunoians.mcrpg.event.board.BoardOfferingGenerateEvent;
 import us.eunoians.mcrpg.event.board.BoardRotationEvent;
+import us.eunoians.mcrpg.event.board.PersonalOfferingGenerateEvent;
 import us.eunoians.mcrpg.database.table.board.BoardCooldownDAO;
 import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
 import us.eunoians.mcrpg.database.table.board.BoardRotationDAO;
+import us.eunoians.mcrpg.database.table.board.PersonalOfferingTrackingDAO;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategory;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.configuration.ReloadableCategoryConfig;
 import us.eunoians.mcrpg.quest.board.configuration.ReloadableRarityConfig;
+import us.eunoians.mcrpg.quest.board.configuration.ReloadableTemplateConfig;
+import us.eunoians.mcrpg.quest.board.generation.PersonalOfferingGenerator;
 import us.eunoians.mcrpg.quest.board.generation.QuestPool;
 import us.eunoians.mcrpg.quest.board.generation.SlotGenerationLogic;
+import us.eunoians.mcrpg.quest.board.generation.SlotSelection;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarity;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshType;
+import us.eunoians.mcrpg.quest.board.template.QuestTemplateEngine;
+import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.DailyRefreshType;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.WeeklyRefreshType;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
+import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
@@ -66,14 +74,18 @@ public class QuestBoardManager extends Manager<McRPG> {
 
     private static final Logger LOGGER = McRPG.getInstance().getLogger();
     private static final String EXTRA_SLOTS_PERMISSION_PREFIX = "mcrpg.board.extra-slots.";
+    private static final String EXTRA_OFFERINGS_PERMISSION_PREFIX = "mcrpg.extra-offerings.";
     private static final NamespacedKey DEFAULT_BOARD_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "default_board");
 
     private final Map<NamespacedKey, QuestBoard> boards = new HashMap<>();
     private final Map<NamespacedKey, List<BoardOffering>> offeringCache = new ConcurrentHashMap<>();
+    private YamlDocument boardConfig;
     private QuestPool questPool;
+    private QuestTemplateEngine templateEngine;
     private ReloadableRarityConfig rarityConfig;
     private ReloadableCategoryConfig categoryConfig;
+    private ReloadableTemplateConfig templateConfig;
 
     public QuestBoardManager(@NotNull McRPG plugin) {
         super(plugin);
@@ -81,7 +93,7 @@ public class QuestBoardManager extends Manager<McRPG> {
 
     public void initialize(@NotNull McRPG plugin) {
         // 1. Load board.yml
-        YamlDocument boardConfig = plugin.registryAccess()
+        this.boardConfig = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.BOARD_CONFIG);
@@ -112,9 +124,21 @@ public class QuestBoardManager extends Manager<McRPG> {
         QuestBoard defaultBoard = new QuestBoard(DEFAULT_BOARD_KEY, boardConfig);
         boards.put(DEFAULT_BOARD_KEY, defaultBoard);
 
-        // 6. Create quest pool
+        // 6. Set up template engine + registry + quest pool
         QuestDefinitionRegistry definitionRegistry = plugin.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_DEFINITION);
+        QuestObjectiveTypeRegistry objectiveTypeRegistry = plugin.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_OBJECTIVE_TYPE);
+        QuestRewardTypeRegistry rewardTypeRegistry = plugin.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_REWARD_TYPE);
+        QuestTemplateRegistry templateRegistry = plugin.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_TEMPLATE);
+
+        this.templateEngine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry);
+        File primaryTemplatesDir = new File(plugin.getDataFolder(), "quest-board/templates");
+        this.templateConfig = new ReloadableTemplateConfig(boardConfig, templateRegistry, primaryTemplatesDir);
+        this.templateConfig.getContent();
+
         this.questPool = new QuestPool(definitionRegistry);
 
         // 7. Load current rotations from DB
@@ -260,7 +284,8 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
-     * Generates shared offerings for a board rotation.
+     * Generates shared offerings for a board rotation. Uses configurable source weights
+     * to choose between hand-crafted definitions and template-generated quests.
      */
     @NotNull
     public List<BoardOffering> generateSharedOfferings(@NotNull QuestBoard board,
@@ -270,6 +295,9 @@ public class QuestBoardManager extends Manager<McRPG> {
                 .registry(McRPGRegistryKey.BOARD_SLOT_CATEGORY);
         QuestRarityRegistry rarityRegistry = plugin().registryAccess()
                 .registry(McRPGRegistryKey.QUEST_RARITY);
+
+        int hcWeight = boardConfig.getInt(BoardConfigFile.SOURCE_WEIGHT_HAND_CRAFTED, 50);
+        int tmplWeight = boardConfig.getInt(BoardConfigFile.SOURCE_WEIGHT_TEMPLATE, 50);
 
         List<BoardSlotCategory> categories = categoryRegistry.getByVisibility(BoardSlotCategory.Visibility.SHARED);
         categories = categories.stream()
@@ -287,32 +315,49 @@ public class QuestBoardManager extends Manager<McRPG> {
             int count = slotCounts.getOrDefault(category.getKey(), 0);
             for (int i = 0; i < count; i++) {
                 QuestRarity rarity = rarityRegistry.rollRarity(random);
-                List<NamespacedKey> eligible = questPool.getEligibleDefinitions(rarity.getKey());
 
-                Optional<NamespacedKey> selected = SlotGenerationLogic.selectQuestForSlot(eligible, random);
+                Optional<SlotSelection> selection = questPool.selectForSlot(
+                        rarity.getKey(), random, templateEngine, hcWeight, tmplWeight);
 
-                if (selected.isEmpty()) {
-                    // Backfill: try all eligible
-                    eligible = questPool.getAllBoardEligibleDefinitions();
-                    selected = SlotGenerationLogic.selectQuestForSlot(eligible, random);
-                }
-
-                if (selected.isPresent()) {
-                    offerings.add(new BoardOffering(
-                            UUID.randomUUID(),
-                            rotation.getRotationId(),
-                            category.getKey(),
-                            slotIndex++,
-                            selected.get(),
-                            rarity.getKey(),
-                            null,
-                            category.getCompletionTime()
-                    ));
-                }
+                selection.ifPresent(sel -> offerings.add(toOffering(sel, rotation, category, offerings.size())));
             }
         }
 
         return offerings;
+    }
+
+    /**
+     * Converts a {@link SlotSelection} into a {@link BoardOffering}.
+     */
+    @NotNull
+    private BoardOffering toOffering(@NotNull SlotSelection selection,
+                                     @NotNull BoardRotation rotation,
+                                     @NotNull BoardSlotCategory category,
+                                     int slotIndex) {
+        return switch (selection) {
+            case SlotSelection.HandCrafted hc -> new BoardOffering(
+                    UUID.randomUUID(),
+                    rotation.getRotationId(),
+                    category.getKey(),
+                    slotIndex,
+                    hc.definitionKey(),
+                    hc.rarityKey(),
+                    null,
+                    category.getCompletionTime()
+            );
+            case SlotSelection.TemplateGenerated tmpl -> new BoardOffering(
+                    UUID.randomUUID(),
+                    rotation.getRotationId(),
+                    category.getKey(),
+                    slotIndex,
+                    tmpl.result().definition().getQuestKey(),
+                    tmpl.rarityKey(),
+                    null,
+                    category.getCompletionTime(),
+                    tmpl.result().templateKey(),
+                    tmpl.result().serializedDefinition()
+            );
+        };
     }
 
     /**
@@ -421,6 +466,125 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
+     * Generates personal offerings for a player using deterministic seeding.
+     * Offerings are lazily generated on first board open per rotation period and
+     * persisted to the database.
+     *
+     * @param playerUUID the player's UUID
+     * @param boardKey   the board key
+     * @param rotation   the current rotation
+     * @return the list of personal offerings
+     */
+    @NotNull
+    public List<BoardOffering> generatePersonalOfferings(
+            @NotNull UUID playerUUID,
+            @NotNull NamespacedKey boardKey,
+            @NotNull BoardRotation rotation) {
+        BoardSlotCategoryRegistry categoryRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.BOARD_SLOT_CATEGORY);
+        QuestRarityRegistry rarityRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_RARITY);
+
+        List<BoardSlotCategory> personalCategories = categoryRegistry
+                .getByVisibility(BoardSlotCategory.Visibility.PERSONAL)
+                .stream()
+                .filter(c -> c.getRefreshTypeKey().equals(rotation.getRefreshTypeKey()))
+                .sorted((a, b) -> Integer.compare(b.getPriority(), a.getPriority()))
+                .toList();
+
+        int hcWeight = boardConfig.getInt(BoardConfigFile.SOURCE_WEIGHT_HAND_CRAFTED, 50);
+        int tmplWeight = boardConfig.getInt(BoardConfigFile.SOURCE_WEIGHT_TEMPLATE, 50);
+
+        int minOfferings = 0;
+        return PersonalOfferingGenerator.generatePersonalOfferings(
+                playerUUID, rotation, personalCategories, minOfferings,
+                questPool, rarityRegistry, templateEngine, hcWeight, tmplWeight);
+    }
+
+    /**
+     * Gets all offerings for a player: shared (cached) + personal (lazily generated
+     * and persisted).
+     *
+     * @param playerUUID the player's UUID
+     * @param boardKey   the board key
+     * @return combined list of shared and personal offerings
+     */
+    @NotNull
+    public List<BoardOffering> getOfferingsForPlayer(@NotNull UUID playerUUID,
+                                                      @NotNull NamespacedKey boardKey) {
+        List<BoardOffering> all = new ArrayList<>(getSharedOfferingsForBoard(boardKey));
+
+        QuestBoard board = boards.get(boardKey);
+        if (board == null) return all;
+
+        board.getCurrentDailyRotation().ifPresent(rotation ->
+                all.addAll(getOrGeneratePersonalOfferings(playerUUID, boardKey, rotation)));
+        board.getCurrentWeeklyRotation().ifPresent(rotation ->
+                all.addAll(getOrGeneratePersonalOfferings(playerUUID, boardKey, rotation)));
+
+        return all;
+    }
+
+    /**
+     * Returns or generates personal offerings for a player and rotation. On first
+     * access the offerings are generated, persisted, and cached. Subsequent calls
+     * load from the database.
+     */
+    @NotNull
+    private List<BoardOffering> getOrGeneratePersonalOfferings(@NotNull UUID playerUUID,
+                                                                @NotNull NamespacedKey boardKey,
+                                                                @NotNull BoardRotation rotation) {
+        Database database = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE)
+                .getDatabase();
+        try (Connection connection = database.getConnection()) {
+            if (PersonalOfferingTrackingDAO
+                    .hasGenerated(connection, playerUUID, boardKey, rotation.getRotationId())) {
+                return BoardOfferingDAO.loadPersonalOfferingsForRotation(
+                        connection, rotation.getRotationId(), playerUUID);
+            }
+
+            List<BoardOffering> personal = generatePersonalOfferings(playerUUID, boardKey, rotation);
+
+            QuestBoard board = boards.get(boardKey);
+            if (board != null) {
+                PersonalOfferingGenerateEvent event = new PersonalOfferingGenerateEvent(
+                        board, playerUUID, rotation, personal);
+                Bukkit.getPluginManager().callEvent(event);
+                personal = event.getOfferings();
+            }
+
+            BoardOfferingDAO.saveOfferings(connection, personal).forEach(ps -> {
+                try { ps.executeUpdate(); ps.close(); } catch (Exception e) { e.printStackTrace(); }
+            });
+            PersonalOfferingTrackingDAO
+                    .markGenerated(connection, playerUUID, boardKey, rotation.getRotationId());
+            return personal;
+        } catch (Exception e) {
+            LOGGER.warning("[QuestBoard] Failed to get personal offerings for " + playerUUID + ": " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Returns the effective minimum personal offerings for a player, combining the base
+     * with permission-based bonuses.
+     *
+     * @param player the player
+     * @param board  the board
+     * @return the effective minimum personal offerings
+     */
+    public int getEffectiveMinimumOfferings(@NotNull Player player, @NotNull QuestBoard board) {
+        int base = 0;
+        Set<String> permissions = player.getEffectivePermissions().stream()
+                .map(info -> info.getPermission())
+                .collect(Collectors.toSet());
+        return base + PermissionNumberParser.getHighestNumericSuffix(
+                permissions, EXTRA_OFFERINGS_PERMISSION_PREFIX).orElse(0);
+    }
+
+    /**
      * Returns the quest pool used for generating board offerings.
      *
      * @return the quest pool
@@ -448,5 +612,25 @@ public class QuestBoardManager extends Manager<McRPG> {
     @NotNull
     public ReloadableCategoryConfig getCategoryConfig() {
         return categoryConfig;
+    }
+
+    /**
+     * Returns the reloadable template configuration.
+     *
+     * @return the template config
+     */
+    @NotNull
+    public ReloadableTemplateConfig getTemplateConfig() {
+        return templateConfig;
+    }
+
+    /**
+     * Returns the template engine used for generating quests from templates.
+     *
+     * @return the template engine
+     */
+    @NotNull
+    public QuestTemplateEngine getTemplateEngine() {
+        return templateEngine;
     }
 }

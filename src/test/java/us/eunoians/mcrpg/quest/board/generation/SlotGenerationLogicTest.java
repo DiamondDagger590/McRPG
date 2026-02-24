@@ -95,6 +95,47 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         assertEquals(5, countsOne.get(catKey).intValue());
     }
 
+    @DisplayName("computeSlotCountForCategory: chance=0 gives exactly min slots")
+    @Test
+    void computeSlotCountForCategory_chanceZero_givesMin() {
+        NamespacedKey catKey = new NamespacedKey("mcrpg", "single_cat");
+        BoardSlotCategory cat = category(catKey, 2, 5, 0.0, 1);
+
+        int count = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(42));
+        assertEquals(2, count);
+    }
+
+    @DisplayName("computeSlotCountForCategory: chance=1.0 gives exactly max slots")
+    @Test
+    void computeSlotCountForCategory_chanceOne_givesMax() {
+        NamespacedKey catKey = new NamespacedKey("mcrpg", "single_cat");
+        BoardSlotCategory cat = category(catKey, 2, 5, 1.0, 1);
+
+        int count = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(42));
+        assertEquals(5, count);
+    }
+
+    @DisplayName("computeSlotCountForCategory: min == max always returns that value")
+    @Test
+    void computeSlotCountForCategory_minEqualsMax_returnsExact() {
+        NamespacedKey catKey = new NamespacedKey("mcrpg", "fixed_cat");
+        BoardSlotCategory cat = category(catKey, 3, 3, 0.5, 1);
+
+        int count = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(42));
+        assertEquals(3, count);
+    }
+
+    @DisplayName("computeSlotCountForCategory: deterministic with same seed")
+    @Test
+    void computeSlotCountForCategory_deterministicWithSameSeed() {
+        NamespacedKey catKey = new NamespacedKey("mcrpg", "seed_cat");
+        BoardSlotCategory cat = category(catKey, 1, 10, 0.5, 1);
+
+        int count1 = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(999));
+        int count2 = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(999));
+        assertEquals(count1, count2);
+    }
+
     @DisplayName("selectQuestForSlot: single eligible returns it")
     @Test
     void selectQuestForSlot_singleEligible_returnsIt() {

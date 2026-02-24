@@ -25,6 +25,10 @@ public final class BoardConfigFile extends ConfigFile {
             Route.fromString("max-accepted-quests");
     public static final Route RARITIES =
             Route.fromString("rarities");
+    public static final Route SOURCE_WEIGHT_HAND_CRAFTED =
+            Route.fromString("quest-source-weights.hand-crafted");
+    public static final Route SOURCE_WEIGHT_TEMPLATE =
+            Route.fromString("quest-source-weights.template");
     public static final Route ROTATION_TIME =
             Route.fromString("rotation.time");
     public static final Route ROTATION_TIMEZONE =

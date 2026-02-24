@@ -655,7 +655,21 @@ The `QuestTemplateEngine` resolves variables at generation time:
 3. For each `POOL` variable: select pools by rarity-weighted random, merge values, compute pool difficulty
 4. For each `RANGE` variable: resolve random value within range, apply difficulty multiplier
 5. Substitute all variables (including `${difficulty}`) into the definition structure
-6. Produce an ephemeral `QuestDefinition` that gets persisted when accepted
+6. Produce an ephemeral `QuestDefinition` serialized to JSON for persistence
+
+**Quest source selection**: For each board slot, after rolling the rarity, the system selects the quest **source** (hand-crafted definition or template) using configurable weights in `board.yml`:
+
+```yaml
+quest-source-weights:
+  hand-crafted: 50
+  template: 50
+```
+
+Both sources are treated as equals. The weight determines the probability of drawing from each pool. If one pool is empty for the rolled rarity (e.g., no templates support LEGENDARY), 100% goes to the other pool. If both are empty, the system falls back to all-rarity hand-crafted backfill. Setting a weight to 0 disables that source entirely. This selection is encapsulated in `QuestPool.selectForSlot()` which returns a `SlotSelection` sealed interface (`HandCrafted` or `TemplateGenerated`).
+
+**Expression validation at template load time**: Template expressions (e.g., `"block_count * 5 * difficulty"`) are validated at YAML load time by trial-parsing with the existing `McCore.Parser`. The `Parser.getParsedVariables()` method detects undeclared variable references, while the trial-parse itself catches syntax errors. This catches configuration issues at server startup rather than at quest generation time.
+
+**Ephemeral definitions**: When a template-generated offering is accepted, the deserialized `QuestDefinition` is registered in `QuestDefinitionRegistry` under a `mcrpg:gen_` prefixed key. This allows the full quest lifecycle to work identically to hand-crafted quests. On quest completion or cancellation, the ephemeral definition is deregistered from the registry. On server restart, active template-generated quests recover their definitions from the persisted JSON snapshot.
 
 **Phase 2 -- Conditional Objectives:**
 
@@ -816,6 +830,12 @@ mcrpg_board_cooldown
   - quest_definition_key (VARCHAR, nullable) -- null for category-level cooldowns
   - category_key (VARCHAR, nullable) -- null for quest-level cooldowns
   - expires_at (TIMESTAMP, indexed)
+
+mcrpg_personal_offering_tracking
+  - player_uuid (VARCHAR(36), PK component)
+  - board_key (VARCHAR(256), PK component)
+  - rotation_epoch (BIGINT, PK component)
+  - generated_at (BIGINT) -- timestamp when personal offerings were generated
 ```
 
 The `mcrpg_quest_instances` table includes the following columns (part of the initial schema, not a migration):
@@ -842,16 +862,16 @@ Expired cooldown rows are pruned periodically by the `QuestBoardRotationTask` du
 
 ```
 plugins/McRPG/
-  config.yml                    # existing -- add quest-board section reference
+  config.yml                    # existing -- add quest-board section reference, expired-quest-scan-task frequency
   quest-board/
-    board.yml                   # global board settings (min offerings, rarities, rotation, limits)
+    board.yml                   # global board settings (min offerings, rarities, rotation, limits, quest-source-weights)
     categories/                 # one YAML per category -- delete a file to remove the category
       shared-daily.yml
       shared-weekly.yml
       personal-daily.yml
       personal-weekly.yml
       land-daily.yml            # delete this file if Lands is not installed
-    templates/                  # quest template files
+    templates/                  # quest template files (recursively scanned)
       daily-mining.yml
       daily-herbalism.yml
       weekly-land-mining.yml
@@ -864,6 +884,14 @@ plugins/McRPG/
   localization/
     en.yml                      # existing -- add quest-board.rarities, quest-board.reward-tiers,
                                 # quest-board.gui, and template display names/descriptions
+```
+
+`board.yml` now includes a `quest-source-weights` section that controls the probability of selecting hand-crafted vs. template-generated quests for each board slot:
+
+```yaml
+quest-source-weights:
+  hand-crafted: 50
+  template: 50
 ```
 
 All player-facing text lives in `en.yml` and is resolved through `McRPGLocalizationManager` using MiniMessage formatting. The `board.yml` contains only global mechanical configuration (min offerings, rarities, rotation timing, slot limits). Category definitions are split into individual files under `categories/` -- this is a recommended practice (not enforced) so server owners without Lands (or other soft dependencies) can simply delete the relevant category file rather than dealing with warnings or disabled config blocks.
@@ -889,7 +917,8 @@ The quest board system should be extensible by other plugins, following the same
 - **Quest source registration**: Plugins can register new `QuestSource` subclasses via `QuestSourceContentPack` (e.g., `npc:quest_giver`) so their quests integrate with the abandonment and slot accounting systems.
 - **Scope provider registration**: Plugins can register custom `QuestScopeProvider` implementations via `QuestScopeProviderContentPack`. The `QUEST_SCOPE_PROVIDER` content handler registers both the provider itself (into `QuestScopeProviderRegistry`) and any associated scope-change listeners. This enables third-party group plugins (Factions, Towny, parties, etc.) to provide scoped quest support through the standard content expansion mechanism.
 - **Reward distribution type registration**: Plugins can register custom reward distribution types beyond the built-in four (TOP_PLAYERS, CONTRIBUTION_THRESHOLD, PARTICIPATED, MEMBERSHIP). A custom type implements a `RewardDistributionType` interface with a `resolve(contributionMap, membershipList, config)` method.
-- **Board event hooks**: Custom Bukkit events for board lifecycle: `BoardRotationEvent`, `BoardOfferingGenerateEvent` (cancellable), `BoardOfferingAcceptEvent`, `BoardOfferingExpireEvent`. All board events extend `BoardEvent` and are **synchronous** (not async) -- they fire on the main server thread and handlers execute inline. Plugins can listen to these to add custom logic (e.g., announce legendary quests in chat).
+- **Quest template registration**: Plugins can register templates via `QuestTemplateContentPack` (programmatic) or by calling `QuestTemplateRegistry.registerTemplateDirectory()` to register a directory of template YAML files. Programmatically registered templates survive config reloads; directory-registered templates are reloaded alongside built-in templates.
+- **Board event hooks**: Custom Bukkit events for board lifecycle: `BoardRotationEvent`, `BoardOfferingGenerateEvent` (cancellable), `BoardOfferingAcceptEvent`, `BoardOfferingExpireEvent`, `PersonalOfferingGenerateEvent`, `TemplateQuestGenerateEvent` (cancellable). All board events extend `BoardEvent` and are **synchronous** (not async) -- they fire on the main server thread and handlers execute inline. Plugins can listen to these to add custom logic (e.g., announce legendary quests in chat, filter personal offerings, or cancel template generation for specific templates).
 
 **Integration pattern** (follows existing `ContentExpansion` approach):
 
@@ -902,6 +931,7 @@ public class BountyBoardExpansion implements ContentExpansion {
             new BoardCategoryContentPack(customCategories),
             new QuestSourceContentPack(customSources),
             new QuestScopeProviderContentPack(customScopeProviders),
+            new QuestTemplateContentPack(customTemplates),
             new RewardDistributionTypeContentPack(customDistributionTypes)
         );
     }
@@ -985,6 +1015,22 @@ Each phase includes unit tests alongside implementation. Key areas to test:
 - `QuestTemplateEngine` (variable resolution, difficulty computation, substitution)
 - Per-player board state persistence
 - Unit tests: template engine, deterministic seeding, difficulty propagation, custom type parsing
+
+**Implementation notes (completed):**
+
+- `QuestTemplateRegistry` with dual-source registration (config-loaded and expansion-registered), supports `registerTemplateDirectory()` for expansion YAML and `QuestTemplateContentPack` for programmatic registration
+- `QuestTemplateConfigLoader` recursively scans template directories, validates expressions via McCore `Parser` trial-parse at load time
+- `GeneratedQuestDefinitionSerializer` handles JSON serialization/deserialization of generated `QuestDefinition` objects via Gson
+- Unified source selection via configurable `quest-source-weights` (hand-crafted/template, default 50/50) in `board.yml` with `SlotSelection` sealed interface and `QuestPool.selectForSlot()`
+- Ephemeral `QuestDefinition` lifecycle: registered under `mcrpg:gen_` prefix on acceptance, deregistered on completion/cancellation, recovered from JSON on restart
+- Custom exceptions: `QuestGenerationException`, `QuestDeserializationException` for third-party developer diagnostics
+- Custom events: `TemplateQuestGenerateEvent` (cancellable), `PersonalOfferingGenerateEvent`
+- `PersonalOfferingGenerator` with deterministic seeding and template deduplication
+- `ExpiredQuestScanTask` for two-phase expired quest cleanup (in-memory + bulk DB sweep)
+- `ReloadableTemplateConfig` for hot-reloading template YAML changes
+- `PersonalOfferingTrackingDAO` for tracking per-player generation state
+- Database optimized: all `TEXT` columns replaced with sized `VARCHAR`, targeted indexes on all board tables
+- 770 unit tests, all passing (up from 639 in Phase 1)
 
 ### Phase 3: Land Board Quests and Reward Distribution
 

@@ -27,6 +27,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -34,6 +35,8 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.QuestConfigLoader;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.quest.board.BoardOffering;
+import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionSerializer;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
@@ -772,15 +775,63 @@ public class QuestManager extends Manager<McRPG> {
             try (Connection connection = database.getConnection()) {
                 List<QuestInstance> quests = QuestInstanceDAO.loadQuestInstancesByState(
                         connection, QuestState.NOT_STARTED, QuestState.IN_PROGRESS);
+                int recoveredEphemeral = 0;
                 for (QuestInstance shell : quests) {
+                    if (recoverEphemeralDefinition(connection, shell)) {
+                        recoveredEphemeral++;
+                    }
                     Optional<QuestInstance> fullTree = QuestInstanceDAO.loadFullQuestTree(connection, shell.getQuestUUID());
                     fullTree.ifPresent(this::trackActiveQuest);
                 }
-                plugin().getLogger().info("Loaded " + activeQuests.size() + " active quests from database.");
+                plugin().getLogger().info("Loaded " + activeQuests.size() + " active quests from database"
+                        + (recoveredEphemeral > 0 ? " (recovered " + recoveredEphemeral + " ephemeral definitions)" : "")
+                        + ".");
             } catch (SQLException e) {
                 plugin().getLogger().log(Level.SEVERE, "Failed to load active quests from database", e);
             }
         });
+    }
+
+    /**
+     * If the quest's definition key matches the {@code gen_} pattern and is not already
+     * registered, attempts to recover the ephemeral definition from the offering's
+     * {@code generated_definition} column. This handles the case where the server
+     * restarted while a template-generated quest was still active.
+     *
+     * @return {@code true} if an ephemeral definition was recovered and registered
+     */
+    private boolean recoverEphemeralDefinition(@NotNull Connection connection,
+                                               @NotNull QuestInstance shell) {
+        NamespacedKey defKey = shell.getQuestKey();
+        if (!defKey.getKey().startsWith("gen_")) {
+            return false;
+        }
+
+        QuestDefinitionRegistry definitionRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_DEFINITION);
+        if (definitionRegistry.isRegistered(defKey)) {
+            return false;
+        }
+
+        try {
+            Optional<BoardOffering> offering =
+                    BoardOfferingDAO.loadOfferingByQuestInstanceUUID(connection, shell.getQuestUUID());
+            if (offering.isPresent() && offering.get().getGeneratedDefinition().isPresent()) {
+                String json = offering.get().getGeneratedDefinition().get();
+                QuestDefinition recovered = GeneratedQuestDefinitionSerializer.deserialize(
+                        json, objectiveTypeRegistry, rewardTypeRegistry);
+                definitionRegistry.register(recovered);
+                plugin().getLogger().fine("Recovered ephemeral definition " + defKey + " from offering");
+                return true;
+            } else {
+                plugin().getLogger().warning("Cannot recover ephemeral definition " + defKey
+                        + ": no matching offering with generated_definition found");
+            }
+        } catch (Exception e) {
+            plugin().getLogger().log(Level.WARNING,
+                    "Failed to recover ephemeral definition " + defKey, e);
+        }
+        return false;
     }
 
     /**

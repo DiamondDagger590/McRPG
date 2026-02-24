@@ -2,7 +2,7 @@
 
 > **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest-board.md)
 > **Phase 1 LLD:** [phase-1-core-board-infrastructure.md](phase-1-core-board-infrastructure.md)
-> **Status:** DRAFT
+> **Status:** IMPLEMENTED
 
 ## Scope
 
@@ -2139,7 +2139,7 @@ A (Rebase)
 
 5. **Lazy generation with persistence**: Per-player offerings are generated on first board open (lazy), then persisted. This avoids computing offerings for players who never open the board. Once persisted, subsequent opens load from DB. The deterministic seed is only used during initial generation -- persistence is the source of truth afterward.
 
-6. **Templates and hand-crafted quests in the same pool**: The generation pipeline tries hand-crafted quests first, then templates. This gives server admins predictable behavior: hand-crafted quests always take priority, and templates fill in the gaps. Both sources are eligible for the same slot categories.
+6. **Unified source selection with configurable weights**: Hand-crafted definitions and templates are treated as **equal sources** with configurable weights (`quest-source-weights` in `board.yml`, default 50/50). For each slot, after rolling the rarity, the system gathers eligible candidates from both pools and uses a weighted random roll to choose which source to draw from. If one pool is empty for the rolled rarity, 100% goes to the other pool. If both are empty, the system falls back to all-rarity hand-crafted backfill. If template generation fails, it falls back to hand-crafted. Setting a weight to 0 disables that source entirely. The selection is encapsulated in `QuestPool.selectForSlot()` which returns a `SlotSelection` sealed interface (`HandCrafted` or `TemplateGenerated`).
 
 7. **Pool selection without replacement**: When a `PoolVariable` selects multiple pools (`maxSelections > 1`), it uses weighted random **without replacement**. This prevents the same pool from being selected twice, ensuring variety in the merged values.
 
@@ -2170,3 +2170,23 @@ A (Rebase)
 3. **Weighted random objective selection from pools (Phase 4)**: Instead of all objectives in a stage being required, a template could define a pool of objectives and select N at generation time. This adds variety to a single template's output.
 
 4. **Template analytics / telemetry**: Tracking which templates are most/least accepted, average completion rates per template, and difficulty distribution. Useful for content balancing but not required for core functionality.
+
+---
+
+## 14. Implementation Notes
+
+Phase 2 implementation is complete. Key decisions and deviations from the original design:
+
+1. **Unified source weight selection** (post-implementation change): The original design prioritized hand-crafted quests and used templates as a fallback. This was refactored to a configurable weight system (`quest-source-weights` in `board.yml`) where both sources are treated as equals. The `SlotSelection` sealed interface and `QuestPool.selectForSlot()` method encapsulate this logic.
+
+2. **Custom exceptions for third-party developers**: `QuestGenerationException` (thrown during template generation) and `QuestDeserializationException` (thrown during JSON deserialization) expose context fields like `templateKey`, `rarityKey`, and `failedElementKey` so expansion developers can diagnose issues programmatically.
+
+3. **Custom events for third-party hooks**: `TemplateQuestGenerateEvent` (cancellable, fired after template generation) and `PersonalOfferingGenerateEvent` (fired after personal offerings are generated but before persistence) provide extension points for third-party plugins.
+
+4. **Expression validation via McCore Parser**: Rather than maintaining a separate set of built-in function names, template expression validation uses `Parser`'s trial-parse and `getParsedVariables()` for comprehensive syntax and undeclared variable checking at template load time.
+
+5. **Database optimizations**: All board DAO tables use `VARCHAR` with appropriate sizes instead of `TEXT` (e.g., `VARCHAR(36)` for UUIDs, `VARCHAR(256)` for NamespacedKeys). All tables include targeted indexes for common query patterns.
+
+6. **`ExpiredQuestScanTask`**: A two-phase background task that first expires in-memory active quests past their deadline, then performs a bulk database sweep for quests that expired while not loaded.
+
+7. **770 unit tests, all passing** (up from 639 in Phase 1). Coverage includes: template data model, template engine, config loader, serializer, template registry, content pack, quest pool (unified selection with 8 edge case tests), personal offering generator (deterministic seeding, deduplication, template fallback), slot generation logic, ephemeral definition cleanup, and all board DAOs.
