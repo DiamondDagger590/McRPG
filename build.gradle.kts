@@ -92,6 +92,8 @@ dependencies {
 
     val landsVersion = "7.10.13"
     compileOnly("com.github.angeschossen:LandsAPI:$landsVersion")
+    testImplementation("com.github.angeschossen:LandsAPI:$landsVersion")
+    testFixturesImplementation("com.github.angeschossen:LandsAPI:$landsVersion")
 
     val vaultVersion = "1.7.1"
     compileOnly("com.github.MilkBowl:VaultAPI:$vaultVersion")
