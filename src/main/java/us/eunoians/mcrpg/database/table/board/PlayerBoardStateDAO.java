@@ -28,12 +28,12 @@ public class PlayerBoardStateDAO {
             return false;
         }
         try (PreparedStatement ps = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "` (" +
-                "`player_uuid` TEXT NOT NULL," +
-                "`board_key` TEXT NOT NULL," +
-                "`offering_id` TEXT NOT NULL," +
-                "`state` TEXT NOT NULL," +
+                "`player_uuid` VARCHAR(36) NOT NULL," +
+                "`board_key` VARCHAR(256) NOT NULL," +
+                "`offering_id` VARCHAR(36) NOT NULL," +
+                "`state` VARCHAR(32) NOT NULL," +
                 "`accepted_at` BIGINT," +
-                "`quest_instance_uuid` TEXT," +
+                "`quest_instance_uuid` VARCHAR(36)," +
                 "PRIMARY KEY (`player_uuid`, `board_key`, `offering_id`)" +
                 ");")) {
             ps.executeUpdate();
@@ -49,7 +49,21 @@ public class PlayerBoardStateDAO {
         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
             return;
         }
-        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
+        if (lastStoredVersion == 0) {
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_pbs_player_board_state ON " + TABLE_NAME + " (player_uuid, board_key, state)",
+                    "CREATE INDEX IF NOT EXISTS idx_pbs_offering ON " + TABLE_NAME + " (offering_id)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
+        }
     }
 
     @NotNull

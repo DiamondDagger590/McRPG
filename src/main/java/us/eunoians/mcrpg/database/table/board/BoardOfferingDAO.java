@@ -31,17 +31,19 @@ public class BoardOfferingDAO {
             return false;
         }
         try (PreparedStatement ps = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "` (" +
-                "`offering_id` TEXT NOT NULL," +
-                "`rotation_id` TEXT NOT NULL," +
-                "`category_key` TEXT NOT NULL," +
+                "`offering_id` VARCHAR(36) NOT NULL," +
+                "`rotation_id` VARCHAR(36) NOT NULL," +
+                "`category_key` VARCHAR(256) NOT NULL," +
                 "`slot_index` INTEGER NOT NULL," +
-                "`quest_definition_key` TEXT," +
-                "`rarity_key` TEXT NOT NULL," +
-                "`scope_target_id` TEXT," +
-                "`state` TEXT NOT NULL," +
+                "`quest_definition_key` VARCHAR(256)," +
+                "`rarity_key` VARCHAR(256) NOT NULL," +
+                "`scope_target_id` VARCHAR(255)," +
+                "`state` VARCHAR(32) NOT NULL," +
                 "`accepted_at` BIGINT," +
-                "`quest_instance_uuid` TEXT," +
+                "`quest_instance_uuid` VARCHAR(36)," +
                 "`completion_time_ms` BIGINT NOT NULL," +
+                "`generated_definition` TEXT," +
+                "`template_key` VARCHAR(256)," +
                 "PRIMARY KEY (`offering_id`)" +
                 ");")) {
             ps.executeUpdate();
@@ -57,7 +59,23 @@ public class BoardOfferingDAO {
         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
             return;
         }
-        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
+        if (lastStoredVersion == 0) {
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_offering_rotation ON " + TABLE_NAME + " (rotation_id)",
+                    "CREATE INDEX IF NOT EXISTS idx_offering_scope_target ON " + TABLE_NAME + " (scope_target_id, rotation_id)",
+                    "CREATE INDEX IF NOT EXISTS idx_offering_state ON " + TABLE_NAME + " (state)",
+                    "CREATE INDEX IF NOT EXISTS idx_offering_template_key ON " + TABLE_NAME + " (template_key)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
+        }
     }
 
     @NotNull
@@ -68,8 +86,9 @@ public class BoardOfferingDAO {
             PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO " + TABLE_NAME +
                             " (offering_id, rotation_id, category_key, slot_index, quest_definition_key," +
-                            " rarity_key, scope_target_id, state, accepted_at, quest_instance_uuid, completion_time_ms)" +
-                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+                            " rarity_key, scope_target_id, state, accepted_at, quest_instance_uuid," +
+                            " completion_time_ms, generated_definition, template_key)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                             " ON CONFLICT(offering_id) DO UPDATE SET" +
                             " state = excluded.state," +
                             " accepted_at = excluded.accepted_at," +
@@ -200,6 +219,16 @@ public class BoardOfferingDAO {
             ps.setNull(10, Types.VARCHAR);
         }
         ps.setLong(11, offering.getCompletionTime().toMillis());
+        if (offering.getGeneratedDefinition().isPresent()) {
+            ps.setString(12, offering.getGeneratedDefinition().get());
+        } else {
+            ps.setNull(12, Types.VARCHAR);
+        }
+        if (offering.getTemplateKey().isPresent()) {
+            ps.setString(13, offering.getTemplateKey().get().toString());
+        } else {
+            ps.setNull(13, Types.VARCHAR);
+        }
     }
 
     @NotNull
@@ -209,6 +238,8 @@ public class BoardOfferingDAO {
         Long acceptedAt = rs.getLong("accepted_at");
         if (rs.wasNull()) acceptedAt = null;
         String questInstStr = rs.getString("quest_instance_uuid");
+        String generatedDef = rs.getString("generated_definition");
+        String templateKeyStr = rs.getString("template_key");
 
         return new BoardOffering(
                 UUID.fromString(rs.getString("offering_id")),
@@ -221,7 +252,9 @@ public class BoardOfferingDAO {
                 Duration.ofMillis(rs.getLong("completion_time_ms")),
                 BoardOffering.State.valueOf(rs.getString("state")),
                 acceptedAt,
-                questInstStr != null ? UUID.fromString(questInstStr) : null
+                questInstStr != null ? UUID.fromString(questInstStr) : null,
+                templateKeyStr != null ? NamespacedKey.fromString(templateKeyStr) : null,
+                generatedDef
         );
     }
 }

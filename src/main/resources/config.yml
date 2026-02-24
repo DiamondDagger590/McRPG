@@ -16,6 +16,9 @@ configuration:
   quest-save-task:
     # How often dirty active quests are persisted to the database (in seconds)
     frequency: 120
+  expired-quest-scan-task:
+    # How often to scan for and expire stale quests (in seconds)
+    frequency: 43200
   quest-pending-rewards:
     # How many days pending rewards for offline players are kept before expiring
     expiry-days: 30

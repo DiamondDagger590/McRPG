@@ -74,14 +74,20 @@ public class QuestInstanceDAO {
         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
             return;
         }
-        if (lastStoredVersion < 1) {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "CREATE INDEX idx_quest_instances_state ON " + TABLE_NAME + " (state)")) {
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
+        if (lastStoredVersion == 0) {
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_quest_instances_state ON " + TABLE_NAME + " (state)",
+                    "CREATE INDEX IF NOT EXISTS idx_qi_definition_key ON " + TABLE_NAME + " (definition_key)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
         }
     }
 
@@ -230,6 +236,39 @@ public class QuestInstanceDAO {
             e.printStackTrace();
         }
         return statements;
+    }
+
+    /**
+     * Bulk-expires all quest instances in the database that are still in an active state
+     * ({@code NOT_STARTED} or {@code IN_PROGRESS}) but whose {@code expiration_time} has
+     * passed. Sets their state to {@code CANCELLED} and records the current time as
+     * {@code end_time}.
+     * <p>
+     * This is intended for database-only cleanup of quests that expired while no players
+     * were online or while the quest was not loaded in memory. In-memory quests should be
+     * expired through {@link QuestInstance#expire()} to ensure events fire properly.
+     *
+     * @param connection  the database connection
+     * @param currentTime the current epoch millis to compare against expiration times
+     * @return the number of rows updated
+     */
+    public static int bulkExpireStaleQuests(@NotNull Connection connection, long currentTime) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "UPDATE " + TABLE_NAME +
+                        " SET state = ?, end_time = ?" +
+                        " WHERE state IN (?, ?)" +
+                        " AND expiration_time IS NOT NULL" +
+                        " AND expiration_time < ?")) {
+            ps.setString(1, QuestState.CANCELLED.name());
+            ps.setLong(2, currentTime);
+            ps.setString(3, QuestState.NOT_STARTED.name());
+            ps.setString(4, QuestState.IN_PROGRESS.name());
+            ps.setLong(5, currentTime);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @NotNull

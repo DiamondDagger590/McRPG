@@ -122,6 +122,8 @@ public class BoardOfferingDAOTest extends McRPGBaseTest {
         when(mockResultSet.wasNull()).thenReturn(true, true);
         when(mockResultSet.getString("quest_instance_uuid")).thenReturn(null, (String) null);
         when(mockResultSet.getLong("completion_time_ms")).thenReturn(86400000L, 86400000L);
+        when(mockResultSet.getString("generated_definition")).thenReturn(null, (String) null);
+        when(mockResultSet.getString("template_key")).thenReturn(null, (String) null);
 
         List<BoardOffering> result = BoardOfferingDAO.loadOfferingsForRotation(mockConnection, rotId);
 
@@ -136,6 +138,77 @@ public class BoardOfferingDAOTest extends McRPGBaseTest {
         assertEquals(new NamespacedKey("mcrpg", "common"), first.getRarityKey());
         assertEquals(BoardOffering.State.VISIBLE, first.getState());
         assertEquals(Duration.ofDays(1), first.getCompletionTime());
+        assertFalse(first.isTemplateGenerated());
+        assertTrue(first.getTemplateKey().isEmpty());
+        assertTrue(first.getGeneratedDefinition().isEmpty());
+    }
+
+    @DisplayName("saveOffering with template fields returns prepared statements")
+    @Test
+    void saveOfferingWithTemplate_returnsPreparedStatements() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+
+        BoardOffering offering = new BoardOffering(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                new NamespacedKey("mcrpg", "daily_personal"),
+                0,
+                new NamespacedKey("mcrpg", "gen_daily_mining_a1b2c3d4"),
+                new NamespacedKey("mcrpg", "common"),
+                null,
+                Duration.ofDays(1),
+                new NamespacedKey("mcrpg", "daily_mining"),
+                "{\"key\":\"mcrpg:gen_daily_mining_a1b2c3d4\"}"
+        );
+
+        assertTrue(offering.isTemplateGenerated());
+        assertEquals("mcrpg:daily_mining", offering.getTemplateKey().orElseThrow().toString());
+        assertNotNull(offering.getGeneratedDefinition().orElse(null));
+
+        List<PreparedStatement> statements = BoardOfferingDAO.saveOffering(mockConnection, offering);
+
+        assertNotNull(statements);
+        assertFalse(statements.isEmpty());
+    }
+
+    @DisplayName("loadOfferingsForRotation returns template-generated offering with metadata")
+    @Test
+    void loadOfferingsForRotation_returnsTemplateOffering() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+
+        UUID id = UUID.randomUUID();
+        UUID rotId = UUID.randomUUID();
+        String generatedDef = "{\"key\":\"mcrpg:gen_daily_mining_a1b2c3d4\"}";
+
+        when(mockResultSet.next()).thenReturn(true, false);
+        when(mockResultSet.getString("offering_id")).thenReturn(id.toString());
+        when(mockResultSet.getString("rotation_id")).thenReturn(rotId.toString());
+        when(mockResultSet.getString("category_key")).thenReturn("mcrpg:daily_personal");
+        when(mockResultSet.getInt("slot_index")).thenReturn(0);
+        when(mockResultSet.getString("quest_definition_key")).thenReturn("mcrpg:gen_daily_mining_a1b2c3d4");
+        when(mockResultSet.getString("rarity_key")).thenReturn("mcrpg:common");
+        when(mockResultSet.getString("scope_target_id")).thenReturn(null);
+        when(mockResultSet.getString("state")).thenReturn("VISIBLE");
+        when(mockResultSet.getLong("accepted_at")).thenReturn(0L);
+        when(mockResultSet.wasNull()).thenReturn(true);
+        when(mockResultSet.getString("quest_instance_uuid")).thenReturn(null);
+        when(mockResultSet.getLong("completion_time_ms")).thenReturn(86400000L);
+        when(mockResultSet.getString("generated_definition")).thenReturn(generatedDef);
+        when(mockResultSet.getString("template_key")).thenReturn("mcrpg:daily_mining");
+
+        List<BoardOffering> result = BoardOfferingDAO.loadOfferingsForRotation(mockConnection, rotId);
+
+        assertEquals(1, result.size());
+        BoardOffering offering = result.get(0);
+        assertTrue(offering.isTemplateGenerated());
+        assertEquals(new NamespacedKey("mcrpg", "daily_mining"), offering.getTemplateKey().orElseThrow());
+        assertEquals(generatedDef, offering.getGeneratedDefinition().orElseThrow());
     }
 
     @DisplayName("updateOfferingState returns prepared statements")

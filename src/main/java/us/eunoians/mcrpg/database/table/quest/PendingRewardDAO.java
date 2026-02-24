@@ -70,7 +70,19 @@ public class PendingRewardDAO {
             return;
         }
         if (lastStoredVersion == 0) {
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_pr_player ON " + TABLE_NAME + " (player_uuid)",
+                    "CREATE INDEX IF NOT EXISTS idx_pr_expires ON " + TABLE_NAME + " (expires_at)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
         }
     }
 

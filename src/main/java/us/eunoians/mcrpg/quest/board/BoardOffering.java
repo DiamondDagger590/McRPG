@@ -43,6 +43,8 @@ public class BoardOffering {
     private final String scopeTargetId;
     private final StateMachine<State> stateMachine;
     private final Duration completionTime;
+    private final @Nullable NamespacedKey templateKey;
+    private final @Nullable String generatedDefinition;
     private Long acceptedAt;
     private UUID questInstanceUUID;
 
@@ -67,7 +69,35 @@ public class BoardOffering {
                          @Nullable String scopeTargetId,
                          @NotNull Duration completionTime) {
         this(offeringId, rotationId, categoryKey, slotIndex, questDefinitionKey,
-                rarityKey, scopeTargetId, completionTime, State.VISIBLE, null, null);
+                rarityKey, scopeTargetId, completionTime, State.VISIBLE, null, null, null, null);
+    }
+
+    /**
+     * Creates a new offering in the {@code VISIBLE} state from a template.
+     *
+     * @param offeringId         unique identifier for this offering
+     * @param rotationId         the rotation this offering belongs to
+     * @param categoryKey        the category that generated this offering
+     * @param slotIndex          positional index on the board
+     * @param questDefinitionKey the quest definition this offering represents
+     * @param rarityKey          the rolled rarity tier
+     * @param scopeTargetId      the scope target for scoped categories, or {@code null} for shared
+     * @param completionTime     time limit after acceptance
+     * @param templateKey        the template that generated this offering, or {@code null}
+     * @param generatedDefinition the generated quest definition JSON, or {@code null}
+     */
+    public BoardOffering(@NotNull UUID offeringId,
+                         @NotNull UUID rotationId,
+                         @NotNull NamespacedKey categoryKey,
+                         int slotIndex,
+                         @NotNull NamespacedKey questDefinitionKey,
+                         @NotNull NamespacedKey rarityKey,
+                         @Nullable String scopeTargetId,
+                         @NotNull Duration completionTime,
+                         @Nullable NamespacedKey templateKey,
+                         @Nullable String generatedDefinition) {
+        this(offeringId, rotationId, categoryKey, slotIndex, questDefinitionKey,
+                rarityKey, scopeTargetId, completionTime, State.VISIBLE, null, null, templateKey, generatedDefinition);
     }
 
     /**
@@ -96,6 +126,40 @@ public class BoardOffering {
                          @NotNull State initialState,
                          @Nullable Long acceptedAt,
                          @Nullable UUID questInstanceUUID) {
+        this(offeringId, rotationId, categoryKey, slotIndex, questDefinitionKey,
+                rarityKey, scopeTargetId, completionTime, initialState, acceptedAt, questInstanceUUID, null, null);
+    }
+
+    /**
+     * Reconstruction constructor for loading from the database with template metadata.
+     *
+     * @param offeringId         unique identifier for this offering
+     * @param rotationId         the rotation this offering belongs to
+     * @param categoryKey        the category that generated this offering
+     * @param slotIndex          positional index on the board
+     * @param questDefinitionKey the quest definition this offering represents
+     * @param rarityKey          the rolled rarity tier
+     * @param scopeTargetId      the scope target, or {@code null} for shared
+     * @param completionTime     time limit after acceptance
+     * @param initialState       the persisted state
+     * @param acceptedAt         epoch millis when accepted, or {@code null} if not yet accepted
+     * @param questInstanceUUID  the quest instance created on acceptance, or {@code null}
+     * @param templateKey        the template that generated this offering, or {@code null}
+     * @param generatedDefinition the generated quest definition JSON, or {@code null}
+     */
+    public BoardOffering(@NotNull UUID offeringId,
+                         @NotNull UUID rotationId,
+                         @NotNull NamespacedKey categoryKey,
+                         int slotIndex,
+                         @NotNull NamespacedKey questDefinitionKey,
+                         @NotNull NamespacedKey rarityKey,
+                         @Nullable String scopeTargetId,
+                         @NotNull Duration completionTime,
+                         @NotNull State initialState,
+                         @Nullable Long acceptedAt,
+                         @Nullable UUID questInstanceUUID,
+                         @Nullable NamespacedKey templateKey,
+                         @Nullable String generatedDefinition) {
         this.offeringId = offeringId;
         this.rotationId = rotationId;
         this.categoryKey = categoryKey;
@@ -104,6 +168,8 @@ public class BoardOffering {
         this.rarityKey = rarityKey;
         this.scopeTargetId = scopeTargetId;
         this.completionTime = completionTime;
+        this.templateKey = templateKey;
+        this.generatedDefinition = generatedDefinition;
         this.stateMachine = new StateMachine<>(initialState, TRANSITIONS);
         this.acceptedAt = acceptedAt;
         this.questInstanceUUID = questInstanceUUID;
@@ -254,5 +320,34 @@ public class BoardOffering {
     @NotNull
     public Optional<UUID> getQuestInstanceUUID() {
         return Optional.ofNullable(questInstanceUUID);
+    }
+
+    /**
+     * Returns the template key that generated this offering.
+     *
+     * @return the template key, or empty if this is not a template-generated offering
+     */
+    @NotNull
+    public Optional<NamespacedKey> getTemplateKey() {
+        return Optional.ofNullable(templateKey);
+    }
+
+    /**
+     * Returns the generated quest definition JSON for template-generated offerings.
+     *
+     * @return the generated definition, or empty if not a template-generated offering
+     */
+    @NotNull
+    public Optional<String> getGeneratedDefinition() {
+        return Optional.ofNullable(generatedDefinition);
+    }
+
+    /**
+     * Returns whether this offering was generated from a template.
+     *
+     * @return {@code true} if templateKey is not null
+     */
+    public boolean isTemplateGenerated() {
+        return templateKey != null;
     }
 }

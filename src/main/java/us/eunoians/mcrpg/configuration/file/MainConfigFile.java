@@ -41,6 +41,10 @@ public final class MainConfigFile extends ConfigFile {
     private static final String QUEST_SAVE_TASK_HEADER = toRoutePath(CONFIGURATION_HEADER, "quest-save-task");
     public static final Route QUEST_SAVE_TASK_FREQUENCY = Route.fromString(toRoutePath(QUEST_SAVE_TASK_HEADER, "frequency"));
 
+    // Expired quest scan task fields
+    private static final String EXPIRED_QUEST_SCAN_TASK_HEADER = toRoutePath(CONFIGURATION_HEADER, "expired-quest-scan-task");
+    public static final Route EXPIRED_QUEST_SCAN_TASK_FREQUENCY = Route.fromString(toRoutePath(EXPIRED_QUEST_SCAN_TASK_HEADER, "frequency"));
+
     // Quest pending rewards fields
     private static final String QUEST_PENDING_REWARDS_HEADER = toRoutePath(CONFIGURATION_HEADER, "quest-pending-rewards");
     public static final Route QUEST_PENDING_REWARDS_EXPIRY_DAYS = Route.fromString(toRoutePath(QUEST_PENDING_REWARDS_HEADER, "expiry-days"));

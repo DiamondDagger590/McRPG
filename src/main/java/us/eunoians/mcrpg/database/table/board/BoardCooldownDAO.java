@@ -28,12 +28,12 @@ public class BoardCooldownDAO {
             return false;
         }
         try (PreparedStatement ps = connection.prepareStatement("CREATE TABLE `" + TABLE_NAME + "` (" +
-                "`cooldown_id` TEXT NOT NULL," +
-                "`cooldown_type` TEXT NOT NULL," +
-                "`scope_type` TEXT NOT NULL," +
-                "`scope_identifier` TEXT NOT NULL," +
-                "`quest_definition_key` TEXT," +
-                "`category_key` TEXT," +
+                "`cooldown_id` VARCHAR(36) NOT NULL," +
+                "`cooldown_type` VARCHAR(64) NOT NULL," +
+                "`scope_type` VARCHAR(64) NOT NULL," +
+                "`scope_identifier` VARCHAR(255) NOT NULL," +
+                "`quest_definition_key` VARCHAR(256)," +
+                "`category_key` VARCHAR(256)," +
                 "`expires_at` BIGINT NOT NULL," +
                 "PRIMARY KEY (`cooldown_id`)" +
                 ");")) {
@@ -50,7 +50,21 @@ public class BoardCooldownDAO {
         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
             return;
         }
-        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
+        if (lastStoredVersion == 0) {
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_cooldown_scope ON " + TABLE_NAME + " (scope_type, scope_identifier)",
+                    "CREATE INDEX IF NOT EXISTS idx_cooldown_expires ON " + TABLE_NAME + " (expires_at)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
+        }
     }
 
     @NotNull

@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.task.player.McRPGPlayerSafeZoneCheckTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSaveTask;
 import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.task.board.QuestBoardRotationTask;
+import us.eunoians.mcrpg.task.quest.ExpiredQuestScanTask;
 import us.eunoians.mcrpg.task.quest.QuestSaveTask;
 
 import java.util.Set;
@@ -51,6 +52,11 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     double frequency = yamlDocument.getDouble(route);
                     return new QuestSaveTask(plugin, frequency, frequency);
                 }, true);
+        ReloadableTask<ExpiredQuestScanTask> expiredQuestScanTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.EXPIRED_QUEST_SCAN_TASK_FREQUENCY,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    return new ExpiredQuestScanTask(plugin, frequency, frequency);
+                }, true);
         ReloadableTask<QuestBoardRotationTask> rotationTask = new ReloadableTask<>(fileManager.getFile(FileType.BOARD_CONFIG),
                 BoardConfigFile.ROTATION_CHECK_INTERVAL,
                 (yamlDocument, route) -> {
@@ -60,6 +66,6 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     return new QuestBoardRotationTask(plugin, frequency, frequency, time, tz);
                 }, true);
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, rotationTask));
+                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, expiredQuestScanTask, rotationTask));
     }
 }

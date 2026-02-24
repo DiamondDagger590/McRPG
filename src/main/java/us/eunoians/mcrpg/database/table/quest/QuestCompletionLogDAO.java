@@ -61,13 +61,19 @@ public class QuestCompletionLogDAO {
             return;
         }
         if (lastStoredVersion == 0) {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "CREATE INDEX idx_completion_player_def ON " + TABLE_NAME + " (player_uuid, definition_key)")) {
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_completion_player_def ON " + TABLE_NAME + " (player_uuid, definition_key)",
+                    "CREATE INDEX IF NOT EXISTS idx_qcl_player_time ON " + TABLE_NAME + " (player_uuid, completed_at)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
         }
     }
 
