@@ -13,6 +13,8 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
+import us.eunoians.mcrpg.quest.impl.scope.impl.LandQuestScopeProvider;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
@@ -26,6 +28,23 @@ public class LandsHook extends PluginHook<McRPG> implements SafeZonePluginHook {
     public LandsHook(@NotNull McRPG plugin) {
         super(plugin);
         this.landsIntegration = LandsIntegration.of(plugin);
+        registerLandQuestScopeProvider(plugin);
+    }
+
+    private void registerLandQuestScopeProvider(@NotNull McRPG plugin) {
+        plugin.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_SCOPE_PROVIDER)
+                .register(new LandQuestScopeProvider());
+    }
+
+    /**
+     * Gets the underlying {@link LandsIntegration} instance for direct API access.
+     *
+     * @return the Lands integration
+     */
+    @NotNull
+    public LandsIntegration getLandsIntegration() {
+        return landsIntegration;
     }
 
     /**

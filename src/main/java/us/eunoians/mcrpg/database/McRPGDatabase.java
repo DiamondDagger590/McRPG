@@ -13,6 +13,19 @@ import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
+import us.eunoians.mcrpg.database.table.board.BoardCooldownDAO;
+import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
+import us.eunoians.mcrpg.database.table.board.BoardRotationDAO;
+import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
+import us.eunoians.mcrpg.database.table.quest.PendingRewardDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestObjectiveContributionDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestObjectiveInstanceDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestStageInstanceDAO;
+import us.eunoians.mcrpg.database.table.quest.scope.LandQuestScopeDAO;
+import us.eunoians.mcrpg.database.table.quest.scope.PermissionQuestScopeDAO;
+import us.eunoians.mcrpg.database.table.quest.scope.SinglePlayerQuestScopeDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -82,6 +95,32 @@ public class McRPGDatabase extends Database {
                             + (PlayerExperienceExtrasDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Player Loadout Selection DAO "
                             + (PlayerLoadoutSelectionDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Instance DAO "
+                            + (QuestInstanceDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Stage Instance DAO "
+                            + (QuestStageInstanceDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Objective Instance DAO "
+                            + (QuestObjectiveInstanceDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Objective Contribution DAO "
+                            + (QuestObjectiveContributionDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Land Quest Scope DAO "
+                            + (LandQuestScopeDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Permission Quest Scope DAO "
+                            + (PermissionQuestScopeDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Single Player Quest Scope DAO "
+                            + (SinglePlayerQuestScopeDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Pending Reward DAO "
+                            + (PendingRewardDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Completion Log DAO "
+                            + (QuestCompletionLogDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Board Rotation DAO "
+                            + (BoardRotationDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Board Offering DAO "
+                            + (BoardOfferingDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Player Board State DAO "
+                            + (PlayerBoardStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Board Cooldown DAO "
+                            + (BoardCooldownDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
@@ -104,6 +143,19 @@ public class McRPGDatabase extends Database {
                     PlayerLoginTimeDAO.updateTable(connection);
                     PlayerExperienceExtrasDAO.updateTable(connection);
                     PlayerLoadoutSelectionDAO.updateTable(connection);
+                    QuestInstanceDAO.updateTable(connection);
+                    QuestStageInstanceDAO.updateTable(connection);
+                    QuestObjectiveInstanceDAO.updateTable(connection);
+                    QuestObjectiveContributionDAO.updateTable(connection);
+                    LandQuestScopeDAO.updateTable(connection);
+                    PermissionQuestScopeDAO.updateTable(connection);
+                    SinglePlayerQuestScopeDAO.updateTable(connection);
+                    PendingRewardDAO.updateTable(connection);
+                    QuestCompletionLogDAO.updateTable(connection);
+                    BoardRotationDAO.updateTable(connection);
+                    BoardOfferingDAO.updateTable(connection);
+                    PlayerBoardStateDAO.updateTable(connection);
+                    BoardCooldownDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {

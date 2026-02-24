@@ -18,11 +18,11 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.ready.HerbalismReadyData;
-import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
@@ -38,7 +38,6 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,8 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
 /**
  * This ability allows players to harvest blocks in a radius around them.
  */
-public final class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReloadableContentAbility {
+public final class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility,
+        ReloadableContentAbility, ReadyAbility {
 
     public static final NamespacedKey MASS_HARVEST_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mass_harvest");
     private final ReloadableSet<CustomBlockWrapper> VALID_BLOCK_TYPES;
@@ -72,8 +72,8 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
 
     @NotNull
     @Override
-    public Optional<ReadyData> getReadyData() {
-        return Optional.of(new HerbalismReadyData());
+    public HerbalismReadyData getReadyData() {
+        return new HerbalismReadyData();
     }
 
     /**

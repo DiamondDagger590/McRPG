@@ -48,3 +48,349 @@ experience:
     # The message to send to display as the boss bar's name when sent to a player.
     # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
     boss-bar-display-message: "<gray><skill> Lv. <gold><level></gold> - Remaining Exp <gold><remaining-experience-to-level-up></gold>"
+# Localized quest display names and objective descriptions.
+# Route pattern: quests.{namespace}.{quest_key}.display-name
+# Route pattern: quests.{namespace}.{quest_key}.objectives.{objective_key}.description
+quests:
+  mcrpg:
+    example_mining:
+      display-name: "<gold>Daily Mining Challenge"
+      objectives:
+        break_stone_blocks:
+          description: "<gray>Mine Stone Blocks"
+        break_deepslate:
+          description: "<gray>Mine Deepslate"
+    example_branching:
+      display-name: "<gold>Ore Specialist"
+      objectives:
+        break_iron_ore:
+          description: "<gray>Mine Iron Ore"
+        break_diamond_ore:
+          description: "<gray>Mine Diamond Ore"
+        break_emerald_ore:
+          description: "<gray>Mine Emerald Ore"
+    enhanced_bleed_upgrade:
+      display-name: "<red>Enhanced Bleed Mastery"
+      objectives:
+        enhanced_bleed_upgrade_objective:
+          description: "<gray>Kill Spiders"
+    enhanced_bleed_tier2:
+      display-name: "<red>Enhanced Bleed Tier 2 Mastery"
+      objectives:
+        enhanced_bleed_tier2_objective:
+          description: "<gray>Kill Spiders"
+    enhanced_bleed_tier3:
+      display-name: "<red>Enhanced Bleed Tier 3 Mastery"
+      objectives:
+        enhanced_bleed_tier3_objective:
+          description: "<gray>Kill Spiders"
+    enhanced_bleed_tier4:
+      display-name: "<red>Enhanced Bleed Tier 4 Mastery"
+      objectives:
+        enhanced_bleed_tier4_objective:
+          description: "<gray>Kill Spiders"
+    enhanced_bleed_tier5:
+      display-name: "<red>Enhanced Bleed Tier 5 Mastery"
+      objectives:
+        enhanced_bleed_tier5_objective:
+          description: "<gray>Kill Spiders"
+    deeper_wound_tier2:
+      display-name: "<red>Deeper Wound Tier 2 Mastery"
+      objectives:
+        deeper_wound_tier2_objective:
+          description: "<gray>Kill Undead Mobs"
+    deeper_wound_tier3:
+      display-name: "<red>Deeper Wound Tier 3 Mastery"
+      objectives:
+        deeper_wound_tier3_objective:
+          description: "<gray>Kill Undead Mobs"
+    deeper_wound_tier4:
+      display-name: "<red>Deeper Wound Tier 4 Mastery"
+      objectives:
+        deeper_wound_tier4_objective:
+          description: "<gray>Kill Undead Mobs"
+    deeper_wound_tier5:
+      display-name: "<red>Deeper Wound Tier 5 Mastery"
+      objectives:
+        deeper_wound_tier5_objective:
+          description: "<gray>Kill Undead Mobs"
+    vampire_tier2:
+      display-name: "<red>Vampire Tier 2 Mastery"
+      objectives:
+        vampire_tier2_objective:
+          description: "<gray>Kill Undead Mobs"
+    vampire_tier3:
+      display-name: "<red>Vampire Tier 3 Mastery"
+      objectives:
+        vampire_tier3_objective:
+          description: "<gray>Kill Undead Mobs"
+    vampire_tier4:
+      display-name: "<red>Vampire Tier 4 Mastery"
+      objectives:
+        vampire_tier4_objective:
+          description: "<gray>Kill Undead Mobs"
+    vampire_tier5:
+      display-name: "<red>Vampire Tier 5 Mastery"
+      objectives:
+        vampire_tier5_objective:
+          description: "<gray>Kill Undead Mobs"
+    serrated_strikes_tier2:
+      display-name: "<red>Serrated Strikes Tier 2 Mastery"
+      objectives:
+        serrated_strikes_tier2_objective:
+          description: "<gray>Kill Creepers and Spiders"
+    serrated_strikes_tier3:
+      display-name: "<red>Serrated Strikes Tier 3 Mastery"
+      objectives:
+        serrated_strikes_tier3_objective:
+          description: "<gray>Kill Creepers and Spiders"
+    serrated_strikes_tier4:
+      display-name: "<red>Serrated Strikes Tier 4 Mastery"
+      objectives:
+        serrated_strikes_tier4_objective:
+          description: "<gray>Kill Creepers and Spiders"
+    serrated_strikes_tier5:
+      display-name: "<red>Serrated Strikes Tier 5 Mastery"
+      objectives:
+        serrated_strikes_tier5_objective:
+          description: "<gray>Kill Creepers and Spiders"
+    rage_spike_tier2:
+      display-name: "<red>Rage Spike Tier 2 Mastery"
+      objectives:
+        rage_spike_tier2_objective:
+          description: "<gray>Kill Nether Mobs"
+    rage_spike_tier3:
+      display-name: "<red>Rage Spike Tier 3 Mastery"
+      objectives:
+        rage_spike_tier3_objective:
+          description: "<gray>Kill Nether Mobs"
+    rage_spike_tier4:
+      display-name: "<red>Rage Spike Tier 4 Mastery"
+      objectives:
+        rage_spike_tier4_objective:
+          description: "<gray>Kill Nether Mobs"
+    rage_spike_tier5:
+      display-name: "<red>Rage Spike Tier 5 Mastery"
+      objectives:
+        rage_spike_tier5_objective:
+          description: "<gray>Kill Nether Mobs"
+    its_a_triple_tier2:
+      display-name: "<aqua>It's a Triple Tier 2 Mastery"
+      objectives:
+        its_a_triple_tier2_objective:
+          description: "<gray>Mine Ore Blocks"
+    its_a_triple_tier3:
+      display-name: "<aqua>It's a Triple Tier 3 Mastery"
+      objectives:
+        its_a_triple_tier3_objective:
+          description: "<gray>Mine Ore Blocks"
+    its_a_triple_tier4:
+      display-name: "<aqua>It's a Triple Tier 4 Mastery"
+      objectives:
+        its_a_triple_tier4_objective:
+          description: "<gray>Mine Ore Blocks"
+    its_a_triple_tier5:
+      display-name: "<aqua>It's a Triple Tier 5 Mastery"
+      objectives:
+        its_a_triple_tier5_objective:
+          description: "<gray>Mine Ore Blocks"
+    remote_transfer_tier2:
+      display-name: "<aqua>Remote Transfer Tier 2 Mastery"
+      objectives:
+        remote_transfer_tier2_objective:
+          description: "<gray>Mine Ore Blocks"
+    remote_transfer_tier3:
+      display-name: "<aqua>Remote Transfer Tier 3 Mastery"
+      objectives:
+        remote_transfer_tier3_objective:
+          description: "<gray>Mine Ore Blocks"
+    remote_transfer_tier4:
+      display-name: "<aqua>Remote Transfer Tier 4 Mastery"
+      objectives:
+        remote_transfer_tier4_objective:
+          description: "<gray>Mine Ore Blocks"
+    remote_transfer_tier5:
+      display-name: "<aqua>Remote Transfer Tier 5 Mastery"
+      objectives:
+        remote_transfer_tier5_objective:
+          description: "<gray>Mine Ore Blocks"
+    ore_scanner_tier2:
+      display-name: "<aqua>Ore Scanner Tier 2 Mastery"
+      objectives:
+        ore_scanner_tier2_objective:
+          description: "<gray>Mine Ore Blocks"
+    ore_scanner_tier3:
+      display-name: "<aqua>Ore Scanner Tier 3 Mastery"
+      objectives:
+        ore_scanner_tier3_objective:
+          description: "<gray>Mine Ore Blocks"
+    ore_scanner_tier4:
+      display-name: "<aqua>Ore Scanner Tier 4 Mastery"
+      objectives:
+        ore_scanner_tier4_objective:
+          description: "<gray>Mine Ore Blocks"
+    ore_scanner_tier5:
+      display-name: "<aqua>Ore Scanner Tier 5 Mastery"
+      objectives:
+        ore_scanner_tier5_objective:
+          description: "<gray>Mine Ore Blocks"
+    heavy_swing_tier2:
+      display-name: "<dark_green>Heavy Swing Tier 2 Mastery"
+      objectives:
+        heavy_swing_tier2_objective:
+          description: "<gray>Break Logs"
+    heavy_swing_tier3:
+      display-name: "<dark_green>Heavy Swing Tier 3 Mastery"
+      objectives:
+        heavy_swing_tier3_objective:
+          description: "<gray>Break Logs"
+    heavy_swing_tier4:
+      display-name: "<dark_green>Heavy Swing Tier 4 Mastery"
+      objectives:
+        heavy_swing_tier4_objective:
+          description: "<gray>Break Logs"
+    heavy_swing_tier5:
+      display-name: "<dark_green>Heavy Swing Tier 5 Mastery"
+      objectives:
+        heavy_swing_tier5_objective:
+          description: "<gray>Break Logs"
+    dryads_gift_tier2:
+      display-name: "<dark_green>Dryad's Gift Tier 2 Mastery"
+      objectives:
+        dryads_gift_tier2_objective:
+          description: "<gray>Break Logs"
+    dryads_gift_tier3:
+      display-name: "<dark_green>Dryad's Gift Tier 3 Mastery"
+      objectives:
+        dryads_gift_tier3_objective:
+          description: "<gray>Break Logs"
+    dryads_gift_tier4:
+      display-name: "<dark_green>Dryad's Gift Tier 4 Mastery"
+      objectives:
+        dryads_gift_tier4_objective:
+          description: "<gray>Break Logs"
+    dryads_gift_tier5:
+      display-name: "<dark_green>Dryad's Gift Tier 5 Mastery"
+      objectives:
+        dryads_gift_tier5_objective:
+          description: "<gray>Break Logs"
+    nymphs_vitality_tier2:
+      display-name: "<dark_green>Nymph's Vitality Tier 2 Mastery"
+      objectives:
+        nymphs_vitality_tier2_objective:
+          description: "<gray>Break Logs"
+    nymphs_vitality_tier3:
+      display-name: "<dark_green>Nymph's Vitality Tier 3 Mastery"
+      objectives:
+        nymphs_vitality_tier3_objective:
+          description: "<gray>Break Logs"
+    nymphs_vitality_tier4:
+      display-name: "<dark_green>Nymph's Vitality Tier 4 Mastery"
+      objectives:
+        nymphs_vitality_tier4_objective:
+          description: "<gray>Break Logs"
+    nymphs_vitality_tier5:
+      display-name: "<dark_green>Nymph's Vitality Tier 5 Mastery"
+      objectives:
+        nymphs_vitality_tier5_objective:
+          description: "<gray>Break Logs"
+    verdant_surge_tier2:
+      display-name: "<green>Verdant Surge Tier 2 Mastery"
+      objectives:
+        verdant_surge_tier2_objective:
+          description: "<gray>Harvest Crops"
+    verdant_surge_tier3:
+      display-name: "<green>Verdant Surge Tier 3 Mastery"
+      objectives:
+        verdant_surge_tier3_objective:
+          description: "<gray>Harvest Crops"
+    verdant_surge_tier4:
+      display-name: "<green>Verdant Surge Tier 4 Mastery"
+      objectives:
+        verdant_surge_tier4_objective:
+          description: "<gray>Harvest Crops"
+    verdant_surge_tier5:
+      display-name: "<green>Verdant Surge Tier 5 Mastery"
+      objectives:
+        verdant_surge_tier5_objective:
+          description: "<gray>Harvest Crops"
+    mass_harvest_tier2:
+      display-name: "<green>Mass Harvest Tier 2 Mastery"
+      objectives:
+        mass_harvest_tier2_objective:
+          description: "<gray>Harvest Crops"
+    mass_harvest_tier3:
+      display-name: "<green>Mass Harvest Tier 3 Mastery"
+      objectives:
+        mass_harvest_tier3_objective:
+          description: "<gray>Harvest Crops"
+    mass_harvest_tier4:
+      display-name: "<green>Mass Harvest Tier 4 Mastery"
+      objectives:
+        mass_harvest_tier4_objective:
+          description: "<gray>Harvest Crops"
+    mass_harvest_tier5:
+      display-name: "<green>Mass Harvest Tier 5 Mastery"
+      objectives:
+        mass_harvest_tier5_objective:
+          description: "<gray>Harvest Crops"
+    deeper_wound_upgrade:
+      display-name: "<red>Deeper Wound Mastery"
+      objectives:
+        deeper_wound_upgrade_objective:
+          description: "<gray>Kill Undead Mobs"
+    vampire_upgrade:
+      display-name: "<red>Vampire Mastery"
+      objectives:
+        vampire_upgrade_objective:
+          description: "<gray>Kill Hostile Mobs"
+    serrated_strikes_upgrade:
+      display-name: "<red>Serrated Strikes Mastery"
+      objectives:
+        serrated_strikes_upgrade_objective:
+          description: "<gray>Kill Hostile Mobs"
+    rage_spike_upgrade:
+      display-name: "<red>Rage Spike Mastery"
+      objectives:
+        rage_spike_upgrade_objective:
+          description: "<gray>Kill Hostile Mobs"
+    its_a_triple_upgrade:
+      display-name: "<aqua>It's a Triple Mastery"
+      objectives:
+        its_a_triple_upgrade_objective:
+          description: "<gray>Mine Ore Blocks"
+    remote_transfer_upgrade:
+      display-name: "<aqua>Remote Transfer Mastery"
+      objectives:
+        remote_transfer_upgrade_objective:
+          description: "<gray>Mine Ore Blocks"
+    ore_scanner_upgrade:
+      display-name: "<aqua>Ore Scanner Mastery"
+      objectives:
+        ore_scanner_upgrade_objective:
+          description: "<gray>Mine Ore Blocks"
+    heavy_swing_upgrade:
+      display-name: "<dark_green>Heavy Swing Mastery"
+      objectives:
+        heavy_swing_upgrade_objective:
+          description: "<gray>Break Logs"
+    dryads_gift_upgrade:
+      display-name: "<dark_green>Dryad's Gift Mastery"
+      objectives:
+        dryads_gift_upgrade_objective:
+          description: "<gray>Break Logs"
+    nymphs_vitality_upgrade:
+      display-name: "<dark_green>Nymph's Vitality Mastery"
+      objectives:
+        nymphs_vitality_upgrade_objective:
+          description: "<gray>Break Logs"
+    verdant_surge_upgrade:
+      display-name: "<green>Verdant Surge Mastery"
+      objectives:
+        verdant_surge_upgrade_objective:
+          description: "<gray>Harvest Crops"
+    mass_harvest_upgrade:
+      display-name: "<green>Mass Harvest Mastery"
+      objectives:
+        mass_harvest_upgrade_objective:
+          description: "<gray>Harvest Crops"

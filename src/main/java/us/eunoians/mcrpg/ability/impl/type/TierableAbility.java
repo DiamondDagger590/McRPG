@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.quest.Quest;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -37,21 +37,29 @@ public interface TierableAbility extends UnlockableAbility {
      *
      * @param tier The tier to get the ability point cost of
      * @return The ability point cost for this ability to be upgraded to the provided tier.
+     * @deprecated Upgrade points are being deprecated in favor of quest-based upgrades.
+     *             Use {@link #getUpgradeQuestKey(int)} instead.
      */
+    @Deprecated
     int getUpgradeCostForTier(int tier);
+
+    /**
+     * Gets the {@link NamespacedKey} of the quest definition that must be completed to
+     * upgrade this ability to the given tier. Returns empty if no upgrade quest is
+     * configured for this tier (e.g., tier 1 typically has no quest).
+     *
+     * @param tier the target tier
+     * @return an {@link Optional} containing the quest definition key, or empty if not configured
+     */
+    @NotNull
+    default Optional<NamespacedKey> getUpgradeQuestKey(int tier) {
+        return Optional.empty();
+    }
 
     @Override
     default int getUnlockLevel() {
         return getUnlockLevelForTier(1);
     }
-
-    /**
-     * Gets the {@link Quest} needed to upgrade this ability at the provided tier.
-     * @param tier The tier to get the upgrade {@link Quest} for
-     * @return The {@link Quest} needed to upgrade this ability.
-     */
-    @NotNull
-    Quest getUpgradeQuestForTier(int tier);
 
     @NotNull
     @Override
@@ -63,7 +71,8 @@ public interface TierableAbility extends UnlockableAbility {
     }
 
     /**
-     * Gets the current tier of this ability for the provided {@link AbilityHolder}.,
+     * Gets the current tier of this ability for the provided {@link AbilityHolder}.
+     *
      * @param abilityHolder The {@link AbilityHolder} to get the current tier for.
      * @return The current tier of this ability for the provided {@link AbilityHolder}.
      */

@@ -1,0 +1,72 @@
+# A quest is composed of stages which are composed of objectives.
+# These objectives can be completed in any order, but will not progress to the next stage until
+# all objectives are completed. Once a stage is completed, the player will be issued rewards
+# if there are any and progress to the next stage. Once the quest has completed the final stage,
+# then it will be completed and the player will be issued rewards.
+#
+# Quest
+#  - Stages
+#    - Objectives
+#    - Rewards
+#  - Rewards
+# The ID of the quest
+# This is the id to be referenced in configurations and localizations.
+# To localize this quest, add localizations to any file in the `localization` folder.
+#
+# Supported localizations:
+# - quests.<quest-id>.quest-start-message
+# - quests.<quest-id>.quest-complete-message
+# - quests.<quest-id>.quest-cancel-message
+vampire-upgrade-tier-2-quest:
+  # The scope of who can take on and contribute to the quest
+  scope: SINGLE_PLAYER
+  # Configure all the different stages of the quest. If only one stage is desired, then this can be omitted
+  stages:
+    # The id of the stage.
+    # Supported localizations:
+    #
+    # quests.<quest-id>.<stage-id>.stage-start-message
+    # quests.<quest-id>.<stage-id>.stage-complete-message
+    # quests.<quest-id>.<stage-id>.stage-cancel-message
+    # quests.<quest-id>.<stage-id>.stage-objective-complete-message
+    stage-1:
+      # Configure the objectives for this stage. Any amount of objectives can be placed
+      objectives:
+        # The id of the objective. This can be set to any value and is an internal identifier.
+        kill-skeletons:
+          # The type of this objective.
+          type: MOB_KILL_OBJECTIVE
+          # For the MOB_KILL_OBJECTIVE, this is the list of mob types that can be killed for objective progression.
+          mob-types:
+            - SKELETON
+          # For the MOB_KILL_OBJECTIVE, this is the number of mobs that need to be killed for objective progression.
+          kill-count: 10
+      # The list of rewards that will be given to the player when this stage is completed.
+      rewards:
+        # Award the player skill experience as an award
+        - mcrpg-skill-experience:
+            skill: SWORDS
+            amount: 2500
+    stage-2:
+      objectives:
+        kill-skeletons:
+          type: MOB_KILL_OBJECTIVE
+          mob-types:
+            - SKELETON
+          kill-count: 25
+        kill-wither-skeletons:
+          type: MOB_KILL_OBJECTIVE
+          mob-types:
+            - WITHER_SKELETON
+          kill-count: 1
+      rewards:
+        - mcrpg-skill-experience:
+            skill: SWORDS
+            amount: 5000
+  # The rewards that will be given to the player when the quest is completed.
+  rewards:
+    # Award the player an increase to their VAMPIRE ability tier.
+    - mcrpg-tier-upgrade:
+        ability: VAMPIRE
+    # Award the player redeemable experience.
+    - mcrpg-redeemable-experience: 1000

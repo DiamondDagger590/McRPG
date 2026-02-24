@@ -138,14 +138,12 @@ public class AbilityRegistry implements Registry<Ability> {
      */
     public void unregisterAbility(@NotNull NamespacedKey abilityKey) {
         Ability ability = abilities.remove(abilityKey);
-
         if (ability == null) {
             return;
         }
 
         if (ability instanceof SkillAbility skillAbility) {
             NamespacedKey skillKey = skillAbility.getSkillKey();
-
             if (abilitiesWithSkills.containsKey(skillKey)) {
                 Set<NamespacedKey> abilities = abilitiesWithSkills.get(skillKey);
                 abilities.remove(abilityKey);
@@ -175,7 +173,6 @@ public class AbilityRegistry implements Registry<Ability> {
         if (!registered(abilityKey)) {
             throw new AbilityNotRegisteredException(abilityKey);
         }
-
         return abilities.get(abilityKey);
     }
 
@@ -276,11 +273,9 @@ public class AbilityRegistry implements Registry<Ability> {
      * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link EntityAlliedCheck EntityAlliedFunctions}.
      */
     public boolean areEntitiesAllied(@NotNull Entity entity1, @NotNull Entity entity2, @NotNull NamespacedKey namespacedKey) {
-
         if (entityAlliedFunctions.containsKey(namespacedKey)) {
             return entityAlliedFunctions.get(namespacedKey).areAllies(entity1, entity2);
         }
-
         return false;
     }
 
@@ -296,15 +291,12 @@ public class AbilityRegistry implements Registry<Ability> {
      * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link EntityAlliedCheck EntityAlliedFunctions}.
      */
     public Pair<Boolean, Optional<NamespacedKey>> areEntitiesAllied(@NotNull Entity entity1, @NotNull Entity entity2) {
-
         for (NamespacedKey namespacedKey : entityAlliedFunctions.keySet()) {
-
             //We don't care about any others, something considers them allies so stop early
             if (areEntitiesAllied(entity1, entity2, namespacedKey)) {
                 return ImmutablePair.of(true, Optional.of(namespacedKey));
             }
         }
-
         return ImmutablePair.of(false, Optional.empty());
     }
 
@@ -330,17 +322,13 @@ public class AbilityRegistry implements Registry<Ability> {
      * @return {@code true} if the two {@link Entity entities} are considered allies by any registered {@link AlliedAttackCheck EntityAlliedFunctions}.
      */
     public Pair<Boolean, Optional<NamespacedKey>> shouldAlliesBeUnableToDamage(@NotNull Entity entity1, @NotNull Entity entity2) {
-
         for (NamespacedKey namespacedKey : alliedAttackCheckFunctions.keySet()) {
-
             AlliedAttackCheck alliedAttackCheckFunction = alliedAttackCheckFunctions.get(namespacedKey);
-
             //Require the entities to currently be allies and them to be unable to damage each other
             if (areEntitiesAllied(entity1, entity2, namespacedKey) && alliedAttackCheckFunction.shouldBeUnableToDamage(entity1, entity2)) {
                 return ImmutablePair.of(true, Optional.of(namespacedKey));
             }
         }
-
         return ImmutablePair.of(false, Optional.empty());
     }
 }

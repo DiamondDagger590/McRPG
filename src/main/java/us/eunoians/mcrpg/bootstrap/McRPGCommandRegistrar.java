@@ -17,6 +17,7 @@ import org.incendo.cloud.processors.confirmation.ConfirmationManager;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.HomeGUICommand;
+import us.eunoians.mcrpg.command.board.BoardCommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
@@ -33,7 +34,14 @@ import us.eunoians.mcrpg.command.link.UnlinkChestCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
-import us.eunoians.mcrpg.command.quest.TestQuestStartCommand;
+import us.eunoians.mcrpg.command.quest.QuestCancelCommand;
+import us.eunoians.mcrpg.command.quest.QuestInfoCommand;
+import us.eunoians.mcrpg.command.quest.QuestListCommand;
+import us.eunoians.mcrpg.command.quest.QuestStartCommand;
+import us.eunoians.mcrpg.command.quest.admin.QuestAdminCompleteCommand;
+import us.eunoians.mcrpg.command.quest.admin.QuestAdminRegistryCommand;
+import us.eunoians.mcrpg.command.quest.admin.QuestAdminReloadCommand;
+import us.eunoians.mcrpg.command.quest.admin.QuestAdminSetProgressCommand;
 import us.eunoians.mcrpg.command.redeem.RedeemExperienceCommand;
 import us.eunoians.mcrpg.command.redeem.RedeemLevelsCommand;
 import us.eunoians.mcrpg.command.setting.SettingGuiCommand;
@@ -74,8 +82,18 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Debug Command
         DebugCommand.registerCommand();
 
-        // Quest Command
-        TestQuestStartCommand.registerCommand();
+        // Quest Commands
+        QuestStartCommand.registerCommand();
+        QuestCancelCommand.registerCommand();
+        QuestListCommand.registerCommand();
+        QuestInfoCommand.registerCommand();
+        QuestAdminReloadCommand.registerCommand();
+        QuestAdminCompleteCommand.registerCommand();
+        QuestAdminSetProgressCommand.registerCommand();
+        QuestAdminRegistryCommand.registerCommand();
+
+        // Board Command
+        BoardCommand.registerCommand();
 
         // Reload command
         ReloadPluginCommand.registerCommand();

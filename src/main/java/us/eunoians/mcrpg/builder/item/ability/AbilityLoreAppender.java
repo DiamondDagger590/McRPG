@@ -20,6 +20,9 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.impl.QuestInstance;
+import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
+import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -65,17 +68,27 @@ public final class AbilityLoreAppender {
                 if (abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE)
                         .map(value -> value instanceof AbilityUnlockedAttribute attribute && attribute.getContent()).orElse(true)) {
                     var abilityQuestOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
-                    // If there is an active quest
+                    QuestInstance activeUpgradeQuest = null;
                     if (abilityQuestOptional.isPresent() && abilityQuestOptional.get() instanceof AbilityUpgradeQuestAttribute questAttribute && questAttribute.shouldContentBeSaved()) {
-                        QuestManager questManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
-                        var questOptional = questManager.getActiveQuest(questAttribute.getContent());
-                        if (questOptional.isPresent()) {
-                            lore.add("");
-                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_LORE));
-                            placeholders.put("quest-progress", Methods.getProgressBarAsString(questOptional.get().getQuestProgress(), 20));
-                        } else {
-                            throw new IllegalArgumentException("The ability quest for ability " + ability.getName() + " was not found.");
+                        QuestManager questManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
+                        activeUpgradeQuest = questManager.getActiveQuestsForPlayer(mcRPGPlayer.getUUID()).stream()
+                                .filter(q -> q.getQuestUUID().equals(questAttribute.getContent()))
+                                .findFirst()
+                                .orElse(null);
+                    }
+                    if (activeUpgradeQuest != null) {
+                        long totalRequired = 0;
+                        long totalCurrent = 0;
+                        for (QuestStageInstance stage : activeUpgradeQuest.getQuestStageInstances()) {
+                            for (QuestObjectiveInstance obj : stage.getQuestObjectives()) {
+                                totalRequired += obj.getRequiredProgression();
+                                totalCurrent += obj.getCurrentProgression();
+                            }
                         }
+                        double progress = totalRequired > 0 ? (double) totalCurrent / totalRequired : 0;
+                        lore.add("");
+                        lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_LORE));
+                        placeholders.put("quest-progress", Methods.getProgressBarAsString(progress, 20));
                     } else {
                         abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).ifPresent(abilityAttribute -> {
                             if (abilityAttribute instanceof AbilityTierAttribute abilityTierAttribute) {

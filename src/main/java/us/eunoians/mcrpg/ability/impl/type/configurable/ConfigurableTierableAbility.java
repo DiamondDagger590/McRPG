@@ -8,11 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
-import us.eunoians.mcrpg.quest.Quest;
-import us.eunoians.mcrpg.quest.UpgradeQuestReward;
-import us.eunoians.mcrpg.quest.objective.EntitySlayQuestObjective;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This interface represents an {@link Ability} that has the same behavior as a {@link TierableAbility}, except
@@ -23,6 +22,9 @@ import java.util.Set;
  * in the 'all-tiers' configuration section.
  */
 public interface ConfigurableTierableAbility extends ConfigurableAbility, TierableAbility {
+
+    /** Tracks which abilities have logged an inference warning already. */
+    Set<NamespacedKey> INFERRED_UPGRADE_QUEST_WARNED = ConcurrentHashMap.newKeySet();
 
     /**
      * Gets the {@link Route} that provides the tier configuration section for this ability.
@@ -68,6 +70,7 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
         return (int) parser.getValue();
     }
 
+    @Deprecated
     @Override
     default int getUpgradeCostForTier(int tier) {
         YamlDocument yamlDocument = getYamlDocument();
@@ -83,15 +86,41 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
         return (int) parser.getValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation reads from the YAML config, checking for a tier-specific
+     * {@code upgrade-quest} key first (e.g., {@code tier-2.upgrade-quest}), then falling
+     * back to {@code all-tiers.upgrade-quest}. The value should be a
+     * {@link NamespacedKey} string (e.g., {@code "mcrpg:enhanced_bleed_t2"}).
+     */
     @NotNull
     @Override
-    default Quest getUpgradeQuestForTier(int tier) {
-        // TODO go back and finish these
-        Quest quest = new Quest(getAbilityKey().getKey());
-        quest.addQuestReward(new UpgradeQuestReward());
-        EntitySlayQuestObjective objective = new EntitySlayQuestObjective(quest, 10 * tier);
-        quest.addQuestObjective(objective);
-        return quest;
+    default Optional<NamespacedKey> getUpgradeQuestKey(int tier) {
+        YamlDocument yamlDocument = getYamlDocument();
+        Route tierRoute = Route.addTo(getRouteForTier(tier), "upgrade-quest");
+        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "upgrade-quest");
+
+        String questKeyStr = null;
+        if (yamlDocument.contains(tierRoute)) {
+            questKeyStr = yamlDocument.getString(tierRoute);
+        } else if (yamlDocument.contains(allTiersRoute)) {
+            questKeyStr = yamlDocument.getString(allTiersRoute);
+        }
+
+        if (questKeyStr != null && !questKeyStr.isEmpty()) {
+            questKeyStr = questKeyStr.replace("{tier}", String.valueOf(tier));
+            return Optional.ofNullable(NamespacedKey.fromString(questKeyStr));
+        }
+
+        NamespacedKey abilityKey = getAbilityKey();
+        NamespacedKey inferred = new NamespacedKey(abilityKey.getNamespace(), abilityKey.getKey() + "_upgrade");
+        if (INFERRED_UPGRADE_QUEST_WARNED.add(abilityKey)) {
+            McRPG.getInstance().getLogger().warning(
+                    "[TierableAbility] No upgrade-quest configured for " + abilityKey
+                            + " (tier " + tier + "). Inferring generic upgrade quest key: " + inferred);
+        }
+        return Optional.of(inferred);
     }
 
     @NotNull

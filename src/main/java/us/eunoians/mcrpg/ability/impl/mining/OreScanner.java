@@ -18,11 +18,11 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
+import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
-import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
@@ -50,7 +50,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
 public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility,
-        ReloadableContentAbility, ConfigurableSkillAbility {
+        ReloadableContentAbility, ConfigurableSkillAbility, ReadyAbility {
 
     public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ore_scanner");
     private final ReloadableOreScannerBlocks ORE_SCANNER_BLOCK_TYPES = new ReloadableOreScannerBlocks(getYamlDocument(), MiningConfigFile.ORE_SCANNER_BLOCK_TYPES);
@@ -207,8 +207,8 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
 
     @NotNull
     @Override
-    public Optional<ReadyData> getReadyData() {
-        return Optional.of(new MiningReadyData());
+    public MiningReadyData getReadyData() {
+        return new MiningReadyData();
     }
 
     @Override

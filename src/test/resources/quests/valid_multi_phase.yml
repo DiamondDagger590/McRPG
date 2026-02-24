@@ -1,0 +1,31 @@
+quests:
+  multi_phase_quest:
+    scope: mcrpg:single_player
+    phases:
+      gather_phase:
+        completion-mode: ALL
+        stages:
+          phase_0_stage:
+            key: mcrpg:phase_0_stage
+            objectives:
+              gather_ore:
+                key: mcrpg:gather_ore
+                type: mcrpg:block_break
+                required-progress: 20
+      branch_phase:
+        completion-mode: ANY
+        stages:
+          branch_a:
+            key: mcrpg:branch_a
+            objectives:
+              kill_zombies:
+                key: mcrpg:kill_zombies
+                type: mcrpg:mob_kill
+                required-progress: 5
+          branch_b:
+            key: mcrpg:branch_b
+            objectives:
+              mine_more:
+                key: mcrpg:mine_more
+                type: mcrpg:block_break
+                required-progress: 15

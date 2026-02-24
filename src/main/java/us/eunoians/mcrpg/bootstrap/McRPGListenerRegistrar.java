@@ -30,8 +30,15 @@ import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerPickupItemListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
+import us.eunoians.mcrpg.listener.quest.AbilityUpgradeQuestListener;
+import us.eunoians.mcrpg.listener.quest.BlockBreakQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.MobKillQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.QuestCancelListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestPhaseCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestStageCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestStartListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
@@ -78,8 +85,15 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new OnAbilityPutOnCooldownListener(), plugin);
 
         // Quest Listeners
+        Bukkit.getPluginManager().registerEvents(new QuestStartListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestCompleteListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestCancelListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestObjectiveCompleteListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestStageCompleteListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestPhaseCompleteListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityUpgradeQuestListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakQuestProgressListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new MobKillQuestProgressListener(), plugin);
 
         // World listener
         Bukkit.getPluginManager().registerEvents(new FakeBlockBreakListener(), plugin);

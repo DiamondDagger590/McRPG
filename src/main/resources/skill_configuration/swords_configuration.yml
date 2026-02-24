@@ -156,14 +156,8 @@ ability-configuration:
         enhanced-bleed-base-damage-increase: 1
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SPIDER
-              - CAVE_SPIDER
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:enhanced_bleed_upgrade"
       tier-1:
         unlock-level: 50
         # The chance of Enhanced Bleed activating bonus damage whenever Bleed is inflicted (on top of the base damage increase)
@@ -172,20 +166,24 @@ ability-configuration:
         enhanced-bleed-damage-boost: 1
       tier-2:
         unlock-level: 125
+        upgrade-quest: "mcrpg:enhanced_bleed_tier2"
         enhanced-bleed-activation-chance: 30.0
         enhanced-bleed-damage-boost: 1
       tier-3:
         unlock-level: 250
+        upgrade-quest: "mcrpg:enhanced_bleed_tier3"
         enhanced-bleed-activation-chance: 35.0
         enhanced-bleed-damage-boost: 2
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 375
+        upgrade-quest: "mcrpg:enhanced_bleed_tier4"
         enhanced-bleed-activation-chance: 55.0
         enhanced-bleed-damage-boost: 2
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 500
+        upgrade-quest: "mcrpg:enhanced_bleed_tier5"
         enhanced-bleed-base-damage-increase: 2
         enhanced-bleed-activation-chance: 70.0
         enhanced-bleed-damage-boost: 2
@@ -203,13 +201,8 @@ ability-configuration:
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SKELETON
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:deeper_wound_upgrade"
       tier-1:
         unlock-level: 150
         # The chance of Deeper Wound activating bonus duration whenever Bleed is inflicted
@@ -218,20 +211,24 @@ ability-configuration:
         deeper-wound-cycle-increase: 2
       tier-2:
         unlock-level: 275
+        upgrade-quest: "mcrpg:deeper_wound_tier2"
         deeper-wound-activation-chance: 30.0
         deeper-wound-cycle-increase: 2
       tier-3:
         unlock-level: 425
+        upgrade-quest: "mcrpg:deeper_wound_tier3"
         deeper-wound-activation-chance: 40.0
         deeper-wound-cycle-increase: 3
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 575
+        upgrade-quest: "mcrpg:deeper_wound_tier4"
         deeper-wound-activation-chance: 50.0
         deeper-wound-cycle-increase: 6
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 700
+        upgrade-quest: "mcrpg:deeper_wound_tier5"
         deeper-wound-activation-chance: 60.0
         deeper-wound-cycle-increase: 8
   vampire:
@@ -248,14 +245,8 @@ ability-configuration:
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - ZOMBIE
-              - DROWNED
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:vampire_upgrade"
       tier-1:
         unlock-level: 250
         # The chance of Vampire activating whenever bleed is inflicted
@@ -264,20 +255,24 @@ ability-configuration:
         amount-to-heal: 1
       tier-2:
         unlock-level: 400
+        upgrade-quest: "mcrpg:vampire_tier2"
         vampire-activation-chance: 30.0
         amount-to-heal: 1
       tier-3:
         unlock-level: 550
+        upgrade-quest: "mcrpg:vampire_tier3"
         vampire-activation-chance: 50.0
         amount-to-heal: 1
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 700
+        upgrade-quest: "mcrpg:vampire_tier4"
         vampire-activation-chance: 80.0
         amount-to-heal: 1
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 850
+        upgrade-quest: "mcrpg:vampire_tier5"
         vampire-activation-chance: 100.0
         amount-to-heal: 1
   serrated-strikes:
@@ -288,18 +283,12 @@ ability-configuration:
       #Accepted keys are as follows:
       # - upgrade-point-cost: integer
       # - unlock-level: integer
-      # - upgrade-quest: quest
+      # - upgrade-quest: quest definition key (e.g. "mcrpg:serrated_strikes_t2")
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - ZOMBIE
-              - DROWNED
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:serrated_strikes_upgrade"
       tier-1:
         unlock-level: 1
         cooldown: 240
@@ -307,22 +296,26 @@ ability-configuration:
         bleed-activation-boost: 5.0
       tier-2:
         unlock-level: 2
+        upgrade-quest: "mcrpg:serrated_strikes_tier2"
         cooldown: 220
         duration: 3
         bleed-activation-boost: 7.5
       tier-3:
         unlock-level: 3
+        upgrade-quest: "mcrpg:serrated_strikes_tier3"
         cooldown: 200
         duration: 5
         bleed-activation-boost: 10.0
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 700
+        upgrade-quest: "mcrpg:serrated_strikes_tier4"
         cooldown: 160
         duration: 7
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 850
+        upgrade-quest: "mcrpg:serrated_strikes_tier5"
         cooldown: 120
         duration: 10
   rage-spike:
@@ -333,32 +326,30 @@ ability-configuration:
       #Accepted keys are as follows:
       # - upgrade-point-cost: integer
       # - unlock-level: integer
-      # - upgrade-quest: quest
+      # - upgrade-quest: quest definition key (e.g. "mcrpg:rage_spike_t2")
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - ZOMBIE
-              - DROWNED
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:rage_spike_upgrade"
       tier-1:
         unlock-level: 1
         cooldown: 240
       tier-2:
         unlock-level: 2
+        upgrade-quest: "mcrpg:rage_spike_tier2"
         cooldown: 220
       tier-3:
         unlock-level: 3
+        upgrade-quest: "mcrpg:rage_spike_tier3"
         cooldown: 200
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 700
+        upgrade-quest: "mcrpg:rage_spike_tier4"
         cooldown: 160
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 850
+        upgrade-quest: "mcrpg:rage_spike_tier5"
         cooldown: 120

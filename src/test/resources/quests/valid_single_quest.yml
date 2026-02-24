@@ -1,0 +1,14 @@
+quests:
+  test_single_quest:
+    scope: mcrpg:single_player
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          test_stage:
+            key: mcrpg:test_stage
+            objectives:
+              test_objective:
+                key: mcrpg:test_objective
+                type: mcrpg:block_break
+                required-progress: 10

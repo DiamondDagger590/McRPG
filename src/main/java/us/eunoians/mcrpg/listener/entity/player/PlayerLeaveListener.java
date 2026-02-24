@@ -8,6 +8,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.task.player.McRPGPlayerUnloadTask;
@@ -26,6 +28,13 @@ public class PlayerLeaveListener implements Listener {
             McRPGPlayer mcRPGPlayer = playerManager.getPlayer(player.getUniqueId()).get();
             new McRPGPlayerUnloadTask(McRPG.getInstance(), mcRPGPlayer).runTask();
         }
+
+        QuestManager questManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
+        for (QuestInstance quest : questManager.getActiveQuestsForPlayer(player.getUniqueId())) {
+            questManager.saveQuestAsync(quest);
+        }
+        questManager.deindexPlayer(player.getUniqueId());
+
         McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.LUNAR_CLIENT)
                 .ifPresent(lunarClientHook -> lunarClientHook.clearCooldowns(player.getUniqueId()));
     }

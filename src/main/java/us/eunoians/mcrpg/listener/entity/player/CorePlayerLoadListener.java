@@ -37,7 +37,7 @@ public class CorePlayerLoadListener implements Listener {
                     var cooldownAttributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY);
                     if (cooldownAttributeOptional.isPresent()) {
                         AbilityCooldownAttribute attribute = (AbilityCooldownAttribute) cooldownAttributeOptional.get();
-                        int diff = (int) (attribute.getContent() - System.currentTimeMillis());
+                        int diff = (int) (attribute.getContent() - McRPG.getInstance().getTimeProvider().now().toEpochMilli());
                         if (attribute.shouldContentBeSaved() && diff > 0) {
                             long remainingSeconds = diff / 1000;
                             skillHolder.startCooldownExpireNotificationTimer(abilityKey, remainingSeconds);

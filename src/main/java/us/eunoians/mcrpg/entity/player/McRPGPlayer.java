@@ -25,11 +25,11 @@ import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
+import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.event.entity.player.PlayerSafeZoneStateChangeEvent;
 import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
-import us.eunoians.mcrpg.quest.Quest;
-import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
@@ -37,6 +37,7 @@ import us.eunoians.mcrpg.setting.McRPGSetting;
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -151,25 +152,22 @@ public class McRPGPlayer extends CorePlayer {
     }
 
     /**
-     * Starts an upgrade quest for the provided {@link TierableAbility}.
+     * Starts an upgrade quest for the provided {@link TierableAbility}. Looks up the
+     * quest definition for the next tier and delegates to
+     * {@link us.eunoians.mcrpg.quest.QuestManager#startQuest}. On success, the
+     * {@link us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute} is set
+     * on the player's ability data.
      *
-     * @param tierableAbility The {@link TierableAbility} to start an upgrade quest for.
+     * @param tierableAbility the tierable ability to start an upgrade quest for
      */
     public void startUpgradeQuest(@NotNull TierableAbility tierableAbility) {
-        var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
-
-        if (abilityDataOptional.isEmpty() || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE).isEmpty()
-                || abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).isEmpty()) {
-            throw new IllegalArgumentException("Expected ability quest data for ability " + tierableAbility.getDisplayName(this));
-        }
-        int tier = (int) abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent() + 1;
-        Quest quest = tierableAbility.getUpgradeQuestForTier(tier);
-        abilityDataOptional.get().addAttribute(new AbilityUpgradeQuestAttribute(quest.getUUID()));
-        QuestManager questManager = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
-        skillHolder.setUpgradePoints(skillHolder.getUpgradePoints() - tierableAbility.getUpgradeCostForTier(tier));
-        questManager.addActiveQuest(quest);
-        questManager.addHolderToQuest(questHolder, quest);
-        quest.startQuest();
+        int nextTier = tierableAbility.getCurrentAbilityTier(skillHolder) + 1;
+        QuestManager questManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
+        questManager.resolveUpgradeQuestDefinition(tierableAbility, nextTier).ifPresent(definition ->
+                questManager.startQuest(definition, getUUID(), Map.of("tier", nextTier), new AbilityUpgradeQuestSource()).ifPresent(instance ->
+                        skillHolder.getAbilityData(tierableAbility).ifPresent(abilityData ->
+                                abilityData.addAttribute(new AbilityUpgradeQuestAttribute(instance.getQuestUUID())))));
     }
 
     /**
@@ -266,7 +264,7 @@ public class McRPGPlayer extends CorePlayer {
      */
     public void savePlayerLogoutTime(@NotNull Connection connection) {
         FailSafeTransaction lastLogoutTransaction = new FailSafeTransaction(connection);
-        Instant logoutTime = Instant.now();
+        Instant logoutTime = McRPG.getInstance().getTimeProvider().now();
         lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLastLogoutTime(connection, this.getUUID(), logoutTime));
         lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLastSeenTime(connection, this.getUUID(), logoutTime));
         lastLogoutTransaction.addAll(PlayerLoginTimeDAO.saveLoggedOutInSafeZone(connection, this.getUUID(), this.isStandingInSafeZone(true)));

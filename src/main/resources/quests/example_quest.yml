@@ -1,0 +1,107 @@
+# Example quest definitions for McRPG.
+#
+# All .yml files in this directory (and subdirectories) are loaded automatically.
+# Organize files however you like — quest identity comes from the key, not the file name.
+#
+# Keys use the namespace:name format (e.g. mcrpg:daily_mining).
+# If no namespace is provided, "mcrpg" is assumed.
+#
+# Duration formats: 24h, 7d, 1d12h30m, 3600 (plain seconds)
+# Completion modes: ALL (every stage required), ANY (first stage to finish advances)
+#
+# Phases, stages, objectives, and rewards use named map keys for readability.
+# The map keys are labels only — identity comes from 'key:' fields on stages/objectives.
+
+quests:
+  mcrpg:example_mining:
+    scope: mcrpg:single_player
+    expiration: 24h
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 500
+    phases:
+      mine_blocks:
+        completion-mode: ALL
+        stages:
+          mine_stone:
+            key: mcrpg:mine_stone
+            objectives:
+              break_stone:
+                key: mcrpg:break_stone_blocks
+                type: mcrpg:block_break
+                required-progress: 64
+                config:
+                  blocks:
+                    - STONE
+                    - COBBLESTONE
+                    - ANDESITE
+              break_deepslate:
+                key: mcrpg:break_deepslate
+                type: mcrpg:block_break
+                required-progress: 32
+                config:
+                  blocks:
+                    - DEEPSLATE
+
+  mcrpg:example_branching:
+    scope: mcrpg:single_player
+    expiration: 7d
+    rewards:
+      diamond_reward:
+        type: mcrpg:command
+        commands:
+          - "give {player} diamond 3"
+    phases:
+      # Phase 0: Mine some basic ores (all objectives required)
+      mine_basics:
+        completion-mode: ALL
+        stages:
+          mine_iron:
+            key: mcrpg:mine_iron
+            objectives:
+              break_iron:
+                key: mcrpg:break_iron_ore
+                type: mcrpg:block_break
+                required-progress: 16
+                config:
+                  blocks:
+                    - IRON_ORE
+                    - DEEPSLATE_IRON_ORE
+      # Phase 1: Choose your specialty (ANY = branching, complete either stage)
+      choose_specialty:
+        completion-mode: ANY
+        stages:
+          mine_diamonds:
+            key: mcrpg:mine_diamonds
+            rewards:
+              diamond_xp:
+                type: mcrpg:experience
+                skill: MINING
+                amount: 250
+            objectives:
+              break_diamond:
+                key: mcrpg:break_diamond_ore
+                type: mcrpg:block_break
+                required-progress: 8
+                config:
+                  blocks:
+                    - DIAMOND_ORE
+                    - DEEPSLATE_DIAMOND_ORE
+          mine_emeralds:
+            key: mcrpg:mine_emeralds
+            rewards:
+              emerald_xp:
+                type: mcrpg:experience
+                skill: MINING
+                amount: 250
+            objectives:
+              break_emerald:
+                key: mcrpg:break_emerald_ore
+                type: mcrpg:block_break
+                required-progress: 8
+                config:
+                  blocks:
+                    - EMERALD_ORE
+                    - DEEPSLATE_EMERALD_ORE

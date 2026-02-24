@@ -37,6 +37,19 @@ public final class MainConfigFile extends ConfigFile {
     // Save task fields
     public static final Route SAVE_TASK_FREQUENCY = Route.fromString(toRoutePath(SAVE_TASK_HEADER, "frequency"));
 
+    // Quest save task fields
+    private static final String QUEST_SAVE_TASK_HEADER = toRoutePath(CONFIGURATION_HEADER, "quest-save-task");
+    public static final Route QUEST_SAVE_TASK_FREQUENCY = Route.fromString(toRoutePath(QUEST_SAVE_TASK_HEADER, "frequency"));
+
+    // Quest pending rewards fields
+    private static final String QUEST_PENDING_REWARDS_HEADER = toRoutePath(CONFIGURATION_HEADER, "quest-pending-rewards");
+    public static final Route QUEST_PENDING_REWARDS_EXPIRY_DAYS = Route.fromString(toRoutePath(QUEST_PENDING_REWARDS_HEADER, "expiry-days"));
+
+    // Quest cache fields
+    private static final String QUEST_CACHE_HEADER = toRoutePath(CONFIGURATION_HEADER, "quest-cache");
+    public static final Route QUEST_CACHE_FINISHED_KEEP_ALIVE_MINUTES = Route.fromString(toRoutePath(QUEST_CACHE_HEADER, "finished-keep-alive-minutes"));
+    public static final Route QUEST_CACHE_FINISHED_OFFLINE_TTL_MINUTES = Route.fromString(toRoutePath(QUEST_CACHE_HEADER, "finished-offline-ttl-minutes"));
+
     // Experience fields
     public static final Route MODIFY_MOB_SPAWN_EXPERIENCE_CONFIGURATION = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, "modify-mob-spawn-experience"));
     public static final Route MAX_DAMAGE_CAP_TO_AWARD_EXPERIENCE = Route.fromString(toRoutePath(EXPERIENCE_CONFIGURATION_HEADER, "max-damage-cap-to-award-exp"));

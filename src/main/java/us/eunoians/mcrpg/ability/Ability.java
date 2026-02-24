@@ -5,14 +5,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -119,19 +117,6 @@ public interface Ability extends McRPGContent {
      * @return {@code true} if this ability is passive.
      */
     boolean isPassive();
-
-    /**
-     * Gets the {@link ReadyData} that is used whenever this ability enters a "ready" state for
-     * an {@link AbilityHolder}.
-     * <p>
-     * This should return an empty {@link Optional} whenever this ability doesn't actually ready.
-     *
-     * @return An {@link Optional} containing the {@link ReadyData} that is used whenever this ability
-     * enters a "ready" state, or an empty {@link Optional} if this ability isn't one that supports the ready
-     * mechanic.
-     */
-    @NotNull
-    Optional<ReadyData> getReadyData();
 
     /**
      * Gets the {@link AbilityItemBuilder} for this ability based off the provided

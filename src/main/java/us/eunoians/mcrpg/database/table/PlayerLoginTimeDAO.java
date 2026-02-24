@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
+import us.eunoians.mcrpg.McRPG;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.jetbrains.annotations.NotNull;
 
@@ -370,7 +371,7 @@ public class PlayerLoginTimeDAO {
                     "VALUES (?, ?, ?, ?, ?) " +
                     "ON CONFLICT(uuid) DO UPDATE SET " +
                     "  logged_out_in_safezone = excluded.logged_out_in_safezone");
-            Instant now = Instant.now();
+            Instant now = McRPG.getInstance().getTimeProvider().now();
             preparedStatement.setString(1, uuid.toString());
             preparedStatement.setTimestamp(2, Timestamp.from(now));
             preparedStatement.setTimestamp(3, Timestamp.from(now));

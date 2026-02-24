@@ -11,10 +11,11 @@ import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponent;
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponentAttribute;
 import us.eunoians.mcrpg.ability.component.readyable.EventReadyableComponent;
 import us.eunoians.mcrpg.ability.component.readyable.EventReadyableComponentAttribute;
-import us.eunoians.mcrpg.ability.ready.ReadyData;
+import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.exception.ability.EventNotRegisteredForActivationException;
 import us.eunoians.mcrpg.exception.ability.EventNotRegisteredForReadyingException;
+import us.eunoians.mcrpg.exception.ready.AbilityNotValidToReadyException;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -126,11 +127,9 @@ public abstract class BaseAbility implements Ability {
      */
     @NotNull
     public Optional<EventActivatableComponent> checkIfComponentFailsActivation(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
         if (!canEventActivateAbility(event)) {
             throw new EventNotRegisteredForActivationException(event, this);
         }
-
         EventActivatableComponent returnComponent = null;
         for (EventActivatableComponentAttribute eventActivatableComponentAttribute : getActivatingComponents(event.getClass())) {
             EventActivatableComponent eventActivatableComponent = eventActivatableComponentAttribute.abilityComponent();
@@ -140,7 +139,6 @@ public abstract class BaseAbility implements Ability {
                 break;
             }
         }
-
         return Optional.ofNullable(returnComponent);
     }
 
@@ -150,8 +148,8 @@ public abstract class BaseAbility implements Ability {
      * These {@link EventReadyableComponent} are processed in order of priority and the first failure will be returned in the
      * {@link Optional}. If there are no failures, the {@link Optional} returned will be empty.
      * <p>
-     * Additionally, if {@link #canEventReadyAbility(Event)} (Event)} returns {@code false}, then a {@link EventNotRegisteredForReadyingException} will
-     * be fired.
+     * Additionally, if {@link #canEventReadyAbility(Event)}returns {@code false}, then a {@link EventNotRegisteredForReadyingException}
+     * will be fired.
      *
      * @param abilityHolder The {@link AbilityHolder} to check against.
      * @param event         The {@link Event} to use for checking readying components.
@@ -159,16 +157,15 @@ public abstract class BaseAbility implements Ability {
      */
     @NotNull
     public Optional<EventReadyableComponent> checkIfComponentFailsReady(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
         if (!canEventReadyAbility(event)) {
             throw new EventNotRegisteredForReadyingException(event, this);
+        } else if (!(this instanceof ReadyAbility)) {
+            throw new AbilityNotValidToReadyException(abilityHolder, this);
         }
-
         EventReadyableComponent returnComponent = null;
-        Optional<ReadyData> readyData = getReadyData();
         for (EventReadyableComponentAttribute eventReadyableComponentAttribute : getReadyComponents(event.getClass())) {
             EventReadyableComponent eventReadyableComponent = eventReadyableComponentAttribute.abilityComponent();
-            if (!isAbilityEnabled() || !eventReadyableComponent.shouldReady(abilityHolder, event) || readyData.isEmpty()) {
+            if (!isAbilityEnabled() || !eventReadyableComponent.shouldReady(abilityHolder, event)) {
                 returnComponent = eventReadyableComponent;
                 break;
             }
@@ -221,18 +218,12 @@ public abstract class BaseAbility implements Ability {
         sortReadyComponents();
     }
 
-    @NotNull
-    @Override
-    public Optional<ReadyData> getReadyData() {
-        return Optional.empty();
-    }
-
     /**
      * Gets a {@link List} of all {@link EventActivatableComponentAttribute}s that are registered for the provided
-     * {@link Event} cass.
+     * {@link Event} class.
      * @param clazz The {@link Event} class to get the {@link EventActivatableComponentAttribute} list of
      * @return A {@link List} of all {@link EventActivatableComponentAttribute}s that are registered for the provided
-     * {@link Event} cass.
+     * {@link Event} class.
      */
     private List<EventActivatableComponentAttribute> getActivatingComponents(Class<? extends Event> clazz) {
         return activatingAttributes.getOrDefault(clazz, new ArrayList<>());
@@ -240,10 +231,10 @@ public abstract class BaseAbility implements Ability {
 
     /**
      * Gets a {@link List} of all {@link EventReadyableComponentAttribute}s that are registered for the provided
-     * {@link Event} cass.
+     * {@link Event} class.
      * @param clazz The {@link Event} class to get the {@link EventReadyableComponentAttribute} list of
      * @return A {@link List} of all {@link EventReadyableComponentAttribute}s that are registered for the provided
-     * {@link Event} cass.
+     * {@link Event} class.
      */
     private List<EventReadyableComponentAttribute> getReadyComponents(Class<? extends Event> clazz) {
         return readyAttributes.getOrDefault(clazz, new ArrayList<>());

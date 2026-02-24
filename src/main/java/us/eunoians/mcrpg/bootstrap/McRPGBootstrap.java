@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.bootstrap.BootstrapContext;
 import com.diamonddagger590.mccore.bootstrap.CoreBootstrap;
 import com.diamonddagger590.mccore.bootstrap.StartupProfile;
 import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
@@ -14,6 +15,7 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
@@ -23,6 +25,16 @@ import us.eunoians.mcrpg.external.glowing.GlowingManager;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.QuestBoardManager;
+import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
+import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
+import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
+import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
+import us.eunoians.mcrpg.quest.impl.QuestInstance;
+import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
+import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
+import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
@@ -57,12 +69,22 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new AbilityRegistry(mcRPG));
         registryAccess.register(new AbilityAttributeRegistry());
         registryAccess.register(new SkillRegistry());
+        registryAccess.register(new QuestDefinitionRegistry());
+        registryAccess.register(new QuestScopeProviderRegistry());
+        registryAccess.register(new QuestObjectiveTypeRegistry());
+        registryAccess.register(new QuestRewardTypeRegistry());
+        registryAccess.register(new QuestSourceRegistry());
+        registryAccess.register(new QuestRarityRegistry());
+        registryAccess.register(new BoardSlotCategoryRegistry());
+        registryAccess.register(new RefreshTypeRegistry());
+        registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
+        registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new DisplayManager(mcRPG));
-        registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new QuestBoardManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new BleedManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new WorldManager(mcRPG));
         registryAccess.register(new ExperienceModifierRegistry());
@@ -101,6 +123,17 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
+                }
+                if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.QUEST)) {
+                    try (Connection connection = database.getConnection()) {
+                        BatchTransaction questBatch = new BatchTransaction(connection);
+                        for (QuestInstance quest : registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).getActiveQuests()) {
+                            questBatch.addAll(QuestInstanceDAO.saveFullQuestTree(connection, quest));
+                        }
+                        questBatch.executeTransaction();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
                 database.shutdown();
             }

@@ -8,6 +8,13 @@ import com.diamonddagger590.mccore.util.TimeProvider;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
+import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
+import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
+import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScopeProvider;
+import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -39,8 +46,18 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
 
     @Override
     public void start(@NotNull StartupProfile startupProfile) {
-        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(FileManager.class));
-        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(McRPGLocalizationManager.class));
+        RegistryAccess registryAccess = RegistryAccess.registryAccess();
+        registryAccess.registry(RegistryKey.MANAGER).register(mock(FileManager.class));
+        registryAccess.registry(RegistryKey.MANAGER).register(mock(McRPGLocalizationManager.class));
+
+        registryAccess.register(new QuestDefinitionRegistry());
+        QuestScopeProviderRegistry scopeProviderRegistry = new QuestScopeProviderRegistry();
+        registryAccess.register(scopeProviderRegistry);
+        scopeProviderRegistry.register(new SinglePlayerQuestScopeProvider());
+        scopeProviderRegistry.register(new PermissionQuestScopeProvider());
+        registryAccess.register(new QuestObjectiveTypeRegistry());
+        registryAccess.register(new QuestRewardTypeRegistry());
+        registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
     }
 
     @Override

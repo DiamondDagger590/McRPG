@@ -1,0 +1,1077 @@
+# Tier-specific override quests for tierable abilities (tiers 2–5).
+#
+# These quests are ONCE-per-tier and use the fixed-tier reward type:
+#   type: mcrpg:ability_upgrade
+#
+# They are intended to be referenced via ability config keys:
+#   tier-2.upgrade-quest: "mcrpg:<ability>_tier2"
+#   ...
+#
+# The generic `*_upgrade` quests remain as a fallback (e.g. for future tiers).
+
+quests:
+  # ────────────────────────────────────────────
+  #  Swords
+  # ────────────────────────────────────────────
+  mcrpg:enhanced_bleed_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:enhanced_bleed_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:enhanced_bleed_tier2_objective
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config: { entities: [SPIDER, CAVE_SPIDER] }
+  mcrpg:enhanced_bleed_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:enhanced_bleed_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:enhanced_bleed_tier3_objective
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config: { entities: [SPIDER, CAVE_SPIDER] }
+  mcrpg:enhanced_bleed_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:enhanced_bleed_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:enhanced_bleed_tier4_objective
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config: { entities: [SPIDER, CAVE_SPIDER] }
+  mcrpg:enhanced_bleed_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:enhanced_bleed_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:enhanced_bleed_tier5_objective
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config: { entities: [SPIDER, CAVE_SPIDER] }
+
+  mcrpg:deeper_wound_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:deeper_wound_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:deeper_wound_tier2_objective
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config: { entities: [SKELETON, STRAY] }
+  mcrpg:deeper_wound_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:deeper_wound_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:deeper_wound_tier3_objective
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config: { entities: [SKELETON, STRAY] }
+  mcrpg:deeper_wound_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:deeper_wound_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:deeper_wound_tier4_objective
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config: { entities: [SKELETON, STRAY] }
+  mcrpg:deeper_wound_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:deeper_wound_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:deeper_wound_tier5_objective
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config: { entities: [SKELETON, STRAY] }
+
+  mcrpg:vampire_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vampire_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:vampire_tier2_objective
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config: { entities: [ZOMBIE, DROWNED, HUSK, ZOMBIE_VILLAGER] }
+  mcrpg:vampire_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vampire_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:vampire_tier3_objective
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config: { entities: [ZOMBIE, DROWNED, HUSK, ZOMBIE_VILLAGER] }
+  mcrpg:vampire_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vampire_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:vampire_tier4_objective
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config: { entities: [ZOMBIE, DROWNED, HUSK, ZOMBIE_VILLAGER] }
+  mcrpg:vampire_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vampire_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:vampire_tier5_objective
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config: { entities: [ZOMBIE, DROWNED, HUSK, ZOMBIE_VILLAGER] }
+
+  mcrpg:serrated_strikes_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:serrated_strikes
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:serrated_strikes_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:serrated_strikes_tier2_objective
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config: { entities: [CREEPER, SPIDER] }
+  mcrpg:serrated_strikes_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:serrated_strikes
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:serrated_strikes_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:serrated_strikes_tier3_objective
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config: { entities: [CREEPER, SPIDER] }
+  mcrpg:serrated_strikes_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:serrated_strikes
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:serrated_strikes_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:serrated_strikes_tier4_objective
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config: { entities: [CREEPER, SPIDER] }
+  mcrpg:serrated_strikes_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:serrated_strikes
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:serrated_strikes_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:serrated_strikes_tier5_objective
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config: { entities: [CREEPER, SPIDER] }
+
+  mcrpg:rage_spike_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:rage_spike
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:rage_spike_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:rage_spike_tier2_objective
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config: { entities: [ENDERMAN, PIGLIN, ZOMBIFIED_PIGLIN] }
+  mcrpg:rage_spike_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:rage_spike
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:rage_spike_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:rage_spike_tier3_objective
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config: { entities: [ENDERMAN, PIGLIN, ZOMBIFIED_PIGLIN] }
+  mcrpg:rage_spike_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:rage_spike
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:rage_spike_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:rage_spike_tier4_objective
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config: { entities: [ENDERMAN, PIGLIN, ZOMBIFIED_PIGLIN] }
+  mcrpg:rage_spike_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:rage_spike
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:rage_spike_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:rage_spike_tier5_objective
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config: { entities: [ENDERMAN, PIGLIN, ZOMBIFIED_PIGLIN] }
+
+  # ────────────────────────────────────────────
+  #  Mining
+  # ────────────────────────────────────────────
+  mcrpg:its_a_triple_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:its_a_triple
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:its_a_triple_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:its_a_triple_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [COAL_ORE, DEEPSLATE_COAL_ORE, COPPER_ORE, DEEPSLATE_COPPER_ORE] }
+  mcrpg:its_a_triple_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:its_a_triple
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:its_a_triple_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:its_a_triple_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [COAL_ORE, DEEPSLATE_COAL_ORE, COPPER_ORE, DEEPSLATE_COPPER_ORE] }
+  mcrpg:its_a_triple_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:its_a_triple
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:its_a_triple_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:its_a_triple_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [COAL_ORE, DEEPSLATE_COAL_ORE, COPPER_ORE, DEEPSLATE_COPPER_ORE] }
+  mcrpg:its_a_triple_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:its_a_triple
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:its_a_triple_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:its_a_triple_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [COAL_ORE, DEEPSLATE_COAL_ORE, COPPER_ORE, DEEPSLATE_COPPER_ORE] }
+
+  mcrpg:remote_transfer_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:remote_transfer
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:remote_transfer_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:remote_transfer_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [IRON_ORE, DEEPSLATE_IRON_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE] }
+  mcrpg:remote_transfer_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:remote_transfer
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:remote_transfer_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:remote_transfer_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [IRON_ORE, DEEPSLATE_IRON_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE] }
+  mcrpg:remote_transfer_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:remote_transfer
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:remote_transfer_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:remote_transfer_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [IRON_ORE, DEEPSLATE_IRON_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE] }
+  mcrpg:remote_transfer_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:remote_transfer
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:remote_transfer_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:remote_transfer_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [IRON_ORE, DEEPSLATE_IRON_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE] }
+
+  mcrpg:ore_scanner_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:ore_scanner
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:ore_scanner_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:ore_scanner_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, DEEPSLATE_EMERALD_ORE] }
+  mcrpg:ore_scanner_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:ore_scanner
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:ore_scanner_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:ore_scanner_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, DEEPSLATE_EMERALD_ORE] }
+  mcrpg:ore_scanner_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:ore_scanner
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:ore_scanner_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:ore_scanner_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, DEEPSLATE_EMERALD_ORE] }
+  mcrpg:ore_scanner_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:ore_scanner
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:ore_scanner_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:ore_scanner_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, DEEPSLATE_EMERALD_ORE] }
+
+  # ────────────────────────────────────────────
+  #  Woodcutting
+  # ────────────────────────────────────────────
+  mcrpg:heavy_swing_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:heavy_swing
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:heavy_swing_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:heavy_swing_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:heavy_swing_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:heavy_swing
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:heavy_swing_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:heavy_swing_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:heavy_swing_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:heavy_swing
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:heavy_swing_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:heavy_swing_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:heavy_swing_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:heavy_swing
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:heavy_swing_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:heavy_swing_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+
+  mcrpg:dryads_gift_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:dryads_gift
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dryads_gift_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:dryads_gift_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:dryads_gift_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:dryads_gift
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dryads_gift_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:dryads_gift_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:dryads_gift_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:dryads_gift
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dryads_gift_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:dryads_gift_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:dryads_gift_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:dryads_gift
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dryads_gift_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:dryads_gift_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+
+  mcrpg:nymphs_vitality_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:nymphs_vitality
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:nymphs_vitality_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:nymphs_vitality_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:nymphs_vitality_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:nymphs_vitality
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:nymphs_vitality_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:nymphs_vitality_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:nymphs_vitality_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:nymphs_vitality
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:nymphs_vitality_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:nymphs_vitality_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+  mcrpg:nymphs_vitality_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:nymphs_vitality
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:nymphs_vitality_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:nymphs_vitality_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG] }
+
+  # ────────────────────────────────────────────
+  #  Herbalism
+  # ────────────────────────────────────────────
+  mcrpg:verdant_surge_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:verdant_surge
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:verdant_surge_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:verdant_surge_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+  mcrpg:verdant_surge_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:verdant_surge
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:verdant_surge_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:verdant_surge_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+  mcrpg:verdant_surge_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:verdant_surge
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:verdant_surge_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:verdant_surge_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+  mcrpg:verdant_surge_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:verdant_surge
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:verdant_surge_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:verdant_surge_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+
+  mcrpg:mass_harvest_tier2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:mass_harvest
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:mass_harvest_tier2_stage
+            objectives:
+              objective:
+                key: mcrpg:mass_harvest_tier2_objective
+                type: mcrpg:block_break
+                required-progress: 80
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+  mcrpg:mass_harvest_tier3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:mass_harvest
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:mass_harvest_tier3_stage
+            objectives:
+              objective:
+                key: mcrpg:mass_harvest_tier3_objective
+                type: mcrpg:block_break
+                required-progress: 180
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+  mcrpg:mass_harvest_tier4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:mass_harvest
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:mass_harvest_tier4_stage
+            objectives:
+              objective:
+                key: mcrpg:mass_harvest_tier4_objective
+                type: mcrpg:block_break
+                required-progress: 320
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+  mcrpg:mass_harvest_tier5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:mass_harvest
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:mass_harvest_tier5_stage
+            objectives:
+              objective:
+                key: mcrpg:mass_harvest_tier5_objective
+                type: mcrpg:block_break
+                required-progress: 500
+                config: { blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART] }
+

@@ -1,0 +1,17 @@
+quests:
+  repeatable_quest:
+    scope: mcrpg:single_player
+    repeat-mode: COOLDOWN
+    repeat-cooldown: "1h"
+    expansion: "mcrpg:seasonal"
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          repeat_stage:
+            key: mcrpg:repeat_stage
+            objectives:
+              repeat_obj:
+                key: mcrpg:repeat_obj
+                type: mcrpg:block_break
+                required-progress: 5

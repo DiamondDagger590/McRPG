@@ -80,6 +80,132 @@ gui:
           - '<gray>Redeemable Levels: <gold><redeemable-levels>'
           - '<gray>Rested Experience: <gold><rested-experience>'
           - '<gray>Boosted Experience: <gold><boosted-experience>'
+    # The slot that takes players to the quest gui.
+    quests-slot:
+      display-item:
+        material: WRITABLE_BOOK
+        name: "<red>Quests"
+        lore:
+          - '<gray>Click to view your active quests.'
+    # Placeholder for the future quest board feature.
+    coming-soon-slot:
+      display-item:
+        material: GRAY_STAINED_GLASS_PANE
+        name: "<gray>Coming Soon"
+        lore:
+          - '<gray>Quest Board coming in a future update!'
+  # This GUI shows all active quests for the player.
+  active-quest-gui:
+    title: '<gold>Active Quests'
+    previous-gui-button:
+      display-item:
+        name: "<red>Return to Home Menu</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to the Home Menu</gray>'
+    # Template for each active quest item. Placeholders: <quest_name>, <phase_current>,
+    # <phase_total>, <objectives>, <time_remaining>
+    quest-slot:
+      display-item:
+        material: WRITABLE_BOOK
+        name: "<gold><quest_name>"
+        lore:
+          - '<gray>Phase: <gold><phase_current>/<phase_total>'
+          - ''
+          - '<objectives>'
+          - ''
+          - '<gray>Expires in: <gold><time_remaining>'
+          - ''
+          - '<yellow>Click to view details'
+    view-history-button:
+      display-item:
+        material: BOOKSHELF
+        name: "<gold>Quest History"
+        lore:
+          - '<gray>Click to view your completed quests.'
+    no-active-quests:
+      display-item:
+        material: BARRIER
+        name: "<gray>No Active Quests"
+        lore:
+          - '<gray>You have no active quests at the moment.'
+  # This GUI shows the player's completed quest history.
+  quest-history-gui:
+    title: '<gold>Quest History'
+    previous-gui-button:
+      display-item:
+        name: "<red>Back to Active Quests</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to return to active quests</gray>'
+    sort-date-desc:
+      display-item:
+        material: HOPPER
+        name: "<gold>Sort: Newest First"
+        lore:
+          - '<gray>Click to sort by oldest first.'
+    sort-date-asc:
+      display-item:
+        material: HOPPER
+        name: "<gold>Sort: Oldest First"
+        lore:
+          - '<gray>Click to sort by newest first.'
+    # Template for each completed quest. Placeholders: <quest_name>, <completed_date>
+    completed-quest-slot:
+      display-item:
+        material: WRITTEN_BOOK
+        name: "<gold><quest_name>"
+        lore:
+          - '<gray>Completed: <gold><completed_date>'
+          - ''
+          - '<yellow>Click to view details'
+    # Fallback when a quest definition no longer exists.
+    unknown-quest-slot:
+      display-item:
+        material: BARRIER
+        name: "<red><quest_name>"
+        lore:
+          - '<gray>Completed: <gold><completed_date>'
+          - '<red>Quest definition no longer exists.'
+  # This GUI shows the detailed breakdown of a quest's phases, stages and objectives.
+  quest-detail-gui:
+    title: '<gold>Quest Details'
+    previous-gui-button:
+      display-item:
+        name: "<red>Back</red>"
+        material: BARRIER
+        lore:
+          - '<gray>Click to go back</gray>'
+    # Overview header slot. Placeholders: <quest_name>, <quest_state>, <start_time>,
+    # <end_time>, <expiration_time>, <completed_date>, <phase_total>
+    overview-slot:
+      display-item:
+        material: ENCHANTED_BOOK
+        name: "<gold><quest_name>"
+        lore:
+          - '<gray>State: <gold><quest_state>'
+          - '<gray>Phases: <gold><phase_total>'
+    # Phase header. Placeholders: <phase_number>, <phase_total>, <completion_mode>
+    phase-header:
+      display-item:
+        material: YELLOW_STAINED_GLASS_PANE
+        name: "<gold>Phase <phase_number>/<phase_total>"
+        lore:
+          - '<gray>Completion mode: <gold><completion_mode>'
+    # Stage slot (reserved for future use if stages need individual display)
+    stage-slot:
+      display-item:
+        material: PAPER
+        name: "<gold>Stage"
+        lore: []
+    # Objective slot. Placeholders: <objective_description>, <progress>, <required>, <objective_state>
+    objective-slot:
+      display-item:
+        material: MAP
+        name: "<gray><objective_description>"
+        lore:
+          - '<gray>Progress: <gold><progress>/<required>'
+          - '<gray>State: <gold><objective_state>'
   # This GUI allows players to view and edit their abilities.
   ability-gui:
     title: '<gold>Viewing Abilities'

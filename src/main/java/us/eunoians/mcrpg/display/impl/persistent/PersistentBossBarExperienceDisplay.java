@@ -29,7 +29,7 @@ public class PersistentBossBarExperienceDisplay extends BossBarExperienceDisplay
     public PersistentBossBarExperienceDisplay(@NotNull McRPGPlayer player, @NotNull NamespacedKey skillKey, @NotNull Duration duration) {
         super(player);
         this.skillKey = skillKey;
-        this.expireTime = System.currentTimeMillis() + duration.toMillis();
+        this.expireTime = getMcRPGPlayer().getPlugin().getTimeProvider().now().toEpochMilli() + duration.toMillis();
         DelayableCoreTask delayableCoreTask = new DelayableCoreTask(getMcRPGPlayer().getPlugin(), (int) duration.toSeconds()) {
 
             @Override

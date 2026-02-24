@@ -1,0 +1,32 @@
+package us.eunoians.mcrpg.quest.source.builtin;
+
+import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.expansion.McRPGExpansion;
+import us.eunoians.mcrpg.quest.source.QuestSource;
+import us.eunoians.mcrpg.util.McRPGMethods;
+
+import java.util.Optional;
+
+/**
+ * Quest source for personal (per-player) board quests.
+ */
+public final class BoardPersonalQuestSource extends QuestSource {
+
+    public static final NamespacedKey KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "board_personal");
+
+    public BoardPersonalQuestSource() {
+        super(KEY);
+    }
+
+    @Override
+    public boolean isAbandonable() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.of(McRPGExpansion.EXPANSION_KEY);
+    }
+}

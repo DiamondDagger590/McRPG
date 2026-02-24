@@ -13,12 +13,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.SkillDAO;
@@ -30,6 +34,9 @@ import us.eunoians.mcrpg.event.skill.PostSkillGainExpEvent;
 import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.definition.QuestDefinition;
+import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -37,13 +44,17 @@ import us.eunoians.mcrpg.skill.Skill;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * This listener is in charge of handling ability unlocks and ability point distributions
  */
 public class OnSkillLevelUpListener implements Listener {
 
+    /** @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades. */
+    @Deprecated
     private static final int UPGRADE_POINT_AWARD_THRESHOLD = 1;
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -72,20 +83,17 @@ public class OnSkillLevelUpListener implements Listener {
         SkillHolder skillHolder = postSkillGainLevelEvent.getSkillHolder();
         Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
         var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
-        // Check to see if we need to unlock any abilities
         if (skillHolderDataOptional.isPresent()) {
 
-            // Award skill points if needed
+            /** @deprecated Upgrade points are deprecated in favor of quest-based upgrades. */
             if (postSkillGainLevelEvent.getBeforeLevel()/UPGRADE_POINT_AWARD_THRESHOLD != postSkillGainLevelEvent.getAfterLevel()/UPGRADE_POINT_AWARD_THRESHOLD) {
                 skillHolder.giveUpgradePoints(1);
             }
 
             var skillHolderData = skillHolderDataOptional.get();
             AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
-            // Check all abilities for the skill
             for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skill)) {
                 Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
-                // If the ability is unlockable and the holder's skill level is higher than or equal to unlock level
                 if (ability instanceof UnlockableAbility unlockableAbility && unlockableAbility.getUnlockLevel() <= skillHolderData.getCurrentLevel()) {
                     var abilityDataOptional = skillHolder.getAbilityData(abilityKey);
                     if (abilityDataOptional.isPresent()) {
@@ -93,13 +101,11 @@ public class OnSkillLevelUpListener implements Listener {
                         var attributeOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE);
                         if (attributeOptional.isPresent()) {
                             AbilityUnlockedAttribute attribute = (AbilityUnlockedAttribute) attributeOptional.get();
-                            // If the ability isn't unlocked, unlock it after we call the event
                             if (!attribute.getContent()) {
                                 AbilityUnlockEvent abilityUnlockEvent = new AbilityUnlockEvent(skillHolder, unlockableAbility);
                                 Bukkit.getPluginManager().callEvent(abilityUnlockEvent);
                                 abilityData.updateAttribute(attribute, true);
 
-                                //Save the updated attribute
                                 Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
                                 database.getDatabaseExecutorService().submit(() -> {
                                     try (Connection connection = database.getConnection()) {
@@ -113,8 +119,80 @@ public class OnSkillLevelUpListener implements Listener {
                         }
                     }
                 }
+
+                if (ability instanceof TierableAbility tierableAbility) {
+                    checkAndStartUpgradeQuest(skillHolder, tierableAbility);
+                }
             }
         }
+    }
+
+    /**
+     * Checks if the player is eligible for an upgrade quest for the given tierable ability
+     * and auto-starts it if no quest is currently active. Validation against repeat mode
+     * and the completion log happens asynchronously.
+     */
+    private void checkAndStartUpgradeQuest(@NotNull SkillHolder skillHolder,
+                                           @NotNull TierableAbility tierableAbility) {
+        int currentTier = tierableAbility.getCurrentAbilityTier(skillHolder);
+        int nextTier = currentTier + 1;
+        if (nextTier > tierableAbility.getMaxTier()) {
+            return;
+        }
+
+        Optional<AbilityData> abilityDataOpt = skillHolder.getAbilityData(tierableAbility);
+        if (abilityDataOpt.isEmpty()) {
+            return;
+        }
+        AbilityData abilityData = abilityDataOpt.get();
+
+        var questAttrOpt = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
+        if (questAttrOpt.isPresent() && questAttrOpt.get() instanceof AbilityUpgradeQuestAttribute questAttr
+                && questAttr.shouldContentBeSaved()) {
+            return;
+        }
+
+        if (tierableAbility instanceof SkillAbility skillAbility) {
+            int requiredLevel = tierableAbility.getUnlockLevelForTier(nextTier);
+            Optional<Integer> currentLevel = skillHolder.getSkillHolderData(skillAbility.getSkillKey())
+                    .map(data -> data.getCurrentLevel());
+            if (currentLevel.isEmpty() || currentLevel.get() < requiredLevel) {
+                return;
+            }
+        }
+
+        QuestManager questManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);
+        Optional<QuestDefinition> defOpt = questManager.resolveUpgradeQuestDefinition(tierableAbility, nextTier);
+        if (defOpt.isEmpty()) {
+            return;
+        }
+
+        QuestDefinition definition = defOpt.get();
+        UUID playerUUID = skillHolder.getUUID();
+
+        Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE).getDatabase();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                if (!questManager.canPlayerStartQuest(connection, playerUUID, definition)) {
+                    return;
+                }
+
+                Bukkit.getScheduler().runTask(McRPG.getInstance(), () -> {
+                    Player player = Bukkit.getPlayer(playerUUID);
+                    if (player == null || !player.isOnline()) {
+                        return;
+                    }
+
+                    questManager.startQuest(definition, playerUUID, Map.of("tier", nextTier), new AbilityUpgradeQuestSource()).ifPresent(instance ->
+                            abilityData.addAttribute(new AbilityUpgradeQuestAttribute(instance.getQuestUUID())));
+                });
+            } catch (SQLException e) {
+                McRPG.getInstance().getLogger().log(Level.SEVERE,
+                        "Failed to check upgrade quest eligibility for player " + playerUUID, e);
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

@@ -109,14 +109,20 @@ ability-configuration:
         pulses: 1+(.5*tier)
         pulse-radius: 5+(1.6*tier)
         cooldown: 30-(3.5*tier)
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SPIDER
-              - CAVE_SPIDER
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:verdant_surge_upgrade"
+      tier-2:
+        unlock-level: 2
+        upgrade-quest: "mcrpg:verdant_surge_tier2"
+      tier-3:
+        unlock-level: 3
+        upgrade-quest: "mcrpg:verdant_surge_tier3"
+      tier-4:
+        unlock-level: 4
+        upgrade-quest: "mcrpg:verdant_surge_tier4"
+      tier-5:
+        unlock-level: 5
+        upgrade-quest: "mcrpg:verdant_surge_tier5"
   mass-harvest:
     enabled: true
     amount-of-tiers: 5
@@ -134,11 +140,17 @@ ability-configuration:
         unlock-level: 1*tier
         pulse-radius: 5+(1.6*tier)
         cooldown: 30-(3.5*tier)
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SPIDER
-              - CAVE_SPIDER
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:mass_harvest_upgrade"
+      tier-2:
+        unlock-level: 2
+        upgrade-quest: "mcrpg:mass_harvest_tier2"
+      tier-3:
+        unlock-level: 3
+        upgrade-quest: "mcrpg:mass_harvest_tier3"
+      tier-4:
+        unlock-level: 4
+        upgrade-quest: "mcrpg:mass_harvest_tier4"
+      tier-5:
+        unlock-level: 5
+        upgrade-quest: "mcrpg:mass_harvest_tier5"

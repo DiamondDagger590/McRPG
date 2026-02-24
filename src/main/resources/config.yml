@@ -13,6 +13,17 @@ configuration:
   save-task:
     # This is how often the save task runs in seconds
     frequency: 300
+  quest-save-task:
+    # How often dirty active quests are persisted to the database (in seconds)
+    frequency: 120
+  quest-pending-rewards:
+    # How many days pending rewards for offline players are kept before expiring
+    expiry-days: 30
+  quest-cache:
+    # How long (minutes) finished quests stay cached while scope players are online
+    finished-keep-alive-minutes: 15
+    # How long (minutes) finished quests linger after all scope players go offline
+    finished-offline-ttl-minutes: 5
   localization:
     # Language support will go in the order of user's local language -> server default -> english
     # User local language is determined by their minecraft client

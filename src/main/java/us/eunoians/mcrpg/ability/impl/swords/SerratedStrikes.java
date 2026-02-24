@@ -13,9 +13,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -29,7 +29,6 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ABILITY_DURATION;
@@ -40,7 +39,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * This ability activates by attacking an enemy after readying the user's sword. The ability
  * increases the activation rate of {@link Bleed} while active.
  */
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReadyAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
@@ -82,7 +81,6 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         return Swords.SWORDS_KEY;
     }
 
-
     @NotNull
     @Override
     public String getDatabaseName() {
@@ -110,8 +108,8 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
 
     @NotNull
     @Override
-    public Optional<ReadyData> getReadyData() {
-        return Optional.of(new SwordReadyData());
+    public SwordReadyData getReadyData() {
+        return new SwordReadyData();
     }
 
     /**

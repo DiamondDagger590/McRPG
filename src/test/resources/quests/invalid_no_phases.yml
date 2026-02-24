@@ -1,0 +1,3 @@
+quests:
+  invalid_quest:
+    scope: mcrpg:single_player

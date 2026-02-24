@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability.attribute;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 
 /**
  * This attribute stores the cooldown that an ability has left before it can be activated again
@@ -58,6 +59,6 @@ public class AbilityCooldownAttribute extends OptionalSavingAbilityAttribute<Lon
 
     @Override
     public boolean shouldContentBeSaved() {
-        return getContent() > 0 && getContent() > System.currentTimeMillis();
+        return getContent() > 0 && getContent() > McRPG.getInstance().getTimeProvider().now().toEpochMilli();
     }
 }

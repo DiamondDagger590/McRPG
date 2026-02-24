@@ -7,17 +7,17 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
-import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 import us.eunoians.mcrpg.event.entity.AbilityHolderReadyEvent;
 import us.eunoians.mcrpg.event.entity.AbilityHolderUnreadyEvent;
-import us.eunoians.mcrpg.exception.ready.AbilityNotValidToReadyException;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.Skill;
 
@@ -405,7 +405,10 @@ public class AbilityHolder {
      * Gets the amount of upgrade points that this holder currently has.
      *
      * @return The amount of upgrade points that this holder currently has.
+     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
+     *             See {@link us.eunoians.mcrpg.ability.impl.type.TierableAbility#getUpgradeQuestKey(int)}.
      */
+    @Deprecated
     public int getUpgradePoints() {
         return upgradePoints;
     }
@@ -414,7 +417,9 @@ public class AbilityHolder {
      * Gives the provided amount of upgrade points.
      *
      * @param upgradePoints The amount of upgrade points to give.
+     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
      */
+    @Deprecated
     public void giveUpgradePoints(int upgradePoints) {
         this.upgradePoints += Math.max(0, upgradePoints);
     }
@@ -423,7 +428,9 @@ public class AbilityHolder {
      * Removes the provided amount of upgrade points.
      *
      * @param upgradePoints The amount of upgrade points to remove.
+     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
      */
+    @Deprecated
     public void removeUpgradePoints(int upgradePoints) {
         this.upgradePoints -= Math.max(0, Math.min(this.upgradePoints, upgradePoints));
     }
@@ -432,7 +439,9 @@ public class AbilityHolder {
      * Sets the amount of upgrade points for this holder.
      *
      * @param upgradePoints The amount of upgrade points to set.
+     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
      */
+    @Deprecated
     public void setUpgradePoints(int upgradePoints) {
         this.upgradePoints = Math.max(0, upgradePoints);
     }
@@ -509,7 +518,7 @@ public class AbilityHolder {
     }
 
     /**
-     * Uses the {@link ReadyData} from the provided {@link Ability} to ready this holder.
+     * Uses the {@link ReadyData} from the provided {@link ReadyAbility} to ready this holder.
      * <p>
      * The {@link ReadyData} is not tied to a specific ability, instead represents a possibly shared
      * ready state. An example would be two skills that use an axe as the ready tool, WoodCutting and Axes.
@@ -520,13 +529,11 @@ public class AbilityHolder {
      *
      * @param ability The {@link Ability} to use to ready this holder.
      */
-    public void readyAbility(@NotNull Ability ability) {
-        readiedAbility = ability.getReadyData();
-        if (readiedAbility.isEmpty()) {
-            throw new AbilityNotValidToReadyException(this, ability);
-        }
+    public void readyAbility(@NotNull ReadyAbility ability) {
+        readiedAbility = Optional.of(ability.getReadyData());
         AbilityHolderReadyEvent abilityHolderReadyEvent = new AbilityHolderReadyEvent(this, readiedAbility.get());
         Bukkit.getPluginManager().callEvent(abilityHolderReadyEvent);
+        // TODO https://github.com/DiamondDagger590/McRPG/issues/187
         CoreTask autoExpireTask = new DelayableCoreTask(McRPG.getInstance(), 3) {
             @Override
             public void run() {
@@ -597,12 +604,15 @@ public class AbilityHolder {
     }
 
     /**
-     * Checks to see if there is an active {@link us.eunoians.mcrpg.quest.Quest} for upgrading the {@link Ability} associated
+     * Checks to see if there is an active upgrade quest for the {@link Ability} associated
      * with the provided {@link NamespacedKey}.
      *
      * @param abilityKey The {@link NamespacedKey} to check
-     * @return {@code true} if the provided {@link NamespacedKey} has an active upgrade {@link us.eunoians.mcrpg.quest.Quest}
+     * @return {@code true} if the provided {@link NamespacedKey} has an active upgrade quest
+     * @deprecated This method is part of the legacy v1 quest system. It should be migrated
+     *             to use the new quest system when the ability upgrade quest flow is reworked.
      */
+    @Deprecated
     public boolean hasActiveUpgradeQuest(@NotNull NamespacedKey abilityKey) {
         if (abilityDataMap.containsKey(abilityKey)) {
             AbilityData abilityData = abilityDataMap.get(abilityKey);

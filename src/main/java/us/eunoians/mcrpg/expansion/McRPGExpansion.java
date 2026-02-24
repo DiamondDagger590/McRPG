@@ -29,8 +29,26 @@ import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestObjectiveTypeContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestRewardTypeContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestScopeProviderContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
+import us.eunoians.mcrpg.quest.objective.type.builtin.BlockBreakObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.MobKillObjectiveType;
+import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeNextTierRewardType;
+import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
+import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
+import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScopeProvider;
+import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
+import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.CommandRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.ExperienceRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.DisableBonusExperienceConsumptionSetting;
 import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
@@ -63,7 +81,9 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     @Override
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
-        return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent(), getLocalizationContent());
+        return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent(), getLocalizationContent(),
+                getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
+                getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent());
     }
 
     @NotNull
@@ -153,5 +173,90 @@ public final class McRPGExpansion extends ContentExpansion {
                 .getLocalizationFiles()
                 .forEach(yamlDocument -> localizationContent.addContent(new DynamicLocale(yamlDocument)));
         return localizationContent;
+    }
+
+    /**
+     * Gets the native {@link QuestObjectiveTypeContentPack} for McRPG, populated with the
+     * built-in objective types (block break, mob kill).
+     *
+     * @return The native {@link QuestObjectiveTypeContentPack} for McRPG.
+     */
+    @NotNull
+    private QuestObjectiveTypeContentPack getQuestObjectiveTypeContent() {
+        QuestObjectiveTypeContentPack pack = new QuestObjectiveTypeContentPack(this);
+        pack.addContent(new BlockBreakObjectiveType());
+        pack.addContent(new MobKillObjectiveType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link QuestRewardTypeContentPack} for McRPG, populated with the
+     * built-in reward types (experience, command, ability upgrade).
+     *
+     * @return The native {@link QuestRewardTypeContentPack} for McRPG.
+     */
+    @NotNull
+    private QuestRewardTypeContentPack getQuestRewardTypeContent() {
+        QuestRewardTypeContentPack pack = new QuestRewardTypeContentPack(this);
+        pack.addContent(new ExperienceRewardType());
+        pack.addContent(new CommandRewardType());
+        pack.addContent(new AbilityUpgradeRewardType());
+        pack.addContent(new AbilityUpgradeNextTierRewardType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link QuestContentPack} for McRPG. This pack is empty because native
+     * quest definitions are loaded from YAML config files via {@code QuestConfigLoader}, not
+     * through the expansion system. The pack is included to signal that the quest system supports
+     * expansion-based quest registration.
+     *
+     * @return The native {@link QuestContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private QuestContentPack getQuestContent() {
+        return new QuestContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link QuestSourceContentPack} for McRPG, populated with the
+     * built-in quest source types.
+     *
+     * @return The native {@link QuestSourceContentPack} for McRPG.
+     */
+    @NotNull
+    private QuestSourceContentPack getQuestSourceContent() {
+        QuestSourceContentPack pack = new QuestSourceContentPack(this);
+        pack.addContent(new BoardPersonalQuestSource());
+        pack.addContent(new BoardLandQuestSource());
+        pack.addContent(new AbilityUpgradeQuestSource());
+        pack.addContent(new ManualQuestSource());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link QuestRarityContentPack} for McRPG. This pack is empty because
+     * native rarities are loaded from {@code board.yml} config via {@link us.eunoians.mcrpg.quest.board.configuration.ReloadableRarityConfig}.
+     *
+     * @return The native {@link QuestRarityContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private QuestRarityContentPack getQuestRarityContent() {
+        return new QuestRarityContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link QuestScopeProviderContentPack} for McRPG, populated with the
+     * built-in scope providers (single player, permission). Third-party providers like
+     * Lands are registered by their respective plugin hooks.
+     *
+     * @return The native {@link QuestScopeProviderContentPack} for McRPG.
+     */
+    @NotNull
+    private QuestScopeProviderContentPack getQuestScopeProviderContent() {
+        QuestScopeProviderContentPack pack = new QuestScopeProviderContentPack(this);
+        pack.addContent(new SinglePlayerQuestScopeProvider());
+        pack.addContent(new PermissionQuestScopeProvider());
+        return pack;
     }
 }

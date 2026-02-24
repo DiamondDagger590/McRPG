@@ -116,6 +116,15 @@ commands:
       upgrade-points-message: "<gray>Upgrade Points: <gold><upgrade-points>"
       # The message showing skill information.
       skill-info-message: "<gray>Skill: <gold><skill> <gray>Level: <gold><level> <gray>Exp: <gold><experience>"
+    # Configure /mcrpg quest admin registry commands
+    # Lists registered objective types, reward types, scope providers, and quest definitions.
+    quest-registry:
+      # Supports: <registry_type>, <count>
+      header: "<gold><registry_type> <gray>(<count>):"
+      # Supports: <registry_key>
+      entry: "  <white><registry_key>"
+      # Supports: <registry_type>
+      empty: "<gray>No <white><registry_type></white> registered."
     # Configure the reset commands
     reset:
       # Supports the following placeholders: <target>, <sender>
@@ -256,6 +265,85 @@ commands:
           sender-success-message: "<gray>You reset <gold><target></gold>'s boosted experience."
           # The message to send to the sender when the command fails.
           sender-error-message: "<red>Unable to reset <gray><player></gray>'s boosted experience at the moment."
+  # Configure /mcrpg quest commands
+  quest:
+    # Messages shared across multiple quest commands
+    common:
+      # Supports: <quest_uuid>
+      invalid-uuid: "<red>Invalid UUID: <white><quest_uuid>"
+      specify-player-from-console: "<red>You must specify a player when running from console."
+      # Supports: <quest_uuid>
+      quest-not-found: "<red>No active quest found with UUID: <white><quest_uuid>"
+    # Configure /mcrpg quest list
+    list:
+      no-permission-others: "<red>You don't have permission to view other players' quests."
+      # Supports: <target>
+      no-active-quests: "<gray>No active quests for <white><target></white>."
+      # Supports: <target>, <count>
+      header: "<gold>Active quests for <white><target></white> <gray>(<count>):"
+      # Supports: <quest_key>, <quest_state>, <stages_completed>, <stages_total>, <quest_uuid>
+      entry: "  <white><quest_key></white> <gray>- <quest_state> <dark_gray>[<stages_completed>/<stages_total> stages] <dark_gray>(UUID: <quest_uuid>...)"
+    # Configure /mcrpg quest info
+    info:
+      title: "<gold><bold>Quest Info</bold></gold>"
+      # Supports: <quest_key>
+      definition: "  <gray>Definition: <white><quest_key>"
+      # Supports: <quest_uuid>
+      uuid: "  <gray>UUID: <white><quest_uuid>"
+      # Supports: <quest_state>
+      state: "  <gray>State: <white><quest_state>"
+      # Supports: <scope_type>
+      scope-type: "  <gray>Scope Type: <white><scope_type>"
+      # Supports: <timestamp>
+      started: "  <gray>Started: <white><timestamp>"
+      # Supports: <timestamp>
+      ended: "  <gray>Ended: <white><timestamp>"
+      # Supports: <timestamp>
+      expires: "  <gray>Expires: <white><timestamp>"
+      # Supports: <count>
+      stages-header: "  <gold>Stages <gray>(<count>):"
+      # Supports: <state_color>, <stage_state>, <stage_key>, <phase_index>
+      stage-entry: "    <state_color>[<stage_state>] <white><stage_key></white> <dark_gray>(phase <phase_index>)"
+      # Supports: <state_color>, <objective_key>, <current_progress>, <required_progress>
+      objective-entry: "      <state_color>● <white><objective_key></white> <gray>(<gold><current_progress></gold>/<gold><required_progress></gold>)"
+    # Configure /mcrpg quest start
+    start:
+      no-permission-others: "<red>You don't have permission to start quests for other players."
+      # Supports: <target>, <quest_key>
+      cannot-start: "<red>Player <white><target></white> cannot start quest <white><quest_key></white> (already active or repeat-mode restriction)."
+      # Supports: <quest_key>, <target>, <quest_uuid>
+      success: "<green>Started quest <white><quest_key></white> for <white><target></white>. <gray>(UUID: <quest_uuid>)"
+      # Supports: <scope_type>
+      no-scope-provider: "<red>Failed to start quest: no scope provider for type <white><scope_type></white>"
+      error: "<red>An error occurred while validating quest start. Check console."
+    # Configure /mcrpg quest cancel
+    cancel:
+      # Supports: <quest_state>
+      not-cancellable: "<red>Quest is not in a cancellable state: <white><quest_state>"
+      # Supports: <quest_key>, <quest_uuid>
+      success: "<green>Cancelled quest <white><quest_key></white> <gray>(UUID: <quest_uuid>)"
+    # Configure /mcrpg quest admin commands
+    admin:
+      # Configure /mcrpg quest admin reload
+      reload:
+        # Supports: <after_count>, <before_count>
+        success: "<green>Quest definitions reloaded. <gray>(<after_count> definitions loaded, was <before_count>)"
+      # Configure /mcrpg quest admin complete
+      complete:
+        # Supports: <quest_state>
+        not-in-progress: "<red>Quest is not in progress: <white><quest_state>"
+        # Supports: <quest_key>, <quest_uuid>
+        success: "<green>Force-completed quest <white><quest_key></white> <gray>(UUID: <quest_uuid>)"
+        # Supports: <quest_key>
+        definition-not-found: "<red>Quest definition not found for key: <white><quest_key></white>. Cannot complete without definition."
+      # Configure /mcrpg quest admin setprogress
+      setprogress:
+        # Supports: <objective_key>
+        invalid-objective-key: "<red>Invalid objective key: <white><objective_key>"
+        # Supports: <objective_key>, <quest_uuid>
+        objective-not-found: "<red>No objective found with key <white><objective_key></white> in quest <white><quest_uuid>"
+        # Supports: <objective_key>, <current_progress>, <required_progress>, <quest_key>
+        success: "<green>Set progress of <white><objective_key></white> to <gold><current_progress></gold>/<gold><required_progress></gold> in quest <white><quest_key></white>."
   # Configure commands to redeem things such as experience or levels.
   redeem:
     # Configure the redeemable levels command.

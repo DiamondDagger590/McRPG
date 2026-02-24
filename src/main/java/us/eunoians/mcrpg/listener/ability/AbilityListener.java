@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -45,9 +46,7 @@ public interface AbilityListener extends Listener {
         EntityManager entityManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
         AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
-
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
-
             // Validate that the holder currently can use McRPG
             if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
@@ -62,7 +61,6 @@ public interface AbilityListener extends Listener {
              */
             Set<NamespacedKey> allAbilities = abilityHolder instanceof LoadoutHolder loadoutHolder ?
                     loadoutHolder.getAvailableAbilitiesToUse() : abilityHolder.getAvailableAbilities();
-
             //We can do this safely because we assume that the only abilities in the loadout are registered ones.
             allAbilities.stream()
                     .map(ability -> (BaseAbility) abilityRegistry.getRegisteredAbility(ability))
@@ -87,12 +85,10 @@ public interface AbilityListener extends Listener {
         AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
-
             // Validate that the holder currently can use McRPG
             if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
             }
-
             // Check if the player requires empty offhand
             var playerOptional = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(uuid);
             if (playerOptional.isPresent() && playerOptional.get().getAsBukkitPlayer().isPresent()) {
@@ -117,10 +113,10 @@ public interface AbilityListener extends Listener {
              */
             Set<NamespacedKey> allAbilities = abilityHolder instanceof LoadoutHolder loadoutHolder ?
                     loadoutHolder.getAvailableAbilitiesToUse() : abilityHolder.getAvailableAbilities();
-
             //We can do this safely because we assume that the only abilities in the loadout are registered ones.
             allAbilities.stream()
                     .map(ability -> (BaseAbility) abilityRegistry.getRegisteredAbility(ability))
+                    .filter(ability -> ability instanceof ReadyAbility)
                     .filter(ability -> ability.canEventReadyAbility(event))
                     .filter(ability -> ability.checkIfComponentFailsReady(abilityHolder, event).isEmpty())
                     .filter(ability -> {
@@ -130,6 +126,7 @@ public interface AbilityListener extends Listener {
                         }
                         return true;
                     })
+                    .map(ability -> (ReadyAbility) ability)
                     .forEach(abilityHolder::readyAbility);
         });
     }

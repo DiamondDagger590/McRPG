@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.display.impl.persistent;
 
 import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.McRPG;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -40,6 +41,6 @@ public interface PersistentExperienceDisplay {
      * @return {@code true} if this experience display both has an expiry time and that time has expired
      */
     default boolean hasExpired() {
-        return getExpireTime().isPresent() && getExpireTime().get() < System.currentTimeMillis();
+        return getExpireTime().isPresent() && getExpireTime().get() < McRPG.getInstance().getTimeProvider().now().toEpochMilli();
     }
 }

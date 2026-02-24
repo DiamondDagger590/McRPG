@@ -13,6 +13,9 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.experience.RestedExperienceAccumulationTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSafeZoneCheckTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSaveTask;
+import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
+import us.eunoians.mcrpg.task.board.QuestBoardRotationTask;
+import us.eunoians.mcrpg.task.quest.QuestSaveTask;
 
 import java.util.Set;
 
@@ -43,7 +46,20 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     double frequency = yamlDocument.getDouble(route);
                     return new McRPGPlayerSafeZoneCheckTask(plugin, frequency, frequency);
                 }, false);
+        ReloadableTask<QuestSaveTask> questSaveTask = new ReloadableTask<>(fileManager.getFile(FileType.MAIN_CONFIG), MainConfigFile.QUEST_SAVE_TASK_FREQUENCY,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    return new QuestSaveTask(plugin, frequency, frequency);
+                }, true);
+        ReloadableTask<QuestBoardRotationTask> rotationTask = new ReloadableTask<>(fileManager.getFile(FileType.BOARD_CONFIG),
+                BoardConfigFile.ROTATION_CHECK_INTERVAL,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    String time = yamlDocument.getString(BoardConfigFile.ROTATION_TIME);
+                    String tz = yamlDocument.getString(BoardConfigFile.ROTATION_TIMEZONE);
+                    return new QuestBoardRotationTask(plugin, frequency, frequency, time, tz);
+                }, true);
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask));
+                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, rotationTask));
     }
 }

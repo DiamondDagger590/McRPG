@@ -77,7 +77,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     @VisibleForTesting
     @Override
     protected boolean loadPlayer() { //TODO completable future?
-        Instant loginTime = Instant.now();
+        Instant loginTime = getPlugin().getTimeProvider().now();
 
         // TODO move this into the skill holder
         try (Connection connection = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)

@@ -165,28 +165,26 @@ ability-configuration:
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SPIDER
-              - CAVE_SPIDER
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:its_a_triple_upgrade"
       tier-1:
         unlock-level: 1
         activation-chance: 3.0
       tier-2:
         unlock-level: 2
+        upgrade-quest: "mcrpg:its_a_triple_tier2"
         activation-chance: 4.0
       tier-3:
         unlock-level: 3
+        upgrade-quest: "mcrpg:its_a_triple_tier3"
         activation-chance: 5.0
       tier-4:
         unlock-level: 4
+        upgrade-quest: "mcrpg:its_a_triple_tier4"
         activation-chance: 7.5
       tier-5:
         unlock-level: 5
+        upgrade-quest: "mcrpg:its_a_triple_tier5"
         activation-chance: 10.0
   remote-transfer:
     enabled: true
@@ -304,17 +302,23 @@ ability-configuration:
         # Ignored for tier 1
         upgrade-point-cost: 1
         unlock-level: 1*tier
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SPIDER
-              - CAVE_SPIDER
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:remote_transfer_upgrade"
       tier-1:
         unlock-level: 1
         maximum-distance: 50
+      tier-2:
+        unlock-level: 2
+        upgrade-quest: "mcrpg:remote_transfer_tier2"
+      tier-3:
+        unlock-level: 3
+        upgrade-quest: "mcrpg:remote_transfer_tier3"
+      tier-4:
+        unlock-level: 4
+        upgrade-quest: "mcrpg:remote_transfer_tier4"
+      tier-5:
+        unlock-level: 5
+        upgrade-quest: "mcrpg:remote_transfer_tier5"
   ore-scanner:
     enabled: true
     #How many tiers does this ability have
@@ -379,27 +383,25 @@ ability-configuration:
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
-        upgrade-quest:
-          kill-criteria:
-            criteria-type: KILL_MOBS
-            progression-required: 20*(tier^2)
-            criteria-filter-mode: ALLOW
-            criteria-filter:
-              - SPIDER
-              - CAVE_SPIDER
+        # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
+        upgrade-quest: "mcrpg:ore_scanner_upgrade"
         cooldown: 180
       tier-1:
         unlock-level: 1
         range: 10
       tier-2:
         unlock-level: 2
+        upgrade-quest: "mcrpg:ore_scanner_tier2"
         range: 10
       tier-3:
         unlock-level: 3
+        upgrade-quest: "mcrpg:ore_scanner_tier3"
         range: 10
       tier-4:
         unlock-level: 4
+        upgrade-quest: "mcrpg:ore_scanner_tier4"
         range: 10
       tier-5:
         unlock-level: 5
+        upgrade-quest: "mcrpg:ore_scanner_tier5"
         range: 10

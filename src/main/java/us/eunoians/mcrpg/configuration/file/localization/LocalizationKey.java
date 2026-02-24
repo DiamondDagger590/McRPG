@@ -85,6 +85,62 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route DEBUG_COMMAND_UPGRADE_POINTS_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "upgrade-points-message"));
     public static final Route DEBUG_COMMAND_SKILL_INFO_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "skill-info-message"));
 
+    private static final String QUEST_REGISTRY_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "quest-registry");
+    public static final Route QUEST_REGISTRY_HEADER_MESSAGE = Route.fromString(toRoutePath(QUEST_REGISTRY_COMMAND_HEADER, "header"));
+    public static final Route QUEST_REGISTRY_ENTRY_MESSAGE = Route.fromString(toRoutePath(QUEST_REGISTRY_COMMAND_HEADER, "entry"));
+    public static final Route QUEST_REGISTRY_EMPTY_MESSAGE = Route.fromString(toRoutePath(QUEST_REGISTRY_COMMAND_HEADER, "empty"));
+
+    private static final String QUEST_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "quest");
+
+    private static final String QUEST_COMMON_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "common");
+    public static final Route QUEST_CMD_INVALID_UUID = Route.fromString(toRoutePath(QUEST_COMMON_HEADER, "invalid-uuid"));
+    public static final Route QUEST_CMD_SPECIFY_PLAYER = Route.fromString(toRoutePath(QUEST_COMMON_HEADER, "specify-player-from-console"));
+    public static final Route QUEST_CMD_QUEST_NOT_FOUND = Route.fromString(toRoutePath(QUEST_COMMON_HEADER, "quest-not-found"));
+
+    private static final String QUEST_LIST_COMMAND_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "list");
+    public static final Route QUEST_LIST_NO_PERMISSION_OTHERS = Route.fromString(toRoutePath(QUEST_LIST_COMMAND_HEADER, "no-permission-others"));
+    public static final Route QUEST_LIST_NO_ACTIVE_QUESTS = Route.fromString(toRoutePath(QUEST_LIST_COMMAND_HEADER, "no-active-quests"));
+    public static final Route QUEST_LIST_HEADER = Route.fromString(toRoutePath(QUEST_LIST_COMMAND_HEADER, "header"));
+    public static final Route QUEST_LIST_ENTRY = Route.fromString(toRoutePath(QUEST_LIST_COMMAND_HEADER, "entry"));
+
+    private static final String QUEST_INFO_COMMAND_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "info");
+    public static final Route QUEST_INFO_TITLE = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "title"));
+    public static final Route QUEST_INFO_DEFINITION = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "definition"));
+    public static final Route QUEST_INFO_UUID = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "uuid"));
+    public static final Route QUEST_INFO_STATE = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "state"));
+    public static final Route QUEST_INFO_SCOPE_TYPE = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "scope-type"));
+    public static final Route QUEST_INFO_STARTED = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "started"));
+    public static final Route QUEST_INFO_ENDED = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "ended"));
+    public static final Route QUEST_INFO_EXPIRES = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "expires"));
+    public static final Route QUEST_INFO_STAGES_HEADER = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "stages-header"));
+    public static final Route QUEST_INFO_STAGE_ENTRY = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "stage-entry"));
+    public static final Route QUEST_INFO_OBJECTIVE_ENTRY = Route.fromString(toRoutePath(QUEST_INFO_COMMAND_HEADER, "objective-entry"));
+
+    private static final String QUEST_START_COMMAND_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "start");
+    public static final Route QUEST_START_NO_PERMISSION_OTHERS = Route.fromString(toRoutePath(QUEST_START_COMMAND_HEADER, "no-permission-others"));
+    public static final Route QUEST_START_CANNOT_START = Route.fromString(toRoutePath(QUEST_START_COMMAND_HEADER, "cannot-start"));
+    public static final Route QUEST_START_SUCCESS = Route.fromString(toRoutePath(QUEST_START_COMMAND_HEADER, "success"));
+    public static final Route QUEST_START_NO_SCOPE_PROVIDER = Route.fromString(toRoutePath(QUEST_START_COMMAND_HEADER, "no-scope-provider"));
+    public static final Route QUEST_START_ERROR = Route.fromString(toRoutePath(QUEST_START_COMMAND_HEADER, "error"));
+
+    private static final String QUEST_CANCEL_COMMAND_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "cancel");
+    public static final Route QUEST_CANCEL_NOT_CANCELLABLE = Route.fromString(toRoutePath(QUEST_CANCEL_COMMAND_HEADER, "not-cancellable"));
+    public static final Route QUEST_CANCEL_SUCCESS = Route.fromString(toRoutePath(QUEST_CANCEL_COMMAND_HEADER, "success"));
+
+    private static final String QUEST_ADMIN_COMMAND_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "admin");
+    private static final String QUEST_ADMIN_RELOAD_HEADER = toRoutePath(QUEST_ADMIN_COMMAND_HEADER, "reload");
+    public static final Route QUEST_ADMIN_RELOAD_SUCCESS = Route.fromString(toRoutePath(QUEST_ADMIN_RELOAD_HEADER, "success"));
+
+    private static final String QUEST_ADMIN_COMPLETE_HEADER = toRoutePath(QUEST_ADMIN_COMMAND_HEADER, "complete");
+    public static final Route QUEST_ADMIN_COMPLETE_NOT_IN_PROGRESS = Route.fromString(toRoutePath(QUEST_ADMIN_COMPLETE_HEADER, "not-in-progress"));
+    public static final Route QUEST_ADMIN_COMPLETE_SUCCESS = Route.fromString(toRoutePath(QUEST_ADMIN_COMPLETE_HEADER, "success"));
+    public static final Route QUEST_ADMIN_COMPLETE_DEFINITION_NOT_FOUND = Route.fromString(toRoutePath(QUEST_ADMIN_COMPLETE_HEADER, "definition-not-found"));
+
+    private static final String QUEST_ADMIN_SETPROGRESS_HEADER = toRoutePath(QUEST_ADMIN_COMMAND_HEADER, "setprogress");
+    public static final Route QUEST_ADMIN_SETPROGRESS_INVALID_OBJECTIVE_KEY = Route.fromString(toRoutePath(QUEST_ADMIN_SETPROGRESS_HEADER, "invalid-objective-key"));
+    public static final Route QUEST_ADMIN_SETPROGRESS_OBJECTIVE_NOT_FOUND = Route.fromString(toRoutePath(QUEST_ADMIN_SETPROGRESS_HEADER, "objective-not-found"));
+    public static final Route QUEST_ADMIN_SETPROGRESS_SUCCESS = Route.fromString(toRoutePath(QUEST_ADMIN_SETPROGRESS_HEADER, "success"));
+
     private static final String RESET_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reset");
     private static final String RESET_PLAYER_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "player");
     public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "recipient-message"));
@@ -231,6 +287,43 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route HOME_GUI_SKILLS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "skills-slot.display-item"));
     public static final Route HOME_GUI_LOADOUTS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "loadouts-slot.display-item"));
     public static final Route HOME_GUI_EXPERIENCE_BANK_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "experience-bank-slot.display-item"));
+    public static final Route HOME_GUI_QUESTS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "quests-slot.display-item"));
+    public static final Route HOME_GUI_COMING_SOON_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "coming-soon-slot.display-item"));
+
+    // Quest Board GUI
+    private static final String QUEST_BOARD_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-board");
+    public static final Route QUEST_BOARD_GUI_TITLE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "title"));
+    public static final Route QUEST_BOARD_OFFERING_LORE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "offering-lore"));
+    public static final Route QUEST_BOARD_ACCEPT_BUTTON = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "accept"));
+    public static final Route QUEST_BOARD_SLOT_FULL = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "slots-full"));
+    public static final Route QUEST_BOARD_ABANDONED = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "abandoned"));
+    public static final Route QUEST_BOARD_COOLDOWN = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "on-cooldown"));
+
+    // Active Quest GUI
+    private static final String ACTIVE_QUEST_GUI_HEADER = toRoutePath(GUI_HEADER, "active-quest-gui");
+    public static final Route ACTIVE_QUEST_GUI_TITLE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "title"));
+    public static final Route ACTIVE_QUEST_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "previous-gui-button.display-item"));
+    public static final Route ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.display-item"));
+    public static final Route ACTIVE_QUEST_GUI_VIEW_HISTORY_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "view-history-button.display-item"));
+    public static final Route ACTIVE_QUEST_GUI_NO_ACTIVE_QUESTS_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "no-active-quests.display-item"));
+
+    // Quest History GUI
+    private static final String QUEST_HISTORY_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-history-gui");
+    public static final Route QUEST_HISTORY_GUI_TITLE = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "title"));
+    public static final Route QUEST_HISTORY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "previous-gui-button.display-item"));
+    public static final Route QUEST_HISTORY_GUI_SORT_DATE_DESC_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "sort-date-desc.display-item"));
+    public static final Route QUEST_HISTORY_GUI_SORT_DATE_ASC_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "sort-date-asc.display-item"));
+    public static final Route QUEST_HISTORY_GUI_COMPLETED_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "completed-quest-slot.display-item"));
+    public static final Route QUEST_HISTORY_GUI_UNKNOWN_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "unknown-quest-slot.display-item"));
+
+    // Quest Detail GUI
+    private static final String QUEST_DETAIL_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-detail-gui");
+    public static final Route QUEST_DETAIL_GUI_TITLE = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "title"));
+    public static final Route QUEST_DETAIL_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.display-item"));
+    public static final Route QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "overview-slot.display-item"));
+    public static final Route QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "phase-header.display-item"));
+    public static final Route QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.display-item"));
+    public static final Route QUEST_DETAIL_GUI_OBJECTIVE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "objective-slot.display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");

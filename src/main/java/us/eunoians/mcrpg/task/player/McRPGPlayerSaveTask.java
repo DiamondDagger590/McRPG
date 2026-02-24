@@ -54,7 +54,7 @@ public final class McRPGPlayerSaveTask extends CancelableCoreTask {
         try (Connection connection = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase().getConnection()) {
             BatchTransaction lastSeenTimeTransaction = new BatchTransaction(connection);
-            Instant lastSeenTime = Instant.now();
+            Instant lastSeenTime = getPlugin().getTimeProvider().now();
             players.forEach(mcRPGPlayer -> {
                 mcRPGPlayer.savePlayer(connection);
                 /*

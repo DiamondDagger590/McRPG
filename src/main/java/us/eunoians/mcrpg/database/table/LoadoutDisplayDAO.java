@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.loadout.LoadoutDisplay;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,7 +25,8 @@ import java.util.UUID;
 public class LoadoutDisplayDAO {
 
     static final String TABLE_NAME = "mcrpg_loadout_display";
-    private static final int CURRENT_TABLE_VERSION = 1;
+    private static final int CURRENT_TABLE_VERSION = 2;
+    private static final String DISPLAY_ITEM_COLUMN = "display_item";
 
     /**
      * Attempts to create a new table for this DAO provided that the table does not already exist.
@@ -80,19 +82,61 @@ public class LoadoutDisplayDAO {
      */
     public static void updateTable(@NotNull Connection connection) {
         int lastStoredVersion = TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME);
-        if (lastStoredVersion < CURRENT_TABLE_VERSION) {
-            //Adds table to our tracking
-            if (lastStoredVersion == 0) {
-                // Create an index to group by UUIDs
-                try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX holder_uuid_index_loadout_display ON " + TABLE_NAME + " (holder_uuid)")) {
-                    preparedStatement.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
-                lastStoredVersion = 1;
-            }
+        if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+            return;
         }
+
+        // Version 1: initial tracking + index
+        if (lastStoredVersion == 0) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE INDEX holder_uuid_index_loadout_display ON " + TABLE_NAME + " (holder_uuid)")) {
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
+        }
+
+        // Version 2: add display_item column for older installs that created the table without it
+        if (lastStoredVersion == 1) {
+            ensureColumnExists(connection, DISPLAY_ITEM_COLUMN, "VARCHAR(96) NOT NULL DEFAULT 'STONE'");
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
+        }
+    }
+
+    private static void ensureColumnExists(@NotNull Connection connection, @NotNull String columnName, @NotNull String addColumnSqlFragment) {
+        if (columnExists(connection, TABLE_NAME, columnName)) {
+            return;
+        }
+        try (PreparedStatement ps = connection.prepareStatement(
+                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + columnName + " " + addColumnSqlFragment)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean columnExists(@NotNull Connection connection, @NotNull String tableName, @NotNull String columnName) {
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            try (ResultSet rs = metaData.getColumns(null, null, tableName, columnName)) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+            // SQLite metadata lookups can be finicky with case; fallback to a pragma check.
+            try (PreparedStatement ps = connection.prepareStatement("PRAGMA table_info(" + tableName + ")");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    if (columnName.equalsIgnoreCase(rs.getString("name"))) {
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+            // If we can't determine it, we'll assume it doesn't exist and let the ALTER attempt decide.
+        }
+        return false;
     }
 
     /**

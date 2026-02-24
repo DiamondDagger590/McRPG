@@ -1,0 +1,302 @@
+# Default ability upgrade quests for Swords abilities.
+#
+# These quests are referenced by the ability configs via their "upgrade-quest" key.
+# Server owners can customize objectives, required progress, and rewards freely.
+# Each tier has its own quest so objectives can differ per tier.
+#
+# The mcrpg:ability_upgrade reward type handles the actual tier progression,
+# attribute cleanup, and cascading next-tier auto-start.
+
+quests:
+  # ────────────────────────────────────────────
+  #  Enhanced Bleed
+  # ────────────────────────────────────────────
+  mcrpg:enhanced_bleed_t2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:eb_t2_kill
+            objectives:
+              objective:
+                key: mcrpg:eb_t2_kill_spiders
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config:
+                  entities:
+                    - SPIDER
+                    - CAVE_SPIDER
+
+  mcrpg:enhanced_bleed_t3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:eb_t3_kill
+            objectives:
+              objective:
+                key: mcrpg:eb_t3_kill_spiders
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config:
+                  entities:
+                    - SPIDER
+                    - CAVE_SPIDER
+
+  mcrpg:enhanced_bleed_t4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:eb_t4_kill
+            objectives:
+              objective:
+                key: mcrpg:eb_t4_kill_spiders
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config:
+                  entities:
+                    - SPIDER
+                    - CAVE_SPIDER
+
+  mcrpg:enhanced_bleed_t5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:enhanced_bleed
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:eb_t5_kill
+            objectives:
+              objective:
+                key: mcrpg:eb_t5_kill_spiders
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config:
+                  entities:
+                    - SPIDER
+                    - CAVE_SPIDER
+
+  # ────────────────────────────────────────────
+  #  Deeper Wound
+  # ────────────────────────────────────────────
+  mcrpg:deeper_wound_t2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dw_t2_kill
+            objectives:
+              objective:
+                key: mcrpg:dw_t2_kill_skeletons
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config:
+                  entities:
+                    - SKELETON
+
+  mcrpg:deeper_wound_t3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dw_t3_kill
+            objectives:
+              objective:
+                key: mcrpg:dw_t3_kill_skeletons
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config:
+                  entities:
+                    - SKELETON
+
+  mcrpg:deeper_wound_t4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dw_t4_kill
+            objectives:
+              objective:
+                key: mcrpg:dw_t4_kill_skeletons
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config:
+                  entities:
+                    - SKELETON
+
+  mcrpg:deeper_wound_t5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:deeper_wound
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dw_t5_kill
+            objectives:
+              objective:
+                key: mcrpg:dw_t5_kill_skeletons
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config:
+                  entities:
+                    - SKELETON
+
+  # ────────────────────────────────────────────
+  #  Vampire
+  # ────────────────────────────────────────────
+  mcrpg:vampire_t2:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 2
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vamp_t2_kill
+            objectives:
+              objective:
+                key: mcrpg:vamp_t2_kill_undead
+                type: mcrpg:mob_kill
+                required-progress: 80
+                config:
+                  entities:
+                    - ZOMBIE
+                    - DROWNED
+
+  mcrpg:vampire_t3:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 3
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vamp_t3_kill
+            objectives:
+              objective:
+                key: mcrpg:vamp_t3_kill_undead
+                type: mcrpg:mob_kill
+                required-progress: 180
+                config:
+                  entities:
+                    - ZOMBIE
+                    - DROWNED
+
+  mcrpg:vampire_t4:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 4
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vamp_t4_kill
+            objectives:
+              objective:
+                key: mcrpg:vamp_t4_kill_undead
+                type: mcrpg:mob_kill
+                required-progress: 320
+                config:
+                  entities:
+                    - ZOMBIE
+                    - DROWNED
+
+  mcrpg:vampire_t5:
+    scope: mcrpg:single_player
+    repeat-mode: ONCE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade
+        ability: mcrpg:vampire
+        tier: 5
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vamp_t5_kill
+            objectives:
+              objective:
+                key: mcrpg:vamp_t5_kill_undead
+                type: mcrpg:mob_kill
+                required-progress: 500
+                config:
+                  entities:
+                    - ZOMBIE
+                    - DROWNED

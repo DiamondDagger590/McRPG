@@ -1,0 +1,295 @@
+# Generic, scalable ability upgrade quests (one per tierable ability).
+#
+# These quests are intended to be REPEATABLE and scale their required progress using the `{tier}`
+# variable supplied at quest-start time (target tier = currentTier + 1).
+#
+# Reward type `mcrpg:ability_upgrade_next_tier` upgrades the ability to the next tier on completion.
+#
+# Tier-specific override quests (e.g. `mcrpg:enhanced_bleed_tier3`) may be defined separately and
+# referenced via ability config if desired.
+
+quests:
+  # ────────────────────────────────────────────
+  #  Swords
+  # ────────────────────────────────────────────
+  mcrpg:enhanced_bleed_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:enhanced_bleed
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:enhanced_bleed_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:enhanced_bleed_upgrade_objective
+                type: mcrpg:mob_kill
+                required-progress: "20*(tier^2)"
+                config:
+                  entities: [SPIDER, CAVE_SPIDER]
+
+  mcrpg:deeper_wound_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:deeper_wound
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:deeper_wound_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:deeper_wound_upgrade_objective
+                type: mcrpg:mob_kill
+                required-progress: "20*(tier^2)"
+                config:
+                  entities: [SKELETON, STRAY]
+
+  mcrpg:vampire_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:vampire
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:vampire_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:vampire_upgrade_objective
+                type: mcrpg:mob_kill
+                required-progress: "20*(tier^2)"
+                config:
+                  entities: [ZOMBIE, DROWNED, HUSK, ZOMBIE_VILLAGER]
+
+  mcrpg:serrated_strikes_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:serrated_strikes
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:serrated_strikes_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:serrated_strikes_upgrade_objective
+                type: mcrpg:mob_kill
+                required-progress: "20*(tier^2)"
+                config:
+                  entities: [CREEPER, SPIDER]
+
+  mcrpg:rage_spike_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:rage_spike
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:rage_spike_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:rage_spike_upgrade_objective
+                type: mcrpg:mob_kill
+                required-progress: "20*(tier^2)"
+                config:
+                  entities: [ENDERMAN, PIGLIN, ZOMBIFIED_PIGLIN]
+
+  # ────────────────────────────────────────────
+  #  Mining
+  # ────────────────────────────────────────────
+  mcrpg:its_a_triple_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:its_a_triple
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:its_a_triple_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:its_a_triple_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [COAL_ORE, DEEPSLATE_COAL_ORE, COPPER_ORE, DEEPSLATE_COPPER_ORE]
+
+  mcrpg:remote_transfer_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:remote_transfer
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:remote_transfer_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:remote_transfer_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [IRON_ORE, DEEPSLATE_IRON_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE]
+
+  mcrpg:ore_scanner_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:ore_scanner
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:ore_scanner_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:ore_scanner_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, DEEPSLATE_EMERALD_ORE]
+
+  # ────────────────────────────────────────────
+  #  Woodcutting
+  # ────────────────────────────────────────────
+  mcrpg:heavy_swing_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:heavy_swing
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:heavy_swing_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:heavy_swing_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG]
+
+  mcrpg:dryads_gift_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:dryads_gift
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:dryads_gift_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:dryads_gift_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG]
+
+  mcrpg:nymphs_vitality_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:nymphs_vitality
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:nymphs_vitality_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:nymphs_vitality_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [OAK_LOG, SPRUCE_LOG, BIRCH_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG]
+
+  # ────────────────────────────────────────────
+  #  Herbalism
+  # ────────────────────────────────────────────
+  mcrpg:verdant_surge_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:verdant_surge
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:verdant_surge_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:verdant_surge_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART]
+
+  mcrpg:mass_harvest_upgrade:
+    scope: mcrpg:single_player
+    repeat-mode: REPEATABLE
+    rewards:
+      upgrade:
+        type: mcrpg:ability_upgrade_next_tier
+        ability: mcrpg:mass_harvest
+    phases:
+      phase:
+        completion-mode: ALL
+        stages:
+          stage:
+            key: mcrpg:mass_harvest_upgrade_stage
+            objectives:
+              objective:
+                key: mcrpg:mass_harvest_upgrade_objective
+                type: mcrpg:block_break
+                required-progress: "20*(tier^2)"
+                config:
+                  blocks: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART]
