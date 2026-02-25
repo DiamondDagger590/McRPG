@@ -1048,6 +1048,14 @@ Each phase includes unit tests alongside implementation. Key areas to test:
 - Conditional objectives in templates
 - Expression engine integration for template variables
 - Board GUI polish (rarity animations, hover previews, timer displays)
+- Distribution preview in GUI -- live display of distribution tiers and projected rewards at a player's current contribution level
+- Factions/Towny scope adapter implementations -- reference implementations of `ScopedBoardAdapter` for popular group plugins, using the generic framework from Phase 3
+- Advanced split-mode reward handling:
+  - Per-reward `pot-behavior` flag (`SCALE`, `TOP_ONLY`, `ALL`) for mixed-reward tiers with non-scalable types (e.g., command rewards)
+  - `ScalableCommandRewardType` with `{amount}` token for command-based pot rewards
+  - Integer truncation remainder strategies (`DISCARD`, `TOP_CONTRIBUTOR`, `RANDOM`)
+  - `min-scaled-amount` config to prevent minimum-1 clamping from exceeding pot totals
+  - Composite pot bundles for holistic multi-reward decomposition
 - Edge case hardening (server restart mid-rotation, land dissolution with active quest, etc.)
 - Integration test suite
 
