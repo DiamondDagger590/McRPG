@@ -1,15 +1,21 @@
 package us.eunoians.mcrpg.quest.reward.builtin;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * Built-in reward type that grants McRPG skill experience to a player.
@@ -66,14 +72,46 @@ public class ExperienceRewardType implements QuestRewardType {
 
     @Override
     public void grant(@NotNull Player player) {
-        // TODO: Hook into McRPG skill XP system to grant experience
-        // SkillRegistry -> find skill by name -> grant XP to player
+        if (skillName.isEmpty() || amount <= 0) {
+            return;
+        }
+
+        NamespacedKey skillKey = resolveSkillKey(skillName);
+        if (skillKey == null || !RegistryAccess.registryAccess().registry(McRPGRegistryKey.SKILL).registered(skillKey)) {
+            Logger.getLogger(ExperienceRewardType.class.getName())
+                    .warning("Cannot grant experience — unknown skill: " + skillName);
+            return;
+        }
+
+        Optional<McRPGPlayer> mcRPGPlayer = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(player.getUniqueId());
+
+        mcRPGPlayer.ifPresent(p ->
+                p.asSkillHolder().getSkillHolderData(skillKey)
+                        .ifPresent(data -> data.addExperience((int) amount)));
+    }
+
+    @org.jetbrains.annotations.Nullable
+    private static NamespacedKey resolveSkillKey(@NotNull String input) {
+        if (input.contains(":")) {
+            return NamespacedKey.fromString(input.toLowerCase());
+        }
+        return new NamespacedKey(McRPGMethods.getMcRPGNamespace(), input.toLowerCase());
     }
 
     @NotNull
     @Override
     public Map<String, Object> serializeConfig() {
         return Map.of("skill", skillName, "amount", amount);
+    }
+
+    @NotNull
+    @Override
+    public ExperienceRewardType withAmountMultiplier(double multiplier) {
+        long scaled = Math.max(1, (long) (amount * multiplier));
+        return new ExperienceRewardType(skillName, scaled);
     }
 
     @NotNull

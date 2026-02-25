@@ -74,4 +74,22 @@ public interface QuestRewardType extends McRPGContent {
     @NotNull
     QuestRewardType fromSerializedConfig(@NotNull Map<String, Object> config);
 
+    /**
+     * Returns a new reward instance with any numeric amount scaled by the multiplier.
+     * Used by the reward distribution resolver for {@code SPLIT_EVEN} and
+     * {@code SPLIT_PROPORTIONAL} pot distribution modes.
+     * <p>
+     * Implementations with numeric amounts (experience, items, currency) should
+     * return a new instance with the scaled value (minimum 1). Implementations
+     * without numeric amounts (commands, ability upgrades) return {@code this}
+     * unchanged — the resolver logs a warning for non-scalable rewards in split-mode tiers.
+     *
+     * @param multiplier the scaling factor (e.g., 0.5 for half, 0.1 for one-tenth)
+     * @return a scaled copy, or {@code this} if the reward type is not scalable
+     */
+    @NotNull
+    default QuestRewardType withAmountMultiplier(double multiplier) {
+        return this;
+    }
+
 }
