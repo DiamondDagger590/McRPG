@@ -3,7 +3,7 @@
 > **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest-board.md)
 > **Phase 1 LLD:** [phase-1-core-board-infrastructure.md](phase-1-core-board-infrastructure.md)
 > **Phase 2 LLD:** [phase-2-per-player-slots-and-templates.md](phase-2-per-player-slots-and-templates.md)
-> **Status:** DRAFT
+> **Status:** IMPLEMENTED
 
 ## Scope
 
@@ -2246,3 +2246,23 @@ public Set<ReloadableContent<?>> getReloadableContent() {
 
    **d) Composite pot bundles:**
    Rather than scaling each reward independently, a `CompositePotReward` type could define a pot as a single logical unit that is decomposed intelligently. For example, a pot of "1000 XP + 10 diamonds + 1 title" could be configured to distribute the XP and diamonds proportionally, the title to the top contributor only, and handle remainders holistically rather than per-reward. This is the most complex option and may not be worth the config complexity.
+
+---
+
+## 12. Implementation Notes
+
+The following intentional deviations from the original code snippets were made during implementation. The snippets in sections 1–9 are illustrative (design intent); this section records where the final code differs.
+
+1. **`DistributionTierConfig` uses generic `typeParameters` map (section 1.5):** The LLD shows dedicated `topPlayerCount` and `minContributionPercent` constructor parameters. The implementation uses a `Map<String, Object> typeParameters` with `PARAM_TOP_PLAYER_COUNT` and `PARAM_MIN_CONTRIBUTION_PERCENT` string constants, plus a generic `<T> Optional<T> getTypeParameter(String key, Class<T> type)` accessor. This is more extensible for third-party distribution types that need custom parameters without modifying the config class. The convenience methods `getTopPlayerCount()` and `getMinContributionPercent()` still exist as typed wrappers over the map.
+
+2. **`DistributionTierConfig` added `getMinRarity()` / `getRequiredRarity()` returning `Optional<NamespacedKey>`:** These getters were added to expose the rarity gate fields for serialization by `GeneratedQuestDefinitionSerializer`. The LLD's section 1.5 omits them since they were only needed for the serializer round-trip added during implementation.
+
+3. **`parseRewardDistribution` is `static`, returns `Optional`, and takes logging context (section 3.14):** The LLD shows `@Nullable private RewardDistributionConfig parseRewardDistribution(@NotNull Section)`. The actual signature is `static Optional<RewardDistributionConfig> parseRewardDistribution(@NotNull Section parentSection, @NotNull String fileName, @NotNull String contextKey)`. Made package-private static for reuse and testability; returns `Optional` for consistency with `parseNamespacedKey`; takes `fileName` and `contextKey` for contextual warning messages when tiers are malformed.
+
+4. **`parseNamespacedKey` returns `Optional<NamespacedKey>` (section 3.14):** Both `QuestConfigLoader` and `QuestTemplateConfigLoader` were refactored from `@Nullable NamespacedKey` to `Optional<NamespacedKey>`. All call sites updated to use `Optional` methods (`.orElseThrow()`, `.orElse(null)`, `.ifPresent()`, `.isEmpty()`).
+
+5. **Scoped offering generation lives in `QuestBoardManager`, not `QuestBoardRotationTask` (section 3.13):** The LLD describes extending `QuestBoardRotationTask.onIntervalComplete()`. In practice, `QuestBoardManager.generateScopedOfferings()` is called inline alongside `generateSharedOfferings()` during the existing rotation flow within `QuestBoardManager`'s rotation method (not via a separate override on the task class). The task triggers the manager, and the manager orchestrates both shared and scoped generation.
+
+6. **Test naming differs from LLD section headers:** Section 9.10 (`RewardDistributionConfigParsingTest`) is implemented as `QuestConfigLoaderDistributionTest`. Section 9.18 content pack tests are added to the existing `ContentPackTest` class rather than separate test classes. Section 9.19 completion listener tests exist as `QuestCompleteListenerTest`, `QuestPhaseCompleteListenerTest`, etc. but distribution-specific assertions are deferred to Phase 4.
+
+7. **`GeneratedQuestDefinitionSerializer` extended for `reward-distribution`:** Not explicitly called out in the LLD as a modification target, but was updated during implementation to serialize/deserialize `RewardDistributionConfig` at quest, phase, and stage levels for template-generated quest persistence. Helper methods `serializeDistribution()` and `deserializeDistribution()` added.

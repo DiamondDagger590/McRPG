@@ -18,6 +18,9 @@ import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.board.distribution.DistributionTierConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardSplitMode;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 
@@ -94,6 +97,9 @@ public final class GeneratedQuestDefinitionSerializer {
         }
         root.add("rewards", rewardsArray);
 
+        definition.getRewardDistribution()
+                .ifPresent(dist -> root.add("reward_distribution", serializeDistribution(dist)));
+
         return GSON.toJson(root);
     }
 
@@ -122,9 +128,13 @@ public final class GeneratedQuestDefinitionSerializer {
             NamespacedKey scopeKey = NamespacedKey.fromString(root.get("scope").getAsString());
 
             List<QuestPhaseDefinition> phases = deserializePhases(
-                    root.getAsJsonArray("phases"), objectiveTypeRegistry, questKeyString);
+                    root.getAsJsonArray("phases"), objectiveTypeRegistry, rewardTypeRegistry, questKeyString);
             List<QuestRewardType> rewards = deserializeRewards(
                     root.getAsJsonArray("rewards"), rewardTypeRegistry, questKeyString);
+
+            RewardDistributionConfig rewardDistribution = root.has("reward_distribution")
+                    ? deserializeDistribution(root.getAsJsonObject("reward_distribution"), rewardTypeRegistry, questKeyString)
+                    : null;
 
             return new QuestDefinition(
                     questKey,
@@ -135,7 +145,9 @@ public final class GeneratedQuestDefinitionSerializer {
                     QuestRepeatMode.ONCE,
                     null,
                     -1,
-                    null
+                    null,
+                    null,
+                    rewardDistribution
             );
         } catch (QuestDeserializationException e) {
             throw e;
@@ -165,6 +177,10 @@ public final class GeneratedQuestDefinitionSerializer {
             stagesArray.add(serializeStage(stage, objectiveConfigs));
         }
         phaseObj.add("stages", stagesArray);
+
+        phase.getRewardDistribution()
+                .ifPresent(dist -> phaseObj.add("reward_distribution", serializeDistribution(dist)));
+
         return phaseObj;
     }
 
@@ -186,6 +202,10 @@ public final class GeneratedQuestDefinitionSerializer {
             objectivesArray.add(serializeObjective(objective, objectiveConfigs));
         }
         stageObj.add("objectives", objectivesArray);
+
+        stage.getRewardDistribution()
+                .ifPresent(dist -> stageObj.add("reward_distribution", serializeDistribution(dist)));
+
         return stageObj;
     }
 
@@ -219,6 +239,7 @@ public final class GeneratedQuestDefinitionSerializer {
      *
      * @param phasesArray           the JSON array of phase objects
      * @param objectiveTypeRegistry registry for looking up objective types
+     * @param rewardTypeRegistry    registry for looking up reward types (used for distribution tiers)
      * @param questKeyString        the quest key string for error context
      * @return the deserialized phase definitions
      * @throws QuestDeserializationException if an objective type cannot be resolved
@@ -226,6 +247,7 @@ public final class GeneratedQuestDefinitionSerializer {
     @NotNull
     private static List<QuestPhaseDefinition> deserializePhases(@NotNull JsonArray phasesArray,
                                                                 @NotNull QuestObjectiveTypeRegistry objectiveTypeRegistry,
+                                                                @NotNull QuestRewardTypeRegistry rewardTypeRegistry,
                                                                 @NotNull String questKeyString) {
         List<QuestPhaseDefinition> phases = new ArrayList<>();
         for (int phaseIdx = 0; phaseIdx < phasesArray.size(); phaseIdx++) {
@@ -248,10 +270,18 @@ public final class GeneratedQuestDefinitionSerializer {
                     objectives.add(deserializeObjective(objObj, objectiveTypeRegistry, questKeyString));
                 }
 
-                stages.add(new QuestStageDefinition(stageKey, objectives, List.of(), null));
+                RewardDistributionConfig stageDist = stageObj.has("reward_distribution")
+                        ? deserializeDistribution(stageObj.getAsJsonObject("reward_distribution"), rewardTypeRegistry, questKeyString)
+                        : null;
+
+                stages.add(new QuestStageDefinition(stageKey, objectives, List.of(), stageDist));
             }
 
-            phases.add(new QuestPhaseDefinition(phaseIdx, completionMode, stages, null));
+            RewardDistributionConfig phaseDist = phaseObj.has("reward_distribution")
+                    ? deserializeDistribution(phaseObj.getAsJsonObject("reward_distribution"), rewardTypeRegistry, questKeyString)
+                    : null;
+
+            phases.add(new QuestPhaseDefinition(phaseIdx, completionMode, stages, phaseDist));
         }
         return phases;
     }
@@ -320,6 +350,39 @@ public final class GeneratedQuestDefinitionSerializer {
             rewards.add(baseType.fromSerializedConfig(configMap));
         }
         return rewards;
+    }
+
+    @NotNull
+    private static RewardDistributionConfig deserializeDistribution(@NotNull JsonObject distObj,
+                                                                     @NotNull QuestRewardTypeRegistry rewardTypeRegistry,
+                                                                     @NotNull String questKeyString) {
+        JsonArray tiersArray = distObj.getAsJsonArray("tiers");
+        List<DistributionTierConfig> tiers = new ArrayList<>();
+
+        for (JsonElement tierElement : tiersArray) {
+            JsonObject tierObj = tierElement.getAsJsonObject();
+            String tierKey = tierObj.get("tier_key").getAsString();
+            NamespacedKey typeKey = NamespacedKey.fromString(tierObj.get("type").getAsString());
+            RewardSplitMode splitMode = RewardSplitMode.valueOf(tierObj.get("split_mode").getAsString());
+
+            Map<String, Object> typeParameters = tierObj.has("type_parameters")
+                    ? jsonObjectToMap(tierObj.getAsJsonObject("type_parameters"))
+                    : Map.of();
+
+            List<QuestRewardType> rewards = deserializeRewards(
+                    tierObj.getAsJsonArray("rewards"), rewardTypeRegistry, questKeyString);
+
+            NamespacedKey minRarity = tierObj.has("min_rarity")
+                    ? NamespacedKey.fromString(tierObj.get("min_rarity").getAsString())
+                    : null;
+            NamespacedKey requiredRarity = tierObj.has("required_rarity")
+                    ? NamespacedKey.fromString(tierObj.get("required_rarity").getAsString())
+                    : null;
+
+            tiers.add(new DistributionTierConfig(tierKey, typeKey, splitMode, rewards, typeParameters, minRarity, requiredRarity));
+        }
+
+        return new RewardDistributionConfig(tiers);
     }
 
     /**
@@ -411,6 +474,40 @@ public final class GeneratedQuestDefinitionSerializer {
             return jsonObjectToMap(element.getAsJsonObject());
         }
         return element.toString();
+    }
+
+    @NotNull
+    private static JsonObject serializeDistribution(@NotNull RewardDistributionConfig config) {
+        JsonArray tiersArray = new JsonArray();
+        for (DistributionTierConfig tier : config.getTiers()) {
+            JsonObject tierObj = new JsonObject();
+            tierObj.addProperty("tier_key", tier.getTierKey());
+            tierObj.addProperty("type", tier.getTypeKey().toString());
+            tierObj.addProperty("split_mode", tier.getSplitMode().name());
+
+            if (!tier.getTypeParameters().isEmpty()) {
+                tierObj.add("type_parameters", GSON.toJsonTree(tier.getTypeParameters()));
+            }
+
+            JsonArray rewardsArray = new JsonArray();
+            for (QuestRewardType reward : tier.getRewards()) {
+                JsonObject rObj = new JsonObject();
+                rObj.addProperty("type", reward.getKey().toString());
+                rObj.add("config", GSON.toJsonTree(reward.serializeConfig()));
+                rewardsArray.add(rObj);
+            }
+            tierObj.add("rewards", rewardsArray);
+
+            tier.getMinRarity()
+                    .ifPresent(k -> tierObj.addProperty("min_rarity", k.toString()));
+            tier.getRequiredRarity()
+                    .ifPresent(k -> tierObj.addProperty("required_rarity", k.toString()));
+
+            tiersArray.add(tierObj);
+        }
+        JsonObject distObj = new JsonObject();
+        distObj.add("tiers", tiersArray);
+        return distObj;
     }
 
     /**

@@ -175,6 +175,26 @@ public final class DistributionTierConfig {
     }
 
     /**
+     * Gets the minimum rarity key for this tier's rarity gate.
+     *
+     * @return the minimum rarity key, or empty if not configured
+     */
+    @NotNull
+    public Optional<NamespacedKey> getMinRarity() {
+        return Optional.ofNullable(minRarity);
+    }
+
+    /**
+     * Gets the required exact-match rarity key for this tier's rarity gate.
+     *
+     * @return the required rarity key, or empty if not configured
+     */
+    @NotNull
+    public Optional<NamespacedKey> getRequiredRarity() {
+        return Optional.ofNullable(requiredRarity);
+    }
+
+    /**
      * Checks whether a quest instance's rarity passes this tier's rarity gate.
      * If no rarity gate is configured, always returns {@code true}.
      * <p>

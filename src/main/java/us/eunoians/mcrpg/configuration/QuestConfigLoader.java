@@ -126,11 +126,12 @@ public class QuestConfigLoader {
         }
 
         for (String questKeyString : questsSection.getRoutesAsStrings(false)) {
-            NamespacedKey questKey = parseNamespacedKey(questKeyString);
-            if (questKey == null) {
+            Optional<NamespacedKey> questKeyOpt = parseNamespacedKey(questKeyString);
+            if (questKeyOpt.isEmpty()) {
                 logger.warning("Invalid quest key '" + questKeyString + "' in " + file.getName() + ", skipping");
                 continue;
             }
+            NamespacedKey questKey = questKeyOpt.get();
 
             if (definitions.containsKey(questKey)) {
                 logger.warning("Duplicate quest key '" + questKey + "' in " + file.getName()
@@ -169,10 +170,8 @@ public class QuestConfigLoader {
                                                  @NotNull Section section,
                                                  @NotNull String fileName) {
         String scopeString = section.getString("scope", "mcrpg:single_player");
-        NamespacedKey scopeType = parseNamespacedKey(scopeString);
-        if (scopeType == null) {
-            throw new IllegalArgumentException("Invalid scope type: " + scopeString);
-        }
+        NamespacedKey scopeType = parseNamespacedKey(scopeString)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid scope type: " + scopeString));
 
         Duration expiration = null;
         if (section.contains("expiration")) {
@@ -199,10 +198,9 @@ public class QuestConfigLoader {
             repeatLimit = section.getInt("repeat-limit", -1);
         }
 
-        NamespacedKey expansionKey = null;
-        if (section.contains("expansion")) {
-            expansionKey = parseNamespacedKey(section.getString("expansion"));
-        }
+        NamespacedKey expansionKey = section.contains("expansion")
+                ? parseNamespacedKey(section.getString("expansion")).orElse(null)
+                : null;
 
         List<QuestRewardType> rewards = parseRewards(section, fileName, questKey.toString());
 
@@ -355,11 +353,9 @@ public class QuestConfigLoader {
             throw new IllegalArgumentException("Stage in quest " + questKey + " is missing a 'key'");
         }
 
-        NamespacedKey stageKey = parseNamespacedKey(stageKeyString);
-        if (stageKey == null) {
-            throw new IllegalArgumentException("Invalid stage key '" + stageKeyString
-                    + "' in quest " + questKey);
-        }
+        NamespacedKey stageKey = parseNamespacedKey(stageKeyString)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid stage key '" + stageKeyString
+                    + "' in quest " + questKey));
 
         List<QuestRewardType> rewards = parseRewards(stageSection, fileName, questKey + "/" + stageKey);
 
@@ -409,11 +405,9 @@ public class QuestConfigLoader {
             throw new IllegalArgumentException("Objective in quest " + questKey + " is missing a 'key'");
         }
 
-        NamespacedKey objectiveKey = parseNamespacedKey(objectiveKeyString);
-        if (objectiveKey == null) {
-            throw new IllegalArgumentException("Invalid objective key '" + objectiveKeyString
-                    + "' in quest " + questKey);
-        }
+        NamespacedKey objectiveKey = parseNamespacedKey(objectiveKeyString)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid objective key '" + objectiveKeyString
+                    + "' in quest " + questKey));
 
         String typeKeyString = objectiveSection.getString("type");
         if (typeKeyString == null || typeKeyString.isEmpty()) {
@@ -421,11 +415,9 @@ public class QuestConfigLoader {
                     + " is missing a 'type'");
         }
 
-        NamespacedKey typeKey = parseNamespacedKey(typeKeyString);
-        if (typeKey == null) {
-            throw new IllegalArgumentException("Invalid objective type key '" + typeKeyString
-                    + "' in quest " + questKey);
-        }
+        NamespacedKey typeKey = parseNamespacedKey(typeKeyString)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid objective type key '" + typeKeyString
+                    + "' in quest " + questKey));
 
         Optional<QuestObjectiveType> baseType = objectiveTypeRegistry.get(typeKey);
         if (baseType.isEmpty()) {
@@ -480,9 +472,9 @@ public class QuestConfigLoader {
      * @return the list of configured reward type instances (may be empty)
      */
     @NotNull
-    private List<QuestRewardType> parseRewards(@NotNull Section parentSection,
-                                               @NotNull String fileName,
-                                               @NotNull String contextKey) {
+    static List<QuestRewardType> parseRewards(@NotNull Section parentSection,
+                                              @NotNull String fileName,
+                                              @NotNull String contextKey) {
         Section rewardsSection = parentSection.getSection("rewards");
         if (rewardsSection == null) {
             return List.of();
@@ -513,13 +505,14 @@ public class QuestConfigLoader {
                 continue;
             }
 
-            NamespacedKey typeKey = parseNamespacedKey(typeKeyString);
-            if (typeKey == null) {
+            Optional<NamespacedKey> typeKeyOpt = parseNamespacedKey(typeKeyString);
+            if (typeKeyOpt.isEmpty()) {
                 logger.warning("Invalid reward type key '" + typeKeyString + "' in " + contextKey
                         + " (" + fileName + "), skipping");
                 continue;
             }
 
+            NamespacedKey typeKey = typeKeyOpt.get();
             Optional<QuestRewardType> baseType = rewardTypeRegistry.get(typeKey);
             if (baseType.isEmpty()) {
                 logger.warning("Unknown reward type '" + typeKey + "' in " + contextKey
@@ -549,9 +542,9 @@ public class QuestConfigLoader {
      * @return an {@link Optional} containing the parsed config, or empty if no section is present
      */
     @NotNull
-    private Optional<RewardDistributionConfig> parseRewardDistribution(@NotNull Section parentSection,
-                                                                       @NotNull String fileName,
-                                                                       @NotNull String contextKey) {
+    static Optional<RewardDistributionConfig> parseRewardDistribution(@NotNull Section parentSection,
+                                                                      @NotNull String fileName,
+                                                                      @NotNull String contextKey) {
         Section distSection = parentSection.getSection("reward-distribution");
         if (distSection == null) {
             return Optional.empty();
@@ -579,13 +572,14 @@ public class QuestConfigLoader {
                 continue;
             }
 
-            NamespacedKey typeKey = parseNamespacedKey(typeKeyString);
-            if (typeKey == null) {
+            Optional<NamespacedKey> typeKeyOpt = parseNamespacedKey(typeKeyString);
+            if (typeKeyOpt.isEmpty()) {
                 logger.warning("Invalid distribution type key '" + typeKeyString + "' in " + contextKey
                         + " (" + fileName + "), skipping");
                 continue;
             }
 
+            NamespacedKey typeKey = typeKeyOpt.get();
             RewardSplitMode splitMode = RewardSplitMode.INDIVIDUAL;
             if (tierSection.contains("split-mode")) {
                 try {
@@ -615,15 +609,13 @@ public class QuestConfigLoader {
                 }
             }
 
-            NamespacedKey minRarity = null;
-            if (tierSection.contains("min-rarity")) {
-                minRarity = parseNamespacedKey(tierSection.getString("min-rarity"));
-            }
+            NamespacedKey minRarity = tierSection.contains("min-rarity")
+                    ? parseNamespacedKey(tierSection.getString("min-rarity")).orElse(null)
+                    : null;
 
-            NamespacedKey requiredRarity = null;
-            if (tierSection.contains("required-rarity")) {
-                requiredRarity = parseNamespacedKey(tierSection.getString("required-rarity"));
-            }
+            NamespacedKey requiredRarity = tierSection.contains("required-rarity")
+                    ? parseNamespacedKey(tierSection.getString("required-rarity")).orElse(null)
+                    : null;
 
             tiers.add(new DistributionTierConfig(tierLabel, typeKey, splitMode, rewards,
                     typeParameters, minRarity, requiredRarity));
@@ -641,17 +633,18 @@ public class QuestConfigLoader {
      * with the input lowercased as the key.
      *
      * @param input the string to parse
-     * @return the parsed key, or {@code null} if the input is null, empty, or invalid
+     * @return an {@link Optional} containing the parsed key, or empty if the input
+     *         is null, empty, or invalid
      */
-    @Nullable
-    private NamespacedKey parseNamespacedKey(@Nullable String input) {
+    @NotNull
+    static Optional<NamespacedKey> parseNamespacedKey(@Nullable String input) {
         if (input == null || input.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
         if (input.contains(":")) {
-            return NamespacedKey.fromString(input);
+            return Optional.ofNullable(NamespacedKey.fromString(input));
         }
-        return new NamespacedKey(McRPGMethods.getMcRPGNamespace(), input.toLowerCase());
+        return Optional.of(new NamespacedKey(McRPGMethods.getMcRPGNamespace(), input.toLowerCase()));
     }
 
     /**

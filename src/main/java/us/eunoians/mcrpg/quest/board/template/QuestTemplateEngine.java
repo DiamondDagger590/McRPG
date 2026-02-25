@@ -173,7 +173,9 @@ public final class QuestTemplateEngine {
                 QuestRepeatMode.ONCE,
                 null,
                 -1,
-                null
+                null,
+                null,
+                template.getRewardDistribution().orElse(null)
         );
     }
 

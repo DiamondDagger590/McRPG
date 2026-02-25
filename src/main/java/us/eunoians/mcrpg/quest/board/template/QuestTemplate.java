@@ -9,6 +9,8 @@ import us.eunoians.mcrpg.quest.board.rarity.QuestRarity;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +38,7 @@ public final class QuestTemplate implements McRPGContent {
     private final Map<String, TemplateVariable> variables;
     private final List<TemplatePhaseDefinition> phases;
     private final List<TemplateRewardDefinition> rewards;
+    private final RewardDistributionConfig rewardDistribution;
     private final NamespacedKey expansionKey;
 
     public QuestTemplate(@NotNull NamespacedKey key,
@@ -48,7 +51,7 @@ public final class QuestTemplate implements McRPGContent {
                          @NotNull List<TemplatePhaseDefinition> phases,
                          @NotNull List<TemplateRewardDefinition> rewards) {
         this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
-                rarityOverrides, variables, phases, rewards, null);
+                rarityOverrides, variables, phases, rewards, null, null);
     }
 
     public QuestTemplate(@NotNull NamespacedKey key,
@@ -60,6 +63,7 @@ public final class QuestTemplate implements McRPGContent {
                          @NotNull Map<String, TemplateVariable> variables,
                          @NotNull List<TemplatePhaseDefinition> phases,
                          @NotNull List<TemplateRewardDefinition> rewards,
+                         @Nullable RewardDistributionConfig rewardDistribution,
                          @Nullable NamespacedKey expansionKey) {
         this.key = key;
         this.displayNameRoute = displayNameRoute;
@@ -70,6 +74,7 @@ public final class QuestTemplate implements McRPGContent {
         this.variables = Map.copyOf(variables);
         this.phases = List.copyOf(phases);
         this.rewards = List.copyOf(rewards);
+        this.rewardDistribution = rewardDistribution;
         this.expansionKey = expansionKey;
     }
 
@@ -174,6 +179,18 @@ public final class QuestTemplate implements McRPGContent {
     @NotNull
     public List<TemplateRewardDefinition> getRewards() {
         return rewards;
+    }
+
+    /**
+     * Returns the optional reward distribution configuration for this template.
+     * When present, this config is propagated to generated {@link QuestDefinition}
+     * instances by the {@code QuestTemplateEngine}.
+     *
+     * @return the distribution config, or empty if not configured
+     */
+    @NotNull
+    public Optional<RewardDistributionConfig> getRewardDistribution() {
+        return Optional.ofNullable(rewardDistribution);
     }
 
     /**

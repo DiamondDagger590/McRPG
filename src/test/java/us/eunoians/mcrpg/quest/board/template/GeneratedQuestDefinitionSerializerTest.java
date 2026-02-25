@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,9 @@ import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.board.distribution.DistributionTierConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardSplitMode;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 
@@ -178,6 +182,132 @@ class GeneratedQuestDefinitionSerializerTest {
         assertTrue(ex.getFailedElement().contains("reward type"));
     }
 
+    @Test
+    @DisplayName("Round-trip preserves quest-level reward distribution")
+    void roundTrip_preservesQuestLevelRewardDistribution() {
+        QuestDefinition original = createDefinitionWithDistribution();
+        ResolvedVariableContext context = createTestContext();
+        Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
+
+        String json = GeneratedQuestDefinitionSerializer.serialize(
+                original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
+        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
+                json, objectiveTypeRegistry, rewardTypeRegistry);
+
+        assertTrue(deserialized.getRewardDistribution().isPresent(),
+                "Quest-level reward distribution should survive roundtrip");
+        RewardDistributionConfig dist = deserialized.getRewardDistribution().get();
+        assertEquals(2, dist.getTiers().size());
+
+        DistributionTierConfig firstTier = dist.getTiers().get(0);
+        assertEquals("top-contributors", firstTier.getTierKey());
+        assertEquals(NamespacedKey.fromString("mcrpg:top_players"), firstTier.getTypeKey());
+        assertEquals(RewardSplitMode.INDIVIDUAL, firstTier.getSplitMode());
+        assertEquals(1, firstTier.getRewards().size());
+
+        DistributionTierConfig secondTier = dist.getTiers().get(1);
+        assertEquals("all-members", secondTier.getTierKey());
+        assertEquals(NamespacedKey.fromString("mcrpg:membership"), secondTier.getTypeKey());
+        assertEquals(RewardSplitMode.SPLIT_EVEN, secondTier.getSplitMode());
+    }
+
+    @Test
+    @DisplayName("Round-trip preserves stage-level reward distribution")
+    void roundTrip_preservesStageLevelRewardDistribution() {
+        QuestDefinition original = createDefinitionWithStageDistribution();
+        ResolvedVariableContext context = createTestContext();
+        Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
+
+        String json = GeneratedQuestDefinitionSerializer.serialize(
+                original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
+        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
+                json, objectiveTypeRegistry, rewardTypeRegistry);
+
+        QuestStageDefinition stage = deserialized.getPhases().get(0).getStages().get(0);
+        assertTrue(stage.getRewardDistribution().isPresent(),
+                "Stage-level reward distribution should survive roundtrip");
+        assertEquals(1, stage.getRewardDistribution().get().getTiers().size());
+    }
+
+    @Test
+    @DisplayName("Round-trip preserves phase-level reward distribution")
+    void roundTrip_preservesPhaseLevelRewardDistribution() {
+        QuestDefinition original = createDefinitionWithPhaseDistribution();
+        ResolvedVariableContext context = createTestContext();
+        Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
+
+        String json = GeneratedQuestDefinitionSerializer.serialize(
+                original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
+        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
+                json, objectiveTypeRegistry, rewardTypeRegistry);
+
+        QuestPhaseDefinition phase = deserialized.getPhases().get(0);
+        assertTrue(phase.getRewardDistribution().isPresent(),
+                "Phase-level reward distribution should survive roundtrip");
+        assertEquals(1, phase.getRewardDistribution().get().getTiers().size());
+    }
+
+    @Test
+    @DisplayName("Round-trip preserves distribution tier type parameters")
+    void roundTrip_preservesDistributionTypeParameters() {
+        QuestDefinition original = createDefinitionWithDistribution();
+        ResolvedVariableContext context = createTestContext();
+        Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
+
+        String json = GeneratedQuestDefinitionSerializer.serialize(
+                original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
+        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
+                json, objectiveTypeRegistry, rewardTypeRegistry);
+
+        DistributionTierConfig tier = deserialized.getRewardDistribution().get().getTiers().get(0);
+        assertTrue(tier.getTopPlayerCount().isPresent());
+        assertEquals(3, tier.getTopPlayerCount().get());
+    }
+
+    @Test
+    @DisplayName("Round-trip preserves distribution tier rarity gates")
+    void roundTrip_preservesDistributionRarityGates() {
+        NamespacedKey minRarity = NamespacedKey.fromString("mcrpg:uncommon");
+        NamespacedKey requiredRarity = NamespacedKey.fromString("mcrpg:legendary");
+
+        QuestRewardType rewardType = mock(QuestRewardType.class);
+        when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
+        when(rewardType.serializeConfig()).thenReturn(Map.of("amount", 100));
+
+        DistributionTierConfig tier = new DistributionTierConfig(
+                "gated-tier", NamespacedKey.fromString("mcrpg:participated"),
+                RewardSplitMode.INDIVIDUAL, List.of(rewardType),
+                Map.of(), minRarity, requiredRarity);
+
+        QuestDefinition original = createDefinitionWithCustomDistribution(
+                new RewardDistributionConfig(List.of(tier)));
+
+        String json = GeneratedQuestDefinitionSerializer.serialize(
+                original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
+                json, objectiveTypeRegistry, rewardTypeRegistry);
+
+        DistributionTierConfig deserializedTier = deserialized.getRewardDistribution().get().getTiers().get(0);
+        assertTrue(deserializedTier.getMinRarity().isPresent());
+        assertEquals(minRarity, deserializedTier.getMinRarity().get());
+        assertTrue(deserializedTier.getRequiredRarity().isPresent());
+        assertEquals(requiredRarity, deserializedTier.getRequiredRarity().get());
+    }
+
+    @Test
+    @DisplayName("Round-trip without reward distribution keeps it empty")
+    void roundTrip_noDistribution_remainsEmpty() {
+        QuestDefinition original = createTestDefinition();
+
+        String json = GeneratedQuestDefinitionSerializer.serialize(
+                original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
+                json, objectiveTypeRegistry, rewardTypeRegistry);
+
+        assertTrue(deserialized.getRewardDistribution().isEmpty(),
+                "Definition without reward distribution should remain empty after roundtrip");
+    }
+
     private QuestDefinition createTestDefinition() {
         QuestObjectiveType objType = mock(QuestObjectiveType.class);
         when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
@@ -225,5 +355,101 @@ class GeneratedQuestDefinitionSerializerTest {
         return GeneratedQuestDefinitionSerializer.serialize(
                 createTestDefinition(), TEMPLATE_KEY, RARITY_KEY,
                 createTestContext(), createObjectiveConfigs());
+    }
+
+    private RewardDistributionConfig createTwoTierDistribution() {
+        QuestRewardType rewardType = mock(QuestRewardType.class);
+        when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
+        when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 500));
+
+        DistributionTierConfig topTier = new DistributionTierConfig(
+                "top-contributors", NamespacedKey.fromString("mcrpg:top_players"),
+                RewardSplitMode.INDIVIDUAL, List.of(rewardType),
+                Map.of(DistributionTierConfig.PARAM_TOP_PLAYER_COUNT, 3),
+                null, null);
+
+        DistributionTierConfig memberTier = new DistributionTierConfig(
+                "all-members", NamespacedKey.fromString("mcrpg:membership"),
+                RewardSplitMode.SPLIT_EVEN, List.of(rewardType),
+                Map.of(), null, null);
+
+        return new RewardDistributionConfig(List.of(topTier, memberTier));
+    }
+
+    private RewardDistributionConfig createSingleTierDistribution() {
+        QuestRewardType rewardType = mock(QuestRewardType.class);
+        when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
+        when(rewardType.serializeConfig()).thenReturn(Map.of("amount", 250));
+
+        DistributionTierConfig tier = new DistributionTierConfig(
+                "participated", NamespacedKey.fromString("mcrpg:participated"),
+                RewardSplitMode.INDIVIDUAL, List.of(rewardType),
+                Map.of(), null, null);
+
+        return new RewardDistributionConfig(List.of(tier));
+    }
+
+    private QuestDefinition createDefinitionWithDistribution() {
+        return createDefinitionWithCustomDistribution(createTwoTierDistribution());
+    }
+
+    private QuestDefinition createDefinitionWithCustomDistribution(@NotNull RewardDistributionConfig dist) {
+        QuestObjectiveType objType = mock(QuestObjectiveType.class);
+        when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
+                OBJECTIVE_KEY, objType, 126L, List.of(), null);
+        QuestStageDefinition stage = new QuestStageDefinition(
+                STAGE_KEY, List.of(objective), List.of(), null);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(
+                0, PhaseCompletionMode.ALL, List.of(stage), null);
+
+        QuestRewardType rewardType = mock(QuestRewardType.class);
+        when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
+        when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 1654));
+
+        return new QuestDefinition(
+                QUEST_KEY, SCOPE_KEY, null, List.of(phase), List.of(rewardType),
+                QuestRepeatMode.ONCE, null, -1, null, null, dist);
+    }
+
+    private QuestDefinition createDefinitionWithStageDistribution() {
+        QuestObjectiveType objType = mock(QuestObjectiveType.class);
+        when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
+                OBJECTIVE_KEY, objType, 126L, List.of(), null);
+        QuestStageDefinition stage = new QuestStageDefinition(
+                STAGE_KEY, List.of(objective), List.of(), createSingleTierDistribution());
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(
+                0, PhaseCompletionMode.ALL, List.of(stage), null);
+
+        QuestRewardType rewardType = mock(QuestRewardType.class);
+        when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
+        when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 1654));
+
+        return new QuestDefinition(
+                QUEST_KEY, SCOPE_KEY, null, List.of(phase), List.of(rewardType),
+                QuestRepeatMode.ONCE, null, -1, null);
+    }
+
+    private QuestDefinition createDefinitionWithPhaseDistribution() {
+        QuestObjectiveType objType = mock(QuestObjectiveType.class);
+        when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
+                OBJECTIVE_KEY, objType, 126L, List.of(), null);
+        QuestStageDefinition stage = new QuestStageDefinition(
+                STAGE_KEY, List.of(objective), List.of(), null);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(
+                0, PhaseCompletionMode.ALL, List.of(stage), createSingleTierDistribution());
+
+        QuestRewardType rewardType = mock(QuestRewardType.class);
+        when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
+        when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 1654));
+
+        return new QuestDefinition(
+                QUEST_KEY, SCOPE_KEY, null, List.of(phase), List.of(rewardType),
+                QuestRepeatMode.ONCE, null, -1, null);
     }
 }

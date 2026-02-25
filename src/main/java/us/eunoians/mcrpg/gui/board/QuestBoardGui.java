@@ -1,16 +1,12 @@
 package us.eunoians.mcrpg.gui.board;
 
-import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -21,7 +17,6 @@ import us.eunoians.mcrpg.gui.board.slot.ScopedBackSlot;
 import us.eunoians.mcrpg.gui.board.slot.ScopedOfferingSlot;
 import us.eunoians.mcrpg.gui.board.slot.ScopedTabSlot;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
-import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter;
@@ -149,7 +144,7 @@ public class QuestBoardGui extends McRPGPaginatedGui {
         }
 
         if (scopedOfferings.isEmpty()) {
-            setSlot(22, noGroupQuestsSlot());
+            setSlot(22, new us.eunoians.mcrpg.gui.board.slot.ScopedNoOfferingsSlot());
         } else {
             int startIndex = page * SLOTS_PER_PAGE;
             int endIndex = Math.min(startIndex + SLOTS_PER_PAGE, scopedOfferings.size());
@@ -187,6 +182,14 @@ public class QuestBoardGui extends McRPGPaginatedGui {
         InventoryClickEvent.getHandlerList().unregister(this);
     }
 
+    /**
+     * Checks whether the player is a member of at least one scope entity across all
+     * registered adapters. Used to determine whether the scoped tab should be rendered
+     * in the navigation row.
+     *
+     * @param playerUUID the player to check
+     * @return {@code true} if the player belongs to at least one scope entity
+     */
     private boolean checkHasScopedEntities(@NotNull UUID playerUUID) {
         ScopedBoardAdapterRegistry adapterRegistry = McRPG.getInstance().registryAccess()
                 .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER);
@@ -198,6 +201,16 @@ public class QuestBoardGui extends McRPGPaginatedGui {
         return false;
     }
 
+    /**
+     * Loads all visible scoped offerings the player can see by iterating every registered
+     * {@link ScopedBoardAdapter}, resolving the player's member entities, and flattening
+     * each entity's offerings into a list of {@link ScopedOfferingEntry} records. Each
+     * entry carries the management permission flag so the GUI can gate accept/abandon actions.
+     *
+     * @param playerUUID   the player whose scoped offerings are being loaded
+     * @param boardManager the board manager to query for scoped offerings
+     * @return an immutable list of scoped offering entries across all member entities
+     */
     @NotNull
     private List<ScopedOfferingEntry> loadScopedOfferings(@NotNull UUID playerUUID,
                                                           @NotNull QuestBoardManager boardManager) {
@@ -223,29 +236,16 @@ public class QuestBoardGui extends McRPGPaginatedGui {
         return List.copyOf(entries);
     }
 
-    @NotNull
-    private static McRPGSlot noGroupQuestsSlot() {
-        return new McRPGSlot() {
-            @NotNull
-            @Override
-            public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(new ItemStack(Material.BARRIER))
-                        .setDisplayName("No group quests available");
-            }
-
-            @Override
-            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
-                return true;
-            }
-
-            @NotNull
-            @Override
-            public Set<Class<?>> getValidGuiTypes() {
-                return Set.of(QuestBoardGui.class);
-            }
-        };
-    }
-
+    /**
+     * Flattened representation of a single scoped board offering paired with its
+     * entity context and the player's management permission for that entity.
+     *
+     * @param offering          the board offering
+     * @param entityId          the scope entity identifier (e.g., land name)
+     * @param scopeProviderKey  the adapter's scope provider key
+     * @param entityDisplayName the human-readable entity name
+     * @param canManage         whether the player can accept/abandon quests for this entity
+     */
     private record ScopedOfferingEntry(
             @NotNull BoardOffering offering,
             @NotNull String entityId,

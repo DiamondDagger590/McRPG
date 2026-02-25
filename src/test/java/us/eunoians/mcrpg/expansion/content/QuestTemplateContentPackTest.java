@@ -98,6 +98,6 @@ class QuestTemplateContentPackTest {
         Map<String, TemplateVariable> vars = Map.of("count", new RangeVariable("count", 1, 10));
         return new QuestTemplate(key, Route.fromString("test.display"), true,
                 NamespacedKey.fromString("mcrpg:single_player"), Set.of(COMMON), Map.of(),
-                vars, List.of(phase), List.of(), EXPANSION_KEY);
+                vars, List.of(phase), List.of(), null, EXPANSION_KEY);
     }
 }

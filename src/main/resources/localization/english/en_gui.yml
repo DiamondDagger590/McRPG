@@ -94,6 +94,47 @@ gui:
         name: "<gray>Coming Soon"
         lore:
           - '<gray>Quest Board coming in a future update!'
+  # This GUI shows the quest board offerings.
+  quest-board:
+    title: '<gold>Quest Board'
+    offering-lore:
+      - '<gray>Rarity: <gold><rarity>'
+      - '<gray>Category: <gold><category>'
+      - ''
+      - '<yellow>Click to accept'
+    accept: '<green>Quest accepted!'
+    slots-full: '<red>You have no available quest slots.'
+    abandoned: '<yellow>Quest abandoned.'
+    on-cooldown: '<red>This quest is on cooldown.'
+    # Scoped (group) quest entries
+    group-tab:
+      display-item:
+        material: COMPASS
+        name: '<gold>Group Quests'
+        lore:
+          - '<gray>Click to view group quests.'
+    group-selector-title: '<gold>Select a Group'
+    # Placeholders: <entity_name>, <quest_count>
+    group-entity-slot:
+      display-item:
+        material: SHIELD
+        name: '<gold><entity_name>'
+        lore:
+          - '<gray>Active quests: <gold><quest_count>'
+          - ''
+          - '<yellow>Click to view offerings'
+    group-no-offerings:
+      display-item:
+        material: BARRIER
+        name: '<gray>No Group Quests Available'
+        lore:
+          - '<gray>New offerings are generated at the next rotation.'
+    group-accept: '<green>Group quest accepted!'
+    group-abandon: '<yellow>Group quest abandoned.'
+    group-no-permission: '<red>Ask your group leader to manage quests.'
+    group-slots-full: '<red>This group has no available quest slots.'
+    # Appended to each scoped offering item. Placeholder: <entity_name>
+    group-entity-lore: '<gray>Group: <gold><entity_name>'
   # This GUI shows all active quests for the player.
   active-quest-gui:
     title: '<gold>Active Quests'

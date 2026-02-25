@@ -353,6 +353,8 @@ public final class LocalizationKey extends ConfigFile {
 
     // Quest Board GUI -- Group Quests (scoped)
     public static final Route QUEST_BOARD_GROUP_TAB = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-tab"));
+    public static final Route QUEST_BOARD_GROUP_SELECTOR_TITLE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-selector-title"));
+    public static final Route QUEST_BOARD_GROUP_ENTITY_SLOT = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-entity-slot"));
     public static final Route QUEST_BOARD_GROUP_NO_OFFERINGS = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-no-offerings"));
     public static final Route QUEST_BOARD_GROUP_ACCEPT = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-accept"));
     public static final Route QUEST_BOARD_GROUP_ABANDON = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-abandon"));

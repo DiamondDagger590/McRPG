@@ -813,8 +813,9 @@ mcrpg_player_board_state
   - accepted_at (TIMESTAMP, nullable)
   - quest_instance_uuid (UUID, nullable, FK -> mcrpg_quest_instances)
 
-mcrpg_land_board_state
-  - land_id (VARCHAR, PK component) -- land name/identifier
+mcrpg_scoped_board_state
+  - scope_entity_id (VARCHAR, PK component) -- generic entity identifier (land name, faction ID, etc.)
+  - scope_provider_key (VARCHAR) -- e.g., "mcrpg:land_scope"
   - board_key (PK component)
   - offering_id (PK component, FK -> mcrpg_board_offering)
   - state (ENUM: VISIBLE, ACCEPTED, COMPLETED, EXPIRED)
@@ -842,6 +843,7 @@ The `mcrpg_quest_instances` table includes the following columns (part of the in
 
 - `quest_source VARCHAR NOT NULL` -- the `NamespacedKey` of the `QuestSource` (e.g., `mcrpg:board_personal`). Non-nullable; every quest instance has a source.
 - `scope_display_name VARCHAR` (nullable) -- English locale display name of the scope entity (e.g., land name), persisted at acceptance time. Used as a fallback for quest history rendering when the scope provider plugin is unavailable.
+- `board_rarity_key VARCHAR` (nullable) -- the `NamespacedKey` of the `QuestRarity` assigned at board acceptance time. Denormalized from the board offering for efficient rarity gating during reward distribution resolution at completion time.
 
 Expired cooldown rows are pruned periodically by the `QuestBoardRotationTask` during rotation.
 
@@ -916,7 +918,8 @@ The quest board system should be extensible by other plugins, following the same
 - **Board category registration**: Plugins can register additional slot categories programmatically (e.g., an NPC plugin adding a `bounty-board-daily` category tied to a specific NPC). Categories registered via API follow the same schema as YAML-defined categories.
 - **Quest source registration**: Plugins can register new `QuestSource` subclasses via `QuestSourceContentPack` (e.g., `npc:quest_giver`) so their quests integrate with the abandonment and slot accounting systems.
 - **Scope provider registration**: Plugins can register custom `QuestScopeProvider` implementations via `QuestScopeProviderContentPack`. The `QUEST_SCOPE_PROVIDER` content handler registers both the provider itself (into `QuestScopeProviderRegistry`) and any associated scope-change listeners. This enables third-party group plugins (Factions, Towny, parties, etc.) to provide scoped quest support through the standard content expansion mechanism.
-- **Reward distribution type registration**: Plugins can register custom reward distribution types beyond the built-in four (TOP_PLAYERS, CONTRIBUTION_THRESHOLD, PARTICIPATED, MEMBERSHIP). A custom type implements a `RewardDistributionType` interface with a `resolve(contributionMap, membershipList, config)` method.
+- **Scoped board adapter registration**: Plugins that register a `QuestScopeProvider` for a group system can also register a `ScopedBoardAdapter` via `ScopedBoardAdapterContentPack` (or directly via their plugin hook). The adapter provides board-specific operations (entity enumeration, permission checks, display names) that enable the `QuestBoardManager` to generate and manage scoped offerings for the group type without any plugin-specific code.
+- **Reward distribution type registration**: Plugins can register custom reward distribution types beyond the built-in four (TOP_PLAYERS, CONTRIBUTION_THRESHOLD, PARTICIPATED, MEMBERSHIP). A custom type implements a `RewardDistributionType` interface with a `resolve(ContributionSnapshot, DistributionTierConfig)` method and is registered via `RewardDistributionTypeContentPack`.
 - **Quest template registration**: Plugins can register templates via `QuestTemplateContentPack` (programmatic) or by calling `QuestTemplateRegistry.registerTemplateDirectory()` to register a directory of template YAML files. Programmatically registered templates survive config reloads; directory-registered templates are reloaded alongside built-in templates.
 - **Board event hooks**: Custom Bukkit events for board lifecycle: `BoardRotationEvent`, `BoardOfferingGenerateEvent` (cancellable), `BoardOfferingAcceptEvent`, `BoardOfferingExpireEvent`, `PersonalOfferingGenerateEvent`, `TemplateQuestGenerateEvent` (cancellable). All board events extend `BoardEvent` and are **synchronous** (not async) -- they fire on the main server thread and handlers execute inline. Plugins can listen to these to add custom logic (e.g., announce legendary quests in chat, filter personal offerings, or cancel template generation for specific templates).
 
@@ -931,6 +934,7 @@ public class BountyBoardExpansion implements ContentExpansion {
             new BoardCategoryContentPack(customCategories),
             new QuestSourceContentPack(customSources),
             new QuestScopeProviderContentPack(customScopeProviders),
+            new ScopedBoardAdapterContentPack(customScopedAdapters),
             new QuestTemplateContentPack(customTemplates),
             new RewardDistributionTypeContentPack(customDistributionTypes)
         );
@@ -1043,6 +1047,31 @@ Each phase includes unit tests alongside implementation. Key areas to test:
 - Land board GUI tab/section
 - Unit tests: reward distribution resolver (all types, edge cases, multi-level), land acceptance permissions
 
+**Implementation notes (completed):**
+
+- Generic `ScopedBoardAdapter` interface + `ScopedBoardAdapterRegistry` -- `QuestBoardManager` never references Lands or any specific group plugin directly; all scoped board operations go through the adapter interface, looked up by scope provider key
+- `LandScopedBoardAdapter` registered by `LandsHook` with custom `MANAGE_BOARD_QUESTS` Lands role flag (owner always bypasses; delegation is a two-step opt-in via Lands config allowlisting)
+- `LandDeleteListener` translates `LandDeleteEvent` into generic `QuestBoardManager.handleScopeEntityRemoval()` -- cancels active quests, expires visible offerings, prunes cooldowns
+- `ScopedBoardStateDAO` is scope-agnostic (single table serves all scope types via `scope_provider_key` + `scope_entity_id` columns)
+- Per-scope-type slot limits via `BoardSlotCategory.maxActivePerEntity` with global `max-scoped-quests-per-entity` fallback in `board.yml`
+- `RewardDistributionType` interface with four built-in implementations: `TopPlayersDistributionType`, `ContributionThresholdDistributionType`, `ParticipatedDistributionType`, `MembershipDistributionType`
+- `RewardDistributionTypeRegistry` for pluggable third-party distribution strategies
+- `RewardSplitMode` enum (`INDIVIDUAL`, `SPLIT_EVEN`, `SPLIT_PROPORTIONAL`) composes with any distribution type at the resolver level
+- `QuestRewardType.withAmountMultiplier(double)` default method enables pot distribution for numeric reward types; non-scalable types (e.g., `CommandRewardType`) return `this` unchanged with a logged warning
+- `QuestRewardDistributionResolver` is pure stateless logic (no Bukkit dependency); `RewardDistributionGranter` is the Bukkit bridge handling online/offline detection and `PendingRewardDAO` queuing
+- `QuestContributionAggregator` aggregates contributions at objective, stage, phase, and quest levels via `ContributionSnapshot` (immutable defensive-copy record)
+- `reward-distribution` YAML parsing in both `QuestConfigLoader` and `QuestTemplateConfigLoader` at all four hierarchy levels; `parseNamespacedKey` refactored to return `Optional<NamespacedKey>`
+- `QuestDefinition`, `QuestPhaseDefinition`, `QuestStageDefinition`, `QuestObjectiveDefinition` all carry optional `RewardDistributionConfig`
+- All four completion listeners (`QuestCompleteListener`, `QuestPhaseCompleteListener`, `QuestStageCompleteListener`, `QuestObjectiveCompleteListener`) delegate to the resolver when distribution is present
+- `QuestInstance.boardRarityKey` persisted at acceptance time for rarity gating without traversing back to offering
+- `GeneratedQuestDefinitionSerializer` updated for `reward-distribution` round-trip serialization/deserialization at all levels
+- Content packs: `RewardDistributionTypeContentPack` + `ScopedBoardAdapterContentPack` with handler types in `McRPGExpansion`
+- Board GUI: `ScopedEntitySelectorGui` (paginated entity picker), `ScopedEntitySelectSlot`, `ScopedNoOfferingsSlot`, `ScopedTabSlot` (single-entity fast path), `ScopedBackSlot` (context-aware back navigation)
+- Localization: `LocalizationKey` routes and `en_gui.yml` entries for all scoped board GUI elements
+- Default `land-daily.yml` category file with `SCOPED` visibility, `mcrpg:land_scope`, and `max-active-per-entity: 1`
+- 901 unit tests, all passing (up from 770 in Phase 2)
+- Deferred to Phase 4: multi-level distribution integration test, completion listener distribution tests
+
 ### Phase 4: Advanced Templates and Polish
 
 - Conditional objectives in templates
@@ -1056,6 +1085,8 @@ Each phase includes unit tests alongside implementation. Key areas to test:
   - Integer truncation remainder strategies (`DISCARD`, `TOP_CONTRIBUTOR`, `RANDOM`)
   - `min-scaled-amount` config to prevent minimum-1 clamping from exceeding pot totals
   - Composite pot bundles for holistic multi-reward decomposition
+- Multi-level distribution integration test (deferred from Phase 3)
+- Completion listener distribution tests (deferred from Phase 3)
 - Edge case hardening (server restart mid-rotation, land dissolution with active quest, etc.)
 - Integration test suite
 

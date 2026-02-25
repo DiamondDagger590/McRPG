@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.quest.board.template.variable.Pool;
 import us.eunoians.mcrpg.quest.board.template.variable.PoolVariable;
 import us.eunoians.mcrpg.quest.board.template.variable.RangeVariable;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -32,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,11 +144,12 @@ public final class QuestTemplateConfigLoader {
         }
 
         for (String keyString : templatesSection.getRoutesAsStrings(false)) {
-            NamespacedKey templateKey = parseNamespacedKey(keyString);
-            if (templateKey == null) {
+            Optional<NamespacedKey> templateKeyOpt = parseNamespacedKey(keyString);
+            if (templateKeyOpt.isEmpty()) {
                 logger.warning("Invalid template key '" + keyString + "' in " + file.getName() + ", skipping");
                 continue;
             }
+            NamespacedKey templateKey = templateKeyOpt.get();
 
             if (templates.containsKey(templateKey)) {
                 logger.warning("Duplicate template key '" + templateKey + "' in " + file.getName()
@@ -196,10 +199,8 @@ public final class QuestTemplateConfigLoader {
         boolean boardEligible = section.getBoolean("board-eligible", true);
 
         String scopeStr = section.getString("scope", "mcrpg:single_player");
-        NamespacedKey scopeProviderKey = parseNamespacedKey(scopeStr);
-        if (scopeProviderKey == null) {
-            throw new IllegalArgumentException("Invalid scope: " + scopeStr);
-        }
+        NamespacedKey scopeProviderKey = parseNamespacedKey(scopeStr)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid scope: " + scopeStr));
 
         Set<NamespacedKey> supportedRarities = parseSupportedRarities(section);
         if (supportedRarities.isEmpty()) {
@@ -216,10 +217,13 @@ public final class QuestTemplateConfigLoader {
 
         List<TemplateRewardDefinition> rewards = parseRewardDefinitions(section);
 
+        RewardDistributionConfig rewardDistribution = QuestConfigLoader.parseRewardDistribution(
+                section, fileName, key.toString()).orElse(null);
+
         validateExpressions(variables, phases, rewards, key.toString());
 
         return new QuestTemplate(key, displayNameRoute, boardEligible, scopeProviderKey,
-                supportedRarities, rarityOverrides, variables, phases, rewards);
+                supportedRarities, rarityOverrides, variables, phases, rewards, rewardDistribution, null);
     }
 
     /**
@@ -236,10 +240,7 @@ public final class QuestTemplateConfigLoader {
             return rarities;
         }
         for (String raw : section.getStringList("supported-rarities")) {
-            NamespacedKey key = parseNamespacedKey(raw);
-            if (key != null) {
-                rarities.add(key);
-            }
+            parseNamespacedKey(raw).ifPresent(rarities::add);
         }
         return rarities;
     }
@@ -260,10 +261,11 @@ public final class QuestTemplateConfigLoader {
             return overrides;
         }
         for (String rawKey : overridesSection.getRoutesAsStrings(false)) {
-            NamespacedKey rarityKey = parseNamespacedKey(rawKey);
-            if (rarityKey == null) {
+            Optional<NamespacedKey> rarityKeyOpt = parseNamespacedKey(rawKey);
+            if (rarityKeyOpt.isEmpty()) {
                 continue;
             }
+            NamespacedKey rarityKey = rarityKeyOpt.get();
             Section overrideSection = overridesSection.getSection(rawKey);
             if (overrideSection == null) {
                 continue;
@@ -349,10 +351,8 @@ public final class QuestTemplateConfigLoader {
             Section weightSection = poolSection.getSection("weight");
             if (weightSection != null) {
                 for (String rarityRaw : weightSection.getRoutesAsStrings(false)) {
-                    NamespacedKey rarityKey = parseNamespacedKey(rarityRaw);
-                    if (rarityKey != null) {
-                        weights.put(rarityKey, weightSection.getInt(rarityRaw, 0));
-                    }
+                    parseNamespacedKey(rarityRaw)
+                            .ifPresent(k -> weights.put(k, weightSection.getInt(rarityRaw, 0)));
                 }
             }
 
@@ -479,10 +479,9 @@ public final class QuestTemplateConfigLoader {
                 throw new IllegalArgumentException("Objective '" + objLabel + "' in stage '" + stageLabel
                         + "' of template " + templateKey + " is missing 'type'");
             }
-            NamespacedKey typeKey = parseNamespacedKey(typeStr);
-            if (typeKey == null) {
-                throw new IllegalArgumentException("Invalid objective type '" + typeStr + "' in template " + templateKey);
-            }
+            NamespacedKey typeKey = parseNamespacedKey(typeStr)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Invalid objective type '" + typeStr + "' in template " + templateKey));
 
             Object progressObj = objSection.get("required-progress");
             String requiredProgressExpression;
@@ -533,10 +532,11 @@ public final class QuestTemplateConfigLoader {
             if (typeStr == null || typeStr.isBlank()) {
                 continue;
             }
-            NamespacedKey typeKey = parseNamespacedKey(typeStr);
-            if (typeKey == null) {
+            Optional<NamespacedKey> typeKeyOpt = parseNamespacedKey(typeStr);
+            if (typeKeyOpt.isEmpty()) {
                 continue;
             }
+            NamespacedKey typeKey = typeKeyOpt.get();
 
             Map<String, Object> config = new LinkedHashMap<>();
             for (String key : rewardSection.getRoutesAsStrings(false)) {
@@ -640,16 +640,17 @@ public final class QuestTemplateConfigLoader {
      * with the input lowercased and hyphens replaced by underscores.
      *
      * @param input the string to parse
-     * @return the parsed key, or {@code null} if the input is null, empty, or invalid
+     * @return an {@link Optional} containing the parsed key, or empty if the input
+     *         is null, empty, or invalid
      */
-    @Nullable
-    private NamespacedKey parseNamespacedKey(@Nullable String input) {
+    @NotNull
+    private Optional<NamespacedKey> parseNamespacedKey(@Nullable String input) {
         if (input == null || input.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
         if (input.contains(":")) {
-            return NamespacedKey.fromString(input.toLowerCase());
+            return Optional.ofNullable(NamespacedKey.fromString(input.toLowerCase()));
         }
-        return new NamespacedKey(McRPGMethods.getMcRPGNamespace(), input.toLowerCase().replace('-', '_'));
+        return Optional.of(new NamespacedKey(McRPGMethods.getMcRPGNamespace(), input.toLowerCase().replace('-', '_')));
     }
 }
