@@ -8,13 +8,17 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.event.quest.QuestObjectiveCompleteEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.QuestState;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Listens for {@link QuestObjectiveCompleteEvent} and cascades to the parent stage:
@@ -42,7 +46,16 @@ public class QuestObjectiveCompleteListener implements Listener {
         Optional<QuestDefinition> definition = questManager.getQuestDefinition(quest.getQuestKey());
 
         definition.flatMap(def -> def.findObjectiveDefinition(event.getObjectiveInstance().getQuestObjectiveKey()))
-                .ifPresent(objectiveDef -> quest.grantRewards(objectiveDef.getRewards()));
+                .ifPresent(objectiveDef -> {
+                    quest.grantRewards(objectiveDef.getRewards());
+                    objectiveDef.getRewardDistribution().ifPresent(config -> {
+                        Map<UUID, Long> contributions = QuestContributionAggregator.fromObjective(event.getObjectiveInstance());
+                        Set<UUID> groupMembers = quest.getQuestScope()
+                                .map(scope -> scope.getCurrentPlayersInScope())
+                                .orElse(Set.of());
+                        QuestCompleteListener.resolveAndGrantDistribution(config, contributions, groupMembers, quest);
+                    });
+                });
 
         if (stage.checkForUpdatedStatus()) {
             definition.flatMap(def -> def.findStageDefinition(stage.getStageKey()))

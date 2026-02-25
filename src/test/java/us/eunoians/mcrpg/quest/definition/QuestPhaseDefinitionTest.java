@@ -17,21 +17,21 @@ public class QuestPhaseDefinitionTest extends McRPGBaseTest {
     public void constructor_throwsIllegalArgumentException_whenPhaseIndexNegative() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         assertThrows(IllegalArgumentException.class,
-                () -> new QuestPhaseDefinition(-1, PhaseCompletionMode.ALL, List.of(stage)));
+                () -> new QuestPhaseDefinition(-1, PhaseCompletionMode.ALL, List.of(stage), null));
     }
 
     @DisplayName("Given an empty stages list, when constructing, then it throws IllegalArgumentException")
     @Test
     public void constructor_throwsIllegalArgumentException_whenStagesEmpty() {
         assertThrows(IllegalArgumentException.class,
-                () -> new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of()));
+                () -> new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(), null));
     }
 
     @DisplayName("Given a valid phase, when getting stages, then the returned list is immutable")
     @Test
     public void getStages_returnsImmutableList() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
-        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage));
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), null);
         assertThrows(UnsupportedOperationException.class, () -> phase.getStages().add(null));
     }
 
@@ -39,7 +39,7 @@ public class QuestPhaseDefinitionTest extends McRPGBaseTest {
     @Test
     public void getters_returnConstructorValues() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
-        QuestPhaseDefinition phase = new QuestPhaseDefinition(2, PhaseCompletionMode.ANY, List.of(stage));
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(2, PhaseCompletionMode.ANY, List.of(stage), null);
         assertEquals(2, phase.getPhaseIndex());
         assertEquals(PhaseCompletionMode.ANY, phase.getCompletionMode());
         assertEquals(1, phase.getStages().size());

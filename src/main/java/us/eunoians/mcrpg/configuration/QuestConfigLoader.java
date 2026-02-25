@@ -16,6 +16,9 @@ import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
+import us.eunoians.mcrpg.quest.board.distribution.DistributionTierConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardSplitMode;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
@@ -228,7 +231,9 @@ public class QuestConfigLoader {
         Map<NamespacedKey, QuestDefinitionMetadata> metadata = parseBoardMetadata(section);
 
         return new QuestDefinition(questKey, scopeType, expiration, phases, rewards,
-                repeatMode, repeatCooldown, repeatLimit, expansionKey, metadata.isEmpty() ? null : metadata);
+                repeatMode, repeatCooldown, repeatLimit, expansionKey,
+                metadata.isEmpty() ? null : metadata,
+                parseRewardDistribution(section, fileName, questKey.toString()).orElse(null));
     }
 
     /**
@@ -329,7 +334,8 @@ public class QuestConfigLoader {
             stages.add(parseStageDefinition(stageSection, fileName, questKey));
         }
 
-        return new QuestPhaseDefinition(phaseIndex, mode, stages);
+        return new QuestPhaseDefinition(phaseIndex, mode, stages,
+                parseRewardDistribution(phaseSection, fileName, questKey + "/phase-" + phaseIndex).orElse(null));
     }
 
     /**
@@ -379,7 +385,8 @@ public class QuestConfigLoader {
             objectives.add(parseObjectiveDefinition(objectiveSection, fileName, questKey));
         }
 
-        return new QuestStageDefinition(stageKey, objectives, rewards);
+        return new QuestStageDefinition(stageKey, objectives, rewards,
+                parseRewardDistribution(stageSection, fileName, questKey + "/" + stageKey).orElse(null));
     }
 
     /**
@@ -454,11 +461,13 @@ public class QuestConfigLoader {
         }
 
         List<QuestRewardType> rewards = parseRewards(objectiveSection, fileName, questKey + "/" + objectiveKey);
+        RewardDistributionConfig rewardDistribution = parseRewardDistribution(objectiveSection, fileName,
+                questKey + "/" + objectiveKey).orElse(null);
 
         if (requiredProgress != null) {
-            return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, rewards);
+            return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, rewards, rewardDistribution);
         }
-        return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgressExpression, rewards);
+        return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgressExpression, rewards, rewardDistribution);
     }
 
     /**
@@ -528,6 +537,102 @@ public class QuestConfigLoader {
         }
 
         return rewards;
+    }
+
+    /**
+     * Parses an optional {@code reward-distribution} section from a parent YAML section.
+     * Each child key within {@code reward-distribution} represents a named tier.
+     *
+     * @param parentSection the parent section that may contain a {@code reward-distribution} subsection
+     * @param fileName      the source file name (for log messages)
+     * @param contextKey    a human-readable context path (for log messages)
+     * @return an {@link Optional} containing the parsed config, or empty if no section is present
+     */
+    @NotNull
+    private Optional<RewardDistributionConfig> parseRewardDistribution(@NotNull Section parentSection,
+                                                                       @NotNull String fileName,
+                                                                       @NotNull String contextKey) {
+        Section distSection = parentSection.getSection("reward-distribution");
+        if (distSection == null) {
+            return Optional.empty();
+        }
+
+        Logger logger = McRPG.getInstance().getLogger();
+        var tierKeys = distSection.getRoutesAsStrings(false);
+        if (tierKeys.isEmpty()) {
+            return Optional.empty();
+        }
+
+        List<DistributionTierConfig> tiers = new ArrayList<>(tierKeys.size());
+        for (String tierLabel : tierKeys) {
+            Section tierSection = distSection.getSection(tierLabel);
+            if (tierSection == null) {
+                logger.warning("Distribution tier '" + tierLabel + "' in " + contextKey
+                        + " (" + fileName + ") has no configuration, skipping");
+                continue;
+            }
+
+            String typeKeyString = tierSection.getString("type");
+            if (typeKeyString == null || typeKeyString.isEmpty()) {
+                logger.warning("Distribution tier '" + tierLabel + "' in " + contextKey
+                        + " (" + fileName + ") is missing a 'type', skipping");
+                continue;
+            }
+
+            NamespacedKey typeKey = parseNamespacedKey(typeKeyString);
+            if (typeKey == null) {
+                logger.warning("Invalid distribution type key '" + typeKeyString + "' in " + contextKey
+                        + " (" + fileName + "), skipping");
+                continue;
+            }
+
+            RewardSplitMode splitMode = RewardSplitMode.INDIVIDUAL;
+            if (tierSection.contains("split-mode")) {
+                try {
+                    splitMode = RewardSplitMode.valueOf(tierSection.getString("split-mode").toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    logger.warning("Invalid split-mode '" + tierSection.getString("split-mode")
+                            + "' in distribution tier '" + tierLabel + "' of " + contextKey
+                            + " (" + fileName + "), defaulting to INDIVIDUAL");
+                }
+            }
+
+            List<QuestRewardType> rewards = parseRewards(tierSection, fileName, contextKey + "/dist:" + tierLabel);
+
+            Map<String, Object> typeParameters = new HashMap<>();
+            if (tierSection.contains("top-player-count")) {
+                typeParameters.put(DistributionTierConfig.PARAM_TOP_PLAYER_COUNT,
+                        tierSection.getInt("top-player-count"));
+            }
+            if (tierSection.contains("min-contribution-percent")) {
+                typeParameters.put(DistributionTierConfig.PARAM_MIN_CONTRIBUTION_PERCENT,
+                        tierSection.getDouble("min-contribution-percent"));
+            }
+            Section paramsSection = tierSection.getSection("type-parameters");
+            if (paramsSection != null) {
+                for (String paramKey : paramsSection.getRoutesAsStrings(false)) {
+                    typeParameters.put(paramKey, paramsSection.get(paramKey));
+                }
+            }
+
+            NamespacedKey minRarity = null;
+            if (tierSection.contains("min-rarity")) {
+                minRarity = parseNamespacedKey(tierSection.getString("min-rarity"));
+            }
+
+            NamespacedKey requiredRarity = null;
+            if (tierSection.contains("required-rarity")) {
+                requiredRarity = parseNamespacedKey(tierSection.getString("required-rarity"));
+            }
+
+            tiers.add(new DistributionTierConfig(tierLabel, typeKey, splitMode, rewards,
+                    typeParameters, minRarity, requiredRarity));
+        }
+
+        if (tiers.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(new RewardDistributionConfig(tiers));
     }
 
     /**

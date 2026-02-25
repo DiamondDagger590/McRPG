@@ -6,6 +6,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
@@ -40,4 +41,5 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<BoardSlotCategoryRegistry> BOARD_SLOT_CATEGORY = create(BoardSlotCategoryRegistry.class);
     RegistryKey<RefreshTypeRegistry> REFRESH_TYPE = create(RefreshTypeRegistry.class);
     RegistryKey<QuestTemplateRegistry> QUEST_TEMPLATE = create(QuestTemplateRegistry.class);
+    RegistryKey<RewardDistributionTypeRegistry> REWARD_DISTRIBUTION_TYPE = create(RewardDistributionTypeRegistry.class);
 }

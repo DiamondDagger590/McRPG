@@ -22,7 +22,8 @@ public class QuestObjectiveDefinitionTest extends McRPGBaseTest {
                         new NamespacedKey("mcrpg", "o"),
                         QuestTestHelper.mockObjectiveType("t"),
                         0,
-                        List.of()
+                        List.of(),
+                        null
                 ));
     }
 
@@ -34,7 +35,8 @@ public class QuestObjectiveDefinitionTest extends McRPGBaseTest {
                         new NamespacedKey("mcrpg", "o"),
                         QuestTestHelper.mockObjectiveType("t"),
                         -5,
-                        List.of()
+                        List.of(),
+                        null
                 ));
     }
 

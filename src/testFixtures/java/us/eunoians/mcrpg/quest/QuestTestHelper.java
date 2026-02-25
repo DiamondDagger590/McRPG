@@ -69,7 +69,8 @@ public final class QuestTestHelper {
                 new NamespacedKey(NAMESPACE, key),
                 mockObjectiveType(key + "_type"),
                 requiredProgress,
-                List.of()
+                List.of(),
+                null
         );
     }
 
@@ -91,7 +92,8 @@ public final class QuestTestHelper {
                 new NamespacedKey(NAMESPACE, key),
                 objectiveType,
                 requiredProgress,
-                rewards
+                rewards,
+                null
         );
     }
 
@@ -107,7 +109,8 @@ public final class QuestTestHelper {
         return new QuestStageDefinition(
                 new NamespacedKey(NAMESPACE, stageKey),
                 List.of(singleObjectiveDef(objectiveKey, 10)),
-                List.of()
+                List.of(),
+                null
         );
     }
 
@@ -123,7 +126,7 @@ public final class QuestTestHelper {
     public static QuestStageDefinition stageDef(@NotNull String stageKey,
                                                 @NotNull List<QuestObjectiveDefinition> objectives,
                                                 @NotNull List<QuestRewardType> rewards) {
-        return new QuestStageDefinition(new NamespacedKey(NAMESPACE, stageKey), objectives, rewards);
+        return new QuestStageDefinition(new NamespacedKey(NAMESPACE, stageKey), objectives, rewards, null);
     }
 
     /**
@@ -136,7 +139,7 @@ public final class QuestTestHelper {
     @NotNull
     public static QuestPhaseDefinition singlePhaseDef(@NotNull PhaseCompletionMode mode,
                                                       @NotNull QuestStageDefinition... stages) {
-        return new QuestPhaseDefinition(0, mode, Arrays.asList(stages));
+        return new QuestPhaseDefinition(0, mode, Arrays.asList(stages), null);
     }
 
     /**
@@ -151,7 +154,7 @@ public final class QuestTestHelper {
     public static QuestPhaseDefinition phaseDef(int phaseIndex,
                                                 @NotNull PhaseCompletionMode mode,
                                                 @NotNull QuestStageDefinition... stages) {
-        return new QuestPhaseDefinition(phaseIndex, mode, Arrays.asList(stages));
+        return new QuestPhaseDefinition(phaseIndex, mode, Arrays.asList(stages), null);
     }
 
     /**

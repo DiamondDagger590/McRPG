@@ -34,6 +34,11 @@ import us.eunoians.mcrpg.expansion.content.QuestObjectiveTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRewardTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestScopeProviderContentPack;
+import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.ContributionThresholdDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.MembershipDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
 import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
@@ -83,7 +88,8 @@ public final class McRPGExpansion extends ContentExpansion {
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
         return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
-                getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent());
+                getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
+                getRewardDistributionTypeContent());
     }
 
     @NotNull
@@ -257,6 +263,22 @@ public final class McRPGExpansion extends ContentExpansion {
         QuestScopeProviderContentPack pack = new QuestScopeProviderContentPack(this);
         pack.addContent(new SinglePlayerQuestScopeProvider());
         pack.addContent(new PermissionQuestScopeProvider());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link RewardDistributionTypeContentPack} for McRPG, populated with the
+     * built-in distribution types (top players, contribution threshold, participated, membership).
+     *
+     * @return The native {@link RewardDistributionTypeContentPack} for McRPG.
+     */
+    @NotNull
+    private RewardDistributionTypeContentPack getRewardDistributionTypeContent() {
+        RewardDistributionTypeContentPack pack = new RewardDistributionTypeContentPack(this);
+        pack.addContent(new TopPlayersDistributionType());
+        pack.addContent(new ContributionThresholdDistributionType());
+        pack.addContent(new ParticipatedDistributionType());
+        pack.addContent(new MembershipDistributionType());
         return pack;
     }
 }

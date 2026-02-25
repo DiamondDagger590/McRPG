@@ -208,10 +208,10 @@ public final class QuestTemplateEngine {
 
                 List<QuestObjectiveDefinition> objectives = buildObjectives(
                         template, rarityKey, templateStage, questKey, phaseIdx, stageIdx, context, objectiveConfigs);
-                stages.add(new QuestStageDefinition(stageKey, objectives, List.of()));
+                stages.add(new QuestStageDefinition(stageKey, objectives, List.of(), null));
             }
 
-            phases.add(new QuestPhaseDefinition(phaseIdx, templatePhase.completionMode(), stages));
+            phases.add(new QuestPhaseDefinition(phaseIdx, templatePhase.completionMode(), stages, null));
         }
 
         return phases;
@@ -266,7 +266,7 @@ public final class QuestTemplateEngine {
                     baseType, resolvedConfig, template.getKey(), rarityKey);
             objectiveConfigs.put(objectiveKey, Collections.unmodifiableMap(resolvedConfig));
 
-            objectives.add(new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, List.of()));
+            objectives.add(new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, List.of(), null));
         }
 
         return objectives;

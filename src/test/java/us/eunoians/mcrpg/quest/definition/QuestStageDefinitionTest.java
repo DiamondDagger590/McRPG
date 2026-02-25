@@ -17,7 +17,7 @@ public class QuestStageDefinitionTest extends McRPGBaseTest {
     @Test
     public void constructor_throwsIllegalArgumentException_whenObjectivesEmpty() {
         assertThrows(IllegalArgumentException.class,
-                () -> new QuestStageDefinition(new NamespacedKey("mcrpg", "s"), List.of(), List.of()));
+                () -> new QuestStageDefinition(new NamespacedKey("mcrpg", "s"), List.of(), List.of(), null));
     }
 
     @DisplayName("Given a valid stage, when getting objectives, then returned list is immutable")
@@ -39,7 +39,7 @@ public class QuestStageDefinitionTest extends McRPGBaseTest {
     public void getters_returnConstructorValues() {
         QuestObjectiveDefinition obj = QuestTestHelper.singleObjectiveDef("o", 50);
         QuestStageDefinition stage = new QuestStageDefinition(
-                new NamespacedKey("mcrpg", "my_stage"), List.of(obj), List.of());
+                new NamespacedKey("mcrpg", "my_stage"), List.of(obj), List.of(), null);
         assertEquals(new NamespacedKey("mcrpg", "my_stage"), stage.getStageKey());
         assertEquals(1, stage.getObjectives().size());
         assertEquals(0, stage.getRewards().size());

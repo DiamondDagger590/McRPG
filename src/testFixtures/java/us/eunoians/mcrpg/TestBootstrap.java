@@ -9,6 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.ContributionThresholdDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.MembershipDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
+import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
@@ -59,6 +65,13 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new QuestObjectiveTypeRegistry());
         registryAccess.register(new QuestRewardTypeRegistry());
         registryAccess.register(new QuestTemplateRegistry());
+        registryAccess.register(new QuestRarityRegistry());
+        RewardDistributionTypeRegistry distTypeRegistry = new RewardDistributionTypeRegistry();
+        registryAccess.register(distTypeRegistry);
+        distTypeRegistry.register(new TopPlayersDistributionType());
+        distTypeRegistry.register(new ContributionThresholdDistributionType());
+        distTypeRegistry.register(new ParticipatedDistributionType());
+        distTypeRegistry.register(new MembershipDistributionType());
         registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
     }
 

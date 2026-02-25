@@ -248,10 +248,10 @@ public final class GeneratedQuestDefinitionSerializer {
                     objectives.add(deserializeObjective(objObj, objectiveTypeRegistry, questKeyString));
                 }
 
-                stages.add(new QuestStageDefinition(stageKey, objectives, List.of()));
+                stages.add(new QuestStageDefinition(stageKey, objectives, List.of(), null));
             }
 
-            phases.add(new QuestPhaseDefinition(phaseIdx, completionMode, stages));
+            phases.add(new QuestPhaseDefinition(phaseIdx, completionMode, stages, null));
         }
         return phases;
     }
@@ -287,7 +287,7 @@ public final class GeneratedQuestDefinitionSerializer {
             configuredType = createConfiguredType(baseType, configMap, questKeyString);
         }
 
-        return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, List.of());
+        return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, List.of(), null);
     }
 
     /**

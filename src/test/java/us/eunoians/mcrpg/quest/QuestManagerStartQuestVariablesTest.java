@@ -148,14 +148,15 @@ public class QuestManagerStartQuestVariablesTest extends McRPGBaseTest {
     private static QuestDefinition questWithSingleObjectiveExpression(String questKey, String requiredProgressExpr) {
         NamespacedKey objectiveKey = new NamespacedKey("mcrpg", questKey + "_obj");
         var objectiveType = QuestTestHelper.mockObjectiveType(questKey + "_type");
-        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(objectiveKey, objectiveType, requiredProgressExpr, List.of());
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(objectiveKey, objectiveType, requiredProgressExpr, List.of(), null);
 
         QuestStageDefinition stage = new QuestStageDefinition(
                 new NamespacedKey("mcrpg", questKey + "_stage"),
                 List.of(objective),
-                List.of()
+                List.of(),
+                null
         );
-        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage));
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), null);
 
         return new QuestDefinition(
                 new NamespacedKey("mcrpg", questKey),

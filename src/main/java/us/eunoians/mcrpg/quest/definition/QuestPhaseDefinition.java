@@ -1,10 +1,11 @@
 package us.eunoians.mcrpg.quest.definition;
 
-import java.util.Collections;
-import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * An immutable definition for a quest phase -- an ordered grouping of stages within a quest.
@@ -22,18 +23,21 @@ public class QuestPhaseDefinition {
     private final int phaseIndex;
     private final PhaseCompletionMode completionMode;
     private final List<QuestStageDefinition> stages;
+    private final RewardDistributionConfig rewardDistribution;
 
     /**
      * Creates a new phase definition.
      *
-     * @param phaseIndex     the zero-based index of this phase within the parent quest
-     * @param completionMode the mode determining how stages must complete for the phase to advance
-     * @param stages         the stage definitions within this phase (must contain at least one)
+     * @param phaseIndex          the zero-based index of this phase within the parent quest
+     * @param completionMode      the mode determining how stages must complete for the phase to advance
+     * @param stages              the stage definitions within this phase (must contain at least one)
+     * @param rewardDistribution  the distribution configuration for phase-level rewards, or {@code null} if none
      * @throws IllegalArgumentException if {@code phaseIndex} is negative or {@code stages} is empty
      */
     public QuestPhaseDefinition(int phaseIndex,
                                 @NotNull PhaseCompletionMode completionMode,
-                                @NotNull List<QuestStageDefinition> stages) {
+                                @NotNull List<QuestStageDefinition> stages,
+                                @Nullable RewardDistributionConfig rewardDistribution) {
         if (phaseIndex < 0) {
             throw new IllegalArgumentException("phaseIndex must be non-negative");
         }
@@ -43,6 +47,7 @@ public class QuestPhaseDefinition {
         this.phaseIndex = phaseIndex;
         this.completionMode = completionMode;
         this.stages = List.copyOf(stages);
+        this.rewardDistribution = rewardDistribution;
     }
 
     /**
@@ -73,5 +78,15 @@ public class QuestPhaseDefinition {
     @NotNull
     public List<QuestStageDefinition> getStages() {
         return stages;
+    }
+
+    /**
+     * Gets the optional reward distribution configuration for phase-level completion rewards.
+     *
+     * @return an {@link Optional} containing the distribution config, or empty if standard (non-distributed) rewards apply
+     */
+    @NotNull
+    public Optional<RewardDistributionConfig> getRewardDistribution() {
+        return Optional.ofNullable(rewardDistribution);
     }
 }

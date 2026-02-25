@@ -61,6 +61,7 @@ public class QuestInstance {
     private volatile boolean dirty;
     private final QuestSource questSource;
     private final String scopeDisplayName;
+    private NamespacedKey boardRarityKey;
 
     /**
      * Creates a new quest instance from a definition with an explicit quest source.
@@ -335,6 +336,27 @@ public class QuestInstance {
     @NotNull
     public Optional<String> getScopeDisplayName() {
         return Optional.ofNullable(scopeDisplayName);
+    }
+
+    /**
+     * Gets the board rarity key associated with this quest instance, if it was accepted
+     * from a board offering. Used by the distribution resolver for rarity-gated tiers.
+     *
+     * @return an {@link Optional} containing the rarity key, or empty if not board-sourced
+     */
+    @NotNull
+    public Optional<NamespacedKey> getBoardRarityKey() {
+        return Optional.ofNullable(boardRarityKey);
+    }
+
+    /**
+     * Sets the board rarity key for this quest instance. Should be called once during quest
+     * acceptance from a {@link us.eunoians.mcrpg.quest.board.BoardOffering}.
+     *
+     * @param boardRarityKey the rarity key from the offering
+     */
+    public void setBoardRarityKey(@NotNull NamespacedKey boardRarityKey) {
+        this.boardRarityKey = boardRarityKey;
     }
 
     /**

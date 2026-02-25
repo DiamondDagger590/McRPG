@@ -183,13 +183,13 @@ class GeneratedQuestDefinitionSerializerTest {
         when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
 
         QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
-                OBJECTIVE_KEY, objType, 126L, List.of());
+                OBJECTIVE_KEY, objType, 126L, List.of(), null);
 
         QuestStageDefinition stage = new QuestStageDefinition(
-                STAGE_KEY, List.of(objective), List.of());
+                STAGE_KEY, List.of(objective), List.of(), null);
 
         QuestPhaseDefinition phase = new QuestPhaseDefinition(
-                0, PhaseCompletionMode.ALL, List.of(stage));
+                0, PhaseCompletionMode.ALL, List.of(stage), null);
 
         QuestRewardType rewardType = mock(QuestRewardType.class);
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);

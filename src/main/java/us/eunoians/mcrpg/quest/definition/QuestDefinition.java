@@ -8,10 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
+import us.eunoians.mcrpg.quest.board.BoardMetadata;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-
-import us.eunoians.mcrpg.quest.board.BoardMetadata;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -46,6 +46,7 @@ public class QuestDefinition implements McRPGContent {
     private final int repeatLimit;
     private final NamespacedKey expansionKey;
     private final Map<NamespacedKey, QuestDefinitionMetadata> metadata;
+    private final RewardDistributionConfig rewardDistribution;
 
     /**
      * Creates a new quest definition.
@@ -70,7 +71,7 @@ public class QuestDefinition implements McRPGContent {
                            @Nullable Duration repeatCooldown,
                            int repeatLimit,
                            @Nullable NamespacedKey expansionKey) {
-        this(questKey, scopeType, expiration, phases, rewards, repeatMode, repeatCooldown, repeatLimit, expansionKey, null);
+        this(questKey, scopeType, expiration, phases, rewards, repeatMode, repeatCooldown, repeatLimit, expansionKey, null, null);
     }
 
     /**
@@ -84,8 +85,9 @@ public class QuestDefinition implements McRPGContent {
      * @param repeatMode     how this quest may be repeated (defaults to {@link QuestRepeatMode#ONCE})
      * @param repeatCooldown the cooldown between completions (only used with {@link QuestRepeatMode#COOLDOWN}), or {@code null}
      * @param repeatLimit    the maximum number of completions per player (only used with {@link QuestRepeatMode#LIMITED}), or {@code -1} for no limit
-     * @param expansionKey   the key of the {@link us.eunoians.mcrpg.expansion.ContentExpansion} that provides this definition, or {@code null} for config-loaded definitions
-     * @param metadata       extensible metadata map, or {@code null} for none
+     * @param expansionKey        the key of the {@link us.eunoians.mcrpg.expansion.ContentExpansion} that provides this definition, or {@code null} for config-loaded definitions
+     * @param metadata            extensible metadata map, or {@code null} for none
+     * @param rewardDistribution  the distribution configuration for quest-level rewards, or {@code null} if none
      * @throws IllegalArgumentException if {@code phases} is empty
      */
     public QuestDefinition(@NotNull NamespacedKey questKey,
@@ -97,7 +99,8 @@ public class QuestDefinition implements McRPGContent {
                            @Nullable Duration repeatCooldown,
                            int repeatLimit,
                            @Nullable NamespacedKey expansionKey,
-                           @Nullable Map<NamespacedKey, QuestDefinitionMetadata> metadata) {
+                           @Nullable Map<NamespacedKey, QuestDefinitionMetadata> metadata,
+                           @Nullable RewardDistributionConfig rewardDistribution) {
         if (phases.isEmpty()) {
             throw new IllegalArgumentException("A quest must have at least one phase");
         }
@@ -111,6 +114,7 @@ public class QuestDefinition implements McRPGContent {
         this.repeatLimit = repeatLimit;
         this.expansionKey = expansionKey;
         this.metadata = metadata != null ? Map.copyOf(metadata) : Collections.emptyMap();
+        this.rewardDistribution = rewardDistribution;
     }
 
     /**
@@ -331,6 +335,16 @@ public class QuestDefinition implements McRPGContent {
     @NotNull
     public Map<NamespacedKey, QuestDefinitionMetadata> getAllMetadata() {
         return metadata;
+    }
+
+    /**
+     * Gets the optional reward distribution configuration for quest-level completion rewards.
+     *
+     * @return an {@link Optional} containing the distribution config, or empty if standard (non-distributed) rewards apply
+     */
+    @NotNull
+    public Optional<RewardDistributionConfig> getRewardDistribution() {
+        return Optional.ofNullable(rewardDistribution);
     }
 
     @NotNull

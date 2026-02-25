@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.expansion.content.QuestRewardTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestScopeProviderContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestTemplateContentPack;
+import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -144,6 +145,19 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof QuestTemplateContentPack templateContent) {
             templateContent.getContent().forEach(template ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.QUEST_TEMPLATE).register(template));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link RewardDistributionTypeContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.quest.board.distribution.RewardDistributionType} into the
+     * {@link us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry}.
+     */
+    REWARD_DISTRIBUTION_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof RewardDistributionTypeContentPack distributionContent) {
+            distributionContent.getContent().forEach(type ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE).register(type));
             return true;
         }
         return false;

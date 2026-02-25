@@ -80,7 +80,8 @@ public class QuestPoolTest extends McRPGBaseTest {
                 null,
                 -1,
                 null,
-                metadata
+                metadata,
+                null
         );
     }
 

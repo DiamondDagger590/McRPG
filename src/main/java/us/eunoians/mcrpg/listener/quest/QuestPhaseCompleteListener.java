@@ -8,10 +8,15 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.event.quest.QuestPhaseCompleteEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.QuestState;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Listens for {@link QuestPhaseCompleteEvent} and either activates the next phase
@@ -36,7 +41,18 @@ public class QuestPhaseCompleteListener implements Listener {
                 .manager(McRPGManagerKey.QUEST);
 
         questManager.getQuestDefinition(quest.getQuestKey()).ifPresent(definition -> {
-            int nextPhaseIndex = event.getCompletedPhaseIndex() + 1;
+            int completedPhaseIndex = event.getCompletedPhaseIndex();
+            definition.getPhase(completedPhaseIndex).ifPresent(phaseDef ->
+                    phaseDef.getRewardDistribution().ifPresent(config -> {
+                        Map<UUID, Long> contributions = QuestContributionAggregator.fromPhase(quest, completedPhaseIndex);
+                        Set<UUID> groupMembers = quest.getQuestScope()
+                                .map(scope -> scope.getCurrentPlayersInScope())
+                                .orElse(Set.of());
+                        QuestCompleteListener.resolveAndGrantDistribution(config, contributions, groupMembers, quest);
+                    })
+            );
+
+            int nextPhaseIndex = completedPhaseIndex + 1;
             if (definition.hasPhase(nextPhaseIndex)) {
                 for (QuestStageInstance stage : quest.getStagesForPhase(nextPhaseIndex)) {
                     stage.activate();

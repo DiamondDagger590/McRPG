@@ -6,13 +6,16 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -30,20 +33,23 @@ public class QuestObjectiveDefinition {
     private final Long requiredProgress;
     private final String requiredProgressExpression;
     private final List<QuestRewardType> rewards;
+    private final RewardDistributionConfig rewardDistribution;
 
     /**
      * Creates a new objective definition.
      *
-     * @param objectiveKey     the unique key identifying this objective within its parent quest
-     * @param objectiveType    a configured objective type (produced by {@link QuestObjectiveType#parseConfig})
-     * @param requiredProgress the total progress required to complete this objective (must be positive)
-     * @param rewards          the rewards granted upon objective completion
+     * @param objectiveKey        the unique key identifying this objective within its parent quest
+     * @param objectiveType       a configured objective type (produced by {@link QuestObjectiveType#parseConfig})
+     * @param requiredProgress    the total progress required to complete this objective (must be positive)
+     * @param rewards             the rewards granted upon objective completion
+     * @param rewardDistribution  the distribution configuration for objective-level rewards, or {@code null} if none
      * @throws IllegalArgumentException if {@code requiredProgress} is not positive
      */
     public QuestObjectiveDefinition(@NotNull NamespacedKey objectiveKey,
                                     @NotNull QuestObjectiveType objectiveType,
                                     long requiredProgress,
-                                    @NotNull List<QuestRewardType> rewards) {
+                                    @NotNull List<QuestRewardType> rewards,
+                                    @Nullable RewardDistributionConfig rewardDistribution) {
         if (requiredProgress <= 0) {
             throw new IllegalArgumentException("requiredProgress must be positive");
         }
@@ -52,6 +58,7 @@ public class QuestObjectiveDefinition {
         this.requiredProgress = requiredProgress;
         this.requiredProgressExpression = null;
         this.rewards = List.copyOf(rewards);
+        this.rewardDistribution = rewardDistribution;
     }
 
     /**
@@ -62,12 +69,14 @@ public class QuestObjectiveDefinition {
      * @param objectiveType              a configured objective type (produced by {@link QuestObjectiveType#parseConfig})
      * @param requiredProgressExpression a Parser expression string that resolves to a positive number
      * @param rewards                    the rewards granted upon objective completion
+     * @param rewardDistribution         the distribution configuration for objective-level rewards, or {@code null} if none
      * @throws IllegalArgumentException if the expression is null/blank
      */
     public QuestObjectiveDefinition(@NotNull NamespacedKey objectiveKey,
                                     @NotNull QuestObjectiveType objectiveType,
                                     @NotNull String requiredProgressExpression,
-                                    @NotNull List<QuestRewardType> rewards) {
+                                    @NotNull List<QuestRewardType> rewards,
+                                    @Nullable RewardDistributionConfig rewardDistribution) {
         if (requiredProgressExpression.isBlank()) {
             throw new IllegalArgumentException("requiredProgressExpression must not be blank");
         }
@@ -76,6 +85,7 @@ public class QuestObjectiveDefinition {
         this.requiredProgress = null;
         this.requiredProgressExpression = requiredProgressExpression;
         this.rewards = List.copyOf(rewards);
+        this.rewardDistribution = rewardDistribution;
     }
 
     /**
@@ -178,5 +188,15 @@ public class QuestObjectiveDefinition {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION)
                 .getLocalizedMessage(player, getDescriptionRoute(questKey));
+    }
+
+    /**
+     * Gets the optional reward distribution configuration for objective-level completion rewards.
+     *
+     * @return an {@link Optional} containing the distribution config, or empty if standard (non-distributed) rewards apply
+     */
+    @NotNull
+    public Optional<RewardDistributionConfig> getRewardDistribution() {
+        return Optional.ofNullable(rewardDistribution);
     }
 }

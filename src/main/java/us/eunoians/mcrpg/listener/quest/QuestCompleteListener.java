@@ -12,13 +12,24 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
 import us.eunoians.mcrpg.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.distribution.ContributionSnapshot;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
+import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionGranter;
+import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
+import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
+import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -40,6 +51,14 @@ public class QuestCompleteListener implements Listener {
     public void onQuestComplete(@NotNull QuestCompleteEvent event) {
         QuestInstance questInstance = event.getQuestInstance();
         questInstance.grantRewards(event.getQuestDefinition().getRewards());
+
+        event.getQuestDefinition().getRewardDistribution().ifPresent(config -> {
+            Map<UUID, Long> contributions = QuestContributionAggregator.fromQuest(questInstance);
+            Set<UUID> groupMembers = questInstance.getQuestScope()
+                    .map(scope -> scope.getCurrentPlayersInScope())
+                    .orElse(Set.of());
+            resolveAndGrantDistribution(config, contributions, groupMembers, questInstance);
+        });
 
         logCompletionForAllScopePlayers(questInstance);
 
@@ -74,6 +93,24 @@ public class QuestCompleteListener implements Listener {
      *
      * @param questInstance the completed quest instance
      */
+    /**
+     * Shared helper that builds a contribution snapshot, resolves distribution rewards,
+     * and grants them via the granter.
+     */
+    static void resolveAndGrantDistribution(@NotNull RewardDistributionConfig config,
+                                            @NotNull Map<UUID, Long> contributions,
+                                            @NotNull Set<UUID> groupMembers,
+                                            @NotNull QuestInstance quest) {
+        ContributionSnapshot snapshot = QuestContributionAggregator.toSnapshot(contributions, groupMembers);
+        QuestRarityRegistry rarityRegistry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_RARITY);
+        RewardDistributionTypeRegistry typeRegistry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);
+        Map<UUID, List<QuestRewardType>> resolved = QuestRewardDistributionResolver.resolve(
+                config, snapshot, quest.getBoardRarityKey().orElse(null), rarityRegistry, typeRegistry);
+        RewardDistributionGranter.grant(resolved, quest.getQuestKey());
+    }
+
     private void logCompletionForAllScopePlayers(@NotNull QuestInstance questInstance) {
         questInstance.getQuestScope().ifPresent(scope -> {
             String definitionKey = questInstance.getQuestKey().toString();

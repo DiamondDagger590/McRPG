@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.event.quest.QuestPhaseCompleteEvent;
 import us.eunoians.mcrpg.event.quest.QuestStageCompleteEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -19,6 +20,9 @@ import us.eunoians.mcrpg.quest.impl.stage.QuestStageState;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Listens for {@link QuestStageCompleteEvent} and cascades to the parent phase:
@@ -41,20 +45,31 @@ public class QuestStageCompleteListener implements Listener {
             return;
         }
 
-        int phaseIndex = event.getStageInstance().getPhaseIndex();
+        QuestStageInstance stage = event.getStageInstance();
+        int phaseIndex = stage.getPhaseIndex();
         QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
 
-        questManager.getQuestDefinition(quest.getQuestKey())
-                .flatMap(definition -> definition.getPhase(phaseIndex))
-                .ifPresent(phaseDef -> {
-                    if (isPhaseComplete(quest, phaseDef)) {
-                        if (phaseDef.getCompletionMode() == PhaseCompletionMode.ANY) {
-                            cancelIncompleteSiblingStages(quest, phaseIndex);
-                        }
-                        Bukkit.getPluginManager().callEvent(new QuestPhaseCompleteEvent(quest, phaseDef, phaseIndex));
+        questManager.getQuestDefinition(quest.getQuestKey()).ifPresent(definition -> {
+            definition.findStageDefinition(stage.getStageKey())
+                    .flatMap(stageDef -> stageDef.getRewardDistribution())
+                    .ifPresent(config -> {
+                        Map<UUID, Long> contributions = QuestContributionAggregator.fromStage(stage);
+                        Set<UUID> groupMembers = quest.getQuestScope()
+                                .map(scope -> scope.getCurrentPlayersInScope())
+                                .orElse(Set.of());
+                        QuestCompleteListener.resolveAndGrantDistribution(config, contributions, groupMembers, quest);
+                    });
+
+            definition.getPhase(phaseIndex).ifPresent(phaseDef -> {
+                if (isPhaseComplete(quest, phaseDef)) {
+                    if (phaseDef.getCompletionMode() == PhaseCompletionMode.ANY) {
+                        cancelIncompleteSiblingStages(quest, phaseIndex);
                     }
-                });
+                    Bukkit.getPluginManager().callEvent(new QuestPhaseCompleteEvent(quest, phaseDef, phaseIndex));
+                }
+            });
+        });
     }
 
     private boolean isPhaseComplete(@NotNull QuestInstance quest, @NotNull QuestPhaseDefinition phaseDef) {
