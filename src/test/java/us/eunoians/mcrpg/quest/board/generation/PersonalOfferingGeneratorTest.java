@@ -106,7 +106,7 @@ class PersonalOfferingGeneratorTest extends McRPGBaseTest {
                 NamespacedKey.fromString("mcrpg:personal_daily"),
                 BoardSlotCategory.Visibility.PERSONAL, REFRESH_KEY,
                 Duration.ofDays(1), Duration.ofHours(24), SCOPE_KEY,
-                2, 2, 1.0, 10, null, null);
+                2, 2, 1.0, 10, null, null, null);
 
         List<BoardOffering> run1 = PersonalOfferingGenerator.generatePersonalOfferings(
                 player, rotation, List.of(category), 0, questPool, rarityRegistry, templateEngine, 50, 50);
@@ -124,7 +124,7 @@ class PersonalOfferingGeneratorTest extends McRPGBaseTest {
                 NamespacedKey.fromString("mcrpg:personal_daily"),
                 BoardSlotCategory.Visibility.PERSONAL, REFRESH_KEY,
                 Duration.ofDays(1), Duration.ofHours(24), SCOPE_KEY,
-                1, 1, 1.0, 10, null, null);
+                1, 1, 1.0, 10, null, null, null);
 
         QuestPool mockedPool = mock(QuestPool.class);
         QuestDefinition generatedDef = QuestTestHelper.singlePhaseQuest("gen_tmpl_only_abcd1234");

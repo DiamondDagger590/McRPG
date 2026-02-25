@@ -21,6 +21,7 @@ public class QuestBoard {
     private final NamespacedKey boardKey;
     private final ReloadableInteger maxAcceptedQuests;
     private final ReloadableInteger minimumTotalOfferings;
+    private final ReloadableInteger maxScopedQuestsPerEntity;
     private BoardRotation currentDailyRotation;
     private BoardRotation currentWeeklyRotation;
 
@@ -29,6 +30,7 @@ public class QuestBoard {
         this.boardKey = boardKey;
         this.maxAcceptedQuests = new ReloadableInteger(boardConfig, BoardConfigFile.MAX_ACCEPTED_QUESTS);
         this.minimumTotalOfferings = new ReloadableInteger(boardConfig, BoardConfigFile.MINIMUM_TOTAL_OFFERINGS);
+        this.maxScopedQuestsPerEntity = new ReloadableInteger(boardConfig, BoardConfigFile.MAX_SCOPED_QUESTS_PER_ENTITY);
     }
 
     /**
@@ -59,6 +61,16 @@ public class QuestBoard {
      */
     public int getMinimumTotalOfferings() {
         return minimumTotalOfferings.getContent();
+    }
+
+    /**
+     * Returns the maximum number of scoped quests a single scope entity can have active
+     * at the same time across all categories.
+     *
+     * @return the max scoped quests per entity
+     */
+    public int getMaxScopedQuestsPerEntity() {
+        return maxScopedQuestsPerEntity.getContent();
     }
 
     /**
@@ -109,6 +121,6 @@ public class QuestBoard {
      */
     @NotNull
     public Set<ReloadableContent<?>> getReloadableContent() {
-        return Set.of(maxAcceptedQuests, minimumTotalOfferings);
+        return Set.of(maxAcceptedQuests, minimumTotalOfferings, maxScopedQuestsPerEntity);
     }
 }

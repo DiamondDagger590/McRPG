@@ -22,6 +22,9 @@ import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
 import us.eunoians.mcrpg.database.table.board.BoardRotationDAO;
 import us.eunoians.mcrpg.database.table.board.PersonalOfferingTrackingDAO;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
+import us.eunoians.mcrpg.database.table.board.ScopedBoardStateDAO;
+import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter;
+import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategory;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.configuration.ReloadableCategoryConfig;
@@ -42,6 +45,7 @@ import us.eunoians.mcrpg.quest.board.refresh.builtin.WeeklyRefreshType;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
+import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
@@ -60,6 +64,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -239,6 +244,7 @@ public class QuestBoardManager extends Manager<McRPG> {
                             }));
 
                 offerings = generateSharedOfferings(board, rotation, new Random());
+                offerings.addAll(generateScopedOfferings(board, rotation, new Random()));
             } catch (Exception e) {
                 LOGGER.severe("[QuestBoard] Rotation failed for " + refreshTypeKey + ": " + e.getMessage());
                 e.printStackTrace();
@@ -632,5 +638,275 @@ public class QuestBoardManager extends Manager<McRPG> {
     @NotNull
     public QuestTemplateEngine getTemplateEngine() {
         return templateEngine;
+    }
+
+    /**
+     * Generates scoped offerings for all active scope entities during rotation.
+     * Iterates every registered {@link ScopedBoardAdapter}, resolves active entities,
+     * and rolls offerings for each SCOPED category matching the refresh type.
+     *
+     * @param board    the board to generate for
+     * @param rotation the current rotation
+     * @param random   the random source
+     * @return the generated scoped offerings
+     */
+    @NotNull
+    public List<BoardOffering> generateScopedOfferings(@NotNull QuestBoard board,
+                                                        @NotNull BoardRotation rotation,
+                                                        @NotNull Random random) {
+        BoardSlotCategoryRegistry categoryRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.BOARD_SLOT_CATEGORY);
+        QuestRarityRegistry rarityRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_RARITY);
+        ScopedBoardAdapterRegistry adapterRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER);
+
+        List<BoardSlotCategory> scopedCategories = categoryRegistry
+                .getByVisibility(BoardSlotCategory.Visibility.SCOPED).stream()
+                .filter(c -> c.getRefreshTypeKey().equals(rotation.getRefreshTypeKey()))
+                .toList();
+
+        if (scopedCategories.isEmpty()) return List.of();
+
+        int hcWeight = boardConfig.getInt(BoardConfigFile.SOURCE_WEIGHT_HAND_CRAFTED, 50);
+        int tmplWeight = boardConfig.getInt(BoardConfigFile.SOURCE_WEIGHT_TEMPLATE, 50);
+
+        List<BoardOffering> offerings = new ArrayList<>();
+        for (BoardSlotCategory category : scopedCategories) {
+            Optional<ScopedBoardAdapter> adapter = adapterRegistry.get(category.getScopeProviderKey());
+            if (adapter.isEmpty()) continue;
+
+            Set<String> activeEntities = adapter.get().getAllActiveEntities();
+            for (String entityId : activeEntities) {
+                Map<NamespacedKey, Integer> slotCounts = SlotGenerationLogic.computeSlotCounts(
+                        List.of(category), 0, random, key -> false);
+
+                int count = slotCounts.getOrDefault(category.getKey(), 0);
+                for (int i = 0; i < count; i++) {
+                    QuestRarity rarity = rarityRegistry.rollRarity(random);
+                    Optional<SlotSelection> selection = questPool.selectForSlot(
+                            rarity.getKey(), random, templateEngine, hcWeight, tmplWeight);
+                    selection.ifPresent(sel -> offerings.add(
+                            toScopedOffering(sel, rotation, category, offerings.size(), entityId)));
+                }
+            }
+        }
+        return offerings;
+    }
+
+    /**
+     * Converts a {@link SlotSelection} into a scoped {@link BoardOffering} with the
+     * scope entity identifier set. Mirrors the shared {@code toOffering()} helper but
+     * populates {@link BoardOffering#getScopeTargetId()}.
+     *
+     * @param selection the slot selection (hand-crafted or template-generated)
+     * @param rotation  the current board rotation
+     * @param category  the scoped category the offering belongs to
+     * @param slotIndex the positional index within the offering list
+     * @param entityId  the scope entity identifier (e.g., land name)
+     * @return the constructed scoped board offering
+     */
+    @NotNull
+    private BoardOffering toScopedOffering(@NotNull SlotSelection selection,
+                                            @NotNull BoardRotation rotation,
+                                            @NotNull BoardSlotCategory category,
+                                            int slotIndex,
+                                            @NotNull String entityId) {
+        return switch (selection) {
+            case SlotSelection.HandCrafted hc -> new BoardOffering(
+                    UUID.randomUUID(),
+                    rotation.getRotationId(),
+                    category.getKey(),
+                    slotIndex,
+                    hc.definitionKey(),
+                    hc.rarityKey(),
+                    entityId,
+                    category.getCompletionTime()
+            );
+            case SlotSelection.TemplateGenerated tmpl -> new BoardOffering(
+                    UUID.randomUUID(),
+                    rotation.getRotationId(),
+                    category.getKey(),
+                    slotIndex,
+                    tmpl.result().definition().getQuestKey(),
+                    tmpl.rarityKey(),
+                    entityId,
+                    category.getCompletionTime(),
+                    tmpl.result().templateKey(),
+                    tmpl.result().serializedDefinition()
+            );
+        };
+    }
+
+    /**
+     * Attempts to accept a scoped offering for a player. Performs synchronous
+     * pre-flight checks (adapter lookup, permission, offering state), then
+     * runs the active-count query on the database executor thread.
+     *
+     * @param player           the accepting player
+     * @param offeringId       the offering UUID
+     * @param entityId         the scope entity identifier
+     * @param scopeProviderKey the scope provider key
+     * @return future resolving to {@code true} if the offering was accepted
+     */
+    @NotNull
+    public CompletableFuture<Boolean> acceptScopedOffering(@NotNull Player player,
+                                                            @NotNull UUID offeringId,
+                                                            @NotNull String entityId,
+                                                            @NotNull NamespacedKey scopeProviderKey) {
+        ScopedBoardAdapterRegistry adapterRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER);
+        Optional<ScopedBoardAdapter> optAdapter = adapterRegistry.get(scopeProviderKey);
+        if (optAdapter.isEmpty()) return CompletableFuture.completedFuture(false);
+
+        ScopedBoardAdapter adapter = optAdapter.get();
+        if (!adapter.canManageQuests(player.getUniqueId(), entityId)) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        QuestBoard board = getDefaultBoard();
+        List<BoardOffering> offerings = getSharedOfferingsForBoard(board.getBoardKey());
+
+        Optional<BoardOffering> optOffering = offerings.stream()
+                .filter(o -> o.getOfferingId().equals(offeringId))
+                .filter(o -> o.getScopeTargetId().map(entityId::equals).orElse(false))
+                .findFirst();
+
+        if (optOffering.isEmpty() || !optOffering.get().canTransitionTo(BoardOffering.State.ACCEPTED)) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        BoardSlotCategoryRegistry categoryRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.BOARD_SLOT_CATEGORY);
+        BoardOffering offering = optOffering.get();
+        Optional<BoardSlotCategory> optCategory = categoryRegistry.get(offering.getCategoryKey());
+
+        int effectiveLimit = optCategory
+                .map(cat -> cat.getMaxActivePerEntity().orElse(board.getMaxScopedQuestsPerEntity()))
+                .orElse(board.getMaxScopedQuestsPerEntity());
+
+        NamespacedKey boardKey = board.getBoardKey();
+        Database database = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE)
+                .getDatabase();
+
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                int activeCount = ScopedBoardStateDAO.countActiveQuestsForEntity(connection, entityId, boardKey);
+                if (activeCount >= effectiveLimit) {
+                    future.complete(false);
+                    return;
+                }
+                offering.accept(plugin().getTimeProvider().now().toEpochMilli(), UUID.randomUUID());
+                future.complete(true);
+            } catch (Exception e) {
+                LOGGER.warning("[QuestBoard] Failed to accept scoped offering for entity "
+                        + entityId + ": " + e.getMessage());
+                future.complete(false);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Abandons a scoped quest. Validates management permission via the adapter.
+     *
+     * @param player            the abandoning player
+     * @param questInstanceUUID the quest instance UUID
+     * @param entityId          the scope entity identifier
+     * @param scopeProviderKey  the scope provider key
+     * @return {@code true} if the quest was successfully abandoned
+     */
+    public boolean abandonScopedQuest(@NotNull Player player,
+                                      @NotNull UUID questInstanceUUID,
+                                      @NotNull String entityId,
+                                      @NotNull NamespacedKey scopeProviderKey) {
+        ScopedBoardAdapterRegistry adapterRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER);
+        Optional<ScopedBoardAdapter> optAdapter = adapterRegistry.get(scopeProviderKey);
+        if (optAdapter.isEmpty()) return false;
+
+        if (!optAdapter.get().canManageQuests(player.getUniqueId(), entityId)) return false;
+
+        QuestManager questManager = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST);
+        return questManager.abandonQuest(questInstanceUUID);
+    }
+
+    /**
+     * Gets scoped offerings for all entities the player is a member of,
+     * across all registered scope adapters.
+     *
+     * @param playerUUID the player UUID
+     * @return map of entity ID to list of offerings for that entity
+     */
+    @NotNull
+    public Map<String, List<BoardOffering>> getScopedOfferingsForPlayer(@NotNull UUID playerUUID) {
+        ScopedBoardAdapterRegistry adapterRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER);
+        QuestBoard board = getDefaultBoard();
+        List<BoardOffering> allOfferings = getSharedOfferingsForBoard(board.getBoardKey());
+
+        Map<String, List<BoardOffering>> result = new HashMap<>();
+
+        for (ScopedBoardAdapter adapter : adapterRegistry.getAll()) {
+            Set<String> memberEntities = adapter.getMemberEntities(playerUUID);
+            for (String entityId : memberEntities) {
+                List<BoardOffering> entityOfferings = allOfferings.stream()
+                        .filter(o -> o.getScopeTargetId().map(entityId::equals).orElse(false))
+                        .filter(o -> o.getState() == BoardOffering.State.VISIBLE)
+                        .toList();
+                if (!entityOfferings.isEmpty()) {
+                    result.put(entityId, entityOfferings);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Handles scope entity removal: cancels active quests, expires offerings,
+     * cleans up state records. Called by scope-specific event listeners
+     * (e.g., {@link us.eunoians.mcrpg.listener.lands.LandDeleteListener}).
+     *
+     * @param scopeProviderKey the scope provider key
+     * @param entityId         the entity being removed
+     */
+    public void handleScopeEntityRemoval(@NotNull NamespacedKey scopeProviderKey, @NotNull String entityId) {
+        Database database = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE)
+                .getDatabase();
+
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                List<ScopedBoardStateDAO.ScopedBoardStateRecord> accepted =
+                        ScopedBoardStateDAO.loadAcceptedStatesForEntity(connection, entityId);
+
+                QuestManager questManager = plugin().registryAccess()
+                        .registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.QUEST);
+
+                for (ScopedBoardStateDAO.ScopedBoardStateRecord record : accepted) {
+                    if (record.questInstanceUUID() != null) {
+                        questManager.abandonQuest(record.questInstanceUUID());
+                    }
+                }
+
+                ScopedBoardStateDAO.deleteStatesForEntity(connection, entityId)
+                        .forEach(ps -> {
+                            try { ps.executeUpdate(); ps.close(); } catch (Exception e) { e.printStackTrace(); }
+                        });
+
+                LOGGER.info("[QuestBoard] Cleaned up " + accepted.size() + " scoped quests for removed entity '"
+                        + entityId + "' (scope: " + scopeProviderKey + ")");
+            } catch (Exception e) {
+                LOGGER.severe("[QuestBoard] Failed to clean up entity removal for '" + entityId + "': " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 }

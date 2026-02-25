@@ -37,6 +37,8 @@ public final class BoardConfigFile extends ConfigFile {
             Route.fromString("rotation.weekly-reset-day");
     public static final Route ROTATION_CHECK_INTERVAL =
             Route.fromString("rotation.task-check-interval-seconds");
+    public static final Route MAX_SCOPED_QUESTS_PER_ENTITY =
+            Route.fromString("max-scoped-quests-per-entity");
 
     @NotNull
     @Override

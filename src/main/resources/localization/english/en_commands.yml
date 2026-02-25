@@ -125,6 +125,92 @@ commands:
       entry: "  <white><registry_key>"
       # Supports: <registry_type>
       empty: "<gray>No <white><registry_type></white> registered."
+    # Configure /mcrpg board admin commands
+    board-admin:
+      # Configure /mcrpg board admin rotate
+      rotate:
+        # Supports: <refresh_type>
+        success: "<green>Board rotation triggered for refresh type: <white><refresh_type></white>."
+      # Configure /mcrpg board admin offerings
+      offerings:
+        list-empty: "<gray>No visible shared offerings on the board."
+        # Supports: <count>
+        list-header: "<gold>Shared Board Offerings <gray>(<count>):"
+        # Supports: <offering_id>, <quest_def>, <rarity>, <category>
+        list-entry: "  <white><offering_id></white> | <white><quest_def></white> | <white><rarity></white> | <white><category>"
+        # Supports: <offering_id>
+        expire-not-found: "<red>Offering not found: <white><offering_id>"
+        # Supports: <offering_id>, <offering_state>
+        expire-invalid-state: "<red>Offering <white><offering_id></white> cannot be expired (current state: <white><offering_state></white>)."
+        # Supports: <offering_id>
+        expire-success: "<green>Offering <white><offering_id></white> expired successfully."
+        # Supports: <offering_id>
+        expire-error: "<red>Error expiring offering <white><offering_id></white>. Check console."
+      # Configure /mcrpg board admin scoped
+      scoped:
+        # Supports: <entity_id>
+        list-empty: "<gray>No scoped board state found for entity: <white><entity_id>"
+        # Supports: <entity_id>, <count>
+        list-header: "<gold>Scoped Board State for '<white><entity_id></white>' <gray>(<count>):"
+        # Supports: <offering_id>, <offering_state>, <accepted_by>
+        list-entry: "  <white><offering_id></white> | state=<white><offering_state></white> | accepted_by=<white><accepted_by>"
+        # Supports: <entity_id>, <cancelled_count>
+        reset-success: "<green>Reset scoped board state for '<white><entity_id></white>'. Cancelled <white><cancelled_count></white> quest(s)."
+        # Supports: <entity_id>
+        reset-error: "<red>Error resetting scoped state for <white><entity_id></white>. Check console."
+        # Supports: <entity_id>
+        generate-success: "<green>Generating scoped offerings for entity '<white><entity_id></white>'."
+      # Configure /mcrpg board admin player
+      player:
+        # Supports: <target>
+        offerings-header: "<gold>Offerings visible to <white><target></white>:"
+        # Supports: <count>
+        offerings-scoped-count: "<gray>Scoped offerings: <white><count>"
+        # Supports: <entity_id>, <offering_id>, <quest_def>, <rarity>
+        offerings-entry: "  <gray>[<white><entity_id></white>] <white><offering_id></white> | <white><quest_def></white> | <white><rarity>"
+        # Supports: <target>
+        accepted-empty: "<gray><target> has no active board quests."
+        # Supports: <target>, <count>
+        accepted-header: "<gold>Active Board Quests for <white><target></white> <gray>(<count>):"
+        # Supports: <quest_uuid>, <quest_key>, <quest_state>, <rarity>
+        accepted-entry: "  <white><quest_uuid></white> | <white><quest_key></white> | state=<white><quest_state></white> | rarity=<white><rarity>"
+        # Supports: <offering_id>
+        abandon-not-found: "<red>Offering not found: <white><offering_id>"
+        # Supports: <offering_id>, <offering_state>
+        abandon-invalid-state: "<red>Offering <white><offering_id></white> is not in ACCEPTED state (current: <white><offering_state></white>)."
+        # Supports: <offering_id>
+        abandon-success: "<green>Offering <white><offering_id></white> abandoned successfully."
+        # Supports: <offering_id>
+        abandon-error: "<red>Error abandoning offering <white><offering_id></white>. Check console."
+      # Configure /mcrpg board admin cooldown
+      cooldown:
+        # Supports: <scope_type_id>, <scope_id>
+        list-empty: "<gray>No active cooldowns for <white><scope_type_id></white>:<white><scope_id>"
+        # Supports: <scope_type_id>, <scope_id>, <count>
+        list-header: "<gold>Cooldowns for <white><scope_type_id></white>:<white><scope_id></white> <gray>(<count>):"
+        # Supports: <cooldown_type>, <category>, <quest_def>, <expires>
+        list-entry: "  <white>type=<cooldown_type></white> | cat=<white><category></white> | quest=<white><quest_def></white> | expires=<white><expires>"
+        # Supports: <deleted_count>, <scope_type_id>, <scope_id>
+        reset-success: "<green>Cleared <white><deleted_count></white> cooldown(s) for <white><scope_type_id></white>:<white><scope_id></white>."
+        # Supports: <scope_type_id>, <scope_id>
+        reset-error: "<red>Error resetting cooldowns for <white><scope_type_id></white>:<white><scope_id></white>. Check console."
+      # Configure /mcrpg board admin rewards
+      rewards:
+        # Supports: <target>
+        pending-empty: "<gray>No pending rewards for <white><target></white>."
+        # Supports: <target>, <count>
+        pending-header: "<gold>Pending Rewards for <white><target></white> <gray>(<count>):"
+        # Supports: <reward_type>, <quest_key>, <expires>
+        pending-entry: "  <white><reward_type></white> | quest=<white><quest_key></white> | expires=<white><expires>"
+        # Supports: <deleted_count>, <target>
+        clear-success: "<green>Cleared <white><deleted_count></white> pending reward(s) for <white><target></white>."
+        # Supports: <target>
+        clear-error: "<red>Error clearing pending rewards for <white><target></white>. Check console."
+      # Configure /mcrpg board admin purge
+      purge:
+        # Supports: <deleted_count>
+        success: "<green>Purge complete. Pruned <white><deleted_count></white> expired cooldown(s)."
+        error: "<red>Error during purge. Check console."
     # Configure the reset commands
     reset:
       # Supports the following placeholders: <target>, <sender>

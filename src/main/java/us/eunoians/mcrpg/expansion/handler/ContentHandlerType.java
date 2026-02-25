@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.expansion.content.QuestScopeProviderContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestTemplateContentPack;
 import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
+import us.eunoians.mcrpg.expansion.content.ScopedBoardAdapterContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -158,6 +159,19 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof RewardDistributionTypeContentPack distributionContent) {
             distributionContent.getContent().forEach(type ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE).register(type));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link ScopedBoardAdapterContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter} into the
+     * {@link us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry}.
+     */
+    SCOPED_BOARD_ADAPTER((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof ScopedBoardAdapterContentPack adapterContent) {
+            adapterContent.getContent().forEach(adapter ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER).register(adapter));
             return true;
         }
         return false;

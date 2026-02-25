@@ -66,6 +66,20 @@ public class PlayerBoardStateDAO {
         }
     }
 
+    /**
+     * Generates prepared statements to save (upsert) a player's board state for a specific offering.
+     * If a row with the same composite key ({@code playerUUID}, {@code boardKey}, {@code offeringId})
+     * already exists, its state, accepted timestamp, and quest instance UUID are updated.
+     *
+     * @param connection       the database connection
+     * @param playerUUID       the player's UUID
+     * @param boardKey         the board this offering belongs to
+     * @param offeringId       the unique offering identifier
+     * @param state            the offering state (e.g., "VISIBLE", "ACCEPTED", "ABANDONED")
+     * @param acceptedAt       the epoch millis timestamp when the offering was accepted, or {@code null} if not yet accepted
+     * @param questInstanceUUID the quest instance UUID tied to this acceptance, or {@code null} if none
+     * @return a list of prepared statements to execute
+     */
     @NotNull
     public static List<PreparedStatement> saveState(@NotNull Connection connection,
                                                      @NotNull UUID playerUUID,
@@ -105,6 +119,71 @@ public class PlayerBoardStateDAO {
         return statements;
     }
 
+    /**
+     * Deletes all player board state records for the given player.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return the number of deleted rows
+     */
+    public static int deleteForPlayer(@NotNull Connection connection, @NotNull UUID playerUUID) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
+            ps.setString(1, playerUUID.toString());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Loads all ACCEPTED personal board state records for the given player (to find quests to cancel).
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return list of offering IDs and quest instance UUIDs in ACCEPTED state
+     */
+    @NotNull
+    public static List<AcceptedBoardEntry> loadAcceptedForPlayer(@NotNull Connection connection,
+                                                                  @NotNull UUID playerUUID) {
+        List<AcceptedBoardEntry> entries = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT offering_id, quest_instance_uuid FROM " + TABLE_NAME +
+                        " WHERE player_uuid = ? AND state = 'ACCEPTED'")) {
+            ps.setString(1, playerUUID.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String questStr = rs.getString("quest_instance_uuid");
+                    entries.add(new AcceptedBoardEntry(
+                            UUID.fromString(rs.getString("offering_id")),
+                            questStr != null ? UUID.fromString(questStr) : null
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return entries;
+    }
+
+    /**
+     * Immutable record representing an accepted personal board offering.
+     *
+     * @param offeringId        the unique offering identifier
+     * @param questInstanceUUID the quest instance UUID associated with this acceptance, or {@code null} if none
+     */
+    public record AcceptedBoardEntry(@NotNull UUID offeringId, @Nullable UUID questInstanceUUID) {}
+
+    /**
+     * Counts the number of offerings currently in the {@code ACCEPTED} state for a given player
+     * on a specific board. Used to enforce maximum active quest limits.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player's UUID
+     * @param boardKey   the board to count accepted offerings for
+     * @return the number of active (accepted) offerings
+     */
     public static int countActiveQuestsFromBoard(@NotNull Connection connection,
                                                   @NotNull UUID playerUUID,
                                                   @NotNull NamespacedKey boardKey) {

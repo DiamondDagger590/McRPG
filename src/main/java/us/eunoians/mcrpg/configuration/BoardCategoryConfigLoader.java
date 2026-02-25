@@ -105,8 +105,13 @@ public final class BoardCategoryConfigLoader {
                 ? section.getString("required-permission")
                 : null;
 
+        Integer maxActivePerEntity = section.contains("max-active-per-entity")
+                ? section.getInt("max-active-per-entity")
+                : null;
+
         return new BoardSlotCategory(key, visibility, refreshTypeKey, refreshInterval, completionTime,
-                scopeProviderKey, min, max, chancePerSlot, priority, appearanceCooldown, requiredPermission);
+                scopeProviderKey, min, max, chancePerSlot, priority, appearanceCooldown, requiredPermission,
+                maxActivePerEntity);
     }
 
     /**

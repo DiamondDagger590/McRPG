@@ -145,6 +145,6 @@ public class BoardSlotCategoryRegistryTest extends McRPGBaseTest {
                 new NamespacedKey("mcrpg", name), vis,
                 new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24),
                 Duration.ofHours(48), new NamespacedKey("mcrpg", "single_player"),
-                1, 5, 0.5, priority, null, null);
+                1, 5, 0.5, priority, null, null, null);
     }
 }

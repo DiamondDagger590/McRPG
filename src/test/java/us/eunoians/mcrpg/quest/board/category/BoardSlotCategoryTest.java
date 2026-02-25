@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,7 +27,7 @@ public class BoardSlotCategoryTest extends McRPGBaseTest {
 
         BoardSlotCategory cat = new BoardSlotCategory(key, BoardSlotCategory.Visibility.SHARED,
                 refreshTypeKey, refreshInterval, completionTime, scopeProviderKey,
-                1, 5, 0.5, 10, appearanceCooldown, requiredPermission);
+                1, 5, 0.5, 10, appearanceCooldown, requiredPermission, null);
 
         assertEquals(key, cat.getKey());
         assertEquals(BoardSlotCategory.Visibility.SHARED, cat.getVisibility());
@@ -56,7 +57,7 @@ public class BoardSlotCategoryTest extends McRPGBaseTest {
         BoardSlotCategory cat = new BoardSlotCategory(
                 new NamespacedKey("mcrpg", "x"), BoardSlotCategory.Visibility.SCOPED,
                 new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, cooldown, null);
+                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, cooldown, null, null);
         assertTrue(cat.getAppearanceCooldown().isPresent());
         assertEquals(cooldown, cat.getAppearanceCooldown().orElseThrow());
     }
@@ -75,7 +76,7 @@ public class BoardSlotCategoryTest extends McRPGBaseTest {
         BoardSlotCategory cat = new BoardSlotCategory(
                 new NamespacedKey("mcrpg", "x"), BoardSlotCategory.Visibility.SHARED,
                 new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, null, perm);
+                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, null, perm, null);
         assertTrue(cat.getRequiredPermission().isPresent());
         assertEquals(perm, cat.getRequiredPermission().orElseThrow());
     }
@@ -101,10 +102,27 @@ public class BoardSlotCategoryTest extends McRPGBaseTest {
         assertEquals(BoardSlotCategory.Visibility.SCOPED, cat.getVisibility());
     }
 
+    @DisplayName("getMaxActivePerEntity returns empty when null")
+    @Test
+    void getMaxActivePerEntity_null_returnsEmpty() {
+        BoardSlotCategory cat = category("a", 1, BoardSlotCategory.Visibility.SCOPED);
+        assertEquals(OptionalInt.empty(), cat.getMaxActivePerEntity());
+    }
+
+    @DisplayName("getMaxActivePerEntity returns OptionalInt with value when set")
+    @Test
+    void getMaxActivePerEntity_set_returnsOptionalIntWithValue() {
+        BoardSlotCategory cat = new BoardSlotCategory(
+                new NamespacedKey("mcrpg", "x"), BoardSlotCategory.Visibility.SCOPED,
+                new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
+                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, null, null, 3);
+        assertEquals(OptionalInt.of(3), cat.getMaxActivePerEntity());
+    }
+
     private static BoardSlotCategory category(String name, int priority, BoardSlotCategory.Visibility vis) {
         return new BoardSlotCategory(
                 new NamespacedKey("mcrpg", name), vis,
                 new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, priority, null, null);
+                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, priority, null, null, null);
     }
 }

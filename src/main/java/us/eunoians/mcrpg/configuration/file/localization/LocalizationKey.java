@@ -299,6 +299,67 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_BOARD_ABANDONED = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "abandoned"));
     public static final Route QUEST_BOARD_COOLDOWN = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "on-cooldown"));
 
+    // Board Admin Commands
+    private static final String BOARD_ADMIN_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "board-admin");
+    private static final String BOARD_ADMIN_ROTATE_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "rotate");
+    public static final Route BOARD_ADMIN_ROTATE_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_ROTATE_HEADER, "success"));
+
+    private static final String BOARD_ADMIN_OFFERINGS_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "offerings");
+    public static final Route BOARD_ADMIN_OFFERINGS_LIST_EMPTY = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "list-empty"));
+    public static final Route BOARD_ADMIN_OFFERINGS_LIST_HEADER = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "list-header"));
+    public static final Route BOARD_ADMIN_OFFERINGS_LIST_ENTRY = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "list-entry"));
+    public static final Route BOARD_ADMIN_OFFERINGS_EXPIRE_NOT_FOUND = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "expire-not-found"));
+    public static final Route BOARD_ADMIN_OFFERINGS_EXPIRE_INVALID_STATE = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "expire-invalid-state"));
+    public static final Route BOARD_ADMIN_OFFERINGS_EXPIRE_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "expire-success"));
+    public static final Route BOARD_ADMIN_OFFERINGS_EXPIRE_ERROR = Route.fromString(toRoutePath(BOARD_ADMIN_OFFERINGS_HEADER, "expire-error"));
+
+    private static final String BOARD_ADMIN_SCOPED_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "scoped");
+    public static final Route BOARD_ADMIN_SCOPED_LIST_EMPTY = Route.fromString(toRoutePath(BOARD_ADMIN_SCOPED_HEADER, "list-empty"));
+    public static final Route BOARD_ADMIN_SCOPED_LIST_HEADER = Route.fromString(toRoutePath(BOARD_ADMIN_SCOPED_HEADER, "list-header"));
+    public static final Route BOARD_ADMIN_SCOPED_LIST_ENTRY = Route.fromString(toRoutePath(BOARD_ADMIN_SCOPED_HEADER, "list-entry"));
+    public static final Route BOARD_ADMIN_SCOPED_RESET_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_SCOPED_HEADER, "reset-success"));
+    public static final Route BOARD_ADMIN_SCOPED_RESET_ERROR = Route.fromString(toRoutePath(BOARD_ADMIN_SCOPED_HEADER, "reset-error"));
+    public static final Route BOARD_ADMIN_SCOPED_GENERATE_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_SCOPED_HEADER, "generate-success"));
+
+    private static final String BOARD_ADMIN_PLAYER_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "player");
+    public static final Route BOARD_ADMIN_PLAYER_OFFERINGS_HEADER_MSG = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "offerings-header"));
+    public static final Route BOARD_ADMIN_PLAYER_OFFERINGS_SCOPED_COUNT = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "offerings-scoped-count"));
+    public static final Route BOARD_ADMIN_PLAYER_OFFERINGS_ENTRY = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "offerings-entry"));
+    public static final Route BOARD_ADMIN_PLAYER_ACCEPTED_EMPTY = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "accepted-empty"));
+    public static final Route BOARD_ADMIN_PLAYER_ACCEPTED_HEADER_MSG = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "accepted-header"));
+    public static final Route BOARD_ADMIN_PLAYER_ACCEPTED_ENTRY = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "accepted-entry"));
+    public static final Route BOARD_ADMIN_PLAYER_ABANDON_NOT_FOUND = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "abandon-not-found"));
+    public static final Route BOARD_ADMIN_PLAYER_ABANDON_INVALID_STATE = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "abandon-invalid-state"));
+    public static final Route BOARD_ADMIN_PLAYER_ABANDON_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "abandon-success"));
+    public static final Route BOARD_ADMIN_PLAYER_ABANDON_ERROR = Route.fromString(toRoutePath(BOARD_ADMIN_PLAYER_HEADER, "abandon-error"));
+
+    private static final String BOARD_ADMIN_COOLDOWN_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "cooldown");
+    public static final Route BOARD_ADMIN_COOLDOWN_LIST_EMPTY = Route.fromString(toRoutePath(BOARD_ADMIN_COOLDOWN_HEADER, "list-empty"));
+    public static final Route BOARD_ADMIN_COOLDOWN_LIST_HEADER_MSG = Route.fromString(toRoutePath(BOARD_ADMIN_COOLDOWN_HEADER, "list-header"));
+    public static final Route BOARD_ADMIN_COOLDOWN_LIST_ENTRY = Route.fromString(toRoutePath(BOARD_ADMIN_COOLDOWN_HEADER, "list-entry"));
+    public static final Route BOARD_ADMIN_COOLDOWN_RESET_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_COOLDOWN_HEADER, "reset-success"));
+    public static final Route BOARD_ADMIN_COOLDOWN_RESET_ERROR = Route.fromString(toRoutePath(BOARD_ADMIN_COOLDOWN_HEADER, "reset-error"));
+
+    private static final String BOARD_ADMIN_REWARDS_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "rewards");
+    public static final Route BOARD_ADMIN_REWARDS_PENDING_EMPTY = Route.fromString(toRoutePath(BOARD_ADMIN_REWARDS_HEADER, "pending-empty"));
+    public static final Route BOARD_ADMIN_REWARDS_PENDING_HEADER_MSG = Route.fromString(toRoutePath(BOARD_ADMIN_REWARDS_HEADER, "pending-header"));
+    public static final Route BOARD_ADMIN_REWARDS_PENDING_ENTRY = Route.fromString(toRoutePath(BOARD_ADMIN_REWARDS_HEADER, "pending-entry"));
+    public static final Route BOARD_ADMIN_REWARDS_CLEAR_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_REWARDS_HEADER, "clear-success"));
+    public static final Route BOARD_ADMIN_REWARDS_CLEAR_ERROR = Route.fromString(toRoutePath(BOARD_ADMIN_REWARDS_HEADER, "clear-error"));
+
+    private static final String BOARD_ADMIN_PURGE_HEADER = toRoutePath(BOARD_ADMIN_COMMAND_HEADER, "purge");
+    public static final Route BOARD_ADMIN_PURGE_SUCCESS = Route.fromString(toRoutePath(BOARD_ADMIN_PURGE_HEADER, "success"));
+    public static final Route BOARD_ADMIN_PURGE_ERROR = Route.fromString(toRoutePath(BOARD_ADMIN_PURGE_HEADER, "error"));
+
+    // Quest Board GUI -- Group Quests (scoped)
+    public static final Route QUEST_BOARD_GROUP_TAB = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-tab"));
+    public static final Route QUEST_BOARD_GROUP_NO_OFFERINGS = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-no-offerings"));
+    public static final Route QUEST_BOARD_GROUP_ACCEPT = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-accept"));
+    public static final Route QUEST_BOARD_GROUP_ABANDON = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-abandon"));
+    public static final Route QUEST_BOARD_GROUP_NO_PERMISSION = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-no-permission"));
+    public static final Route QUEST_BOARD_GROUP_SLOTS_FULL = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-slots-full"));
+    public static final Route QUEST_BOARD_GROUP_ENTITY_LORE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-entity-lore"));
+
     // Active Quest GUI
     private static final String ACTIVE_QUEST_GUI_HEADER = toRoutePath(GUI_HEADER, "active-quest-gui");
     public static final Route ACTIVE_QUEST_GUI_TITLE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "title"));

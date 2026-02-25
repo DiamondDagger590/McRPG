@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.OptionalInt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -169,5 +170,56 @@ public class BoardCategoryConfigLoaderTest extends McRPGBaseTest {
         assertEquals(2, result.size());
         assertTrue(result.containsKey(new NamespacedKey("mcrpg", "daily_personal")));
         assertTrue(result.containsKey(new NamespacedKey("mcrpg", "weekly_shared")));
+    }
+
+    @DisplayName("loadCategoriesFromDirectory parses max-active-per-entity when present")
+    @Test
+    void loadCategoriesFromDirectory_parsesMaxActivePerEntity() throws IOException {
+        String yaml = """
+                land-daily:
+                  visibility: SCOPED
+                  refresh-type: daily
+                  refresh-interval: 24h
+                  completion-time: 48h
+                  scope-provider: mcrpg:land_scope
+                  min: 1
+                  max: 2
+                  chance-per-slot: 1.0
+                  priority: 5
+                  max-active-per-entity: 3
+                """;
+        writeYaml("land.yml", yaml);
+
+        Map<NamespacedKey, BoardSlotCategory> result = loader.loadCategoriesFromDirectory(tempDir);
+
+        NamespacedKey key = new NamespacedKey("mcrpg", "land_daily");
+        BoardSlotCategory cat = result.get(key);
+        assertNotNull(cat);
+        assertEquals(OptionalInt.of(3), cat.getMaxActivePerEntity());
+    }
+
+    @DisplayName("loadCategoriesFromDirectory returns empty max-active-per-entity when absent")
+    @Test
+    void loadCategoriesFromDirectory_maxActivePerEntityAbsent_returnsEmpty() throws IOException {
+        String yaml = """
+                basic:
+                  visibility: PERSONAL
+                  refresh-type: daily
+                  refresh-interval: 24h
+                  completion-time: 24h
+                  scope-provider: single_player
+                  min: 0
+                  max: 1
+                  chance-per-slot: 1.0
+                  priority: 0
+                """;
+        writeYaml("basic.yml", yaml);
+
+        Map<NamespacedKey, BoardSlotCategory> result = loader.loadCategoriesFromDirectory(tempDir);
+
+        NamespacedKey key = new NamespacedKey("mcrpg", "basic");
+        BoardSlotCategory cat = result.get(key);
+        assertNotNull(cat);
+        assertEquals(OptionalInt.empty(), cat.getMaxActivePerEntity());
     }
 }

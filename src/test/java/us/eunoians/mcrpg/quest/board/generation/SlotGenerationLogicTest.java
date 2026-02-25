@@ -35,6 +35,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
                 chancePerSlot,
                 priority,
                 null,
+                null,
                 null
         );
     }

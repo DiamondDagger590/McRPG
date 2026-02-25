@@ -18,6 +18,14 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.HomeGUICommand;
 import us.eunoians.mcrpg.command.board.BoardCommand;
+import us.eunoians.mcrpg.command.board.ScopedBoardCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminCooldownCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminOfferingsCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminPlayerCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminPurgeCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminRewardsCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminRotateCommand;
+import us.eunoians.mcrpg.command.admin.board.BoardAdminScopedCommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
@@ -92,8 +100,18 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         QuestAdminSetProgressCommand.registerCommand();
         QuestAdminRegistryCommand.registerCommand();
 
-        // Board Command
+        // Board Commands
         BoardCommand.registerCommand();
+        ScopedBoardCommand.registerCommand();
+
+        // Board Admin Commands
+        BoardAdminRotateCommand.registerCommand();
+        BoardAdminOfferingsCommand.registerCommand();
+        BoardAdminScopedCommand.registerCommand();
+        BoardAdminPlayerCommand.registerCommand();
+        BoardAdminCooldownCommand.registerCommand();
+        BoardAdminRewardsCommand.registerCommand();
+        BoardAdminPurgeCommand.registerCommand();
 
         // Reload command
         ReloadPluginCommand.registerCommand();

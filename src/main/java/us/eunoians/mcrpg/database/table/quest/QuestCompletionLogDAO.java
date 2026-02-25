@@ -180,6 +180,24 @@ public class QuestCompletionLogDAO {
     }
 
     /**
+     * Deletes all completion log entries for a player.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return the number of deleted rows
+     */
+    public static int deleteForPlayer(@NotNull Connection connection, @NotNull UUID playerUUID) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
+            ps.setString(1, playerUUID.toString());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
      * Retrieves the full completion history for a player, ordered by completion date.
      *
      * @param connection the database connection

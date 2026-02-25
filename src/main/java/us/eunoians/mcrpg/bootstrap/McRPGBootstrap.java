@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
+import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
@@ -81,6 +82,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new RefreshTypeRegistry());
         registryAccess.register(new QuestTemplateRegistry());
         registryAccess.register(new RewardDistributionTypeRegistry());
+        registryAccess.register(new ScopedBoardAdapterRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();

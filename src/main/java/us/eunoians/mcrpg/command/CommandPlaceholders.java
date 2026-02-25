@@ -40,6 +40,21 @@ public enum CommandPlaceholders {
     STAGES_COMPLETED("stages_completed"),
     BEFORE_COUNT("before_count"),
     AFTER_COUNT("after_count"),
+    OFFERING_ID("offering_id"),
+    ENTITY_ID("entity_id"),
+    SCOPE_TYPE_PH("scope_type_id"),
+    SCOPE_ID("scope_id"),
+    COOLDOWN_TYPE("cooldown_type"),
+    CATEGORY("category"),
+    QUEST_DEF("quest_def"),
+    RARITY("rarity"),
+    OFFERING_STATE("offering_state"),
+    ACCEPTED_BY("accepted_by"),
+    EXPIRES("expires"),
+    REWARD_TYPE("reward_type"),
+    DELETED_COUNT("deleted_count"),
+    CANCELLED_COUNT("cancelled_count"),
+    REFRESH_TYPE("refresh_type"),
     ;
 
     private final String placeholder;

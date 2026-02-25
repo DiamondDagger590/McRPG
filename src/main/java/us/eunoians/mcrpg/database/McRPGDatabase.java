@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.database.table.board.BoardCooldownDAO;
 import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
 import us.eunoians.mcrpg.database.table.board.BoardRotationDAO;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
+import us.eunoians.mcrpg.database.table.board.ScopedBoardStateDAO;
 import us.eunoians.mcrpg.database.table.quest.PendingRewardDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
@@ -121,6 +122,8 @@ public class McRPGDatabase extends Database {
                             + (PlayerBoardStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Board Cooldown DAO "
                             + (BoardCooldownDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Scoped Board State DAO "
+                            + (ScopedBoardStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
@@ -156,6 +159,7 @@ public class McRPGDatabase extends Database {
                     BoardOfferingDAO.updateTable(connection);
                     PlayerBoardStateDAO.updateTable(connection);
                     BoardCooldownDAO.updateTable(connection);
+                    ScopedBoardStateDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {

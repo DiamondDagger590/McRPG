@@ -1,0 +1,29 @@
+# Category for Lands-scoped daily quests.
+# These quests appear on a per-land basis and are managed by land members
+# with the appropriate permission (owner or manage_board_quests role flag).
+land-daily:
+  # SCOPED categories generate offerings per scope entity (e.g., one set per land)
+  # rather than globally shared offerings.
+  visibility: SCOPED
+  # How often this category's offerings refresh. Must match a registered refresh type.
+  refresh-type: DAILY
+  # Duration between refreshes. Used by the rotation scheduler.
+  refresh-interval: 1d
+  # How long a player/entity has to complete the quest after accepting it.
+  completion-time: 3d
+  # The scope provider key that links this category to a specific group system.
+  # mcrpg:land_scope ties it to the Lands plugin integration.
+  scope-provider: mcrpg:land_scope
+  # Maximum number of active (accepted) quests from this category per scope entity.
+  # Overrides the global max-scoped-quests-per-entity in board.yml for this category.
+  max-active-per-entity: 1
+  # Minimum number of slots this category contributes per rotation.
+  min: 0
+  # Maximum number of slots this category contributes per rotation.
+  max: 1
+  # Probability (0.0-1.0) that each potential slot actually generates an offering.
+  chance-per-slot: 0.15
+  # Cooldown before the same quest definition can reappear in this category.
+  appearance-cooldown: 7d
+  # Priority relative to other categories. Higher priority categories fill slots first.
+  priority: 5

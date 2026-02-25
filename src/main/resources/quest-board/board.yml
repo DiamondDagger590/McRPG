@@ -1,12 +1,25 @@
+# Minimum number of quest offerings that must appear on the board each rotation.
+# If fewer slots are generated from categories, the board will pad to this minimum.
 slot-layout:
   minimum-total-offerings: 3
 
+# Maximum number of shared (non-scoped) quests a single player can have accepted at once.
 max-accepted-quests: 3
 
+# Default maximum number of active scoped quests per scope entity (e.g., per land).
+# Individual categories can override this via their own max-active-per-entity setting.
+max-scoped-quests-per-entity: 1
+
+# Relative weights controlling how often hand-crafted vs template-generated quests
+# are selected when filling board slots. Higher weight = more likely to be picked.
 quest-source-weights:
   hand-crafted: 50
   template: 50
 
+# Rarity tiers that quests can roll when generated for the board.
+# weight: relative chance of this rarity being rolled (higher = more common)
+# difficulty-multiplier: scales objective targets (e.g., "mine 100 blocks" becomes "mine 150")
+# reward-multiplier: scales reward amounts (e.g., 100 XP becomes 200 XP)
 rarities:
   COMMON:
     weight: 60
@@ -25,8 +38,13 @@ rarities:
     difficulty-multiplier: 2.0
     reward-multiplier: 3.0
 
+# Controls when the board rotates (replaces expired offerings with new ones).
 rotation:
+  # Time of day (HH:mm) when daily rotations occur.
   time: "00:00"
+  # Timezone used for rotation scheduling.
   timezone: "UTC"
+  # Day of the week when weekly rotations occur.
   weekly-reset-day: MONDAY
+  # How often (in seconds) the rotation task checks whether a rotation is due.
   task-check-interval-seconds: 60

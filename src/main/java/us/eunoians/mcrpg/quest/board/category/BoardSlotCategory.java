@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Immutable data class representing a slot category on the quest board.
@@ -40,6 +41,7 @@ public final class BoardSlotCategory {
     private final int priority;
     private final Duration appearanceCooldown;
     private final String requiredPermission;
+    private final Integer maxActivePerEntity;
 
     public BoardSlotCategory(@NotNull NamespacedKey key,
                              @NotNull Visibility visibility,
@@ -52,7 +54,8 @@ public final class BoardSlotCategory {
                              double chancePerSlot,
                              int priority,
                              @Nullable Duration appearanceCooldown,
-                             @Nullable String requiredPermission) {
+                             @Nullable String requiredPermission,
+                             @Nullable Integer maxActivePerEntity) {
         this.key = key;
         this.visibility = visibility;
         this.refreshTypeKey = refreshTypeKey;
@@ -65,6 +68,7 @@ public final class BoardSlotCategory {
         this.priority = priority;
         this.appearanceCooldown = appearanceCooldown;
         this.requiredPermission = requiredPermission;
+        this.maxActivePerEntity = maxActivePerEntity;
     }
 
     /**
@@ -189,5 +193,16 @@ public final class BoardSlotCategory {
     @NotNull
     public Optional<String> getRequiredPermission() {
         return Optional.ofNullable(requiredPermission);
+    }
+
+    /**
+     * Returns the maximum number of active quests from this category per scope entity,
+     * if configured.
+     *
+     * @return the max active per entity, or empty if unlimited
+     */
+    @NotNull
+    public OptionalInt getMaxActivePerEntity() {
+        return maxActivePerEntity != null ? OptionalInt.of(maxActivePerEntity) : OptionalInt.empty();
     }
 }

@@ -164,6 +164,59 @@ public class PendingRewardDAO {
     }
 
     /**
+     * Lists all non-expired pending rewards for a player without modifying any data.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return the list of valid pending rewards
+     */
+    @NotNull
+    public static List<PendingReward> listPendingRewards(@NotNull Connection connection, @NotNull UUID playerUUID) {
+        long now = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+        List<PendingReward> rewards = new ArrayList<>();
+        try (PreparedStatement select = connection.prepareStatement(
+                "SELECT * FROM " + TABLE_NAME + " WHERE player_uuid = ? AND expires_at > ?")) {
+            select.setString(1, playerUUID.toString());
+            select.setLong(2, now);
+            try (ResultSet rs = select.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
+                    rewards.add(new PendingReward(
+                            UUID.fromString(rs.getString("id")),
+                            playerUUID,
+                            NamespacedKey.fromString(rs.getString("reward_type_key")),
+                            config,
+                            NamespacedKey.fromString(rs.getString("quest_key")),
+                            rs.getLong("created_at"),
+                            rs.getLong("expires_at")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rewards;
+    }
+
+    /**
+     * Deletes all pending rewards for a player.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return the number of deleted rows
+     */
+    public static int deleteAllForPlayer(@NotNull Connection connection, @NotNull UUID playerUUID) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
+            ps.setString(1, playerUUID.toString());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
      * Deletes a specific pending reward by its ID after it has been granted.
      *
      * @param connection the database connection

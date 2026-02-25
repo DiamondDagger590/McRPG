@@ -19,16 +19,26 @@ import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.SkillDAO;
+import us.eunoians.mcrpg.database.table.board.BoardCooldownDAO;
+import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
+import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
+import us.eunoians.mcrpg.database.table.quest.PendingRewardDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.quest.board.BoardOffering;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * This command is used to fully reset a player's data
@@ -71,9 +81,11 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                                 }
 
                                 Database database = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
+                                UUID playerUUID = player.getUniqueId();
                                 database.getDatabaseExecutorService().submit(() -> {
                                     try (Connection connection = database.getConnection()) {
                                         new FailSafeTransaction(connection, SkillDAO.saveAllSkillHolderInformation(connection, skillHolder)).executeTransaction();
+                                        clearBoardData(connection, playerUUID);
                                     } catch (SQLException e) {
                                         // Go back to main thread
                                         new CoreTask(mcRPG) {
@@ -89,6 +101,38 @@ public class ResetPlayerCommand extends ResetBaseCommand {
                             senderAudience.sendMessage(localizationManager.getLocalizedMessageAsComponent(senderAudience, LocalizationKey.RESET_PLAYER_COMMAND_SENDER_ERROR_MESSAGE, senderPlaceholders));
                         }
                 ));
+    }
+
+    /**
+     * Clears all board-related data for a player. Abandons personal board offerings,
+     * cancels associated solo quest instances, clears cooldowns, pending rewards,
+     * completion log, and player board state. Scoped quest contributions are preserved.
+     */
+    private static void clearBoardData(@NotNull Connection connection, @NotNull UUID playerUUID) throws SQLException {
+        // Abandon personal accepted offerings and cancel their quest instances
+        List<PlayerBoardStateDAO.AcceptedBoardEntry> accepted =
+                PlayerBoardStateDAO.loadAcceptedForPlayer(connection, playerUUID);
+        for (PlayerBoardStateDAO.AcceptedBoardEntry entry : accepted) {
+            for (PreparedStatement ps : BoardOfferingDAO.updateOfferingState(
+                    connection, entry.offeringId(), BoardOffering.State.ABANDONED, null, null)) {
+                ps.executeUpdate();
+                ps.close();
+            }
+            if (entry.questInstanceUUID() != null) {
+                for (PreparedStatement ps : QuestInstanceDAO.deleteQuestInstance(connection, entry.questInstanceUUID())) {
+                    ps.executeUpdate();
+                    ps.close();
+                }
+            }
+        }
+        // Clear player board state
+        PlayerBoardStateDAO.deleteForPlayer(connection, playerUUID);
+        // Clear player-scoped cooldowns
+        BoardCooldownDAO.deleteCooldowns(connection, "player", playerUUID.toString(), null);
+        // Clear pending rewards
+        PendingRewardDAO.deleteAllForPlayer(connection, playerUUID);
+        // Clear completion log
+        QuestCompletionLogDAO.deleteForPlayer(connection, playerUUID);
     }
 
     @NotNull

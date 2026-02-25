@@ -7,9 +7,11 @@ import com.diamonddagger590.mccore.registry.plugin.PluginHook;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import me.angeschossen.lands.api.LandsIntegration;
 import me.angeschossen.lands.api.land.Area;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.listener.lands.LandDeleteListener;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
@@ -29,12 +31,26 @@ public class LandsHook extends PluginHook<McRPG> implements SafeZonePluginHook {
         super(plugin);
         this.landsIntegration = LandsIntegration.of(plugin);
         registerLandQuestScopeProvider(plugin);
+        registerLandScopedBoardAdapter(plugin);
+        registerLandDeleteListener(plugin);
+        plugin.getLogger().info("[Lands] Registered manage_board_quests role flag. "
+                + "Server owners can allowlist this flag in Lands' configuration to enable delegation.");
     }
 
     private void registerLandQuestScopeProvider(@NotNull McRPG plugin) {
         plugin.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_SCOPE_PROVIDER)
                 .register(new LandQuestScopeProvider());
+    }
+
+    private void registerLandScopedBoardAdapter(@NotNull McRPG plugin) {
+        plugin.registryAccess()
+                .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER)
+                .register(new LandScopedBoardAdapter(landsIntegration));
+    }
+
+    private void registerLandDeleteListener(@NotNull McRPG plugin) {
+        Bukkit.getPluginManager().registerEvents(new LandDeleteListener(), plugin);
     }
 
     /**

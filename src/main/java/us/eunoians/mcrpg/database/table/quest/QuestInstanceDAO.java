@@ -54,6 +54,7 @@ public class QuestInstanceDAO {
                 "`end_time` BIGINT," +
                 "`expiration_time` BIGINT," +
                 "`quest_source` varchar(256) NOT NULL," +
+                "`board_rarity_key` varchar(256)," +
                 "PRIMARY KEY (`quest_uuid`)" +
                 ");")) {
             statement.executeUpdate();
@@ -107,13 +108,14 @@ public class QuestInstanceDAO {
         try {
             PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO " + TABLE_NAME +
-                            " (quest_uuid, definition_key, state, scope_type, start_time, end_time, expiration_time, quest_source)" +
-                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)" +
+                            " (quest_uuid, definition_key, state, scope_type, start_time, end_time, expiration_time, quest_source, board_rarity_key)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                             " ON CONFLICT(quest_uuid) DO UPDATE SET" +
                             " state = excluded.state," +
                             " start_time = excluded.start_time," +
                             " end_time = excluded.end_time," +
-                            " expiration_time = excluded.expiration_time");
+                            " expiration_time = excluded.expiration_time," +
+                            " board_rarity_key = excluded.board_rarity_key");
             ps.setString(1, quest.getQuestUUID().toString());
             ps.setString(2, quest.getQuestKey().toString());
             ps.setString(3, quest.getQuestState().name());
@@ -122,6 +124,12 @@ public class QuestInstanceDAO {
             setNullableLong(ps, 6, quest.getEndTime().orElse(null));
             setNullableLong(ps, 7, quest.getExpirationTime().orElse(null));
             ps.setString(8, quest.getQuestSource().getKey().toString());
+            String boardRarityKey = quest.getBoardRarityKey().map(NamespacedKey::toString).orElse(null);
+            if (boardRarityKey != null) {
+                ps.setString(9, boardRarityKey);
+            } else {
+                ps.setNull(9, java.sql.Types.VARCHAR);
+            }
             statements.add(ps);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -140,7 +148,7 @@ public class QuestInstanceDAO {
     @NotNull
     public static Optional<QuestInstance> loadQuestInstance(@NotNull Connection connection, @NotNull UUID questUUID) {
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT definition_key, scope_type, state, start_time, end_time, expiration_time, quest_source FROM " + TABLE_NAME +
+                "SELECT definition_key, scope_type, state, start_time, end_time, expiration_time, quest_source, board_rarity_key FROM " + TABLE_NAME +
                         " WHERE quest_uuid = ?")) {
             ps.setString(1, questUUID.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -200,7 +208,7 @@ public class QuestInstanceDAO {
             placeholders.append("?");
         }
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT quest_uuid, definition_key, scope_type, state, start_time, end_time, expiration_time, quest_source FROM " +
+                "SELECT quest_uuid, definition_key, scope_type, state, start_time, end_time, expiration_time, quest_source, board_rarity_key FROM " +
                         TABLE_NAME + " WHERE state IN (" + placeholders + ")")) {
             for (int i = 0; i < states.length; i++) {
                 ps.setString(i + 1, states[i].name());
@@ -286,7 +294,12 @@ public class QuestInstanceDAO {
         QuestSource questSource = sourceRegistry.get(sourceKey)
                 .orElseThrow(() -> new IllegalStateException("Unknown quest source: " + sourceKey + " for quest " + questUUID));
 
-        return new QuestInstance(definitionKey, questUUID, scopeType, state, null, startTime, endTime, expirationTime, questSource, null);
+        QuestInstance questInstance = new QuestInstance(definitionKey, questUUID, scopeType, state, null, startTime, endTime, expirationTime, questSource, null);
+        String boardRarityKeyStr = rs.getString("board_rarity_key");
+        if (boardRarityKeyStr != null) {
+            questInstance.setBoardRarityKey(NamespacedKey.fromString(boardRarityKeyStr));
+        }
+        return questInstance;
     }
 
     /**
