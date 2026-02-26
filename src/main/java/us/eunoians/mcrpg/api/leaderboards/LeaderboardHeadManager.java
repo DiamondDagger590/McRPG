@@ -113,7 +113,7 @@ public class LeaderboardHeadManager {
                         .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                 sign.update();
                 Skull skull = (Skull) skullLoc.getBlock().getState();
-                if(!skull.getOwningPlayer().getUniqueId().equals(playerLeaderboardData.getUUID())){
+                if(skull.getOwningPlayer() == null || !skull.getOwningPlayer().getUniqueId().equals(playerLeaderboardData.getUUID())){
                     skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
                     skull.update();
                 }
@@ -156,7 +156,7 @@ public class LeaderboardHeadManager {
                         .replace("%Level%", Integer.toString(level)).replace("%Player%", offlinePlayer.getName())));
                 sign.update();
                 Skull skull = (Skull) skullLoc.getBlock().getState();
-                if(!skull.getOwningPlayer().getUniqueId().equals(playerLeaderboardData.getUUID())){
+                if(skull.getOwningPlayer() == null || !skull.getOwningPlayer().getUniqueId().equals(playerLeaderboardData.getUUID())){
                     skull.setOwningPlayer(Bukkit.getOfflinePlayer(playerLeaderboardData.getUUID()));
                     skull.update();
                 }
