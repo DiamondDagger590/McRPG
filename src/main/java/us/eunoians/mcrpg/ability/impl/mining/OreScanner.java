@@ -15,12 +15,14 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -50,7 +52,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
 public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility,
-        ReloadableContentAbility, ConfigurableSkillAbility {
+        ReloadableContentAbility, ConfigurableSkillAbility, ComboActivatable {
 
     public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ore_scanner");
     private final ReloadableOreScannerBlocks ORE_SCANNER_BLOCK_TYPES = new ReloadableOreScannerBlocks(getYamlDocument(), MiningConfigFile.ORE_SCANNER_BLOCK_TYPES);
@@ -103,8 +105,37 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
         Player player = playerInteractEvent.getPlayer();
-        Location playerLocation = player.getLocation();
         abilityHolder.unreadyHolder();
+        if (performScan(abilityHolder, player)) {
+            putHolderOnCooldown(abilityHolder);
+        }
+    }
+
+    @Override
+    public void comboActivate(@NotNull AbilityHolder abilityHolder) {
+        if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
+            performScan(abilityHolder, player);
+        }
+    }
+
+    @Override
+    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
+                .getInt(ComboConfigFile.ORE_SCANNER_HUNGER_COST, 4);
+    }
+
+    /**
+     * Executes the core ore scan effect — scanning the area, firing the activate event,
+     * pointing the player toward the highest-weighted ore, and scheduling glow tasks.
+     * Called by both the ready-state path and the combo path.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param player        The online {@link Player} associated with the holder.
+     * @return {@code true} if the scan completed successfully (event not cancelled).
+     */
+    private boolean performScan(@NotNull AbilityHolder abilityHolder, @NotNull Player player) {
+        Location playerLocation = player.getLocation();
         abilityHolder.addActiveAbility(this);
         int radius = getRange(getCurrentAbilityTier(abilityHolder));
 
@@ -133,9 +164,8 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
         OreScannerActivateEvent oreScannerActivateEvent = new OreScannerActivateEvent(abilityHolder, instancesOfBlocks);
         Bukkit.getPluginManager().callEvent(oreScannerActivateEvent);
         if (oreScannerActivateEvent.isCancelled()) {
-            return;
+            return false;
         }
-        putHolderOnCooldown(abilityHolder);
 
         var highestWeightedScanType = getHighestWeightedScanType(instancesOfBlocks.keySet());
         highestWeightedScanType.ifPresent(oreScannerBlockType -> {
@@ -151,6 +181,7 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
             blockRemoveGlowTask.runTask();
             player.sendMessage(getPlugin().getMiniMessage().deserialize("<gray>You've detected <gold>" + locations.size() + " " + oreScannerBlockType.typeName() + "</gold> near you."));
         });
+        return true;
     }
 
     @NotNull

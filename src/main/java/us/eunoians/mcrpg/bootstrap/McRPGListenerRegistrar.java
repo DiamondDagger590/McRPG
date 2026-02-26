@@ -7,7 +7,10 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.combo.ComboTracker;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
+import us.eunoians.mcrpg.listener.ability.OnComboCompleteListener;
+import us.eunoians.mcrpg.listener.ability.OnComboInputListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityCooldownExpireListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityPutOnCooldownListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityUnlockListener;
@@ -53,6 +56,11 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
             Bukkit.getPluginManager().registerEvents(new CorePlayerLoadListener(), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerUnloadListener(), plugin);
         }
+
+        // Combo activation listeners (PoC)
+        ComboTracker comboTracker = new ComboTracker(plugin);
+        Bukkit.getPluginManager().registerEvents(new OnComboInputListener(comboTracker), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnComboCompleteListener(), plugin);
 
         // Ability activation/ready listeners
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), plugin);

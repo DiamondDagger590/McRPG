@@ -17,10 +17,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.ability.ready.HerbalismReadyData;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -48,7 +50,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
 /**
  * This ability allows players to harvest blocks in a radius around them.
  */
-public final class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReloadableContentAbility {
+public final class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReloadableContentAbility, ComboActivatable {
 
     public static final NamespacedKey MASS_HARVEST_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mass_harvest");
     private final ReloadableSet<CustomBlockWrapper> VALID_BLOCK_TYPES;
@@ -125,19 +127,46 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
         PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
         Player player = playerInteractEvent.getPlayer();
         McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).orElseThrow(IllegalStateException::new);
-        int pulseRadius = getRadius(getCurrentAbilityTier(abilityHolder));
         abilityHolder.unreadyHolder();
+        if (performHarvest(abilityHolder, mcRPGPlayer)) {
+            putHolderOnCooldown(abilityHolder);
+        }
+    }
 
+    @Override
+    public void comboActivate(@NotNull AbilityHolder abilityHolder) {
+        RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER)
+                .getPlayer(abilityHolder.getUUID())
+                .ifPresent(mcRPGPlayer -> performHarvest(abilityHolder, mcRPGPlayer));
+    }
+
+    @Override
+    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
+                .getInt(ComboConfigFile.MASS_HARVEST_HUNGER_COST, 4);
+    }
+
+    /**
+     * Executes the core MassHarvest effect — firing the activate event and scheduling the pulse task.
+     * Called by both the ready-state path and the combo path.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param mcRPGPlayer   The {@link McRPGPlayer} associated with the holder.
+     * @return {@code true} if the harvest was started successfully (event not cancelled).
+     */
+    private boolean performHarvest(@NotNull AbilityHolder abilityHolder, @NotNull McRPGPlayer mcRPGPlayer) {
+        int pulseRadius = getRadius(getCurrentAbilityTier(abilityHolder));
         MassHarvestActivateEvent massHarvestActivateEvent = new MassHarvestActivateEvent(abilityHolder, pulseRadius);
         Bukkit.getPluginManager().callEvent(massHarvestActivateEvent);
         if (massHarvestActivateEvent.isCancelled()) {
-            return;
+            return false;
         }
         abilityHolder.addActiveAbility(this);
-        putHolderOnCooldown(abilityHolder);
         MassHarvestPulseTask massHarvestPulseTask = new MassHarvestPulseTask(this.getPlugin(), mcRPGPlayer, this, massHarvestActivateEvent.getMaxPulseRadius());
         massHarvestPulseTask.runTask();
         abilityHolder.removeActiveAbility(this);
+        return true;
     }
 
     @Override

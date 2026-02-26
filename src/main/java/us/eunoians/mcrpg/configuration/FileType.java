@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
@@ -24,6 +25,7 @@ public enum FileType {
     MINING_CONFIG("skill_configuration" + "/" + "mining_configuration.yml", new MiningConfigFile()),
     WOODCUTTING_CONFIG("skill_configuration" + "/" + "woodcutting_configuration.yml", new WoodcuttingConfigFile()),
     HERBALISM_CONFIG("skill_configuration" + "/" + "herbalism_configuration.yml", new HerbalismConfigFile()),
+    COMBO_CONFIG("combo_configuration.yml", new ComboConfigFile()),
     ;
 
     private final String filePath;

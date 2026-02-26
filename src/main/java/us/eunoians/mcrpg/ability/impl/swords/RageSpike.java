@@ -19,9 +19,11 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
@@ -49,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Rage Spike is an active ability that activates after the user readies their
  * sword and then crouches, blasting them forward and knocking back enemies and doing damage.
  */
-public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility {
+public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
 
     public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "rage_spike");
 
@@ -104,49 +106,77 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
 
         if (!rageSpikeActivateEvent.isCancelled() && Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
             abilityHolder.unreadyHolder();
-            int tier = getCurrentAbilityTier(abilityHolder);
-            Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
-            player.setVelocity(unitVector.multiply(getVelocity(tier)));
+            performRageSpike(abilityHolder, player);
+            putHolderOnCooldown(abilityHolder);
+        }
+    }
 
-            RageSpike rageSpike = this;
-            abilityHolder.addActiveAbility(rageSpike);
-            // After they've traveled we need to iteratee 20 times (1 second)
-            AtomicInteger count = new AtomicInteger(0);
-            //A list of all entities hit by rage spike so we arent double hitting
-            List<UUID> entities = new ArrayList<>();
-            //Damage entities as we fly by
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    //verify that this runs 20 times
-                    if (!abilityHolder.isAbilityActive(rageSpike) || !player.isOnline()
-                            || player.isDead() || player.isSleeping()
-                            || count.incrementAndGet() == 21) {
-                        abilityHolder.removeActiveAbility(rageSpike);
-                        cancel();
-                    } else {
-                        //get all the entities in a 2 by 2 radius
-                        for (Entity entity : player.getNearbyEntities(2, 2, 2)) {
-                            //if the entity is living (avoids items and such) and isnt already hit
-                            if (entity instanceof LivingEntity livingEntity && !isNPC(entity) && !entities.contains(entity.getUniqueId())) {
-                                RageSpikeDamageEvent rageSpikeDamageEvent = new RageSpikeDamageEvent(abilityHolder, livingEntity, getDamage(tier));
-                                Bukkit.getPluginManager().callEvent(rageSpikeDamageEvent);
-                                if (rageSpikeDamageEvent.isCancelled()) {
-                                    continue;
-                                }
-                                //make target go voom
-                                Vector targVector = new Vector(entity.getLocation().getDirection().getX(), entity.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
-                                entity.setVelocity(targVector.multiply(-4.3));
-                                //damage target and add them to list
-                                livingEntity.damage(rageSpikeDamageEvent.getDamage());
-                                entities.add(entity.getUniqueId());
+    @Override
+    public void comboActivate(@NotNull AbilityHolder abilityHolder) {
+        RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
+        Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
+
+        if (!rageSpikeActivateEvent.isCancelled() && Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
+            performRageSpike(abilityHolder, player);
+        }
+    }
+
+    @Override
+    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
+                .getInt(ComboConfigFile.RAGE_SPIKE_HUNGER_COST, 6);
+    }
+
+    /**
+     * Executes the core Rage Spike effect — launching the player forward and damaging
+     * entities they pass through. Called by both the ready-state path and the combo path.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param player        The online {@link Player} associated with the holder.
+     */
+    private void performRageSpike(@NotNull AbilityHolder abilityHolder, @NotNull Player player) {
+        int tier = getCurrentAbilityTier(abilityHolder);
+        Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
+        player.setVelocity(unitVector.multiply(getVelocity(tier)));
+
+        RageSpike rageSpike = this;
+        abilityHolder.addActiveAbility(rageSpike);
+        // After they've traveled we need to iteratee 20 times (1 second)
+        AtomicInteger count = new AtomicInteger(0);
+        //A list of all entities hit by rage spike so we arent double hitting
+        List<UUID> entities = new ArrayList<>();
+        //Damage entities as we fly by
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                //verify that this runs 20 times
+                if (!abilityHolder.isAbilityActive(rageSpike) || !player.isOnline()
+                        || player.isDead() || player.isSleeping()
+                        || count.incrementAndGet() == 21) {
+                    abilityHolder.removeActiveAbility(rageSpike);
+                    cancel();
+                } else {
+                    //get all the entities in a 2 by 2 radius
+                    for (Entity entity : player.getNearbyEntities(2, 2, 2)) {
+                        //if the entity is living (avoids items and such) and isnt already hit
+                        if (entity instanceof LivingEntity livingEntity && !isNPC(entity) && !entities.contains(entity.getUniqueId())) {
+                            RageSpikeDamageEvent rageSpikeDamageEvent = new RageSpikeDamageEvent(abilityHolder, livingEntity, getDamage(tier));
+                            Bukkit.getPluginManager().callEvent(rageSpikeDamageEvent);
+                            if (rageSpikeDamageEvent.isCancelled()) {
+                                continue;
                             }
+                            //make target go voom
+                            Vector targVector = new Vector(entity.getLocation().getDirection().getX(), entity.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
+                            entity.setVelocity(targVector.multiply(-4.3));
+                            //damage target and add them to list
+                            livingEntity.damage(rageSpikeDamageEvent.getDamage());
+                            entities.add(entity.getUniqueId());
                         }
                     }
                 }
-            }.runTaskTimer(getPlugin(), 0, 1);
-            putHolderOnCooldown(abilityHolder);
-        }
+            }
+        }.runTaskTimer(getPlugin(), 0, 1);
     }
 
     @NotNull

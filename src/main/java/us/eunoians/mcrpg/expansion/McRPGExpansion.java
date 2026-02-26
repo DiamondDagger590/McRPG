@@ -13,10 +13,12 @@ import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.ability.impl.mining.OreScanner;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
+import us.eunoians.mcrpg.ability.impl.swords.Cleave;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
+import us.eunoians.mcrpg.ability.impl.swords.Shockwave;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.ability.impl.woodcutting.DryadsGift;
 import us.eunoians.mcrpg.ability.impl.woodcutting.ExtraLumber;
@@ -102,6 +104,9 @@ public final class McRPGExpansion extends ContentExpansion {
         abilityContent.addContent(new EnhancedBleed(mcRPG));
         abilityContent.addContent(new RageSpike(mcRPG));
         abilityContent.addContent(new SerratedStrikes(mcRPG));
+        // PoC combo-only abilities
+        abilityContent.addContent(new Shockwave(mcRPG));
+        abilityContent.addContent(new Cleave(mcRPG));
 
         // Mining Abilities
         abilityContent.addContent(new ExtraOre(mcRPG));
