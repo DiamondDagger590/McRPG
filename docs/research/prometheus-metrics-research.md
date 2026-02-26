@@ -17,11 +17,13 @@ McRPG needs a system to collect game balance metrics (XP rates, ability usage, l
 3. [Recommended Architecture](#3-recommended-architecture)
 4. [Backend Options Comparison](#4-backend-options-comparison)
 5. [What Metrics to Collect](#5-what-metrics-to-collect)
-6. [Security & Trust Model](#6-security--trust-model)
-7. [Privacy & GDPR Compliance](#7-privacy--gdpr-compliance)
-8. [How Other Games Do This](#8-how-other-games-do-this)
-9. [Statistical Approaches for Balance Analysis](#9-statistical-approaches-for-balance-analysis)
-10. [Implementation Roadmap](#10-implementation-roadmap)
+6. [Loadout Composition & Ability Co-Occurrence Metrics](#6-loadout-composition--ability-co-occurrence-metrics)
+7. [PvP Win/Loss Tracking](#7-pvp-winloss-tracking)
+8. [Security & Trust Model](#8-security--trust-model)
+9. [Privacy & GDPR Compliance](#9-privacy--gdpr-compliance)
+10. [How Other Games Do This](#10-how-other-games-do-this)
+11. [Statistical Approaches for Balance Analysis](#11-statistical-approaches-for-balance-analysis)
+12. [Implementation Roadmap](#12-implementation-roadmap)
 
 ---
 
@@ -270,7 +272,325 @@ You mentioned this specific metric. Here's how to approach it despite configurab
 
 ---
 
-## 6. Security & Trust Model
+## 6. Loadout Composition & Ability Co-Occurrence Metrics
+
+### Current Loadout System in McRPG
+
+Based on the codebase (`Loadout.java`, `LoadoutHolder.java`, `LoadoutAbilityDAO.java`):
+- Players have up to **3 loadout slots**, each holding up to **15 abilities**
+- **Constraint**: only ONE `ActiveAbility` per skill per loadout (e.g., can't have both SerratedStrikes AND another Swords active in the same loadout)
+- **~20+ equippable abilities** across 4 skills (Swords, Mining, Woodcutting, Herbalism), with a mix of passive and active types
+- Loadouts are stored in `mcrpg_loadout` table (`holder_uuid`, `loadout_id`, `ability_id`)
+- Players select their active loadout slot via `mcrpg_player_loadout_selection`
+
+This is a rich source of balance data: which abilities do players actually choose to equip?
+
+### Metric Type 1: Ability Popularity (Pie Charts)
+
+The simplest metric — "what percentage of loadouts contain ability X?"
+
+#### What to Collect (Plugin-Side)
+```java
+// Snapshot taken hourly: scan all online players' ACTIVE loadouts
+class LoadoutCompositionSnapshot {
+    // Per ability: how many active loadouts contain it
+    Map<String, Integer> abilityEquipCounts;  // e.g., {"bleed": 142, "extra_ore": 98, ...}
+    int totalActiveLoadouts;                   // e.g., 200
+    int totalOnlinePlayers;                    // e.g., 200 (1 active loadout per player)
+}
+```
+
+#### Resulting Metrics
+```
+mcrpg_loadout_ability_equipped{ability="bleed"}          142  # 71% of loadouts
+mcrpg_loadout_ability_equipped{ability="extra_ore"}       98  # 49% of loadouts
+mcrpg_loadout_ability_equipped{ability="serrated_strikes"} 87  # 43.5% of loadouts
+mcrpg_loadout_ability_equipped{ability="ore_scanner"}      23  # 11.5% of loadouts
+mcrpg_loadout_total_active                                200
+```
+
+In Grafana, this naturally becomes a pie chart via:
+```promql
+mcrpg_loadout_ability_equipped / mcrpg_loadout_total_active
+```
+
+#### Useful Slices
+- **By skill**: "What % of loadouts have ANY Swords ability vs ANY Mining ability?" — tells you which skill trees feel rewarding enough to invest in
+- **Active vs passive**: "Do players prefer passive abilities (always on) or active abilities (manual trigger)?" — if passives dominate, actives may feel too clunky
+- **By tier**: "At what tier do players start equipping an ability?" — if nobody equips Bleed until Tier 3, maybe the early tiers feel underwhelming
+
+### Metric Type 2: Ability Co-Occurrence (Combo Detection)
+
+This is the more interesting and analytically rich metric: "which abilities are equipped **together**?"
+
+#### The Market Basket Analysis Analogy
+
+This is the same problem as retail's "customers who bought X also bought Y" — formally called **association rule mining**. The classic algorithms are:
+
+- **Apriori**: Find all ability pairs (and triples) that appear together in loadouts more often than expected by chance
+- **FP-Growth**: More efficient version of Apriori for larger item sets
+
+The key metrics from association rule mining:
+
+| Metric | Formula | What It Tells You |
+|---|---|---|
+| **Support** | `count(A ∧ B) / total_loadouts` | How common is this combo? |
+| **Confidence** | `count(A ∧ B) / count(A)` | If you have A, how likely do you also have B? |
+| **Lift** | `confidence(A→B) / support(B)` | Is this combo more common than random chance? Lift > 1 = synergy |
+
+**Example**: If Bleed appears in 70% of loadouts and SerratedStrikes in 40%, random chance says they'd co-occur in 28% of loadouts. If they actually co-occur in 38%, the lift is 1.36 — suggesting players perceive a synergy (which makes sense since SerratedStrikes boosts Bleed activation).
+
+#### What to Collect (Plugin-Side)
+
+Computing full co-occurrence matrices on every server would be expensive. Instead, send **pair counts** for the most common pairs:
+
+```java
+class LoadoutCoOccurrenceSnapshot {
+    // Top N ability pairs by co-occurrence count
+    // N = 50 is plenty (with ~20 abilities, there are ~190 possible pairs)
+    List<AbilityPair> pairCounts;
+    int totalActiveLoadouts;
+
+    static class AbilityPair {
+        String abilityA;     // Lexicographically first (canonical ordering)
+        String abilityB;
+        int coOccurrences;   // Loadouts containing BOTH
+    }
+}
+```
+
+Actually, with only ~20 equippable abilities, there are at most `20 choose 2 = 190` pairs. That's small enough to send **all** pairs every hour. No need to truncate.
+
+#### Resulting Metrics
+```
+# Gauge: number of active loadouts containing both abilities
+mcrpg_loadout_pair{a="bleed",b="serrated_strikes"}        87
+mcrpg_loadout_pair{a="bleed",b="deeper_wound"}            72
+mcrpg_loadout_pair{a="bleed",b="vampire"}                 65
+mcrpg_loadout_pair{a="extra_ore",b="its_a_triple"}        54
+mcrpg_loadout_pair{a="extra_lumber",b="heavy_swing"}      41
+mcrpg_loadout_pair{a="bleed",b="extra_ore"}               38  # Cross-skill combo
+```
+
+#### Server-Side Analysis
+
+With pair counts and individual counts from many servers, compute lift server-side:
+
+```promql
+# Lift for (Bleed, SerratedStrikes) combo:
+# lift = P(A∧B) / (P(A) × P(B))
+
+(sum(mcrpg_loadout_pair{a="bleed",b="serrated_strikes"}) / sum(mcrpg_loadout_total_active))
+/
+(
+  (sum(mcrpg_loadout_ability_equipped{ability="bleed"}) / sum(mcrpg_loadout_total_active))
+  *
+  (sum(mcrpg_loadout_ability_equipped{ability="serrated_strikes"}) / sum(mcrpg_loadout_total_active))
+)
+```
+
+A **lift heatmap** in Grafana across all ability pairs would immediately reveal:
+- **High lift pairs (> 1.5)**: Strong perceived synergies — are these intended or exploits?
+- **Low lift pairs (< 0.5)**: Anti-synergies — abilities that players avoid combining. Why?
+- **Cross-skill high-lift pairs**: Players combining abilities from different skill trees in unexpected ways
+
+#### Scaling Consideration: Triples and Beyond
+
+With 15-slot loadouts, you might want triples too (`A + B + C`). With 20 abilities, there are `20 choose 3 = 1140` triples — still manageable. But beyond triples the cardinality explodes. Recommendation:
+- **Always send**: All pair counts (~190 pairs)
+- **Optionally send**: Top 100 triple counts (pre-filtered on the plugin side to only triples that actually appear in loadouts)
+- **Never send**: Quadruples or higher — analyze these server-side by correlating pair data
+
+### Metric Type 3: Loadout Diversity Index
+
+A single number that captures how "solved" or "diverse" the loadout meta is:
+
+```java
+// Shannon entropy of loadout compositions
+// High entropy = diverse meta (many viable builds)
+// Low entropy = solved meta (everyone runs the same build)
+double loadoutDiversityIndex = -sum(p_i * log2(p_i))
+    // where p_i = fraction of loadouts containing ability i
+```
+
+Track this over time. If diversity drops after a patch, something became dominant.
+
+---
+
+## 7. PvP Win/Loss Tracking
+
+### The Core Problem: What Is a "Fight"?
+
+In structured games (League of Legends, chess), a match has clear start/end boundaries. In Minecraft open-world PvP, there's no formal fight structure. A "fight" could be:
+- A 1v1 duel lasting 30 seconds
+- A surprise ambush that's over in 2 hits
+- A prolonged 3v3 skirmish
+- A player hitting someone once and running away
+- Two players trading blows with a 30-second break mid-fight
+
+You need a **heuristic** to define fight boundaries.
+
+### Recommended Heuristic: Damage Window / Combat Session
+
+The approach used by open-world PvP games like Albion Online and EVE Online:
+
+```
+FIGHT DEFINITION:
+1. A "combat session" begins when Player A damages Player B (or vice versa)
+2. The session is ACTIVE as long as damage events continue between the
+   same pair of players with gaps of ≤ 15 seconds
+3. The session ENDS when:
+   a. One player dies → clear winner/loser
+   b. 15 seconds pass with no damage between the pair → "disengage"
+   c. One player logs out → "flee"
+```
+
+#### Codebase Integration Points
+
+McRPG already hooks `EntityDamageByEntityEvent` at MONITOR priority (`OnAttackAbilityListener.java:15`). The PvP tracking system would layer on top:
+
+```java
+// New: PvPCombatTracker (runs alongside ability activation)
+// Listens to EntityDamageByEntityEvent where both entities are Players
+
+class PvPCombatSession {
+    UUID playerA;
+    UUID playerB;
+    long sessionStartTick;
+    long lastDamageTick;
+
+    // Per-player stats within this session
+    double damageDealtByA;
+    double damageDealtByB;
+    int hitsLandedByA;
+    int hitsLandedByB;
+
+    // Ability tracking within fight
+    Map<String, Integer> abilitiesUsedByA;  // ability_id → activation count
+    Map<String, Integer> abilitiesUsedByB;
+
+    // Loadout snapshot (captured at fight start)
+    Set<String> loadoutA;
+    Set<String> loadoutB;
+}
+```
+
+### Fight Outcomes
+
+| Outcome | How Detected | Recording |
+|---|---|---|
+| **Kill** | `PlayerDeathEvent` with player killer | Clear win/loss |
+| **Disengage** | 15s timeout with no damage | Partial outcome — compare damage dealt |
+| **Flee (logout)** | `PlayerQuitEvent` during active session | Count as loss for the quitter |
+| **Interrupted** | Third player joins the fight | Flag as multi-party, analyze separately |
+
+For **disengagements** (no kill), you can still extract value:
+- If Player A dealt 80% of total damage → "dominant" outcome for A
+- If roughly equal damage → "draw"
+- Threshold: `damage_ratio = damageByA / (damageByA + damageByB)` → Win if > 0.65, Draw if 0.35-0.65, Loss if < 0.35
+
+### What to Send as Metrics
+
+**Critical privacy point**: Never send individual fight data or player identifiers. Pre-aggregate on the plugin side:
+
+```java
+class PvPMetricsBatch {
+    // Hourly aggregate
+
+    int totalFights;                    // Total PvP combat sessions this hour
+    int totalKills;                     // Sessions ending in a kill
+    int totalDisengages;                // Sessions ending in disengage
+    int totalFlees;                     // Sessions ending in logout
+
+    // Ability performance in PvP
+    // Per ability: (times_used_in_fights, fights_where_user_won, fights_where_user_lost)
+    Map<String, AbilityPvPStats> abilityPvPPerformance;
+
+    // Loadout vs Loadout outcomes (the really interesting data)
+    // Hash loadout compositions into canonical "build archetypes"
+    // then track win rates between archetypes
+    List<ArchetypeMatchup> archetypeMatchups;
+
+    static class AbilityPvPStats {
+        String abilityId;
+        int timesActivatedInFights;
+        int fightsWhereEquippedAndWon;
+        int fightsWhereEquippedAndLost;
+        double totalDamageContributed;  // Damage dealt by this ability in PvP
+    }
+
+    static class ArchetypeMatchup {
+        String archetypeHashA;    // Hash of sorted ability set
+        String archetypeHashB;
+        int winsForA;
+        int winsForB;
+        int draws;
+    }
+}
+```
+
+### Ability PvP Win Rate Metric
+
+The most actionable balance metric:
+
+```
+# For each ability: what is the win rate when this ability is in the loadout?
+mcrpg_pvp_ability_winrate{ability="bleed"}          0.54   # 54% — slightly above average
+mcrpg_pvp_ability_winrate{ability="serrated_strikes"} 0.61 # 61% — potentially overpowered
+mcrpg_pvp_ability_winrate{ability="vampire"}         0.58  # 58% — strong in PvP
+mcrpg_pvp_ability_winrate{ability="ore_scanner"}     0.41  # 41% — utility, not combat-focused
+
+mcrpg_pvp_ability_usage{ability="bleed"}             312   # Used in 312 fights this hour
+mcrpg_pvp_ability_usage{ability="ore_scanner"}        14   # Rarely seen in PvP
+```
+
+**Important**: Win rate alone is misleading. You MUST pair it with **pick rate**:
+- 60% win rate at 50% pick rate = probably overpowered
+- 60% win rate at 2% pick rate = niche/skill-dependent, probably fine
+- 45% win rate at 80% pick rate = underpowered but feels necessary (possible game design issue)
+
+This is exactly how League of Legends and Overwatch analyze hero/champion balance — the "win rate vs pick rate scatter plot" is the standard industry tool.
+
+### Loadout Archetype Tracking
+
+Rather than tracking every unique loadout (too many combinations), group loadouts into **archetypes** based on their active abilities:
+
+```java
+// Archetype = the set of ACTIVE abilities in the loadout
+// (Passives are excluded since they don't represent a "playstyle choice" as strongly)
+//
+// Example archetypes:
+//   "Swords/SerratedStrikes + Mining/OreScanner"   → "Melee+Utility"
+//   "Swords/SerratedStrikes + Woodcutting/HeavySwing" → "Full Melee"
+//   "Mining/OreScanner + Mining/RemoteTransfer"     → "Pure Utility"
+
+String archetypeHash = sortedActiveAbilities.stream()
+    .map(NamespacedKey::toString)
+    .collect(Collectors.joining("+"));
+```
+
+Then track **archetype vs archetype matchup win rates** — this reveals:
+- Rock-paper-scissors dynamics (healthy: archetypes have strengths and weaknesses)
+- Dominant archetypes (unhealthy: one build beats everything)
+- Dead archetypes (no one runs them — abilities need buffing or reworking)
+
+### Multi-Party Fights
+
+When a third player enters an existing combat session (damages either participant):
+- **Option A**: Promote to a "skirmish" and track separately from 1v1s. Don't count toward 1v1 balance stats.
+- **Option B**: Track kill credit only — whoever lands the killing blow "wins," all others who contributed damage are "participants"
+- **Recommendation**: Option A. 1v1 data is cleanest for balance. Skirmishes are interesting but introduce too many confounders (gear difference, health states, 2v1 unfairness).
+
+### Skill-Based Matchmaking Consideration
+
+Without skill-based matchmaking, raw win rates are noisy — a good player with a "weak" build beats a bad player with a "strong" build. Mitigations:
+- **Volume**: Across hundreds of servers and thousands of fights, player skill averages out
+- **Relative ranking**: You care about "is Bleed's win rate higher than DeeperWound's win rate" — both are affected equally by player skill noise
+- **Confidence intervals**: Report win rates with error bars. A 55% ± 8% win rate is very different from 55% ± 1%
+
+---
+
+## 8. Security & Trust Model
 
 ### Threat Model
 
@@ -335,7 +655,7 @@ Since McRPG is open-source, sophisticated actors can read the validation logic a
 
 ---
 
-## 7. Privacy & GDPR Compliance
+## 9. Privacy & GDPR Compliance
 
 ### Core Principles
 
@@ -368,7 +688,7 @@ Since McRPG is open-source, sophisticated actors can read the validation logic a
 
 ---
 
-## 8. How Other Games Do This
+## 10. How Other Games Do This
 
 ### WarcraftLogs (World of Warcraft)
 - Players upload combat log files via a companion app
@@ -398,7 +718,7 @@ Since McRPG is open-source, sophisticated actors can read the validation logic a
 
 ---
 
-## 9. Statistical Approaches for Balance Analysis
+## 11. Statistical Approaches for Balance Analysis
 
 ### Pre-Aggregation on the Plugin Side
 
@@ -457,7 +777,7 @@ With aggregated data, you can set up Grafana alerts for:
 
 ---
 
-## 10. Implementation Roadmap
+## 12. Implementation Roadmap
 
 ### Phase 1: Foundation (In-Plugin Instrumentation)
 1. **Initialize bStats** for standard plugin adoption metrics (server count, version, player count)
@@ -465,37 +785,56 @@ With aggregated data, you can set up Grafana alerts for:
    - `SkillGainExpEvent` → increment XP counters per skill
    - `SkillGainLevelEvent` → increment level-up counters
    - Ability activation events → track activation counts
-3. **Implement local pre-aggregation** — hourly rollups of counters and histograms
-4. **Add telemetry config section** — opt-in toggle, API key management, `/mcrpg telemetry` commands
+3. **Add loadout snapshot collection** — hourly scan of online players' active loadouts for ability popularity and pair co-occurrence counts
+4. **Implement local pre-aggregation** — hourly rollups of counters and histograms
+5. **Add telemetry config section** — opt-in toggle, API key management, `/mcrpg telemetry` commands
 
-### Phase 2: Backend (Central Collection)
+### Phase 2: PvP Combat Tracking (In-Plugin)
+1. **Implement PvPCombatTracker** — listen to `EntityDamageByEntityEvent` for player-vs-player damage
+2. **Combat session state machine** — track active fights with a 15-second rolling timeout
+3. **Fight outcome detection** — kill (via `PlayerDeathEvent`), disengage (timeout), flee (logout during session)
+4. **Per-fight ability tracking** — record which abilities activated during each fight, per combatant
+5. **Loadout snapshot at fight start** — capture both players' active loadouts for archetype analysis
+6. **Pre-aggregate PvP stats hourly** — ability PvP win rates, archetype matchup outcomes, fight counts
+
+### Phase 3: Backend (Central Collection)
 1. **Deploy validation API gateway** — lightweight HTTP service (Go, Rust, or Java)
    - API key registration and authentication
    - Rate limiting
    - Schema and range validation
 2. **Deploy VictoriaMetrics** (single binary) for time-series storage
 3. **Deploy Grafana** for dashboards
-4. **Test with your own servers** as the initial data source
+4. **Set up recording rules** for pre-computed distributions (ability popularity ratios, co-occurrence lift)
+5. **Test with your own servers** as the initial data source
 
-### Phase 3: Trust & Security
+### Phase 4: Trust & Security
 1. **Implement trust scoring** — start simple (participation duration + data consistency)
 2. **Add statistical outlier detection** — IQR-based flagging
 3. **Server fingerprinting** — detect key sharing/misuse
-4. **Monitor and iterate** — the trust model will need tuning based on real data
+4. **PvP-specific validation** — detect impossible fight counts, validate damage ranges, flag servers with implausible win rate distributions
+5. **Monitor and iterate** — the trust model will need tuning based on real data
 
-### Phase 4: Analysis & Dashboards
+### Phase 5: Analysis & Dashboards
 1. **Build balance dashboards** in Grafana:
    - XP rates per skill (normalized)
-   - Ability usage distribution
    - Level progression curves
+   - **Ability popularity pie charts** — equipment rates across all servers
+   - **Co-occurrence lift heatmap** — which ability pairs have synergy
+   - **PvP ability win rate vs pick rate scatter plot** — the standard balance analysis tool
+   - **Archetype matchup matrix** — win rates between loadout archetypes
+   - **Loadout diversity index over time** — is the meta getting stale?
    - Cross-server comparison
-2. **Set up alerts** for significant balance anomalies
-3. **Use findings to inform config defaults and balance patches**
+2. **Set up alerts** for significant balance anomalies:
+   - Ability win rate exceeding 58% with pick rate above 20%
+   - Loadout diversity index dropping below threshold
+   - Single archetype exceeding 30% pick rate
+3. **Run association rule mining** (Apriori/FP-Growth) on aggregated loadout data periodically (weekly batch) to discover non-obvious synergies
 
-### Phase 5: Community
+### Phase 6: Community
 1. **Public (read-only) dashboard** — let the community see aggregate balance data
 2. **Server operator dashboard** — let individual servers compare their stats to the global average
 3. **Balance feedback loop** — publish balance reports based on the data
+4. **"Meta report"** — periodic auto-generated reports showing top loadout archetypes, ability tier lists based on PvP performance, and emerging combo trends
 
 ---
 
