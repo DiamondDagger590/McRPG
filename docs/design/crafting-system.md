@@ -317,7 +317,7 @@ Crafted items should interact with non-crafting skill systems:
 
 - Alchemical potions that temporarily boost passive ability proc rates or extend ability combo windows
 - Blacksmith-crafted weapons with properties that interact with specific sword or axe ability mechanics (e.g., a crafted blade that increases Bleed stack duration)
-- Jewellery that reduces hunger costs for combo ability activation
+- Jewellery that reduces mana costs for combo ability activation
 - Crafted tools that increase the chance of Pristine material drops during gathering
 
 This creates genuine cross-system value: a combat player benefits from having a good alchemist in their community. The lifestyle player contributes to combat outcomes without fighting.

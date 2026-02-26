@@ -8,12 +8,13 @@
 ## Table of Contents
 
 1. [Ability Activation — Click Combos](#1-ability-activation--click-combos)
-2. [Resource System — Hunger](#2-resource-system--hunger)
-3. [Cast Times and Charge Mechanics](#3-cast-times-and-charge-mechanics)
-4. [CC System](#4-cc-system)
-5. [Base McRPG Abilities](#5-base-mcrpg-abilities)
-6. [Expansion Pack Abilities](#6-expansion-pack-abilities)
-7. [Design Principles](#7-design-principles)
+2. [Resource System — Mana](#2-resource-system--mana)
+3. [Display Architecture](#3-display-architecture)
+4. [Cast Times and Charge Mechanics](#4-cast-times-and-charge-mechanics)
+5. [CC System](#5-cc-system)
+6. [Base McRPG Abilities](#6-base-mcrpg-abilities)
+7. [Expansion Pack Abilities](#7-expansion-pack-abilities)
+8. [Design Principles](#8-design-principles)
 
 ---
 
@@ -35,27 +36,63 @@ A player's available `ComboActivatable` abilities are sorted alphabetically by t
 
 ### Failure Feedback
 
-On a failed or expired pattern the player receives an audio cue (configurable). On a successful pattern that cannot fire (hunger, cooldown) the player receives a distinct cue and an action bar message.
+On a failed or expired pattern the player receives an audio cue (configurable). On a successful pattern that cannot fire (mana, cooldown) the player receives a distinct cue and a subtitle message.
 
 ---
 
-## 2. Resource System — Hunger
+## 2. Resource System — Mana
 
-Hunger is the primary activation resource. Cooldowns are a secondary optional gate per ability.
+Mana is the primary activation resource. Cooldowns are a secondary optional gate per ability.
 
-**Why hunger over mana:**
-- Already exists on every player with no new UI
-- Creates natural tension with combat (fighting while hungry is risky)
-- Encourages resource management and build synergy (Herbal Remedy passive helps sustain)
-- Avoids mana bar UI complexity while being universally understood
+**Why mana over hunger:**
+- Hunger governs vanilla HP regeneration — draining hunger for abilities creates a painful double punishment (spend hunger on abilities → also lose regen). Mana is a completely separate resource with no such conflict.
+- Mana scales with character progression: the base pool grows with skill levels and gear can add bonuses. Hunger is always 0–20 and cannot express character growth.
+- With the action bar now available for persistent stat display, a numeric mana readout is clean and universally legible. The original argument for hunger — "no custom UI needed" — no longer applies.
+- The crafting expansion creates a clear market for mana potions as a craftable product. Hunger-restoring food already exists in vanilla; mana potions fill a distinct economic niche with no equivalent.
 
-**Cost deduction** happens at fire time (after cast completes), not at cast start. If a cast is interrupted the hunger cost is refunded.
+**Mana pool and regeneration:**
+- Base pool starts at a defined value and grows passively with relevant skill levels.
+- Mana regenerates passively at a slow tick rate, configurable per server.
+- Gear can increase max mana or regen rate — a meaningful equipment decision.
+- Mana potions (crafting expansion) provide on-demand restoration.
 
-**Tier progression** reduces both hunger cost and cast time simultaneously — see Section 3.
+**Cost deduction** happens at fire time (after cast completes), not at cast start. If a cast is interrupted the mana cost is refunded.
+
+**Tier progression** reduces both mana cost and cast time simultaneously — see Section 4.
+
+**Open design question — Hunger as secondary resource:** A minority class of raw physical abilities (Haymaker, Reckless Charge, Ground Slam) may cost hunger in addition to or instead of mana, representing stamina rather than technique or magical energy. This would create a thematic split between physical abilities and skill/magic-based ones, and gives food sustained PvP value. Unresolved pending further ability design.
 
 ---
 
-## 3. Cast Times and Charge Mechanics
+## 3. Display Architecture
+
+All player-facing feedback uses vanilla Bukkit channels: no resource packs, no client mods, no custom inventory screens.
+
+| Channel | Content | Behaviour |
+|---------|---------|-----------|
+| **Action bar** | `❤ 20/20   ✦ 180/200   ⚔ 350` | Persistent baseline, updates on stat change |
+| **Subtitle** | Combo pattern, cast timers, ability messages | Transient; clears to nothing when idle |
+| **Boss bar** | Shield pool (expansion content only) | Not used in base McRPG |
+| **Vanilla hearts** | HP display | Always at 20 — hearts are always clean |
+| **Scoreboard** | Unused | Left free for server operators |
+
+**Action bar — persistent stats.** The action bar shows a compact snapshot of the player's current resources and core defensive stat. Updated on server tick whenever values change. The mana figure (`✦`) is the primary read for players deciding whether to cast.
+
+**Subtitle — transient feedback.** The subtitle is the primary channel for in-progress ability state:
+- Combo in progress: `▶  ▶  _` (filled/empty circles matching the 3-input pattern)
+- Cast timer: `Haymaker... 0.8s` (yellow; pulses green on completion)
+- Channel active: `Channeling Ore Rush... 6s`
+- Failure: `Not enough mana` / `On cooldown`
+
+The subtitle naturally clears when no ability state is active. Default screen state: action bar with stats, clean subtitle. No visual clutter between engagements.
+
+**Boss bar — Shield (expansion).** In the crafting expansion, Epic+ equipment can grant a Shield pool — a second HP layer that absorbs damage before vanilla HP is touched. Large enough (hundreds of points) to warrant a boss bar display. Base McRPG does not use the boss bar at all.
+
+**HP scaling decision.** HP remains at 20 (vanilla) in base McRPG. Hearts are always clean. The action bar's `❤ 20/20` is somewhat redundant with visible hearts but its real value is the unified readout — players read the action bar as a single number group (HP / Mana / Defense) rather than three separate things.
+
+---
+
+## 4. Cast Times and Charge Mechanics
 
 Instant-cast abilities remove counterplay. Introducing cast phases creates a three-layer counterplay structure:
 
@@ -77,14 +114,14 @@ Not all abilities have cast times. The type of cast is part of the ability's des
 
 ### Tier Progression and Cast Time
 
-Both hunger cost and cast time reduce with tier. This makes progression feel like mastery rather than just a stat bump — higher-tier players are more fluid, not just stronger.
+Both mana cost and cast time reduce with tier. This makes progression feel like mastery rather than just a stat bump — higher-tier players are more fluid, not just stronger.
 
-| Tier | Hunger Cost | Cast Time |
-|------|-------------|-----------|
-| 1    | High        | ~1.5s     |
-| 2    | Medium-High | ~1.0s     |
-| 3    | Medium      | ~0.5s     |
-| 4    | Low         | ~0.2s     |
+| Tier | Mana Cost | Cast Time |
+|------|-----------|-----------|
+| 1    | High      | ~1.5s     |
+| 2    | Medium-High | ~1.0s   |
+| 3    | Medium    | ~0.5s     |
+| 4    | Low       | ~0.2s     |
 
 Cast time never fully reaches zero to preserve some counterplay even at max tier.
 
@@ -95,7 +132,7 @@ Tier upgrades can also grant CC resistance as part of the wind-up:
 
 ### Interrupted Casts
 
-- **Hunger:** Refunded in full on interrupt (cost deducts at fire time)
+- **Mana:** Refunded in full on interrupt (cost deducts at fire time)
 - **Combo pattern:** Not refunded — wasted input + positioning is the punishment
 - **Partial charge:** Interrupted before minimum threshold → nothing fires, full refund. Interrupted after minimum threshold → fires a reduced version at current charge level (rewards partial commitment)
 
@@ -103,16 +140,16 @@ Tier upgrades can also grant CC resistance as part of the wind-up:
 
 | Signal | Use |
 |--------|-----|
-| Action bar countdown | `Haymaker... 0.8s` in yellow, green on complete |
+| Subtitle countdown | `Haymaker... 0.8s` in yellow, green on complete |
 | Particle halo | Orbiting particles increasing in speed/density as charge builds |
 | Sound ramp | Pitch rises through the cast duration |
-| Boss bar | Long channels where action bar is too transient |
+| Subtitle channel indicator | `Channeling Ore Rush... 6s` for long channel abilities |
 
 The particle halo is particularly effective for charges — a half-charged Haymaker has a sparse slow ring; max charge has a dense fast halo. Enemies read threat level at a glance without any custom models.
 
 ---
 
-## 4. CC System
+## 5. CC System
 
 ### CC Type Taxonomy
 
@@ -191,7 +228,7 @@ Counterplay to CC needs to exist or CC-heavy builds become oppressive:
 
 | Ability | Type | Description |
 |---------|------|-------------|
-| Cleanse | Active | Removes one CC effect, high hunger cost |
+| Cleanse | Active | Removes one CC effect, high mana cost |
 | Combat Instincts | Passive | First CC in a fight auto-triggers 1s CC immunity, once per engagement |
 | Resilience | Passive (Unarmed) | Chance to break out of roots/slows early |
 | Unstoppable Rage | Active (Axes, Tier 4 Berserker's Cry) | Full CC negation during duration |
@@ -206,7 +243,7 @@ Some abilities exist specifically to interrupt casters — high-value PvP picks:
 
 ---
 
-## 5. Base McRPG Abilities
+## 6. Base McRPG Abilities
 
 Base McRPG has no ModelEngine dependency. All VFX use vanilla Bukkit: particles, sounds, velocity manipulation, potion effects, damage. Depth comes from **synergy between abilities**, not visual complexity.
 
@@ -235,7 +272,7 @@ Base McRPG has no ModelEngine dependency. All VFX use vanilla Bukkit: particles,
 | Ability | Type | Description |
 |---------|------|-------------|
 | **Whirlwind** | Wind-up | SWEEP_ATTACK AOE spin. Applies one Bleed stack to all targets hit |
-| **Rupture** | Instant | Prevents target from regenerating HP for 4-5 seconds. Low hunger cost. The setup ability |
+| **Rupture** | Instant | Prevents target from regenerating HP for 4-5 seconds. Low mana cost. The setup ability |
 | **Execute** | Wind-up | Bonus damage scaling with target's missing HP. Pairs devastatingly with Bleed + Rupture |
 | **Counter** | Instant | Only usable within 1 second of a successful Parry. Guaranteed high-damage strike with armor penetration |
 
@@ -261,7 +298,7 @@ Base McRPG has no ModelEngine dependency. All VFX use vanilla Bukkit: particles,
 | **Seismic Pulse** | Chargeable | Ground ripple that reveals all ores within 12-15 blocks (glowing effect) for ~10 seconds. Charge extends range |
 | **Precision Drill** | Wind-up | Instantly mines a 1x1x5 tunnel in the direction you're looking |
 | **Ore Rush** | Channel | All ore drops doubled for 8 seconds while channelling |
-| **Vein Collapse** | Wind-up | Mines an entire connected vein at once. High hunger cost |
+| **Vein Collapse** | Wind-up | Mines an entire connected vein at once. High mana cost |
 
 **Core loop:** Seismic Pulse → Vein Collapse (scout then harvest efficiently)
 
@@ -276,7 +313,7 @@ Base McRPG has no ModelEngine dependency. All VFX use vanilla Bukkit: particles,
 | **Green Thumb** | Crops grow faster in your presence (slow bonemeal aura) |
 | **Herbal Remedy** | Eating food triggers brief Regeneration I on top of normal saturation |
 | **Forager** | Chance to find bonus drops (herbs, rare seeds) from natural vegetation |
-| **Symbiosis** | If multiple Herbalism combo abilities are active simultaneously, hunger costs are reduced |
+| **Symbiosis** | If multiple Herbalism combo abilities are active simultaneously, mana costs are reduced |
 
 #### Actives (Combo)
 
@@ -307,7 +344,7 @@ Base McRPG has no ModelEngine dependency. All VFX use vanilla Bukkit: particles,
 |---------|------|-------------|
 | **Dust Storm** | Wind-up | Eruption of sand/dirt particles, AOE Blindness + Slowness |
 | **Earthen Launch** | Instant | Velocity spike upward. Escape tool and repositioning |
-| **Buried Cache** | Instant | 30% chance to discover a buried loot chest in the block below. High hunger cost, gambling mechanic |
+| **Buried Cache** | Instant | 30% chance to discover a buried loot chest in the block below. High mana cost, gambling mechanic |
 
 ---
 
@@ -389,7 +426,7 @@ Base McRPG has no ModelEngine dependency. All VFX use vanilla Bukkit: particles,
 
 ---
 
-## 6. Expansion Pack Abilities
+## 7. Expansion Pack Abilities
 
 Expansion packs can require ModelEngine. This enables custom entities, animations, and projectile models. The key design constraint is **asset reuse** — define a small set of primitive entity types and build many abilities on top of them.
 
@@ -423,7 +460,7 @@ Expansion abilities can be obtained from boss drops as Skill Books — a player 
 |---------|-------|-----------|-------------|
 | **Icicle Rain** | Swords | Chargeable | Volley of Icicle Shards falls on target area. Charge increases projectile count and area. Damage + Slowness |
 | **Frost Nova** | Unarmed | Wind-up | Expanding ice ring freezes (Slowness V + brief levitation cancel) everything it touches |
-| **Blizzard Stance** | Axes | Channel | Aura that continuously slows all nearby enemies at cost of ongoing hunger drain |
+| **Blizzard Stance** | Axes | Channel | Aura that continuously slows all nearby enemies at cost of ongoing mana drain |
 | **Glacial Armor** | Any (passive) | — | Chance to crystallize briefly when hit, reducing damage for 1 second |
 | **Ice Lance** | Swords | Wind-up | Hurled Icicle Shard that shatters on impact for AoE fragments |
 
@@ -482,7 +519,7 @@ Expansion abilities can be obtained from boss drops as Skill Books — a player 
 
 ---
 
-## 7. Design Principles
+## 8. Design Principles
 
 ### Ability Roles
 Every active should have a clear role as either a **setup** ability or a **finisher**. Not just "deal damage." Setup abilities enable something; finishers cash in a prior state.
@@ -512,4 +549,4 @@ A well-designed PvP exchange involves multiple overlapping counterplay decisions
 2. **React to the cast indicator** → interrupt or dodge
 3. **React to the fired effect** → absorb, cleanse, or counter
 
-All three layers should be accessible to a skilled player. No single ability should eliminate all three simultaneously without significant cost (high hunger, long cooldown, self-debuff like Berserker's Cry).
+All three layers should be accessible to a skilled player. No single ability should eliminate all three simultaneously without significant cost (high mana cost, long cooldown, self-debuff like Berserker's Cry).
