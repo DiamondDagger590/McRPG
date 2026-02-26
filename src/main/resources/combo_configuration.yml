@@ -1,0 +1,42 @@
+config-version: 1
+
+combo:
+  timing:
+    # How many server ticks to wait for the next input before resetting the combo sequence.
+    # 14 ticks ≈ 700 ms at 20 TPS.
+    window-ticks: 14
+
+  failure-feedback:
+    # Sound played when a combo fails (insufficient hunger or cooldown).
+    sound: BLOCK_NOTE_BLOCK_BASS
+    volume: 1.0
+    pitch: 0.5
+
+  abilities:
+    shockwave:
+      # Hunger cost in half-points (Minecraft food level units, range 0-20).
+      hunger-cost: 8
+      # Radius in blocks within which entities are knocked back.
+      radius: 6.0
+      # Velocity multiplier applied outward from the player to each nearby entity.
+      knockback-force: 2.5
+
+    cleave:
+      # Hunger cost in half-points.
+      hunger-cost: 6
+      # Radius in blocks within which entities are damaged.
+      radius: 3.0
+      # Raw damage dealt to each entity within range (respects armor and enchantments).
+      damage: 4.0
+
+    rage-spike:
+      # Hunger cost in half-points.
+      hunger-cost: 6
+
+    ore-scanner:
+      # Hunger cost in half-points.
+      hunger-cost: 4
+
+    mass-harvest:
+      # Hunger cost in half-points.
+      hunger-cost: 4
