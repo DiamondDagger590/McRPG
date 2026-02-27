@@ -28,6 +28,7 @@ import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
+import us.eunoians.mcrpg.telemetry.TelemetryManager;
 import us.eunoians.mcrpg.world.WorldManager;
 
 import java.sql.Connection;
@@ -78,6 +79,11 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
             new McRPGCommandRegistrar().register(bootstrapContext);
             new McRPGExperienceModifiersRegistrar().register(bootstrapContext);
             new McRPGBackgroundTaskRegistrar().register(bootstrapContext);
+
+            // Initialize telemetry (opt-in, controlled by config)
+            TelemetryManager telemetryManager = new TelemetryManager(mcRPG);
+            registryAccess.registry(RegistryKey.MANAGER).register(telemetryManager);
+            telemetryManager.initialize();
         }
 
         registryAccess.registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
@@ -87,6 +93,9 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
     public void stop(@NotNull StartupProfile startupProfile) {
         if (startupProfile == StartupProfile.PROD) {
             RegistryAccess registryAccess = getPlugin().registryAccess();
+            if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.TELEMETRY)) {
+                registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.TELEMETRY).shutdown();
+            }
             if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.GLOWING)) {
                 registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
             }

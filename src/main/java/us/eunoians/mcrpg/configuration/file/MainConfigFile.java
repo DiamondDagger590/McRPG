@@ -105,4 +105,9 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));
     public static final Route MCMMO_CONVERSION_EQUATION = Route.fromString(toRoutePath(MCMMO_CONFIGURATION_HEADER, "conversion-equation"));
 
+    // Telemetry
+    private static final String TELEMETRY_HEADER = toRoutePath(CONFIGURATION_HEADER, "telemetry");
+    public static final Route TELEMETRY_ENABLED = Route.fromString(toRoutePath(TELEMETRY_HEADER, "enabled"));
+    public static final Route TELEMETRY_SNAPSHOT_FREQUENCY = Route.fromString(toRoutePath(TELEMETRY_HEADER, "snapshot-frequency"));
+
 }

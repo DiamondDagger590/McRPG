@@ -176,6 +176,17 @@ configuration:
     # Use mcrpg.%skill%.%level% as the perm
     enable-level-up-permissions: false
 
+  # Telemetry collects anonymous, aggregate game balance metrics (XP rates, ability usage, loadout popularity)
+  # across servers. No player-identifiable data is ever collected — all metrics are pre-aggregated on the server
+  # before any future transmission. This data helps McRPG developers understand game balance across many servers.
+  telemetry:
+    # Must be explicitly enabled. When false, no metrics are collected and no listeners are registered.
+    enabled: false
+    # How often (in seconds) a metrics snapshot is taken. Each snapshot captures accumulated
+    # XP gains, ability activations, and a point-in-time loadout composition scan.
+    # Default: 3600 (1 hour). Minimum: 300 (5 minutes).
+    snapshot-frequency: 3600
+
 # Configure McMMO integration
 mcmmo:
   # Converts a players level to exp and then convert that into 'boosted experience' using the equation below

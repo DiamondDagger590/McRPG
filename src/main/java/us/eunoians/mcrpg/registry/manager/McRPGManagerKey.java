@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
+import us.eunoians.mcrpg.telemetry.TelemetryManager;
 import us.eunoians.mcrpg.world.WorldManager;
 
 import static com.diamonddagger590.mccore.registry.manager.ManagerKeyImpl.create;
@@ -40,4 +41,5 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<RestedExperienceManager> RESTED_EXPERIENCE = create(RestedExperienceManager.class);
     ManagerKey<McRPGDatabaseManager> DATABASE = create(McRPGDatabaseManager.class);
     ManagerKey<GlowingManager> GLOWING = create(GlowingManager.class);
+    ManagerKey<TelemetryManager> TELEMETRY = create(TelemetryManager.class);
 }
