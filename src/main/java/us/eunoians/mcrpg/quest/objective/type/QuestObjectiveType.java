@@ -39,6 +39,20 @@ public interface QuestObjectiveType extends McRPGContent {
     NamespacedKey getKey();
 
     /**
+     * Produces a human-readable description of what this configured objective requires,
+     * used as a fallback when no localization entry exists (e.g. for template-generated quests).
+     *
+     * @param requiredProgress the amount of progress needed to complete the objective
+     * @return a descriptive string such as "Break 43 Coal Ore, Deepslate Coal Ore"
+     */
+    @NotNull
+    default String describeObjective(long requiredProgress) {
+        String typeName = getKey().getKey().replace('_', ' ');
+        String capitalized = typeName.substring(0, 1).toUpperCase() + typeName.substring(1);
+        return capitalized + " x" + requiredProgress;
+    }
+
+    /**
      * Parses type-specific configuration from a YAML section and returns a new configured
      * instance of this type. The returned instance holds the parsed data internally and
      * uses it during {@link #processProgress}.

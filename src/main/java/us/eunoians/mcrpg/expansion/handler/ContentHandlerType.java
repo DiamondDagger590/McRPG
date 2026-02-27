@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.expansion.content.QuestTemplateContentPack;
 import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.ScopedBoardAdapterContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
+import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -172,6 +173,14 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof ScopedBoardAdapterContentPack adapterContent) {
             adapterContent.getContent().forEach(adapter ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER).register(adapter));
+            return true;
+        }
+        return false;
+    }),
+    TEMPLATE_CONDITION((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof TemplateConditionContentPack conditionContent) {
+            conditionContent.getContent().forEach(condition ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.TEMPLATE_CONDITION).register(condition));
             return true;
         }
         return false;

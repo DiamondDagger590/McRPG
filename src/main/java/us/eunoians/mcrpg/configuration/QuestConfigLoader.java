@@ -16,7 +16,10 @@ import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
+import us.eunoians.mcrpg.quest.board.distribution.DistributionRewardEntry;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionTierConfig;
+import us.eunoians.mcrpg.quest.board.distribution.PotBehavior;
+import us.eunoians.mcrpg.quest.board.distribution.RemainderStrategy;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 import us.eunoians.mcrpg.quest.board.distribution.RewardSplitMode;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
@@ -281,8 +284,15 @@ public class QuestConfigLoader {
             cooldownScope = boardSection.getString("cooldown-scope").toUpperCase();
         }
 
+        Set<String> supportedRefreshTypes = new java.util.LinkedHashSet<>();
+        if (boardSection.contains("supported-refresh-types")) {
+            for (String rt : boardSection.getStringList("supported-refresh-types")) {
+                supportedRefreshTypes.add(rt.toUpperCase());
+            }
+        }
+
         BoardMetadata boardMetadata = new BoardMetadata(boardEligible, Set.copyOf(supportedRarities),
-                acceptanceCooldown, cooldownScope);
+                Set.copyOf(supportedRefreshTypes), acceptanceCooldown, cooldownScope);
         metadata.put(BoardMetadata.METADATA_KEY, boardMetadata);
         return metadata;
     }
@@ -591,7 +601,8 @@ public class QuestConfigLoader {
                 }
             }
 
-            List<QuestRewardType> rewards = parseRewards(tierSection, fileName, contextKey + "/dist:" + tierLabel);
+            List<DistributionRewardEntry> rewardEntries = parseDistributionRewardEntries(
+                    tierSection, fileName, contextKey + "/dist:" + tierLabel);
 
             Map<String, Object> typeParameters = new HashMap<>();
             if (tierSection.contains("top-player-count")) {
@@ -617,7 +628,7 @@ public class QuestConfigLoader {
                     ? parseNamespacedKey(tierSection.getString("required-rarity")).orElse(null)
                     : null;
 
-            tiers.add(new DistributionTierConfig(tierLabel, typeKey, splitMode, rewards,
+            tiers.add(new DistributionTierConfig(tierLabel, typeKey, splitMode, rewardEntries,
                     typeParameters, minRarity, requiredRarity));
         }
 
@@ -625,6 +636,92 @@ public class QuestConfigLoader {
             return Optional.empty();
         }
         return Optional.of(new RewardDistributionConfig(tiers));
+    }
+
+    /**
+     * Parses reward entries within a distribution tier, extracting per-reward
+     * pot-behavior, remainder-strategy, min-scaled-amount, top-count, and fallback fields.
+     * Falls back to wrapping plain rewards with default settings for backward compatibility.
+     */
+    @NotNull
+    private static List<DistributionRewardEntry> parseDistributionRewardEntries(
+            @NotNull Section tierSection,
+            @NotNull String fileName,
+            @NotNull String contextKey) {
+        Section rewardsSection = tierSection.getSection("rewards");
+        if (rewardsSection == null) {
+            return List.of();
+        }
+
+        List<DistributionRewardEntry> entries = new ArrayList<>();
+        for (String rewardKey : rewardsSection.getRoutesAsStrings(false)) {
+            Section rewardSection = rewardsSection.getSection(rewardKey);
+            if (rewardSection == null) {
+                continue;
+            }
+
+            String typeStr = rewardSection.getString("type");
+            if (typeStr == null || typeStr.isBlank()) {
+                continue;
+            }
+            Optional<NamespacedKey> typeKeyOpt = parseNamespacedKey(typeStr);
+            if (typeKeyOpt.isEmpty()) {
+                continue;
+            }
+
+            QuestRewardTypeRegistry rewardTypeRegistry = RegistryAccess.registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_REWARD_TYPE);
+            QuestRewardType baseType = rewardTypeRegistry.get(typeKeyOpt.get()).orElse(null);
+            if (baseType == null) {
+                McRPG.getInstance().getLogger().warning("Unknown reward type '" + typeStr
+                        + "' in " + contextKey + " (" + fileName + "), skipping");
+                continue;
+            }
+
+            Map<String, Object> rewardConfig = new HashMap<>();
+            for (String key : rewardSection.getRoutesAsStrings(false)) {
+                if ("type".equals(key) || "pot-behavior".equals(key)
+                        || "remainder-strategy".equals(key) || "min-scaled-amount".equals(key)
+                        || "top-count".equals(key) || "fallback".equals(key)) {
+                    continue;
+                }
+                rewardConfig.put(key, rewardSection.get(key));
+            }
+
+            QuestRewardType reward = rewardConfig.isEmpty()
+                    ? baseType
+                    : baseType.fromSerializedConfig(rewardConfig);
+
+            PotBehavior potBehavior = PotBehavior.SCALE;
+            if (rewardSection.contains("pot-behavior")) {
+                try {
+                    potBehavior = PotBehavior.valueOf(rewardSection.getString("pot-behavior").toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    McRPG.getInstance().getLogger().warning("Invalid pot-behavior '"
+                            + rewardSection.getString("pot-behavior") + "' in " + contextKey
+                            + " (" + fileName + "), defaulting to SCALE");
+                }
+            }
+
+            RemainderStrategy remainder = RemainderStrategy.DISCARD;
+            if (rewardSection.contains("remainder-strategy")) {
+                try {
+                    remainder = RemainderStrategy.valueOf(
+                            rewardSection.getString("remainder-strategy").toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    McRPG.getInstance().getLogger().warning("Invalid remainder-strategy '"
+                            + rewardSection.getString("remainder-strategy") + "' in " + contextKey
+                            + " (" + fileName + "), defaulting to DISCARD");
+                }
+            }
+
+            int minScaled = rewardSection.getInt("min-scaled-amount", 1);
+            int topCount = rewardSection.getInt("top-count", 1);
+
+            entries.add(new DistributionRewardEntry(reward, potBehavior, remainder, minScaled, topCount, null));
+        }
+
+        return entries;
     }
 
     /**

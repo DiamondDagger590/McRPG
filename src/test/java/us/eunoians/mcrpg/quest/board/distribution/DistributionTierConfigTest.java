@@ -47,7 +47,7 @@ public class DistributionTierConfigTest extends McRPGBaseTest {
     @Test
     void noRarityGateAlwaysPasses() {
         var tier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), null, null);
+                List.of(), Map.of(), null, null, true);
 
         assertTrue(tier.passesRarityGate(commonKey, rarityRegistry));
         assertTrue(tier.passesRarityGate(legendaryKey, rarityRegistry));
@@ -58,7 +58,7 @@ public class DistributionTierConfigTest extends McRPGBaseTest {
     @Test
     void minRarityIncludesHigherTiers() {
         var tier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), rareKey, null);
+                List.of(), Map.of(), rareKey, null, true);
 
         assertTrue(tier.passesRarityGate(rareKey, rarityRegistry));
         assertTrue(tier.passesRarityGate(legendaryKey, rarityRegistry));
@@ -70,7 +70,7 @@ public class DistributionTierConfigTest extends McRPGBaseTest {
     @Test
     void requiredRarityExactMatch() {
         var tier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), null, rareKey);
+                List.of(), Map.of(), null, rareKey, true);
 
         assertTrue(tier.passesRarityGate(rareKey, rarityRegistry));
         assertFalse(tier.passesRarityGate(legendaryKey, rarityRegistry));
@@ -81,9 +81,9 @@ public class DistributionTierConfigTest extends McRPGBaseTest {
     @Test
     void nullQuestRarityFailsGatedTiers() {
         var minTier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), rareKey, null);
+                List.of(), Map.of(), rareKey, null, true);
         var reqTier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), null, rareKey);
+                List.of(), Map.of(), null, rareKey, true);
 
         assertFalse(minTier.passesRarityGate(null, rarityRegistry));
         assertFalse(reqTier.passesRarityGate(null, rarityRegistry));
@@ -93,7 +93,7 @@ public class DistributionTierConfigTest extends McRPGBaseTest {
     @Test
     void nullQuestRarityPassesNonGated() {
         var tier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), null, null);
+                List.of(), Map.of(), null, null, true);
 
         assertTrue(tier.passesRarityGate(null, rarityRegistry));
     }
@@ -102,7 +102,7 @@ public class DistributionTierConfigTest extends McRPGBaseTest {
     @Test
     void unregisteredRarityKeyFails() {
         var tier = new DistributionTierConfig("test", TYPE_KEY, RewardSplitMode.INDIVIDUAL,
-                List.of(), Map.of(), rareKey, null);
+                List.of(), Map.of(), rareKey, null, true);
         var unknownKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "unknown");
 
         assertFalse(tier.passesRarityGate(unknownKey, rarityRegistry));

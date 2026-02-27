@@ -289,6 +289,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route HOME_GUI_EXPERIENCE_BANK_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "experience-bank-slot.display-item"));
     public static final Route HOME_GUI_QUESTS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "quests-slot.display-item"));
     public static final Route HOME_GUI_COMING_SOON_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "coming-soon-slot.display-item"));
+    public static final Route HOME_GUI_BOARD_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(HOME_GUI_HEADER, "board-slot.display-item"));
 
     // Quest Board GUI
     private static final String QUEST_BOARD_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-board");
@@ -387,6 +388,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "phase-header.display-item"));
     public static final Route QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_OBJECTIVE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "objective-slot.display-item"));
+    public static final Route QUEST_DETAIL_GUI_REWARD_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "reward-slot.display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
@@ -585,4 +587,21 @@ public final class LocalizationKey extends ConfigFile {
     private static final String TOO_MANY_PLANTS_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "too-many-plants");
     public static final Route TOO_MANY_PLANTS_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(TOO_MANY_PLANTS_HEADER, "display-item"));
 
+    public static final Route QUEST_BOARD_OFFERING_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "offering-slot.display-item"));
+    public static final Route QUEST_BOARD_NO_OFFERINGS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "no-offerings-slot.display-item"));
+
+    // Quest Board GUI Polish (Phase 4)
+    public static final Route QUEST_BOARD_OBJECTIVES_HEADER = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "objectives-header"));
+    public static final Route QUEST_BOARD_OBJECTIVE_LINE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "objective-line"));
+    public static final Route QUEST_BOARD_REWARDS_HEADER = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "rewards-header"));
+    public static final Route QUEST_BOARD_REWARD_LINE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "reward-line"));
+    public static final Route QUEST_BOARD_REWARD_LINE_NO_AMOUNT = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "reward-line-no-amount"));
+    public static final Route QUEST_BOARD_EXPIRES_IN = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "expires-in"));
+    public static final Route QUEST_BOARD_OFFERING_CATEGORY = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "offering-category"));
+    public static final Route QUEST_BOARD_CLICK_TO_ACCEPT = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "click-to-accept"));
+    public static final Route QUEST_BOARD_DISTRIBUTION_HEADER = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "distribution-header"));
+    public static final Route QUEST_BOARD_DISTRIBUTION_TIER = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "distribution-tier"));
+    public static final Route QUEST_BOARD_PREVIEW_QUALIFIES = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "preview-qualifies"));
+    public static final Route QUEST_BOARD_PREVIEW_NOT_QUALIFIES = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "preview-not-qualifies"));
+    public static final Route QUEST_BOARD_PREVIEW_CONTRIBUTION = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "preview-contribution"));
 }

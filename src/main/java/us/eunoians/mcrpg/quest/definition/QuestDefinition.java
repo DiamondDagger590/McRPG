@@ -141,16 +141,45 @@ public class QuestDefinition implements McRPGContent {
 
     /**
      * Gets the localized display name for this quest, resolved through the player's locale chain.
+     * Falls back to a formatted version of the quest key if no localization entry exists.
      *
      * @param player the player whose locale chain determines the language
-     * @return the localized display name
+     * @return the localized display name, or a key-derived fallback
      */
     @NotNull
     public String getDisplayName(@NotNull McRPGPlayer player) {
-        return RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedMessage(player, getDisplayNameRoute());
+        try {
+            return RegistryAccess.registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedMessage(player, getDisplayNameRoute());
+        } catch (Exception e) {
+            return formatFallbackDisplayName(questKey.getKey());
+        }
+    }
+
+    /**
+     * Produces a readable fallback name from a raw key, stripping generated prefixes
+     * and UUID suffixes (e.g. {@code gen_template_choose_path_1f97a1b5} becomes {@code Choose Path}).
+     */
+    @NotNull
+    private static String formatFallbackDisplayName(@NotNull String rawKey) {
+        String cleaned = rawKey;
+        if (cleaned.startsWith("gen_template_")) {
+            cleaned = cleaned.substring("gen_template_".length());
+        } else if (cleaned.startsWith("gen_")) {
+            cleaned = cleaned.substring("gen_".length());
+        }
+        // Strip trailing UUID-like suffix (8+ hex chars at end after underscore)
+        cleaned = cleaned.replaceAll("_[0-9a-f]{8,}$", "");
+        String[] parts = cleaned.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.isEmpty() ? rawKey.replace('_', ' ') : sb.toString();
     }
 
     /**

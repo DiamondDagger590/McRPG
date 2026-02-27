@@ -1,0 +1,11 @@
+# Shared weekly quests — harder objectives, better rewards, slower rotation.
+personal-weekly:
+  visibility: SHARED
+  refresh-type: WEEKLY
+  refresh-interval: 7d
+  completion-time: 7d
+  scope-provider: mcrpg:single_player
+  min: 1
+  max: 3
+  chance-per-slot: 0.8
+  priority: 5

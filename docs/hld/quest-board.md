@@ -671,16 +671,20 @@ Both sources are treated as equals. The weight determines the probability of dra
 
 **Ephemeral definitions**: When a template-generated offering is accepted, the deserialized `QuestDefinition` is registered in `QuestDefinitionRegistry` under a `mcrpg:gen_` prefixed key. This allows the full quest lifecycle to work identically to hand-crafted quests. On quest completion or cancellation, the ephemeral definition is deregistered from the registry. On server restart, active template-generated quests recover their definitions from the persisted JSON snapshot.
 
-**Phase 2 -- Conditional Objectives:**
+**Phase 2 -- Conditional Objectives (delivered in board Phase 4):**
 
-- `if` blocks in templates that include/exclude objectives based on rarity or random rolls
-- Multi-stage templates where later stages depend on earlier variable rolls
+- `TemplateCondition` extensible interface evaluated at generation time; covers phase, stage, and objective levels (not just `if` blocks -- full registry + content pack pattern matching all other pluggable types)
+- Built-in types: `RarityCondition`, `ChanceCondition`, `VariableCondition`, `CompoundCondition`, `PermissionCondition`, `CompletionPrerequisiteCondition`; third-party conditions registered via `TemplateConditionRegistry` and `TemplateConditionContentPack`
+- `ConditionContext` record -- unified evaluation context reused across template generation, prerequisite checks, and reward grant-time evaluation (single interface, not separate `RewardCondition` / `PrerequisiteCondition` interfaces)
+- Variable-dependent stage gating: `VariableCondition` checks resolved variable values after pool/range resolution (e.g., "did the selected pool contain DIAMOND_ORE?")
+- Template-level and category-level `prerequisite:` sections gate personal offerings behind player progression milestones; shared offerings are never player-filtered at generation time
+- Shorthand YAML syntax for built-in conditions; explicit `type:` key for third-party conditions in both standalone and compound blocks
 
-**Phase 3 -- Full Template Language:**
+**Phase 3 -- Full Template Language (weighted selection delivered in board Phase 4; cross-referencing deferred):**
 
-- Expression engine integration (you already have a parser for `required-progress` expressions)
-- Weighted random objective selection from pools
-- Cross-referencing between templates (compose smaller templates into larger quests)
+- Weighted random objective selection from pools (`ObjectiveSelectionConfig` with `WEIGHTED_RANDOM` mode; per-objective `weight` field on `TemplateObjectiveDefinition`); selection is per-stage, not per-phase
+- Expression engine integration was delivered in Phase 2 (existing `Parser` system for `required-progress` expressions -- no new syntax introduced)
+- Cross-referencing between templates (compose smaller templates into larger quests) -- deferred to future; see Phase 4 LLD section 13.1
 
 ### 9. Rotation Lifecycle
 
@@ -1074,21 +1078,38 @@ Each phase includes unit tests alongside implementation. Key areas to test:
 
 ### Phase 4: Advanced Templates and Polish
 
-- Conditional objectives in templates
-- Expression engine integration for template variables
-- Board GUI polish (rarity animations, hover previews, timer displays)
-- Distribution preview in GUI -- live display of distribution tiers and projected rewards at a player's current contribution level
-- Factions/Towny scope adapter implementations -- reference implementations of `ScopedBoardAdapter` for popular group plugins, using the generic framework from Phase 3
-- Advanced split-mode reward handling:
-  - Per-reward `pot-behavior` flag (`SCALE`, `TOP_ONLY`, `ALL`) for mixed-reward tiers with non-scalable types (e.g., command rewards)
-  - `ScalableCommandRewardType` with `{amount}` token for command-based pot rewards
-  - Integer truncation remainder strategies (`DISCARD`, `TOP_CONTRIBUTOR`, `RANDOM`)
-  - `min-scaled-amount` config to prevent minimum-1 clamping from exceeding pot totals
-  - Composite pot bundles for holistic multi-reward decomposition
-- Multi-level distribution integration test (deferred from Phase 3)
+- `TemplateCondition` extensible interface with `TemplateConditionRegistry` and `TemplateConditionContentPack` for third-party condition registration
+- Built-in condition types: `RarityCondition` (`mcrpg:rarity_gate`), `ChanceCondition` (`mcrpg:chance`), `VariableCondition` (`mcrpg:variable_check`), `CompoundCondition` (`mcrpg:compound`), `PermissionCondition` (`mcrpg:permission_check`), `CompletionPrerequisiteCondition` (`mcrpg:completion_prerequisite`)
+- `ConditionContext` record -- unified evaluation context supporting template generation, prerequisite checks, and reward grant-time evaluation
+- `QuestCompletionHistory` interface -- read-only DAO abstraction used by `CompletionPrerequisiteCondition`
+- Conditional phases, stages, and objectives in template definitions (evaluated during `QuestTemplateEngine.generate()`)
+- Variable-dependent stage gating via `VariableCondition` (checks resolved variable values after pool/range resolution)
+- Template-level and category-level `prerequisite:` sections for personal offering eligibility gating
+- `ObjectiveSelectionConfig` -- weighted random objective selection from pools within a stage; per-objective `weight` field on `TemplateObjectiveDefinition`
+- `RewardFallback` record + `QuestRewardEntry` wrapper -- per-reward conditional fallback substitution (reuses `TemplateCondition`; any registered condition can trigger a fallback)
+- `DistributionRewardEntry` -- per-reward wrapper within distribution tiers, carrying `PotBehavior`, `RemainderStrategy`, `minScaledAmount`, `topCount`, and optional `RewardFallback`
+- `PotBehavior` enum (`SCALE`, `TOP_N`, `ALL`) -- per-reward control of how split-mode tiers handle rewards
+- `topCount` field on `DistributionRewardEntry` -- configures how many top contributors receive the reward when `pot-behavior: TOP_N` (defaults to 1; `TOP_N` with `top-count: 1` replaces the former `TOP_ONLY` concept)
+- `RemainderStrategy` enum (`DISCARD`, `TOP_CONTRIBUTOR`, `RANDOM`) -- integer truncation remainder distribution
+- `ScalableCommandRewardType` (`mcrpg:scalable_command`) -- command reward with `{amount}` token for pot distribution (separate from existing `CommandRewardType` to preserve backward compatibility)
+- `min-scaled-amount` per-reward config to prevent minimum-1 clamping from exceeding pot totals (`0` disables minimum and prevents pot overrun)
+- `QuestRewardType.getNumericAmount()` default method for remainder calculation
+- `QuestAcceptorDistributionType` (`mcrpg:quest_acceptor`) -- distribution type that resolves exclusively to the player who accepted a scoped quest; restricted to scoped quests at config load time
+- Rarity visual effects: `glint` and `custom-model-data` fields on `QuestRarity` config in `board.yml` (configured per rarity tier, not derived from weight thresholds)
+- Board GUI polish: `OfferingLoreBuilder` utility (objective summary, reward preview, timer countdown lines); centralized to ensure consistency between `BoardOfferingSlot` and `ScopedOfferingSlot`
+- `DistributionPreviewResolver` utility + `DistributionPreviewEntry` record -- live contribution preview embedded as lore lines on the active scoped quest display
+- Objective-level `reward-distribution` serialization in `GeneratedQuestDefinitionSerializer` (gap from Phase 3)
+- Concurrent acceptance race hardening -- per-offering synchronized locks via `ConcurrentHashMap<UUID, Object>` in `QuestBoardManager`
+- Server restart mid-rotation recovery -- `QuestBoardManager.initialize()` detects missed rotations and triggers a catch-up rotation
+- Offering state consistency validation on board open -- orphaned `ACCEPTED` offerings (no corresponding `QuestInstance`) are repaired to `EXPIRED`
+- Multi-level distribution integration tests (deferred from Phase 3)
 - Completion listener distribution tests (deferred from Phase 3)
-- Edge case hardening (server restart mid-rotation, land dissolution with active quest, etc.)
-- Integration test suite
+- Integration test suite for end-to-end board flows
+
+**Out of scope (deferred to future / community-driven):**
+- Factions/Towny scope adapter implementations -- the generic `ScopedBoardAdapter` framework from Phase 3 documents the integration pattern; actual third-party adapters are community-driven via `ScopedBoardAdapterContentPack`
+- Composite pot bundles -- per-reward `PotBehavior` achieves the same result with simpler configuration; holistic cross-reward remainder sharing deferred as low-value edge case
+- Cross-referencing between templates (compose smaller templates into larger quests) -- deferred due to dependency resolution complexity and variable namespace conflicts
 
 ### Phase 5: Reputation and Multi-Board (Future)
 

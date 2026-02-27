@@ -277,7 +277,7 @@ class GeneratedQuestDefinitionSerializerTest {
         DistributionTierConfig tier = new DistributionTierConfig(
                 "gated-tier", NamespacedKey.fromString("mcrpg:participated"),
                 RewardSplitMode.INDIVIDUAL, List.of(rewardType),
-                Map.of(), minRarity, requiredRarity);
+                Map.of(), minRarity, requiredRarity, true);
 
         QuestDefinition original = createDefinitionWithCustomDistribution(
                 new RewardDistributionConfig(List.of(tier)));
@@ -366,12 +366,12 @@ class GeneratedQuestDefinitionSerializerTest {
                 "top-contributors", NamespacedKey.fromString("mcrpg:top_players"),
                 RewardSplitMode.INDIVIDUAL, List.of(rewardType),
                 Map.of(DistributionTierConfig.PARAM_TOP_PLAYER_COUNT, 3),
-                null, null);
+                null, null, true);
 
         DistributionTierConfig memberTier = new DistributionTierConfig(
                 "all-members", NamespacedKey.fromString("mcrpg:membership"),
                 RewardSplitMode.SPLIT_EVEN, List.of(rewardType),
-                Map.of(), null, null);
+                Map.of(), null, null, true);
 
         return new RewardDistributionConfig(List.of(topTier, memberTier));
     }
@@ -384,7 +384,7 @@ class GeneratedQuestDefinitionSerializerTest {
         DistributionTierConfig tier = new DistributionTierConfig(
                 "participated", NamespacedKey.fromString("mcrpg:participated"),
                 RewardSplitMode.INDIVIDUAL, List.of(rewardType),
-                Map.of(), null, null);
+                Map.of(), null, null, true);
 
         return new RewardDistributionConfig(List.of(tier));
     }

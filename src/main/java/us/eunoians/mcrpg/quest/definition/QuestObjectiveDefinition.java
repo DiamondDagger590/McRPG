@@ -177,17 +177,28 @@ public class QuestObjectiveDefinition {
 
     /**
      * Gets the localized description for this objective, resolved through the player's locale chain.
+     * Falls back to a formatted version of the objective key if no localization entry exists.
      *
      * @param player   the player whose locale chain determines the language
      * @param questKey the parent quest's namespaced key, used to scope the localization route
-     * @return the localized objective description
+     * @return the localized objective description, or a key-derived fallback
      */
     @NotNull
     public String getDescription(@NotNull McRPGPlayer player, @NotNull NamespacedKey questKey) {
-        return RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedMessage(player, getDescriptionRoute(questKey));
+        try {
+            return RegistryAccess.registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedMessage(player, getDescriptionRoute(questKey));
+        } catch (Exception e) {
+            long required;
+            try {
+                required = getRequiredProgress();
+            } catch (IllegalStateException ex) {
+                required = 0;
+            }
+            return objectiveType.describeObjective(required);
+        }
     }
 
     /**

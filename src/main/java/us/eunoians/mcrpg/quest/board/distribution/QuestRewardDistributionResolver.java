@@ -7,22 +7,22 @@ import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- * Stateless utility that performs distribution resolution. No Bukkit dependency beyond
- * NamespacedKey — takes pure data inputs and returns a map of player UUIDs to their
- * earned reward lists.
- * <p>
- * Handles {@link RewardSplitMode} scaling: for {@code SPLIT_EVEN} and
- * {@code SPLIT_PROPORTIONAL} tiers, reward amounts are divided among qualifying
- * players via {@link QuestRewardType#withAmountMultiplier(double)}.
+ * Stateless utility that performs distribution resolution. Handles {@link RewardSplitMode}
+ * scaling with per-reward {@link PotBehavior}, {@link RemainderStrategy}, and
+ * {@code minScaledAmount} controls.
  */
 public final class QuestRewardDistributionResolver {
 
@@ -50,6 +50,20 @@ public final class QuestRewardDistributionResolver {
             @Nullable NamespacedKey questRarity,
             @NotNull QuestRarityRegistry rarityRegistry,
             @NotNull RewardDistributionTypeRegistry typeRegistry) {
+        return resolve(config, snapshot, questRarity, rarityRegistry, typeRegistry, new Random());
+    }
+
+    /**
+     * Evaluates all tiers with a provided random instance for deterministic remainder distribution.
+     */
+    @NotNull
+    public static Map<UUID, List<QuestRewardType>> resolve(
+            @NotNull RewardDistributionConfig config,
+            @NotNull ContributionSnapshot snapshot,
+            @Nullable NamespacedKey questRarity,
+            @NotNull QuestRarityRegistry rarityRegistry,
+            @NotNull RewardDistributionTypeRegistry typeRegistry,
+            @NotNull Random random) {
 
         Map<UUID, List<QuestRewardType>> result = new HashMap<>();
 
@@ -68,28 +82,17 @@ public final class QuestRewardDistributionResolver {
                 continue;
             }
 
-            applyTierRewards(tier, qualifyingPlayers, snapshot, result);
+            applyTierRewards(tier, qualifyingPlayers, snapshot, result, random);
         }
 
         return result;
     }
 
-    /**
-     * Applies a single tier's rewards to qualifying players according to the tier's
-     * {@link RewardSplitMode}. For {@code INDIVIDUAL}, each player gets the full
-     * reward list. For {@code SPLIT_EVEN}, the pot is divided equally. For
-     * {@code SPLIT_PROPORTIONAL}, the pot is divided by each player's contribution
-     * share (falls back to even split when total contribution is zero).
-     *
-     * @param tier              the tier configuration
-     * @param qualifyingPlayers the set of player UUIDs that qualified for this tier
-     * @param snapshot          the contribution snapshot (used for proportional calculation)
-     * @param result            the accumulator map of player UUID to reward list (mutated in-place)
-     */
     private static void applyTierRewards(@NotNull DistributionTierConfig tier,
                                          @NotNull Set<UUID> qualifyingPlayers,
                                          @NotNull ContributionSnapshot snapshot,
-                                         @NotNull Map<UUID, List<QuestRewardType>> result) {
+                                         @NotNull Map<UUID, List<QuestRewardType>> result,
+                                         @NotNull Random random) {
         switch (tier.getSplitMode()) {
             case INDIVIDUAL -> {
                 for (UUID playerUUID : qualifyingPlayers) {
@@ -98,11 +101,10 @@ public final class QuestRewardDistributionResolver {
                 }
             }
             case SPLIT_EVEN -> {
-                double multiplier = 1.0 / qualifyingPlayers.size();
-                List<QuestRewardType> scaledRewards = scaleRewards(tier.getRewards(), multiplier);
-                for (UUID playerUUID : qualifyingPlayers) {
-                    result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
-                            .addAll(scaledRewards);
+                double baseMultiplier = 1.0 / qualifyingPlayers.size();
+                for (DistributionRewardEntry entry : tier.getRewardEntries()) {
+                    distributeRewardEntry(entry, baseMultiplier, qualifyingPlayers,
+                            snapshot, result, random);
                 }
             }
             case SPLIT_PROPORTIONAL -> {
@@ -111,38 +113,182 @@ public final class QuestRewardDistributionResolver {
                         .sum();
                 if (totalContribution == 0) {
                     double fallback = 1.0 / qualifyingPlayers.size();
-                    List<QuestRewardType> scaledRewards = scaleRewards(tier.getRewards(), fallback);
-                    for (UUID playerUUID : qualifyingPlayers) {
-                        result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
-                                .addAll(scaledRewards);
+                    for (DistributionRewardEntry entry : tier.getRewardEntries()) {
+                        distributeRewardEntry(entry, fallback, qualifyingPlayers,
+                                snapshot, result, random);
                     }
                 } else {
-                    for (UUID playerUUID : qualifyingPlayers) {
-                        long playerContribution = snapshot.contributions().getOrDefault(playerUUID, 0L);
-                        double multiplier = (double) playerContribution / totalContribution;
-                        List<QuestRewardType> scaledRewards = scaleRewards(tier.getRewards(), multiplier);
-                        result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
-                                .addAll(scaledRewards);
+                    for (DistributionRewardEntry entry : tier.getRewardEntries()) {
+                        distributeProportional(entry, qualifyingPlayers, snapshot,
+                                totalContribution, result, random);
                     }
                 }
             }
         }
     }
 
-    /**
-     * Creates a new reward list where each reward's amount is scaled by the given
-     * multiplier via {@link QuestRewardType#withAmountMultiplier(double)}. Reward
-     * types that are not scalable (e.g., commands) return themselves unchanged.
-     *
-     * @param rewards    the original reward list
-     * @param multiplier the scaling factor (e.g., 0.5 for half)
-     * @return a new list of scaled reward instances
-     */
+    private static void distributeRewardEntry(
+            @NotNull DistributionRewardEntry entry,
+            double baseMultiplier,
+            @NotNull Set<UUID> qualifyingPlayers,
+            @NotNull ContributionSnapshot snapshot,
+            @NotNull Map<UUID, List<QuestRewardType>> result,
+            @NotNull Random random) {
+
+        switch (entry.potBehavior()) {
+            case ALL -> {
+                for (UUID playerUUID : qualifyingPlayers) {
+                    result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
+                            .add(entry.reward());
+                }
+            }
+            case TOP_N -> {
+                List<UUID> topN = findTopContributors(qualifyingPlayers, snapshot, entry.topCount());
+                for (UUID top : topN) {
+                    result.computeIfAbsent(top, k -> new ArrayList<>())
+                            .add(entry.reward());
+                }
+            }
+            case SCALE -> {
+                QuestRewardType scaled = entry.reward().withAmountMultiplier(baseMultiplier);
+                boolean isScalable = scaled != entry.reward();
+
+                if (!isScalable) {
+                    LOGGER.warning("Non-scalable reward '" + entry.reward().getKey()
+                            + "' used with SCALE pot-behavior; granting unscaled to all qualifying players");
+                    for (UUID playerUUID : qualifyingPlayers) {
+                        result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
+                                .add(entry.reward());
+                    }
+                    return;
+                }
+
+                OptionalLong scaledAmount = scaled.getNumericAmount();
+                if (scaledAmount.isPresent() && scaledAmount.getAsLong() < entry.minScaledAmount()) {
+                    return;
+                }
+
+                for (UUID playerUUID : qualifyingPlayers) {
+                    result.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(scaled);
+                }
+
+                if (entry.remainderStrategy() != RemainderStrategy.DISCARD) {
+                    distributeRemainder(entry, baseMultiplier, qualifyingPlayers,
+                            snapshot, result, random);
+                }
+            }
+        }
+    }
+
+    private static void distributeProportional(
+            @NotNull DistributionRewardEntry entry,
+            @NotNull Set<UUID> qualifyingPlayers,
+            @NotNull ContributionSnapshot snapshot,
+            long totalContribution,
+            @NotNull Map<UUID, List<QuestRewardType>> result,
+            @NotNull Random random) {
+
+        switch (entry.potBehavior()) {
+            case ALL -> {
+                for (UUID playerUUID : qualifyingPlayers) {
+                    result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
+                            .add(entry.reward());
+                }
+            }
+            case TOP_N -> {
+                List<UUID> topN = findTopContributors(qualifyingPlayers, snapshot, entry.topCount());
+                for (UUID top : topN) {
+                    result.computeIfAbsent(top, k -> new ArrayList<>())
+                            .add(entry.reward());
+                }
+            }
+            case SCALE -> {
+                for (UUID playerUUID : qualifyingPlayers) {
+                    long playerContribution = snapshot.contributions().getOrDefault(playerUUID, 0L);
+                    double multiplier = (double) playerContribution / totalContribution;
+                    QuestRewardType scaled = entry.reward().withAmountMultiplier(multiplier);
+                    boolean isScalable = scaled != entry.reward();
+
+                    if (!isScalable) {
+                        LOGGER.warning("Non-scalable reward '" + entry.reward().getKey()
+                                + "' used with SCALE pot-behavior; granting unscaled to all");
+                        for (UUID uuid : qualifyingPlayers) {
+                            result.computeIfAbsent(uuid, k -> new ArrayList<>())
+                                    .add(entry.reward());
+                        }
+                        return;
+                    }
+
+                    OptionalLong scaledAmount = scaled.getNumericAmount();
+                    if (scaledAmount.isPresent() && scaledAmount.getAsLong() < entry.minScaledAmount()) {
+                        continue;
+                    }
+
+                    result.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(scaled);
+                }
+            }
+        }
+    }
+
+    private static void distributeRemainder(
+            @NotNull DistributionRewardEntry entry,
+            double baseMultiplier,
+            @NotNull Set<UUID> qualifyingPlayers,
+            @NotNull ContributionSnapshot snapshot,
+            @NotNull Map<UUID, List<QuestRewardType>> result,
+            @NotNull Random random) {
+
+        OptionalLong originalAmount = entry.reward().getNumericAmount();
+        if (originalAmount.isEmpty()) {
+            return;
+        }
+
+        long total = originalAmount.getAsLong();
+        long perPlayer = Math.max(entry.minScaledAmount(),
+                Math.round(total * baseMultiplier));
+        long distributed = perPlayer * qualifyingPlayers.size();
+        long remainder = total - distributed;
+
+        if (remainder <= 0) {
+            return;
+        }
+
+        switch (entry.remainderStrategy()) {
+            case TOP_CONTRIBUTOR -> findTopContributor(qualifyingPlayers, snapshot).ifPresent(top -> {
+                QuestRewardType extra = entry.reward().withAmountMultiplier(
+                        (double) remainder / total);
+                result.computeIfAbsent(top, k -> new ArrayList<>()).add(extra);
+            });
+            case RANDOM -> {
+                List<UUID> shuffled = new ArrayList<>(qualifyingPlayers);
+                Collections.shuffle(shuffled, random);
+                for (int i = 0; i < remainder && i < shuffled.size(); i++) {
+                    QuestRewardType extra = entry.reward().withAmountMultiplier(1.0 / total);
+                    result.computeIfAbsent(shuffled.get(i), k -> new ArrayList<>()).add(extra);
+                }
+            }
+            case DISCARD -> {}
+        }
+    }
+
     @NotNull
-    private static List<QuestRewardType> scaleRewards(@NotNull List<QuestRewardType> rewards,
-                                                       double multiplier) {
-        return rewards.stream()
-                .map(reward -> reward.withAmountMultiplier(multiplier))
+    private static List<UUID> findTopContributors(@NotNull Set<UUID> qualifyingPlayers,
+                                                   @NotNull ContributionSnapshot snapshot,
+                                                   int count) {
+        return qualifyingPlayers.stream()
+                .sorted(Comparator.comparingLong(
+                                (UUID uuid) -> snapshot.contributions().getOrDefault(uuid, 0L))
+                        .reversed()
+                        .thenComparing(Comparator.naturalOrder()))
+                .limit(count)
                 .toList();
+    }
+
+    @NotNull
+    private static Optional<UUID> findTopContributor(@NotNull Set<UUID> qualifyingPlayers,
+                                                      @NotNull ContributionSnapshot snapshot) {
+        return qualifyingPlayers.stream()
+                .max(Comparator.comparingLong(
+                        uuid -> snapshot.contributions().getOrDefault(uuid, 0L)));
     }
 }

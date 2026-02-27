@@ -89,6 +89,9 @@ public class QuestManager extends Manager<McRPG> {
     private static final String QUESTS_DIRECTORY = "quests";
     private static final String DEFAULT_QUEST_RESOURCE = "quests/example_quest.yml";
     private static final String DEFAULT_UPGRADE_QUEST_RESOURCE = "quests/upgrades/swords_upgrades.yml";
+    private static final String DEFAULT_BOARD_MINING_QUEST_RESOURCE = "quests/board/daily_mining_quests.yml";
+    private static final String DEFAULT_BOARD_COMBAT_QUEST_RESOURCE = "quests/board/daily_combat_quests.yml";
+    private static final String DEFAULT_BOARD_WEEKLY_QUEST_RESOURCE = "quests/board/weekly_quests.yml";
     private static final String DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE = "quests/upgrades/generic_ability_upgrades.yml";
     private static final String DEFAULT_TIER_OVERRIDE_UPGRADE_QUEST_RESOURCE = "quests/upgrades/tier_override_ability_upgrades.yml";
 
@@ -1017,11 +1020,19 @@ public class QuestManager extends Manager<McRPG> {
         File markerFile = new File(questsDir, ".extracted-defaults");
         Set<String> alreadyExtracted = loadExtractedMarker(markerFile);
 
+        File boardDir = new File(questsDir, "board");
+        if (!boardDir.exists()) {
+            boardDir.mkdirs();
+        }
+
         List<String> defaultResources = List.of(
                 DEFAULT_QUEST_RESOURCE,
                 DEFAULT_UPGRADE_QUEST_RESOURCE,
                 DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE,
-                DEFAULT_TIER_OVERRIDE_UPGRADE_QUEST_RESOURCE
+                DEFAULT_TIER_OVERRIDE_UPGRADE_QUEST_RESOURCE,
+                DEFAULT_BOARD_MINING_QUEST_RESOURCE,
+                DEFAULT_BOARD_COMBAT_QUEST_RESOURCE,
+                DEFAULT_BOARD_WEEKLY_QUEST_RESOURCE
         );
 
         boolean markerDirty = false;

@@ -78,6 +78,28 @@ public class MobKillObjectiveType implements QuestObjectiveType {
 
     @NotNull
     @Override
+    public String describeObjective(long requiredProgress) {
+        if (validEntities.isEmpty()) {
+            return "Kill " + requiredProgress + " mobs";
+        }
+        String targets = validEntities.stream()
+                .map(e -> formatName(e.toString()))
+                .collect(Collectors.joining(", "));
+        return "Kill " + requiredProgress + " " + targets;
+    }
+
+    private static String formatName(String raw) {
+        String[] parts = raw.toLowerCase().split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.toString();
+    }
+
+    @NotNull
+    @Override
     public Optional<NamespacedKey> getExpansionKey() {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }

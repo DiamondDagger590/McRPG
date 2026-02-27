@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.board.slot.BoardBackSlot;
 import us.eunoians.mcrpg.gui.board.slot.ScopedEntitySelectSlot;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter;
@@ -69,7 +70,7 @@ public class ScopedEntitySelectorGui extends McRPGPaginatedGui {
         }
 
         int navRowStart = 45;
-        setSlot(navRowStart, new us.eunoians.mcrpg.gui.board.slot.BoardBackSlot());
+        setSlot(navRowStart, new BoardBackSlot());
         if (page > 0) {
             setSlot(navRowStart + 3, getPreviousPageSlot());
         }

@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.logging.Logger;
 
 /**
@@ -105,6 +106,12 @@ public class ExperienceRewardType implements QuestRewardType {
     @Override
     public Map<String, Object> serializeConfig() {
         return Map.of("skill", skillName, "amount", amount);
+    }
+
+    @NotNull
+    @Override
+    public OptionalLong getNumericAmount() {
+        return OptionalLong.of(amount);
     }
 
     @NotNull

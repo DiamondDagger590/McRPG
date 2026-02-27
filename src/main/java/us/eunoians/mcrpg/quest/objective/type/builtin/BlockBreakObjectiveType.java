@@ -79,6 +79,28 @@ public class BlockBreakObjectiveType implements QuestObjectiveType {
 
     @NotNull
     @Override
+    public String describeObjective(long requiredProgress) {
+        if (validBlocks.isEmpty()) {
+            return "Break " + requiredProgress + " blocks";
+        }
+        String targets = validBlocks.stream()
+                .map(b -> formatName(b.toString()))
+                .collect(Collectors.joining(", "));
+        return "Break " + requiredProgress + " " + targets;
+    }
+
+    private static String formatName(String raw) {
+        String[] parts = raw.toLowerCase().split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.toString();
+    }
+
+    @NotNull
+    @Override
     public Optional<NamespacedKey> getExpansionKey() {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }

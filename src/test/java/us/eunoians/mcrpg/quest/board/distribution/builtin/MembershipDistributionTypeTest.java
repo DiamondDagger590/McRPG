@@ -22,13 +22,13 @@ public class MembershipDistributionTypeTest extends McRPGBaseTest {
 
     private final DistributionTierConfig tier = new DistributionTierConfig("test",
             MembershipDistributionType.KEY, RewardSplitMode.INDIVIDUAL, List.of(),
-            Map.of(), null, null);
+            Map.of(), null, null, true);
 
     @DisplayName("all group members qualify regardless of contribution")
     @Test
     void allMembersQualify() {
         UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1, p2, p3));
+        var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1, p2, p3), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertEquals(3, result.size());
@@ -41,7 +41,7 @@ public class MembershipDistributionTypeTest extends McRPGBaseTest {
     @Test
     void zerContributionMembersQualify() {
         UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of(p1, p2, p3));
+        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of(p1, p2, p3), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertEquals(3, result.size());
@@ -50,7 +50,7 @@ public class MembershipDistributionTypeTest extends McRPGBaseTest {
     @DisplayName("empty group returns empty set")
     @Test
     void emptyGroup() {
-        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of());
+        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of(), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertTrue(result.isEmpty());
@@ -61,7 +61,7 @@ public class MembershipDistributionTypeTest extends McRPGBaseTest {
     void nonMembersExcluded() {
         UUID member = UUID.randomUUID(), nonMember = UUID.randomUUID();
         var snapshot = new ContributionSnapshot(
-                Map.of(member, 50L, nonMember, 100L), 150, Set.of(member));
+                Map.of(member, 50L, nonMember, 100L), 150, Set.of(member), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertEquals(1, result.size());

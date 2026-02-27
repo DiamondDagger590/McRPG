@@ -65,4 +65,32 @@ public class McRPGMethods {
     public static Parser parseWithPapi(@NotNull Parser parser, @NotNull OfflinePlayer offlinePlayer) {
         return McRPG.getInstance().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.PAPI).map(papiHook -> new Parser(papiHook.translateMessage(offlinePlayer, parser.getInputString()))).orElse(parser);
     }
+
+    /**
+     * Formats a millisecond duration into a compact human-readable string.
+     * Examples: {@code "2h 30m"}, {@code "45m"}, {@code "<1m"}.
+     *
+     * @param millis the duration in milliseconds
+     * @return a formatted duration string
+     */
+    @NotNull
+    public static String formatDuration(long millis) {
+        long totalSeconds = millis / 1000;
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        StringBuilder sb = new StringBuilder();
+        if (hours > 0) {
+            sb.append(hours).append("h");
+        }
+        if (minutes > 0) {
+            if (!sb.isEmpty()) {
+                sb.append(" ");
+            }
+            sb.append(minutes).append("m");
+        }
+        if (sb.isEmpty()) {
+            sb.append("<1m");
+        }
+        return sb.toString();
+    }
 }

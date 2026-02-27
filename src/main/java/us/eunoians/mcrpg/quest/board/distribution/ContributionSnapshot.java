@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.quest.board.distribution;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
@@ -11,17 +12,20 @@ import java.util.UUID;
  * {@link RewardDistributionType#resolve} call. This is a pure data record with
  * no Bukkit dependency.
  *
- * @param contributions per-player contribution amounts for the relevant scope
- * @param totalProgress the sum of all contributions (or total objective progress
- *                      if untracked contributions exist)
- * @param groupMembers  the full set of group members (e.g., land trusted players),
- *                      used by the {@code MEMBERSHIP} distribution type.
- *                      For solo quests, this is just the single player.
+ * @param contributions      per-player contribution amounts for the relevant scope
+ * @param totalProgress      the sum of all contributions (or total objective progress
+ *                           if untracked contributions exist)
+ * @param groupMembers       the full set of group members (e.g., land trusted players),
+ *                           used by the {@code MEMBERSHIP} distribution type.
+ *                           For solo quests, this is just the single player.
+ * @param questAcceptorUUID  the UUID of the player who accepted the scoped quest,
+ *                           or null for non-scoped quests.
  */
 public record ContributionSnapshot(
         @NotNull Map<UUID, Long> contributions,
         long totalProgress,
-        @NotNull Set<UUID> groupMembers
+        @NotNull Set<UUID> groupMembers,
+        @Nullable UUID questAcceptorUUID
 ) {
     public ContributionSnapshot {
         contributions = Map.copyOf(contributions);

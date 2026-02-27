@@ -1,0 +1,205 @@
+# Weekly quests — larger goals with bigger payouts.
+
+quests:
+  # -------------------------------------------------------------------
+  # Weekly: Mass mining expedition
+  # -------------------------------------------------------------------
+  mcrpg:weekly_mining_expedition:
+    scope: mcrpg:single_player
+    expiration: 7d
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:uncommon
+        - mcrpg:rare
+        - mcrpg:legendary
+      supported-refresh-types:
+        - WEEKLY
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 2000
+      loot_crate:
+        type: mcrpg:command
+        commands:
+          - "give {player} diamond 5"
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          mine_bulk:
+            key: mcrpg:weekly_mine_bulk
+            objectives:
+              break_stone:
+                key: mcrpg:weekly_break_stone
+                type: mcrpg:block_break
+                required-progress: 500
+                config:
+                  blocks:
+                    - STONE
+                    - COBBLESTONE
+                    - DEEPSLATE
+                    - COBBLED_DEEPSLATE
+                    - ANDESITE
+                    - DIORITE
+                    - GRANITE
+      phase_2:
+        completion-mode: ALL
+        stages:
+          mine_valuables:
+            key: mcrpg:weekly_mine_valuables
+            objectives:
+              break_iron:
+                key: mcrpg:weekly_break_iron
+                type: mcrpg:block_break
+                required-progress: 32
+                config:
+                  blocks:
+                    - IRON_ORE
+                    - DEEPSLATE_IRON_ORE
+              break_diamonds:
+                key: mcrpg:weekly_break_diamonds
+                type: mcrpg:block_break
+                required-progress: 10
+                config:
+                  blocks:
+                    - DIAMOND_ORE
+                    - DEEPSLATE_DIAMOND_ORE
+
+  # -------------------------------------------------------------------
+  # Weekly: Monster hunter
+  # -------------------------------------------------------------------
+  mcrpg:weekly_monster_hunter:
+    scope: mcrpg:single_player
+    expiration: 7d
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:uncommon
+        - mcrpg:rare
+        - mcrpg:legendary
+      supported-refresh-types:
+        - WEEKLY
+    rewards:
+      swords_xp:
+        type: mcrpg:experience
+        skill: SWORDS
+        amount: 2000
+      hunter_bounty:
+        type: mcrpg:command
+        commands:
+          - "give {player} experience_bottle 16"
+    phases:
+      hunt_overworld:
+        completion-mode: ALL
+        stages:
+          undead_hunt:
+            key: mcrpg:weekly_undead_hunt
+            objectives:
+              slay_undead:
+                key: mcrpg:weekly_slay_undead
+                type: mcrpg:mob_kill
+                required-progress: 100
+                config:
+                  mobs:
+                    - ZOMBIE
+                    - SKELETON
+                    - HUSK
+                    - STRAY
+                    - DROWNED
+          spider_hunt:
+            key: mcrpg:weekly_spider_hunt
+            objectives:
+              slay_spiders:
+                key: mcrpg:weekly_slay_spiders
+                type: mcrpg:mob_kill
+                required-progress: 40
+                config:
+                  mobs:
+                    - SPIDER
+                    - CAVE_SPIDER
+      hunt_nether:
+        completion-mode: ANY
+        stages:
+          blaze_hunt:
+            key: mcrpg:weekly_blaze_hunt
+            objectives:
+              slay_blazes:
+                key: mcrpg:weekly_slay_blazes
+                type: mcrpg:mob_kill
+                required-progress: 25
+                config:
+                  mobs:
+                    - BLAZE
+          wither_skele_hunt:
+            key: mcrpg:weekly_wither_hunt
+            objectives:
+              slay_wither_skeletons:
+                key: mcrpg:weekly_slay_wither_skeletons
+                type: mcrpg:mob_kill
+                required-progress: 15
+                config:
+                  mobs:
+                    - WITHER_SKELETON
+
+  # -------------------------------------------------------------------
+  # Weekly: Multi-skill challenge (mining + combat)
+  # -------------------------------------------------------------------
+  mcrpg:weekly_adventurer:
+    scope: mcrpg:single_player
+    expiration: 7d
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:rare
+        - mcrpg:legendary
+      supported-refresh-types:
+        - WEEKLY
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 1000
+      swords_xp:
+        type: mcrpg:experience
+        skill: SWORDS
+        amount: 1000
+      grand_prize:
+        type: mcrpg:command
+        commands:
+          - "give {player} netherite_scrap 2"
+    phases:
+      mine_phase:
+        completion-mode: ALL
+        stages:
+          mine_ancient:
+            key: mcrpg:weekly_mine_ancient
+            objectives:
+              break_ancient_debris:
+                key: mcrpg:weekly_break_ancient_debris
+                type: mcrpg:block_break
+                required-progress: 4
+                config:
+                  blocks:
+                    - ANCIENT_DEBRIS
+      combat_phase:
+        completion-mode: ALL
+        stages:
+          kill_strong:
+            key: mcrpg:weekly_kill_strong
+            objectives:
+              slay_endermen:
+                key: mcrpg:weekly_slay_endermen
+                type: mcrpg:mob_kill
+                required-progress: 20
+                config:
+                  mobs:
+                    - ENDERMAN
+              slay_creepers:
+                key: mcrpg:weekly_slay_creepers
+                type: mcrpg:mob_kill
+                required-progress: 30
+                config:
+                  mobs:
+                    - CREEPER

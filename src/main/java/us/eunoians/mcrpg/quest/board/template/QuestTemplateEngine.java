@@ -5,6 +5,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
+import us.eunoians.mcrpg.quest.board.template.condition.ConditionContext;
 import us.eunoians.mcrpg.quest.board.template.variable.PoolVariable;
 import us.eunoians.mcrpg.quest.board.template.variable.RangeVariable;
 import us.eunoians.mcrpg.quest.board.template.variable.ResolvedPool;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +47,8 @@ import java.util.stream.Collectors;
  * </ol>
  */
 public final class QuestTemplateEngine {
+
+    private static final Logger LOGGER = Logger.getLogger(QuestTemplateEngine.class.getName());
 
     private final QuestRarityRegistry rarityRegistry;
     private final QuestObjectiveTypeRegistry objectiveTypeRegistry;
@@ -79,11 +83,25 @@ public final class QuestTemplateEngine {
                                          @NotNull Random random) {
         template.validateRaritySupported(rarityKey);
 
-        ResolvedVariableContext context = resolveVariables(template, rarityKey, random);
+        ResolvedVariableContext variableContext = resolveVariables(template, rarityKey, random);
+
+        ConditionContext conditionContext = ConditionContext.forTemplateGeneration(
+                rarityKey, rarityRegistry, random, variableContext);
+
+        List<TemplatePhaseDefinition> filteredPhases = filterPhases(
+                template.getPhases(), conditionContext, random);
+
+        if (filteredPhases.isEmpty()) {
+            throw new QuestGenerationException("Template '" + template.getKey()
+                    + "' generated zero phases after condition evaluation for rarity " + rarityKey,
+                    template.getKey(), rarityKey, null);
+        }
+
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = new LinkedHashMap<>();
-        QuestDefinition definition = buildDefinition(template, rarityKey, context, random, objectiveConfigs);
+        QuestDefinition definition = buildDefinition(
+                template, rarityKey, variableContext, filteredPhases, random, objectiveConfigs);
         String json = GeneratedQuestDefinitionSerializer.serialize(
-                definition, template.getKey(), rarityKey, context, objectiveConfigs);
+                definition, template.getKey(), rarityKey, variableContext, objectiveConfigs);
         return new GeneratedQuestResult(definition, template.getKey(), json);
     }
 
@@ -155,13 +173,14 @@ public final class QuestTemplateEngine {
     QuestDefinition buildDefinition(@NotNull QuestTemplate template,
                                     @NotNull NamespacedKey rarityKey,
                                     @NotNull ResolvedVariableContext context,
+                                    @NotNull List<TemplatePhaseDefinition> filteredPhases,
                                     @NotNull Random random,
                                     @NotNull Map<NamespacedKey, Map<String, Object>> objectiveConfigs) {
         String hexSuffix = String.format("%08x", random.nextInt());
         String questKeyStr = "gen_" + template.getKey().getKey() + "_" + hexSuffix;
         NamespacedKey questKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), questKeyStr);
 
-        List<QuestPhaseDefinition> phases = buildPhases(template, rarityKey, questKey, context, objectiveConfigs);
+        List<QuestPhaseDefinition> phases = buildPhases(template, rarityKey, questKey, filteredPhases, context, objectiveConfigs);
         List<QuestRewardType> rewards = buildRewards(template, rarityKey, context);
 
         return new QuestDefinition(
@@ -194,13 +213,13 @@ public final class QuestTemplateEngine {
     private List<QuestPhaseDefinition> buildPhases(@NotNull QuestTemplate template,
                                                    @NotNull NamespacedKey rarityKey,
                                                    @NotNull NamespacedKey questKey,
+                                                   @NotNull List<TemplatePhaseDefinition> filteredPhases,
                                                    @NotNull ResolvedVariableContext context,
                                                    @NotNull Map<NamespacedKey, Map<String, Object>> objectiveConfigs) {
         List<QuestPhaseDefinition> phases = new ArrayList<>();
-        List<TemplatePhaseDefinition> templatePhases = template.getPhases();
 
-        for (int phaseIdx = 0; phaseIdx < templatePhases.size(); phaseIdx++) {
-            TemplatePhaseDefinition templatePhase = templatePhases.get(phaseIdx);
+        for (int phaseIdx = 0; phaseIdx < filteredPhases.size(); phaseIdx++) {
+            TemplatePhaseDefinition templatePhase = filteredPhases.get(phaseIdx);
             List<QuestStageDefinition> stages = new ArrayList<>();
 
             for (int stageIdx = 0; stageIdx < templatePhase.stages().size(); stageIdx++) {
@@ -465,6 +484,68 @@ public final class QuestTemplateEngine {
                             + baseType.getKey() + " in template " + templateKey,
                     e, templateKey, rarityKey, baseType.getKey());
         }
+    }
+
+    @NotNull
+    private List<TemplatePhaseDefinition> filterPhases(
+            @NotNull List<TemplatePhaseDefinition> phases,
+            @NotNull ConditionContext context,
+            @NotNull Random random) {
+
+        List<TemplatePhaseDefinition> result = new ArrayList<>();
+        for (TemplatePhaseDefinition phase : phases) {
+            if (phase.getCondition().map(c -> c.evaluate(context)).orElse(true)) {
+                List<TemplateStageDefinition> filteredStages = filterStages(
+                        phase.stages(), context, random);
+                if (!filteredStages.isEmpty()) {
+                    result.add(phase.withStages(filteredStages));
+                }
+            }
+        }
+        return result;
+    }
+
+    @NotNull
+    private List<TemplateStageDefinition> filterStages(
+            @NotNull List<TemplateStageDefinition> stages,
+            @NotNull ConditionContext context,
+            @NotNull Random random) {
+
+        List<TemplateStageDefinition> result = new ArrayList<>();
+        for (TemplateStageDefinition stage : stages) {
+            if (stage.getCondition().map(c -> c.evaluate(context)).orElse(true)) {
+                List<TemplateObjectiveDefinition> filteredObjectives = filterObjectives(
+                        stage.objectives(), context);
+
+                if (stage.getObjectiveSelection().isPresent()) {
+                    ObjectiveSelectionConfig selConfig = stage.getObjectiveSelection().get();
+                    if (selConfig.mode() == ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM) {
+                        try {
+                            filteredObjectives = WeightedObjectiveSelector.select(
+                                    filteredObjectives, selConfig, random);
+                        } catch (IllegalStateException e) {
+                            LOGGER.warning("[QuestTemplateEngine] Stage excluded: " + e.getMessage());
+                            continue;
+                        }
+                    }
+                }
+
+                if (!filteredObjectives.isEmpty()) {
+                    result.add(stage.withObjectives(filteredObjectives));
+                }
+            }
+        }
+        return result;
+    }
+
+    @NotNull
+    private List<TemplateObjectiveDefinition> filterObjectives(
+            @NotNull List<TemplateObjectiveDefinition> objectives,
+            @NotNull ConditionContext context) {
+
+        return objectives.stream()
+                .filter(obj -> obj.getCondition().map(c -> c.evaluate(context)).orElse(true))
+                .toList();
     }
 
 }

@@ -56,8 +56,12 @@ public class QuestDetailObjectiveSlot implements McRPGSlot {
             placeholders.put("objective_state", objectiveInstance.getQuestObjectiveState().name());
         } else {
             placeholders.put("progress", "0");
-            placeholders.put("required", "?");
-            placeholders.put("objective_state", "COMPLETED");
+            try {
+                placeholders.put("required", String.valueOf(objectiveDef.getRequiredProgress()));
+            } catch (IllegalStateException e) {
+                placeholders.put("required", "?");
+            }
+            placeholders.put("objective_state", "PREVIEW");
         }
 
         return ItemBuilder.from(RegistryAccess.registryAccess()

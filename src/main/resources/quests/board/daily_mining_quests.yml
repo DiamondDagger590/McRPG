@@ -1,0 +1,119 @@
+# Daily mining quests for the quest board.
+
+quests:
+  # -------------------------------------------------------------------
+  # Simple: Mine a stack of stone
+  # -------------------------------------------------------------------
+  mcrpg:daily_stone_haul:
+    scope: mcrpg:single_player
+    expiration: 24h
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:common
+        - mcrpg:uncommon
+      supported-refresh-types:
+        - DAILY
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 200
+    phases:
+      dig:
+        completion-mode: ALL
+        stages:
+          mine_stone:
+            key: mcrpg:daily_mine_stone
+            objectives:
+              break_stone:
+                key: mcrpg:daily_break_stone
+                type: mcrpg:block_break
+                required-progress: 64
+                config:
+                  blocks:
+                    - STONE
+                    - COBBLESTONE
+                    - ANDESITE
+                    - DIORITE
+                    - GRANITE
+
+  # -------------------------------------------------------------------
+  # Medium: Mine deepslate ores
+  # -------------------------------------------------------------------
+  mcrpg:daily_deepslate_delver:
+    scope: mcrpg:single_player
+    expiration: 24h
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:uncommon
+        - mcrpg:rare
+      supported-refresh-types:
+        - DAILY
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 400
+    phases:
+      delve:
+        completion-mode: ALL
+        stages:
+          mine_deepslate:
+            key: mcrpg:daily_mine_deepslate
+            objectives:
+              break_deepslate:
+                key: mcrpg:daily_break_deepslate
+                type: mcrpg:block_break
+                required-progress: 128
+                config:
+                  blocks:
+                    - DEEPSLATE
+                    - COBBLED_DEEPSLATE
+
+  # -------------------------------------------------------------------
+  # Hard: Mine precious ores
+  # -------------------------------------------------------------------
+  mcrpg:daily_ore_rush:
+    scope: mcrpg:single_player
+    expiration: 24h
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:rare
+        - mcrpg:legendary
+      supported-refresh-types:
+        - DAILY
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 750
+      gem_bonus:
+        type: mcrpg:command
+        commands:
+          - "give {player} diamond 2"
+    phases:
+      mine_ores:
+        completion-mode: ALL
+        stages:
+          mine_precious:
+            key: mcrpg:daily_mine_precious
+            objectives:
+              break_gold:
+                key: mcrpg:daily_break_gold
+                type: mcrpg:block_break
+                required-progress: 12
+                config:
+                  blocks:
+                    - GOLD_ORE
+                    - DEEPSLATE_GOLD_ORE
+              break_diamond:
+                key: mcrpg:daily_break_diamond
+                type: mcrpg:block_break
+                required-progress: 6
+                config:
+                  blocks:
+                    - DIAMOND_ORE
+                    - DEEPSLATE_DIAMOND_ORE

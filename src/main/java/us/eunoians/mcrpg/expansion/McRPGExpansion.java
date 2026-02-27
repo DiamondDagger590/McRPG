@@ -35,16 +35,25 @@ import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRewardTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestScopeProviderContentPack;
 import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
+import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ContributionThresholdDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.MembershipDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.QuestAcceptorDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
+import us.eunoians.mcrpg.quest.board.template.condition.ChanceCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.CompletionPrerequisiteCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.CompoundCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.PermissionCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.RarityCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.VariableCondition;
 import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
 import us.eunoians.mcrpg.quest.objective.type.builtin.BlockBreakObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.MobKillObjectiveType;
 import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeNextTierRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.ScalableCommandRewardType;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
@@ -89,7 +98,7 @@ public final class McRPGExpansion extends ContentExpansion {
         return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
-                getRewardDistributionTypeContent());
+                getRewardDistributionTypeContent(), getTemplateConditionContent());
     }
 
     @NotNull
@@ -208,6 +217,7 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new CommandRewardType());
         pack.addContent(new AbilityUpgradeRewardType());
         pack.addContent(new AbilityUpgradeNextTierRewardType());
+        pack.addContent(new ScalableCommandRewardType());
         return pack;
     }
 
@@ -279,6 +289,25 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new ContributionThresholdDistributionType());
         pack.addContent(new ParticipatedDistributionType());
         pack.addContent(new MembershipDistributionType());
+        pack.addContent(new QuestAcceptorDistributionType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link TemplateConditionContentPack} for McRPG, populated with the
+     * built-in condition types (rarity, chance, variable, compound, permission, completion prerequisite).
+     *
+     * @return The native {@link TemplateConditionContentPack} for McRPG.
+     */
+    @NotNull
+    private TemplateConditionContentPack getTemplateConditionContent() {
+        TemplateConditionContentPack pack = new TemplateConditionContentPack(this);
+        pack.addContent(new RarityCondition(new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "common")));
+        pack.addContent(new ChanceCondition(0.5));
+        pack.addContent(new VariableCondition("_prototype", new us.eunoians.mcrpg.quest.board.template.condition.VariableCheck.ContainsAny(java.util.List.of())));
+        pack.addContent(new CompoundCondition(java.util.Map.of("_prototype", new ChanceCondition(1.0)), CompoundCondition.LogicMode.ALL));
+        pack.addContent(new PermissionCondition("_prototype"));
+        pack.addContent(new CompletionPrerequisiteCondition(1, null, null));
         return pack;
     }
 }

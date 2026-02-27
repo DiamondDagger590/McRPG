@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarity;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
@@ -39,6 +40,7 @@ public final class QuestTemplate implements McRPGContent {
     private final List<TemplatePhaseDefinition> phases;
     private final List<TemplateRewardDefinition> rewards;
     private final RewardDistributionConfig rewardDistribution;
+    private final TemplateCondition prerequisite;
     private final NamespacedKey expansionKey;
 
     public QuestTemplate(@NotNull NamespacedKey key,
@@ -51,7 +53,7 @@ public final class QuestTemplate implements McRPGContent {
                          @NotNull List<TemplatePhaseDefinition> phases,
                          @NotNull List<TemplateRewardDefinition> rewards) {
         this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
-                rarityOverrides, variables, phases, rewards, null, null);
+                rarityOverrides, variables, phases, rewards, null, null, null);
     }
 
     public QuestTemplate(@NotNull NamespacedKey key,
@@ -65,6 +67,22 @@ public final class QuestTemplate implements McRPGContent {
                          @NotNull List<TemplateRewardDefinition> rewards,
                          @Nullable RewardDistributionConfig rewardDistribution,
                          @Nullable NamespacedKey expansionKey) {
+        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
+                rarityOverrides, variables, phases, rewards, rewardDistribution, null, expansionKey);
+    }
+
+    public QuestTemplate(@NotNull NamespacedKey key,
+                         @NotNull Route displayNameRoute,
+                         boolean boardEligible,
+                         @NotNull NamespacedKey scopeProviderKey,
+                         @NotNull Set<NamespacedKey> supportedRarities,
+                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
+                         @NotNull Map<String, TemplateVariable> variables,
+                         @NotNull List<TemplatePhaseDefinition> phases,
+                         @NotNull List<TemplateRewardDefinition> rewards,
+                         @Nullable RewardDistributionConfig rewardDistribution,
+                         @Nullable TemplateCondition prerequisite,
+                         @Nullable NamespacedKey expansionKey) {
         this.key = key;
         this.displayNameRoute = displayNameRoute;
         this.boardEligible = boardEligible;
@@ -75,6 +93,7 @@ public final class QuestTemplate implements McRPGContent {
         this.phases = List.copyOf(phases);
         this.rewards = List.copyOf(rewards);
         this.rewardDistribution = rewardDistribution;
+        this.prerequisite = prerequisite;
         this.expansionKey = expansionKey;
     }
 
@@ -243,6 +262,17 @@ public final class QuestTemplate implements McRPGContent {
      * @param registry  the global rarity registry used as fallback
      * @return the reward multiplier (template override if present, otherwise registry default, otherwise {@code 1.0})
      */
+    /**
+     * Returns the optional prerequisite condition for this template.
+     * Evaluated during personal offering generation to gate template eligibility.
+     *
+     * @return the prerequisite condition, or empty if none
+     */
+    @NotNull
+    public Optional<TemplateCondition> getPrerequisite() {
+        return Optional.ofNullable(prerequisite);
+    }
+
     public double getEffectiveRewardMultiplier(@NotNull NamespacedKey rarityKey,
                                                 @NotNull QuestRarityRegistry registry) {
         RarityOverride override = rarityOverrides.get(rarityKey);

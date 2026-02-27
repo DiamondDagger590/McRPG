@@ -30,6 +30,7 @@ import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
@@ -83,6 +84,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new QuestTemplateRegistry());
         registryAccess.register(new RewardDistributionTypeRegistry());
         registryAccess.register(new ScopedBoardAdapterRegistry());
+        registryAccess.register(new TemplateConditionRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
@@ -103,6 +105,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         if (startupProfile == StartupProfile.PROD) {
             new McRPGDriverRegistrar().register(bootstrapContext);
             registryAccess.registry(RegistryKey.MANAGER).register(new McRPGDatabaseManager(mcRPG));
+            registryAccess.registry(RegistryKey.MANAGER).<QuestBoardManager>manager(McRPGManagerKey.QUEST_BOARD).initialize(mcRPG);
             new McRPGCommandRegistrar().register(bootstrapContext);
             new McRPGExperienceModifiersRegistrar().register(bootstrapContext);
             new McRPGBackgroundTaskRegistrar().register(bootstrapContext);

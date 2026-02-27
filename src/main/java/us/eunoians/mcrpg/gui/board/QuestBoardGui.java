@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.board.slot.BoardBackSlot;
 import us.eunoians.mcrpg.gui.board.slot.BoardOfferingSlot;
 import us.eunoians.mcrpg.gui.board.slot.ScopedBackSlot;
+import us.eunoians.mcrpg.gui.board.slot.ScopedNoOfferingsSlot;
 import us.eunoians.mcrpg.gui.board.slot.ScopedOfferingSlot;
 import us.eunoians.mcrpg.gui.board.slot.ScopedTabSlot;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
@@ -60,9 +61,7 @@ public class QuestBoardGui extends McRPGPaginatedGui {
         QuestBoardManager boardManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST_BOARD);
-        this.offerings = boardManager.getSharedOfferingsForBoard(DEFAULT_BOARD_KEY).stream()
-                .filter(o -> o.getState() == BoardOffering.State.VISIBLE)
-                .toList();
+        this.offerings = boardManager.getSharedOfferingsForBoard(DEFAULT_BOARD_KEY);
         this.scopedOfferings = List.of();
         this.hasScopedEntities = checkHasScopedEntities(player.getUUID());
     }
@@ -84,12 +83,21 @@ public class QuestBoardGui extends McRPGPaginatedGui {
             this.scopedOfferings = loadScopedOfferings(player.getUUID(), boardManager);
             this.hasScopedEntities = !scopedOfferings.isEmpty();
         } else {
-            this.offerings = boardManager.getSharedOfferingsForBoard(DEFAULT_BOARD_KEY).stream()
-                    .filter(o -> o.getState() == BoardOffering.State.VISIBLE)
-                    .toList();
+            this.offerings = boardManager.getSharedOfferingsForBoard(DEFAULT_BOARD_KEY);
             this.scopedOfferings = List.of();
             this.hasScopedEntities = checkHasScopedEntities(player.getUUID());
         }
+    }
+
+    /**
+     * Returns only the VISIBLE offerings from the cached list. Since offering objects
+     * are mutable shared references, this re-filters live state on each repaint.
+     */
+    @NotNull
+    private List<BoardOffering> getVisibleOfferings() {
+        return offerings.stream()
+                .filter(o -> o.getState() == BoardOffering.State.VISIBLE)
+                .toList();
     }
 
     @NotNull
@@ -117,18 +125,20 @@ public class QuestBoardGui extends McRPGPaginatedGui {
             setSlot(i, filler);
         }
 
-        int startIndex = page * SLOTS_PER_PAGE;
-        int endIndex = Math.min(startIndex + SLOTS_PER_PAGE, offerings.size());
+        List<BoardOffering> visible = getVisibleOfferings();
+        int zeroPage = page - 1;
+        int startIndex = zeroPage * SLOTS_PER_PAGE;
+        int endIndex = Math.min(startIndex + SLOTS_PER_PAGE, visible.size());
         for (int i = startIndex; i < endIndex; i++) {
-            setSlot(i - startIndex, new BoardOfferingSlot(offerings.get(i)));
+            setSlot(i - startIndex, new BoardOfferingSlot(visible.get(i)));
         }
 
         int navRowStart = 45;
         setSlot(navRowStart, new BoardBackSlot());
-        if (page > 0) {
+        if (zeroPage > 0) {
             setSlot(navRowStart + 3, getPreviousPageSlot());
         }
-        if (endIndex < offerings.size()) {
+        if (endIndex < visible.size()) {
             setSlot(navRowStart + 5, getNextPageSlot());
         }
 
@@ -143,10 +153,11 @@ public class QuestBoardGui extends McRPGPaginatedGui {
             setSlot(i, filler);
         }
 
+        int zeroPage = page - 1;
         if (scopedOfferings.isEmpty()) {
-            setSlot(22, new us.eunoians.mcrpg.gui.board.slot.ScopedNoOfferingsSlot());
+            setSlot(22, new ScopedNoOfferingsSlot());
         } else {
-            int startIndex = page * SLOTS_PER_PAGE;
+            int startIndex = zeroPage * SLOTS_PER_PAGE;
             int endIndex = Math.min(startIndex + SLOTS_PER_PAGE, scopedOfferings.size());
             for (int i = startIndex; i < endIndex; i++) {
                 ScopedOfferingEntry entry = scopedOfferings.get(i);
@@ -158,17 +169,17 @@ public class QuestBoardGui extends McRPGPaginatedGui {
 
         int navRowStart = 45;
         setSlot(navRowStart, new ScopedBackSlot());
-        if (page > 0) {
+        if (zeroPage > 0) {
             setSlot(navRowStart + 3, getPreviousPageSlot());
         }
-        if (!scopedOfferings.isEmpty() && (page + 1) * SLOTS_PER_PAGE < scopedOfferings.size()) {
+        if (!scopedOfferings.isEmpty() && (zeroPage + 1) * SLOTS_PER_PAGE < scopedOfferings.size()) {
             setSlot(navRowStart + 5, getNextPageSlot());
         }
     }
 
     @Override
     public int getMaximumPage() {
-        int itemCount = (mode == BoardGuiMode.SCOPED) ? scopedOfferings.size() : offerings.size();
+        int itemCount = (mode == BoardGuiMode.SCOPED) ? scopedOfferings.size() : getVisibleOfferings().size();
         return Math.max(1, (int) Math.ceil((double) itemCount / SLOTS_PER_PAGE));
     }
 

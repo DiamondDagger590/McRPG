@@ -68,7 +68,7 @@ public class QuestPoolTest extends McRPGBaseTest {
         var stage = QuestTestHelper.singleStageDef(questKey + "_stage", questKey + "_obj");
         var phase = QuestTestHelper.singlePhaseDef(us.eunoians.mcrpg.quest.definition.PhaseCompletionMode.ALL, stage);
         Map<NamespacedKey, us.eunoians.mcrpg.quest.definition.QuestDefinitionMetadata> metadata = Map.of(
-                BoardMetadata.METADATA_KEY, new BoardMetadata(boardEligible, supportedRarities, null, null)
+                BoardMetadata.METADATA_KEY, new BoardMetadata(boardEligible, supportedRarities, Set.of(), null, null)
         );
         return new QuestDefinition(
                 new NamespacedKey("mcrpg", questKey),

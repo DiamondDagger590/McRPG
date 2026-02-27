@@ -1,0 +1,165 @@
+# Mixed/multi-phase templates showcasing advanced features.
+
+quest-templates:
+  # -------------------------------------------------------------------
+  # Two-phase quest: mine then fight
+  # -------------------------------------------------------------------
+  mcrpg:template_mine_and_fight:
+    display-name-route: quest-templates.mine-and-fight
+    board-eligible: true
+    scope: mcrpg:single_player
+    supported-rarities:
+      - mcrpg:uncommon
+      - mcrpg:rare
+      - mcrpg:legendary
+    variables:
+      block_count:
+        type: RANGE
+        base:
+          min: 32
+          max: 80
+      mob_count:
+        type: RANGE
+        base:
+          min: 10
+          max: 30
+    phases:
+      mine_phase:
+        completion-mode: ALL
+        stages:
+          gather_resources:
+            objectives:
+              mine_ores:
+                type: mcrpg:block_break
+                required-progress: "{block_count}"
+                config:
+                  blocks:
+                    - IRON_ORE
+                    - DEEPSLATE_IRON_ORE
+                    - GOLD_ORE
+                    - DEEPSLATE_GOLD_ORE
+      fight_phase:
+        completion-mode: ALL
+        stages:
+          fight_monsters:
+            objectives:
+              kill_hostiles:
+                type: mcrpg:mob_kill
+                required-progress: "{mob_count}"
+                config:
+                  mobs:
+                    - ZOMBIE
+                    - SKELETON
+                    - CREEPER
+                    - SPIDER
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: "{block_count} * 4"
+      swords_xp:
+        type: mcrpg:experience
+        skill: SWORDS
+        amount: "{mob_count} * 8"
+
+  # -------------------------------------------------------------------
+  # Branching template: choose your path (ANY completion)
+  # -------------------------------------------------------------------
+  mcrpg:template_choose_path:
+    display-name-route: quest-templates.choose-path
+    board-eligible: true
+    scope: mcrpg:single_player
+    supported-rarities:
+      - mcrpg:common
+      - mcrpg:uncommon
+      - mcrpg:rare
+    variables:
+      amount:
+        type: RANGE
+        base:
+          min: 20
+          max: 50
+    phases:
+      choose:
+        completion-mode: ANY
+        stages:
+          mining_path:
+            objectives:
+              mine_coal:
+                type: mcrpg:block_break
+                required-progress: "{amount}"
+                config:
+                  blocks:
+                    - COAL_ORE
+                    - DEEPSLATE_COAL_ORE
+          combat_path:
+            objectives:
+              kill_zombies:
+                type: mcrpg:mob_kill
+                required-progress: "{amount}"
+                config:
+                  mobs:
+                    - ZOMBIE
+                    - HUSK
+    rewards:
+      versatile_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: "{amount} * 5"
+
+  # -------------------------------------------------------------------
+  # Condition-gated template: bonus phase only for rare+
+  # Uses Phase 4 condition system
+  # -------------------------------------------------------------------
+  mcrpg:template_lucky_strike:
+    display-name-route: quest-templates.lucky-strike
+    board-eligible: true
+    scope: mcrpg:single_player
+    supported-rarities:
+      - mcrpg:common
+      - mcrpg:uncommon
+      - mcrpg:rare
+      - mcrpg:legendary
+    variables:
+      ore_count:
+        type: RANGE
+        base:
+          min: 16
+          max: 48
+    phases:
+      main_phase:
+        completion-mode: ALL
+        stages:
+          mine_iron:
+            objectives:
+              break_iron:
+                type: mcrpg:block_break
+                required-progress: "{ore_count}"
+                config:
+                  blocks:
+                    - IRON_ORE
+                    - DEEPSLATE_IRON_ORE
+      bonus_phase:
+        condition:
+          type: mcrpg:rarity_gate
+          min-rarity: rare
+        completion-mode: ALL
+        stages:
+          mine_diamonds:
+            objectives:
+              break_diamonds:
+                type: mcrpg:block_break
+                required-progress: 8
+                config:
+                  blocks:
+                    - DIAMOND_ORE
+                    - DEEPSLATE_DIAMOND_ORE
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: "{ore_count} * 5"
+      bonus_reward:
+        type: mcrpg:scalable_command
+        command: "give {player} diamond {amount}"
+        base-amount: 3

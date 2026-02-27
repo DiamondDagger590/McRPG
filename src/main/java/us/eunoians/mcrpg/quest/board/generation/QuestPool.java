@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.event.board.TemplateQuestGenerateEvent;
 import us.eunoians.mcrpg.quest.board.BoardMetadata;
@@ -18,6 +19,7 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,10 +51,30 @@ public class QuestPool {
      */
     @NotNull
     public List<NamespacedKey> getEligibleDefinitions(@NotNull NamespacedKey rolledRarity) {
+        return getEligibleDefinitions(rolledRarity, null, Set.of());
+    }
+
+    /**
+     * Gets hand-crafted definitions eligible for a specific rolled rarity, optionally
+     * filtered by refresh type and excluding already-selected keys.
+     *
+     * @param rolledRarity    the rarity to filter by
+     * @param refreshType     the refresh type string (e.g. "DAILY") to filter by, or {@code null} to skip
+     * @param excludeKeys     definition keys to exclude from the results
+     * @return the list of eligible definition keys
+     */
+    @NotNull
+    public List<NamespacedKey> getEligibleDefinitions(@NotNull NamespacedKey rolledRarity,
+                                                      @Nullable String refreshType,
+                                                      @NotNull Set<NamespacedKey> excludeKeys) {
         return definitionRegistry.getAll().stream()
+                .filter(def -> !excludeKeys.contains(def.getQuestKey()))
                 .filter(def -> def.getBoardMetadata()
                         .filter(meta -> meta.boardEligible()
-                                && meta.supportedRarities().contains(rolledRarity))
+                                && meta.supportedRarities().contains(rolledRarity)
+                                && (refreshType == null
+                                    || meta.supportedRefreshTypes().isEmpty()
+                                    || meta.supportedRefreshTypes().contains(refreshType)))
                         .isPresent())
                 .map(QuestDefinition::getQuestKey)
                 .toList();
@@ -143,6 +165,8 @@ public class QuestPool {
      * @param templateEngine the template engine for generating from templates
      * @param hcWeight       the configured weight for hand-crafted quest selection
      * @param templateWeight the configured weight for template quest selection
+     * @param refreshType    the refresh type string (e.g. "DAILY") for filtering, or {@code null} to skip
+     * @param excludeKeys    definition keys already selected this rotation to prevent duplicates
      * @return the selection result, or empty if no quest could be produced for this slot
      */
     @NotNull
@@ -151,16 +175,18 @@ public class QuestPool {
             @NotNull Random random,
             @NotNull QuestTemplateEngine templateEngine,
             int hcWeight,
-            int templateWeight) {
+            int templateWeight,
+            @Nullable String refreshType,
+            @NotNull Set<NamespacedKey> excludeKeys) {
 
-        List<NamespacedKey> hcEligible = getEligibleDefinitions(rolledRarity);
+        List<NamespacedKey> hcEligible = getEligibleDefinitions(rolledRarity, refreshType, excludeKeys);
         List<QuestTemplate> tmplEligible = getEligibleTemplates(rolledRarity);
 
         boolean hasHc = !hcEligible.isEmpty();
         boolean hasTmpl = !tmplEligible.isEmpty();
 
         if (!hasHc && !hasTmpl) {
-            return backfillFromAnyRarity(rolledRarity, random);
+            return backfillFromAnyRarity(rolledRarity, random, excludeKeys);
         }
 
         boolean chooseHandCrafted = resolveSourceChoice(hasHc, hasTmpl, hcWeight, templateWeight, random);
@@ -173,13 +199,25 @@ public class QuestPool {
             if (generated.isPresent()) {
                 return Optional.of(new SlotSelection.TemplateGenerated(generated.get(), rolledRarity));
             }
-            // Template generation failed — fall back to hand-crafted if available
             if (hasHc) {
                 NamespacedKey selected = hcEligible.get(random.nextInt(hcEligible.size()));
                 return Optional.of(new SlotSelection.HandCrafted(selected, rolledRarity));
             }
             return Optional.empty();
         }
+    }
+
+    /**
+     * Overload for backward compatibility (no refresh type filter or exclusion).
+     */
+    @NotNull
+    public Optional<SlotSelection> selectForSlot(
+            @NotNull NamespacedKey rolledRarity,
+            @NotNull Random random,
+            @NotNull QuestTemplateEngine templateEngine,
+            int hcWeight,
+            int templateWeight) {
+        return selectForSlot(rolledRarity, random, templateEngine, hcWeight, templateWeight, null, Set.of());
     }
 
     /**
@@ -210,12 +248,16 @@ public class QuestPool {
 
     /**
      * Backfill: when neither hand-crafted nor templates match the rolled rarity,
-     * try all board-eligible hand-crafted definitions regardless of rarity.
+     * try all board-eligible hand-crafted definitions regardless of rarity (but still excluding
+     * already-selected keys).
      */
     @NotNull
     private Optional<SlotSelection> backfillFromAnyRarity(@NotNull NamespacedKey rolledRarity,
-                                                          @NotNull Random random) {
-        List<NamespacedKey> allEligible = getAllBoardEligibleDefinitions();
+                                                          @NotNull Random random,
+                                                          @NotNull Set<NamespacedKey> excludeKeys) {
+        List<NamespacedKey> allEligible = getAllBoardEligibleDefinitions().stream()
+                .filter(key -> !excludeKeys.contains(key))
+                .toList();
         if (allEligible.isEmpty()) return Optional.empty();
         NamespacedKey selected = allEligible.get(random.nextInt(allEligible.size()));
         return Optional.of(new SlotSelection.HandCrafted(selected, rolledRarity));

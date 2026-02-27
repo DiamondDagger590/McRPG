@@ -229,6 +229,10 @@ public final class GeneratedQuestDefinitionSerializer {
         if (!config.isEmpty()) {
             objObj.add("config", GSON.toJsonTree(config));
         }
+
+        objective.getRewardDistribution()
+                .ifPresent(dist -> objObj.add("reward_distribution", serializeDistribution(dist)));
+
         return objObj;
     }
 
@@ -267,7 +271,7 @@ public final class GeneratedQuestDefinitionSerializer {
 
                 for (JsonElement objElement : objectivesArray) {
                     JsonObject objObj = objElement.getAsJsonObject();
-                    objectives.add(deserializeObjective(objObj, objectiveTypeRegistry, questKeyString));
+                    objectives.add(deserializeObjective(objObj, objectiveTypeRegistry, rewardTypeRegistry, questKeyString));
                 }
 
                 RewardDistributionConfig stageDist = stageObj.has("reward_distribution")
@@ -300,6 +304,7 @@ public final class GeneratedQuestDefinitionSerializer {
     @NotNull
     private static QuestObjectiveDefinition deserializeObjective(@NotNull JsonObject objObj,
                                                                  @NotNull QuestObjectiveTypeRegistry objectiveTypeRegistry,
+                                                                 @NotNull QuestRewardTypeRegistry rewardTypeRegistry,
                                                                  @NotNull String questKeyString) {
         NamespacedKey objectiveKey = NamespacedKey.fromString(objObj.get("key").getAsString());
         NamespacedKey typeKey = NamespacedKey.fromString(objObj.get("type").getAsString());
@@ -317,7 +322,12 @@ public final class GeneratedQuestDefinitionSerializer {
             configuredType = createConfiguredType(baseType, configMap, questKeyString);
         }
 
-        return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, List.of(), null);
+        RewardDistributionConfig objDist = objObj.has("reward_distribution")
+                ? deserializeDistribution(objObj.getAsJsonObject("reward_distribution"),
+                        rewardTypeRegistry, questKeyString)
+                : null;
+
+        return new QuestObjectiveDefinition(objectiveKey, configuredType, requiredProgress, List.of(), objDist);
     }
 
     /**
@@ -379,7 +389,7 @@ public final class GeneratedQuestDefinitionSerializer {
                     ? NamespacedKey.fromString(tierObj.get("required_rarity").getAsString())
                     : null;
 
-            tiers.add(new DistributionTierConfig(tierKey, typeKey, splitMode, rewards, typeParameters, minRarity, requiredRarity));
+            tiers.add(new DistributionTierConfig(tierKey, typeKey, splitMode, rewards, typeParameters, minRarity, requiredRarity, true));
         }
 
         return new RewardDistributionConfig(tiers);

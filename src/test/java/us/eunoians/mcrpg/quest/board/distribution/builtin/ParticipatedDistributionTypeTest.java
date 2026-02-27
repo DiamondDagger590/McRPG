@@ -21,13 +21,13 @@ public class ParticipatedDistributionTypeTest extends McRPGBaseTest {
 
     private final DistributionTierConfig tier = new DistributionTierConfig("test",
             ParticipatedDistributionType.KEY, RewardSplitMode.INDIVIDUAL, List.of(),
-            Map.of(), null, null);
+            Map.of(), null, null, true);
 
     @DisplayName("single contributor qualifies")
     @Test
     void singleContributor() {
         UUID player = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(player, 50L), 50, Set.of(player));
+        var snapshot = new ContributionSnapshot(Map.of(player, 50L), 50, Set.of(player), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertEquals(Set.of(player), result);
@@ -37,7 +37,7 @@ public class ParticipatedDistributionTypeTest extends McRPGBaseTest {
     @Test
     void multipleContributors() {
         UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(p1, 30L, p2, 20L, p3, 10L), 60, Set.of(p1, p2, p3));
+        var snapshot = new ContributionSnapshot(Map.of(p1, 30L, p2, 20L, p3, 10L), 60, Set.of(p1, p2, p3), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertEquals(3, result.size());
@@ -47,7 +47,7 @@ public class ParticipatedDistributionTypeTest extends McRPGBaseTest {
     @Test
     void zeroContributionExcluded() {
         UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(p1, 100L, p2, 0L), 100, Set.of(p1, p2));
+        var snapshot = new ContributionSnapshot(Map.of(p1, 100L, p2, 0L), 100, Set.of(p1, p2), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertEquals(1, result.size());
@@ -57,7 +57,7 @@ public class ParticipatedDistributionTypeTest extends McRPGBaseTest {
     @DisplayName("empty contributions returns empty set")
     @Test
     void emptyContributions() {
-        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of());
+        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of(), null);
 
         Set<UUID> result = type.resolve(snapshot, tier);
         assertTrue(result.isEmpty());

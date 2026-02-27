@@ -47,18 +47,18 @@ public final class DistributionTierConfig {
     private final String tierKey;
     private final NamespacedKey typeKey;
     private final RewardSplitMode splitMode;
-    private final List<QuestRewardType> rewards;
+    private final List<DistributionRewardEntry> rewardEntries;
     private final Map<String, Object> typeParameters;
     private final NamespacedKey minRarity;
     private final NamespacedKey requiredRarity;
 
     /**
-     * Constructs a new tier config with an explicit type-parameters map.
+     * Constructs a new tier config with {@link DistributionRewardEntry} list.
      *
      * @param tierKey        a human-readable identifier for this tier (used in logging)
      * @param typeKey        the {@link NamespacedKey} of the {@link RewardDistributionType} to use
      * @param splitMode      how rewards are divided among qualifying players
-     * @param rewards        the list of rewards granted to qualifying players
+     * @param rewardEntries  the list of reward entries granted to qualifying players
      * @param typeParameters arbitrary key-value parameters consumed by the distribution type
      * @param minRarity      if set, the quest's rarity weight must be {@code <=} this rarity's weight
      * @param requiredRarity if set, the quest's rarity must exactly match this key
@@ -66,17 +66,34 @@ public final class DistributionTierConfig {
     public DistributionTierConfig(@NotNull String tierKey,
                                   @NotNull NamespacedKey typeKey,
                                   @NotNull RewardSplitMode splitMode,
-                                  @NotNull List<QuestRewardType> rewards,
+                                  @NotNull List<DistributionRewardEntry> rewardEntries,
                                   @NotNull Map<String, Object> typeParameters,
                                   @Nullable NamespacedKey minRarity,
                                   @Nullable NamespacedKey requiredRarity) {
         this.tierKey = tierKey;
         this.typeKey = typeKey;
         this.splitMode = splitMode;
-        this.rewards = List.copyOf(rewards);
+        this.rewardEntries = List.copyOf(rewardEntries);
         this.typeParameters = Map.copyOf(typeParameters);
         this.minRarity = minRarity;
         this.requiredRarity = requiredRarity;
+    }
+
+    /**
+     * Backward-compatible constructor accepting raw reward types.
+     * Wraps each reward in a {@link DistributionRewardEntry} with default settings.
+     */
+    public DistributionTierConfig(@NotNull String tierKey,
+                                  @NotNull NamespacedKey typeKey,
+                                  @NotNull RewardSplitMode splitMode,
+                                  @NotNull List<QuestRewardType> rewards,
+                                  @NotNull Map<String, Object> typeParameters,
+                                  @Nullable NamespacedKey minRarity,
+                                  @Nullable NamespacedKey requiredRarity,
+                                  @SuppressWarnings("unused") boolean legacyOverload) {
+        this(tierKey, typeKey, splitMode,
+                rewards.stream().map(DistributionRewardEntry::new).toList(),
+                typeParameters, minRarity, requiredRarity);
     }
 
     /**
@@ -112,16 +129,26 @@ public final class DistributionTierConfig {
     }
 
     /**
-     * Gets the immutable list of rewards granted to qualifying players.
-     * In {@link RewardSplitMode#INDIVIDUAL} mode, each player receives the full
-     * list; in split modes, amounts are scaled via
-     * {@link QuestRewardType#withAmountMultiplier(double)}.
+     * Gets the immutable list of reward entries with per-reward distribution config.
+     *
+     * @return the reward entry list
+     */
+    @NotNull
+    public List<DistributionRewardEntry> getRewardEntries() {
+        return rewardEntries;
+    }
+
+    /**
+     * Convenience accessor returning the raw reward types without entry metadata.
+     * Preserves backward compatibility with callers that don't need pot-behavior info.
      *
      * @return the reward list
      */
     @NotNull
     public List<QuestRewardType> getRewards() {
-        return rewards;
+        return rewardEntries.stream()
+                .map(DistributionRewardEntry::reward)
+                .toList();
     }
 
     /**

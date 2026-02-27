@@ -73,11 +73,11 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
                     placeholders.put("end_time", DATE_FORMAT.format(new Date(t))));
             questInstance.getExpirationTime().ifPresent(t ->
                     placeholders.put("expiration_time", DATE_FORMAT.format(new Date(t))));
-        }
-
-        if (completionRecord != null) {
+        } else if (completionRecord != null) {
             placeholders.put("quest_state", "COMPLETED");
             placeholders.put("completed_date", DATE_FORMAT.format(new Date(completionRecord.completedAt())));
+        } else {
+            placeholders.put("quest_state", "PREVIEW");
         }
 
         int phaseCount = defOpt.map(QuestDefinition::getPhaseCount).orElse(0);

@@ -1,0 +1,131 @@
+# Daily combat quests for the quest board.
+
+quests:
+  # -------------------------------------------------------------------
+  # Easy: Kill common hostile mobs
+  # -------------------------------------------------------------------
+  mcrpg:daily_pest_control:
+    scope: mcrpg:single_player
+    expiration: 24h
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:common
+        - mcrpg:uncommon
+      supported-refresh-types:
+        - DAILY
+    rewards:
+      swords_xp:
+        type: mcrpg:experience
+        skill: SWORDS
+        amount: 200
+    phases:
+      hunt:
+        completion-mode: ALL
+        stages:
+          kill_undead:
+            key: mcrpg:daily_kill_undead
+            objectives:
+              slay_zombies:
+                key: mcrpg:daily_slay_zombies
+                type: mcrpg:mob_kill
+                required-progress: 20
+                config:
+                  mobs:
+                    - ZOMBIE
+                    - HUSK
+                    - DROWNED
+
+  # -------------------------------------------------------------------
+  # Medium: Kill skeletons and spiders
+  # -------------------------------------------------------------------
+  mcrpg:daily_dungeon_sweep:
+    scope: mcrpg:single_player
+    expiration: 24h
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:common
+        - mcrpg:uncommon
+        - mcrpg:rare
+      supported-refresh-types:
+        - DAILY
+    rewards:
+      swords_xp:
+        type: mcrpg:experience
+        skill: SWORDS
+        amount: 350
+    phases:
+      clear:
+        completion-mode: ALL
+        stages:
+          kill_ranged:
+            key: mcrpg:daily_kill_ranged
+            objectives:
+              slay_skeletons:
+                key: mcrpg:daily_slay_skeletons
+                type: mcrpg:mob_kill
+                required-progress: 15
+                config:
+                  mobs:
+                    - SKELETON
+                    - STRAY
+          kill_spiders:
+            key: mcrpg:daily_kill_spiders
+            objectives:
+              slay_spiders:
+                key: mcrpg:daily_slay_spiders
+                type: mcrpg:mob_kill
+                required-progress: 10
+                config:
+                  mobs:
+                    - SPIDER
+                    - CAVE_SPIDER
+
+  # -------------------------------------------------------------------
+  # Hard: Kill Nether mobs
+  # -------------------------------------------------------------------
+  mcrpg:daily_nether_hunt:
+    scope: mcrpg:single_player
+    expiration: 24h
+    board-metadata:
+      board-eligible: true
+      supported-rarities:
+        - mcrpg:rare
+        - mcrpg:legendary
+      supported-refresh-types:
+        - DAILY
+    rewards:
+      swords_xp:
+        type: mcrpg:experience
+        skill: SWORDS
+        amount: 600
+      blaze_bonus:
+        type: mcrpg:command
+        commands:
+          - "give {player} blaze_rod 4"
+    phases:
+      nether:
+        completion-mode: ALL
+        stages:
+          kill_blaze:
+            key: mcrpg:daily_kill_blaze
+            objectives:
+              slay_blazes:
+                key: mcrpg:daily_slay_blazes
+                type: mcrpg:mob_kill
+                required-progress: 10
+                config:
+                  mobs:
+                    - BLAZE
+          kill_piglin:
+            key: mcrpg:daily_kill_piglin
+            objectives:
+              slay_piglins:
+                key: mcrpg:daily_slay_piglins
+                type: mcrpg:mob_kill
+                required-progress: 15
+                config:
+                  mobs:
+                    - PIGLIN_BRUTE
+                    - ZOMBIFIED_PIGLIN

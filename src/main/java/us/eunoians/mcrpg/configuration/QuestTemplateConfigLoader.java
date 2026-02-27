@@ -7,12 +7,15 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.quest.board.template.ObjectiveSelectionConfig;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplate;
 import us.eunoians.mcrpg.quest.board.template.RarityOverride;
 import us.eunoians.mcrpg.quest.board.template.TemplateObjectiveDefinition;
 import us.eunoians.mcrpg.quest.board.template.TemplatePhaseDefinition;
 import us.eunoians.mcrpg.quest.board.template.TemplateRewardDefinition;
 import us.eunoians.mcrpg.quest.board.template.TemplateStageDefinition;
+import us.eunoians.mcrpg.quest.board.template.condition.ConditionParser;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.quest.board.template.variable.Pool;
 import us.eunoians.mcrpg.quest.board.template.variable.PoolVariable;
 import us.eunoians.mcrpg.quest.board.template.variable.RangeVariable;
@@ -220,10 +223,12 @@ public final class QuestTemplateConfigLoader {
         RewardDistributionConfig rewardDistribution = QuestConfigLoader.parseRewardDistribution(
                 section, fileName, key.toString()).orElse(null);
 
+        TemplateCondition prerequisite = ConditionParser.parsePrerequisiteBlock(section);
+
         validateExpressions(variables, phases, rewards, key.toString());
 
         return new QuestTemplate(key, displayNameRoute, boardEligible, scopeProviderKey,
-                supportedRarities, rarityOverrides, variables, phases, rewards, rewardDistribution, null);
+                supportedRarities, rarityOverrides, variables, phases, rewards, rewardDistribution, prerequisite, null);
     }
 
     /**
@@ -425,6 +430,8 @@ public final class QuestTemplateConfigLoader {
                         + templateKey + " must have at least one stage");
             }
 
+            TemplateCondition phaseCondition = ConditionParser.parseConditionBlock(phaseSection);
+
             List<TemplateStageDefinition> stages = new ArrayList<>();
             for (String stageLabel : stagesSection.getRoutesAsStrings(false)) {
                 Section stageSection = stagesSection.getSection(stageLabel);
@@ -439,7 +446,7 @@ public final class QuestTemplateConfigLoader {
                         + templateKey + " must have at least one stage");
             }
 
-            phases.add(new TemplatePhaseDefinition(mode, stages));
+            phases.add(new TemplatePhaseDefinition(mode, stages, phaseCondition));
         }
         return phases;
     }
@@ -461,6 +468,9 @@ public final class QuestTemplateConfigLoader {
                                                          @NotNull String templateKey,
                                                          @NotNull String phaseLabel,
                                                          @NotNull String stageLabel) {
+        TemplateCondition stageCondition = ConditionParser.parseConditionBlock(stageSection);
+        ObjectiveSelectionConfig selectionConfig = parseObjectiveSelectionConfig(stageSection);
+
         Section objectivesSection = stageSection.getSection("objectives");
         if (objectivesSection == null) {
             throw new IllegalArgumentException("Stage '" + stageLabel + "' in phase '" + phaseLabel
@@ -494,8 +504,12 @@ public final class QuestTemplateConfigLoader {
                         + templateKey + " is missing 'required-progress'");
             }
 
+            TemplateCondition objCondition = ConditionParser.parseConditionBlock(objSection);
+            int weight = objSection.getInt("weight", 1);
+
             Map<String, Object> config = parseConfigMap(objSection.getSection("config"));
-            objectives.add(new TemplateObjectiveDefinition(typeKey, requiredProgressExpression, config));
+            objectives.add(new TemplateObjectiveDefinition(
+                    typeKey, requiredProgressExpression, config, objCondition, weight));
         }
 
         if (objectives.isEmpty()) {
@@ -503,7 +517,31 @@ public final class QuestTemplateConfigLoader {
                     + "' of template " + templateKey + " must have at least one objective");
         }
 
-        return new TemplateStageDefinition(objectives);
+        return new TemplateStageDefinition(objectives, stageCondition, selectionConfig);
+    }
+
+    /**
+     * Parses an optional {@code objective-selection} block from a stage section.
+     *
+     * @param stageSection the stage's YAML section
+     * @return the parsed selection config, or null if absent
+     */
+    @Nullable
+    private ObjectiveSelectionConfig parseObjectiveSelectionConfig(@NotNull Section stageSection) {
+        Section selSection = stageSection.getSection("objective-selection");
+        if (selSection == null) {
+            return null;
+        }
+        String modeStr = selSection.getString("mode", "ALL");
+        ObjectiveSelectionConfig.ObjectiveSelectionMode mode;
+        try {
+            mode = ObjectiveSelectionConfig.ObjectiveSelectionMode.valueOf(modeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid objective-selection mode: " + modeStr);
+        }
+        int minCount = selSection.getInt("min-count", 1);
+        int maxCount = selSection.getInt("max-count", minCount);
+        return new ObjectiveSelectionConfig(mode, minCount, maxCount);
     }
 
     /**
@@ -590,6 +628,9 @@ public final class QuestTemplateConfigLoader {
                                      @NotNull List<TemplatePhaseDefinition> phases,
                                      @NotNull List<TemplateRewardDefinition> rewards,
                                      @NotNull String templateKey) {
+        Set<String> declaredNames = new HashSet<>(variables.keySet());
+        declaredNames.add("difficulty");
+
         Map<String, String> expressionsToValidate = new LinkedHashMap<>();
 
         for (TemplatePhaseDefinition phase : phases) {
@@ -602,14 +643,11 @@ public final class QuestTemplateConfigLoader {
 
         for (TemplateRewardDefinition reward : rewards) {
             for (Map.Entry<String, Object> entry : reward.config().entrySet()) {
-                if (entry.getValue() instanceof String s && !s.isEmpty()) {
+                if (entry.getValue() instanceof String s && !s.isEmpty() && referencesAnyVariable(s, declaredNames)) {
                     expressionsToValidate.put(s, "reward." + entry.getKey());
                 }
             }
         }
-
-        Set<String> declaredNames = new HashSet<>(variables.keySet());
-        declaredNames.add("difficulty");
 
         for (Map.Entry<String, String> entry : expressionsToValidate.entrySet()) {
             String expression = entry.getKey();
@@ -632,6 +670,20 @@ public final class QuestTemplateConfigLoader {
                         + "' has invalid expression: '" + expression + "' -- " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Checks whether a string value references any declared template variable name.
+     * Used to distinguish plain literal config values (e.g. {@code "SWORDS"}) from
+     * expression strings that should be validated (e.g. {@code "base_count * 5"}).
+     */
+    private boolean referencesAnyVariable(@NotNull String value, @NotNull Set<String> declaredNames) {
+        for (String varName : declaredNames) {
+            if (value.contains(varName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

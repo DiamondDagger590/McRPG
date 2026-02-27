@@ -94,6 +94,15 @@ gui:
         name: "<gray>Coming Soon"
         lore:
           - '<gray>Quest Board coming in a future update!'
+    board-slot:
+      display-item:
+        material: OAK_SIGN
+        name: '<gold>Quest Board'
+        lore:
+          - '<gray>Browse and accept daily'
+          - '<gray>and weekly quests.'
+          - ''
+          - '<yellow>Click to open'
   # This GUI shows the quest board offerings.
   quest-board:
     title: '<gold>Quest Board'
@@ -102,6 +111,26 @@ gui:
       - '<gray>Category: <gold><category>'
       - ''
       - '<yellow>Click to accept'
+    # Board offering slot. Placeholders: <quest_name>, <rarity>, <category>, <board_quests>, <max_quests>, <count_color>
+    offering-slot:
+      display-item:
+        material: PAPER
+        name: '<gold><quest_name>'
+        lore:
+          - '<gray>Rarity: <yellow><rarity>'
+          - '<gray>Category: <aqua><category>'
+          - ''
+          - '<gray>Board Quests: <count_color><board_quests>/<max_quests>'
+          - ''
+          - '<green>Left-click to accept'
+          - '<yellow>Right-click to preview'
+    no-offerings-slot:
+      display-item:
+        material: BARRIER
+        name: '<red>No Offerings'
+        lore:
+          - '<gray>There are no quest offerings available right now.'
+          - '<gray>Check back after the next rotation.'
     accept: '<green>Quest accepted!'
     slots-full: '<red>You have no available quest slots.'
     abandoned: '<yellow>Quest abandoned.'
@@ -135,6 +164,27 @@ gui:
     group-slots-full: '<red>This group has no available quest slots.'
     # Appended to each scoped offering item. Placeholder: <entity_name>
     group-entity-lore: '<gray>Group: <gold><entity_name>'
+    # Offering lore components (Phase 4). Placeholders: <category>, <type>, <amount>, <time>
+    offering-category: '<gray>Category: <gold><category>'
+    objectives-header: '<gray>Objectives:'
+    # Placeholders: <type> (objective type key), <amount> (required progress)
+    objective-line: '<white>  • <type>: <gold><amount>'
+    rewards-header: '<gray>Rewards:'
+    # Placeholders: <type> (reward type key), <amount> (numeric amount)
+    reward-line: '<white>  • <type>: <gold><amount>'
+    # Placeholder: <type> (reward type key, no numeric amount available)
+    reward-line-no-amount: '<white>  • <type>'
+    # Placeholder: <time> (formatted time remaining, e.g. "2h 30m")
+    expires-in: '<gray>Expires in: <yellow><time>'
+    click-to-accept: '<green>Click to accept'
+    # Distribution preview components for scoped quests
+    distribution-header: '<gray>Reward Distribution:'
+    # Placeholder: <tier> (tier identifier)
+    distribution-tier: '<white>  <tier>:'
+    preview-qualifies: '<green>  ✔ You qualify for this tier'
+    preview-not-qualifies: '<red>  ✘ You do not yet qualify'
+    # Placeholder: <contribution>, <percent>
+    preview-contribution: '<gray>  Your contribution: <gold><contribution> <gray>(<gold><percent>%<gray>)'
   # This GUI shows all active quests for the player.
   active-quest-gui:
     title: '<gold>Active Quests'
@@ -247,6 +297,15 @@ gui:
         lore:
           - '<gray>Progress: <gold><progress>/<required>'
           - '<gray>State: <gold><objective_state>'
+    # Reward summary slot shown in board preview. Placeholders: <quest_name>, <reward_list>
+    reward-slot:
+      display-item:
+        material: GOLD_INGOT
+        name: "<gold>Rewards"
+        lore:
+          - '<gray>Rewards for completing this quest:'
+          - ''
+          - '<reward_list>'
   # This GUI allows players to view and edit their abilities.
   ability-gui:
     title: '<gold>Viewing Abilities'

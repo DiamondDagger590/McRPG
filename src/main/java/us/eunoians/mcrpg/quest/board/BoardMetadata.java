@@ -18,21 +18,24 @@ import java.util.stream.Collectors;
  * Board-specific metadata attached to a {@link us.eunoians.mcrpg.quest.definition.QuestDefinition}.
  * <p>
  * Controls whether a quest is eligible for the quest board, which rarity tiers it can appear
- * under, and optional acceptance cooldown behavior.
+ * under, which refresh types it supports, and optional acceptance cooldown behavior.
  * <p>
  * For hand-crafted quests in Phase 1, rarity affects <b>appearance frequency only</b> — which
  * slots the quest can appear in. Difficulty/reward multipliers are cosmetic; mechanical scaling
  * only applies to template-generated quests (Phase 2+).
  *
- * @param boardEligible      whether this quest can appear on the board
- * @param supportedRarities  the set of rarity keys this quest is eligible for
- * @param acceptanceCooldown optional cooldown after accepting this quest before it can appear again
- * @param cooldownScope      the scope of the cooldown ({@code "GLOBAL"}, {@code "PLAYER"}, or {@code "SCOPE_ENTITY"}),
- *                           or {@code null} if no cooldown
+ * @param boardEligible         whether this quest can appear on the board
+ * @param supportedRarities     the set of rarity keys this quest is eligible for
+ * @param supportedRefreshTypes the set of refresh type strings (e.g. "DAILY", "WEEKLY") this quest is eligible for;
+ *                              empty means all refresh types are accepted
+ * @param acceptanceCooldown    optional cooldown after accepting this quest before it can appear again
+ * @param cooldownScope         the scope of the cooldown ({@code "GLOBAL"}, {@code "PLAYER"}, or {@code "SCOPE_ENTITY"}),
+ *                              or {@code null} if no cooldown
  */
 public record BoardMetadata(
         boolean boardEligible,
         @NotNull Set<NamespacedKey> supportedRarities,
+        @NotNull Set<String> supportedRefreshTypes,
         @Nullable Duration acceptanceCooldown,
         @Nullable String cooldownScope
 ) implements QuestDefinitionMetadata {
@@ -54,6 +57,9 @@ public record BoardMetadata(
         map.put("supported-rarities", supportedRarities.stream()
                 .map(NamespacedKey::toString)
                 .toList());
+        if (!supportedRefreshTypes.isEmpty()) {
+            map.put("supported-refresh-types", List.copyOf(supportedRefreshTypes));
+        }
         if (acceptanceCooldown != null) {
             map.put("acceptance-cooldown-ms", acceptanceCooldown.toMillis());
         }
@@ -82,6 +88,14 @@ public record BoardMetadata(
             }
         }
 
+        Set<String> refreshTypes = new LinkedHashSet<>();
+        Object refreshObj = data.get("supported-refresh-types");
+        if (refreshObj instanceof List<?> rtList) {
+            for (Object item : rtList) {
+                refreshTypes.add(item.toString().toUpperCase());
+            }
+        }
+
         Duration cooldown = null;
         Object cooldownMs = data.get("acceptance-cooldown-ms");
         if (cooldownMs instanceof Number number) {
@@ -90,6 +104,6 @@ public record BoardMetadata(
 
         String scope = data.get("cooldown-scope") instanceof String s ? s : null;
 
-        return new BoardMetadata(eligible, Set.copyOf(rarities), cooldown, scope);
+        return new BoardMetadata(eligible, Set.copyOf(rarities), Set.copyOf(refreshTypes), cooldown, scope);
     }
 }

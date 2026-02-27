@@ -22,6 +22,9 @@ import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailObjectiveSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailOverviewSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailPhaseSlot;
+import us.eunoians.mcrpg.gui.quest.slot.QuestDetailRewardSlot;
+import us.eunoians.mcrpg.gui.board.QuestBoardGui;
+import us.eunoians.mcrpg.quest.board.BoardOffering;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
@@ -53,15 +56,22 @@ public class QuestDetailGui extends McRPGPaginatedGui {
     private final QuestInstance questInstance;
     @Nullable
     private final CompletionRecord completionRecord;
+    @Nullable
+    private final QuestDefinition previewDefinition;
+    @Nullable
+    private final BoardOffering previewOffering;
     private final Player player;
     private final boolean fromHistory;
+    private final boolean boardPreview;
     private final List<Slot<McRPGPlayer>> contentSlots;
 
     private QuestDetailGui(@NotNull McRPGPlayer mcRPGPlayer,
                            @NotNull NamespacedKey questKey,
                            @Nullable QuestInstance questInstance,
                            @Nullable CompletionRecord completionRecord,
-                           boolean fromHistory) {
+                           boolean fromHistory,
+                           @Nullable QuestDefinition previewDefinition,
+                           @Nullable BoardOffering previewOffering) {
         super(mcRPGPlayer);
         this.player = mcRPGPlayer.getAsBukkitPlayer()
                 .orElseThrow(() -> new CorePlayerOfflineException(mcRPGPlayer));
@@ -69,6 +79,9 @@ public class QuestDetailGui extends McRPGPaginatedGui {
         this.questInstance = questInstance;
         this.completionRecord = completionRecord;
         this.fromHistory = fromHistory;
+        this.boardPreview = previewDefinition != null;
+        this.previewDefinition = previewDefinition;
+        this.previewOffering = previewOffering;
         this.contentSlots = buildContentSlots(mcRPGPlayer);
     }
 
@@ -78,7 +91,7 @@ public class QuestDetailGui extends McRPGPaginatedGui {
     @NotNull
     public static QuestDetailGui forActiveQuest(@NotNull McRPGPlayer player,
                                                 @NotNull QuestInstance questInstance) {
-        return new QuestDetailGui(player, questInstance.getQuestKey(), questInstance, null, false);
+        return new QuestDetailGui(player, questInstance.getQuestKey(), questInstance, null, false, null, null);
     }
 
     /**
@@ -91,21 +104,36 @@ public class QuestDetailGui extends McRPGPaginatedGui {
         if (key == null) {
             key = new NamespacedKey("mcrpg", record.definitionKey());
         }
-        return new QuestDetailGui(player, key, null, record, true);
+        return new QuestDetailGui(player, key, null, record, true, null, null);
+    }
+
+    /**
+     * Creates a preview GUI for a board offering before the player accepts it.
+     * Shows the quest's phases, objectives, and rewards without needing an active instance.
+     */
+    @NotNull
+    public static QuestDetailGui forBoardPreview(@NotNull McRPGPlayer player,
+                                                 @NotNull QuestDefinition definition,
+                                                 @NotNull BoardOffering offering) {
+        return new QuestDetailGui(player, definition.getQuestKey(), null, null, false, definition, offering);
     }
 
     @NotNull
     private List<Slot<McRPGPlayer>> buildContentSlots(@NotNull McRPGPlayer player) {
         List<Slot<McRPGPlayer>> slots = new ArrayList<>();
 
-        QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.QUEST_DEFINITION);
-        Optional<QuestDefinition> defOpt = definitionRegistry.get(questKey);
+        QuestDefinition def;
+        if (previewDefinition != null) {
+            def = previewDefinition;
+        } else {
+            QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_DEFINITION);
+            def = definitionRegistry.get(questKey).orElse(null);
+        }
 
         slots.add(new QuestDetailOverviewSlot(questKey, questInstance, completionRecord));
 
-        if (defOpt.isPresent()) {
-            QuestDefinition def = defOpt.get();
+        if (def != null) {
             for (QuestPhaseDefinition phaseDef : def.getPhases()) {
                 slots.add(new QuestDetailPhaseSlot(phaseDef, def.getPhaseCount()));
 
@@ -115,6 +143,10 @@ public class QuestDetailGui extends McRPGPaginatedGui {
                         slots.add(new QuestDetailObjectiveSlot(questKey, objDef, objInstance));
                     }
                 }
+            }
+
+            if (boardPreview) {
+                slots.add(new QuestDetailRewardSlot(def, player));
             }
         }
 
@@ -186,7 +218,12 @@ public class QuestDetailGui extends McRPGPaginatedGui {
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-                    if (fromHistory) {
+                    if (boardPreview) {
+                        QuestBoardGui boardGui = new QuestBoardGui(mcRPGPlayer);
+                        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                                .manager(McRPGManagerKey.GUI).trackPlayerGui(player, boardGui);
+                        player.openInventory(boardGui.getInventory());
+                    } else if (fromHistory) {
                         QuestHistoryGui historyGui = new QuestHistoryGui(mcRPGPlayer);
                         McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                                 .manager(McRPGManagerKey.GUI).trackPlayerGui(player, historyGui);

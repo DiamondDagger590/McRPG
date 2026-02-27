@@ -18,7 +18,7 @@ public class BoardMetadataTest extends McRPGBaseTest {
     @DisplayName("getMetadataKey returns BoardMetadata.METADATA_KEY")
     @Test
     void getMetadataKey_returnsMetadataKey() {
-        BoardMetadata metadata = new BoardMetadata(true, Set.of(), null, null);
+        BoardMetadata metadata = new BoardMetadata(true, Set.of(), Set.of(), null, null);
         assertSame(BoardMetadata.METADATA_KEY, metadata.getMetadataKey());
     }
 
@@ -31,7 +31,7 @@ public class BoardMetadataTest extends McRPGBaseTest {
         Duration cooldown = Duration.ofMinutes(30);
         String scope = "PLAYER";
 
-        BoardMetadata original = new BoardMetadata(false, rarities, cooldown, scope);
+        BoardMetadata original = new BoardMetadata(false, rarities, Set.of(), cooldown, scope);
         Map<String, Object> serialized = original.serialize();
         BoardMetadata deserialized = BoardMetadata.deserialize(serialized);
 
@@ -49,7 +49,7 @@ public class BoardMetadataTest extends McRPGBaseTest {
     @DisplayName("serialize / deserialize round-trip with null cooldown and scope")
     @Test
     void serializeDeserialize_roundTrip_nullCooldownAndScope() {
-        BoardMetadata original = new BoardMetadata(true, Set.of(new NamespacedKey("mcrpg", "common")), null, null);
+        BoardMetadata original = new BoardMetadata(true, Set.of(new NamespacedKey("mcrpg", "common")), Set.of(), null, null);
         Map<String, Object> serialized = original.serialize();
         BoardMetadata deserialized = BoardMetadata.deserialize(serialized);
 
@@ -69,7 +69,7 @@ public class BoardMetadataTest extends McRPGBaseTest {
         Duration cooldown = Duration.ofHours(1);
         String scope = "GLOBAL";
 
-        BoardMetadata metadata = new BoardMetadata(true, rarities, cooldown, scope);
+        BoardMetadata metadata = new BoardMetadata(true, rarities, Set.of(), cooldown, scope);
 
         assertTrue(metadata.boardEligible());
         assertEquals(rarities, metadata.supportedRarities());

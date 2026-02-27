@@ -97,9 +97,9 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new TestRewardType(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
-                    RewardSplitMode.INDIVIDUAL, List.of(reward), Map.of(), null, null);
+                    RewardSplitMode.INDIVIDUAL, List.of(reward), Map.of(), null, null, true);
             var config = new RewardDistributionConfig(List.of(tier));
-            var snapshot = new ContributionSnapshot(Map.of(p1, 60L, p2, 40L), 100, Set.of(p1, p2));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 60L, p2, 40L), 100, Set.of(p1, p2), null);
 
             var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
@@ -121,9 +121,9 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new TestRewardType(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
-                    RewardSplitMode.SPLIT_EVEN, List.of(reward), Map.of(), null, null);
+                    RewardSplitMode.SPLIT_EVEN, List.of(reward), Map.of(), null, null, true);
             var config = new RewardDistributionConfig(List.of(tier));
-            var snapshot = new ContributionSnapshot(Map.of(p1, 60L, p2, 40L), 100, Set.of(p1, p2));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 60L, p2, 40L), 100, Set.of(p1, p2), null);
 
             var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
@@ -138,9 +138,9 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
             UUID p1 = UUID.randomUUID();
             var reward = new TestRewardType(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
-                    RewardSplitMode.SPLIT_EVEN, List.of(reward), Map.of(), null, null);
+                    RewardSplitMode.SPLIT_EVEN, List.of(reward), Map.of(), null, null, true);
             var config = new RewardDistributionConfig(List.of(tier));
-            var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1), null);
 
             var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
@@ -159,9 +159,9 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new TestRewardType(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
-                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(reward), Map.of(), null, null);
+                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(reward), Map.of(), null, null, true);
             var config = new RewardDistributionConfig(List.of(tier));
-            var snapshot = new ContributionSnapshot(Map.of(p1, 75L, p2, 25L), 100, Set.of(p1, p2));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 75L, p2, 25L), 100, Set.of(p1, p2), null);
 
             var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
@@ -176,10 +176,10 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new TestRewardType(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
-                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(reward), Map.of(), null, null);
+                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(reward), Map.of(), null, null, true);
             var config = new RewardDistributionConfig(List.of(tier));
             // Both players have contribution but 0 in snapshot among qualifying
-            var snapshot = new ContributionSnapshot(Map.of(p1, 0L, p2, 0L), 0, Set.of(p1, p2));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 0L, p2, 0L), 0, Set.of(p1, p2), null);
 
             var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
@@ -200,11 +200,11 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
             var lowReward = new TestRewardType(100);
             var topTier = new DistributionTierConfig("top", TopPlayersDistributionType.KEY,
                     RewardSplitMode.INDIVIDUAL, List.of(highReward),
-                    Map.of(DistributionTierConfig.PARAM_TOP_PLAYER_COUNT, 1), null, null);
+                    Map.of(DistributionTierConfig.PARAM_TOP_PLAYER_COUNT, 1), null, null, true);
             var allTier = new DistributionTierConfig("all", ParticipatedDistributionType.KEY,
-                    RewardSplitMode.INDIVIDUAL, List.of(lowReward), Map.of(), null, null);
+                    RewardSplitMode.INDIVIDUAL, List.of(lowReward), Map.of(), null, null, true);
             var config = new RewardDistributionConfig(List.of(topTier, allTier));
-            var snapshot = new ContributionSnapshot(Map.of(p1, 80L, p2, 20L), 100, Set.of(p1, p2));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 80L, p2, 20L), 100, Set.of(p1, p2), null);
 
             var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
@@ -221,9 +221,9 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
         var reward = new TestRewardType(100);
         var unknownKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "nonexistent");
         var tier = new DistributionTierConfig("t1", unknownKey,
-                RewardSplitMode.INDIVIDUAL, List.of(reward), Map.of(), null, null);
+                RewardSplitMode.INDIVIDUAL, List.of(reward), Map.of(), null, null, true);
         var config = new RewardDistributionConfig(List.of(tier));
-        var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1));
+        var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1), null);
 
         var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
         assertTrue(result.isEmpty());
@@ -234,7 +234,7 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
     void emptyConfigReturnsEmpty() {
         UUID p1 = UUID.randomUUID();
         var config = new RewardDistributionConfig(List.of());
-        var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1));
+        var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1), null);
 
         var result = QuestRewardDistributionResolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
         assertTrue(result.isEmpty());

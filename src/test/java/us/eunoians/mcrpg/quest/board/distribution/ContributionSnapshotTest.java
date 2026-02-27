@@ -25,7 +25,7 @@ public class ContributionSnapshotTest extends McRPGBaseTest {
         Set<UUID> mutableMembers = new HashSet<>();
         mutableMembers.add(player);
 
-        var snapshot = new ContributionSnapshot(mutableContributions, 100, mutableMembers);
+        var snapshot = new ContributionSnapshot(mutableContributions, 100, mutableMembers, null);
 
         mutableContributions.put(UUID.randomUUID(), 50L);
         mutableMembers.add(UUID.randomUUID());
@@ -38,7 +38,7 @@ public class ContributionSnapshotTest extends McRPGBaseTest {
     @Test
     void contributionsUnmodifiable() {
         UUID player = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(player, 100L), 100, Set.of(player));
+        var snapshot = new ContributionSnapshot(Map.of(player, 100L), 100, Set.of(player), null);
 
         assertThrows(UnsupportedOperationException.class,
                 () -> snapshot.contributions().put(UUID.randomUUID(), 50L));
@@ -48,7 +48,7 @@ public class ContributionSnapshotTest extends McRPGBaseTest {
     @Test
     void groupMembersUnmodifiable() {
         UUID player = UUID.randomUUID();
-        var snapshot = new ContributionSnapshot(Map.of(player, 100L), 100, Set.of(player));
+        var snapshot = new ContributionSnapshot(Map.of(player, 100L), 100, Set.of(player), null);
 
         assertThrows(UnsupportedOperationException.class,
                 () -> snapshot.groupMembers().add(UUID.randomUUID()));
@@ -57,14 +57,14 @@ public class ContributionSnapshotTest extends McRPGBaseTest {
     @DisplayName("totalProgress matches provided value")
     @Test
     void totalProgressPreserved() {
-        var snapshot = new ContributionSnapshot(Map.of(UUID.randomUUID(), 42L), 42, Set.of());
+        var snapshot = new ContributionSnapshot(Map.of(UUID.randomUUID(), 42L), 42, Set.of(), null);
         assertEquals(42, snapshot.totalProgress());
     }
 
     @DisplayName("empty contributions and empty members")
     @Test
     void emptyState() {
-        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of());
+        var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of(), null);
 
         assertTrue(snapshot.contributions().isEmpty());
         assertTrue(snapshot.groupMembers().isEmpty());

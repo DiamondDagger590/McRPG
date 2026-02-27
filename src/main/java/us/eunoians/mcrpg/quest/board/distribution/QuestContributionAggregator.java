@@ -75,6 +75,6 @@ public final class QuestContributionAggregator {
     public static ContributionSnapshot toSnapshot(@NotNull Map<UUID, Long> contributions,
                                                    @NotNull Set<UUID> groupMembers) {
         long total = contributions.values().stream().mapToLong(Long::longValue).sum();
-        return new ContributionSnapshot(contributions, total, groupMembers);
+        return new ContributionSnapshot(contributions, total, groupMembers, null);
     }
 }

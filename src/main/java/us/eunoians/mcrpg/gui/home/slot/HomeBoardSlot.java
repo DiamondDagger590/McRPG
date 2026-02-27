@@ -38,7 +38,7 @@ public class HomeBoardSlot implements McRPGSlot {
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GUI_TITLE));
+                .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_BOARD_SLOT_DISPLAY_ITEM));
     }
 
     @NotNull

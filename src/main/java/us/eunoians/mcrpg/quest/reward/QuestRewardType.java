@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
 import java.util.Map;
+import java.util.OptionalLong;
 
 /**
  * Defines a type of reward that can be granted upon quest, stage, or objective completion.
@@ -92,4 +93,15 @@ public interface QuestRewardType extends McRPGContent {
         return this;
     }
 
+    /**
+     * Returns the numeric amount of this reward, if applicable. Used by the
+     * distribution resolver for remainder calculations in split-mode tiers.
+     * Reward types without a numeric amount (e.g., ability upgrades) return empty.
+     *
+     * @return the numeric amount, or empty if not applicable
+     */
+    @NotNull
+    default OptionalLong getNumericAmount() {
+        return OptionalLong.empty();
+    }
 }

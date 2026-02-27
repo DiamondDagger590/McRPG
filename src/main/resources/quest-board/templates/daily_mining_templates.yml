@@ -1,0 +1,118 @@
+# Template-generated mining quests.
+# Variables are resolved at generation time; expressions are scaled by rarity.
+
+quest-templates:
+  # -------------------------------------------------------------------
+  # Flexible mining template — target block pool varies by rarity
+  # -------------------------------------------------------------------
+  mcrpg:template_mining_gather:
+    display-name-route: quest-templates.mining-gather
+    board-eligible: true
+    scope: mcrpg:single_player
+    supported-rarities:
+      - mcrpg:common
+      - mcrpg:uncommon
+      - mcrpg:rare
+    variables:
+      target_blocks:
+        type: POOL
+        min-selections: 1
+        max-selections: 3
+        pools:
+          basic_stone:
+            difficulty: 1.0
+            weight:
+              mcrpg:common: 80
+              mcrpg:uncommon: 40
+              mcrpg:rare: 10
+            values:
+              - STONE
+              - COBBLESTONE
+              - ANDESITE
+              - DIORITE
+              - GRANITE
+          ores:
+            difficulty: 2.0
+            weight:
+              mcrpg:common: 10
+              mcrpg:uncommon: 50
+              mcrpg:rare: 70
+            values:
+              - COAL_ORE
+              - IRON_ORE
+              - COPPER_ORE
+              - DEEPSLATE_COAL_ORE
+              - DEEPSLATE_IRON_ORE
+              - DEEPSLATE_COPPER_ORE
+          rare_ores:
+            difficulty: 4.0
+            weight:
+              mcrpg:common: 0
+              mcrpg:uncommon: 10
+              mcrpg:rare: 40
+            values:
+              - GOLD_ORE
+              - DEEPSLATE_GOLD_ORE
+              - LAPIS_ORE
+              - DEEPSLATE_LAPIS_ORE
+              - REDSTONE_ORE
+              - DEEPSLATE_REDSTONE_ORE
+      block_count:
+        type: RANGE
+        base:
+          min: 32
+          max: 96
+    phases:
+      gather:
+        completion-mode: ALL
+        stages:
+          mine_targets:
+            objectives:
+              break_blocks:
+                type: mcrpg:block_break
+                required-progress: "{block_count}"
+                config:
+                  blocks: "{target_blocks}"
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: "{block_count} * 3"
+
+  # -------------------------------------------------------------------
+  # Deepslate specialist — always deep mining, count varies
+  # -------------------------------------------------------------------
+  mcrpg:template_deepslate_miner:
+    display-name-route: quest-templates.deepslate-miner
+    board-eligible: true
+    scope: mcrpg:single_player
+    supported-rarities:
+      - mcrpg:uncommon
+      - mcrpg:rare
+      - mcrpg:legendary
+    variables:
+      deepslate_count:
+        type: RANGE
+        base:
+          min: 64
+          max: 256
+    phases:
+      dig_deep:
+        completion-mode: ALL
+        stages:
+          mine_deepslate:
+            objectives:
+              break_deepslate:
+                type: mcrpg:block_break
+                required-progress: "{deepslate_count}"
+                config:
+                  blocks:
+                    - DEEPSLATE
+                    - COBBLED_DEEPSLATE
+                    - DEEPSLATE_BRICKS
+                    - CRACKED_DEEPSLATE_BRICKS
+    rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: "{deepslate_count} * 2"
