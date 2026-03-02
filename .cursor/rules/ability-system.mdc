@@ -168,3 +168,7 @@ See `Bleed.java` (`ability/impl/swords/Bleed.java`) — a passive ability that:
 - Uses `ConfigurableSkillAbility` for config-driven enable/disable
 - Reads base damage and cycles from YAML via `Route` constants
 - Fires `BleedActivateEvent` and delegates to a manager on success
+
+---
+
+> **Maintenance:** If you introduce a new ability pattern, interface, or activation mechanism not described here, update this file and `CLAUDE.md` in the same PR.

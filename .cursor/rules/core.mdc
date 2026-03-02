@@ -63,3 +63,7 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No mutable global static** — use registries; only `McRPG.getInstance()` is acceptable as static access
 - **No ability state on ability objects** — abilities are shared singletons; state lives in `AbilityData`/`AbilityAttribute` per holder
 - **No direct entity casts** — use `instanceof` pattern matching: `if (entity instanceof Player p) { ... }`
+
+---
+
+> **Maintenance:** If you introduce a new pattern, naming convention, or anti-pattern not described here, update this file and `CLAUDE.md` in the same PR.

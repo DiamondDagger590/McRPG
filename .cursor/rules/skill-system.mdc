@@ -131,3 +131,7 @@ See `Swords.java` (`skill/impl/swords/Swords.java`) — a skill that:
 - Registers a single `SwordsLevelOnAttackComponent` for `EntityDamageByEntityEvent`
 - Implements `HeldItemBonusSkill` with per-material bonus caching via `CustomItemWrapper`
 - Reads all config via `SwordsConfigFile` route constants
+
+---
+
+> **Maintenance:** If you introduce a new skill pattern, interface, or XP mechanism not described here, update this file and `CLAUDE.md` in the same PR.

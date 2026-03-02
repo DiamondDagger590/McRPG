@@ -215,7 +215,31 @@ double damage = getYamlDocument().getDouble(route);
 Route dynamicRoute = Route.fromString("material-modifiers." + materialKey);
 ```
 
-Use `ReloadableSet<T>` (annotated `@ReloadableContent`) for config values that must update without restart.
+For config values that must update without a server restart, implement `ReloadableContentAbility` on the ability class and use `ReloadableSet<T>` fields:
+
+```java
+public final class MyAbility extends McRPGAbility implements PassiveAbility, ReloadableContentAbility {
+
+    private final ReloadableSet<CustomBlockWrapper> VALID_BLOCK_TYPES;
+
+    public MyAbility(@NotNull McRPG mcRPG) {
+        super(mcRPG, MY_ABILITY_KEY);
+        this.VALID_BLOCK_TYPES = new ReloadableSet<>(
+            getYamlDocument(),
+            MyConfigFile.VALID_BLOCKS,
+            strings -> strings.stream().map(CustomBlockWrapper::new).collect(Collectors.toSet())
+        );
+    }
+
+    @Override
+    public Set<ReloadableContent<?>> getReloadableContent() {
+        return Set.of(VALID_BLOCK_TYPES);
+    }
+}
+
+// Access the current value anywhere:
+VALID_BLOCK_TYPES.getContent().contains(block);
+```
 
 ### Registering New Content
 
@@ -287,6 +311,40 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 
 ---
 
+## Coding Standards
+
+### Code Style
+
+- 4-space indentation, K&R brace style (standard Java)
+- Meaningful variable names — avoid single-letter names except loop counters
+- Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
+- Keep methods focused and short — split logic into private helpers rather than long method bodies
+- Javadoc on all public methods with `@param` and `@return` semantics
+
+**Third-party developer mindset:** McRPG is designed to be extensible by external plugins. Any change to a public API, event, or registry should be made as if you were a third-party developer hooking in. Prefer additive, non-breaking changes; fire Bukkit events wherever an external plugin would reasonably want to intercept; document extension points clearly.
+
+### Commit Messages
+
+- Imperative mood, sentence case: `"Add mass harvest block type validation"`
+- Reference the GitHub issue or PR in parentheses when applicable: `"Fix bleed DOT threshold (#145)"`
+- Keep subject line under 72 characters
+
+### Pull Requests
+
+- One logical change per PR — don't bundle unrelated fixes
+- PR title mirrors the commit message style
+- All new abilities/skills must include corresponding config entries in the same PR
+- New non-Bukkit logic must have unit test coverage before the PR is raised
+- Manual test on a running Paper server before marking ready for review
+
+### Testing
+
+- New utility classes and non-Bukkit logic belong in `src/test/java/` (mirrors main package structure)
+- Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
+- Shared test helpers and fixtures go in `src/testFixtures/java/`
+
+---
+
 ## Key Utilities
 
 - `McRPGMethods.getMcRPGNamespace()` — returns the `"mcrpg"` namespace string for `NamespacedKey` construction
@@ -299,3 +357,22 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 ## Soft Dependencies (optional integrations)
 
 WorldGuard, Geyser (Bedrock), LunarClient (Apollo), LandsAPI, PlaceholderAPI (PAPI), mcMMO (jar in `libs/`)
+
+---
+
+## Keeping This File Current
+
+After any commit or PR that introduces one of the following, **update `CLAUDE.md` and the relevant `.cursor/rules/*.mdc` files** before or alongside the change:
+
+| Change type | What to update |
+|-------------|----------------|
+| New architectural pattern established | `CLAUDE.md` Architecture Overview + relevant `.mdc` |
+| New domain term introduced | `CLAUDE.md` Domain Terminology table |
+| New naming convention | `CLAUDE.md` Naming Conventions table + `core.mdc` |
+| New anti-pattern discovered | `CLAUDE.md` Anti-Patterns to Avoid + `core.mdc` |
+| Build command changes | `CLAUDE.md` Build & Run table + `core.mdc` |
+| New McCore abstraction used | `CLAUDE.md` McCore Relationship section |
+| New coding standard adopted | `CLAUDE.md` Coding Standards section |
+| New ability/skill type interface added | `CLAUDE.md` + `ability-system.mdc` or `skill-system.mdc` |
+
+These files are the project's living technical contract — stale steering files produce stale AI output.
