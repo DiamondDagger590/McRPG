@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew verifiedShadowJar)",
+      "Bash(./gradlew fastShadowJar)",
+      "Bash(./gradlew shadowJar)",
+      "Bash(./gradlew test)",
+      "Bash(./gradlew test --tests *)",
+      "Bash(./gradlew compileJava)",
+      "Bash(./gradlew compileTestJava)",
+      "Bash(./gradlew clean)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git branch *)",
+      "Bash(git show *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [[ \"$FILE\" == *.java ]]; then cd /home/user/McRPG && ./gradlew compileJava --quiet 2>&1; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
