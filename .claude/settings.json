@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew test)",
+      "Bash(./gradlew test *)",
+      "Bash(./gradlew compileJava)",
+      "Bash(./gradlew compileJava *)",
+      "Bash(./gradlew compileTestJava)",
+      "Bash(./gradlew compileTestJava *)",
+      "Bash(./gradlew clean)",
+      "Bash(./gradlew tasks)",
+      "Bash(./gradlew tasks *)",
+      "Bash(./gradlew dependencies)",
+      "Bash(./gradlew dependencies *)",
+      "Bash(./gradlew help)",
+      "Bash(./gradlew --version)",
+      "Bash(./gradlew properties)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log)",
+      "Bash(git log *)",
+      "Bash(git show)",
+      "Bash(git show *)",
+      "Bash(git branch)",
+      "Bash(git branch *)",
+      "Bash(git stash list)",
+      "Bash(git remote *)",
+      "Bash(git blame *)",
+      "Bash(git fetch)",
+      "Bash(git fetch *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-edit-compile.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
