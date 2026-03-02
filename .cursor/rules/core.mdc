@@ -1,0 +1,95 @@
+---
+description: Core McRPG project conventions, architecture, and domain knowledge — applied to every prompt
+alwaysApply: true
+---
+
+# McRPG Core Rules
+
+McRPG is a Java 21 Minecraft RPG plugin (Paper 1.21) that adds skills and abilities. It depends on **McCore** — an owned shared framework — and uses `ContentExpansion` to register content.
+
+## McCore Ownership
+
+McCore (`com.diamonddagger590:McCore`) is **also an owned project**. Place reusable logic there, not in McRPG.
+McCore provides: `CorePlugin`, `CoreBootstrap`, `Registry`, `Manager`, `RegistryAccess`, `RegistryKey`, `DelayableCoreTask`, `Parser` (equation evaluator), `CustomItemWrapper`.
+
+## Build Commands
+
+- `./gradlew verifiedShadowJar` — clean + test + build (recommended)
+- `./gradlew fastShadowJar` — clean + build (no tests)
+- `./gradlew test` — tests only
+
+## Entity Hierarchy
+
+`AbilityHolder` → `LoadoutHolder` → `SkillHolder` → `McRPGPlayer`
+Players always implement all three. Non-player entities use `AbilityHolder` directly.
+
+## Domain Terminology
+
+| Term | Meaning |
+|------|---------|
+| Ability | An action or passive effect an entity can use (active or passive) |
+| Skill | A leveling system (e.g., Swords, Mining) that unlocks and scales abilities |
+| AbilityHolder | McRPG wrapper around any entity that can hold/use abilities |
+| LoadoutHolder | AbilityHolder restricted to only abilities in their active loadout |
+| SkillHolder | AbilityHolder that also has levelable skills |
+| McRPGPlayer | Concrete player — implements SkillHolder, LoadoutHolder, and CorePlayer |
+| Tier | Enhancement level of an ability; higher tiers change mechanics, not just stats |
+| Ready State | "Charged" intermediate state before activation; shared per tool, auto-expires ~3s |
+| Cooldown | Time lock applied to an ability after it activates |
+| Component | Modular activation/cancel/ready logic registered on an ability (priority-ordered) |
+| Attribute | `AbilityAttribute<T>` in `AbilityData` — per-holder ability state, no reflection |
+| ContentExpansion | Module bundling skills, abilities, settings, and localization for registration |
+| DAO | Static JDBC methods for reading/writing data (`SkillDAO`, `LoadoutAbilityDAO`) |
+
+## Registry Access Pattern
+
+```java
+// Always access via registryAccess() — never instantiate managers directly
+EntityManager em = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+AbilityRegistry ar = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
+YamlDocument config = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
+```
+
+## Naming Conventions
+
+| Type | Convention | Example |
+|------|-----------|---------|
+| Abstract base | `Base` prefix | `BaseAbility`, `BaseSkill` |
+| McRPG native impl | `McRPG` prefix | `McRPGAbility`, `McRPGPlayer` |
+| DTOs | `Data` suffix | `AbilityData`, `ReadyData` |
+| DAOs | `DAO` suffix | `SkillDAO`, `LoadoutAbilityDAO` |
+| Registries | `Registry` suffix | `AbilityRegistry`, `SkillRegistry` |
+| Custom events | `Event` suffix | `BleedActivateEvent` |
+| Bukkit listeners | `On` + action | `OnAttackAbilityListener` |
+| Components | `Component` suffix | `BleedEligibleForTargetComponent` |
+| Attributes | `Attribute` suffix | `AbilityTierAttribute` |
+| Config wrappers | `ConfigFile` suffix | `SwordsConfigFile` |
+
+Ability `NamespacedKey` constants are `static final` on the ability class: `new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "bleed")`.
+
+## Required Annotations
+
+- `@NotNull` (IntelliJ v12) on all non-null return types and parameters
+- `@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)` on listeners
+- `@Override` on all overridden methods
+
+## Code Style
+
+- 4-space indentation, K&R brace style (standard Java)
+- Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
+- Javadoc on all public methods with `@param` and `@return` semantics
+- **Third-party developer mindset:** McRPG is extensible by external plugins. Changes to public APIs, events, and registries should be made as if you were a third-party plugin hooking in — prefer additive non-breaking changes, fire Bukkit events where external plugins would want to intercept, document extension points.
+
+## Anti-Patterns
+
+- **No reflection** — use attribute factory pattern instead
+- **No hard-coded values** — all tunable values must come from YAML config via `Route`
+- **No deep inheritance** — compose via interfaces (`PassiveAbility`, `CooldownableAbility`, etc.)
+- **No mutable global static** — use registries; only `McRPG.getInstance()` is acceptable as static access
+- **No ability state on ability objects** — abilities are shared singletons; state lives in `AbilityData`/`AbilityAttribute` per holder
+- **No direct entity casts** — use `instanceof` pattern matching: `if (entity instanceof Player p) { ... }`
+- **No McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
+
+---
+
+> **Maintenance:** If you introduce a new pattern, naming convention, or anti-pattern not described here, update this file and `CLAUDE.md` in the same PR.

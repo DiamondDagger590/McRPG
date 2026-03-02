@@ -1,0 +1,137 @@
+---
+description: McRPG skill system patterns — skill implementation, experience components, leveling, unlock levels, SkillHolder data management, and registration in McRPGExpansion
+globs: ["src/**/skill/**/*.java"]
+alwaysApply: false
+---
+
+# McRPG Skill System
+
+## Skill vs. Ability
+
+| Concept | Purpose |
+|---------|---------|
+| **Skill** | A leveling system (Swords, Mining, etc.). Players earn XP via actions and level up over time. |
+| **Ability** | An action or passive effect unlocked/scaled by a skill. Abilities are _registered to_ a skill via `getSkillKey()`. |
+
+Skills earn XP — abilities do the gameplay work.
+
+## Checklist: Creating a New Skill
+
+1. Create class in `src/main/java/us/eunoians/mcrpg/skill/impl/<name>/`
+2. Extend `McRPGSkill`, implement relevant type interfaces (`ConfigurableSkill`, `HeldItemBonusSkill`, etc.)
+3. Declare `static final NamespacedKey SKILL_KEY` on the class
+4. Register levelable components in the constructor (`addLevelableComponent(...)`)
+5. Implement `getYamlDocument()`, `getDatabaseName()`, `getPlugin()`, `getDisplayItemRoute()`
+6. Create a `<Name>ConfigFile` class in `configuration/file/skill/`
+7. Register in `McRPGExpansion.getSkillContent()`
+8. Create abilities that return this skill's key from `getSkillKey()`
+
+## Minimal Skill Template
+
+```java
+public final class MySkill extends McRPGSkill implements ConfigurableSkill {
+
+    public static final NamespacedKey MY_SKILL_KEY =
+        new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "my_skill");
+
+    private final McRPG mcRPG;
+
+    public MySkill(@NotNull McRPG mcRPG) {
+        super(MY_SKILL_KEY);
+        this.mcRPG = mcRPG;
+        // Levelable components fire when the player performs the skill action
+        addLevelableComponent(new MySkillLevelOnActionComponent(), SomeEvent.class, 0);
+    }
+
+    @NotNull @Override public YamlDocument getYamlDocument() {
+        return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MY_SKILL_CONFIG);
+    }
+    @NotNull @Override public String getDatabaseName() { return "my_skill"; }
+    @NotNull @Override public Plugin getPlugin() { return mcRPG; }
+    @NotNull @Override public Route getDisplayItemRoute() { return LocalizationKey.MY_SKILL_DISPLAY_ITEM; }
+}
+```
+
+## Levelable Components (XP Sources)
+
+Levelable components are registered on the skill and define which Bukkit events grant XP:
+
+```java
+// In skill constructor:
+addLevelableComponent(new SwordsLevelOnAttackComponent(), EntityDamageByEntityEvent.class, 0);
+```
+
+Implement `EventLevelableComponent`:
+
+```java
+public class MySkillLevelOnActionComponent implements EventLevelableComponent {
+    @Override
+    public boolean shouldGrantExperience(@NotNull SkillHolder skillHolder, @NotNull Event event) {
+        // return true if XP should be granted for this event
+    }
+
+    @Override
+    public double getExperienceToGrant(@NotNull SkillHolder skillHolder, @NotNull Event event) {
+        // return base XP amount (modifiers applied externally)
+    }
+}
+```
+
+## SkillHolder Data
+
+`SkillHolder` extends `AbilityHolder` and also tracks per-skill level data:
+
+```java
+// Reading skill level data
+Optional<SkillHolderData> skillData = skillHolder.getSkillHolderData(Swords.SWORDS_KEY);
+skillData.ifPresent(data -> {
+    int currentLevel = data.getCurrentLevel();
+    double currentXp = data.getCurrentExp();
+});
+```
+
+`SkillHolderData` is stored in `SkillHolder`'s data map, loaded from the database via `SkillDAO`.
+
+## Unlock Levels
+
+Abilities within a skill have an unlock level defined in their config. The ability becomes available to the holder only when the player's skill level reaches or exceeds the unlock threshold.
+
+- Config location: `<skill>-config.yml`, route typically `abilities.<ability-name>.unlock-level`
+- The unlock check runs when a player levels up or logs in
+
+## HeldItemBonusSkill
+
+Implement `HeldItemBonusSkill` if the skill gives bonuses based on the item held:
+
+```java
+@Override
+public double getHeldItemBonus(@NotNull ItemStack... items) {
+    ItemStack mainHand = items[0];
+    CustomItemWrapper wrapper = new CustomItemWrapper(mainHand);
+    // Cache route per material to avoid rebuilding it on every event
+    Route route = Route.fromString(toRoutePath(MyConfigFile.MATERIAL_MODIFIERS_HEADER, materialKey));
+    return getYamlDocument().getDouble(route, 1.0);
+}
+```
+
+## XP Modifiers
+
+XP modifiers are applied through the experience modifier registry before XP is granted. Do not apply modifiers inside the levelable component — the framework handles this automatically.
+
+## Registering in McRPGExpansion
+
+```java
+// In McRPGExpansion.getSkillContent():
+skillContent.addContent(new MySkill(mcRPG));
+```
+
+## Reference: Canonical Example
+
+See `Swords.java` (`skill/impl/swords/Swords.java`) — a skill that:
+- Registers a single `SwordsLevelOnAttackComponent` for `EntityDamageByEntityEvent`
+- Implements `HeldItemBonusSkill` with per-material bonus caching via `CustomItemWrapper`
+- Reads all config via `SwordsConfigFile` route constants
+
+---
+
+> **Maintenance:** If you introduce a new skill pattern, interface, or XP mechanism not described here, update this file and `CLAUDE.md` in the same PR.
