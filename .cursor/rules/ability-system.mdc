@@ -1,0 +1,170 @@
+---
+description: McRPG ability implementation patterns — component registration, activation lifecycle, tier configuration, attribute factory, listener authoring, and registration in McRPGExpansion
+globs: ["src/**/ability/**/*.java", "src/**/listener/ability/**/*.java"]
+alwaysApply: false
+---
+
+# McRPG Ability System
+
+## Checklist: Creating a New Ability
+
+1. Create class in `src/main/java/us/eunoians/mcrpg/ability/impl/<skill>/`
+2. Extend `McRPGAbility`, implement relevant type interfaces (`PassiveAbility`, `ActiveAbility`, `ConfigurableSkillAbility`, etc.)
+3. Declare a `static final NamespacedKey` on the class
+4. Register components in the constructor
+5. Implement `activateAbility()`, `getSkillKey()`, `getDatabaseName()`, `getYamlDocument()`, `getAbilityEnabledRoute()`, `getDisplayItemRoute()`
+6. Create a corresponding `<AbilityName>ActivateEvent` in `event/ability/<skill>/`
+7. Register in `McRPGExpansion.getAbilityContent()`
+
+## Minimal Ability Template
+
+```java
+public final class MyAbility extends McRPGAbility implements PassiveAbility, ConfigurableSkillAbility {
+
+    public static final NamespacedKey MY_ABILITY_KEY =
+        new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "my_ability");
+
+    public MyAbility(@NotNull McRPG mcRPG) {
+        super(mcRPG, MY_ABILITY_KEY);
+        // Components checked in priority order (lowest first). First failure stops chain.
+        addActivatableComponent(SwordsComponents.HOLDING_SWORD_ACTIVATE_COMPONENT, EntityDamageByEntityEvent.class, 0);
+        addActivatableComponent(MyAbilityComponents.CHANCE_CHECK_COMPONENT, EntityDamageByEntityEvent.class, 1);
+    }
+
+    @Override
+    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        EntityDamageByEntityEvent dmgEvent = (EntityDamageByEntityEvent) event; // safe: only registered for this event
+        YamlDocument config = getYamlDocument();
+
+        MyAbilityActivateEvent activateEvent = new MyAbilityActivateEvent(abilityHolder, ...);
+        Bukkit.getPluginManager().callEvent(activateEvent);
+        if (activateEvent.isCancelled()) return;
+
+        // Apply effect here
+    }
+
+    @NotNull @Override public NamespacedKey getSkillKey() { return Swords.SWORDS_KEY; }
+    @NotNull @Override public String getDatabaseName() { return "my_ability"; }
+    @NotNull @Override public Route getAbilityEnabledRoute() { return MyConfigFile.MY_ABILITY_ENABLED; }
+    @NotNull @Override public YamlDocument getYamlDocument() {
+        return getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
+    }
+    @NotNull @Override public Route getDisplayItemRoute() { return LocalizationKey.MY_ABILITY_DISPLAY_ITEM_HEADER; }
+}
+```
+
+## Ability with Ready State
+
+Some abilities require two interactions: first the player "readies" them, then a second event "activates" them.
+
+```java
+public MyReadyAbility(@NotNull McRPG mcRPG) {
+    super(mcRPG, MY_READY_ABILITY_KEY);
+    // Right-click to ready
+    addReadyingComponent(MyComponents.READY_COMPONENT, PlayerInteractEvent.class, 0);
+    // Specific action to activate (after readied)
+    addActivatableComponent(MyComponents.IS_READIED_COMPONENT, BlockBreakEvent.class, 0);
+    addActivatableComponent(MyComponents.ACTIVATE_COMPONENT, BlockBreakEvent.class, 1);
+}
+
+@Override
+public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    abilityHolder.unreadyHolder(); // Always clear ready state first
+    // Fire event, check cancel, apply effect, put on cooldown
+    putHolderOnCooldown(abilityHolder);
+}
+```
+
+Ready state auto-expires after ~3 seconds. `ReadyData` is shared across abilities using the same tool.
+
+## Component Types
+
+Three component interfaces, all registered in the constructor:
+
+| Method | Interface | Checked via | Purpose |
+|--------|-----------|-------------|---------|
+| `addActivatableComponent(...)` | `EventActivatableComponent` | `shouldActivate(holder, event)` | Gate activation |
+| `addReadyingComponent(...)` | `EventReadyableComponent` | `shouldReady(holder, event)` | Gate readying |
+| `addCancellingComponent(...)` | `EventCancellingComponent` | `shouldCancel(holder, event)` | Cancel Bukkit event on activation |
+
+Components within a priority chain are sorted lowest-first. The first failure (returns `false` / returns `true` for cancel) short-circuits the chain.
+
+Static component instances go in a `<Skill>Components` or `<Ability>Components` class:
+
+```java
+// Shared across abilities in a skill
+public final class SwordsComponents {
+    public static final EventActivatableComponent HOLDING_SWORD_ACTIVATE_COMPONENT = (holder, event) -> {
+        // check logic
+    };
+}
+```
+
+## Cooldown Pattern
+
+Implement `CooldownableAbility` (included via `ConfigurableActiveAbility` and related interfaces):
+
+```java
+// Inside activateAbility(), after firing the event and checking cancellation:
+putHolderOnCooldown(abilityHolder); // reads cooldown from config automatically
+
+// The AbilityListener interface already checks cooldowns before calling activateAbility()
+```
+
+## Active-Duration Abilities
+
+For abilities that apply an effect over time (not just at activation moment):
+
+```java
+abilityHolder.addActiveAbility(this, durationSeconds); // auto-removes after duration
+// OR
+abilityHolder.addActiveAbility(this);                  // manual cleanup required
+abilityHolder.removeActiveAbility(this);               // call when effect ends
+```
+
+## Attribute Factory Pattern (No Reflection)
+
+Ability state per-holder lives in `AbilityData` as `AbilityAttribute<T>` instances. **Never use reflection to instantiate attributes.** Use the factory method:
+
+```java
+// Reading an attribute from the holder
+Optional<AbilityData> dataOpt = abilityHolder.getAbilityData(this);
+dataOpt.ifPresent(data -> {
+    Optional<AbilityTierAttribute> tierAttr = data.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY);
+    tierAttr.ifPresent(attr -> {
+        int tier = attr.getContent(); // typed access, no casting
+    });
+});
+```
+
+## Authoring an AbilityListener
+
+New listeners implement `AbilityListener` (which extends `Listener`) and call the provided default methods:
+
+```java
+public class OnSwordAttackAbilityListener implements AbilityListener {
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onAttack(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) return;
+        activateAbilities(player.getUniqueId(), event);  // default method handles all the rest
+    }
+}
+```
+
+`activateAbilities()` and `readyAbilities()` handle: holder lookup, world restriction checks, loadout filtering, component validation, cooldown checks, and dispatching to `activateAbility()`.
+
+## Registering in McRPGExpansion
+
+```java
+// In McRPGExpansion.getAbilityContent():
+abilityContent.addContent(new MyAbility(mcRPG));
+```
+
+## Reference: Canonical Example
+
+See `Bleed.java` (`ability/impl/swords/Bleed.java`) — a passive ability that:
+- Registers 4 activatable components with escalating priorities
+- Uses `ConfigurableSkillAbility` for config-driven enable/disable
+- Reads base damage and cycles from YAML via `Route` constants
+- Fires `BleedActivateEvent` and delegates to a manager on success
