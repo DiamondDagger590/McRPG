@@ -21,24 +21,25 @@ reviews:
         This is McRPG, a Minecraft RPG plugin built on the Paper/Bukkit API using
         the McCore framework library.
 
-        Accept the following patterns without flagging:
-        - Async scheduling via BukkitRunnable, Bukkit.getScheduler(), or
-          CompletableFuture chains is intentional. Do not flag as thread-safety issues.
-        - Classes implementing Listener with @EventHandler methods are valid Bukkit
-          event handlers. Do not suggest restructuring them.
-        - InventoryClickEvent cancellation inside GUI onClick callbacks is often
-          intentional. Evaluate whether it seems appropriate for the slot's purpose
+        Known-safe patterns — evaluate individually before flagging:
+        - Scheduling via BukkitRunnable, Bukkit.getScheduler(), or CompletableFuture
+          is intentional; only flag if data shared between threads lacks
+          synchronization outside these specific classes.
+        - Classes implementing Listener with @EventHandler are valid Bukkit event
+          handlers; restructuring suggestions are not actionable in this codebase.
+        - InventoryClickEvent cancellation inside GUI onClick callbacks is
+          context-dependent; evaluate whether the slot's purpose justifies it
           before flagging.
-        - Text rendering always goes through the localization manager. Never suggest
-          calling MiniMessage directly — that is a project anti-pattern.
+        - Text rendering goes through the localization manager; direct MiniMessage
+          calls are a project anti-pattern and should still be flagged.
         - Registry, builder, and abstract base-class patterns are intentional
-          architectural choices. Do not suggest simplifying them away.
+          architecture; do not flag as over-engineering.
         - Generic type parameters (e.g., T extends McPlugin) are intentional API
-          design inherited from McCore.
+          design inherited from McCore; do not suggest removing them.
 
-        Do NOT review for: GUI slot design, server config readability, API extension
-        points, or test structure. Those domains are covered by dedicated Anthropic
-        AI persona reviewers that run on every PR.
+        Deprioritize primary review of GUI slot design, server config readability,
+        API extension points, and test structure; if persona automation is
+        unavailable or skipped, include these domains in the review.
 
 chat:
   auto_reply: true

@@ -19,6 +19,7 @@ Environment variables (set by pr-review.yml):
 
 import json
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -65,6 +66,25 @@ PERSONAS = {
 # Helpers
 # ---------------------------------------------------------------------------
 
+_SENSITIVE_PATTERNS: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"(?i)(api[_-]?key\s*[:=]\s*)\S+"), r"\1[REDACTED_API_KEY]"),
+    (re.compile(r"(?i)(secret\s*[:=]\s*)\S+"), r"\1[REDACTED_SECRET]"),
+    (re.compile(r"(?i)(token\s*[:=]\s*)\S+"), r"\1[REDACTED_TOKEN]"),
+    (re.compile(r"(?i)(password\s*[:=]\s*)\S+"), r"\1[REDACTED_PASSWORD]"),
+    (re.compile(r"(?i)(private[_-]?key\s*[:=]\s*)\S+"), r"\1[REDACTED_PRIVATE_KEY]"),
+    (re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----.*?-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----", re.DOTALL), "[REDACTED_PRIVATE_KEY]"),
+    # Long base64-like or hex tokens (32+ chars of [A-Za-z0-9+/=_-])
+    (re.compile(r"(?<![A-Za-z0-9])[A-Za-z0-9+/=_-]{32,}(?![A-Za-z0-9])"), "[REDACTED_TOKEN]"),
+]
+
+
+def sanitize_diff(diff: str) -> str:
+    """Redact common sensitive patterns from a diff before sending to the API."""
+    for pattern, replacement in _SENSITIVE_PATTERNS:
+        diff = pattern.sub(replacement, diff)
+    return diff
+
+
 def read_file(path: str) -> str:
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -107,11 +127,19 @@ def call_api(api_key: str, model: str, system: str, user: str) -> str | None:
             req = urllib.request.Request(API_URL, data=payload, headers=headers, method="POST")
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
+                if (
+                    not isinstance(data, dict)
+                    or not isinstance(data.get("content"), list)
+                    or not data["content"]
+                    or not isinstance(data["content"][0], dict)
+                    or not isinstance(data["content"][0].get("text"), str)
+                ):
+                    return None
                 return data["content"][0]["text"]
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")
             print(f"  HTTP {e.code}: {body[:200]}", file=sys.stderr)
-            if e.code in (429, 529):  # rate limit / overload — retry
+            if e.code in (429, 529) or 500 <= e.code < 600:  # rate limit / overload / transient 5xx — retry
                 continue
             return None  # other HTTP errors are permanent
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
@@ -123,8 +151,11 @@ def call_api(api_key: str, model: str, system: str, user: str) -> str | None:
 
 
 def is_no_findings(text: str) -> bool:
-    """Heuristic: true when the model reported no concerns."""
-    lower = text.lower().strip()
+    """Heuristic: true when the model reported no concerns.
+
+    Requires one of the no-concern phrases to appear as a standalone sentence
+    with no other substantive content around it.
+    """
     no_concern_phrases = [
         "no gui/ux concerns",
         "no server owner concerns",
@@ -133,7 +164,20 @@ def is_no_findings(text: str) -> bool:
         "no concerns found",
         "nothing to flag",
     ]
-    return any(p in lower for p in no_concern_phrases) and len(text) < 300
+    if len(text) >= 300:
+        return False
+    sentences = [s.strip() for s in re.split(r"[.!?]\s*", text) if s.strip()]
+    for phrase in no_concern_phrases:
+        for sentence in sentences:
+            if sentence.lower() == phrase:
+                # Ensure no other sentence has substantive content
+                others = [s for s in sentences if s.lower() != phrase]
+                if not any(
+                    s and not re.match(r"^(and|but|however|also)\b", s, re.I)
+                    for s in others
+                ):
+                    return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +194,13 @@ def main() -> None:
 
     model = os.environ.get("REVIEW_MODEL", DEFAULT_MODEL)
     diff_file = os.environ.get("DIFF_FILE", "/tmp/pr.diff")
-    max_diff_chars = int(os.environ.get("MAX_DIFF_CHARS", DEFAULT_MAX_DIFF_CHARS))
+    try:
+        max_diff_chars = int(os.environ.get("MAX_DIFF_CHARS", DEFAULT_MAX_DIFF_CHARS))
+        if max_diff_chars <= 0:
+            raise ValueError("must be positive")
+    except (ValueError, TypeError):
+        print("WARNING: MAX_DIFF_CHARS is not a valid positive integer — using default.", file=sys.stderr)
+        max_diff_chars = DEFAULT_MAX_DIFF_CHARS
 
     # Load the diff
     diff = read_file(diff_file)
@@ -191,7 +241,7 @@ def main() -> None:
         )
         user_prompt = (
             "Review the following pull request diff using your persona and checklist.\n\n"
-            "```diff\n" + diff + "\n```"
+            "```diff\n" + sanitize_diff(diff) + "\n```"
         )
 
         response = call_api(api_key, model, system_prompt, user_prompt)
