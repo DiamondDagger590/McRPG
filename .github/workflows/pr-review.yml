@@ -82,8 +82,19 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check API key
+        id: check-key
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
       - name: Run AI persona reviews
-        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        if: steps.check-key.outputs.available == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           REVIEW_MODEL:      ${{ vars.REVIEW_MODEL || 'claude-haiku-4-5-20251001' }}
@@ -95,7 +106,7 @@ jobs:
         run: python3 .github/scripts/pr-review.py
 
       - name: Post review comment
-        if: ${{ secrets.ANTHROPIC_API_KEY != '' && hashFiles('review_comment.txt') != '' }}
+        if: steps.check-key.outputs.available == 'true' && hashFiles('review_comment.txt') != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
