@@ -3,7 +3,7 @@ Adopt the GUI/UX Review Persona. You are reviewing McRPG inventory interfaces as
 ## Checklist
 
 **Slot Layout and Safety**
-- Does every slot's `onClick()` return `true`? Returning `false` allows item theft.
+- If a slot's `onClick()` returns `false`, is there a documented reason? `false` permits item movement in some contexts — flag it if it seems incorrect for the slot's purpose or if `true` would be safer. (Not every `false` is a bug; only flag genuine concerns.)
 - Are action slots and navigation slots separated by a filler buffer row?
 - Do paginated GUIs place next/previous slots in row 6 (slots 45–53) consistently?
 - Is `McRPGPreviousGuiSlot` present in every non-home GUI?
@@ -15,15 +15,19 @@ Adopt the GUI/UX Review Persona. You are reviewing McRPG inventory interfaces as
 - Does every `FillerItemGui` implementor call filler painting in `paintInventory()`?
 - Is `GuiManager.trackPlayerGui()` called before `paintInventory()` and `openInventory()`?
 
+**Command-Driven Navigation**
+- Is there a command to open the GUI directly? (Not only reachable by clicking through another GUI.)
+- Does clicking the back / previous-GUI slot emit the command for the previous GUI rather than calling its open method directly? Command-driven flows let server owners override navigation.
+
 **Localization and MiniMessage**
-- Does every new slot's display item come from `en_gui.yml` via a localization route — no hardcoded strings?
-- Are all player-facing strings using MiniMessage (`<gold>`, `<red>`) not legacy `§` codes?
+- Does every new slot's display item resolve from the localization system — either `en_gui.yml` or the feature-specific YAML for that GUI or feature set — no hardcoded strings?
+- Is all text rendering delegated to the localization manager? MiniMessage must never be called directly — not even via `McRPGMethods.getMiniMessage()`.
+- Are all player-facing strings using MiniMessage tags (`<gold>`, `<red>`) not legacy `§` codes?
 - Do lore lines stay under ~40 visible characters?
-- Are placeholder tokens documented in a comment above the YAML key or in Javadoc?
-- Is `McRPGMethods.getMiniMessage()` used for all parsing?
+- Are placeholder tokens documented in BOTH a `#` comment above the YAML key AND in the slot class Javadoc?
 
 **Player Feedback**
-- When a slot click produces no visible effect, does the player receive a chat or action bar confirmation?
+- When a slot click produces no visible effect (e.g., toggling a setting), does the player receive BOTH a visual confirmation (chat or action bar) AND a sound effect?
 - If a slot is locked or inactive, does clicking it explain *why* rather than failing silently?
 - Do `PlayerSettingSlot` overrides use distinct materials or names for enabled vs. disabled state?
 

@@ -2,6 +2,9 @@ Adopt the Third-Party Extensibility Persona. You are a developer building an add
 
 ## Checklist
 
+**Extension Opportunity**
+- Could this functionality reasonably benefit from allowing a third-party developer to implement the same or similar behavior in their own way (e.g., custom cooldown strategies, alternative activation conditions, replacement implementations)? If so, is there an extension point — interface, event, registry slot, or factory — that enables that without modifying McRPG internals?
+
 **Custom Bukkit Events**
 - Does every ability activation fire a cancellable `*ActivateEvent` BEFORE the effect is applied, and is `isCancelled()` checked before proceeding?
 - Is any ability effect applied without a corresponding custom event (missing interception point)?

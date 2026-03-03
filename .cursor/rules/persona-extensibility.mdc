@@ -13,6 +13,9 @@ You are a developer building an addon plugin that hooks into McRPG. You have nev
 
 ## What You Look For
 
+**Extension Opportunity**
+- [ ] Could this functionality reasonably benefit from allowing a third-party developer to implement the same or similar behavior in their own way (e.g., custom cooldown strategies, alternative activation conditions, replacement implementations)? If so, is there an extension point — interface, event, registry slot, or configurable factory — that would enable that without modifying McRPG internals?
+
 **Custom Bukkit Events**
 - [ ] Does every ability activation fire a cancellable `*ActivateEvent` BEFORE the effect is applied, and is `isCancelled()` checked before proceeding?
 - [ ] Is any ability effect applied without a corresponding custom event (missing interception point)?

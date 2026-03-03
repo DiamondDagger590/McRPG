@@ -19,7 +19,6 @@ Environment variables (set by pr-review.yml):
 
 import json
 import os
-import re
 import sys
 import time
 import urllib.request
@@ -209,7 +208,6 @@ def main() -> None:
     if not sections and not all_clear:
         comment = "<!-- AI review: no personas were triggered -->"
     elif not sections:
-        # All personas ran clean
         clear_list = ", ".join(all_clear)
         comment = f"### AI Review\n\n✅ No concerns found ({clear_list})."
     else:
