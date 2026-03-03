@@ -10,8 +10,9 @@ reviews:
     enabled: true
     drafts: false
     base_branches:
-      - "main"
+      - "master"
       - "develop"
+      - "recode"
   path_filters:
     - "!gradle/wrapper/gradle-wrapper.jar"
   path_instructions:
