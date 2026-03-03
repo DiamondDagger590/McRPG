@@ -1,0 +1,110 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+
+jobs:
+  # ------------------------------------------------------------------
+  # Step 1: Detect which domains were touched so we only invoke the
+  # relevant personas. Each output is the string "true" or "false".
+  # ------------------------------------------------------------------
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      needs_gui:    ${{ steps.detect.outputs.gui }}
+      needs_config: ${{ steps.detect.outputs.config }}
+      needs_api:    ${{ steps.detect.outputs.api }}
+      needs_test:   ${{ steps.detect.outputs.test }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: detect
+        name: Detect changed file domains
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD" 2>/dev/null || git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          echo "$CHANGED"
+
+          gui=false
+          config=false
+          api=false
+          test=false
+
+          while IFS= read -r f; do
+            [[ "$f" =~ src/.*/gui/.*\.java ]]        && gui=true
+            [[ "$f" =~ resources/localization/ ]]     && gui=true
+            [[ "$f" =~ resources/.*\.yml ]]           && config=true
+            [[ "$f" =~ configuration/.*\.java ]]      && config=true
+            [[ "$f" =~ src/.*/event/.*\.java ]]       && api=true
+            [[ "$f" =~ src/.*/registry/.*\.java ]]    && api=true
+            [[ "$f" =~ src/main/.*\.java ]]           && test=true
+          done <<< "$CHANGED"
+
+          echo "gui=$gui"     >> "$GITHUB_OUTPUT"
+          echo "config=$config" >> "$GITHUB_OUTPUT"
+          echo "api=$api"     >> "$GITHUB_OUTPUT"
+          echo "test=$test"   >> "$GITHUB_OUTPUT"
+
+  # ------------------------------------------------------------------
+  # Step 2: Run the AI personas for each triggered domain.
+  # Skips silently if ANTHROPIC_API_KEY is not configured (fork PRs).
+  # ------------------------------------------------------------------
+  review:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    # Only run if at least one domain is active
+    if: |
+      needs.detect-changes.outputs.needs_gui    == 'true' ||
+      needs.detect-changes.outputs.needs_config == 'true' ||
+      needs.detect-changes.outputs.needs_api    == 'true' ||
+      needs.detect-changes.outputs.needs_test   == 'true'
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate PR diff
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          git diff "$BASE" "$HEAD" > /tmp/pr.diff 2>/dev/null || \
+            git diff origin/${{ github.base_ref }}...HEAD > /tmp/pr.diff
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run AI persona reviews
+        # Exit gracefully if the secret is absent (fork PRs have no access to secrets)
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REVIEW_MODEL:      ${{ vars.REVIEW_MODEL || 'claude-haiku-4-5-20251001' }}
+          NEEDS_GUI:         ${{ needs.detect-changes.outputs.needs_gui }}
+          NEEDS_CONFIG:      ${{ needs.detect-changes.outputs.needs_config }}
+          NEEDS_API:         ${{ needs.detect-changes.outputs.needs_api }}
+          NEEDS_TEST:        ${{ needs.detect-changes.outputs.needs_test }}
+          DIFF_FILE:         /tmp/pr.diff
+        run: python3 .github/scripts/pr-review.py
+
+      - name: Post review comment
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' && hashFiles('review_comment.txt') != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(cat review_comment.txt)
+          # Skip posting if the comment is a suppression marker
+          if [[ "$BODY" == "<!--"* ]]; then
+            echo "Suppressed comment — not posting."
+            exit 0
+          fi
+          gh pr comment ${{ github.event.pull_request.number }} --body "$BODY"
