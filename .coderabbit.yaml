@@ -1,0 +1,45 @@
+language: "en"
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "master"
+      - "develop"
+      - "recode"
+  path_filters:
+    - "!gradle/wrapper/gradle-wrapper.jar"
+  path_instructions:
+    - path: "**/*.java"
+      instructions: |
+        This is McRPG, a Minecraft RPG plugin built on the Paper/Bukkit API using
+        the McCore framework library.
+
+        Known-safe patterns — evaluate individually before flagging:
+        - Scheduling via BukkitRunnable, Bukkit.getScheduler(), or CompletableFuture
+          is intentional; only flag if data shared between threads lacks
+          synchronization outside these specific classes.
+        - Classes implementing Listener with @EventHandler are valid Bukkit event
+          handlers; restructuring suggestions are not actionable in this codebase.
+        - InventoryClickEvent cancellation inside GUI onClick callbacks is
+          context-dependent; evaluate whether the slot's purpose justifies it
+          before flagging.
+        - Text rendering goes through the localization manager; direct MiniMessage
+          calls are a project anti-pattern and should still be flagged.
+        - Registry, builder, and abstract base-class patterns are intentional
+          architecture; do not flag as over-engineering.
+        - Generic type parameters (e.g., T extends McPlugin) are intentional API
+          design inherited from McCore; do not suggest removing them.
+
+        Deprioritize primary review of GUI slot design, server config readability,
+        API extension points, and test structure; if persona automation is
+        unavailable or skipped, include these domains in the review.
+
+chat:
+  auto_reply: true

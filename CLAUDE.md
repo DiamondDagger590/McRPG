@@ -374,5 +374,10 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New McCore abstraction used | `CLAUDE.md` McCore Relationship section |
 | New coding standard adopted | `CLAUDE.md` Coding Standards section |
 | New ability/skill type interface added | `CLAUDE.md` + `ability-system.mdc` or `skill-system.mdc` |
+| New GUI slot pattern or anti-pattern found | `persona-gui-ux.mdc` + `.claude/commands/review-gui-ux.md` |
+| New server owner config concern identified | `persona-server-owner.mdc` + `.claude/commands/review-server-owner.md` |
+| New public API pattern or breaking-change rule | `persona-extensibility.mdc` + `.claude/commands/review-extensibility.md` |
+| New test structural pattern or anti-pattern | `persona-testing.mdc` + `.claude/commands/review-testing.md` |
+| CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
 
 These files are the project's living technical contract — stale steering files produce stale AI output.
