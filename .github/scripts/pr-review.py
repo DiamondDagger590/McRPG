@@ -67,11 +67,19 @@ PERSONAS = {
 # ---------------------------------------------------------------------------
 
 _SENSITIVE_PATTERNS: list[tuple[re.Pattern, str]] = [
+    # Bare (unquoted) key forms: api_key=value, api-key: value, apiKey: value
     (re.compile(r"(?i)(api[_-]?key\s*[:=]\s*)\S+"), r"\1[REDACTED_API_KEY]"),
     (re.compile(r"(?i)(secret\s*[:=]\s*)\S+"), r"\1[REDACTED_SECRET]"),
     (re.compile(r"(?i)(token\s*[:=]\s*)\S+"), r"\1[REDACTED_TOKEN]"),
     (re.compile(r"(?i)(password\s*[:=]\s*)\S+"), r"\1[REDACTED_PASSWORD]"),
     (re.compile(r"(?i)(private[_-]?key\s*[:=]\s*)\S+"), r"\1[REDACTED_PRIVATE_KEY]"),
+    # Quoted-key JSON/YAML forms: "apiKey": "value", 'api-key' = 'value', etc.
+    # Opening quote on the key is required; closing key-quote and value-quote are optional.
+    (re.compile(r"""(?i)([\"']api[_-]?key[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_API_KEY]"),
+    (re.compile(r"""(?i)([\"']secret[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_SECRET]"),
+    (re.compile(r"""(?i)([\"']token[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_TOKEN]"),
+    (re.compile(r"""(?i)([\"']password[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_PASSWORD]"),
+    (re.compile(r"""(?i)([\"']private[_-]?key[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_PRIVATE_KEY]"),
     (re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----.*?-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----", re.DOTALL), "[REDACTED_PRIVATE_KEY]"),
     # Long base64-like or hex tokens (32+ chars of [A-Za-z0-9+/=_-])
     (re.compile(r"(?<![A-Za-z0-9])[A-Za-z0-9+/=_-]{32,}(?![A-Za-z0-9])"), "[REDACTED_TOKEN]"),
@@ -131,11 +139,16 @@ def call_api(api_key: str, model: str, system: str, user: str) -> str | None:
                     not isinstance(data, dict)
                     or not isinstance(data.get("content"), list)
                     or not data["content"]
-                    or not isinstance(data["content"][0], dict)
-                    or not isinstance(data["content"][0].get("text"), str)
                 ):
                     return None
-                return data["content"][0]["text"]
+                texts = [
+                    item["text"]
+                    for item in data["content"]
+                    if isinstance(item, dict) and isinstance(item.get("text"), str)
+                ]
+                if not texts:
+                    return None
+                return "".join(texts)
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")
             print(f"  HTTP {e.code}: {body[:200]}", file=sys.stderr)
