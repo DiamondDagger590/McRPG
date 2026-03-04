@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/post-edit-compile.sh"
+            "command": "bash .claude/hooks/post-edit-compile.sh"
           }
         ]
       }
