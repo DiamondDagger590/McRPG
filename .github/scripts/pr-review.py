@@ -81,8 +81,8 @@ _SENSITIVE_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"""(?i)([\"']password[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_PASSWORD]"),
     (re.compile(r"""(?i)([\"']private[_-]?key[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_PRIVATE_KEY]"),
     (re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----.*?-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----", re.DOTALL), "[REDACTED_PRIVATE_KEY]"),
-    # Long base64-like or hex tokens (32+ chars of [A-Za-z0-9+/=_-])
-    (re.compile(r"(?<![A-Za-z0-9])[A-Za-z0-9+/=_-]{32,}(?![A-Za-z0-9])"), "[REDACTED_TOKEN]"),
+    # Long base64-like tokens (32+ chars containing at least one +, / or = to exclude hex/UUIDs)
+    (re.compile(r"(?<![A-Za-z0-9])(?=[A-Za-z0-9+/=_-]*[+/=])[A-Za-z0-9+/=_-]{32,}(?![A-Za-z0-9])"), "[REDACTED_TOKEN]"),
 ]
 
 
@@ -95,7 +95,7 @@ def sanitize_diff(diff: str) -> str:
 
 def read_file(path: str) -> str:
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return f.read()
     except OSError:
         return ""
@@ -127,7 +127,7 @@ def call_api(api_key: str, model: str, system: str, user: str) -> str | None:
         "messages": [{"role": "user", "content": user}],
     }).encode("utf-8")
 
-    for attempt, delay in enumerate([0] + RETRY_DELAYS):
+    for attempt, delay in enumerate([0, *RETRY_DELAYS]):
         if delay:
             print(f"  Retrying in {delay}s (attempt {attempt + 1})...", file=sys.stderr)
             time.sleep(delay)
@@ -185,8 +185,9 @@ def is_no_findings(text: str) -> bool:
             if sentence.lower() == phrase:
                 # Ensure no other sentence has substantive content
                 others = [s for s in sentences if s.lower() != phrase]
+                _conj_prefix = re.compile(r"^(and|but|however|also)[,;:\s-]*", re.I)
                 if not any(
-                    s and not re.match(r"^(and|but|however|also)\b", s, re.I)
+                    _conj_prefix.sub("", s).strip()
                     for s in others
                 ):
                     return True
@@ -232,7 +233,7 @@ def main() -> None:
     sections: list[str] = []
     all_clear: list[str] = []
 
-    for key, persona in PERSONAS.items():
+    for persona in PERSONAS.values():
         if os.environ.get(persona["env"], "false").lower() != "true":
             continue
 

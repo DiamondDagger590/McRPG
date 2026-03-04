@@ -33,7 +33,8 @@ jobs:
         run: |
           python3 - <<'PYEOF'
           import json, os
-          d = json.load(open("review-meta.json"))
+          with open("review-meta.json") as f:
+              d = json.load(f)
           # strip any surrounding whitespace written by the heredoc
           out = os.environ["GITHUB_OUTPUT"]
           with open(out, "a") as f:
@@ -74,9 +75,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BODY=$(cat review_comment.txt)
-          if [[ "$BODY" == "<!--"* ]]; then
+          if [[ "$(head -c 4 review_comment.txt)" == "<!--" ]]; then
             echo "Suppressed comment — not posting."
             exit 0
           fi
-          gh pr comment ${{ steps.meta.outputs.pr_number }} --body "$BODY"
+          gh pr comment ${{ steps.meta.outputs.pr_number }} --body-file review_comment.txt
