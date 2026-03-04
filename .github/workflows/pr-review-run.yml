@@ -102,6 +102,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [ ! -s review_comment.txt ]; then
+            echo "review_comment.txt is empty — not posting."
+            exit 0
+          fi
           if [[ "$(head -c 4 review_comment.txt)" == "<!--" ]]; then
             echo "Suppressed comment — not posting."
             exit 0
