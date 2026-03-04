@@ -32,14 +32,20 @@ jobs:
         id: meta
         run: |
           python3 - <<'PYEOF'
-          import json, os
+          import json, os, re
           with open("review-meta.json") as f:
               d = json.load(f)
-          # strip any surrounding whitespace written by the heredoc
           out = os.environ["GITHUB_OUTPUT"]
+          _safe_key = re.compile(r'^[A-Za-z0-9_-]+$')
           with open(out, "a") as f:
               for k, v in d.items():
-                  f.write(f"{k}={str(v).strip()}\n")
+                  if not _safe_key.match(k):
+                      continue  # skip keys with unsafe characters
+                  val = str(v).strip()
+                  if any(c in val for c in ('\n', '\r', '\x00')):
+                      f.write(f"{k}<<EOF\n{val}\nEOF\n")
+                  else:
+                      f.write(f"{k}={val}\n")
           PYEOF
 
       - name: Set up Python

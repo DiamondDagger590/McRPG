@@ -81,8 +81,16 @@ _SENSITIVE_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"""(?i)([\"']password[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_PASSWORD]"),
     (re.compile(r"""(?i)([\"']private[_-]?key[\"']?\s*[:=]\s*[\"']?)\S+"""), r"\1[REDACTED_PRIVATE_KEY]"),
     (re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----.*?-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----", re.DOTALL), "[REDACTED_PRIVATE_KEY]"),
-    # Long base64-like tokens (32+ chars containing at least one +, / or = to exclude hex/UUIDs)
+    # Common provider-prefix tokens (most specific — checked first)
+    (re.compile(r"(?<![A-Za-z0-9_])(ghp|gho|ghs|ghr|github_pat)_[A-Za-z0-9_]{16,}"), "[REDACTED_TOKEN]"),
+    (re.compile(r"(?<![A-Za-z0-9_])sk-[A-Za-z0-9_-]{20,}"), "[REDACTED_TOKEN]"),
+    (re.compile(r"(?<![A-Za-z0-9_])pk_live_[A-Za-z0-9_]{20,}"), "[REDACTED_TOKEN]"),
+    # JWTs (three dot-separated base64url segments; header always starts with eyJ)
+    (re.compile(r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+"), "[REDACTED_TOKEN]"),
+    # Long standard base64 tokens (32+ chars, must contain +, / or = to exclude plain hex/UUIDs)
     (re.compile(r"(?<![A-Za-z0-9])(?=[A-Za-z0-9+/=_-]*[+/=])[A-Za-z0-9+/=_-]{32,}(?![A-Za-z0-9])"), "[REDACTED_TOKEN]"),
+    # Long base64url tokens (32+ chars, URL-safe alphabet with _ and -, broadest fallback)
+    (re.compile(r"(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{32,}(?![A-Za-z0-9_-])"), "[REDACTED_TOKEN]"),
 ]
 
 
