@@ -1,0 +1,129 @@
+---
+description: McRPG entity and holder hierarchy — AbilityHolder, LoadoutHolder, SkillHolder, McRPGPlayer, EntityManager, and how to retrieve and type-narrow holders
+globs: ["src/**/entity/**/*.java", "src/**/holder/**/*.java"]
+alwaysApply: false
+---
+
+# McRPG Entity & Holder System
+
+## Holder Hierarchy
+
+```
+AbilityHolder                  — any entity that can have abilities; the base type
+  └── LoadoutHolder            — restricted to using only the abilities in their loadout
+        └── SkillHolder        — also has levelable skills
+```
+
+`McRPGPlayer` is NOT a subclass of these — it composes them:
+
+```java
+public class McRPGPlayer extends CorePlayer {
+    private final SkillHolder skillHolder;   // access via asSkillHolder()
+    private final QuestHolder questHolder;   // access via asQuestHolder()
+}
+```
+
+`QuestHolder` is a separate composition (not in the hierarchy above), currently held by `McRPGPlayer` and tracked separately in `EntityManager`.
+
+## When to Type to Each Level
+
+| Use case | Type to use |
+|----------|-------------|
+| Code that works for any entity with abilities (including mobs) | `AbilityHolder` |
+| Code that requires loadout-restricted ability activation | `LoadoutHolder` |
+| Code that needs skill XP / level data | `SkillHolder` |
+| Code that is player-specific (settings, DB, Bukkit Player) | `McRPGPlayer` |
+
+Avoid typing to `McRPGPlayer` unless you genuinely need player-only features. Prefer the narrowest holder type that satisfies the requirement.
+
+## Retrieving a Holder from EntityManager
+
+```java
+EntityManager entityManager = plugin.registryAccess()
+    .registry(McRPGRegistryKey.MANAGER)
+    .manager(McRPGManagerKey.ENTITY);
+
+// Any entity (player or mob) — returns AbilityHolder (may actually be SkillHolder at runtime)
+Optional<AbilityHolder> holder = entityManager.getAbilityHolder(entity.getUniqueId());
+
+// Narrow to SkillHolder when you need skill data
+holder.ifPresent(h -> {
+    if (h instanceof SkillHolder skillHolder) {
+        // work with skills
+    }
+});
+```
+
+## Retrieving McRPGPlayer from a Bukkit Player
+
+`McRPGPlayer` is a `CorePlayer`. Use the `PlayerManager` from McCore:
+
+```java
+PlayerManager<McRPGPlayer, McRPG> playerManager = plugin.registryAccess()
+    .registry(RegistryKey.MANAGER)
+    .manager(CoreManagerKey.CORE_PLAYER_MANAGER);
+
+Optional<McRPGPlayer> mcRPGPlayer = playerManager.getPlayer(player.getUniqueId());
+```
+
+Then get the skill or quest holder via delegation:
+
+```java
+mcRPGPlayer.ifPresent(p -> {
+    SkillHolder skillHolder = p.asSkillHolder();
+    QuestHolder questHolder = p.asQuestHolder();
+});
+```
+
+## AbilityHolder — Key Responsibilities
+
+- Stores `AbilityData` per `NamespacedKey` (available abilities and their data)
+- Manages cooldown expiry tasks (via `DelayableCoreTask`)
+- Controls the **ready state** — `readyHolder()` / `unreadyHolder()` / `isHolderReadied()`
+- Fires `AbilityHolderReadyEvent` and `AbilityHolderUnreadyEvent` on state change
+- Tracks active abilities: `addActiveAbility(ability, durationSeconds)` auto-cleans up
+
+## SkillHolder — Key Responsibilities
+
+- Stores `SkillHolderData` per `NamespacedKey` (current level + experience)
+- Fires `SkillGainExpEvent` / `PostSkillGainExpEvent` on XP gain
+- Fires `SkillGainLevelEvent` / `PostSkillGainLevelEvent` on level-up
+- XP gain calls are routed through `SkillHolder.gainExperience(skill, amount)`
+
+## EntityManager — Tracking
+
+```java
+// Track a new AbilityHolder (done automatically for players on join)
+entityManager.trackAbilityHolder(abilityHolder);
+entityManager.removeAbilityHolder(abilityHolder);
+
+// Track a QuestHolder separately
+entityManager.trackQuestHolder(questHolder);
+entityManager.removeQuestHolder(questHolder);
+
+// Check if tracked
+boolean tracked = entityManager.isAbilityHolderTracked(holder);
+```
+
+Non-player entities are registered as plain `AbilityHolder` instances (not `SkillHolder`) unless explicitly subclassed.
+
+## Anti-Patterns
+
+- **Do not cast `AbilityHolder` to `McRPGPlayer` directly** — always check `instanceof McRPGPlayer p` first
+- **Do not store `AbilityHolder` references outside of `EntityManager`** — it owns the lifecycle; stale references won't be removed on unload
+- **Do not bypass `EntityManager`** — never construct or track holders manually; let the load/unload task infrastructure handle it
+- **Do not hold `SkillHolderData` references across ticks** — re-fetch from `skillHolder.getSkillHolderData(skillKey)` each time
+
+## Reference Files
+
+| Class | Path |
+|-------|------|
+| `AbilityHolder` | `src/main/java/us/eunoians/mcrpg/entity/holder/AbilityHolder.java` |
+| `LoadoutHolder` | `src/main/java/us/eunoians/mcrpg/entity/holder/LoadoutHolder.java` |
+| `SkillHolder` | `src/main/java/us/eunoians/mcrpg/entity/holder/SkillHolder.java` |
+| `McRPGPlayer` | `src/main/java/us/eunoians/mcrpg/entity/player/McRPGPlayer.java` |
+| `EntityManager` | `src/main/java/us/eunoians/mcrpg/entity/EntityManager.java` |
+
+---
+
+> **Maintenance:** If the holder hierarchy changes (new intermediate type, new composition, new EntityManager map), update this file and `CLAUDE.md` → Architecture Overview → Entity Hierarchy in the same PR.

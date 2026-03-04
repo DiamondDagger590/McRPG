@@ -360,6 +360,78 @@ WorldGuard, Geyser (Bedrock), LunarClient (Apollo), LandsAPI, PlaceholderAPI (PA
 
 ---
 
+## Localization System
+
+All player-facing text in McRPG is routed through `McRPGLocalizationManager`, which extends McCore's `LocalizationManager`. **Never send MiniMessage strings directly to a player** — always resolve through the manager so the player's locale is respected.
+
+### Locale Chain
+
+When resolving a message for a player, the manager walks a chain until it finds a translation:
+
+1. Player's chosen `LocaleSetting` (e.g. `fr`)
+2. Player's client-reported locale
+3. Server's configured default locale
+4. `Locale.ENGLISH` (guaranteed fallback — always covered by `BundledLocale.ENGLISH`)
+
+If the entire chain is exhausted without a match, `NoLocalizationContainsMessageException` is thrown.
+
+### Locale Source Types
+
+| Type | When to use |
+|------|-------------|
+| `BundledLocale` | Locale files shipped inside the McRPG JAR (English is the only current bundled locale). Each entry names a folder and one or more `.yml` files. |
+| `DynamicLocale` | Locale files placed by server owners or third-party plugins at runtime in `plugins/McRPG/localization/<language>/`. Discovered automatically at startup. |
+
+Third-party plugins add custom locale files via:
+```java
+mcRPGLocalizationManager.registerLanguageFile(myMcRPGLocalization);
+```
+
+### Adding a New Locale Key
+
+1. Define a `public static final Route` constant in `LocalizationKey` under the appropriate section header constant:
+```java
+private static final String MY_SECTION_HEADER = toRoutePath(PARENT_HEADER, "my-section");
+public static final Route MY_NEW_KEY = Route.fromString(toRoutePath(MY_SECTION_HEADER, "my-key"));
+```
+2. Add the corresponding entry to every bundled locale YAML (`en.yml`, `en_gui.yml`, etc. — whichever file owns that section).
+3. **Always add new keys in the same PR as the feature that uses them.**
+
+### Sending a Message
+
+```java
+// Resolve a plain string
+String msg = plugin.registryAccess()
+    .registry(RegistryKey.MANAGER)
+    .manager(McRPGManagerKey.LOCALIZATION)
+    .getLocalizedMessage(mcRPGPlayer, LocalizationKey.MY_NEW_KEY);
+
+// Resolve as a MiniMessage Component (preferred for display)
+Component component = plugin.registryAccess()
+    .registry(RegistryKey.MANAGER)
+    .manager(McRPGManagerKey.LOCALIZATION)
+    .getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.MY_NEW_KEY, Map.of("placeholder", value));
+
+// Resolve without a player (uses server default locale)
+String serverMsg = plugin.registryAccess()
+    .registry(RegistryKey.MANAGER)
+    .manager(McRPGManagerKey.LOCALIZATION)
+    .getLocalizedMessage(LocalizationKey.MY_NEW_KEY);
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `McRPGLocalizationManager.java` | Manager implementation; locale chain logic |
+| `McRPGLocalization.java` | Interface for a locale source (implement to add a new locale) |
+| `BundledLocale.java` | Enum of JAR-bundled locales (folder name + file list) |
+| `DynamicLocale.java` | Runtime-discovered locale from the data folder |
+| `LocalizationKey.java` | All `Route` constants for locale keys — the canonical index |
+| `src/main/resources/localization/english/` | Bundled English locale YAML files |
+
+---
+
 ## Keeping This File Current
 
 After any commit or PR that introduces one of the following, **update `CLAUDE.md` and the relevant `.cursor/rules/*.mdc` files** before or alongside the change:
@@ -374,6 +446,9 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New McCore abstraction used | `CLAUDE.md` McCore Relationship section |
 | New coding standard adopted | `CLAUDE.md` Coding Standards section |
 | New ability/skill type interface added | `CLAUDE.md` + `ability-system.mdc` or `skill-system.mdc` |
+| Entity hierarchy changed (new holder type or composition) | `CLAUDE.md` Architecture Overview + `entity-system.mdc` |
+| Localization system changed (new source type, chain order) | `CLAUDE.md` Localization System section |
+| New locale key section added | `LocalizationKey.java` + bundled locale YAMLs |
 | New GUI slot pattern or anti-pattern found | `persona-gui-ux.mdc` + `.claude/commands/review-gui-ux.md` |
 | New server owner config concern identified | `persona-server-owner.mdc` + `.claude/commands/review-server-owner.md` |
 | New public API pattern or breaking-change rule | `persona-extensibility.mdc` + `.claude/commands/review-extensibility.md` |
