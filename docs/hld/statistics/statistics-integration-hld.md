@@ -33,55 +33,57 @@ depend: [McCore]
 All McRPG statistics are defined as constants in a single class, following the pattern of `McRPGSetting` for player settings and `FileType` for config files.
 
 ```
-us.eunoians.mcrpg.statistic.McRPGStatistics
+us.eunoians.mcrpg.statistic.McRPGStatistic
 ```
 
 ### Global Gameplay Statistics
 
+These statistics are **skill-agnostic** — they track aggregate player actions regardless of which skill triggered them.
+
 | Constant | Key | Type | Description |
 |----------|-----|------|-------------|
-| `BLOCKS_MINED` | `mcrpg:blocks_mined` | LONG | Total blocks mined (any block that grants Mining XP) |
+| `BLOCKS_MINED` | `mcrpg:blocks_mined` | LONG | Total blocks mined that grant skill XP (any skill) |
 | `ORES_MINED` | `mcrpg:ores_mined` | LONG | Ore blocks specifically |
-| `TREES_CHOPPED` | `mcrpg:trees_chopped` | LONG | Logs broken (any log that grants WoodCutting XP) |
-| `CROPS_HARVESTED` | `mcrpg:crops_harvested` | LONG | Crops harvested (any block that grants Herbalism XP) |
-| `MOBS_KILLED` | `mcrpg:mobs_killed` | LONG | Mobs killed via Swords combat |
-| `DAMAGE_DEALT` | `mcrpg:damage_dealt` | DOUBLE | Total damage dealt in Swords combat |
-| `DAMAGE_TAKEN` | `mcrpg:damage_taken` | DOUBLE | Total damage taken |
+| `TREES_CHOPPED` | `mcrpg:trees_chopped` | LONG | Logs broken that grant skill XP |
+| `CROPS_HARVESTED` | `mcrpg:crops_harvested` | LONG | Crops harvested that grant skill XP |
+| `MOBS_KILLED` | `mcrpg:mobs_killed` | LONG | Total mobs killed (any combat) |
+| `DAMAGE_DEALT` | `mcrpg:damage_dealt` | DOUBLE | Total damage dealt (all sources) |
+| `DAMAGE_TAKEN` | `mcrpg:damage_taken` | DOUBLE | Total damage taken (all sources) |
 
 ### Skill Progression Statistics
 
 | Constant | Key | Type | Description |
 |----------|-----|------|-------------|
-| `TOTAL_SKILL_LEVELS_GAINED` | `mcrpg:total_skill_levels_gained` | LONG | Sum of all levels across all skills |
+| `TOTAL_SKILL_LEVELS_GAINED` | `mcrpg:total_skill_levels_gained` | LONG | Sum of all levels gained across all skills |
 | `TOTAL_SKILL_EXPERIENCE` | `mcrpg:total_skill_experience` | LONG | Sum of all XP earned across all skills |
 | `MINING_EXPERIENCE` | `mcrpg:mining_experience` | LONG | Total Mining XP earned |
 | `SWORDS_EXPERIENCE` | `mcrpg:swords_experience` | LONG | Total Swords XP earned |
 | `HERBALISM_EXPERIENCE` | `mcrpg:herbalism_experience` | LONG | Total Herbalism XP earned |
 | `WOODCUTTING_EXPERIENCE` | `mcrpg:woodcutting_experience` | LONG | Total WoodCutting XP earned |
-| `MINING_LEVELS` | `mcrpg:mining_levels` | INT | Current Mining level |
-| `SWORDS_LEVELS` | `mcrpg:swords_levels` | INT | Current Swords level |
-| `HERBALISM_LEVELS` | `mcrpg:herbalism_levels` | INT | Current Herbalism level |
-| `WOODCUTTING_LEVELS` | `mcrpg:woodcutting_levels` | INT | Current WoodCutting level |
+| `MINING_MAX_LEVEL` | `mcrpg:mining_max_level` | INT | Highest Mining level reached |
+| `SWORDS_MAX_LEVEL` | `mcrpg:swords_max_level` | INT | Highest Swords level reached |
+| `HERBALISM_MAX_LEVEL` | `mcrpg:herbalism_max_level` | INT | Highest Herbalism level reached |
+| `WOODCUTTING_MAX_LEVEL` | `mcrpg:woodcutting_max_level` | INT | Highest WoodCutting level reached |
 
 ### Ability Statistics
 
 | Constant | Key | Type | Description |
 |----------|-----|------|-------------|
 | `ABILITIES_ACTIVATED` | `mcrpg:abilities_activated` | LONG | Total ability activations across all abilities |
-| `BLEED_PROCS` | `mcrpg:bleed_procs` | LONG | Times Bleed has proc'd |
-| `EXTRA_ORE_PROCS` | `mcrpg:extra_ore_procs` | LONG | Times Extra Ore has activated |
-| `EXTRA_LUMBER_PROCS` | `mcrpg:extra_lumber_procs` | LONG | Times Extra Lumber has activated |
 
-### Quest Statistics
+Per-ability activation counts are registered dynamically during bootstrap by iterating over the `AbilityRegistry`. Each registered ability gets a corresponding statistic:
 
-| Constant | Key | Type | Description |
-|----------|-----|------|-------------|
-| `QUESTS_COMPLETED` | `mcrpg:quests_completed` | LONG | Total quests completed |
-| `UPGRADE_QUESTS_COMPLETED` | `mcrpg:upgrade_quests_completed` | LONG | Ability upgrade quests completed |
+| Pattern | Key Pattern | Type | Description |
+|---------|-------------|------|-------------|
+| `<ABILITY>_ACTIVATIONS` | `mcrpg:<ability_key>_activations` | LONG | Times this specific ability has activated |
+
+Examples: `mcrpg:bleed_activations`, `mcrpg:extra_ore_activations`, `mcrpg:extra_lumber_activations`, `mcrpg:mass_harvest_activations`, etc.
+
+This dynamic approach means new abilities added via `ContentExpansion` automatically get their own activation statistic without manual registration.
 
 ### Extensibility
 
-`McRPGStatistics` is designed to be extended when new skills or abilities are added via `ContentExpansion`. Third-party expansions can register their own statistics using the same McCore `StatisticRegistry`:
+`McRPGStatistic` is designed to be extended when new skills or abilities are added via `ContentExpansion`. Third-party expansions can register their own statistics using the same McCore `StatisticRegistry`:
 
 ```java
 // In a third-party ContentExpansion's registration:
@@ -105,7 +107,8 @@ Statistics are registered during McRPG's bootstrap, after McCore's registries ar
 us.eunoians.mcrpg.bootstrap.registrar.StatisticRegistrar implements Registrar<McRPG>
 ├── register(BootstrapContext<McRPG>)
 │   ├── Gets StatisticRegistry from RegistryAccess
-│   └── Registers all McRPGStatistics constants
+│   ├── Registers all McRPGStatistic constants
+│   └── Iterates AbilityRegistry to register per-ability activation statistics
 ```
 
 This registrar runs for all `StartupProfile`s (both `PROD` and `TEST`) since statistics definitions are needed for testing.
@@ -125,9 +128,8 @@ Statistics are incremented by hooking into McRPG's **existing event system**. Ra
 
 ```
 us.eunoians.mcrpg.listener.statistic
-├── SkillStatisticListener           // listens to PostSkillGainExpEvent, SkillGainLevelEvent
-├── AbilityStatisticListener         // listens to ability-specific activation events
-├── QuestStatisticListener           // listens to QuestCompleteEvent
+├── SkillStatisticListener           // listens to PostSkillGainExpEvent, PostSkillGainLevelEvent
+├── AbilityStatisticListener         // listens to ability activation events
 └── CombatStatisticListener          // listens to EntityDamageByEntityEvent for damage tracking
 ```
 
@@ -142,48 +144,48 @@ public void onSkillGainExp(PostSkillGainExpEvent event) {
     NamespacedKey skillKey = event.getSkill().getSkillKey();
 
     // Increment per-skill XP stat
-    NamespacedKey xpStatKey = McRPGStatistics.getSkillExperienceKey(skillKey);
+    NamespacedKey xpStatKey = McRPGStatistic.getSkillExperienceKey(skillKey);
     stats.incrementLong(xpStatKey, (long) event.getExperience());
 
     // Increment total XP stat
-    stats.incrementLong(McRPGStatistics.TOTAL_SKILL_EXPERIENCE.getStatisticKey(), (long) event.getExperience());
+    stats.incrementLong(McRPGStatistic.TOTAL_SKILL_EXPERIENCE.getStatisticKey(), (long) event.getExperience());
 }
 
 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 public void onSkillLevelUp(PostSkillGainLevelEvent event) {
     PlayerStatisticData stats = event.getMcRPGPlayer().getStatisticData();
 
-    // Update per-skill level stat (SET, not increment — levels are current state)
-    NamespacedKey levelStatKey = McRPGStatistics.getSkillLevelKey(event.getSkill().getSkillKey());
-    stats.setValue(levelStatKey, event.getNewLevel());
+    // Update per-skill max level stat (only increases, never decreases)
+    NamespacedKey levelStatKey = McRPGStatistic.getSkillMaxLevelKey(event.getSkill().getSkillKey());
+    stats.setMaxInt(levelStatKey, event.getNewLevel());
 
     // Increment total levels gained
     int levelsGained = event.getNewLevel() - event.getOldLevel();
-    stats.incrementLong(McRPGStatistics.TOTAL_SKILL_LEVELS_GAINED.getStatisticKey(), levelsGained);
+    stats.incrementLong(McRPGStatistic.TOTAL_SKILL_LEVELS_GAINED.getStatisticKey(), levelsGained);
 }
 ```
 
 ### `AbilityStatisticListener`
 
-Listens to individual ability activation events:
+Listens to ability activation events and increments both the global counter and the per-ability counter:
 
 ```java
 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 public void onAbilityActivate(AbilityActivateEvent event) {
     PlayerStatisticData stats = event.getAbilityHolder().getStatisticData();
-    stats.incrementLong(McRPGStatistics.ABILITIES_ACTIVATED.getStatisticKey(), 1);
-}
 
-@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-public void onBleedActivate(BleedActivateEvent event) {
-    PlayerStatisticData stats = event.getAbilityHolder().getStatisticData();
-    stats.incrementLong(McRPGStatistics.BLEED_PROCS.getStatisticKey(), 1);
+    // Increment global ability activation count
+    stats.incrementLong(McRPGStatistic.ABILITIES_ACTIVATED.getStatisticKey(), 1);
+
+    // Increment per-ability activation count
+    NamespacedKey perAbilityKey = McRPGStatistic.getAbilityActivationKey(event.getAbility().getAbilityKey());
+    stats.incrementLong(perAbilityKey, 1);
 }
 ```
 
 ### `CombatStatisticListener`
 
-Tracks damage dealt and mobs killed. Uses `EventPriority.MONITOR` to read the final damage values after all other plugins have modified them:
+Tracks damage dealt and taken across all combat (skill-agnostic). Uses `EventPriority.MONITOR` to read the final damage values after all other plugins have modified them:
 
 ```java
 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -192,7 +194,7 @@ public void onDamage(EntityDamageByEntityEvent event) {
         McRPGPlayer mcRPGPlayer = getPlayer(player);
         if (mcRPGPlayer != null) {
             mcRPGPlayer.getStatisticData().incrementDouble(
-                McRPGStatistics.DAMAGE_DEALT.getStatisticKey(), event.getFinalDamage()
+                McRPGStatistic.DAMAGE_DEALT.getStatisticKey(), event.getFinalDamage()
             );
         }
     }
@@ -200,7 +202,7 @@ public void onDamage(EntityDamageByEntityEvent event) {
         McRPGPlayer mcRPGPlayer = getPlayer(player);
         if (mcRPGPlayer != null) {
             mcRPGPlayer.getStatisticData().incrementDouble(
-                McRPGStatistics.DAMAGE_TAKEN.getStatisticKey(), event.getFinalDamage()
+                McRPGStatistic.DAMAGE_TAKEN.getStatisticKey(), event.getFinalDamage()
             );
         }
     }
@@ -219,11 +221,11 @@ public void onSkillGainExp(PostSkillGainExpEvent event) {
 
     // Increment the skill-specific "action count" stat
     if (skillKey.equals(Mining.MINING_KEY)) {
-        stats.incrementLong(McRPGStatistics.BLOCKS_MINED.getStatisticKey(), 1);
+        stats.incrementLong(McRPGStatistic.BLOCKS_MINED.getStatisticKey(), 1);
     } else if (skillKey.equals(WoodCutting.WOOD_CUTTING_KEY)) {
-        stats.incrementLong(McRPGStatistics.TREES_CHOPPED.getStatisticKey(), 1);
+        stats.incrementLong(McRPGStatistic.TREES_CHOPPED.getStatisticKey(), 1);
     } else if (skillKey.equals(Herbalism.HERBALISM_KEY)) {
-        stats.incrementLong(McRPGStatistics.CROPS_HARVESTED.getStatisticKey(), 1);
+        stats.incrementLong(McRPGStatistic.CROPS_HARVESTED.getStatisticKey(), 1);
     }
 }
 ```
@@ -256,42 +258,23 @@ The `loadPlayerStatistics()` method:
 ```java
 // In savePlayer(), added alongside existing saves:
 if (getStatisticData().isDirty()) {
-    failsafeTransaction.addAll(
+    FailSafeTransaction statisticTransaction = new FailSafeTransaction(connection);
+    statisticTransaction.addAll(
         PlayerStatisticDAO.savePlayerStatistics(connection, getUUID(), getStatisticData().getModifiedEntries())
     );
-    getStatisticData().markClean();
+    if (statisticTransaction.executeTransaction()) {
+        getStatisticData().markClean();
+    }
 }
 ```
+
+`markClean()` is only called after the transaction succeeds. If the transaction fails, the dirty entries are preserved and will be retried on the next save cycle.
 
 ### Unloading
 
 `McRPGPlayerUnloadTask` already calls `savePlayer()` which will now include statistics. No additional changes needed.
 
----
 
-## Data Migration
-
-Existing McRPG players have skill XP and levels that predate the statistics system. A one-time migration populates the relevant statistics from existing data.
-
-```
-us.eunoians.mcrpg.task.migration.StatisticMigrationTask extends CoreTask
-├── Reads all player skill data from SkillDAO
-├── For each player: calculates total XP, per-skill XP, per-skill levels, total levels
-├── Writes the derived statistics to PlayerStatisticDAO
-├── Marks migration as complete in McRPG config
-```
-
-**Trigger:** Runs once on first server boot after the statistics update. McRPG config gains:
-
-```yaml
-statistics:
-  # Internal — set to true after migration completes. Do not modify.
-  migration-complete: false
-```
-
-**Scope:** Only migrates skill XP and level statistics. Action counts (blocks mined, mobs killed, etc.) cannot be retroactively derived and will start from zero. This is an acceptable tradeoff — players understand that action tracking starts when the feature is added.
-
-**Performance:** Migration runs asynchronously on the database executor. For large servers (100k+ player records), it processes in batches of 100 players to avoid memory pressure and long-running transactions.
 
 ---
 
@@ -300,12 +283,13 @@ statistics:
 McRPG registers additional PAPI placeholders for its statistics on top of McCore's generic `%mccore_stat_*%` placeholders:
 
 ```
-%mcrpg_stat_blocks_mined%              → McRPGStatistics.BLOCKS_MINED
-%mcrpg_stat_mobs_killed%               → McRPGStatistics.MOBS_KILLED
-%mcrpg_stat_total_levels%              → McRPGStatistics.TOTAL_SKILL_LEVELS_GAINED
-%mcrpg_stat_abilities_activated%       → McRPGStatistics.ABILITIES_ACTIVATED
+%mcrpg_stat_blocks_mined%              → McRPGStatistic.BLOCKS_MINED
+%mcrpg_stat_mobs_killed%               → McRPGStatistic.MOBS_KILLED
+%mcrpg_stat_total_levels%              → McRPGStatistic.TOTAL_SKILL_LEVELS_GAINED
+%mcrpg_stat_abilities_activated%       → McRPGStatistic.ABILITIES_ACTIVATED
 %mcrpg_stat_<skill>_xp%               → Per-skill XP
-%mcrpg_stat_<skill>_level%            → Per-skill level
+%mcrpg_stat_<skill>_max_level%        → Per-skill highest level reached
+%mcrpg_stat_<ability>_activations%    → Per-ability activation count
 ```
 
 These are convenience aliases that delegate to `CorePlayer.getStatisticData()` under the hood.
@@ -315,23 +299,19 @@ These are convenience aliases that delegate to `CorePlayer.getStatisticData()` u
 ## Implementation Phases
 
 ### Phase 1: Constants & Registration
-1. Create `McRPGStatistics` constants class with all statistic definitions
-2. Create `StatisticRegistrar` and add to `McRPGBootstrap`
-3. Unit tests for statistic registration
+1. Create `McRPGStatistic` constants class with all statistic definitions
+2. Add dynamic per-ability statistic registration from `AbilityRegistry`
+3. Create `StatisticRegistrar` and add to `McRPGBootstrap`
+4. Unit tests for statistic registration
 
 ### Phase 2: Statistic Listeners
-1. `SkillStatisticListener` — XP, levels, block counts via `PostSkillGainExpEvent`/`PostSkillGainLevelEvent`
-2. `AbilityStatisticListener` — ability activation counts
+1. `SkillStatisticListener` — XP, max levels, block counts via `PostSkillGainExpEvent`/`PostSkillGainLevelEvent`
+2. `AbilityStatisticListener` — global + per-ability activation counts
 3. `CombatStatisticListener` — damage dealt/taken, mob kills
-4. `QuestStatisticListener` — quest completion counts
-5. Register listeners in `McRPGBootstrap`
+4. Register listeners in `McRPGBootstrap`
 
-### Phase 3: Player Lifecycle
+### Phase 3: Player Lifecycle & Polish
 1. Add `loadPlayerStatistics()` to `McRPGPlayerLoadTask`
-2. Add statistics saving to `McRPGPlayer.savePlayer()`
-3. Unit tests for load/save flow
-
-### Phase 4: Migration & Polish
-1. `StatisticMigrationTask` for existing player data
-2. PAPI placeholder registration
-3. Integration testing on a live server
+2. Add statistics saving to `McRPGPlayer.savePlayer()` (with correct `markClean()` ordering)
+3. PAPI placeholder registration
+4. Unit tests for load/save flow
