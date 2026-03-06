@@ -213,16 +213,18 @@ public void onDamage(EntityDamageByEntityEvent event) {
 
 ### Block-Based Statistics
 
-#### Prerequisite: `GainReason` on XP Events
+#### Prerequisite: `GainReason` on `SkillExperienceContext` and XP Events
 
 Block-mined, tree-chopped, and crops-harvested statistics **cannot** be reliably tracked by simply filtering `PostSkillGainExpEvent` by skill type. The problem: redeemable XP can be redeemed into any skill (e.g., redeemed into Mining), which fires `PostSkillGainExpEvent` for Mining even though no block was broken. Filtering by `skillKey == Mining.MINING_KEY` would incorrectly count that as "a block was mined."
 
-McRPG already has a `SkillExperienceContext` hierarchy (`BlockBreakContext`, `EntityDamageContext`, etc.) that carries the *reason* for XP gain, but this context is currently discarded before `SkillGainExpEvent` fires. To fix this, `SkillGainExpEvent` and `PostSkillGainExpEvent` need a `GainReason` field (or the full `SkillExperienceContext`) so that downstream listeners can distinguish the source.
+McRPG already has a `SkillExperienceContext` hierarchy (`BlockBreakContext`, `EntityDamageContext`, etc.) that carries the *reason* for XP gain, but this context is currently discarded before `SkillGainExpEvent` fires.
 
-**Proposed `GainReason` enum:**
+**Design: `GainReason` lives inside `SkillExperienceContext`**
+
+The `GainReason` enum is a field on `SkillExperienceContext` itself — each context subtype returns its own reason:
 
 ```java
-us.eunoians.mcrpg.event.skill.GainReason
+us.eunoians.mcrpg.skill.experience.context.GainReason
 ├── BLOCK_BREAK       // XP from breaking a block (mining, woodcutting, herbalism)
 ├── ENTITY_DAMAGE     // XP from dealing damage (swords, etc.)
 ├── REDEEM            // XP from redeeming redeemable experience
@@ -230,12 +232,45 @@ us.eunoians.mcrpg.event.skill.GainReason
 ├── OTHER             // Any other source (future-proofing)
 ```
 
-This `GainReason` is set when the event is constructed:
-- `SkillListener.levelSkill()` already knows the `SkillExperienceContext` — it maps to the appropriate `GainReason`
-- `RedeemExperienceCommand` sets `GainReason.REDEEM`
-- Admin commands set `GainReason.COMMAND`
+```java
+// In SkillExperienceContext (base class)
+public abstract GainReason getGainReason();
 
-**Note:** Adding `GainReason` to the XP events is a separate, small change to McRPG's event API. It benefits more than just statistics — any plugin listening to these events gains the ability to distinguish XP sources. This should be done as a prerequisite step before the statistics listeners are implemented.
+// In BlockBreakContext
+@Override
+public GainReason getGainReason() {
+    return GainReason.BLOCK_BREAK;
+}
+
+// In EntityDamageContext
+@Override
+public GainReason getGainReason() {
+    return GainReason.ENTITY_DAMAGE;
+}
+```
+
+For XP sources that don't go through the normal `SkillListener.levelSkill()` flow, new lightweight context subtypes are created:
+
+- `RedeemExperienceContext` — used by `RedeemExperienceCommand`, returns `GainReason.REDEEM`
+- `CommandExperienceContext` — used by admin commands, returns `GainReason.COMMAND`
+
+**Events expose both the full context and a convenience wrapper:**
+
+`SkillGainExpEvent` and `PostSkillGainExpEvent` gain two new fields:
+
+```java
+// Full context — available for listeners that need rich detail (which block? which entity?)
+@NotNull
+public SkillExperienceContext<?> getExperienceContext() { return context; }
+
+// Convenience wrapper — delegates to context, for listeners that just need the reason
+@NotNull
+public GainReason getGainReason() { return context.getGainReason(); }
+```
+
+Simple listeners (like our statistic listeners) use `event.getGainReason()`. Advanced listeners that need the triggering Bukkit event can inspect `event.getExperienceContext()` and `instanceof` check for `BlockBreakContext`, `EntityDamageContext`, etc.
+
+**Note:** This is a separate, small change to McRPG's event API and experience context system. It benefits more than just statistics — any plugin listening to these events gains the ability to distinguish XP sources and inspect the triggering context. This should be done as a prerequisite step before the statistics listeners are implemented.
 
 #### Corrected Listener Logic
 
@@ -358,13 +393,14 @@ McRPG constructs the `StatisticCache` during bootstrap using these config values
 4. Unit tests for statistic registration
 
 ### Phase 2: GainReason & Statistic Listeners
-1. Add `GainReason` enum and field to `SkillGainExpEvent` / `PostSkillGainExpEvent`
-2. Update `SkillListener.levelSkill()`, `RedeemExperienceCommand`, and admin commands to set the appropriate `GainReason`
-3. `SkillStatisticListener` — XP (with overflow), max levels, block counts filtered by `GainReason.BLOCK_BREAK`
-4. `AbilityStatisticListener` — global + per-ability activation counts
-5. `CombatStatisticListener` — damage dealt/taken, mob kills
-6. Register listeners in `McRPGBootstrap`
-7. Unit tests for listener behavior (including GainReason filtering)
+1. Add `GainReason` enum and `getGainReason()` to `SkillExperienceContext` (abstract) with implementations in `BlockBreakContext`, `EntityDamageContext`
+2. Create `RedeemExperienceContext` and `CommandExperienceContext` for non-gameplay XP sources
+3. Thread `SkillExperienceContext` through to `SkillGainExpEvent` / `PostSkillGainExpEvent` — expose both the full context and a `getGainReason()` convenience wrapper
+4. `SkillStatisticListener` — XP (with overflow), max levels, block counts filtered by `GainReason.BLOCK_BREAK`
+5. `AbilityStatisticListener` — global + per-ability activation counts
+6. `CombatStatisticListener` — damage dealt/taken, mob kills
+7. Register listeners in `McRPGBootstrap`
+8. Unit tests for listener behavior (including GainReason filtering)
 
 ### Phase 3: Player Lifecycle
 1. Add `loadPlayerStatistics()` to `McRPGPlayerLoadTask`
@@ -372,7 +408,7 @@ McRPG constructs the `StatisticCache` during bootstrap using these config values
 3. Unit tests for load/save flow
 
 ### Phase 4: Commands, PAPI & Config
-1. Mount McCore's base statistic commands under `/mcrpg statistic ...` (view, list, reset)
+1. Mount McCore's base statistic commands under `/mcrpg statistic ...` (view, list, set, modify, reset)
 2. Add statistic placeholders to `McRPGPapiExpansion` via `McRPGPlaceHolderType`
 3. Add `statistics` config section to McRPG's main config
 4. Construct and configure `StatisticCache` during McRPG bootstrap
