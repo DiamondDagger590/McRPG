@@ -219,40 +219,71 @@ Block-mined, tree-chopped, and crops-harvested statistics **cannot** be reliably
 
 McRPG already has a `SkillExperienceContext` hierarchy (`BlockBreakContext`, `EntityDamageContext`, etc.) that carries the *reason* for XP gain, but this context is currently discarded before `SkillGainExpEvent` fires.
 
-**Design: `GainReason` lives inside `SkillExperienceContext`**
+**Design: `GainReason` as an extensible interface**
 
-The `GainReason` enum is a field on `SkillExperienceContext` itself — each context subtype returns its own reason:
+`GainReason` is an **interface** that enums implement, rather than a closed enum. This allows McRPG to ship built-in reasons while third-party `ContentExpansion` plugins can define their own.
 
 ```java
-us.eunoians.mcrpg.skill.experience.context.GainReason
+us.eunoians.mcrpg.skill.experience.context.GainReason (interface)
+├── getKey(): NamespacedKey    // unique identifier for this reason
+├── getDisplayName(): String   // human-readable name for logging/admin UIs
+```
+
+McRPG provides the built-in implementation as an enum:
+
+```java
+us.eunoians.mcrpg.skill.experience.context.McRPGGainReason implements GainReason
 ├── BLOCK_BREAK       // XP from breaking a block (mining, woodcutting, herbalism)
 ├── ENTITY_DAMAGE     // XP from dealing damage (swords, etc.)
 ├── REDEEM            // XP from redeeming redeemable experience
 ├── COMMAND           // XP granted via admin command
-├── OTHER             // Any other source (future-proofing)
+├── OTHER             // Any other source (fallback)
 ```
+
+Third-party plugins define their own:
+
+```java
+// In a third-party ContentExpansion
+public enum MyExpansionGainReason implements GainReason {
+    FISHING,       // XP from a custom fishing skill
+    QUEST_REWARD;  // XP awarded by a quest system
+
+    @Override
+    public NamespacedKey getKey() {
+        return new NamespacedKey("myexpansion", name().toLowerCase());
+    }
+
+    @Override
+    public String getDisplayName() { return name(); }
+}
+```
+
+**`GainReason` lives inside `SkillExperienceContext`:**
+
+Each context subtype returns its own reason:
 
 ```java
 // In SkillExperienceContext (base class)
+@NotNull
 public abstract GainReason getGainReason();
 
 // In BlockBreakContext
 @Override
 public GainReason getGainReason() {
-    return GainReason.BLOCK_BREAK;
+    return McRPGMcRPGGainReason.BLOCK_BREAK;
 }
 
 // In EntityDamageContext
 @Override
 public GainReason getGainReason() {
-    return GainReason.ENTITY_DAMAGE;
+    return McRPGGainReason.ENTITY_DAMAGE;
 }
 ```
 
 For XP sources that don't go through the normal `SkillListener.levelSkill()` flow, new lightweight context subtypes are created:
 
-- `RedeemExperienceContext` — used by `RedeemExperienceCommand`, returns `GainReason.REDEEM`
-- `CommandExperienceContext` — used by admin commands, returns `GainReason.COMMAND`
+- `RedeemExperienceContext` — used by `RedeemExperienceCommand`, returns `McRPGGainReason.REDEEM`
+- `CommandExperienceContext` — used by admin commands, returns `McRPGGainReason.COMMAND`
 
 **Events expose both the full context and a convenience wrapper:**
 
@@ -268,7 +299,7 @@ public SkillExperienceContext<?> getExperienceContext() { return context; }
 public GainReason getGainReason() { return context.getGainReason(); }
 ```
 
-Simple listeners (like our statistic listeners) use `event.getGainReason()`. Advanced listeners that need the triggering Bukkit event can inspect `event.getExperienceContext()` and `instanceof` check for `BlockBreakContext`, `EntityDamageContext`, etc.
+Simple listeners (like our statistic listeners) use `event.getGainReason()`. Advanced listeners that need the triggering Bukkit event can inspect `event.getExperienceContext()` and `instanceof` check for `BlockBreakContext`, `EntityDamageContext`, etc. Listeners checking for built-in reasons use `event.getGainReason() == McRPGMcRPGGainReason.BLOCK_BREAK`.
 
 **Note:** This is a separate, small change to McRPG's event API and experience context system. It benefits more than just statistics — any plugin listening to these events gains the ability to distinguish XP sources and inspect the triggering context. This should be done as a prerequisite step before the statistics listeners are implemented.
 
@@ -280,7 +311,7 @@ With `GainReason` available, block-based statistics only increment when XP was g
 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 public void onSkillGainExp(PostSkillGainExpEvent event) {
     // Only count block-based stats when XP came from actually breaking a block
-    if (event.getGainReason() != GainReason.BLOCK_BREAK) {
+    if (event.getGainReason() != McRPGGainReason.BLOCK_BREAK) {
         return;
     }
 
@@ -297,7 +328,7 @@ public void onSkillGainExp(PostSkillGainExpEvent event) {
 }
 ```
 
-**Design Decision:** Tying block stats to `PostSkillGainExpEvent` + `GainReason.BLOCK_BREAK` means we only count blocks that the skill system considers valid (matching the configured material list) AND that were actually broken by the player. Redeemed XP, admin-granted XP, and other sources are correctly excluded.
+**Design Decision:** Tying block stats to `PostSkillGainExpEvent` + `McRPGGainReason.BLOCK_BREAK` means we only count blocks that the skill system considers valid (matching the configured material list) AND that were actually broken by the player. Redeemed XP, admin-granted XP, and other sources are correctly excluded.
 
 **Tradeoff:** If a block grants XP but is broken by an ability (e.g., Mass Harvest breaking multiple blocks), each XP award counts as one increment. This is the correct behavior — we're counting "skill-relevant actions", not raw block breaks.
 
@@ -393,14 +424,15 @@ McRPG constructs the `StatisticCache` during bootstrap using these config values
 4. Unit tests for statistic registration
 
 ### Phase 2: GainReason & Statistic Listeners
-1. Add `GainReason` enum and `getGainReason()` to `SkillExperienceContext` (abstract) with implementations in `BlockBreakContext`, `EntityDamageContext`
-2. Create `RedeemExperienceContext` and `CommandExperienceContext` for non-gameplay XP sources
-3. Thread `SkillExperienceContext` through to `SkillGainExpEvent` / `PostSkillGainExpEvent` — expose both the full context and a `getGainReason()` convenience wrapper
-4. `SkillStatisticListener` — XP (with overflow), max levels, block counts filtered by `GainReason.BLOCK_BREAK`
-5. `AbilityStatisticListener` — global + per-ability activation counts
-6. `CombatStatisticListener` — damage dealt/taken, mob kills
-7. Register listeners in `McRPGBootstrap`
-8. Unit tests for listener behavior (including GainReason filtering)
+1. Create `GainReason` interface and `McRPGGainReason` enum implementing it
+2. Add abstract `getGainReason()` to `SkillExperienceContext` with implementations in `BlockBreakContext`, `EntityDamageContext`
+3. Create `RedeemExperienceContext` and `CommandExperienceContext` for non-gameplay XP sources
+4. Thread `SkillExperienceContext` through to `SkillGainExpEvent` / `PostSkillGainExpEvent` — expose both the full context and a `getGainReason()` convenience wrapper
+5. `SkillStatisticListener` — XP (with overflow), max levels, block counts filtered by `McRPGGainReason.BLOCK_BREAK`
+6. `AbilityStatisticListener` — global + per-ability activation counts
+7. `CombatStatisticListener` — damage dealt/taken, mob kills
+8. Register listeners in `McRPGBootstrap`
+9. Unit tests for listener behavior (including GainReason filtering)
 
 ### Phase 3: Player Lifecycle
 1. Add `loadPlayerStatistics()` to `McRPGPlayerLoadTask`
