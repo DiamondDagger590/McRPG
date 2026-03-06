@@ -55,15 +55,17 @@ These statistics are **skill-agnostic** — they track aggregate player actions 
 | Constant | Key | Type | Description |
 |----------|-----|------|-------------|
 | `TOTAL_SKILL_LEVELS_GAINED` | `mcrpg:total_skill_levels_gained` | LONG | Sum of all levels gained across all skills |
-| `TOTAL_SKILL_EXPERIENCE` | `mcrpg:total_skill_experience` | LONG | Sum of all XP earned across all skills |
-| `MINING_EXPERIENCE` | `mcrpg:mining_experience` | LONG | Total Mining XP earned |
-| `SWORDS_EXPERIENCE` | `mcrpg:swords_experience` | LONG | Total Swords XP earned |
-| `HERBALISM_EXPERIENCE` | `mcrpg:herbalism_experience` | LONG | Total Herbalism XP earned |
-| `WOODCUTTING_EXPERIENCE` | `mcrpg:woodcutting_experience` | LONG | Total WoodCutting XP earned |
+| `TOTAL_SKILL_EXPERIENCE` | `mcrpg:total_skill_experience` | LONG | Sum of all XP earned across all skills (including overflow) |
+| `MINING_EXPERIENCE` | `mcrpg:mining_experience` | LONG | Total Mining XP earned (including overflow) |
+| `SWORDS_EXPERIENCE` | `mcrpg:swords_experience` | LONG | Total Swords XP earned (including overflow) |
+| `HERBALISM_EXPERIENCE` | `mcrpg:herbalism_experience` | LONG | Total Herbalism XP earned (including overflow) |
+| `WOODCUTTING_EXPERIENCE` | `mcrpg:woodcutting_experience` | LONG | Total WoodCutting XP earned (including overflow) |
 | `MINING_MAX_LEVEL` | `mcrpg:mining_max_level` | INT | Highest Mining level reached |
 | `SWORDS_MAX_LEVEL` | `mcrpg:swords_max_level` | INT | Highest Swords level reached |
 | `HERBALISM_MAX_LEVEL` | `mcrpg:herbalism_max_level` | INT | Highest Herbalism level reached |
 | `WOODCUTTING_MAX_LEVEL` | `mcrpg:woodcutting_max_level` | INT | Highest WoodCutting level reached |
+
+**Overflow XP Tracking:** Experience statistics track **all XP earned**, including overflow past max level. Even if the player is at max level and the XP doesn't change their actual level or stored experience, the statistic still increments. This means the statistic listener must fire on the raw XP amount *before* the skill's level cap is applied — it listens to `SkillGainExpEvent` (the pre-event where the XP amount is known) rather than relying on the delta of the player's stored experience. This gives an accurate "lifetime XP earned" value useful for achievements, leaderboards, and player profiles.
 
 ### Ability Statistics
 
@@ -143,7 +145,7 @@ public void onSkillGainExp(PostSkillGainExpEvent event) {
     PlayerStatisticData stats = event.getMcRPGPlayer().getStatisticData();
     NamespacedKey skillKey = event.getSkill().getSkillKey();
 
-    // Increment per-skill XP stat
+    // Increment per-skill XP stat (includes overflow past max level)
     NamespacedKey xpStatKey = McRPGStatistic.getSkillExperienceKey(skillKey);
     stats.incrementLong(xpStatKey, (long) event.getExperience());
 
@@ -211,15 +213,45 @@ public void onDamage(EntityDamageByEntityEvent event) {
 
 ### Block-Based Statistics
 
-Block-mined, tree-chopped, and crops-harvested statistics are incremented by listening to `PostSkillGainExpEvent` filtered by skill type, rather than duplicating the block detection logic already in the skill's leveling component:
+#### Prerequisite: `GainReason` on XP Events
+
+Block-mined, tree-chopped, and crops-harvested statistics **cannot** be reliably tracked by simply filtering `PostSkillGainExpEvent` by skill type. The problem: redeemable XP can be redeemed into any skill (e.g., redeemed into Mining), which fires `PostSkillGainExpEvent` for Mining even though no block was broken. Filtering by `skillKey == Mining.MINING_KEY` would incorrectly count that as "a block was mined."
+
+McRPG already has a `SkillExperienceContext` hierarchy (`BlockBreakContext`, `EntityDamageContext`, etc.) that carries the *reason* for XP gain, but this context is currently discarded before `SkillGainExpEvent` fires. To fix this, `SkillGainExpEvent` and `PostSkillGainExpEvent` need a `GainReason` field (or the full `SkillExperienceContext`) so that downstream listeners can distinguish the source.
+
+**Proposed `GainReason` enum:**
+
+```java
+us.eunoians.mcrpg.event.skill.GainReason
+├── BLOCK_BREAK       // XP from breaking a block (mining, woodcutting, herbalism)
+├── ENTITY_DAMAGE     // XP from dealing damage (swords, etc.)
+├── REDEEM            // XP from redeeming redeemable experience
+├── COMMAND           // XP granted via admin command
+├── OTHER             // Any other source (future-proofing)
+```
+
+This `GainReason` is set when the event is constructed:
+- `SkillListener.levelSkill()` already knows the `SkillExperienceContext` — it maps to the appropriate `GainReason`
+- `RedeemExperienceCommand` sets `GainReason.REDEEM`
+- Admin commands set `GainReason.COMMAND`
+
+**Note:** Adding `GainReason` to the XP events is a separate, small change to McRPG's event API. It benefits more than just statistics — any plugin listening to these events gains the ability to distinguish XP sources. This should be done as a prerequisite step before the statistics listeners are implemented.
+
+#### Corrected Listener Logic
+
+With `GainReason` available, block-based statistics only increment when XP was gained from actual gameplay actions:
 
 ```java
 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 public void onSkillGainExp(PostSkillGainExpEvent event) {
+    // Only count block-based stats when XP came from actually breaking a block
+    if (event.getGainReason() != GainReason.BLOCK_BREAK) {
+        return;
+    }
+
     PlayerStatisticData stats = event.getMcRPGPlayer().getStatisticData();
     NamespacedKey skillKey = event.getSkill().getSkillKey();
 
-    // Increment the skill-specific "action count" stat
     if (skillKey.equals(Mining.MINING_KEY)) {
         stats.incrementLong(McRPGStatistic.BLOCKS_MINED.getStatisticKey(), 1);
     } else if (skillKey.equals(WoodCutting.WOOD_CUTTING_KEY)) {
@@ -230,7 +262,7 @@ public void onSkillGainExp(PostSkillGainExpEvent event) {
 }
 ```
 
-**Design Decision:** Tying block stats to `PostSkillGainExpEvent` instead of `BlockBreakEvent` means we only count blocks that the skill system considers valid (matching the configured material list). This avoids counting blocks that don't grant XP and keeps the stat meaningful.
+**Design Decision:** Tying block stats to `PostSkillGainExpEvent` + `GainReason.BLOCK_BREAK` means we only count blocks that the skill system considers valid (matching the configured material list) AND that were actually broken by the player. Redeemed XP, admin-granted XP, and other sources are correctly excluded.
 
 **Tradeoff:** If a block grants XP but is broken by an ability (e.g., Mass Harvest breaking multiple blocks), each XP award counts as one increment. This is the correct behavior — we're counting "skill-relevant actions", not raw block breaks.
 
@@ -325,12 +357,14 @@ McRPG constructs the `StatisticCache` during bootstrap using these config values
 3. Create `StatisticRegistrar` and add to `McRPGBootstrap`
 4. Unit tests for statistic registration
 
-### Phase 2: Statistic Listeners
-1. `SkillStatisticListener` — XP, max levels, block counts via `PostSkillGainExpEvent`/`PostSkillGainLevelEvent`
-2. `AbilityStatisticListener` — global + per-ability activation counts
-3. `CombatStatisticListener` — damage dealt/taken, mob kills
-4. Register listeners in `McRPGBootstrap`
-5. Unit tests for listener behavior
+### Phase 2: GainReason & Statistic Listeners
+1. Add `GainReason` enum and field to `SkillGainExpEvent` / `PostSkillGainExpEvent`
+2. Update `SkillListener.levelSkill()`, `RedeemExperienceCommand`, and admin commands to set the appropriate `GainReason`
+3. `SkillStatisticListener` — XP (with overflow), max levels, block counts filtered by `GainReason.BLOCK_BREAK`
+4. `AbilityStatisticListener` — global + per-ability activation counts
+5. `CombatStatisticListener` — damage dealt/taken, mob kills
+6. Register listeners in `McRPGBootstrap`
+7. Unit tests for listener behavior (including GainReason filtering)
 
 ### Phase 3: Player Lifecycle
 1. Add `loadPlayerStatistics()` to `McRPGPlayerLoadTask`
