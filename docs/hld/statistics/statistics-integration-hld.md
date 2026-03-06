@@ -275,12 +275,13 @@ if (getStatisticData().isDirty()) {
 `McRPGPlayerUnloadTask` already calls `savePlayer()` which will now include statistics. No additional changes needed.
 
 
-
 ---
 
 ## PAPI Placeholders
 
-McRPG registers additional PAPI placeholders for its statistics on top of McCore's generic `%mccore_stat_*%` placeholders:
+McRPG registers statistic placeholders in its existing `McRPGPapiExpansion`. McCore does not have its own PAPI expansion — downstream plugins are responsible for registering their own placeholders.
+
+New statistic placeholders are added as `McRPGPlaceholder` implementations and registered via `McRPGPlaceHolderType`, following the existing pattern for skill/ability placeholders:
 
 ```
 %mcrpg_stat_blocks_mined%              → McRPGStatistic.BLOCKS_MINED
@@ -292,7 +293,27 @@ McRPG registers additional PAPI placeholders for its statistics on top of McCore
 %mcrpg_stat_<ability>_activations%    → Per-ability activation count
 ```
 
-These are convenience aliases that delegate to `CorePlayer.getStatisticData()` under the hood.
+These delegate to `CorePlayer.getStatisticData()` for online players. For offline players, they use McCore's `StatisticCache` (if configured) or fall back to direct `PlayerStatisticDAO` queries.
+
+---
+
+## Configuration
+
+Statistics configuration lives in McRPG's config (McCore is shaded and has no standalone config):
+
+```yaml
+statistics:
+  # Offline query cache (used by PAPI placeholders, leaderboards, etc.)
+  cache:
+    # Whether to cache offline stat queries
+    enabled: true
+    # Maximum number of entries in the cache
+    max-size: 1000
+    # How long cached entries live before being re-fetched from the database (seconds)
+    ttl: 300
+```
+
+McRPG constructs the `StatisticCache` during bootstrap using these config values and makes it available to its PAPI expansion and command handlers.
 
 ---
 
@@ -309,9 +330,15 @@ These are convenience aliases that delegate to `CorePlayer.getStatisticData()` u
 2. `AbilityStatisticListener` — global + per-ability activation counts
 3. `CombatStatisticListener` — damage dealt/taken, mob kills
 4. Register listeners in `McRPGBootstrap`
+5. Unit tests for listener behavior
 
-### Phase 3: Player Lifecycle & Polish
+### Phase 3: Player Lifecycle
 1. Add `loadPlayerStatistics()` to `McRPGPlayerLoadTask`
 2. Add statistics saving to `McRPGPlayer.savePlayer()` (with correct `markClean()` ordering)
-3. PAPI placeholder registration
-4. Unit tests for load/save flow
+3. Unit tests for load/save flow
+
+### Phase 4: Commands, PAPI & Config
+1. Mount McCore's base statistic commands under `/mcrpg statistic ...` (view, list, reset)
+2. Add statistic placeholders to `McRPGPapiExpansion` via `McRPGPlaceHolderType`
+3. Add `statistics` config section to McRPG's main config
+4. Construct and configure `StatisticCache` during McRPG bootstrap
