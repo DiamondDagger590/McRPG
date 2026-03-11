@@ -89,15 +89,19 @@ commands:
     # Configure the loadout edit command.
     edit:
       # The message to be sent to the player who ran the command if they don't have a loadout
-      # with the provided slot.
-      # Supports the following placeholders: <loadout-slot>
-      no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
+      # matching the provided slot number, exact name, or partial name.
+      no-loadout-matches: '<red>No loadout found matching that slot number or name.'
+      # The message to be sent to the player when their input matches more than one loadout name.
+      # Supports the following placeholders: <loadout-matches>
+      ambiguous-matches: '<red>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
     # Configure the loadout set command.
     set:
       # The message to be sent to the player who ran the command if they don't have a loadout
-      # with the provided slot.
-      # Supports the following placeholders: <loadout-slot>
-      no-loadout-matches: '<red>You do not have a loadout slot with that slot.'
+      # matching the provided slot number, exact name, or partial name.
+      no-loadout-matches: '<red>No loadout found matching that slot number or name.'
+      # The message to be sent to the player when their input matches more than one loadout name.
+      # Supports the following placeholders: <loadout-matches>
+      ambiguous-matches: '<red>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
       # The message to be sent if the loadout was set successfully.
       # Supports the following placeholders: <loadout-slot>
       loadout-set-success-message: "<gray>Your active loadout is now <gold>loadout #<loadout-slot></gold>.</gray>"

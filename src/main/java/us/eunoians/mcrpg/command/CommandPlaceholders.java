@@ -20,6 +20,7 @@ public enum CommandPlaceholders {
     SKILL("skill"),
     ABILITY("ability"),
     LOADOUT_SLOT("loadout-slot"),
+    LOADOUT_MATCHES("loadout-matches"),
     UPGRADE_POINTS("upgrade-points"),
     ;
 
