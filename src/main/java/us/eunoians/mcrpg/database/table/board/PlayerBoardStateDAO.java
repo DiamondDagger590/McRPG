@@ -176,6 +176,51 @@ public class PlayerBoardStateDAO {
     public record AcceptedBoardEntry(@NotNull UUID offeringId, @Nullable UUID questInstanceUUID) {}
 
     /**
+     * Updates the state of a player board entry identified by the quest instance UUID.
+     * Used when a quest is completed or cancelled to release the board slot.
+     *
+     * @param connection        the database connection
+     * @param questInstanceUUID the quest instance UUID to match
+     * @param newState          the new state (e.g., "COMPLETED", "CANCELLED")
+     * @return the number of rows updated
+     */
+    public static int updateStateByQuestInstanceUUID(@NotNull Connection connection,
+                                                     @NotNull UUID questInstanceUUID,
+                                                     @NotNull String newState) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "UPDATE " + TABLE_NAME + " SET state = ? WHERE quest_instance_uuid = ?")) {
+            ps.setString(1, newState);
+            ps.setString(2, questInstanceUUID.toString());
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Bulk-updates all {@code ACCEPTED} board state rows whose linked quest instance has already
+     * been cancelled in the quest instances table (e.g. by {@code bulkExpireStaleQuests}).
+     * This keeps the board count consistent for quests that expired while unloaded.
+     *
+     * @param connection the database connection
+     * @return the number of rows updated
+     */
+    public static int bulkCancelExpiredBoardStates(@NotNull Connection connection) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "UPDATE " + TABLE_NAME + " SET state = 'CANCELLED'" +
+                        " WHERE state = 'ACCEPTED'" +
+                        " AND quest_instance_uuid IN (" +
+                        "   SELECT quest_uuid FROM mcrpg_quest_instances WHERE state = 'CANCELLED'" +
+                        " )")) {
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
      * Counts the number of offerings currently in the {@code ACCEPTED} state for a given player
      * on a specific board. Used to enforce maximum active quest limits.
      *

@@ -11,16 +11,21 @@ import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.quest.board.BoardRotation;
+import us.eunoians.mcrpg.quest.board.QuestBoard;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshType;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.DailyRefreshType;
+import us.eunoians.mcrpg.quest.board.refresh.builtin.WeeklyRefreshType;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -33,6 +38,7 @@ import static org.mockito.Mockito.when;
 public class QuestBoardRotationTaskTest extends McRPGBaseTest {
 
     private QuestBoardManager mockBoardManager;
+    private QuestBoard mockBoard;
     private RefreshTypeRegistry refreshTypeRegistry;
     private TimeProvider timeProvider;
 
@@ -41,6 +47,10 @@ public class QuestBoardRotationTaskTest extends McRPGBaseTest {
         refreshTypeRegistry = new RefreshTypeRegistry();
         RegistryAccess.registryAccess().register(refreshTypeRegistry);
         mockBoardManager = mock(QuestBoardManager.class);
+        mockBoard = mock(QuestBoard.class);
+        when(mockBoardManager.getDefaultBoard()).thenReturn(mockBoard);
+        when(mockBoard.getCurrentDailyRotation()).thenReturn(Optional.empty());
+        when(mockBoard.getCurrentWeeklyRotation()).thenReturn(Optional.empty());
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockBoardManager);
         timeProvider = McRPG.getInstance().getTimeProvider();
     }
@@ -183,5 +193,72 @@ public class QuestBoardRotationTaskTest extends McRPGBaseTest {
 
         verify(mockBoardManager, times(1)).triggerRotation(daily.getKey());
         verify(mockBoardManager, times(1)).triggerRotation(alwaysRefresh.getKey());
+    }
+
+    @DisplayName("Startup task seeds current board epochs and skips duplicate daily/weekly rotations")
+    @Test
+    void onIntervalComplete_doesNotRotate_whenCurrentEpochsAlreadyLoadedFromBoard() {
+        DailyRefreshType daily = new DailyRefreshType();
+        WeeklyRefreshType weekly = new WeeklyRefreshType(java.time.DayOfWeek.MONDAY);
+        refreshTypeRegistry.register(daily);
+        refreshTypeRegistry.register(weekly);
+
+        Instant instant = instantAt(14, 0);
+        when(timeProvider.now()).thenReturn(instant);
+        ZonedDateTime now = instant.atZone(ZoneOffset.UTC);
+
+        BoardRotation seededDailyRotation = new BoardRotation(
+                UUID.randomUUID(),
+                new NamespacedKey("mcrpg", "default_board"),
+                daily.getKey(),
+                now.toLocalDate().toEpochDay(),
+                instant.toEpochMilli(),
+                instant.plusSeconds(10).toEpochMilli()
+        );
+        BoardRotation seededWeeklyRotation = new BoardRotation(
+                UUID.randomUUID(),
+                new NamespacedKey("mcrpg", "default_board"),
+                weekly.getKey(),
+                WeeklyRefreshType.computeEpoch(now),
+                instant.toEpochMilli(),
+                instant.plusSeconds(10).toEpochMilli()
+        );
+        when(mockBoard.getCurrentDailyRotation()).thenReturn(Optional.of(seededDailyRotation));
+        when(mockBoard.getCurrentWeeklyRotation()).thenReturn(Optional.of(seededWeeklyRotation));
+
+        QuestBoardRotationTask task = spy(new QuestBoardRotationTask(
+                McRPG.getInstance(), 0, 1f, "12:00", "UTC"));
+        task.runTask();
+
+        MockBukkit.getMock().getScheduler().performOneTick();
+        instant = instant.plusSeconds(1);
+        when(timeProvider.now()).thenReturn(instant);
+        MockBukkit.getMock().getScheduler().performOneTick();
+
+        verify(mockBoardManager, never()).triggerRotation(daily.getKey());
+        verify(mockBoardManager, never()).triggerRotation(weekly.getKey());
+        verify(task, times(1)).onIntervalComplete();
+    }
+
+    @DisplayName("Invalid timezone falls back to UTC and still triggers expected rotation checks")
+    @Test
+    void onIntervalComplete_usesUtcFallback_whenTimezoneIsInvalid() {
+        DailyRefreshType daily = new DailyRefreshType();
+        refreshTypeRegistry.register(daily);
+
+        Instant instant = instantAt(14, 0);
+        when(timeProvider.now()).thenReturn(instant);
+
+        QuestBoardRotationTask task = spy(new QuestBoardRotationTask(
+                McRPG.getInstance(), 0, 1f, "12:00", "definitely/not-a-timezone"));
+        task.runTask();
+
+        MockBukkit.getMock().getScheduler().performOneTick();
+        instant = instant.plusSeconds(1);
+        when(timeProvider.now()).thenReturn(instant);
+        MockBukkit.getMock().getScheduler().performOneTick();
+
+        verify(mockBoardManager, times(1)).triggerRotation(daily.getKey());
+        verify(task, times(1)).onIntervalComplete();
     }
 }

@@ -134,6 +134,24 @@ public class AbilityUpgradeRewardType implements QuestRewardType {
 
     @NotNull
     @Override
+    public String describeForDisplay() {
+        String abilityName = abilityKey != null ? formatAbilityName(abilityKey.getKey()) : "Unknown";
+        return "Upgrade: " + abilityName + " (Tier " + targetTier + ")";
+    }
+
+    private static String formatAbilityName(@NotNull String raw) {
+        String[] parts = raw.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.toString();
+    }
+
+    @NotNull
+    @Override
     public Map<String, Object> serializeConfig() {
         Map<String, Object> map = new HashMap<>();
         map.put("ability", abilityKey != null ? abilityKey.toString() : "");

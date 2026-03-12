@@ -94,7 +94,7 @@ public class RedeemExperienceCommand extends McRPGCommandBase {
         PlayerExperienceExtras playerExperienceExtras = mcRPGPlayer.getExperienceExtras();
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            if (amount > playerExperienceExtras.getRedeemableExperience()) {
+            if (amount <= 0 || amount > playerExperienceExtras.getRedeemableExperience()) {
                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_NOT_ENOUGH_EXPERIENCE_MESSAGE));
                 return;
             }

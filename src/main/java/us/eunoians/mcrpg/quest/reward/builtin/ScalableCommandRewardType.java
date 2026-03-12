@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -31,6 +32,7 @@ public final class ScalableCommandRewardType implements QuestRewardType {
 
     private final String commandTemplate;
     private final long baseAmount;
+    private final String displayLabel;
 
     /**
      * Creates an unconfigured base instance for registry registration.
@@ -38,11 +40,13 @@ public final class ScalableCommandRewardType implements QuestRewardType {
     public ScalableCommandRewardType() {
         this.commandTemplate = "";
         this.baseAmount = 0;
+        this.displayLabel = "";
     }
 
-    private ScalableCommandRewardType(@NotNull String commandTemplate, long baseAmount) {
+    private ScalableCommandRewardType(@NotNull String commandTemplate, long baseAmount, @NotNull String displayLabel) {
         this.commandTemplate = commandTemplate;
         this.baseAmount = baseAmount;
+        this.displayLabel = displayLabel;
     }
 
     @NotNull
@@ -53,9 +57,18 @@ public final class ScalableCommandRewardType implements QuestRewardType {
 
     @NotNull
     @Override
+    public String describeForDisplay() {
+        if (!displayLabel.isEmpty()) {
+            return displayLabel + " (x" + baseAmount + ")";
+        }
+        return "Scaled Reward (x" + baseAmount + ")";
+    }
+
+    @NotNull
+    @Override
     public QuestRewardType withAmountMultiplier(double multiplier) {
         long scaled = Math.max(1, Math.round(baseAmount * multiplier));
-        return new ScalableCommandRewardType(commandTemplate, scaled);
+        return new ScalableCommandRewardType(commandTemplate, scaled, displayLabel);
     }
 
     @NotNull
@@ -80,14 +93,21 @@ public final class ScalableCommandRewardType implements QuestRewardType {
     public ScalableCommandRewardType parseConfig(@NotNull Section section) {
         return new ScalableCommandRewardType(
                 section.getString("command", ""),
-                section.getLong("base-amount", 0L)
+                section.getLong("base-amount", 0L),
+                section.getString("display", "")
         );
     }
 
     @NotNull
     @Override
     public Map<String, Object> serializeConfig() {
-        return Map.of("command", commandTemplate, "base-amount", baseAmount);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("command", commandTemplate);
+        map.put("base-amount", baseAmount);
+        if (!displayLabel.isEmpty()) {
+            map.put("display", displayLabel);
+        }
+        return map;
     }
 
     @NotNull
@@ -95,7 +115,8 @@ public final class ScalableCommandRewardType implements QuestRewardType {
     public ScalableCommandRewardType fromSerializedConfig(@NotNull Map<String, Object> config) {
         String cmd = config.getOrDefault("command", "").toString();
         long amt = config.containsKey("base-amount") ? ((Number) config.get("base-amount")).longValue() : 0;
-        return new ScalableCommandRewardType(cmd, amt);
+        String label = config.getOrDefault("display", "").toString();
+        return new ScalableCommandRewardType(cmd, amt, label);
     }
 
     @NotNull

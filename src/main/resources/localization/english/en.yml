@@ -394,3 +394,38 @@ quests:
       objectives:
         mass_harvest_upgrade_objective:
           description: "<gray>Harvest Crops"
+
+# Quest event notifications sent as chat messages to in-scope players.
+# Placeholder syntax uses <placeholder_name> for all values.
+quest-notifications:
+  # Sent to all in-scope players when any quest starts (covers silent starts such as
+  # ability-upgrade quests and shared-scope Lands quests).
+  # Placeholder: <quest_name>
+  quest-started: '<gold>Quest Started: <yellow><quest_name>'
+  # Sent to all in-scope players when a quest is completed.
+  # Placeholder: <quest_name>
+  quest-completed: '<green>Quest Completed: <yellow><quest_name><green>! Rewards have been granted.'
+  # Sent to all in-scope players when a quest is manually abandoned.
+  # Placeholder: <quest_name>
+  quest-cancelled: '<yellow>Quest Abandoned: <quest_name>.'
+  # Sent to all in-scope players when a quest expires.
+  # Placeholder: <quest_name>
+  quest-expired: '<red>Quest Expired: <quest_name>.'
+  # Sent to all in-scope players when a quest phase is completed.
+  # Placeholders: <quest_name>, <phase_number>
+  phase-completed: '<gold>Phase <phase_number> of <yellow><quest_name><gold> is complete!'
+  # Sent to the contributing player when they cross a configured progress threshold
+  # for an objective. Requires the quest progress notifications player setting to be enabled.
+  # Placeholders: <quest_name>, <objective_name>, <percentage>
+  objective-threshold: '<gray>You have completed <gold><percentage>%<gray> of <white><objective_name><gray> for <yellow><quest_name><gray>.'
+  # Sent to all online players when the quest board rotates.
+  board-rotated: '<gold>The quest board has rotated! <yellow>New quests are now available.'
+  # Sent to a player when a single quest is nearing its expiry time.
+  # Placeholders: <quest_name>, <time_remaining>
+  near-expiry-single: '<yellow>Quest <white><quest_name><yellow> is expiring in <gold><time_remaining><yellow>!'
+  # Header sent when multiple quests are nearing expiry at the same time.
+  # Placeholder: <count>
+  near-expiry-batch-header: '<yellow>You have <gold><count><yellow> quests expiring soon:'
+  # One line per quest in a batched near-expiry notification.
+  # Placeholders: <quest_name>, <time_remaining>
+  near-expiry-batch-entry: '<yellow>  • <white><quest_name> <gray>(<time_remaining>)'

@@ -38,13 +38,23 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
     private final QuestInstance questInstance;
     @Nullable
     private final CompletionRecord completionRecord;
+    @Nullable
+    private final QuestDefinition resolvedDefinition;
 
     public QuestDetailOverviewSlot(@NotNull NamespacedKey questKey,
                                    @Nullable QuestInstance questInstance,
                                    @Nullable CompletionRecord completionRecord) {
+        this(questKey, questInstance, completionRecord, null);
+    }
+
+    public QuestDetailOverviewSlot(@NotNull NamespacedKey questKey,
+                                   @Nullable QuestInstance questInstance,
+                                   @Nullable CompletionRecord completionRecord,
+                                   @Nullable QuestDefinition resolvedDefinition) {
         this.questKey = questKey;
         this.questInstance = questInstance;
         this.completionRecord = completionRecord;
+        this.resolvedDefinition = resolvedDefinition;
     }
 
     @Override
@@ -57,9 +67,14 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
 
-        QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.QUEST_DEFINITION);
-        Optional<QuestDefinition> defOpt = definitionRegistry.get(questKey);
+        Optional<QuestDefinition> defOpt;
+        if (resolvedDefinition != null) {
+            defOpt = Optional.of(resolvedDefinition);
+        } else {
+            QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_DEFINITION);
+            defOpt = definitionRegistry.get(questKey);
+        }
 
         String questName = defOpt.map(def -> def.getDisplayName(mcRPGPlayer))
                 .orElse(questKey.toString());

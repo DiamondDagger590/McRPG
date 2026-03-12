@@ -225,10 +225,13 @@ public final class QuestTemplateConfigLoader {
 
         TemplateCondition prerequisite = ConditionParser.parsePrerequisiteBlock(section);
 
+        Map<String, String> inlineDisplay = parseInlineDisplay(section);
+
         validateExpressions(variables, phases, rewards, key.toString());
 
         return new QuestTemplate(key, displayNameRoute, boardEligible, scopeProviderKey,
-                supportedRarities, rarityOverrides, variables, phases, rewards, rewardDistribution, prerequisite, null);
+                supportedRarities, rarityOverrides, variables, phases, rewards, rewardDistribution,
+                prerequisite, null, inlineDisplay.isEmpty() ? null : inlineDisplay);
     }
 
     /**
@@ -704,5 +707,47 @@ public final class QuestTemplateConfigLoader {
             return Optional.ofNullable(NamespacedKey.fromString(input.toLowerCase()));
         }
         return Optional.of(new NamespacedKey(McRPGMethods.getMcRPGNamespace(), input.toLowerCase().replace('-', '_')));
+    }
+
+    /**
+     * Parses the optional {@code display} section from a template section into a flat
+     * string map used as inline fallback display strings for generated quests.
+     *
+     * @param section the template section
+     * @return a map of display keys to values, empty if no display section present
+     */
+    @NotNull
+    private Map<String, String> parseInlineDisplay(@NotNull Section section) {
+        Map<String, String> display = new LinkedHashMap<>();
+        if (!section.contains("display")) {
+            return display;
+        }
+        Section displaySection = section.getSection("display");
+        if (displaySection == null) {
+            return display;
+        }
+        if (displaySection.contains("name")) {
+            display.put("name", displaySection.getString("name"));
+        }
+        if (displaySection.contains("description")) {
+            display.put("description", displaySection.getString("description"));
+        }
+        if (displaySection.contains("objectives")) {
+            Section objSection = displaySection.getSection("objectives");
+            if (objSection != null) {
+                for (String objKey : objSection.getRoutesAsStrings(false)) {
+                    display.put("objective." + objKey, objSection.getString(objKey));
+                }
+            }
+        }
+        if (displaySection.contains("rewards")) {
+            Section rewardSection = displaySection.getSection("rewards");
+            if (rewardSection != null) {
+                for (String rewardKey : rewardSection.getRoutesAsStrings(false)) {
+                    display.put("reward." + rewardKey, rewardSection.getString(rewardKey));
+                }
+            }
+        }
+        return display;
     }
 }

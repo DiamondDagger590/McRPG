@@ -41,6 +41,16 @@ import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceAccumulationType;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
+import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
+import us.eunoians.mcrpg.quest.impl.QuestInstance;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -88,6 +98,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             updatePlayerDataSyncFunctions.add(loadPlayerSettings(connection));
             updatePlayerDataSyncFunctions.add(loadPlayerExperienceExtras(connection));
             updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
+            updatePlayerDataSyncFunctions.add(loadBoardQuestCount(connection));
             updatePlayerLoginTimes(connection, loginTime);
             // Jump to main thread to save the data
             new CoreTask(getPlugin()) {
@@ -112,9 +123,101 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).addPlayer(getCorePlayer());
         getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackAbilityHolder(getCorePlayer().asSkillHolder());
         getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackQuestHolder(getCorePlayer().asQuestHolder());
+        getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST)
+                .rescopePlayer(getCorePlayer().getUUID());
 
         // Fire event
         super.onPlayerLoadSuccessfully();
+
+        // Near-expiry login reminder: always notify regardless of nearExpiryNotified flag
+        // so players get a reminder every time they log in.
+        sendLoginNearExpiryReminder();
+    }
+
+    /**
+     * Checks whether the loaded player has any active quests nearing their expiry
+     * time and sends a reminder notification. This deliberately ignores the
+     * {@link QuestInstance#isNearExpiryNotified()} flag so players receive a reminder
+     * on every login.
+     */
+    private void sendLoginNearExpiryReminder() {
+        McRPGPlayer mcRPGPlayer = getCorePlayer();
+        Optional<org.bukkit.entity.Player> playerOpt = mcRPGPlayer.getAsBukkitPlayer();
+        if (playerOpt.isEmpty()) {
+            return;
+        }
+        org.bukkit.entity.Player player = playerOpt.get();
+
+        long thresholdMs = loadNearExpiryThresholdMs();
+        long lookaheadMs = (long) (thresholdMs * 1.5);
+        long now = getPlugin().getTimeProvider().now().toEpochMilli();
+
+        QuestManager questManager = getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST);
+
+        UUID playerUUID = mcRPGPlayer.getUUID();
+        List<QuestInstance> nearExpiry = new ArrayList<>();
+        for (QuestInstance quest : questManager.getActiveQuestsForPlayer(playerUUID)) {
+            Optional<Long> expOpt = quest.getExpirationTime();
+            if (expOpt.isEmpty()) {
+                continue;
+            }
+            long timeUntilExpiry = expOpt.get() - now;
+            if (timeUntilExpiry > 0 && timeUntilExpiry <= lookaheadMs) {
+                nearExpiry.add(quest);
+            }
+        }
+
+        if (nearExpiry.isEmpty()) {
+            return;
+        }
+
+        McRPGLocalizationManager localizationManager = getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        QuestDefinitionRegistry definitionRegistry = getPlugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_DEFINITION);
+
+        if (nearExpiry.size() == 1) {
+            QuestInstance quest = nearExpiry.get(0);
+            String questName = definitionRegistry.get(quest.getQuestKey())
+                    .map(def -> def.getDisplayName(mcRPGPlayer))
+                    .orElse(quest.getQuestKey().getKey());
+            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().orElse(now) - now);
+
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
+                    mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_SINGLE_NOTIFICATION,
+                    Map.of("quest_name", questName, "time_remaining", timeRemaining)));
+        } else {
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
+                    mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_BATCH_HEADER,
+                    Map.of("count", String.valueOf(nearExpiry.size()))));
+
+            for (QuestInstance quest : nearExpiry) {
+                String questName = definitionRegistry.get(quest.getQuestKey())
+                        .map(def -> def.getDisplayName(mcRPGPlayer))
+                        .orElse(quest.getQuestKey().getKey());
+                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().orElse(now) - now);
+                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
+                        mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_BATCH_ENTRY,
+                        Map.of("quest_name", questName, "time_remaining", timeRemaining)));
+            }
+        }
+    }
+
+    /**
+     * Reads the near-expiry threshold from {@code board.yml} and returns it in milliseconds.
+     *
+     * @return threshold duration in milliseconds
+     */
+    private long loadNearExpiryThresholdMs() {
+        dev.dejvokep.boostedyaml.YamlDocument boardConfig = getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.BOARD_CONFIG);
+        int minutes = boardConfig.getInt(BoardConfigFile.NEAR_EXPIRY_THRESHOLD_MINUTES, 60);
+        return (long) minutes * 60_000L;
     }
 
     @VisibleForTesting
@@ -320,6 +423,35 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         // Reset now that they've logged in
         loginInfoTransaction.addAll(PlayerLoginTimeDAO.saveLoggedOutInSafeZone(connection, uuid, false));
         loginInfoTransaction.executeTransaction();
+    }
+
+    /**
+     * Queries the number of active board quests for this player so the count can be
+     * maintained in-memory on {@link us.eunoians.mcrpg.entity.holder.QuestHolder}.
+     *
+     * @param connection the database connection (on the DB executor thread)
+     * @return sync function that seeds the quest holder with the DB count
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadBoardQuestCount(@NotNull Connection connection) {
+        NamespacedKey boardKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "default_board");
+        int count = PlayerBoardStateDAO.countActiveQuestsFromBoard(connection, getCorePlayer().getUUID(), boardKey);
+        return () -> getCorePlayer().asQuestHolder().setActiveBoardQuestCount(count);
+    }
+
+    /**
+     * Formats a millisecond duration as "Xh Ym" for display in near-expiry messages.
+     *
+     * @param millisRemaining time remaining in milliseconds (clamped to 0 if negative)
+     * @return formatted string, e.g. "1h 30m"
+     */
+    @NotNull
+    private static String formatTimeRemaining(long millisRemaining) {
+        if (millisRemaining <= 0) {
+            return "0h 0m";
+        }
+        Duration d = Duration.ofMillis(millisRemaining);
+        return d.toHours() + "h " + d.toMinutesPart() + "m";
     }
 
     @FunctionalInterface

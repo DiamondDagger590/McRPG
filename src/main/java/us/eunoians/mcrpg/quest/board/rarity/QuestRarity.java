@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.board.rarity;
 
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,13 +23,15 @@ public final class QuestRarity implements McRPGContent {
     private final NamespacedKey expansionKey;
     private final Integer customModelData;
     private final boolean glint;
+    private final Material material;
+    private final String nameColor;
 
     public QuestRarity(@NotNull NamespacedKey key,
                        int weight,
                        double difficultyMultiplier,
                        double rewardMultiplier,
                        @NotNull NamespacedKey expansionKey) {
-        this(key, weight, difficultyMultiplier, rewardMultiplier, expansionKey, null, false);
+        this(key, weight, difficultyMultiplier, rewardMultiplier, expansionKey, null, false, null, null);
     }
 
     public QuestRarity(@NotNull NamespacedKey key,
@@ -38,6 +41,18 @@ public final class QuestRarity implements McRPGContent {
                        @NotNull NamespacedKey expansionKey,
                        @Nullable Integer customModelData,
                        boolean glint) {
+        this(key, weight, difficultyMultiplier, rewardMultiplier, expansionKey, customModelData, glint, null, null);
+    }
+
+    public QuestRarity(@NotNull NamespacedKey key,
+                       int weight,
+                       double difficultyMultiplier,
+                       double rewardMultiplier,
+                       @NotNull NamespacedKey expansionKey,
+                       @Nullable Integer customModelData,
+                       boolean glint,
+                       @Nullable Material material,
+                       @Nullable String nameColor) {
         this.key = key;
         this.weight = weight;
         this.difficultyMultiplier = difficultyMultiplier;
@@ -45,6 +60,8 @@ public final class QuestRarity implements McRPGContent {
         this.expansionKey = expansionKey;
         this.customModelData = customModelData;
         this.glint = glint;
+        this.material = material;
+        this.nameColor = nameColor;
     }
 
     @NotNull
@@ -81,6 +98,28 @@ public final class QuestRarity implements McRPGContent {
      */
     public boolean hasGlint() {
         return glint;
+    }
+
+    /**
+     * Returns the display material for offering items of this rarity.
+     * When present, overrides the material from the localization section.
+     *
+     * @return the material, or empty to use the localization default
+     */
+    @NotNull
+    public Optional<Material> getMaterial() {
+        return Optional.ofNullable(material);
+    }
+
+    /**
+     * Returns the MiniMessage color tag to prepend to offering item names for this rarity.
+     * For example, {@code "<gold>"} for legendary quests.
+     *
+     * @return the name color tag, or empty to use the localization default
+     */
+    @NotNull
+    public Optional<String> getNameColor() {
+        return Optional.ofNullable(nameColor);
     }
 
     @NotNull

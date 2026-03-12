@@ -370,6 +370,15 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.display-item"));
     public static final Route ACTIVE_QUEST_GUI_VIEW_HISTORY_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "view-history-button.display-item"));
     public static final Route ACTIVE_QUEST_GUI_NO_ACTIVE_QUESTS_DISPLAY_ITEM = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "no-active-quests.display-item"));
+    public static final Route ACTIVE_QUEST_GUI_PHASE_LINE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.phase-line"));
+    public static final Route ACTIVE_QUEST_GUI_OBJECTIVE_PROGRESS_LINE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.objective-progress-line"));
+    public static final Route ACTIVE_QUEST_GUI_OBJECTIVE_DETAIL_LINE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.objective-detail-line"));
+    public static final Route ACTIVE_QUEST_GUI_EXPIRES_LINE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.expires-line"));
+    public static final Route ACTIVE_QUEST_GUI_EXPIRES_TIME_FORMAT = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.expires-time-format"));
+    public static final Route ACTIVE_QUEST_GUI_EXPIRES_EXPIRED = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.expires-expired"));
+    public static final Route ACTIVE_QUEST_GUI_EXPIRES_NONE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.expires-none"));
+    public static final Route ACTIVE_QUEST_GUI_CLICK_TO_VIEW_DETAILS = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.click-to-view-details"));
+    public static final Route ACTIVE_QUEST_GUI_RIGHT_CLICK_TO_ABANDON = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.right-click-to-abandon"));
 
     // Quest History GUI
     private static final String QUEST_HISTORY_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-history-gui");
@@ -389,6 +398,15 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_OBJECTIVE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "objective-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_REWARD_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "reward-slot.display-item"));
+    public static final Route QUEST_DETAIL_GUI_DURATION_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "duration-slot.display-item"));
+    public static final Route QUEST_DETAIL_GUI_ABANDON_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "abandon-button.display-item"));
+
+    // Quest Abandon Confirm GUI
+    private static final String QUEST_ABANDON_CONFIRM_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-abandon-confirm-gui");
+    public static final Route QUEST_ABANDON_CONFIRM_GUI_TITLE = Route.fromString(toRoutePath(QUEST_ABANDON_CONFIRM_GUI_HEADER, "title"));
+    public static final Route QUEST_ABANDON_CONFIRM_GUI_CONFIRM_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_ABANDON_CONFIRM_GUI_HEADER, "confirm-button.display-item"));
+    public static final Route QUEST_ABANDON_CONFIRM_GUI_CANCEL_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_ABANDON_CONFIRM_GUI_HEADER, "cancel-button.display-item"));
+    public static final Route QUEST_ABANDON_CONFIRM_GUI_QUEST_INFO_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_ABANDON_CONFIRM_GUI_HEADER, "quest-info.display-item"));
 
     // Remote Transfer
     private static final String REMOTE_TRANSFER_GUI_HEADER = toRoutePath(GUI_HEADER, "remote-transfer-gui");
@@ -590,6 +608,11 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_BOARD_OFFERING_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "offering-slot.display-item"));
     public static final Route QUEST_BOARD_NO_OFFERINGS_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "no-offerings-slot.display-item"));
 
+    // Quest progress notification player setting (settings GUI display items)
+    private static final String QUEST_PROGRESS_NOTIFICATION_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "quest-progress-notification-setting-slot");
+    public static final Route QUEST_PROGRESS_NOTIFICATION_SETTING_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_PROGRESS_NOTIFICATION_SETTING_HEADER, "enabled.display-item"));
+    public static final Route QUEST_PROGRESS_NOTIFICATION_SETTING_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_PROGRESS_NOTIFICATION_SETTING_HEADER, "disabled.display-item"));
+
     // Quest Board GUI Polish (Phase 4)
     public static final Route QUEST_BOARD_OBJECTIVES_HEADER = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "objectives-header"));
     public static final Route QUEST_BOARD_OBJECTIVE_LINE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "objective-line"));
@@ -604,4 +627,17 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_BOARD_PREVIEW_QUALIFIES = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "preview-qualifies"));
     public static final Route QUEST_BOARD_PREVIEW_NOT_QUALIFIES = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "preview-not-qualifies"));
     public static final Route QUEST_BOARD_PREVIEW_CONTRIBUTION = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "preview-contribution"));
+
+    // Quest event notifications (chat messages sent to in-scope players on lifecycle events)
+    private static final String QUEST_NOTIFICATION_HEADER = "quest-notifications";
+    public static final Route QUEST_STARTED_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "quest-started"));
+    public static final Route QUEST_COMPLETED_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "quest-completed"));
+    public static final Route QUEST_CANCELLED_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "quest-cancelled"));
+    public static final Route QUEST_EXPIRED_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "quest-expired"));
+    public static final Route QUEST_PHASE_COMPLETED_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "phase-completed"));
+    public static final Route QUEST_OBJECTIVE_THRESHOLD_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "objective-threshold"));
+    public static final Route QUEST_BOARD_ROTATED_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "board-rotated"));
+    public static final Route QUEST_NEAR_EXPIRY_SINGLE_NOTIFICATION = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "near-expiry-single"));
+    public static final Route QUEST_NEAR_EXPIRY_BATCH_HEADER = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "near-expiry-batch-header"));
+    public static final Route QUEST_NEAR_EXPIRY_BATCH_ENTRY = Route.fromString(toRoutePath(QUEST_NOTIFICATION_HEADER, "near-expiry-batch-entry"));
 }

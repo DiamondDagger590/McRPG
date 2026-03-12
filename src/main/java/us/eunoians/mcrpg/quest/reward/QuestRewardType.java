@@ -104,4 +104,21 @@ public interface QuestRewardType extends McRPGContent {
     default OptionalLong getNumericAmount() {
         return OptionalLong.empty();
     }
+
+    /**
+     * Returns a human-readable description of this configured reward for GUI display.
+     * Implementations should include all relevant details (e.g., skill name for experience,
+     * display label for commands). Used as a fallback when no localization entry exists.
+     *
+     * @return a display-ready description string
+     */
+    @NotNull
+    default String describeForDisplay() {
+        String typeName = getKey().getKey().replace('_', ' ');
+        return getNumericAmount()
+                .stream()
+                .mapToObj(amount -> amount + " " + typeName)
+                .findFirst()
+                .orElse(typeName);
+    }
 }

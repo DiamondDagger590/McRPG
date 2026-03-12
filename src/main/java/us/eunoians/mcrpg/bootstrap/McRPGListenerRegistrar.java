@@ -30,13 +30,16 @@ import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerPickupItemListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
+import us.eunoians.mcrpg.listener.board.BoardRotationNotificationListener;
 import us.eunoians.mcrpg.listener.quest.AbilityUpgradeQuestListener;
 import us.eunoians.mcrpg.listener.quest.BlockBreakQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.MobKillQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.QuestCancelListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestFeedbackListener;
 import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestPhaseCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestProgressNotificationListener;
 import us.eunoians.mcrpg.listener.quest.QuestStageCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestStartListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
@@ -94,6 +97,9 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new AbilityUpgradeQuestListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new BlockBreakQuestProgressListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new MobKillQuestProgressListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestFeedbackListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestProgressNotificationListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new BoardRotationNotificationListener(), plugin);
 
         // World listener
         Bukkit.getPluginManager().registerEvents(new FakeBlockBreakListener(), plugin);

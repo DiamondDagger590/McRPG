@@ -48,27 +48,41 @@ public class QuestDetailObjectiveSlot implements McRPGSlot {
         Map<String, String> placeholders = new HashMap<>();
 
         String description = objectiveDef.getDescription(mcRPGPlayer, questKey);
-        placeholders.put("objective_description", description);
+        String[] descLines = description.split("\n");
+        placeholders.put("objective_description", descLines[0]);
+
+        String progress;
+        String required;
+        String state;
 
         if (objectiveInstance != null) {
-            placeholders.put("progress", String.valueOf(objectiveInstance.getCurrentProgression()));
-            placeholders.put("required", String.valueOf(objectiveInstance.getRequiredProgression()));
-            placeholders.put("objective_state", objectiveInstance.getQuestObjectiveState().name());
+            progress = String.valueOf(objectiveInstance.getCurrentProgression());
+            required = String.valueOf(objectiveInstance.getRequiredProgression());
+            state = objectiveInstance.getQuestObjectiveState().name();
         } else {
-            placeholders.put("progress", "0");
+            progress = "0";
             try {
-                placeholders.put("required", String.valueOf(objectiveDef.getRequiredProgress()));
+                required = String.valueOf(objectiveDef.getRequiredProgress());
             } catch (IllegalStateException e) {
-                placeholders.put("required", "?");
+                required = "?";
             }
-            placeholders.put("objective_state", "PREVIEW");
+            state = "PREVIEW";
         }
 
-        return ItemBuilder.from(RegistryAccess.registryAccess()
+        ItemBuilder builder = ItemBuilder.from(RegistryAccess.registryAccess()
                         .registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.LOCALIZATION)
                         .getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_OBJECTIVE_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+
+        for (int i = 1; i < descLines.length; i++) {
+            builder.addDisplayLore("<gray>" + descLines[i]);
+        }
+
+        builder.addDisplayLore("<gray>Progress: <gold>" + progress + "/" + required);
+        builder.addDisplayLore("<gray>State: <gold>" + state);
+
+        return builder;
     }
 
     @NotNull

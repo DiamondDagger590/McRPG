@@ -5,6 +5,16 @@ quests:
   # Weekly: Mass mining expedition
   # -------------------------------------------------------------------
   mcrpg:weekly_mining_expedition:
+    display:
+      name: "Mining Expedition"
+      description: "A massive mining operation across two phases"
+      objectives:
+        weekly_break_stone: "Mine bulk stone and deepslate"
+        weekly_break_iron: "Mine iron ore"
+        weekly_break_diamonds: "Mine diamond ore"
+      rewards:
+        mining_xp: "Mining XP"
+        loot_crate: "Diamond Bonus"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
@@ -22,6 +32,7 @@ quests:
         amount: 2000
       loot_crate:
         type: mcrpg:command
+        display: "5 Diamonds"
         commands:
           - "give {player} diamond 5"
     phases:
@@ -71,6 +82,17 @@ quests:
   # Weekly: Monster hunter
   # -------------------------------------------------------------------
   mcrpg:weekly_monster_hunter:
+    display:
+      name: "Monster Hunter"
+      description: "Hunt hordes of overworld undead and venture into the Nether"
+      objectives:
+        weekly_slay_undead: "Slay undead mobs"
+        weekly_slay_spiders: "Slay spiders"
+        weekly_slay_blazes: "Slay blazes"
+        weekly_slay_wither_skeletons: "Slay wither skeletons"
+      rewards:
+        swords_xp: "Swords XP"
+        hunter_bounty: "Experience Bottles"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
@@ -88,6 +110,7 @@ quests:
         amount: 2000
       hunter_bounty:
         type: mcrpg:command
+        display: "16 Experience Bottles"
         commands:
           - "give {player} experience_bottle 16"
     phases:
@@ -147,6 +170,17 @@ quests:
   # Weekly: Multi-skill challenge (mining + combat)
   # -------------------------------------------------------------------
   mcrpg:weekly_adventurer:
+    display:
+      name: "Adventurer's Challenge"
+      description: "Mine ancient debris and fight dangerous mobs"
+      objectives:
+        weekly_break_ancient_debris: "Mine ancient debris"
+        weekly_slay_endermen: "Slay endermen"
+        weekly_slay_creepers: "Slay creepers"
+      rewards:
+        mining_xp: "Mining XP"
+        swords_xp: "Swords XP"
+        grand_prize: "Netherite Scrap"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
@@ -167,6 +201,7 @@ quests:
         amount: 1000
       grand_prize:
         type: mcrpg:command
+        display: "2 Netherite Scrap"
         commands:
           - "give {player} netherite_scrap 2"
     phases:

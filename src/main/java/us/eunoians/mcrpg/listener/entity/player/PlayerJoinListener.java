@@ -42,7 +42,6 @@ public class PlayerJoinListener implements Listener {
 
         QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
-        questManager.rescopePlayer(player.getUniqueId());
 
         grantPendingRewards(mcRPG, player);
 

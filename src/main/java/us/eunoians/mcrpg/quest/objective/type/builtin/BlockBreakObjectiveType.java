@@ -83,16 +83,28 @@ public class BlockBreakObjectiveType implements QuestObjectiveType {
         if (validBlocks.isEmpty()) {
             return "Break " + requiredProgress + " blocks";
         }
-        String targets = validBlocks.stream()
-                .map(b -> formatName(b.toString()))
-                .collect(Collectors.joining(", "));
-        return "Break " + requiredProgress + " " + targets;
+        if (validBlocks.size() == 1) {
+            return "Break " + requiredProgress + " " + formatBlockName(validBlocks.iterator().next());
+        }
+        StringBuilder sb = new StringBuilder("Break ").append(requiredProgress).append(" blocks:");
+        for (CustomBlockWrapper block : validBlocks) {
+            sb.append("\n  - ").append(formatBlockName(block));
+        }
+        return sb.toString();
     }
 
-    private static String formatName(String raw) {
+    private static String formatBlockName(@NotNull CustomBlockWrapper wrapper) {
+        return wrapper.customBlock()
+                .orElseGet(() -> wrapper.material()
+                        .map(m -> formatMaterialName(m.name()))
+                        .orElse("Unknown Block"));
+    }
+
+    private static String formatMaterialName(@NotNull String raw) {
         String[] parts = raw.toLowerCase().split("_");
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
+            if (part.isEmpty()) continue;
             if (!sb.isEmpty()) sb.append(' ');
             sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
         }

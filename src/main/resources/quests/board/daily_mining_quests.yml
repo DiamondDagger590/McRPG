@@ -5,6 +5,13 @@ quests:
   # Simple: Mine a stack of stone
   # -------------------------------------------------------------------
   mcrpg:daily_stone_haul:
+    display:
+      name: "Stone Haul"
+      description: "Mine a stack of various stone types"
+      objectives:
+        daily_break_stone: "Mine stone blocks"
+      rewards:
+        mining_xp: "Mining XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -42,6 +49,13 @@ quests:
   # Medium: Mine deepslate ores
   # -------------------------------------------------------------------
   mcrpg:daily_deepslate_delver:
+    display:
+      name: "Deepslate Delver"
+      description: "Mine deepslate deep underground"
+      objectives:
+        daily_break_deepslate: "Mine deepslate blocks"
+      rewards:
+        mining_xp: "Mining XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -76,6 +90,15 @@ quests:
   # Hard: Mine precious ores
   # -------------------------------------------------------------------
   mcrpg:daily_ore_rush:
+    display:
+      name: "Ore Rush"
+      description: "Mine precious gold and diamond ores"
+      objectives:
+        daily_break_gold: "Mine gold ore"
+        daily_break_diamond: "Mine diamond ore"
+      rewards:
+        mining_xp: "Mining XP"
+        gem_bonus: "Bonus Diamonds"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -92,6 +115,7 @@ quests:
         amount: 750
       gem_bonus:
         type: mcrpg:command
+        display: "2 Diamonds"
         commands:
           - "give {player} diamond 2"
     phases:

@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +43,7 @@ public final class QuestTemplate implements McRPGContent {
     private final RewardDistributionConfig rewardDistribution;
     private final TemplateCondition prerequisite;
     private final NamespacedKey expansionKey;
+    private final Map<String, String> inlineDisplay;
 
     public QuestTemplate(@NotNull NamespacedKey key,
                          @NotNull Route displayNameRoute,
@@ -83,6 +85,23 @@ public final class QuestTemplate implements McRPGContent {
                          @Nullable RewardDistributionConfig rewardDistribution,
                          @Nullable TemplateCondition prerequisite,
                          @Nullable NamespacedKey expansionKey) {
+        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
+                rarityOverrides, variables, phases, rewards, rewardDistribution, prerequisite, expansionKey, null);
+    }
+
+    public QuestTemplate(@NotNull NamespacedKey key,
+                         @NotNull Route displayNameRoute,
+                         boolean boardEligible,
+                         @NotNull NamespacedKey scopeProviderKey,
+                         @NotNull Set<NamespacedKey> supportedRarities,
+                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
+                         @NotNull Map<String, TemplateVariable> variables,
+                         @NotNull List<TemplatePhaseDefinition> phases,
+                         @NotNull List<TemplateRewardDefinition> rewards,
+                         @Nullable RewardDistributionConfig rewardDistribution,
+                         @Nullable TemplateCondition prerequisite,
+                         @Nullable NamespacedKey expansionKey,
+                         @Nullable Map<String, String> inlineDisplay) {
         this.key = key;
         this.displayNameRoute = displayNameRoute;
         this.boardEligible = boardEligible;
@@ -95,6 +114,7 @@ public final class QuestTemplate implements McRPGContent {
         this.rewardDistribution = rewardDistribution;
         this.prerequisite = prerequisite;
         this.expansionKey = expansionKey;
+        this.inlineDisplay = inlineDisplay != null ? Map.copyOf(inlineDisplay) : Collections.emptyMap();
     }
 
     @Override
@@ -271,6 +291,17 @@ public final class QuestTemplate implements McRPGContent {
     @NotNull
     public Optional<TemplateCondition> getPrerequisite() {
         return Optional.ofNullable(prerequisite);
+    }
+
+    /**
+     * Returns the inline display strings from the template YAML, used as fallback
+     * display strings for generated quests when localization entries don't exist.
+     *
+     * @return an unmodifiable map of display key to display string
+     */
+    @NotNull
+    public Map<String, String> getInlineDisplay() {
+        return inlineDisplay;
     }
 
     public double getEffectiveRewardMultiplier(@NotNull NamespacedKey rarityKey,

@@ -60,6 +60,25 @@ public class RedeemExperienceCommandTest extends McRPGBaseTest {
         assertEquals(0, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
     }
 
+    @DisplayName("Given a player with redeemable experience, when redeeming zero experience, then a 'not enough experience' message is sent and no state changes")
+    @Test
+    public void redeemExperience_sendsNotEnoughMessage_whenAmountIsZero(@NotNull McRPGPlayer mcRPGPlayer) {
+        PlayerMock player = addPlayerToServer(mcRPGPlayer);
+        mcRPGPlayer.getExperienceExtras().setRedeemableExperience(1000);
+        mcRPGPlayer.asSkillHolder().addSkillHolderDataAtLevel(skill, 1);
+        SkillHolder.SkillHolderData skillHolderData = mcRPGPlayer.asSkillHolder().getSkillHolderData(skill).get();
+        Component message = mcRPG.getMiniMessage().deserialize("You do not have enough redeemable experience");
+        when(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_NOT_ENOUGH_EXPERIENCE_MESSAGE)).thenReturn(message);
+        assertEquals(0, skillHolderData.getCurrentExperience());
+        assertEquals(1, skillHolderData.getCurrentLevel());
+        assertEquals(1000, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
+        RedeemExperienceCommand.redeemExperience(mcRPGPlayer, skill, 0);
+        assertEquals(message, player.nextComponentMessage());
+        assertEquals(0, skillHolderData.getCurrentExperience());
+        assertEquals(1, skillHolderData.getCurrentLevel());
+        assertEquals(1000, mcRPGPlayer.getExperienceExtras().getRedeemableExperience());
+    }
+
     @DisplayName("Given a skill already at its maximum level, when redeeming experience, then a 'skill already maxed' message is sent and no state changes")
     @Test
     public void redeemExperience_sendsMaxLevelMessage_whenSkillAtMaxLevel(@NotNull McRPGPlayer mcRPGPlayer) {

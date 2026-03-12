@@ -6,6 +6,9 @@ quest-templates:
   # Flexible mining template — target block pool varies by rarity
   # -------------------------------------------------------------------
   mcrpg:template_mining_gather:
+    display:
+      name: "Mining Gather"
+      description: "Gather various ores and stone"
     display-name-route: quest-templates.mining-gather
     board-eligible: true
     scope: mcrpg:single_player
@@ -83,6 +86,9 @@ quest-templates:
   # Deepslate specialist — always deep mining, count varies
   # -------------------------------------------------------------------
   mcrpg:template_deepslate_miner:
+    display:
+      name: "Deepslate Miner"
+      description: "Mine deep underground in the deepslate layer"
     display-name-route: quest-templates.deepslate-miner
     board-eligible: true
     scope: mcrpg:single_player

@@ -305,9 +305,11 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - **No hard-coded behavior values** — all tunable values (damage, cooldown, chance) must come from YAML config via `Route`
 - **No deep inheritance** — compose behavior by implementing multiple interfaces (`PassiveAbility`, `CooldownableAbility`, `ConfigurableSkillAbility`); avoid 3+ level hierarchies
 - **No mutable global static state** — use registries accessed via `RegistryAccess`; the only acceptable static access is `McRPG.getInstance()` when no instance is available
+- **No static utility classes for domain logic** — when behavior depends on context (manager, player, offering, etc.), model it as an object collaborator with instance methods
 - **No direct entity casting without guard** — use `instanceof` pattern matching: `if (entity instanceof Player player) { ... }`
 - **No ability state stored on the ability object** — ability state is per-holder, stored in `AbilityData`/`AbilityAttribute`; ability objects are shared singletons
 - **Don't put McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
+- **No fully-qualified type references in method bodies** — always declare a top-level `import` statement for the type; writing `org.bukkit.Location loc` inline is forbidden even when it compiles
 
 ---
 
@@ -319,6 +321,7 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - Meaningful variable names — avoid single-letter names except loop counters
 - Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
 - Keep methods focused and short — split logic into private helpers rather than long method bodies
+- Prefer instance collaborators over static helpers when encoding domain behavior
 - Javadoc on all public methods with `@param` and `@return` semantics
 
 **Third-party developer mindset:** McRPG is designed to be extensible by external plugins. Any change to a public API, event, or registry should be made as if you were a third-party developer hooking in. Prefer additive, non-breaking changes; fire Bukkit events wherever an external plugin would reasonably want to intercept; document extension points clearly.

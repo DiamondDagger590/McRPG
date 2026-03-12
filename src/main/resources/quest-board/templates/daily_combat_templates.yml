@@ -5,6 +5,9 @@ quest-templates:
   # Mob slayer — target mob pool varies by rarity
   # -------------------------------------------------------------------
   mcrpg:template_mob_slayer:
+    display:
+      name: "Mob Slayer"
+      description: "Hunt down hostile mobs"
     display-name-route: quest-templates.mob-slayer
     board-eligible: true
     scope: mcrpg:single_player
@@ -92,6 +95,9 @@ quest-templates:
   # Undead purge — multi-stage kill quest
   # -------------------------------------------------------------------
   mcrpg:template_undead_purge:
+    display:
+      name: "Undead Purge"
+      description: "Eliminate zombies and skeletons"
     display-name-route: quest-templates.undead-purge
     board-eligible: true
     scope: mcrpg:single_player

@@ -22,6 +22,8 @@ import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailObjectiveSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailOverviewSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailPhaseSlot;
+import us.eunoians.mcrpg.gui.quest.slot.QuestDetailAbandonSlot;
+import us.eunoians.mcrpg.gui.quest.slot.QuestDetailDurationSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailRewardSlot;
 import us.eunoians.mcrpg.gui.board.QuestBoardGui;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
@@ -50,6 +52,7 @@ public class QuestDetailGui extends McRPGPaginatedGui {
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
+    private static final int ABANDON_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 8;
 
     private final NamespacedKey questKey;
     @Nullable
@@ -131,7 +134,7 @@ public class QuestDetailGui extends McRPGPaginatedGui {
             def = definitionRegistry.get(questKey).orElse(null);
         }
 
-        slots.add(new QuestDetailOverviewSlot(questKey, questInstance, completionRecord));
+        slots.add(new QuestDetailOverviewSlot(questKey, questInstance, completionRecord, def));
 
         if (def != null) {
             for (QuestPhaseDefinition phaseDef : def.getPhases()) {
@@ -145,9 +148,8 @@ public class QuestDetailGui extends McRPGPaginatedGui {
                 }
             }
 
-            if (boardPreview) {
-                slots.add(new QuestDetailRewardSlot(def, player));
-            }
+            slots.add(new QuestDetailRewardSlot(def, player));
+            slots.add(new QuestDetailDurationSlot(def));
         }
 
         return slots;
@@ -193,6 +195,16 @@ public class QuestDetailGui extends McRPGPaginatedGui {
             setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
         setSlot(PREVIOUS_GUI_SLOT_INDEX, getPreviousGuiSlot());
+
+        if (questInstance != null && !boardPreview && !fromHistory
+                && questInstance.getQuestSource().isAbandonable()) {
+            QuestDefinitionRegistry defRegistry = RegistryAccess.registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_DEFINITION);
+            String displayName = defRegistry.get(questKey)
+                    .map(def -> def.getDisplayName(getCreatingPlayer()))
+                    .orElse(questKey.toString());
+            setSlot(ABANDON_SLOT_INDEX, new QuestDetailAbandonSlot(questInstance, displayName));
+        }
     }
 
     private void paintContent(int page) {

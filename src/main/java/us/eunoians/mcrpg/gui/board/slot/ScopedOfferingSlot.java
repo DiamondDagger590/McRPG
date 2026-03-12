@@ -10,13 +10,16 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.board.BoardGuiMode;
 import us.eunoians.mcrpg.gui.board.QuestBoardGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
+import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -51,7 +54,10 @@ public class ScopedOfferingSlot implements McRPGSlot {
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         if (!canManage) {
             mcRPGPlayer.getAsBukkitPlayer().ifPresent(player ->
-                    player.sendMessage("Ask your group leader to accept this quest"));
+                    player.sendMessage(RegistryAccess.registryAccess()
+                            .registry(RegistryKey.MANAGER)
+                            .manager(McRPGManagerKey.LOCALIZATION)
+                            .getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GROUP_NO_PERMISSION)));
             return true;
         }
 
@@ -82,7 +88,10 @@ public class ScopedOfferingSlot implements McRPGSlot {
                 } else {
                     accepting = false;
                     mcRPGPlayer.getAsBukkitPlayer().ifPresent(p ->
-                            p.sendMessage("Could not accept this group quest. The slot limit may have been reached."));
+                            p.sendMessage(RegistryAccess.registryAccess()
+                                    .registry(RegistryKey.MANAGER)
+                                    .manager(McRPGManagerKey.LOCALIZATION)
+                                    .getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GROUP_SLOTS_FULL)));
                 }
             }));
         });
@@ -92,16 +101,34 @@ public class ScopedOfferingSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        QuestBoardManager boardManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_BOARD);
+
+        var localization = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+
+        String entityLoreTemplate = localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GROUP_ENTITY_LORE);
+        String entityLore = entityLoreTemplate.replace("<entity_name>", entityDisplayName);
+
         ItemBuilder builder = ItemBuilder.from(new ItemStack(Material.PAPER))
-                .setDisplayName(offering.getQuestDefinitionKey().getKey().replace('_', ' '))
-                .addDisplayLore("Group: " + entityDisplayName)
-                .addDisplayLore("Rarity: " + offering.getRarityKey().getKey())
-                .addDisplayLore("Category: " + offering.getCategoryKey().getKey());
+                .setDisplayName(boardManager.getOfferingDisplayName(mcRPGPlayer, offering))
+                .addDisplayLore(entityLore);
+
+        QuestDefinition definition = boardManager.resolveDefinitionForOffering(offering);
+        String duration = definition != null
+                ? definition.getExpiration()
+                .map(expiration -> McRPGMethods.formatDuration(expiration.toMillis()))
+                .orElse(localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_EXPIRES_NONE))
+                : localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_EXPIRES_NONE);
+        String expiresTemplate = localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_BOARD_EXPIRES_IN);
+        builder.addDisplayLore(expiresTemplate.replace("<time>", duration));
 
         if (canManage) {
-            builder.addDisplayLore("Click to accept");
+            builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GROUP_ACCEPT));
         } else {
-            builder.addDisplayLore("Ask your group leader to accept");
+            builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GROUP_NO_PERMISSION));
         }
 
         return builder;

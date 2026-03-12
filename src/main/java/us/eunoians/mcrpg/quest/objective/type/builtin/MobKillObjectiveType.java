@@ -49,8 +49,9 @@ public class MobKillObjectiveType implements QuestObjectiveType {
     @Override
     public MobKillObjectiveType parseConfig(@NotNull Section section) {
         Set<CustomEntityWrapper> entities = Set.of();
-        if (section.contains("entities")) {
-            entities = section.getStringList("entities").stream()
+        String key = section.contains("mobs") ? "mobs" : "entities";
+        if (section.contains(key)) {
+            entities = section.getStringList(key).stream()
                     .map(CustomEntityWrapper::new)
                     .collect(Collectors.toUnmodifiableSet());
         }
@@ -82,16 +83,28 @@ public class MobKillObjectiveType implements QuestObjectiveType {
         if (validEntities.isEmpty()) {
             return "Kill " + requiredProgress + " mobs";
         }
-        String targets = validEntities.stream()
-                .map(e -> formatName(e.toString()))
-                .collect(Collectors.joining(", "));
-        return "Kill " + requiredProgress + " " + targets;
+        if (validEntities.size() == 1) {
+            return "Kill " + requiredProgress + " " + formatEntityName(validEntities.iterator().next());
+        }
+        StringBuilder sb = new StringBuilder("Kill ").append(requiredProgress).append(" mobs:");
+        for (CustomEntityWrapper entity : validEntities) {
+            sb.append("\n  - ").append(formatEntityName(entity));
+        }
+        return sb.toString();
     }
 
-    private static String formatName(String raw) {
+    private static String formatEntityName(@NotNull CustomEntityWrapper wrapper) {
+        return wrapper.customEntity()
+                .orElseGet(() -> wrapper.entityType()
+                        .map(t -> formatTypeName(t.name()))
+                        .orElse("Unknown Entity"));
+    }
+
+    private static String formatTypeName(@NotNull String raw) {
         String[] parts = raw.toLowerCase().split("_");
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
+            if (part.isEmpty()) continue;
             if (!sb.isEmpty()) sb.append(' ');
             sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
         }

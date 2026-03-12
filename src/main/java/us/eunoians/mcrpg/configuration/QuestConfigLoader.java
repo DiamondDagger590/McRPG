@@ -230,11 +230,13 @@ public class QuestConfigLoader {
         }
 
         Map<NamespacedKey, QuestDefinitionMetadata> metadata = parseBoardMetadata(section);
+        Map<String, String> inlineDisplay = parseInlineDisplay(section);
 
         return new QuestDefinition(questKey, scopeType, expiration, phases, rewards,
                 repeatMode, repeatCooldown, repeatLimit, expansionKey,
                 metadata.isEmpty() ? null : metadata,
-                parseRewardDistribution(section, fileName, questKey.toString()).orElse(null));
+                parseRewardDistribution(section, fileName, questKey.toString()).orElse(null),
+                inlineDisplay.isEmpty() ? null : inlineDisplay);
     }
 
     /**
@@ -295,6 +297,48 @@ public class QuestConfigLoader {
                 Set.copyOf(supportedRefreshTypes), acceptanceCooldown, cooldownScope);
         metadata.put(BoardMetadata.METADATA_KEY, boardMetadata);
         return metadata;
+    }
+
+    /**
+     * Parses the optional {@code display} section from a quest definition into a flat
+     * string map used as inline fallback display strings.
+     *
+     * @param section the quest definition section
+     * @return a map of display keys to values, empty if no display section present
+     */
+    @NotNull
+    private Map<String, String> parseInlineDisplay(@NotNull Section section) {
+        Map<String, String> display = new LinkedHashMap<>();
+        if (!section.contains("display")) {
+            return display;
+        }
+        Section displaySection = section.getSection("display");
+        if (displaySection == null) {
+            return display;
+        }
+        if (displaySection.contains("name")) {
+            display.put("name", displaySection.getString("name"));
+        }
+        if (displaySection.contains("description")) {
+            display.put("description", displaySection.getString("description"));
+        }
+        if (displaySection.contains("objectives")) {
+            Section objSection = displaySection.getSection("objectives");
+            if (objSection != null) {
+                for (String objKey : objSection.getRoutesAsStrings(false)) {
+                    display.put("objective." + objKey, objSection.getString(objKey));
+                }
+            }
+        }
+        if (displaySection.contains("rewards")) {
+            Section rewardSection = displaySection.getSection("rewards");
+            if (rewardSection != null) {
+                for (String rewardKey : rewardSection.getRoutesAsStrings(false)) {
+                    display.put("reward." + rewardKey, rewardSection.getString(rewardKey));
+                }
+            }
+        }
+        return display;
     }
 
     /**

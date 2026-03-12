@@ -100,6 +100,14 @@ public final class GeneratedQuestDefinitionSerializer {
         definition.getRewardDistribution()
                 .ifPresent(dist -> root.add("reward_distribution", serializeDistribution(dist)));
 
+        if (!definition.getInlineDisplay().isEmpty()) {
+            JsonObject displayObj = new JsonObject();
+            for (Map.Entry<String, String> entry : definition.getInlineDisplay().entrySet()) {
+                displayObj.addProperty(entry.getKey(), entry.getValue());
+            }
+            root.add("inline_display", displayObj);
+        }
+
         return GSON.toJson(root);
     }
 
@@ -136,6 +144,15 @@ public final class GeneratedQuestDefinitionSerializer {
                     ? deserializeDistribution(root.getAsJsonObject("reward_distribution"), rewardTypeRegistry, questKeyString)
                     : null;
 
+            Map<String, String> inlineDisplay = null;
+            if (root.has("inline_display")) {
+                inlineDisplay = new java.util.LinkedHashMap<>();
+                JsonObject displayObj = root.getAsJsonObject("inline_display");
+                for (Map.Entry<String, com.google.gson.JsonElement> entry : displayObj.entrySet()) {
+                    inlineDisplay.put(entry.getKey(), entry.getValue().getAsString());
+                }
+            }
+
             return new QuestDefinition(
                     questKey,
                     scopeKey,
@@ -147,7 +164,8 @@ public final class GeneratedQuestDefinitionSerializer {
                     -1,
                     null,
                     null,
-                    rewardDistribution
+                    rewardDistribution,
+                    inlineDisplay
             );
         } catch (QuestDeserializationException e) {
             throw e;

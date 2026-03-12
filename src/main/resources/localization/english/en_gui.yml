@@ -111,14 +111,15 @@ gui:
       - '<gray>Category: <gold><category>'
       - ''
       - '<yellow>Click to accept'
-    # Board offering slot. Placeholders: <quest_name>, <rarity>, <category>, <board_quests>, <max_quests>, <count_color>
+    # Board offering slot. Placeholders: <quest_name>, <rarity>, <rarity_color>, <category>, <quest_duration>, <board_quests>, <max_quests>, <count_color>
     offering-slot:
       display-item:
         material: PAPER
-        name: '<gold><quest_name>'
+        name: '<rarity_color><quest_name>'
         lore:
-          - '<gray>Rarity: <yellow><rarity>'
+          - '<gray>Rarity: <rarity_color><rarity>'
           - '<gray>Category: <aqua><category>'
+          - '<gray>Duration: <gold><quest_duration>'
           - ''
           - '<gray>Board Quests: <count_color><board_quests>/<max_quests>'
           - ''
@@ -194,20 +195,22 @@ gui:
         material: BARRIER
         lore:
           - '<gray>Click to return to the Home Menu</gray>'
-    # Template for each active quest item. Placeholders: <quest_name>, <phase_current>,
-    # <phase_total>, <objectives>, <time_remaining>
+    # Template for each active quest item. Placeholders: <quest_name>
+    # Phase, objectives, expiry, and click hint are appended dynamically.
     quest-slot:
       display-item:
         material: WRITABLE_BOOK
         name: "<gold><quest_name>"
-        lore:
-          - '<gray>Phase: <gold><phase_current>/<phase_total>'
-          - ''
-          - '<objectives>'
-          - ''
-          - '<gray>Expires in: <gold><time_remaining>'
-          - ''
-          - '<yellow>Click to view details'
+        lore: []
+      phase-line: '<gray>Phase: <gold><current_phase>/<total_phases>'
+      objective-progress-line: '<gray><objective_description>: <gold><current_progress>/<required_progress>'
+      objective-detail-line: '<gray><objective_description>'
+      expires-line: '<gray>Expires in: <gold><time_remaining>'
+      expires-time-format: '<hours>h <minutes>m'
+      expires-expired: '<red>Expired'
+      expires-none: '<gray>None'
+      click-to-view-details: '<yellow>Click to view details'
+      right-click-to-abandon: '<red>Right-click to abandon'
     view-history-button:
       display-item:
         material: BOOKSHELF
@@ -289,15 +292,15 @@ gui:
         material: PAPER
         name: "<gold>Stage"
         lore: []
-    # Objective slot. Placeholders: <objective_description>, <progress>, <required>, <objective_state>
+    # Objective slot. Placeholders: <objective_description>
+    # Detail lines (block/entity lists), progress, and state are appended dynamically.
     objective-slot:
       display-item:
         material: MAP
         name: "<gray><objective_description>"
-        lore:
-          - '<gray>Progress: <gold><progress>/<required>'
-          - '<gray>State: <gold><objective_state>'
-    # Reward summary slot shown in board preview. Placeholders: <quest_name>, <reward_list>
+        lore: []
+    # Reward summary slot shown in board preview. Placeholders: <quest_name>
+    # Reward lines are appended dynamically as individual lore entries.
     reward-slot:
       display-item:
         material: GOLD_INGOT
@@ -305,7 +308,48 @@ gui:
         lore:
           - '<gray>Rewards for completing this quest:'
           - ''
-          - '<reward_list>'
+    # Quest duration slot shown in quest detail GUI navigation row.
+    # Placeholder: <quest_duration>
+    duration-slot:
+      display-item:
+        material: CLOCK
+        name: "<gold>Quest Duration"
+        lore:
+          - '<gray>Expires after: <gold><quest_duration>'
+    # Abandon button in the quest detail navigation bar (only shown for active abandonable quests).
+    abandon-button:
+      display-item:
+        material: RED_WOOL
+        name: "<red>Abandon Quest"
+        lore:
+          - '<gray>Click to abandon this quest.'
+          - '<gray>This action requires confirmation.'
+  # Confirmation GUI shown before abandoning a quest.
+  quest-abandon-confirm-gui:
+    title: '<red>Confirm Abandon'
+    # Confirm button. Placeholders: <quest_name>
+    confirm-button:
+      display-item:
+        material: TNT
+        name: "<red>Abandon Quest"
+        lore:
+          - '<gray>Click to abandon <gold><quest_name><gray>.'
+          - ''
+          - '<red>This cannot be undone!'
+    # Cancel button to go back without abandoning.
+    cancel-button:
+      display-item:
+        material: LIME_WOOL
+        name: "<green>Go Back"
+        lore:
+          - '<gray>Click to cancel and go back.'
+    # Quest info display in the middle. Placeholders: <quest_name>
+    quest-info:
+      display-item:
+        material: WRITABLE_BOOK
+        name: "<gold><quest_name>"
+        lore:
+          - '<gray>You are about to abandon this quest.'
   # This GUI allows players to view and edit their abilities.
   ability-gui:
     title: '<gold>Viewing Abilities'
@@ -797,6 +841,30 @@ gui:
             - '<gray>You will receive bonus experience from your pools.'
             - ''
             - '<gold>Click <gray>to disable bonus experience consumption.'
+    # Configure the slot representing the quest progress notification setting
+    quest-progress-notification-setting-slot:
+      # Configure the setting display for when the setting is ENABLED (notifications are on)
+      enabled:
+        display-item:
+          material: GREEN_STAINED_GLASS_PANE
+          name: '<gold>Quest Progress Notifications'
+          lore:
+            - '<gray>Status: <green>Enabled</green>.'
+            - '<gray>You will receive chat notifications when you'
+            - '<gray>reach progress milestones on quest objectives.'
+            - ''
+            - '<gold>Click <gray>to disable these notifications.'
+      # Configure the setting display for when the setting is DISABLED (notifications are off)
+      disabled:
+        display-item:
+          material: RED_STAINED_GLASS_PANE
+          name: '<gold>Quest Progress Notifications'
+          lore:
+            - '<gray>Status: <red>Disabled</red>.'
+            - '<gray>You will not receive chat notifications for'
+            - '<gray>quest objective progress milestones.'
+            - ''
+            - '<gold>Click <gray>to enable these notifications.'
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gold>Toggling Remote Transfer Items"

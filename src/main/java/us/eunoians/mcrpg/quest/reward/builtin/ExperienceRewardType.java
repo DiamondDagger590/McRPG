@@ -116,6 +116,26 @@ public class ExperienceRewardType implements QuestRewardType {
 
     @NotNull
     @Override
+    public String describeForDisplay() {
+        String skill = skillName.isEmpty() ? "Unknown" : formatSkillName(skillName);
+        return amount + " " + skill + " XP";
+    }
+
+    private static String formatSkillName(String raw) {
+        if (raw.contains(":")) {
+            raw = raw.substring(raw.indexOf(':') + 1);
+        }
+        String[] parts = raw.toLowerCase().split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (!sb.isEmpty()) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return sb.toString();
+    }
+
+    @NotNull
+    @Override
     public ExperienceRewardType withAmountMultiplier(double multiplier) {
         long scaled = Math.max(1, (long) (amount * multiplier));
         return new ExperienceRewardType(skillName, scaled);

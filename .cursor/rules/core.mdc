@@ -78,6 +78,7 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - 4-space indentation, K&R brace style (standard Java)
 - Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
 - Javadoc on all public methods with `@param` and `@return` semantics
+- Prefer object collaborators with instance methods for domain behavior; avoid introducing static helper classes when behavior naturally belongs to a service/slot/manager object
 - **Third-party developer mindset:** McRPG is extensible by external plugins. Changes to public APIs, events, and registries should be made as if you were a third-party plugin hooking in — prefer additive non-breaking changes, fire Bukkit events where external plugins would want to intercept, document extension points.
 
 ## Anti-Patterns
@@ -86,9 +87,11 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No hard-coded values** — all tunable values must come from YAML config via `Route`
 - **No deep inheritance** — compose via interfaces (`PassiveAbility`, `CooldownableAbility`, etc.)
 - **No mutable global static** — use registries; only `McRPG.getInstance()` is acceptable as static access
+- **No static utility classes for domain logic** — if behavior needs dependencies or context, model it as an object collaborator with injected state
 - **No ability state on ability objects** — abilities are shared singletons; state lives in `AbilityData`/`AbilityAttribute` per holder
 - **No direct entity casts** — use `instanceof` pattern matching: `if (entity instanceof Player p) { ... }`
 - **No McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
+- **No fully-qualified type references in method bodies** — always use a top-level `import` statement; inline package paths (e.g. `org.bukkit.Location loc`) are forbidden
 
 ---
 

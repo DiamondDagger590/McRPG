@@ -35,6 +35,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.QuestConfigLoader;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
 import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionSerializer;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -679,12 +680,21 @@ public class QuestManager extends Manager<McRPG> {
                 List<UUID> questUUIDs = provider.resolveActiveQuestUUIDs(playerUUID, connection);
                 for (UUID questUUID : questUUIDs) {
                     if (activeQuests.containsKey(questUUID)) {
-                        indexQuestForPlayer(questUUID, playerUUID);
+                        QuestInstance quest = activeQuests.get(questUUID);
+                        if (quest != null) {
+                            indexQuestForPlayer(questUUID, playerUUID);
+                            if (quest.isExpired()) {
+                                expireQuestOnMainThread(quest);
+                            }
+                        }
                     } else {
                         Optional<QuestInstance> loaded = QuestInstanceDAO.loadFullQuestTree(connection, questUUID);
                         loaded.ifPresent(quest -> {
                             trackActiveQuest(quest);
                             indexQuestForPlayer(questUUID, playerUUID);
+                            if (quest.isExpired()) {
+                                expireQuestOnMainThread(quest);
+                            }
                         });
                     }
                 }
@@ -776,6 +786,12 @@ public class QuestManager extends Manager<McRPG> {
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
             try (Connection connection = database.getConnection()) {
+                long now = plugin().getTimeProvider().now().toEpochMilli();
+                int expiredAtStartup = QuestInstanceDAO.bulkExpireStaleQuests(connection, now);
+                int releasedBoardSlots = 0;
+                if (expiredAtStartup > 0) {
+                    releasedBoardSlots = PlayerBoardStateDAO.bulkCancelExpiredBoardStates(connection);
+                }
                 List<QuestInstance> quests = QuestInstanceDAO.loadQuestInstancesByState(
                         connection, QuestState.NOT_STARTED, QuestState.IN_PROGRESS);
                 int recoveredEphemeral = 0;
@@ -787,12 +803,23 @@ public class QuestManager extends Manager<McRPG> {
                     fullTree.ifPresent(this::trackActiveQuest);
                 }
                 plugin().getLogger().info("Loaded " + activeQuests.size() + " active quests from database"
+                        + (expiredAtStartup > 0
+                        ? " (startup-expired " + expiredAtStartup + ", released " + releasedBoardSlots + " board slot(s))"
+                        : "")
                         + (recoveredEphemeral > 0 ? " (recovered " + recoveredEphemeral + " ephemeral definitions)" : "")
                         + ".");
             } catch (SQLException e) {
                 plugin().getLogger().log(Level.SEVERE, "Failed to load active quests from database", e);
             }
         });
+    }
+
+    private void expireQuestOnMainThread(@NotNull QuestInstance quest) {
+        if (Bukkit.isPrimaryThread()) {
+            quest.expire();
+            return;
+        }
+        Bukkit.getScheduler().runTask(plugin(), quest::expire);
     }
 
     /**

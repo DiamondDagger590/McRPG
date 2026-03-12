@@ -47,6 +47,7 @@ public class QuestDefinition implements McRPGContent {
     private final NamespacedKey expansionKey;
     private final Map<NamespacedKey, QuestDefinitionMetadata> metadata;
     private final RewardDistributionConfig rewardDistribution;
+    private final Map<String, String> inlineDisplay;
 
     /**
      * Creates a new quest definition.
@@ -71,7 +72,7 @@ public class QuestDefinition implements McRPGContent {
                            @Nullable Duration repeatCooldown,
                            int repeatLimit,
                            @Nullable NamespacedKey expansionKey) {
-        this(questKey, scopeType, expiration, phases, rewards, repeatMode, repeatCooldown, repeatLimit, expansionKey, null, null);
+        this(questKey, scopeType, expiration, phases, rewards, repeatMode, repeatCooldown, repeatLimit, expansionKey, null, null, null);
     }
 
     /**
@@ -101,6 +102,37 @@ public class QuestDefinition implements McRPGContent {
                            @Nullable NamespacedKey expansionKey,
                            @Nullable Map<NamespacedKey, QuestDefinitionMetadata> metadata,
                            @Nullable RewardDistributionConfig rewardDistribution) {
+        this(questKey, scopeType, expiration, phases, rewards, repeatMode, repeatCooldown, repeatLimit, expansionKey, metadata, rewardDistribution, null);
+    }
+
+    /**
+     * Creates a new quest definition with optional metadata and inline display strings.
+     *
+     * @param questKey            the unique key identifying this quest
+     * @param scopeType           the key identifying the scope provider for instances of this quest
+     * @param expiration          the expiration duration, or {@code null} if instances do not expire
+     * @param phases              the ordered list of phase definitions (must contain at least one)
+     * @param rewards             the quest-level rewards granted on completion
+     * @param repeatMode          how this quest may be repeated
+     * @param repeatCooldown      the cooldown between completions, or {@code null}
+     * @param repeatLimit         the maximum completions per player, or {@code -1} for no limit
+     * @param expansionKey        the expansion key, or {@code null}
+     * @param metadata            extensible metadata map, or {@code null} for none
+     * @param rewardDistribution  the distribution config, or {@code null} if none
+     * @param inlineDisplay       inline fallback display strings from quest/template YAML, or {@code null}
+     */
+    public QuestDefinition(@NotNull NamespacedKey questKey,
+                           @NotNull NamespacedKey scopeType,
+                           @Nullable Duration expiration,
+                           @NotNull List<QuestPhaseDefinition> phases,
+                           @NotNull List<QuestRewardType> rewards,
+                           @NotNull QuestRepeatMode repeatMode,
+                           @Nullable Duration repeatCooldown,
+                           int repeatLimit,
+                           @Nullable NamespacedKey expansionKey,
+                           @Nullable Map<NamespacedKey, QuestDefinitionMetadata> metadata,
+                           @Nullable RewardDistributionConfig rewardDistribution,
+                           @Nullable Map<String, String> inlineDisplay) {
         if (phases.isEmpty()) {
             throw new IllegalArgumentException("A quest must have at least one phase");
         }
@@ -115,6 +147,7 @@ public class QuestDefinition implements McRPGContent {
         this.expansionKey = expansionKey;
         this.metadata = metadata != null ? Map.copyOf(metadata) : Collections.emptyMap();
         this.rewardDistribution = rewardDistribution;
+        this.inlineDisplay = inlineDisplay != null ? Map.copyOf(inlineDisplay) : Collections.emptyMap();
     }
 
     /**
@@ -154,6 +187,10 @@ public class QuestDefinition implements McRPGContent {
                     .manager(McRPGManagerKey.LOCALIZATION)
                     .getLocalizedMessage(player, getDisplayNameRoute());
         } catch (Exception e) {
+            String inline = inlineDisplay.get("name");
+            if (inline != null && !inline.isEmpty()) {
+                return inline;
+            }
             return formatFallbackDisplayName(questKey.getKey());
         }
     }
@@ -374,6 +411,28 @@ public class QuestDefinition implements McRPGContent {
     @NotNull
     public Optional<RewardDistributionConfig> getRewardDistribution() {
         return Optional.ofNullable(rewardDistribution);
+    }
+
+    /**
+     * Gets the inline display strings from the quest/template YAML file.
+     * These serve as fallbacks when the localization system has no entry.
+     *
+     * @return an unmodifiable map of display key to display string
+     */
+    @NotNull
+    public Map<String, String> getInlineDisplay() {
+        return inlineDisplay;
+    }
+
+    /**
+     * Gets an inline display value by key, if present.
+     *
+     * @param key the display key (e.g. "name", "description", or an objective key)
+     * @return the display value, or empty
+     */
+    @NotNull
+    public Optional<String> getInlineDisplayValue(@NotNull String key) {
+        return Optional.ofNullable(inlineDisplay.get(key));
     }
 
     @NotNull

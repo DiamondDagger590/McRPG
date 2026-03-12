@@ -1,9 +1,8 @@
 package us.eunoians.mcrpg.quest.board;
 
 import com.diamonddagger590.mccore.database.Database;
-import com.diamonddagger590.mccore.registry.manager.Manager;
-import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -12,19 +11,19 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
-import us.eunoians.mcrpg.event.board.BoardOfferingAcceptEvent;
-import us.eunoians.mcrpg.event.board.BoardOfferingExpireEvent;
-import us.eunoians.mcrpg.event.board.BoardOfferingGenerateEvent;
-import us.eunoians.mcrpg.event.board.BoardRotationEvent;
-import us.eunoians.mcrpg.event.board.PersonalOfferingGenerateEvent;
 import us.eunoians.mcrpg.database.table.board.BoardCooldownDAO;
 import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
 import us.eunoians.mcrpg.database.table.board.BoardRotationDAO;
 import us.eunoians.mcrpg.database.table.board.PersonalOfferingTrackingDAO;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.database.table.board.ScopedBoardStateDAO;
-import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter;
-import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.board.BoardOfferingAcceptEvent;
+import us.eunoians.mcrpg.event.board.BoardOfferingExpireEvent;
+import us.eunoians.mcrpg.event.board.BoardOfferingGenerateEvent;
+import us.eunoians.mcrpg.event.board.BoardRotationEvent;
+import us.eunoians.mcrpg.event.board.PersonalOfferingGenerateEvent;
+import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategory;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.configuration.ReloadableCategoryConfig;
@@ -37,18 +36,19 @@ import us.eunoians.mcrpg.quest.board.generation.SlotSelection;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarity;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshType;
-import us.eunoians.mcrpg.quest.board.template.QuestTemplateEngine;
-import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.DailyRefreshType;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.WeeklyRefreshType;
+import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter;
+import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
+import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionSerializer;
+import us.eunoians.mcrpg.quest.board.template.QuestTemplateEngine;
+import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
+import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
+import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
-import us.eunoians.mcrpg.quest.QuestManager;
-import us.eunoians.mcrpg.quest.impl.QuestInstance;
-import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionSerializer;
-import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.source.QuestSource;
 import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
 import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
@@ -85,6 +85,7 @@ import java.util.stream.Collectors;
 public class QuestBoardManager extends Manager<McRPG> {
 
     private static final Logger LOGGER = McRPG.getInstance().getLogger();
+    private static final String DEFAULT_ROTATION_TIMEZONE = "UTC";
     private static final String EXTRA_SLOTS_PERMISSION_PREFIX = "mcrpg.board.extra-slots.";
     private static final String EXTRA_OFFERINGS_PERMISSION_PREFIX = "mcrpg.extra-offerings.";
     private static final NamespacedKey DEFAULT_BOARD_KEY =
@@ -199,6 +200,20 @@ public class QuestBoardManager extends Manager<McRPG> {
                             + weeklyRotation.get().getExpiresAt() + ", now: " + now + "). Triggering catch-up.");
                     Bukkit.getScheduler().runTask(plugin, () -> triggerRotation(WeeklyRefreshType.KEY));
                 }
+                // Warm the offering cache so getSharedOfferingsForBoard() never hits DB on main thread
+                List<BoardOffering> warmOfferings = new ArrayList<>();
+                dailyRotation.ifPresent(daily ->
+                        warmOfferings.addAll(BoardOfferingDAO.loadOfferingsForRotation(connection, daily.getRotationId())));
+                weeklyRotation.ifPresent(weekly ->
+                        warmOfferings.addAll(BoardOfferingDAO.loadOfferingsForRotation(connection, weekly.getRotationId())));
+                offeringCache.put(DEFAULT_BOARD_KEY, List.copyOf(warmOfferings));
+
+                // Re-register generated definitions from all accepted offerings
+                List<BoardOffering> acceptedGenerated =
+                        BoardOfferingDAO.loadAcceptedGeneratedOfferings(connection);
+                if (!acceptedGenerated.isEmpty()) {
+                    Bukkit.getScheduler().runTask(plugin, () -> reRegisterGeneratedDefinitions(acceptedGenerated));
+                }
             } catch (Exception e) {
                 LOGGER.warning("[QuestBoard] Failed to load current rotations: " + e.getMessage());
             }
@@ -282,7 +297,7 @@ public class QuestBoardManager extends Manager<McRPG> {
         RefreshType refreshType = refreshRegistry.get(refreshTypeKey)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown refresh type: " + refreshTypeKey));
 
-        ZonedDateTime zonedNow = plugin().getTimeProvider().now().atZone(java.time.ZoneId.systemDefault());
+        ZonedDateTime zonedNow = plugin().getTimeProvider().now().atZone(getConfiguredRotationZone());
         long epoch = refreshType instanceof DailyRefreshType
                 ? zonedNow.toLocalDate().toEpochDay()
                 : WeeklyRefreshType.computeEpoch(zonedNow);
@@ -461,42 +476,22 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
-     * Returns the cached shared offerings for a board, loading from the database
-     * on first access.
+     * Returns the cached shared offerings for a board. The cache is populated
+     * during {@link #initialize} and after each rotation; this method never
+     * performs database I/O on the calling thread.
      *
      * @param boardKey the board to get offerings for
-     * @return the list of shared offerings
+     * @return the list of shared offerings (empty if the cache has not been warmed yet)
      */
     @NotNull
     public List<BoardOffering> getSharedOfferingsForBoard(@NotNull NamespacedKey boardKey) {
-        boolean cacheHit = offeringCache.containsKey(boardKey);
-        List<BoardOffering> result = offeringCache.computeIfAbsent(boardKey, key -> {
-            QuestBoard board = boards.get(key);
-            if (board == null) {
-                LOGGER.warning("[QuestBoard] getSharedOfferings: board not found for key " + key);
-                return List.of();
-            }
-
-            List<BoardOffering> all = new ArrayList<>();
-            Database database = plugin().registryAccess()
-                    .registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.DATABASE)
-                    .getDatabase();
-            try (Connection connection = database.getConnection()) {
-                board.getCurrentDailyRotation().ifPresent(daily ->
-                        all.addAll(BoardOfferingDAO.loadOfferingsForRotation(connection, daily.getRotationId())));
-                board.getCurrentWeeklyRotation().ifPresent(weekly ->
-                        all.addAll(BoardOfferingDAO.loadOfferingsForRotation(connection, weekly.getRotationId())));
-                validateOfferingStates(connection, all);
-            } catch (Exception e) {
-                LOGGER.warning("[QuestBoard] Failed to load offerings for board " + key + ": " + e.getMessage());
-            }
-            LOGGER.info("[QuestBoard] getSharedOfferings: loaded " + all.size() + " from DB for " + key);
-            return all;
-        });
-        LOGGER.info("[QuestBoard] getSharedOfferings(" + boardKey + "): cacheHit=" + cacheHit
-                + ", returning " + result.size() + " offerings");
-        return result;
+        List<BoardOffering> cached = offeringCache.get(boardKey);
+        if (cached != null) {
+            return cached;
+        }
+        LOGGER.warning("[QuestBoard] Offering cache miss for " + boardKey
+                + " — cache should have been warmed during initialization or rotation");
+        return List.of();
     }
 
     /**
@@ -504,9 +499,11 @@ public class QuestBoardManager extends Manager<McRPG> {
      *
      * @param player     the player
      * @param offeringId the offering UUID
-     * @return {@code true} if the offering was accepted
+     * @return an {@link OfferingAcceptResult} describing whether acceptance succeeded and,
+     *         if not, the reason for failure
      */
-    public boolean acceptOffering(@NotNull Player player, @NotNull UUID offeringId) {
+    @NotNull
+    public OfferingAcceptResult acceptOffering(@NotNull Player player, @NotNull UUID offeringId) {
         Object lock = offeringLocks.computeIfAbsent(offeringId, k -> new Object());
         synchronized (lock) {
             QuestBoard board = getDefaultBoard();
@@ -517,13 +514,13 @@ public class QuestBoardManager extends Manager<McRPG> {
                     .findFirst();
 
             if (optOffering.isEmpty() || !optOffering.get().canTransitionTo(BoardOffering.State.ACCEPTED)) {
-                return false;
+                return OfferingAcceptResult.NOT_AVAILABLE;
             }
 
             int activeCount = getActiveBoardQuestCount(player.getUniqueId());
             int maxQuests = getEffectiveMaxQuests(player, board);
             if (activeCount >= maxQuests) {
-                return false;
+                return OfferingAcceptResult.SLOTS_FULL;
             }
 
             BoardOffering offering = optOffering.get();
@@ -531,14 +528,14 @@ public class QuestBoardManager extends Manager<McRPG> {
             BoardOfferingAcceptEvent acceptEvent = new BoardOfferingAcceptEvent(board, player, offering);
             Bukkit.getPluginManager().callEvent(acceptEvent);
             if (acceptEvent.isCancelled()) {
-                return false;
+                return OfferingAcceptResult.CANCELLED_BY_EVENT;
             }
 
             QuestDefinition definition = resolveDefinitionForOffering(offering);
             if (definition == null) {
                 LOGGER.warning("[QuestBoard] Could not resolve definition for offering "
                         + offering.getQuestDefinitionKey() + " — skipping acceptance");
-                return false;
+                return OfferingAcceptResult.DEFINITION_NOT_FOUND;
             }
 
             QuestDefinitionRegistry defRegistry = plugin().registryAccess()
@@ -560,12 +557,18 @@ public class QuestBoardManager extends Manager<McRPG> {
             if (instanceOpt.isEmpty()) {
                 LOGGER.warning("[QuestBoard] Failed to start quest " + definition.getQuestKey()
                         + " for player " + player.getName());
-                return false;
+                return OfferingAcceptResult.DEFINITION_NOT_FOUND;
             }
 
             QuestInstance questInstance = instanceOpt.get();
             long acceptedAt = plugin().getTimeProvider().now().toEpochMilli();
             offering.accept(acceptedAt, questInstance.getQuestUUID());
+
+            plugin().registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.PLAYER)
+                    .getPlayer(player.getUniqueId())
+                    .ifPresent(p -> p.asQuestHolder().incrementBoardQuestCount());
 
             Database database = plugin().registryAccess()
                     .registry(RegistryKey.MANAGER)
@@ -590,7 +593,7 @@ public class QuestBoardManager extends Manager<McRPG> {
                 }
             });
 
-            return true;
+            return OfferingAcceptResult.ACCEPTED;
         }
     }
 
@@ -626,6 +629,60 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
+     * Resolves the player-facing display name for a board offering.
+     * Uses the quest definition display name when possible and falls back
+     * to the raw quest definition key when resolution fails.
+     *
+     * @param mcRPGPlayer the player viewing the offering
+     * @param offering the offering being displayed
+     * @return the display name shown in board-related GUIs
+     */
+    @NotNull
+    public String getOfferingDisplayName(@NotNull McRPGPlayer mcRPGPlayer,
+                                         @NotNull BoardOffering offering) {
+        QuestDefinition definition = resolveDefinitionForOffering(offering);
+        if (definition == null) {
+            return offering.getQuestDefinitionKey().getKey();
+        }
+        return definition.getDisplayName(mcRPGPlayer);
+    }
+
+    /**
+     * Re-registers generated quest definitions from accepted offerings into the
+     * {@link QuestDefinitionRegistry} so they survive server restarts.
+     */
+    private void reRegisterGeneratedDefinitions(@NotNull List<BoardOffering> offerings) {
+        QuestDefinitionRegistry defRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_DEFINITION);
+        QuestObjectiveTypeRegistry objTypeRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_OBJECTIVE_TYPE);
+        QuestRewardTypeRegistry rewardTypeRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.QUEST_REWARD_TYPE);
+
+        int registered = 0;
+        for (BoardOffering offering : offerings) {
+            if (!offering.isTemplateGenerated() || offering.getGeneratedDefinition().isEmpty()) {
+                continue;
+            }
+            if (defRegistry.get(offering.getQuestDefinitionKey()).isPresent()) {
+                continue;
+            }
+            try {
+                QuestDefinition def = GeneratedQuestDefinitionSerializer.deserialize(
+                        offering.getGeneratedDefinition().get(), objTypeRegistry, rewardTypeRegistry);
+                defRegistry.register(def);
+                registered++;
+            } catch (Exception e) {
+                LOGGER.warning("[QuestBoard] Failed to re-register generated definition for "
+                        + offering.getQuestDefinitionKey() + ": " + e.getMessage());
+            }
+        }
+        if (registered > 0) {
+            LOGGER.info("[QuestBoard] Re-registered " + registered + " generated quest definition(s) from offerings");
+        }
+    }
+
+    /**
      * Computes the effective maximum board quests for a player, combining the board's
      * base limit with any permission-based bonus slots.
      *
@@ -644,22 +701,20 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
-     * Counts the number of active board quests for a player from the database.
+     * Returns the number of active board quests for a player from the in-memory
+     * counter on {@link us.eunoians.mcrpg.entity.holder.QuestHolder}.
+     * Falls back to 0 if the player is not loaded (offline).
      *
      * @param playerUUID the player's UUID
      * @return the count of active board quests
      */
     public int getActiveBoardQuestCount(@NotNull UUID playerUUID) {
-        Database database = plugin().registryAccess()
+        return plugin().registryAccess()
                 .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.DATABASE)
-                .getDatabase();
-        try (Connection connection = database.getConnection()) {
-            return PlayerBoardStateDAO.countActiveQuestsFromBoard(connection, playerUUID, DEFAULT_BOARD_KEY);
-        } catch (Exception e) {
-            LOGGER.warning("[QuestBoard] Failed to count active quests: " + e.getMessage());
-            return 0;
-        }
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(playerUUID)
+                .map(mcRPGPlayer -> mcRPGPlayer.asQuestHolder().getActiveBoardQuestCount())
+                .orElse(0);
     }
 
     /**
@@ -699,69 +754,113 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
-     * Gets all offerings for a player: shared (cached) + personal (lazily generated
-     * and persisted).
+     * Asynchronously gets all offerings for a player: shared (cached) + personal
+     * (lazily generated and persisted). Personal offerings are generated using the
+     * 3-phase async pattern to keep DB I/O off the main thread.
      *
      * @param playerUUID the player's UUID
      * @param boardKey   the board key
-     * @return combined list of shared and personal offerings
+     * @return a future that completes with the combined list of shared and personal offerings
      */
     @NotNull
-    public List<BoardOffering> getOfferingsForPlayer(@NotNull UUID playerUUID,
-                                                      @NotNull NamespacedKey boardKey) {
-        List<BoardOffering> all = new ArrayList<>(getSharedOfferingsForBoard(boardKey));
+    public CompletableFuture<List<BoardOffering>> getOfferingsForPlayer(@NotNull UUID playerUUID,
+                                                                        @NotNull NamespacedKey boardKey) {
+        List<BoardOffering> shared = new ArrayList<>(getSharedOfferingsForBoard(boardKey));
 
         QuestBoard board = boards.get(boardKey);
-        if (board == null) return all;
+        if (board == null) {
+            return CompletableFuture.completedFuture(shared);
+        }
 
+        List<CompletableFuture<List<BoardOffering>>> personalFutures = new ArrayList<>();
         board.getCurrentDailyRotation().ifPresent(rotation ->
-                all.addAll(getOrGeneratePersonalOfferings(playerUUID, boardKey, rotation)));
+                personalFutures.add(getOrGeneratePersonalOfferingsAsync(playerUUID, boardKey, rotation)));
         board.getCurrentWeeklyRotation().ifPresent(rotation ->
-                all.addAll(getOrGeneratePersonalOfferings(playerUUID, boardKey, rotation)));
+                personalFutures.add(getOrGeneratePersonalOfferingsAsync(playerUUID, boardKey, rotation)));
 
-        return all;
+        if (personalFutures.isEmpty()) {
+            return CompletableFuture.completedFuture(shared);
+        }
+
+        return CompletableFuture.allOf(personalFutures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> {
+                    for (CompletableFuture<List<BoardOffering>> f : personalFutures) {
+                        shared.addAll(f.join());
+                    }
+                    return shared;
+                });
     }
 
     /**
-     * Returns or generates personal offerings for a player and rotation. On first
-     * access the offerings are generated, persisted, and cached. Subsequent calls
-     * load from the database.
+     * Asynchronously returns or generates personal offerings for a player and rotation.
+     * Uses the 3-phase pattern:
+     * <ol>
+     *     <li><b>Phase 1 (DB executor):</b> Check if already generated; if so, load and return.</li>
+     *     <li><b>Phase 2 (main thread):</b> Generate offerings and fire {@link PersonalOfferingGenerateEvent}.</li>
+     *     <li><b>Phase 3 (DB executor):</b> Persist offerings and mark as generated.</li>
+     * </ol>
      */
     @NotNull
-    private List<BoardOffering> getOrGeneratePersonalOfferings(@NotNull UUID playerUUID,
-                                                                @NotNull NamespacedKey boardKey,
-                                                                @NotNull BoardRotation rotation) {
+    private CompletableFuture<List<BoardOffering>> getOrGeneratePersonalOfferingsAsync(
+            @NotNull UUID playerUUID,
+            @NotNull NamespacedKey boardKey,
+            @NotNull BoardRotation rotation) {
+
         Database database = plugin().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE)
                 .getDatabase();
-        try (Connection connection = database.getConnection()) {
-            if (PersonalOfferingTrackingDAO
-                    .hasGenerated(connection, playerUUID, boardKey, rotation.getRotationId())) {
-                return BoardOfferingDAO.loadPersonalOfferingsForRotation(
-                        connection, rotation.getRotationId(), playerUUID);
+        CompletableFuture<List<BoardOffering>> future = new CompletableFuture<>();
+
+        // Phase 1: Check DB if already generated
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                if (PersonalOfferingTrackingDAO
+                        .hasGenerated(connection, playerUUID, boardKey, rotation.getRotationId())) {
+                    List<BoardOffering> existing = BoardOfferingDAO.loadPersonalOfferingsForRotation(
+                            connection, rotation.getRotationId(), playerUUID);
+                    future.complete(existing);
+                    return;
+                }
+            } catch (Exception e) {
+                LOGGER.warning("[QuestBoard] Phase 1 failed for personal offerings "
+                        + playerUUID + ": " + e.getMessage());
+                future.complete(List.of());
+                return;
             }
 
-            List<BoardOffering> personal = generatePersonalOfferings(playerUUID, boardKey, rotation);
+            // Phase 2: Generate on main thread (fires event synchronously)
+            Bukkit.getScheduler().runTask(plugin(), () -> {
+                List<BoardOffering> personal = generatePersonalOfferings(playerUUID, boardKey, rotation);
 
-            QuestBoard board = boards.get(boardKey);
-            if (board != null) {
-                PersonalOfferingGenerateEvent event = new PersonalOfferingGenerateEvent(
-                        board, playerUUID, rotation, personal);
-                Bukkit.getPluginManager().callEvent(event);
-                personal = event.getOfferings();
-            }
+                QuestBoard board = boards.get(boardKey);
+                if (board != null) {
+                    PersonalOfferingGenerateEvent event = new PersonalOfferingGenerateEvent(
+                            board, playerUUID, rotation, personal);
+                    Bukkit.getPluginManager().callEvent(event);
+                    personal = event.getOfferings();
+                }
 
-            BoardOfferingDAO.saveOfferings(connection, personal).forEach(ps -> {
-                try { ps.executeUpdate(); ps.close(); } catch (Exception e) { e.printStackTrace(); }
+                List<BoardOffering> finalPersonal = personal;
+
+                // Phase 3: Persist on DB executor
+                database.getDatabaseExecutorService().submit(() -> {
+                    try (Connection connection = database.getConnection()) {
+                        BoardOfferingDAO.saveOfferings(connection, finalPersonal).forEach(ps -> {
+                            try { ps.executeUpdate(); ps.close(); } catch (Exception e) { e.printStackTrace(); }
+                        });
+                        PersonalOfferingTrackingDAO
+                                .markGenerated(connection, playerUUID, boardKey, rotation.getRotationId());
+                    } catch (Exception e) {
+                        LOGGER.warning("[QuestBoard] Phase 3 failed for personal offerings "
+                                + playerUUID + ": " + e.getMessage());
+                    }
+                    future.complete(finalPersonal);
+                });
             });
-            PersonalOfferingTrackingDAO
-                    .markGenerated(connection, playerUUID, boardKey, rotation.getRotationId());
-            return personal;
-        } catch (Exception e) {
-            LOGGER.warning("[QuestBoard] Failed to get personal offerings for " + playerUUID + ": " + e.getMessage());
-            return List.of();
-        }
+        });
+
+        return future;
     }
 
     /**
@@ -1135,6 +1234,18 @@ public class QuestBoardManager extends Manager<McRPG> {
                     });
                 }
             }
+        }
+    }
+
+    @NotNull
+    private java.time.ZoneId getConfiguredRotationZone() {
+        String configuredTimezone = boardConfig.getString(BoardConfigFile.ROTATION_TIMEZONE, DEFAULT_ROTATION_TIMEZONE);
+        try {
+            return java.time.ZoneId.of(configuredTimezone);
+        } catch (Exception exception) {
+            LOGGER.warning("[QuestBoard] Invalid rotation timezone '" + configuredTimezone
+                    + "' configured in board.yml. Falling back to " + DEFAULT_ROTATION_TIMEZONE + ".");
+            return java.time.ZoneId.of(DEFAULT_ROTATION_TIMEZONE);
         }
     }
 }

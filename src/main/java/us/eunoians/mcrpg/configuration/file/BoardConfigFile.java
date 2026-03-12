@@ -40,6 +40,11 @@ public final class BoardConfigFile extends ConfigFile {
     public static final Route MAX_SCOPED_QUESTS_PER_ENTITY =
             Route.fromString("max-scoped-quests-per-entity");
 
+    public static final Route NEAR_EXPIRY_THRESHOLD_MINUTES =
+            Route.fromString("notifications.near-expiry-threshold-minutes");
+    public static final Route PROGRESS_NOTIFICATION_THRESHOLDS =
+            Route.fromString("notifications.progress-thresholds");
+
     @NotNull
     @Override
     public UpdaterSettings getUpdaterSettings() {

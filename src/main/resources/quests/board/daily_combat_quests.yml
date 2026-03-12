@@ -5,6 +5,13 @@ quests:
   # Easy: Kill common hostile mobs
   # -------------------------------------------------------------------
   mcrpg:daily_pest_control:
+    display:
+      name: "Pest Control"
+      description: "Eliminate common undead creatures"
+      objectives:
+        daily_slay_zombies: "Slay zombies and their variants"
+      rewards:
+        swords_xp: "Swords XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -40,6 +47,14 @@ quests:
   # Medium: Kill skeletons and spiders
   # -------------------------------------------------------------------
   mcrpg:daily_dungeon_sweep:
+    display:
+      name: "Dungeon Sweep"
+      description: "Clear out skeletons and spiders"
+      objectives:
+        daily_slay_skeletons: "Slay skeletons"
+        daily_slay_spiders: "Slay spiders"
+      rewards:
+        swords_xp: "Swords XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -86,6 +101,15 @@ quests:
   # Hard: Kill Nether mobs
   # -------------------------------------------------------------------
   mcrpg:daily_nether_hunt:
+    display:
+      name: "Nether Hunt"
+      description: "Brave the Nether and slay its denizens"
+      objectives:
+        daily_slay_blazes: "Slay blazes"
+        daily_slay_piglins: "Slay piglin brutes and zombified piglins"
+      rewards:
+        swords_xp: "Swords XP"
+        blaze_bonus: "Blaze Rods"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -102,6 +126,7 @@ quests:
         amount: 600
       blaze_bonus:
         type: mcrpg:command
+        display: "4 Blaze Rods"
         commands:
           - "give {player} blaze_rod 4"
     phases:

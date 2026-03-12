@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -88,11 +89,7 @@ public class ActiveQuestGui extends McRPGPaginatedGui {
 
     @NotNull
     private List<QuestInstance> getActiveQuestsForPage(int page) {
-        QuestManager questManager = RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.QUEST);
-        List<QuestInstance> allActive = questManager.getActiveQuestsForPlayer(
-                getCreatingPlayer().getUUID());
+        List<QuestInstance> allActive = getUnexpiredActiveQuests();
         int start = (page - 1) * NAVIGATION_ROW_START_INDEX;
         int end = Math.min(start + NAVIGATION_ROW_START_INDEX, allActive.size());
         if (start >= allActive.size()) {
@@ -101,12 +98,27 @@ public class ActiveQuestGui extends McRPGPaginatedGui {
         return allActive.subList(start, end);
     }
 
-    @Override
-    public int getMaximumPage() {
+    @NotNull
+    private List<QuestInstance> getUnexpiredActiveQuests() {
         QuestManager questManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
-        int total = questManager.getActiveQuestsForPlayer(getCreatingPlayer().getUUID()).size();
+        List<QuestInstance> allActive = questManager.getActiveQuestsForPlayer(
+                getCreatingPlayer().getUUID());
+        List<QuestInstance> unexpired = new ArrayList<>(allActive.size());
+        for (QuestInstance quest : allActive) {
+            if (quest.isExpired()) {
+                quest.expire();
+                continue;
+            }
+            unexpired.add(quest);
+        }
+        return List.copyOf(unexpired);
+    }
+
+    @Override
+    public int getMaximumPage() {
+        int total = getUnexpiredActiveQuests().size();
         return Math.max(1, (int) Math.ceil((double) total / NAVIGATION_ROW_START_INDEX));
     }
 

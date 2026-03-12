@@ -62,6 +62,7 @@ public class QuestInstance {
     private final QuestSource questSource;
     private final String scopeDisplayName;
     private NamespacedKey boardRarityKey;
+    private boolean nearExpiryNotified;
 
     /**
      * Creates a new quest instance from a definition with an explicit quest source.
@@ -403,6 +404,27 @@ public class QuestInstance {
             return false;
         }
         return McRPG.getInstance().getTimeProvider().now().toEpochMilli() >= expirationTime;
+    }
+
+    /**
+     * Returns whether the periodic near-expiry scan has already sent a notification
+     * for this quest instance. This flag is only used by the scan task; the login
+     * reminder path deliberately ignores it so players always receive a reminder on login.
+     *
+     * @return {@code true} if the scan has already notified for this quest
+     */
+    public boolean isNearExpiryNotified() {
+        return nearExpiryNotified;
+    }
+
+    /**
+     * Marks that the periodic scan has sent a near-expiry notification for this quest.
+     * Once set, the scan will not send another notification for the same instance.
+     *
+     * @param notified {@code true} to mark as notified, {@code false} to clear the flag
+     */
+    public void setNearExpiryNotified(boolean notified) {
+        this.nearExpiryNotified = notified;
     }
 
     /**

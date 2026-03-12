@@ -183,6 +183,8 @@ public final class QuestTemplateEngine {
         List<QuestPhaseDefinition> phases = buildPhases(template, rarityKey, questKey, filteredPhases, context, objectiveConfigs);
         List<QuestRewardType> rewards = buildRewards(template, rarityKey, context);
 
+        Map<String, String> inlineDisplay = template.getInlineDisplay().isEmpty() ? null : template.getInlineDisplay();
+
         return new QuestDefinition(
                 questKey,
                 template.getScopeProviderKey(),
@@ -194,7 +196,8 @@ public final class QuestTemplateEngine {
                 -1,
                 null,
                 null,
-                template.getRewardDistribution().orElse(null)
+                template.getRewardDistribution().orElse(null),
+                inlineDisplay
         );
     }
 

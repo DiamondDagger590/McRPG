@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.listener.quest;
 
+import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
@@ -8,11 +9,19 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.quest.QuestCancelEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
+import us.eunoians.mcrpg.quest.impl.QuestInstance;
+import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import java.sql.Connection;
+import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Listens for {@link QuestCancelEvent} and retires the quest from Tier 1 (active)
@@ -33,6 +42,8 @@ public class QuestCancelListener implements Listener {
                 .manager(McRPGManagerKey.QUEST);
         questManager.retireQuest(event.getQuestInstance());
 
+        releaseBoardSlot(event.getQuestInstance());
+        decrementBoardCount(event.getQuestInstance());
         deregisterEphemeralDefinition(event.getQuestInstance().getQuestKey());
     }
 
@@ -43,6 +54,38 @@ public class QuestCancelListener implements Listener {
      *
      * @param questKey the quest definition key to check and potentially deregister
      */
+    private void releaseBoardSlot(@NotNull QuestInstance questInstance) {
+        var dbManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE);
+        if (dbManager == null) {
+            return;
+        }
+        Database database = dbManager.getDatabase();
+        UUID questUUID = questInstance.getQuestUUID();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                PlayerBoardStateDAO.updateStateByQuestInstanceUUID(connection, questUUID, "CANCELLED");
+            } catch (Exception e) {
+                McRPG.getInstance().getLogger().log(Level.WARNING,
+                        "Failed to release board slot for cancelled quest " + questUUID, e);
+            }
+        });
+    }
+
+    private void decrementBoardCount(@NotNull QuestInstance questInstance) {
+        if (!questInstance.getQuestSource().getKey().equals(BoardPersonalQuestSource.KEY)) {
+            return;
+        }
+        questInstance.getQuestScope().ifPresent(scope -> {
+            for (UUID playerUUID : scope.getCurrentPlayersInScope()) {
+                RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.PLAYER)
+                        .<McRPGPlayer>getPlayer(playerUUID)
+                        .ifPresent(p -> p.asQuestHolder().decrementBoardQuestCount());
+            }
+        });
+    }
+
     private void deregisterEphemeralDefinition(@NotNull NamespacedKey questKey) {
         if (questKey.getKey().startsWith("gen_")) {
             QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()

@@ -248,6 +248,28 @@ public class BoardOfferingDAO {
         return Optional.empty();
     }
 
+    /**
+     * Loads all accepted offerings that have a generated definition stored.
+     * Used at startup to re-register template-generated definitions into the registry
+     * so active quests from previous rotations display correctly.
+     */
+    @NotNull
+    public static List<BoardOffering> loadAcceptedGeneratedOfferings(@NotNull Connection connection) {
+        List<BoardOffering> offerings = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM " + TABLE_NAME
+                        + " WHERE state = 'ACCEPTED' AND generated_definition IS NOT NULL")) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    offerings.add(buildOffering(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return offerings;
+    }
+
     private static void setOfferingParams(@NotNull PreparedStatement ps,
                                            @NotNull BoardOffering offering) throws SQLException {
         ps.setString(1, offering.getOfferingId().toString());

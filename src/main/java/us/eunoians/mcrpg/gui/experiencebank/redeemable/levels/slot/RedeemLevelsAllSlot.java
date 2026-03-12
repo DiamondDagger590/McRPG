@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.gui.experiencebank.redeemable.levels.slot;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -40,6 +42,13 @@ public class RedeemLevelsAllSlot implements McRPGSlot {
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
+            if (mcRPGPlayer.getExperienceExtras().getRedeemableLevels() <= 0) {
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                player.sendMessage(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_LEVELS_NOT_ENOUGH_LEVELS_MESSAGE));
+                return;
+            }
             player.performCommand("mcrpg redeem levels " + skill.getName(mcRPGPlayer)+ " all");
             player.closeInventory();
         });

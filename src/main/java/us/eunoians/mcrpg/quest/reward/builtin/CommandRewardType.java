@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,16 +33,19 @@ public class CommandRewardType implements QuestRewardType {
     public static final NamespacedKey KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "command");
 
     private final List<String> commands;
+    private final String displayLabel;
 
     /**
      * Creates an unconfigured base instance for registry registration.
      */
     public CommandRewardType() {
         this.commands = List.of();
+        this.displayLabel = "";
     }
 
-    private CommandRewardType(@NotNull List<String> commands) {
+    private CommandRewardType(@NotNull List<String> commands, @NotNull String displayLabel) {
         this.commands = List.copyOf(commands);
+        this.displayLabel = displayLabel;
     }
 
     @NotNull
@@ -53,7 +57,9 @@ public class CommandRewardType implements QuestRewardType {
     @NotNull
     @Override
     public CommandRewardType parseConfig(@NotNull Section section) {
-        return new CommandRewardType(section.getStringList("commands"));
+        return new CommandRewardType(
+                section.getStringList("commands"),
+                section.getString("display", ""));
     }
 
     @SuppressWarnings("unchecked")
@@ -62,7 +68,8 @@ public class CommandRewardType implements QuestRewardType {
     public CommandRewardType fromSerializedConfig(@NotNull Map<String, Object> config) {
         Object raw = config.getOrDefault("commands", List.of());
         List<String> cmds = raw instanceof List<?> ? ((List<String>) raw) : List.of();
-        return new CommandRewardType(cmds);
+        String label = config.getOrDefault("display", "").toString();
+        return new CommandRewardType(cmds, label);
     }
 
     @Override
@@ -75,8 +82,19 @@ public class CommandRewardType implements QuestRewardType {
 
     @NotNull
     @Override
+    public String describeForDisplay() {
+        return displayLabel.isEmpty() ? "Special Reward" : displayLabel;
+    }
+
+    @NotNull
+    @Override
     public Map<String, Object> serializeConfig() {
-        return Map.of("commands", commands);
+        Map<String, Object> map = new HashMap<>();
+        map.put("commands", commands);
+        if (!displayLabel.isEmpty()) {
+            map.put("display", displayLabel);
+        }
+        return map;
     }
 
     @NotNull

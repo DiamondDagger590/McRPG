@@ -105,6 +105,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         if (startupProfile == StartupProfile.PROD) {
             new McRPGDriverRegistrar().register(bootstrapContext);
             registryAccess.registry(RegistryKey.MANAGER).register(new McRPGDatabaseManager(mcRPG));
+            registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadActiveQuestsFromDatabase();
             registryAccess.registry(RegistryKey.MANAGER).<QuestBoardManager>manager(McRPGManagerKey.QUEST_BOARD).initialize(mcRPG);
             new McRPGCommandRegistrar().register(bootstrapContext);
             new McRPGExperienceModifiersRegistrar().register(bootstrapContext);

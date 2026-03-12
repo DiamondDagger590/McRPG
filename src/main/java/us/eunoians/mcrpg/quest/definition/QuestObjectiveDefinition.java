@@ -183,14 +183,40 @@ public class QuestObjectiveDefinition {
      * @param questKey the parent quest's namespaced key, used to scope the localization route
      * @return the localized objective description, or a key-derived fallback
      */
+    /**
+     * Gets the localized description for this objective, resolved through the player's locale chain.
+     * Falls back to a formatted version of the objective key if no localization entry exists.
+     *
+     * @param player   the player whose locale chain determines the language
+     * @param questKey the parent quest's namespaced key, used to scope the localization route
+     * @return the localized objective description, or a key-derived fallback
+     */
     @NotNull
     public String getDescription(@NotNull McRPGPlayer player, @NotNull NamespacedKey questKey) {
+        return getDescription(player, questKey, null);
+    }
+
+    /**
+     * Gets the localized description with an optional inline display fallback from the
+     * quest/template YAML. Falls back through: localization -> inline display -> auto-generated.
+     *
+     * @param player              the player whose locale chain determines the language
+     * @param questKey            the parent quest's namespaced key
+     * @param inlineDescription   an inline display string from the quest YAML, or {@code null}
+     * @return the resolved description
+     */
+    @NotNull
+    public String getDescription(@NotNull McRPGPlayer player, @NotNull NamespacedKey questKey,
+                                 @Nullable String inlineDescription) {
         try {
             return RegistryAccess.registryAccess()
                     .registry(RegistryKey.MANAGER)
                     .manager(McRPGManagerKey.LOCALIZATION)
                     .getLocalizedMessage(player, getDescriptionRoute(questKey));
         } catch (Exception e) {
+            if (inlineDescription != null && !inlineDescription.isEmpty()) {
+                return inlineDescription;
+            }
             long required;
             try {
                 required = getRequiredProgress();

@@ -25,18 +25,32 @@ rarities:
     weight: 60
     difficulty-multiplier: 1.0
     reward-multiplier: 1.0
+    display:
+      material: PAPER
+      name-color: "<white>"
   UNCOMMON:
     weight: 25
     difficulty-multiplier: 1.25
     reward-multiplier: 1.5
+    display:
+      material: WRITABLE_BOOK
+      name-color: "<green>"
   RARE:
     weight: 10
     difficulty-multiplier: 1.5
     reward-multiplier: 2.0
+    display:
+      material: ENCHANTED_BOOK
+      name-color: "<aqua>"
+      glint: true
   LEGENDARY:
     weight: 5
     difficulty-multiplier: 2.0
     reward-multiplier: 3.0
+    display:
+      material: NETHER_STAR
+      name-color: "<gold>"
+      glint: true
 
 # Controls when the board rotates (replaces expired offerings with new ones).
 rotation:
@@ -48,3 +62,13 @@ rotation:
   weekly-reset-day: MONDAY
   # How often (in seconds) the rotation task checks whether a rotation is due.
   task-check-interval-seconds: 60
+
+# Controls player-facing notifications for quest events.
+notifications:
+  # Minutes before a quest expires at which to send the player a near-expiry warning.
+  # Quests expiring within (near-expiry-threshold-minutes * 1.5) are grouped into a
+  # single batched message to reduce noise.
+  near-expiry-threshold-minutes: 60
+  # Objective completion percentage milestones that trigger a progress notification.
+  # Players can disable these notifications individually via the settings GUI.
+  progress-thresholds: [25, 50, 75]

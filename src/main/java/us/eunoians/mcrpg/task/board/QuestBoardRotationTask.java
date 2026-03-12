@@ -6,9 +6,12 @@ import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.quest.board.BoardRotation;
+import us.eunoians.mcrpg.quest.board.QuestBoard;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshType;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
+import us.eunoians.mcrpg.quest.board.refresh.builtin.DailyRefreshType;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.WeeklyRefreshType;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -18,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Periodic task that checks whether any time-based refresh types should trigger
@@ -28,9 +32,13 @@ import java.util.Map;
  */
 public final class QuestBoardRotationTask extends CancelableCoreTask {
 
+    private static final Logger LOGGER = McRPG.getInstance().getLogger();
+    private static final String DEFAULT_ROTATION_TIMEZONE = "UTC";
+
     private final String rotationTime;
-    private final String timezone;
+    private final ZoneId rotationZone;
     private final Map<NamespacedKey, Long> lastRefreshEpochs = new HashMap<>();
+    private boolean seededFromCurrentBoardRotations = false;
 
     public QuestBoardRotationTask(@NotNull McRPG plugin,
                                   double taskDelay,
@@ -39,13 +47,15 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
                                   @NotNull String timezone) {
         super(plugin, taskDelay, taskFrequency);
         this.rotationTime = rotationTime;
-        this.timezone = timezone;
+        this.rotationZone = parseZoneOrDefault(timezone);
     }
 
     @Override
     protected void onIntervalComplete() {
-        ZoneId zone = ZoneId.of(timezone);
-        ZonedDateTime now = getPlugin().getTimeProvider().now().atZone(zone);
+        if (!seededFromCurrentBoardRotations) {
+            seedFromCurrentBoardRotations();
+        }
+        ZonedDateTime now = getPlugin().getTimeProvider().now().atZone(rotationZone);
         LocalTime configuredTime = LocalTime.parse(rotationTime);
 
         if (now.toLocalTime().isBefore(configuredTime)) {
@@ -72,6 +82,37 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
             return now.toLocalDate().toEpochDay();
         }
         return WeeklyRefreshType.computeEpoch(now);
+    }
+
+    private void seedFromCurrentBoardRotations() {
+        QuestBoardManager boardManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_BOARD);
+        QuestBoard board = boardManager.getDefaultBoard();
+        seedEpoch(DailyRefreshType.KEY, board.getCurrentDailyRotation().orElse(null));
+        seedEpoch(WeeklyRefreshType.KEY, board.getCurrentWeeklyRotation().orElse(null));
+        seededFromCurrentBoardRotations = true;
+    }
+
+    private void seedEpoch(@NotNull NamespacedKey refreshTypeKey, BoardRotation rotation) {
+        if (rotation != null) {
+            lastRefreshEpochs.put(refreshTypeKey, rotation.getRotationEpoch());
+        }
+    }
+
+    @NotNull
+    private ZoneId parseZoneOrDefault(String timezone) {
+        String configuredTimezone = timezone;
+        if (configuredTimezone == null || configuredTimezone.isBlank()) {
+            configuredTimezone = DEFAULT_ROTATION_TIMEZONE;
+        }
+        try {
+            return ZoneId.of(configuredTimezone);
+        } catch (Exception exception) {
+            LOGGER.warning("[QuestBoard] Invalid rotation timezone '" + configuredTimezone
+                    + "' configured in board.yml. Falling back to " + DEFAULT_ROTATION_TIMEZONE + ".");
+            return ZoneId.of(DEFAULT_ROTATION_TIMEZONE);
+        }
     }
 
     @Override
