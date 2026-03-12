@@ -188,6 +188,38 @@ public class LoadoutHolderResolutionTest extends McRPGBaseTest {
         assertEquals(1, ((LoadoutResolution.Found) result).loadout().getLoadoutSlot());
     }
 
+    @DisplayName("Given input '0', when resolving loadout, then NotFound is returned")
+    @Test
+    public void resolveLoadout_returnsNotFound_whenSlotIsZero(@NotNull McRPGPlayer mcRPGPlayer) {
+        LoadoutHolder holder = mcRPGPlayer.asSkillHolder();
+
+        LoadoutResolution result = holder.resolveLoadout("0");
+
+        assertInstanceOf(LoadoutResolution.NotFound.class, result);
+    }
+
+    @DisplayName("Given input '-1', when resolving loadout, then NotFound is returned")
+    @Test
+    public void resolveLoadout_returnsNotFound_whenSlotIsNegative(@NotNull McRPGPlayer mcRPGPlayer) {
+        LoadoutHolder holder = mcRPGPlayer.asSkillHolder();
+
+        LoadoutResolution result = holder.resolveLoadout("-1");
+
+        assertInstanceOf(LoadoutResolution.NotFound.class, result);
+    }
+
+    @DisplayName("Given a non-matching name, when resolving, then NotFound is returned and current loadout slot is unchanged")
+    @Test
+    public void resolveLoadout_returnsNotFound_andLeavesStateUnchanged_whenNoNameMatches(@NotNull McRPGPlayer mcRPGPlayer) {
+        LoadoutHolder holder = mcRPGPlayer.asSkillHolder();
+        int slotBefore = holder.getCurrentLoadoutSlot();
+
+        LoadoutResolution result = holder.resolveLoadout("nonexistent");
+
+        assertInstanceOf(LoadoutResolution.NotFound.class, result);
+        assertEquals(slotBefore, holder.getCurrentLoadoutSlot());
+    }
+
     @DisplayName("Given exact name collision across two loadouts, when resolving, then Ambiguous is returned")
     @Test
     public void resolveLoadout_returnsAmbiguous_whenExactNameMatchesMultiple(@NotNull McRPGPlayer mcRPGPlayer) {

@@ -28,6 +28,9 @@ jobs:
       pull-requests: write   # post PR comments
       contents: read         # checkout persona prompt files
       actions: read          # download artifacts from another workflow run
+    env:
+      # Change this to target a different Claude model across all persona steps.
+      ANTHROPIC_MODEL: claude-sonnet-4-6
 
     steps:
       # Check out ONLY the persona prompt files from the default branch.
@@ -36,6 +39,48 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: .claude/commands/
+
+      # Write a shared helper function used by every persona step.
+      # It builds the API payload, calls Claude, checks for HTTP/API errors,
+      # extracts the review text, and writes it to comment.md.
+      - name: Write Claude helper script
+        run: |
+          cat > "$GITHUB_WORKSPACE/claude-helper.sh" << 'HELPER'
+          call_claude() {
+            local header="$1"       # e.g. "## GUI/UX Review"
+            local prompt_file="$2"  # e.g. ".claude/commands/review-gui-ux.md"
+
+            jq -n \
+              --arg     model  "$ANTHROPIC_MODEL" \
+              --rawfile prompt "$prompt_file" \
+              --rawfile diff   pr.diff \
+              '{"model":$model,"max_tokens":4096,"messages":[{"role":"user","content":($prompt+"\n\n<diff>\n"+$diff+"\n</diff>")}]}' \
+              > payload.json
+
+            HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" \
+              -H "x-api-key: $ANTHROPIC_API_KEY" \
+              -H "anthropic-version: 2023-06-01" \
+              -H "content-type: application/json" \
+              -d @payload.json \
+              https://api.anthropic.com/v1/messages)
+
+            if [ "$HTTP_CODE" != "200" ]; then
+              ERROR_MSG=$(jq -r '.error.message // "unknown error"' response.json 2>/dev/null || echo "unknown error")
+              echo "::error::Claude API returned HTTP $HTTP_CODE: $ERROR_MSG"
+              return 1
+            fi
+
+            REVIEW=$(jq -r '.content[0].text // empty' response.json)
+            if [ -z "$REVIEW" ]; then
+              echo "::error::Claude API returned HTTP 200 but .content[0].text is absent"
+              jq . response.json >&2
+              return 1
+            fi
+
+            printf '%s\n\n%s\n' "$header" "$REVIEW" > comment.md
+          }
+          HELPER
+          chmod +x "$GITHUB_WORKSPACE/claude-helper.sh"
 
       # ── workflow_run path ────────────────────────────────────────────────────
       # The prepare-review job uploaded pr.diff + review-meta.json as an
@@ -63,7 +108,8 @@ jobs:
           PR="${{ inputs.pr_number }}"
           gh pr diff "$PR" > pr.diff
 
-          gui=false; config=false; api=false; test=false
+          # Note: avoid naming variables after shell builtins.
+          gui=false; config=false; api=false; tests_changed=false
           while IFS= read -r f; do
             [[ "$f" =~ src/.*/gui/.*\.java ]]     && gui=true
             [[ "$f" =~ resources/localization/ ]]  && gui=true
@@ -71,16 +117,16 @@ jobs:
             [[ "$f" =~ configuration/.*\.java ]]   && config=true
             [[ "$f" =~ src/.*/event/.*\.java ]]    && api=true
             [[ "$f" =~ src/.*/registry/.*\.java ]] && api=true
-            [[ "$f" =~ src/main/.*\.java ]]        && test=true
+            [[ "$f" =~ src/main/.*\.java ]]        && tests_changed=true
           done < <(gh pr view "$PR" --json files --jq '.files[].path')
 
           jq -n \
-            --arg  pr     "$PR"     \
-            --arg  gui    "$gui"    \
-            --arg  config "$config" \
-            --arg  api    "$api"    \
-            --arg  test   "$test"   \
-            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$test}' \
+            --arg  pr              "$PR"            \
+            --arg  gui             "$gui"           \
+            --arg  config          "$config"        \
+            --arg  api             "$api"           \
+            --arg  tests_changed   "$tests_changed" \
+            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$tests_changed}' \
             > review-meta.json
 
       # ── Common: parse metadata ───────────────────────────────────────────────
@@ -104,6 +150,21 @@ jobs:
             echo "needs_test=$(jq -r '.needs_test' review-meta.json)"
           } >> "$GITHUB_OUTPUT"
 
+      # Truncate very large diffs before feeding them to any persona.
+      # 128 KB of unified diff is already a very large PR; beyond that the
+      # context window adds cost without proportional review quality.
+      - name: Truncate large diffs
+        if: steps.meta.outputs.proceed == 'true'
+        run: |
+          MAX_BYTES=131072
+          DIFF_SIZE=$(wc -c < pr.diff)
+          if [ "$DIFF_SIZE" -gt "$MAX_BYTES" ]; then
+            echo "Diff is ${DIFF_SIZE} bytes — truncating to ${MAX_BYTES} bytes."
+            head -c "$MAX_BYTES" pr.diff > pr.diff.tmp
+            printf '\n\n[Diff truncated — original size: %d bytes]\n' "$DIFF_SIZE" >> pr.diff.tmp
+            mv pr.diff.tmp pr.diff
+          fi
+
       # ── Persona: GUI/UX ──────────────────────────────────────────────────────
       # Runs when GUI Java files or localization YAML files were changed.
       - name: GUI/UX Persona
@@ -113,21 +174,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
         run: |
-          jq -n \
-            --rawfile prompt .claude/commands/review-gui-ux.md \
-            --rawfile diff   pr.diff \
-            '{
-              "model": "claude-sonnet-4-6",
-              "max_tokens": 4096,
-              "messages": [{"role":"user","content":($prompt + "\n\n<diff>\n" + $diff + "\n</diff>")}]
-            }' \
-          | curl -sf https://api.anthropic.com/v1/messages \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
-              -H "anthropic-version: 2023-06-01" \
-              -H "content-type: application/json" \
-              -d @- \
-          | jq -r '"## GUI/UX Review\n\n" + .content[0].text' \
-          > comment.md
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## GUI/UX Review" ".claude/commands/review-gui-ux.md"
           gh pr comment "$PR_NUMBER" --body-file comment.md
 
       # ── Persona: Server Owner ────────────────────────────────────────────────
@@ -139,21 +187,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
         run: |
-          jq -n \
-            --rawfile prompt .claude/commands/review-server-owner.md \
-            --rawfile diff   pr.diff \
-            '{
-              "model": "claude-sonnet-4-6",
-              "max_tokens": 4096,
-              "messages": [{"role":"user","content":($prompt + "\n\n<diff>\n" + $diff + "\n</diff>")}]
-            }' \
-          | curl -sf https://api.anthropic.com/v1/messages \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
-              -H "anthropic-version: 2023-06-01" \
-              -H "content-type: application/json" \
-              -d @- \
-          | jq -r '"## Server Owner Review\n\n" + .content[0].text' \
-          > comment.md
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Server Owner Review" ".claude/commands/review-server-owner.md"
           gh pr comment "$PR_NUMBER" --body-file comment.md
 
       # ── Persona: Extensibility ───────────────────────────────────────────────
@@ -165,21 +200,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
         run: |
-          jq -n \
-            --rawfile prompt .claude/commands/review-extensibility.md \
-            --rawfile diff   pr.diff \
-            '{
-              "model": "claude-sonnet-4-6",
-              "max_tokens": 4096,
-              "messages": [{"role":"user","content":($prompt + "\n\n<diff>\n" + $diff + "\n</diff>")}]
-            }' \
-          | curl -sf https://api.anthropic.com/v1/messages \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
-              -H "anthropic-version: 2023-06-01" \
-              -H "content-type: application/json" \
-              -d @- \
-          | jq -r '"## Extensibility Review\n\n" + .content[0].text' \
-          > comment.md
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Extensibility Review" ".claude/commands/review-extensibility.md"
           gh pr comment "$PR_NUMBER" --body-file comment.md
 
       # ── Persona: Testing ─────────────────────────────────────────────────────
@@ -191,19 +213,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
         run: |
-          jq -n \
-            --rawfile prompt .claude/commands/review-testing.md \
-            --rawfile diff   pr.diff \
-            '{
-              "model": "claude-sonnet-4-6",
-              "max_tokens": 4096,
-              "messages": [{"role":"user","content":($prompt + "\n\n<diff>\n" + $diff + "\n</diff>")}]
-            }' \
-          | curl -sf https://api.anthropic.com/v1/messages \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
-              -H "anthropic-version: 2023-06-01" \
-              -H "content-type: application/json" \
-              -d @- \
-          | jq -r '"## Testing Review\n\n" + .content[0].text' \
-          > comment.md
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Testing Review" ".claude/commands/review-testing.md"
           gh pr comment "$PR_NUMBER" --body-file comment.md

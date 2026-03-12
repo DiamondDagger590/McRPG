@@ -127,7 +127,7 @@ public class LoadoutHolder extends AbilityHolder {
      * from this holder.
      */
     public boolean hasLoadout(int loadoutSlot) {
-        return loadouts.containsKey(loadoutSlot) || loadoutSlot <= getMaxLoadoutAmount();
+        return loadoutSlot >= 1 && (loadouts.containsKey(loadoutSlot) || loadoutSlot <= getMaxLoadoutAmount());
     }
 
     /**
@@ -195,11 +195,10 @@ public class LoadoutHolder extends AbilityHolder {
             // Not an integer — fall through to name matching
         }
 
-        // Collect all loadouts that have a user-set display name
-        int maxSlots = getMaxLoadoutAmount();
+        // Collect all loadouts that have a user-set display name.
+        // Iterate the backing map directly so we never auto-create slots that don't exist yet.
         List<Loadout> namedLoadouts = new ArrayList<>();
-        for (int slot = 1; slot <= maxSlots; slot++) {
-            Loadout loadout = getLoadout(slot);
+        for (Loadout loadout : loadouts.values()) {
             if (loadout.getDisplay().getDisplayName().isPresent()) {
                 namedLoadouts.add(loadout);
             }
