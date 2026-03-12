@@ -398,7 +398,7 @@ public class McRPGPlayer {
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
 
-        List<CompletableFuture> completableFutures = new ArrayList<>();
+        List<CompletableFuture<?>> completableFutures = new ArrayList<>();
 
         CompletableFuture<PlayerDataDAO.PlayerDataSnapshot> playerDataFuture = PlayerDataDAO.getPlayerData(connection, playerToLoadFromUUID);
         completableFutures.add(playerDataFuture);
@@ -491,11 +491,10 @@ public class McRPGPlayer {
         CompletableFuture<Void> compositeSkillFuture = CompletableFuture.allOf(skillFutures);
         completableFutures.add(compositeSkillFuture);
 
-        CompletableFuture<List<UnlockedAbilities>> loadoutFuture = PlayerLoadoutDAO.getPlayerLoadout(connection, uuid);
-        completableFutures.add(loadoutFuture);
+        CompletableFuture<List<UnlockedAbilities>> loadoutFuture = PlayerLoadoutDAO.getPlayerLoadout(connection, playerToLoadFromUUID);
 
-        compositeSkillFuture
-            .thenAccept(unused -> {
+        CompletableFuture<Void> skillsAndLoadoutFuture = compositeSkillFuture
+            .thenCompose(unused -> {
 
                 updatePowerLevel();
 
@@ -503,7 +502,7 @@ public class McRPGPlayer {
                     skill.updateExpToLevel();
                 }
 
-                loadoutFuture.thenAccept(unlockedAbilityList -> {
+                return loadoutFuture.thenAccept(unlockedAbilityList -> {
 
                     int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
@@ -537,6 +536,7 @@ public class McRPGPlayer {
                 throwable.printStackTrace();
                 return null;
             });
+        completableFutures.add(skillsAndLoadoutFuture);
 
         CompletableFuture<?>[] futureArray = new CompletableFuture<?>[completableFutures.size()];
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(completableFutures.toArray(futureArray));
