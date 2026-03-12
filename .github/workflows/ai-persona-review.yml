@@ -1,0 +1,220 @@
+name: AI Persona Review
+
+# Triggered automatically when the "AI PR Review" prepare-review job finishes,
+# OR manually via workflow_dispatch so you can re-run reviews on any open PR
+# without pushing a new commit.
+#
+# Security model: this workflow always executes on the DEFAULT BRANCH and never
+# checks out PR-head code, so secrets are safe.  The diff is passed in via an
+# artifact (workflow_run path) or fetched with gh (dispatch path).
+"on":
+  workflow_run:
+    workflows: ["AI PR Review"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: string
+
+jobs:
+  persona-review:
+    runs-on: ubuntu-latest
+    # For workflow_run: only proceed when the upstream workflow succeeded.
+    # For workflow_dispatch: always proceed.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 10
+    permissions:
+      pull-requests: write   # post PR comments
+      contents: read         # checkout persona prompt files
+      actions: read          # download artifacts from another workflow run
+    env:
+      # Change this to target a different Claude model across all persona steps.
+      ANTHROPIC_MODEL: claude-sonnet-4-6
+
+    steps:
+      # Check out ONLY the persona prompt files from the default branch.
+      # Never check out the PR head — that would expose secrets to untrusted code.
+      - name: Checkout persona prompts (default branch)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .claude/commands/
+
+      # Write a shared helper function used by every persona step.
+      # It builds the API payload, calls Claude, checks for HTTP/API errors,
+      # extracts the review text, and writes it to comment.md.
+      - name: Write Claude helper script
+        run: |
+          cat > "$GITHUB_WORKSPACE/claude-helper.sh" << 'HELPER'
+          call_claude() {
+            local header="$1"       # e.g. "## GUI/UX Review"
+            local prompt_file="$2"  # e.g. ".claude/commands/review-gui-ux.md"
+
+            jq -n \
+              --arg     model  "$ANTHROPIC_MODEL" \
+              --rawfile prompt "$prompt_file" \
+              --rawfile diff   pr.diff \
+              '{"model":$model,"max_tokens":4096,"messages":[{"role":"user","content":($prompt+"\n\n<diff>\n"+$diff+"\n</diff>")}]}' \
+              > payload.json
+
+            HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 120 \
+              -o response.json -w "%{http_code}" \
+              -H "x-api-key: $ANTHROPIC_API_KEY" \
+              -H "anthropic-version: 2023-06-01" \
+              -H "content-type: application/json" \
+              -d @payload.json \
+              https://api.anthropic.com/v1/messages)
+
+            if [ "$HTTP_CODE" != "200" ]; then
+              ERROR_MSG=$(jq -r '.error.message // "unknown error"' response.json 2>/dev/null || echo "unknown error")
+              echo "::error::Claude API returned HTTP $HTTP_CODE: $ERROR_MSG"
+              return 1
+            fi
+
+            REVIEW=$(jq -r '.content[0].text // empty' response.json)
+            if [ -z "$REVIEW" ]; then
+              echo "::error::Claude API returned HTTP 200 but .content[0].text is absent"
+              jq . response.json >&2
+              return 1
+            fi
+
+            printf '%s\n\n%s\n' "$header" "$REVIEW" > comment.md
+          }
+          HELPER
+          chmod +x "$GITHUB_WORKSPACE/claude-helper.sh"
+
+      # ── workflow_run path ────────────────────────────────────────────────────
+      # The prepare-review job uploaded pr.diff + review-meta.json as an
+      # artifact.  Download it here.  If the artifact is absent (prepare-review
+      # was skipped because no personas were needed), continue-on-error keeps
+      # the job alive so "Parse metadata" can emit proceed=false gracefully.
+      - name: Download review artifact (workflow_run)
+        if: github.event_name == 'workflow_run'
+        id: download
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: pr-review-inputs
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── workflow_dispatch path ───────────────────────────────────────────────
+      # Fetch the diff with gh and re-run the same domain-detection logic that
+      # detect-changes uses, so we know which personas to invoke.
+      - name: Fetch diff and detect domains (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR="${{ inputs.pr_number }}"
+          gh pr diff "$PR" > pr.diff
+
+          # Note: avoid naming variables after shell builtins.
+          gui=false; config=false; api=false; tests_changed=false
+          while IFS= read -r f; do
+            [[ "$f" =~ src/.*/gui/.*\.java ]]     && gui=true
+            [[ "$f" =~ resources/localization/ ]]  && gui=true
+            [[ "$f" =~ resources/.*\.yml ]]        && config=true
+            [[ "$f" =~ configuration/.*\.java ]]   && config=true
+            [[ "$f" =~ src/.*/event/.*\.java ]]    && api=true
+            [[ "$f" =~ src/.*/registry/.*\.java ]] && api=true
+            [[ "$f" =~ src/main/.*\.java ]]        && tests_changed=true
+          done < <(gh pr view "$PR" --json files --jq '.files[].path')
+
+          jq -n \
+            --arg  pr              "$PR"            \
+            --arg  gui             "$gui"           \
+            --arg  config          "$config"        \
+            --arg  api             "$api"           \
+            --arg  tests_changed   "$tests_changed" \
+            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$tests_changed}' \
+            > review-meta.json
+
+      # ── Common: parse metadata ───────────────────────────────────────────────
+      # If review-meta.json is absent (artifact was not uploaded because no
+      # personas were triggered for this PR), emit proceed=false and skip all
+      # persona steps cleanly.
+      - name: Parse metadata
+        id: meta
+        run: |
+          if [ ! -f review-meta.json ]; then
+            echo "review-meta.json not found — no personas needed for this PR."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          {
+            echo "proceed=true"
+            echo "pr_number=$(jq -r '.pr_number' review-meta.json)"
+            echo "needs_gui=$(jq -r '.needs_gui' review-meta.json)"
+            echo "needs_config=$(jq -r '.needs_config' review-meta.json)"
+            echo "needs_api=$(jq -r '.needs_api' review-meta.json)"
+            echo "needs_test=$(jq -r '.needs_test' review-meta.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      # Truncate very large diffs before feeding them to any persona.
+      # 128 KB of unified diff is already a very large PR; beyond that the
+      # context window adds cost without proportional review quality.
+      - name: Truncate large diffs
+        if: steps.meta.outputs.proceed == 'true'
+        run: |
+          MAX_BYTES=131072
+          DIFF_SIZE=$(wc -c < pr.diff)
+          if [ "$DIFF_SIZE" -gt "$MAX_BYTES" ]; then
+            echo "Diff is ${DIFF_SIZE} bytes — truncating to ${MAX_BYTES} bytes."
+            head -c "$MAX_BYTES" pr.diff > pr.diff.tmp
+            printf '\n\n[Diff truncated — original size: %d bytes]\n' "$DIFF_SIZE" >> pr.diff.tmp
+            mv pr.diff.tmp pr.diff
+          fi
+
+      # ── Persona: GUI/UX ──────────────────────────────────────────────────────
+      # Runs when GUI Java files or localization YAML files were changed.
+      - name: GUI/UX Persona
+        if: steps.meta.outputs.proceed == 'true' && steps.meta.outputs.needs_gui == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        run: |
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## GUI/UX Review" ".claude/commands/review-gui-ux.md"
+          gh pr comment "$PR_NUMBER" --body-file comment.md
+
+      # ── Persona: Server Owner ────────────────────────────────────────────────
+      # Runs when config YAMLs, plugin.yml, or ConfigFile route constants change.
+      - name: Server Owner Persona
+        if: steps.meta.outputs.proceed == 'true' && steps.meta.outputs.needs_config == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        run: |
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Server Owner Review" ".claude/commands/review-server-owner.md"
+          gh pr comment "$PR_NUMBER" --body-file comment.md
+
+      # ── Persona: Extensibility ───────────────────────────────────────────────
+      # Runs when event or registry Java files change.
+      - name: Extensibility Persona
+        if: steps.meta.outputs.proceed == 'true' && steps.meta.outputs.needs_api == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        run: |
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Extensibility Review" ".claude/commands/review-extensibility.md"
+          gh pr comment "$PR_NUMBER" --body-file comment.md
+
+      # ── Persona: Testing ─────────────────────────────────────────────────────
+      # Runs when any main Java source file changes.
+      - name: Testing Persona
+        if: steps.meta.outputs.proceed == 'true' && steps.meta.outputs.needs_test == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        run: |
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Testing Review" ".claude/commands/review-testing.md"
+          gh pr comment "$PR_NUMBER" --body-file comment.md

@@ -72,8 +72,10 @@ public final class LocalizationKey extends ConfigFile {
     private static final String LOADOUT_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "loadout");
     private static final String LOADOUT_EDIT_COMMAND_HEADER = toRoutePath(LOADOUT_COMMAND_HEADER, "edit");
     public static final Route LOADOUT_EDIT_COMMAND_NO_LOADOUT_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_EDIT_COMMAND_HEADER, "no-loadout-matches"));
+    public static final Route LOADOUT_EDIT_COMMAND_AMBIGUOUS_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_EDIT_COMMAND_HEADER, "ambiguous-matches"));
     private static final String LOADOUT_SET_COMMAND_HEADER = toRoutePath(LOADOUT_COMMAND_HEADER, "set");
     public static final Route LOADOUT_SET_COMMAND_NO_LOADOUT_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "no-loadout-matches"));
+    public static final Route LOADOUT_SET_COMMAND_AMBIGUOUS_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "ambiguous-matches"));
     public static final Route LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "loadout-set-success-message"));
 
     private static final String ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "admin");
