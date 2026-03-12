@@ -58,8 +58,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class McRPGPlayer {
 
@@ -72,7 +74,7 @@ public class McRPGPlayer {
     @Setter
     private int abilityPoints;
 
-    private final List<Skill> skills = new ArrayList<>();
+    private final List<Skill> skills = new CopyOnWriteArrayList<>();
 
     @Getter
     private final List<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
@@ -243,6 +245,12 @@ public class McRPGPlayer {
     @Nullable
     private CompletableFuture<Void> copyFuture;
 
+    /**
+     * Tracks whether all async data loading has completed for this player.
+     * Used to prevent saving uninitialized/default data that would overwrite real data in the database.
+     */
+    private final AtomicBoolean dataLoaded = new AtomicBoolean(false);
+
     public McRPGPlayer(UUID uuid) {
         this.uuid = uuid;
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
@@ -370,6 +378,8 @@ public class McRPGPlayer {
                     for (UnlockedAbilities abilityType : toRemove) {
                         abilityLoadout.remove(abilityType);
                     }
+
+                    dataLoaded.set(true);
                 });
             }).exceptionally(throwable -> {
                 throwable.printStackTrace();
@@ -529,6 +539,7 @@ public class McRPGPlayer {
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(completableFutures.toArray(futureArray));
         this.copyFuture = new CompletableFuture<>();
         allFutures.thenAccept(unused -> {
+            dataLoaded.set(true);
             saveData().thenAccept(copyFuture::complete);
         });
 
@@ -832,6 +843,11 @@ public class McRPGPlayer {
      */
     public CompletableFuture<Void> saveData() {
 
+        // Prevent saving default/uninitialized data that would overwrite real data in the database
+        if (!dataLoaded.get()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
@@ -899,6 +915,13 @@ public class McRPGPlayer {
      */
     public boolean hasPendingAbility() {
         return !this.pendingUnlockAbilities.isEmpty();
+    }
+
+    /**
+     * @return true if all async data loading has completed for this player
+     */
+    public boolean isDataLoaded() {
+        return dataLoaded.get();
     }
 
     /**

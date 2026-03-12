@@ -12,12 +12,12 @@ import us.eunoians.mcrpg.api.exceptions.McRPGPlayerNotFoundException;
 import us.eunoians.mcrpg.players.McRPGPlayer;
 import us.eunoians.mcrpg.players.PlayerManager;
 
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerLogoutEvent implements Listener {
 
-    private static HashMap<UUID, BukkitTask> playerLogOutTasks = new HashMap<>();
+    private static ConcurrentHashMap<UUID, BukkitTask> playerLogOutTasks = new ConcurrentHashMap<>();
 
     public static boolean hasPlayer(UUID uuid) {
         return playerLogOutTasks.containsKey(uuid);
