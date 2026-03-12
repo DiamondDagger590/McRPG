@@ -58,8 +58,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class McRPGPlayer {
 
@@ -72,7 +74,7 @@ public class McRPGPlayer {
     @Setter
     private int abilityPoints;
 
-    private final List<Skill> skills = new ArrayList<>();
+    private final List<Skill> skills = new CopyOnWriteArrayList<>();
 
     @Getter
     private final List<UnlockedAbilities> pendingUnlockAbilities = new ArrayList<>();
@@ -243,13 +245,19 @@ public class McRPGPlayer {
     @Nullable
     private CompletableFuture<Void> copyFuture;
 
+    /**
+     * Tracks whether all async data loading has completed for this player.
+     * Used to prevent saving uninitialized/default data that would overwrite real data in the database.
+     */
+    private final AtomicBoolean dataLoaded = new AtomicBoolean(false);
+
     public McRPGPlayer(UUID uuid) {
         this.uuid = uuid;
         this.guardianSummonChance = McRPG.getInstance().getConfig().getDouble("PlayerConfiguration.PoseidonsGuardian.DefaultSummonChance");
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
 
-        PlayerDataDAO.getPlayerData(connection, uuid).thenAccept(playerDataSnapshot -> {
+        CompletableFuture<Void> playerDataFuture = PlayerDataDAO.getPlayerData(connection, uuid).thenAccept(playerDataSnapshot -> {
 
             this.abilityPoints = playerDataSnapshot.getAbilityPoints();
             this.redeemableExp = playerDataSnapshot.getRedeemableExp();
@@ -302,7 +310,7 @@ public class McRPGPlayer {
             }.runTask(McRPG.getInstance());
         });
 
-        PlayerSettingsDAO.getPlayerSettings(connection, uuid).thenAccept(playerSettingsSnapshot -> {
+        CompletableFuture<Void> playerSettingsFuture = PlayerSettingsDAO.getPlayerSettings(connection, uuid).thenAccept(playerSettingsSnapshot -> {
             this.healthbarType = playerSettingsSnapshot.getHealthbarType();
             this.keepHandEmpty = playerSettingsSnapshot.isKeepHandEmpty();
             this.displayType = playerSettingsSnapshot.getDisplayType();
@@ -314,7 +322,7 @@ public class McRPGPlayer {
         });
 
         //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
-        CompletableFuture<SkillDataSnapshot>[] completableFutures = new CompletableFuture[Skills.values().length];
+        CompletableFuture<SkillDataSnapshot>[] skillFutures = new CompletableFuture[Skills.values().length];
 
         for (int i = 0; i < Skills.values().length; i++) {
 
@@ -329,11 +337,12 @@ public class McRPGPlayer {
                     return null;
                 });
 
-            completableFutures[i] = completableFuture;
+            skillFutures[i] = completableFuture;
         }
 
-        CompletableFuture.allOf(completableFutures)
-            .thenAccept(unused -> {
+        // Wait for skills to load, then load loadout (which depends on skills being initialized)
+        CompletableFuture<Void> skillsAndLoadoutFuture = CompletableFuture.allOf(skillFutures)
+            .thenCompose(unused -> {
 
                 updatePowerLevel();
 
@@ -341,7 +350,7 @@ public class McRPGPlayer {
                     skill.updateExpToLevel();
                 }
 
-                PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
+                return PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
 
                     int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
@@ -376,6 +385,10 @@ public class McRPGPlayer {
                 return null;
             });
 
+        // Only mark data as loaded after ALL async operations complete (player data, settings, skills, and loadout)
+        CompletableFuture.allOf(playerDataFuture, playerSettingsFuture, skillsAndLoadoutFuture)
+            .thenRun(() -> dataLoaded.set(true));
+
     }
 
     //A very sloppy solution for copying, but this whole class is a mess so #techdebt
@@ -385,7 +398,7 @@ public class McRPGPlayer {
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
 
-        List<CompletableFuture> completableFutures = new ArrayList<>();
+        List<CompletableFuture<?>> completableFutures = new ArrayList<>();
 
         CompletableFuture<PlayerDataDAO.PlayerDataSnapshot> playerDataFuture = PlayerDataDAO.getPlayerData(connection, playerToLoadFromUUID);
         completableFutures.add(playerDataFuture);
@@ -478,11 +491,10 @@ public class McRPGPlayer {
         CompletableFuture<Void> compositeSkillFuture = CompletableFuture.allOf(skillFutures);
         completableFutures.add(compositeSkillFuture);
 
-        CompletableFuture<List<UnlockedAbilities>> loadoutFuture = PlayerLoadoutDAO.getPlayerLoadout(connection, uuid);
-        completableFutures.add(loadoutFuture);
+        CompletableFuture<List<UnlockedAbilities>> loadoutFuture = PlayerLoadoutDAO.getPlayerLoadout(connection, playerToLoadFromUUID);
 
-        compositeSkillFuture
-            .thenAccept(unused -> {
+        CompletableFuture<Void> skillsAndLoadoutFuture = compositeSkillFuture
+            .thenCompose(unused -> {
 
                 updatePowerLevel();
 
@@ -490,7 +502,7 @@ public class McRPGPlayer {
                     skill.updateExpToLevel();
                 }
 
-                loadoutFuture.thenAccept(unlockedAbilityList -> {
+                return loadoutFuture.thenAccept(unlockedAbilityList -> {
 
                     int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
@@ -524,11 +536,13 @@ public class McRPGPlayer {
                 throwable.printStackTrace();
                 return null;
             });
+        completableFutures.add(skillsAndLoadoutFuture);
 
         CompletableFuture<?>[] futureArray = new CompletableFuture<?>[completableFutures.size()];
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(completableFutures.toArray(futureArray));
         this.copyFuture = new CompletableFuture<>();
         allFutures.thenAccept(unused -> {
+            dataLoaded.set(true);
             saveData().thenAccept(copyFuture::complete);
         });
 
@@ -832,6 +846,11 @@ public class McRPGPlayer {
      */
     public CompletableFuture<Void> saveData() {
 
+        // Prevent saving default/uninitialized data that would overwrite real data in the database
+        if (!dataLoaded.get()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
@@ -899,6 +918,13 @@ public class McRPGPlayer {
      */
     public boolean hasPendingAbility() {
         return !this.pendingUnlockAbilities.isEmpty();
+    }
+
+    /**
+     * @return true if all async data loading has completed for this player
+     */
+    public boolean isDataLoaded() {
+        return dataLoaded.get();
     }
 
     /**

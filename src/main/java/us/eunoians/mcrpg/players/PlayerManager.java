@@ -12,17 +12,18 @@ import us.eunoians.mcrpg.types.TipType;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerManager {
 
     //Players who are currently logged on
-    private static HashMap<UUID, McRPGPlayer> players = new HashMap<>();
-    private static ArrayList<UUID> playersFrozen = new ArrayList<UUID>();
+    private static ConcurrentHashMap<UUID, McRPGPlayer> players = new ConcurrentHashMap<>();
+    private static Set<UUID> playersFrozen = ConcurrentHashMap.newKeySet();
     private static McRPG plugin;
     private static BukkitTask saveTask;
 
@@ -65,7 +66,7 @@ public class PlayerManager {
     }
 
     public static boolean isPlayerFrozen(UUID uuid) {
-        if (isPlayerStored(uuid)) {
+        if (isPlayerStored(uuid) && players.get(uuid) != null && players.get(uuid).isDataLoaded()) {
             playersFrozen.remove(uuid);
         }
         return playersFrozen.contains(uuid);
@@ -118,7 +119,7 @@ public class PlayerManager {
         new BukkitRunnable() {
             @Override
             public void run() {
-                Collection<McRPGPlayer> clone = ((HashMap<UUID, McRPGPlayer>) players.clone()).values();
+                Collection<McRPGPlayer> clone = new ArrayList<>(players.values());
 
                 if (p.isEnabled()) {
 
