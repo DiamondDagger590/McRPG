@@ -190,16 +190,20 @@ public class LoadoutHolder extends AbilityHolder {
             if (hasLoadout(slot)) {
                 return new LoadoutResolution.Found(getLoadout(slot));
             }
-            return new LoadoutResolution.NotFound();
+            // Input is a valid integer but not a valid slot; fall through to name matching
+            // so a loadout whose display name happens to be a number (e.g. "5") is still reachable.
         } catch (NumberFormatException ignored) {
             // Not an integer — fall through to name matching
         }
 
         // Collect all loadouts that have a user-set display name.
         // Iterate the backing map directly so we never auto-create slots that don't exist yet.
+        // Guard against stale entries whose slot exceeds the current maximum (e.g. after a config change).
+        int maxSlots = getMaxLoadoutAmount();
         List<Loadout> namedLoadouts = new ArrayList<>();
         for (Loadout loadout : loadouts.values()) {
-            if (loadout.getDisplay().getDisplayName().isPresent()) {
+            int slot = loadout.getLoadoutSlot();
+            if (slot >= 1 && slot <= maxSlots && loadout.getDisplay().getDisplayName().isPresent()) {
                 namedLoadouts.add(loadout);
             }
         }
@@ -241,6 +245,19 @@ public class LoadoutHolder extends AbilityHolder {
         return loadout.getDisplay().getDisplayName()
                 .map(name -> PlainTextComponentSerializer.plainText().serialize(McRPG.getInstance().getMiniMessage().deserialize(name)))
                 .orElse("");
+    }
+
+    /**
+     * Returns the number of {@link Loadout}s currently held in memory for this holder.
+     * <p>
+     * Only loadouts that have been explicitly created or loaded from storage are counted.
+     * Slots that have never been accessed are not included, unlike {@link #hasLoadout(int)}
+     * which considers all slots up to {@link #getMaxLoadoutAmount()}.
+     *
+     * @return The number of loadouts present in the backing store.
+     */
+    public int getLoadedLoadoutCount() {
+        return loadouts.size();
     }
 
     /**

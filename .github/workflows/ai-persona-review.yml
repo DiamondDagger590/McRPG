@@ -24,6 +24,7 @@ jobs:
     # For workflow_run: only proceed when the upstream workflow succeeded.
     # For workflow_dispatch: always proceed.
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 10
     permissions:
       pull-requests: write   # post PR comments
       contents: read         # checkout persona prompt files
@@ -57,7 +58,8 @@ jobs:
               '{"model":$model,"max_tokens":4096,"messages":[{"role":"user","content":($prompt+"\n\n<diff>\n"+$diff+"\n</diff>")}]}' \
               > payload.json
 
-            HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" \
+            HTTP_CODE=$(curl -sS --connect-timeout 10 --max-time 120 \
+              -o response.json -w "%{http_code}" \
               -H "x-api-key: $ANTHROPIC_API_KEY" \
               -H "anthropic-version: 2023-06-01" \
               -H "content-type: application/json" \

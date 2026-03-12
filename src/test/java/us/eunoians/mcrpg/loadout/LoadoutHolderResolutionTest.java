@@ -208,16 +208,31 @@ public class LoadoutHolderResolutionTest extends McRPGBaseTest {
         assertInstanceOf(LoadoutResolution.NotFound.class, result);
     }
 
-    @DisplayName("Given a non-matching name, when resolving, then NotFound is returned and current loadout slot is unchanged")
+    @DisplayName("Given a non-matching name, when resolving, then NotFound is returned and holder state is unchanged")
     @Test
     public void resolveLoadout_returnsNotFound_andLeavesStateUnchanged_whenNoNameMatches(@NotNull McRPGPlayer mcRPGPlayer) {
         LoadoutHolder holder = mcRPGPlayer.asSkillHolder();
         int slotBefore = holder.getCurrentLoadoutSlot();
+        int loadoutCountBefore = holder.getLoadedLoadoutCount();
 
         LoadoutResolution result = holder.resolveLoadout("nonexistent");
 
         assertInstanceOf(LoadoutResolution.NotFound.class, result);
         assertEquals(slotBefore, holder.getCurrentLoadoutSlot());
+        // Verify resolveLoadout did not auto-create loadout entries as a side-effect
+        assertEquals(loadoutCountBefore, holder.getLoadedLoadoutCount());
+    }
+
+    @DisplayName("Given input '5' exceeding max 3 slots but matching a loadout name, when resolving, then Found is returned via name match")
+    @Test
+    public void resolveLoadout_returnsFound_whenNumericInputBeyondMaxMatchesLoadoutName(@NotNull McRPGPlayer mcRPGPlayer) {
+        LoadoutHolder holder = mcRPGPlayer.asSkillHolder();
+        holder.getLoadout(1).getDisplay().setDisplayName("5");
+
+        LoadoutResolution result = holder.resolveLoadout("5");
+
+        assertInstanceOf(LoadoutResolution.Found.class, result);
+        assertEquals(1, ((LoadoutResolution.Found) result).loadout().getLoadoutSlot());
     }
 
     @DisplayName("Given exact name collision across two loadouts, when resolving, then Ambiguous is returned")
