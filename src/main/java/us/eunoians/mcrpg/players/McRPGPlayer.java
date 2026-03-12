@@ -257,7 +257,7 @@ public class McRPGPlayer {
         Database database = McRPG.getInstance().getDatabaseManager().getDatabase();
         Connection connection = database.getConnection();
 
-        PlayerDataDAO.getPlayerData(connection, uuid).thenAccept(playerDataSnapshot -> {
+        CompletableFuture<Void> playerDataFuture = PlayerDataDAO.getPlayerData(connection, uuid).thenAccept(playerDataSnapshot -> {
 
             this.abilityPoints = playerDataSnapshot.getAbilityPoints();
             this.redeemableExp = playerDataSnapshot.getRedeemableExp();
@@ -310,7 +310,7 @@ public class McRPGPlayer {
             }.runTask(McRPG.getInstance());
         });
 
-        PlayerSettingsDAO.getPlayerSettings(connection, uuid).thenAccept(playerSettingsSnapshot -> {
+        CompletableFuture<Void> playerSettingsFuture = PlayerSettingsDAO.getPlayerSettings(connection, uuid).thenAccept(playerSettingsSnapshot -> {
             this.healthbarType = playerSettingsSnapshot.getHealthbarType();
             this.keepHandEmpty = playerSettingsSnapshot.isKeepHandEmpty();
             this.displayType = playerSettingsSnapshot.getDisplayType();
@@ -322,7 +322,7 @@ public class McRPGPlayer {
         });
 
         //TODO Need to make this more dynamic to allow for third party plugins to register custom skills
-        CompletableFuture<SkillDataSnapshot>[] completableFutures = new CompletableFuture[Skills.values().length];
+        CompletableFuture<SkillDataSnapshot>[] skillFutures = new CompletableFuture[Skills.values().length];
 
         for (int i = 0; i < Skills.values().length; i++) {
 
@@ -337,11 +337,12 @@ public class McRPGPlayer {
                     return null;
                 });
 
-            completableFutures[i] = completableFuture;
+            skillFutures[i] = completableFuture;
         }
 
-        CompletableFuture.allOf(completableFutures)
-            .thenAccept(unused -> {
+        // Wait for skills to load, then load loadout (which depends on skills being initialized)
+        CompletableFuture<Void> skillsAndLoadoutFuture = CompletableFuture.allOf(skillFutures)
+            .thenCompose(unused -> {
 
                 updatePowerLevel();
 
@@ -349,7 +350,7 @@ public class McRPGPlayer {
                     skill.updateExpToLevel();
                 }
 
-                PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
+                return PlayerLoadoutDAO.getPlayerLoadout(connection, uuid).thenAccept(unlockedAbilityList -> {
 
                     int maxAbilities = McRPG.getInstance().getConfig().getInt("PlayerConfiguration.AmountOfTotalAbilities");
 
@@ -378,13 +379,15 @@ public class McRPGPlayer {
                     for (UnlockedAbilities abilityType : toRemove) {
                         abilityLoadout.remove(abilityType);
                     }
-
-                    dataLoaded.set(true);
                 });
             }).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 return null;
             });
+
+        // Only mark data as loaded after ALL async operations complete (player data, settings, skills, and loadout)
+        CompletableFuture.allOf(playerDataFuture, playerSettingsFuture, skillsAndLoadoutFuture)
+            .thenRun(() -> dataLoaded.set(true));
 
     }
 
