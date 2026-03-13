@@ -1,7 +1,6 @@
 name: AI PR Review
 
 "on":
-  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [master, develop, recode]
