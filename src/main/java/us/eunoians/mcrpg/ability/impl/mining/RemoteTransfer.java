@@ -37,6 +37,7 @@ import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.mining.RemoteTransferActivateEvent;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -245,7 +246,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                 presentInConfig = true;
             }
         }
-        RemoteTransfer remoteTransfer = (RemoteTransfer) getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        RemoteTransfer remoteTransfer = getPlugin().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.REMOTE_TRANSFER);
         var abilityDataOptional = abilityHolder.getAbilityData(remoteTransfer);
         if (abilityDataOptional.isPresent() && abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE).isPresent() &&
                 abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE).get() instanceof RemoteTransferItemSetAttribute remoteTransferItemSetAttribute) {

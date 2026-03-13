@@ -38,6 +38,7 @@ public class AbilityRegistry implements Registry<Ability> {
 
     private final McRPG mcRPG;
     private final Map<NamespacedKey, Ability> abilities;
+    private final Map<Class<? extends Ability>, Ability> abilitiesByClass;
     private final Map<NamespacedKey, Set<NamespacedKey>> abilitiesWithSkills;
     private final Set<NamespacedKey> abilitiesWithoutSkills;
     //TODO find a new home for these two
@@ -47,6 +48,7 @@ public class AbilityRegistry implements Registry<Ability> {
     public AbilityRegistry(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
         abilities = new HashMap<>();
+        abilitiesByClass = new HashMap<>();
         abilitiesWithSkills = new HashMap<>();
         abilitiesWithoutSkills = new HashSet<>();
         entityAlliedFunctions = new HashMap<>();
@@ -67,6 +69,7 @@ public class AbilityRegistry implements Registry<Ability> {
     public void register(@NotNull Ability ability) {
         NamespacedKey abilityKey = ability.getAbilityKey();
         abilities.put(abilityKey, ability);
+        abilitiesByClass.put(ability.getClass(), ability);
 
         if (ability instanceof SkillAbility skillAbility) {
             NamespacedKey skillKey = skillAbility.getSkillKey();
@@ -143,6 +146,8 @@ public class AbilityRegistry implements Registry<Ability> {
             return;
         }
 
+        abilitiesByClass.remove(ability.getClass());
+
         if (ability instanceof SkillAbility skillAbility) {
             NamespacedKey skillKey = skillAbility.getSkillKey();
 
@@ -177,6 +182,37 @@ public class AbilityRegistry implements Registry<Ability> {
         }
 
         return abilities.get(abilityKey);
+    }
+
+    /**
+     * Gets the {@link Ability} belonging to the provided {@link AbilityKey}.
+     * <p>
+     * This method provides type-safe access to abilities without requiring casting.
+     *
+     * @param abilityKey The key to get the corresponding {@link Ability}.
+     * @param <T>        The implementation of {@link Ability} which is being returned.
+     * @return The {@link Ability} belonging to the provided {@link AbilityKey}.
+     * @throws IllegalStateException If the provided {@link AbilityKey} doesn't have
+     *                               a corresponding {@link Ability} registered.
+     */
+    @NotNull
+    @SuppressWarnings("unchecked")
+    public <T extends Ability> T ability(@NotNull AbilityKey<T> abilityKey) {
+        Ability ability = abilitiesByClass.get(abilityKey.abilityClass());
+        if (ability == null) {
+            throw new IllegalStateException("Ability not registered: " + abilityKey.abilityClass().getSimpleName());
+        }
+        return (T) ability;
+    }
+
+    /**
+     * Checks to see if the provided {@link AbilityKey} has a corresponding {@link Ability} registered.
+     *
+     * @param abilityKey The {@link AbilityKey} to check.
+     * @return {@code true} if the ability is registered, {@code false} otherwise.
+     */
+    public boolean registered(@NotNull AbilityKey<?> abilityKey) {
+        return abilitiesByClass.containsKey(abilityKey.abilityClass());
     }
 
     /**
