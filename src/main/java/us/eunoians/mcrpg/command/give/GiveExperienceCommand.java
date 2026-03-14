@@ -69,7 +69,7 @@ public class GiveExperienceCommand extends GiveCommandBase {
                                 Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
                                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
-                                    skillHolderData.addExperience(experienceAmount);
+                                    skillHolderData.addExperience(experienceAmount, us.eunoians.mcrpg.skill.experience.context.McRPGGainReason.COMMAND);
                                     player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(senderAudience instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {

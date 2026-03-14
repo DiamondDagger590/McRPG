@@ -14,4 +14,10 @@ public class EntityDamageContext extends SkillExperienceContext<EntityDamageByEn
     public EntityDamageContext(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int baseExperience, @NotNull EntityDamageByEntityEvent event) {
         super(skillHolder, skill, baseExperience, event);
     }
+
+    @Override
+    @NotNull
+    public GainReason getGainReason() {
+        return McRPGGainReason.ENTITY_DAMAGE;
+    }
 }

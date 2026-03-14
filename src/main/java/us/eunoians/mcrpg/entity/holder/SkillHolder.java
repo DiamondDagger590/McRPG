@@ -11,6 +11,8 @@ import us.eunoians.mcrpg.event.skill.PostSkillGainLevelEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainExpEvent;
 import us.eunoians.mcrpg.event.skill.SkillGainLevelEvent;
 import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.experience.context.GainReason;
+import us.eunoians.mcrpg.skill.experience.context.McRPGGainReason;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -313,6 +315,19 @@ public class SkillHolder extends LoadoutHolder {
          * @return The amount of experience that was unused (when at max level).
          */
         public int addExperience(int experience) {
+            return addExperience(experience, McRPGGainReason.OTHER);
+        }
+
+        /**
+         * Adds the provided amount of experience to the {@link Skill} with an explicit {@link GainReason}.
+         * <p>
+         * This method will call a {@link SkillGainExpEvent}, and only award experience if the event is not canceled.
+         *
+         * @param experience The amount of experience to add.
+         * @param gainReason The reason for the experience gain.
+         * @return The amount of experience that was unused (when at max level).
+         */
+        public int addExperience(int experience, @NotNull GainReason gainReason) {
             ensureCacheValid();
             if (cachedLevel >= skill.getMaxLevel()) {
                 return experience;
@@ -320,7 +335,7 @@ public class SkillHolder extends LoadoutHolder {
                 return 0;
             }
 
-            SkillGainExpEvent skillGainExpEvent = new SkillGainExpEvent(getSkillHolder(), getSkillKey(), Math.max(0, experience));
+            SkillGainExpEvent skillGainExpEvent = new SkillGainExpEvent(getSkillHolder(), getSkillKey(), Math.max(0, experience), gainReason);
             Bukkit.getPluginManager().callEvent(skillGainExpEvent);
             if (skillGainExpEvent.isCancelled()) {
                 return experience;
@@ -354,7 +369,7 @@ public class SkillHolder extends LoadoutHolder {
                 Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, cachedLevel));
             }
 
-            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey()));
+            Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey(), experience, gainReason));
             return leftoverExperience;
         }
 

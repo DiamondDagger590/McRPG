@@ -14,4 +14,10 @@ public class MockExperienceContext extends SkillExperienceContext<Event> {
     public MockExperienceContext(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int baseExperience, @NotNull Event event) {
         super(skillHolder, skill, baseExperience, event);
     }
+
+    @Override
+    @NotNull
+    public GainReason getGainReason() {
+        return McRPGGainReason.OTHER;
+    }
 }

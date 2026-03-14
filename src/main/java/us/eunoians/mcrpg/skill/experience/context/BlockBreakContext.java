@@ -14,4 +14,10 @@ public class BlockBreakContext extends SkillExperienceContext<BlockBreakEvent> {
     public BlockBreakContext(@NotNull SkillHolder skillHolder, @NotNull Skill skill, int baseExperience, @NotNull BlockBreakEvent event) {
         super(skillHolder, skill, baseExperience, event);
     }
+
+    @Override
+    @NotNull
+    public GainReason getGainReason() {
+        return McRPGGainReason.BLOCK_BREAK;
+    }
 }

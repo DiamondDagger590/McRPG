@@ -68,4 +68,15 @@ public abstract class SkillExperienceContext<T extends Event> {
     public final int getBaseExperience() {
         return baseExperience;
     }
+
+    /**
+     * Gets the {@link GainReason} describing why this experience is being awarded.
+     * <p>
+     * Used by statistic listeners to distinguish block breaks from redeemed XP,
+     * admin commands, and other sources.
+     *
+     * @return The {@link GainReason} for this context.
+     */
+    @NotNull
+    public abstract GainReason getGainReason();
 }
