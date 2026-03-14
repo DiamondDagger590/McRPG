@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.entity.player;
 
 import com.diamonddagger590.mccore.database.table.impl.PlayerSettingDAO;
+import com.diamonddagger590.mccore.database.table.impl.PlayerStatisticDAO;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.player.CorePlayer;
@@ -257,6 +258,15 @@ public class McRPGPlayer extends CorePlayer {
         batchTransaction.addAll(PlayerLoadoutSelectionDAO.setActiveLoadout(connection, getUUID(), skillHolder.getCurrentLoadoutSlot()));
         failsafeTransaction.executeTransaction();
         batchTransaction.executeTransaction();
+
+        // Save statistics separately — only mark clean after successful transaction
+        if (getStatisticData().isDirty()) {
+            FailSafeTransaction statisticTransaction = new FailSafeTransaction(connection);
+            statisticTransaction.addAll(PlayerStatisticDAO.savePlayerStatistics(connection, getUUID(), getStatisticData().getModifiedEntries()));
+            if (statisticTransaction.executeTransaction()) {
+                getStatisticData().markClean();
+            }
+        }
     }
 
     /**
