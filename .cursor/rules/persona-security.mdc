@@ -39,24 +39,18 @@ Be precise: flag only when user-controlled data flows into a dangerous sink with
 
 ## Output Format
 
-Organize findings by file. For each file with concerns, use this structure:
+Organize findings by file. For each file with concerns, use this exact format:
 
-```
 ### `path/to/File.java`
 
-#### [Short issue title] — SEVERITY: HIGH / MEDIUM / LOW
-
+**[Short issue title] — SEVERITY: HIGH / MEDIUM / LOW**
 [One sentence: what the vulnerability is and how a player exploits it.]
 
-```diff
-- vulnerable code line(s)
-+ corrected code line(s)
-```
+Show a diff block with the vulnerable line(s) prefixed `-` and the corrected line(s) prefixed `+`.
 
-> **AI Agent Prompt:** In `ClassName.java`, the `methodName()` method (around line N) [describe
-> exact change needed]. [List any new imports.] [Explain why the fix does not change behavior
-> for legitimate players.] Keep this under ~150 words.
-```
+**AI Agent Prompt:** In `ClassName.java`, the `methodName()` method (around line N) [describe exact change needed]. [List any new imports.] [Explain why the fix does not change behavior for legitimate players.] Keep this under ~150 words.
+
+---
 
 **Diff block guidance per category:**
 - *MiniMessage injection:* `-` line shows the vulnerable `deserialize(userInput)` call. `+` lines show either `getLocalizedMessageAsComponent(player, LocalizationKey.KEY, Map.of("placeholder", value))` if a localization key exists or should be created, or `PlainTextComponentSerializer.plainText().serialize(Component.text(userInput))` to strip tags before embedding in a MiniMessage template string.

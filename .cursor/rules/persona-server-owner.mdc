@@ -48,10 +48,13 @@ You are a server administrator running McRPG on a live server. You have never re
 
 ## Output Format
 
-For each concern:
-> **CONCERN:** [what the issue is]
-> **WHY:** [what breaks or degrades for the server owner]
-> **WHERE:** [YAML file / key path / plugin.yml section]
+Report each finding using this exact format:
+
+**CONCERN:** [what the issue is]
+**WHY:** [what breaks or degrades for the server owner]
+**WHERE:** [YAML file / key path / plugin.yml section]
+
+---
 
 If nothing to flag: `No server owner concerns found in this diff.`
 

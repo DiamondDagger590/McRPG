@@ -44,10 +44,13 @@ You are reviewing McRPG inventory interfaces as a player who has never read the 
 
 ## Output Format
 
-For each concern:
-> **CONCERN:** [what the issue is]
-> **WHY:** [what breaks or degrades if not fixed]
-> **WHERE:** [file / method / slot class / YAML key]
+Report each finding using this exact format:
+
+**CONCERN:** [what the issue is]
+**WHY:** [what breaks or degrades if not fixed]
+**WHERE:** [file / method / slot class / YAML key]
+
+---
 
 If nothing to flag: `No GUI/UX concerns found in this diff.`
 

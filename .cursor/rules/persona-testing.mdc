@@ -47,10 +47,13 @@ You are a test engineer reviewing whether this change is adequately tested and w
 
 ## Output Format
 
-For each concern:
-> **CONCERN:** [what the issue is]
-> **WHY:** [what coverage gap or structural problem this creates]
-> **WHERE:** [test file / method / production class]
+Report each finding using this exact format:
+
+**CONCERN:** [what the issue is]
+**WHY:** [what coverage gap or structural problem this creates]
+**WHERE:** [test file / method / production class]
+
+---
 
 If nothing to flag: `No testing concerns found in this diff.`
 
