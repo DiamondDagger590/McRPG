@@ -22,6 +22,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
+import us.eunoians.mcrpg.skill.experience.context.McRPGGainReason;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class GiveExperienceCommand extends GiveCommandBase {
                                 Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
                                 if (skillHolderDataOptional.isPresent()) {
                                     SkillHolder.SkillHolderData skillHolderData = skillHolderDataOptional.get();
-                                    skillHolderData.addExperience(experienceAmount, us.eunoians.mcrpg.skill.experience.context.McRPGGainReason.COMMAND);
+                                    skillHolderData.addExperience(experienceAmount, McRPGGainReason.COMMAND);
                                     player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.GIVE_EXPERIENCE_COMMAND_RECIPIENT_MESSAGE, receiverPlaceholders));
                                     // Only send a message if the sender is not the receiver or the sender is console
                                     if (!(senderAudience instanceof Player sender) || !sender.getUniqueId().equals(player.getUniqueId())) {

@@ -28,8 +28,17 @@ public enum McRPGGainReason implements GainReason {
     OTHER("Other");
 
     private final NamespacedKey key;
+
+    /**
+     * A plain-English display name used for internal logging and admin-facing UIs (e.g.,
+     * debug commands, console output). This is not player-facing chat text, so it does not
+     * need to go through the localization system. If gain reasons are ever surfaced in
+     * player-visible messages, those messages should use {@link us.eunoians.mcrpg.configuration.file.localization.LocalizationKey}
+     * entries that reference the reason by its {@link #key} rather than displaying this field directly.
+     */
     private final String displayName;
 
+    @SuppressWarnings("deprecation") // NamespacedKey(String, String) — no Plugin instance available in enum constructor
     McRPGGainReason(@NotNull String displayName) {
         this.key = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), name().toLowerCase());
         this.displayName = displayName;

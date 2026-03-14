@@ -8,6 +8,18 @@ import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.experience.context.GainReason;
 import us.eunoians.mcrpg.skill.experience.context.McRPGGainReason;
 
+/**
+ * Fired <b>after</b> a {@link SkillHolder} has successfully gained experience in a skill.
+ * <p>
+ * This event is <b>not</b> cancellable — the experience has already been applied when this
+ * event fires. Use it for read-only reactions such as updating statistics, triggering
+ * displays, or logging.
+ * <p>
+ * To intercept or modify experience <i>before</i> it is applied, listen to
+ * {@link SkillGainExpEvent} instead.
+ *
+ * @see SkillGainExpEvent
+ */
 public class PostSkillGainExpEvent extends SkillEvent {
 
     private static final HandlerList handlers = new HandlerList();

@@ -64,7 +64,13 @@ public interface SkillListener extends Listener {
                                 GainReason gainReason = McRPGGainReason.OTHER;
                                 if (eventContextOptional.isPresent()) {
                                     SkillExperienceContext<?> context = eventContextOptional.get();
-                                    double modifier = Math.min(mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.EXPERIENCE_MULTIPLIER_LIMIT), mcRPG.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).calculateModifierForContext(context));
+                                    double multiplierLimit = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                                            .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                                            .getDouble(MainConfigFile.EXPERIENCE_MULTIPLIER_LIMIT);
+                                    double calculatedModifier = mcRPG.registryAccess()
+                                            .registry(McRPGRegistryKey.EXPERIENCE_MODIFIER)
+                                            .calculateModifierForContext(context);
+                                    double modifier = Math.min(multiplierLimit, calculatedModifier);
                                     exp = (int) (exp * modifier);
                                     gainReason = context.getGainReason();
                                 }

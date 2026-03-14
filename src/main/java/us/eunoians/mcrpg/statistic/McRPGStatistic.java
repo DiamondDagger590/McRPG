@@ -17,6 +17,16 @@ import java.util.Set;
  * <p>
  * Statistics are registered during bootstrap via
  * {@link us.eunoians.mcrpg.bootstrap.McRPGStatisticRegistrar}.
+ * <p>
+ * <b>Note on display names and descriptions:</b> The {@code displayName} and
+ * {@code description} fields on each statistic are plain-English metadata used for
+ * internal/admin-facing purposes (e.g., debug commands, database inspection, admin UIs).
+ * They are <b>not</b> player-facing chat text and therefore do not need to go through the
+ * localization system. If statistics are ever surfaced in player-visible messages or GUIs,
+ * those messages should use
+ * {@link us.eunoians.mcrpg.configuration.file.localization.LocalizationKey} entries that
+ * reference the statistic by its {@link org.bukkit.NamespacedKey} rather than displaying
+ * these fields directly.
  */
 public final class McRPGStatistic {
 
@@ -186,6 +196,9 @@ public final class McRPGStatistic {
 
     /**
      * Creates a per-ability activation {@link Statistic} definition for dynamic registration.
+     * <p>
+     * The generated display name and description are admin-facing metadata — see the class-level
+     * javadoc for why they are not localized.
      *
      * @param abilityKey   The ability's {@link NamespacedKey}.
      * @param displayName  The human-readable ability name (used for the statistic display name).
@@ -204,8 +217,16 @@ public final class McRPGStatistic {
 
     // ── Private Helpers ────────────────────────────────────────────────────
 
+    /**
+     * Creates a {@link NamespacedKey} under the McRPG namespace. Uses the deprecated
+     * {@code NamespacedKey(String, String)} constructor because these are static constants
+     * initialized before a {@link org.bukkit.plugin.Plugin} instance is available.
+     *
+     * @param key The key portion of the {@link NamespacedKey}.
+     * @return A new {@link NamespacedKey} under the McRPG namespace.
+     */
     @NotNull
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // NamespacedKey(String, String) — no Plugin instance in static context
     private static NamespacedKey key(@NotNull String key) {
         return new NamespacedKey(NAMESPACE, key);
     }

@@ -273,6 +273,8 @@ public class SkillHolder extends LoadoutHolder {
          */
         public int getCurrentExperience() {
             ensureCacheValid();
+            // At max level there is no "next level" to progress towards, so partial
+            // progress is meaningless. Return 0 to signal that the skill is fully leveled.
             if (cachedLevel >= skill.getMaxLevel()) {
                 return 0;
             }
