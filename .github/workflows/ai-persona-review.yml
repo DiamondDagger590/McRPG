@@ -22,8 +22,12 @@ jobs:
   persona-review:
     runs-on: ubuntu-latest
     # For workflow_run: only proceed when the upstream workflow succeeded.
-    # For workflow_dispatch: always proceed.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # For workflow_dispatch: only allow dispatch from the default branch so an
+    # attacker cannot trigger the job from a fork or feature branch that contains
+    # modified persona files, which would be checked out and sent to the API.
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
     timeout-minutes: 10
     permissions:
       pull-requests: write   # post PR comments
@@ -36,9 +40,12 @@ jobs:
     steps:
       # Check out ONLY the persona prompt files from the default branch.
       # Never check out the PR head — that would expose secrets to untrusted code.
+      # The explicit ref ensures workflow_dispatch from any branch still reads
+      # persona files from the default branch, not the dispatching ref.
       - name: Checkout persona prompts (default branch)
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.repository.default_branch }}
           sparse-checkout: .claude/commands/
 
       # Write a shared helper function used by every persona step.
@@ -111,7 +118,7 @@ jobs:
           gh pr diff "$PR" > pr.diff
 
           # Note: avoid naming variables after shell builtins.
-          gui=false; config=false; api=false; tests_changed=false
+          gui=false; config=false; api=false; tests_changed=false; security=false
           while IFS= read -r f; do
             [[ "$f" =~ src/.*/gui/.*\.java ]]     && gui=true
             [[ "$f" =~ resources/localization/ ]]  && gui=true
@@ -120,6 +127,7 @@ jobs:
             [[ "$f" =~ src/.*/event/.*\.java ]]    && api=true
             [[ "$f" =~ src/.*/registry/.*\.java ]] && api=true
             [[ "$f" =~ src/main/.*\.java ]]        && tests_changed=true
+            [[ "$f" =~ src/main/.*\.java ]]        && security=true
           done < <(gh pr view "$PR" --json files --jq '.files[].path')
 
           jq -n \
@@ -128,7 +136,8 @@ jobs:
             --arg  config          "$config"        \
             --arg  api             "$api"           \
             --arg  tests_changed   "$tests_changed" \
-            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$tests_changed}' \
+            --arg  security        "$security"      \
+            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$tests_changed,"needs_security":$security}' \
             > review-meta.json
 
       # ── Common: parse metadata ───────────────────────────────────────────────
@@ -150,6 +159,7 @@ jobs:
             echo "needs_config=$(jq -r '.needs_config' review-meta.json)"
             echo "needs_api=$(jq -r '.needs_api' review-meta.json)"
             echo "needs_test=$(jq -r '.needs_test' review-meta.json)"
+            echo "needs_security=$(jq -r '.needs_security // "false"' review-meta.json)"
           } >> "$GITHUB_OUTPUT"
 
       # Truncate very large diffs before feeding them to any persona.
@@ -217,4 +227,19 @@ jobs:
         run: |
           source "$GITHUB_WORKSPACE/claude-helper.sh"
           call_claude "## Testing Review" ".claude/commands/review-testing.md"
+          gh pr comment "$PR_NUMBER" --body-file comment.md
+
+      # ── Persona: Security ────────────────────────────────────────────────────
+      # Runs when any main Java source file changes. Checks for MiniMessage/
+      # Adventure API injection, command injection via performCommand(),
+      # permission bypass, and SQL/data injection.
+      - name: Security Persona
+        if: steps.meta.outputs.proceed == 'true' && steps.meta.outputs.needs_security == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        run: |
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Security Review" ".claude/commands/review-security.md"
           gh pr comment "$PR_NUMBER" --body-file comment.md

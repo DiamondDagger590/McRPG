@@ -40,7 +40,13 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 
 1. Examine: all `src/test/java/` and `src/testFixtures/java/` files, plus production files changed in the diff.
 2. Apply every checklist item.
-3. Report findings as:
-   **CONCERN:** [issue] | **WHY:** [coverage gap or structural problem] | **WHERE:** [test file / production class]
+3. Report each finding using this exact format:
+
+**CONCERN:** [issue]
+**WHY:** [coverage gap or structural problem]
+**WHERE:** [test file / production class]
+
+---
+
 4. List: **Production files changed:** [...] | **Test files present:** [...] | **Coverage gaps:** [...]
 5. If nothing to flag: "No testing concerns found."

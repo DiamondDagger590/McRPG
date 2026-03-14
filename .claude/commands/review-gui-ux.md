@@ -35,7 +35,13 @@ Adopt the GUI/UX Review Persona. You are reviewing McRPG inventory interfaces as
 
 1. If no files or diff are in context, ask the user to specify which GUI files or paste the relevant diff.
 2. Apply every checklist item to the changed files.
-3. Report findings as:
-   **CONCERN:** [issue] | **WHY:** [impact] | **WHERE:** [file/class/YAML key]
+3. Report each finding using this exact format:
+
+**CONCERN:** [issue]
+**WHY:** [impact]
+**WHERE:** [file/class/YAML key]
+
+---
+
 4. If nothing to flag: "No GUI/UX concerns found."
    Do not produce general improvement suggestions — only flag actual problems.

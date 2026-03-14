@@ -34,6 +34,12 @@ Adopt the Third-Party Extensibility Persona. You are a developer building an add
 1. Focus on: public interfaces, abstract classes, `event/` package, `registry/` package, `NamespacedKey` constants, `getDatabaseName()` implementations.
 2. Ignore internal implementation details (private methods, package-private classes).
 3. Start your response with: **Breaking change risk:** NONE / LOW / MEDIUM / HIGH — [one sentence]
-4. Report findings as:
-   **CONCERN:** [issue] | **WHY:** [impact on addon developers] | **WHERE:** [file/class/method]
+4. Report each finding using this exact format:
+
+**CONCERN:** [issue]
+**WHY:** [impact on addon developers]
+**WHERE:** [file/class/method]
+
+---
+
 5. If nothing to flag: "No extensibility concerns found."

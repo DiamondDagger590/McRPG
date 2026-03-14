@@ -17,6 +17,7 @@ jobs:
       needs_config: ${{ steps.detect.outputs.config }}
       needs_api: ${{ steps.detect.outputs.api }}
       needs_test: ${{ steps.detect.outputs.test }}
+      needs_security: ${{ steps.detect.outputs.security }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,6 +36,7 @@ jobs:
           config=false
           api=false
           test=false
+          security=false
 
           while IFS= read -r f; do
             [[ "$f" =~ src/.*/gui/.*\.java ]]        && gui=true
@@ -44,12 +46,14 @@ jobs:
             [[ "$f" =~ src/.*/event/.*\.java ]]       && api=true
             [[ "$f" =~ src/.*/registry/.*\.java ]]    && api=true
             [[ "$f" =~ src/main/.*\.java ]]           && test=true
+            [[ "$f" =~ src/main/.*\.java ]]           && security=true
           done <<< "$CHANGED"
 
-          echo "gui=$gui"       >> "$GITHUB_OUTPUT"
-          echo "config=$config" >> "$GITHUB_OUTPUT"
-          echo "api=$api"       >> "$GITHUB_OUTPUT"
-          echo "test=$test"     >> "$GITHUB_OUTPUT"
+          echo "gui=$gui"           >> "$GITHUB_OUTPUT"
+          echo "config=$config"     >> "$GITHUB_OUTPUT"
+          echo "api=$api"           >> "$GITHUB_OUTPUT"
+          echo "test=$test"         >> "$GITHUB_OUTPUT"
+          echo "security=$security" >> "$GITHUB_OUTPUT"
 
   # ------------------------------------------------------------------
   # Step 2: Generate diff and upload it with metadata as an artifact
@@ -59,10 +63,11 @@ jobs:
     needs: detect-changes
     runs-on: ubuntu-latest
     if: |
-      needs.detect-changes.outputs.needs_gui    == 'true' ||
-      needs.detect-changes.outputs.needs_config == 'true' ||
-      needs.detect-changes.outputs.needs_api    == 'true' ||
-      needs.detect-changes.outputs.needs_test   == 'true'
+      needs.detect-changes.outputs.needs_gui      == 'true' ||
+      needs.detect-changes.outputs.needs_config   == 'true' ||
+      needs.detect-changes.outputs.needs_api      == 'true' ||
+      needs.detect-changes.outputs.needs_test     == 'true' ||
+      needs.detect-changes.outputs.needs_security == 'true'
     permissions:
       contents: read
     steps:
@@ -83,7 +88,8 @@ jobs:
             "needs_gui": "${{ needs.detect-changes.outputs.needs_gui }}",
             "needs_config": "${{ needs.detect-changes.outputs.needs_config }}",
             "needs_api": "${{ needs.detect-changes.outputs.needs_api }}",
-            "needs_test": "${{ needs.detect-changes.outputs.needs_test }}"
+            "needs_test": "${{ needs.detect-changes.outputs.needs_test }}",
+            "needs_security": "${{ needs.detect-changes.outputs.needs_security }}"
           }
           EOF_META
 

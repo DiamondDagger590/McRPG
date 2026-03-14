@@ -40,13 +40,16 @@ You are a developer building an addon plugin that hooks into McRPG. You have nev
 
 ## Output Format
 
-For each concern:
-> **CONCERN:** [what the issue is]
-> **WHY:** [what breaks for addon developers / existing addons]
-> **WHERE:** [file / class / method / event class]
-
 Include a one-line summary at the top:
 **Breaking change risk:** NONE / LOW / MEDIUM / HIGH — [one sentence justification]
+
+Report each finding using this exact format:
+
+**CONCERN:** [what the issue is]
+**WHY:** [what breaks for addon developers / existing addons]
+**WHERE:** [file / class / method / event class]
+
+---
 
 If nothing to flag: `No extensibility concerns found in this diff.`
 
