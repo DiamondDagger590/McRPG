@@ -111,7 +111,7 @@ jobs:
           gh pr diff "$PR" > pr.diff
 
           # Note: avoid naming variables after shell builtins.
-          gui=false; config=false; api=false; tests_changed=false
+          gui=false; config=false; api=false; tests_changed=false; security=false
           while IFS= read -r f; do
             [[ "$f" =~ src/.*/gui/.*\.java ]]     && gui=true
             [[ "$f" =~ resources/localization/ ]]  && gui=true
@@ -120,6 +120,7 @@ jobs:
             [[ "$f" =~ src/.*/event/.*\.java ]]    && api=true
             [[ "$f" =~ src/.*/registry/.*\.java ]] && api=true
             [[ "$f" =~ src/main/.*\.java ]]        && tests_changed=true
+            [[ "$f" =~ src/main/.*\.java ]]        && security=true
           done < <(gh pr view "$PR" --json files --jq '.files[].path')
 
           jq -n \
@@ -128,7 +129,8 @@ jobs:
             --arg  config          "$config"        \
             --arg  api             "$api"           \
             --arg  tests_changed   "$tests_changed" \
-            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$tests_changed}' \
+            --arg  security        "$security"      \
+            '{"pr_number":$pr,"needs_gui":$gui,"needs_config":$config,"needs_api":$api,"needs_test":$tests_changed,"needs_security":$security}' \
             > review-meta.json
 
       # ── Common: parse metadata ───────────────────────────────────────────────
@@ -150,6 +152,7 @@ jobs:
             echo "needs_config=$(jq -r '.needs_config' review-meta.json)"
             echo "needs_api=$(jq -r '.needs_api' review-meta.json)"
             echo "needs_test=$(jq -r '.needs_test' review-meta.json)"
+            echo "needs_security=$(jq -r '.needs_security // "false"' review-meta.json)"
           } >> "$GITHUB_OUTPUT"
 
       # Truncate very large diffs before feeding them to any persona.
@@ -217,4 +220,19 @@ jobs:
         run: |
           source "$GITHUB_WORKSPACE/claude-helper.sh"
           call_claude "## Testing Review" ".claude/commands/review-testing.md"
+          gh pr comment "$PR_NUMBER" --body-file comment.md
+
+      # ── Persona: Security ────────────────────────────────────────────────────
+      # Runs when any main Java source file changes. Checks for MiniMessage/
+      # Adventure API injection, command injection via performCommand(),
+      # permission bypass, and SQL/data injection.
+      - name: Security Persona
+        if: steps.meta.outputs.proceed == 'true' && steps.meta.outputs.needs_security == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        run: |
+          source "$GITHUB_WORKSPACE/claude-helper.sh"
+          call_claude "## Security Review" ".claude/commands/review-security.md"
           gh pr comment "$PR_NUMBER" --body-file comment.md
