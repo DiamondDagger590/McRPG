@@ -22,8 +22,12 @@ jobs:
   persona-review:
     runs-on: ubuntu-latest
     # For workflow_run: only proceed when the upstream workflow succeeded.
-    # For workflow_dispatch: always proceed.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # For workflow_dispatch: only allow dispatch from the default branch so an
+    # attacker cannot trigger the job from a fork or feature branch that contains
+    # modified persona files, which would be checked out and sent to the API.
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
     timeout-minutes: 10
     permissions:
       pull-requests: write   # post PR comments
@@ -36,9 +40,12 @@ jobs:
     steps:
       # Check out ONLY the persona prompt files from the default branch.
       # Never check out the PR head — that would expose secrets to untrusted code.
+      # The explicit ref ensures workflow_dispatch from any branch still reads
+      # persona files from the default branch, not the dispatching ref.
       - name: Checkout persona prompts (default branch)
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.repository.default_branch }}
           sparse-checkout: .claude/commands/
 
       # Write a shared helper function used by every persona step.

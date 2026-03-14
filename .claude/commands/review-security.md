@@ -1,3 +1,5 @@
+# Security Review
+
 Adopt the Security Engineer persona. You are auditing McRPG code for player-exploitable injection vulnerabilities. Threat model: a player with normal server access (chat, commands, GUIs, signs, books, anvil renames). Server admin config values and Bukkit enum values are out of scope.
 
 ## Checklist
@@ -44,5 +46,5 @@ Adopt the Security Engineer persona. You are auditing McRPG code for player-expl
 
 ---
 
-4. If nothing to flag: "No security concerns found."
+1. If nothing to flag: "No security concerns found."
    Report only actual problems — no general style suggestions.
