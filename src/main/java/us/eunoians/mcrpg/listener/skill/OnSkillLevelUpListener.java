@@ -198,9 +198,16 @@ public class OnSkillLevelUpListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void handlePostExperienceGain(PostSkillGainExpEvent skillGainExpEvent) {
         SkillHolder skillHolder = skillGainExpEvent.getSkillHolder();
+        Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillGainExpEvent.getSkillKey());
+
+        // Suppress display at max level — XP accumulates silently in the background
+        var skillDataOptional = skillHolder.getSkillHolderData(skill);
+        if (skillDataOptional.isPresent() && skillDataOptional.get().getCurrentLevel() >= skill.getMaxLevel()) {
+            return;
+        }
+
         McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
         var playerOptional = playerManager.getPlayer(skillHolder.getUUID());
-        Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillGainExpEvent.getSkillKey());
 
         if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline() && playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
