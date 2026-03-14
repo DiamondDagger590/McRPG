@@ -146,7 +146,7 @@ Listens at `EventPriority.MONITOR`:
 - Resolves `McRPGPlayer` via `PlayerManager.getPlayer(uuid)`
 
 **`onEntityDeath(EntityDeathEvent)`:**
-- If `entity.getKiller()` is non-null: increments `MOBS_KILLED`
+- If `entity.getKiller()` is non-null (returns `Player`): resolves `McRPGPlayer` and increments `MOBS_KILLED`
 
 ### Modified Files
 
@@ -553,77 +553,112 @@ Corresponding entries must be added to the bundled English locale YAML files.
 
 ---
 
-## Known Issue: Overflow XP at Max Level
+## Uncapped Experience with Dynamic Level Calculation
 
 ### Problem
 
-The HLD requires that experience statistics track **all XP earned, including overflow past max level**. However, `SkillHolder.SkillHolderData.addExperience()` has an early return at max level:
+The HLD requires that experience statistics track **all XP earned, including overflow past max level**. The current `SkillHolder.SkillHolderData.addExperience()` implementation has two problems:
+
+1. **Early return at max level** (line 332): When `cachedLevel >= skill.getMaxLevel()`, the method returns immediately — no events fire, no statistics track.
+2. **Experience capping** (lines 355-361): When gaining XP pushes past max level, `totalExperience` is capped at `totalExpForMaxLevel` and the overflow is discarded.
+
+### Solution: Remove the Experience Cap
+
+Instead of capping `totalExperience`, allow it to grow unbounded. The player's **effective level** is calculated dynamically and clamped to `skill.getMaxLevel()`. This means:
+
+- XP always accumulates, even past max level
+- Events always fire (no early return)
+- Statistics naturally track all XP earned
+- If the server admin later raises `maxLevel`, players who earned overflow XP are already at the correct level without data migration
+
+### Changes to `SkillHolder.SkillHolderData.addExperience()`
 
 ```java
-// SkillHolder.java, line 332-333
-if (cachedLevel >= skill.getMaxLevel()) {
-    return experience;  // Returns ALL experience as leftover, fires NO events
-}
-```
+public int addExperience(int experience, @NotNull GainReason gainReason) {
+    if (experience <= 0) {
+        return 0;
+    }
 
-This means when a player is at max level:
-- `SkillGainExpEvent` never fires
-- `PostSkillGainExpEvent` never fires
-- `SkillStatisticListener` never runs
-- **Overflow XP is not tracked in statistics**
-
-### Impact
-
-- `TOTAL_SKILL_EXPERIENCE` will not include XP earned at max level
-- Per-skill XP statistics (`MINING_EXPERIENCE`, etc.) will stop incrementing at max level
-- This contradicts the HLD requirement: "Experience statistics track all XP earned, including overflow past max level"
-
-### Proposed Solutions
-
-**Option A: Fire events before the early return (recommended)**
-
-Modify `addExperience()` to fire `SkillGainExpEvent` and `PostSkillGainExpEvent` even when at max level, before the early return. The events carry the XP amount but no level change occurs:
-
-```java
-if (cachedLevel >= skill.getMaxLevel()) {
-    // Still fire events so statistics can track overflow XP
     SkillGainExpEvent skillGainExpEvent = new SkillGainExpEvent(
         getSkillHolder(), getSkillKey(), Math.max(0, experience), gainReason);
     Bukkit.getPluginManager().callEvent(skillGainExpEvent);
-    if (!skillGainExpEvent.isCancelled()) {
-        Bukkit.getPluginManager().callEvent(
-            new PostSkillGainExpEvent(skillHolder, getSkillKey(),
-                skillGainExpEvent.getExperience(), gainReason));
+    if (skillGainExpEvent.isCancelled()) {
+        return experience;
     }
-    return experience;
+
+    int previousLevel = getCurrentLevel();
+    experience = skillGainExpEvent.getExperience();
+
+    // Always accumulate — no cap
+    totalExperience += experience;
+
+    // Recalculate level from new total (getCurrentLevel() clamps to maxLevel)
+    recalculateLevelCache();
+
+    // Fire level up event if effective level changed
+    int newLevel = getCurrentLevel();
+    int levelsGained = newLevel - previousLevel;
+    if (levelsGained > 0) {
+        SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(
+            getSkillHolder(), getSkillKey(), levelsGained);
+        Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
+        Bukkit.getPluginManager().callEvent(
+            new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, newLevel));
+    }
+
+    Bukkit.getPluginManager().callEvent(
+        new PostSkillGainExpEvent(skillHolder, getSkillKey(), experience, gainReason));
+    return 0;  // No leftover — all experience is always consumed
 }
 ```
 
-**Pros:** Statistics and third-party listeners can track all XP. No API change.
-**Cons:** Events fire more frequently. Listeners must handle the case where XP is earned but no level change occurs (which they should already handle).
+### Changes to `getCurrentLevel()`
 
-**Option B: Track overflow directly in the statistic listener**
+The level calculation must clamp to `skill.getMaxLevel()`:
 
-Add a separate listener on the block break / entity damage events that directly increments the XP statistic based on the configured XP reward, bypassing the skill system's events entirely.
+```java
+public int getCurrentLevel() {
+    ensureCacheValid();
+    return Math.min(cachedLevel, skill.getMaxLevel());
+}
+```
 
-**Pros:** No changes to core `addExperience()` flow.
-**Cons:** Duplicates XP calculation logic. Fragile if XP formulas change. Would not capture multipliers applied by the skill event system.
+Alternatively, the clamping can happen inside `recalculateLevelCache()` so that `cachedLevel` is always the effective level. Either approach works — the key invariant is that **`getCurrentLevel()` never exceeds `skill.getMaxLevel()`** while **`totalExperience` is never artificially capped**.
 
-**Option C: Accept the limitation**
+### Changes to `getCurrentExperience()` (XP within current level)
 
-Document that overflow XP is not tracked. Statistics represent "effective XP earned" rather than "total XP attempted."
+The "current experience toward next level" display must handle the at-max-level case gracefully. When at max level, either:
+- Return `totalExperience - totalExpForMaxLevel` (showing overflow), or
+- Return `0` (showing no progress since there's no next level)
 
-**Recommendation:** Option A is the cleanest solution and aligns with the HLD's intent. It should be implemented as part of Phase 2.3.
+The choice depends on how the UI should behave. Returning `0` is simpler and avoids confusing players.
+
+### Unit Tests Required
+
+| Test | Assertion |
+|------|-----------|
+| `addExperience_atMaxLevel_stillAccumulatesXP` | `totalExperience` increases even when `getCurrentLevel() == maxLevel` |
+| `addExperience_atMaxLevel_firesSkillGainExpEvent` | `SkillGainExpEvent` fires with correct XP amount |
+| `addExperience_atMaxLevel_firesPostSkillGainExpEvent` | `PostSkillGainExpEvent` fires with correct XP and `GainReason` |
+| `addExperience_atMaxLevel_doesNotFireLevelUpEvent` | No `SkillGainLevelEvent` or `PostSkillGainLevelEvent` fired |
+| `addExperience_atMaxLevel_getCurrentLevelClamped` | `getCurrentLevel()` returns `maxLevel`, not the raw calculated level |
+| `addExperience_crossingMaxLevel_firesLevelUpToMax` | When XP pushes from below max to above, level-up event fires with `newLevel == maxLevel` |
+| `addExperience_crossingMaxLevel_allXpConsumed` | Return value is `0` (no leftover) |
+| `getCurrentExperience_atMaxLevel_returnsZero` | XP-within-level display returns `0` when at max |
+| `maxLevelIncrease_retroactiveLevel` | If `maxLevel` is raised, `getCurrentLevel()` reflects the higher level from accumulated XP |
 
 ---
 
 ## Implementation Order
 
 ### Phase 2.3 (Remaining Work)
-1. Verify uncommitted changes in `McRPGPlayerLoadTask` and `McRPGPlayer` are correct
-2. Address overflow XP issue (Option A above) in `SkillHolder.addExperience()`
-3. Run tests and verify build
-4. Commit and push
+1. Verify committed changes in `McRPGPlayerLoadTask` and `McRPGPlayer` are correct
+2. Refactor `SkillHolder.addExperience()` to remove experience cap and early return at max level
+3. Update `getCurrentLevel()` to clamp to `skill.getMaxLevel()`
+4. Update `getCurrentExperience()` to handle at-max-level gracefully
+5. Add unit tests for uncapped experience behavior (see test table above)
+6. Run tests and verify build
+7. Commit and push
 
 ### Phase 2.4
 1. Add config routes to `MainConfigFile` and default values to YAML
@@ -673,7 +708,7 @@ Document that overflow XP is not tracked. Statistics represent "effective XP ear
 | `skill/experience/context/EntityDamageContext.java` | 2.2 | Implement `getGainReason()` |
 | `event/skill/SkillGainExpEvent.java` | 2.2 | Add `GainReason` field and getter |
 | `event/skill/PostSkillGainExpEvent.java` | 2.2 | Add `experience` and `GainReason` fields |
-| `entity/holder/SkillHolder.java` | 2.2, 2.3 | Add `GainReason` param to `addExperience()`; fire events at max level |
+| `entity/holder/SkillHolder.java` | 2.2, 2.3 | Add `GainReason` param to `addExperience()`; remove experience cap; clamp level dynamically |
 | `listener/skill/SkillListener.java` | 2.2 | Pass `GainReason` to `addExperience()` |
 | `command/redeem/RedeemExperienceCommand.java` | 2.2 | Use `McRPGGainReason.REDEEM` |
 | `command/give/GiveExperienceCommand.java` | 2.2 | Use `McRPGGainReason.COMMAND` |
