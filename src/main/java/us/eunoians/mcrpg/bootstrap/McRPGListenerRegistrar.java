@@ -35,6 +35,9 @@ import us.eunoians.mcrpg.listener.quest.QuestObjectiveCompleteListener;
 import us.eunoians.mcrpg.listener.skill.OnAttackLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnBlockBreakLevelListener;
 import us.eunoians.mcrpg.listener.skill.OnSkillLevelUpListener;
+import us.eunoians.mcrpg.listener.statistic.AbilityStatisticListener;
+import us.eunoians.mcrpg.listener.statistic.CombatStatisticListener;
+import us.eunoians.mcrpg.listener.statistic.SkillStatisticListener;
 import us.eunoians.mcrpg.listener.world.FakeBlockBreakListener;
 
 /**
@@ -94,6 +97,11 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         // Setting listener
         Bukkit.getPluginManager().registerEvents(new PlayerSettingChangeListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerPickupItemListener(), plugin);
+
+        // Statistic listeners
+        Bukkit.getPluginManager().registerEvents(new SkillStatisticListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityStatisticListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new CombatStatisticListener(), plugin);
 
         // Safe zones
         Bukkit.getPluginManager().registerEvents(new PlayerSafeZoneStateChangeListener(), plugin);

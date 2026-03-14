@@ -14,6 +14,8 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
+import us.eunoians.mcrpg.skill.experience.context.GainReason;
+import us.eunoians.mcrpg.skill.experience.context.McRPGGainReason;
 import us.eunoians.mcrpg.skill.experience.context.SkillExperienceContext;
 
 import java.util.Optional;
@@ -53,11 +55,14 @@ public interface SkillListener extends Listener {
                             int exp = skill.calculateExperienceToGive(skillHolder, event);
                             if (exp > 0) {
                                 var eventContextOptional = getEventContext(skillHolder, skill, exp, event);
+                                GainReason gainReason = McRPGGainReason.OTHER;
                                 if (eventContextOptional.isPresent()) {
-                                    double modifier = Math.min(mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.EXPERIENCE_MULTIPLIER_LIMIT), mcRPG.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).calculateModifierForContext(eventContextOptional.get()));
+                                    SkillExperienceContext<?> context = eventContextOptional.get();
+                                    double modifier = Math.min(mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getDouble(MainConfigFile.EXPERIENCE_MULTIPLIER_LIMIT), mcRPG.registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER).calculateModifierForContext(context));
                                     exp = (int) (exp * modifier);
+                                    gainReason = context.getGainReason();
                                 }
-                                skillHolderData.addExperience(exp);
+                                skillHolderData.addExperience(exp, gainReason);
                             }
                         }));
             }
