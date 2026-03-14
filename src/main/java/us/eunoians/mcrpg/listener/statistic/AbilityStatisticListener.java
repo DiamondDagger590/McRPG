@@ -17,6 +17,12 @@ import java.util.Optional;
 /**
  * Listens to ability activation events and increments the global and
  * per-ability activation count statistics.
+ * <p>
+ * Per-ability activation statistics are auto-registered via
+ * {@link us.eunoians.mcrpg.bootstrap.McRPGStatisticRegistrar} when an ability is
+ * registered through the {@link us.eunoians.mcrpg.expansion.ContentExpansion} system.
+ * This means third-party abilities that use the standard registration path automatically
+ * get their activation statistics tracked here.
  */
 public class AbilityStatisticListener implements Listener {
 
@@ -34,7 +40,8 @@ public class AbilityStatisticListener implements Listener {
         // Increment global ability activation count
         stats.incrementLong(McRPGStatistic.ABILITIES_ACTIVATED.getStatisticKey(), 1);
 
-        // Increment per-ability activation count
+        // Increment per-ability activation count — the statistic is auto-registered
+        // for any ability that goes through the ContentExpansion registration path
         stats.incrementLong(McRPGStatistic.getAbilityActivationKey(event.getAbility().getAbilityKey()), 1);
     }
 }

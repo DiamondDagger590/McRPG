@@ -2,6 +2,8 @@ package us.eunoians.mcrpg.listener.statistic;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.statistic.PlayerStatisticData;
+import com.diamonddagger590.mccore.statistic.StatisticRegistry;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -24,6 +26,15 @@ import java.util.Optional;
  * <p>
  * Uses {@link EventPriority#MONITOR} to read final values after all other
  * listeners have modified or cancelled the event.
+ * <p>
+ * Per-skill statistics (experience and max level) are only incremented if the
+ * corresponding statistic is registered. Native McRPG skills have their statistics
+ * registered statically in {@link McRPGStatistic}. Third-party
+ * {@link us.eunoians.mcrpg.expansion.ContentExpansion} plugins that add custom skills
+ * must register their own per-skill statistics to have them tracked here. The global
+ * statistics ({@link McRPGStatistic#TOTAL_SKILL_EXPERIENCE} and
+ * {@link McRPGStatistic#TOTAL_SKILL_LEVELS_GAINED}) are always incremented regardless
+ * of skill origin.
  */
 public class SkillStatisticListener implements Listener {
 
@@ -43,12 +54,16 @@ public class SkillStatisticListener implements Listener {
         }
 
         PlayerStatisticData stats = playerOptional.get().getStatisticData();
+        StatisticRegistry statisticRegistry = McRPG.getInstance().registryAccess().registry(RegistryKey.STATISTIC);
         int experience = event.getExperience();
 
-        // Per-skill XP
-        stats.incrementLong(McRPGStatistic.getSkillExperienceKey(event.getSkillKey()), experience);
+        // Per-skill XP — only if the third-party skill registered its statistic
+        NamespacedKey skillExpKey = McRPGStatistic.getSkillExperienceKey(event.getSkillKey());
+        if (statisticRegistry.getStatistic(skillExpKey).isPresent()) {
+            stats.incrementLong(skillExpKey, experience);
+        }
 
-        // Total XP across all skills
+        // Total XP across all skills (always tracked)
         stats.incrementLong(McRPGStatistic.TOTAL_SKILL_EXPERIENCE.getStatisticKey(), experience);
 
         // Block-based statistics — only count when XP came from actually breaking a block
@@ -80,11 +95,15 @@ public class SkillStatisticListener implements Listener {
         }
 
         PlayerStatisticData stats = playerOptional.get().getStatisticData();
+        StatisticRegistry statisticRegistry = McRPG.getInstance().registryAccess().registry(RegistryKey.STATISTIC);
 
-        // Update per-skill max level (only increases, never decreases)
-        stats.setMaxInt(McRPGStatistic.getSkillMaxLevelKey(event.getSkillKey()), event.getAfterLevel());
+        // Update per-skill max level — only if the third-party skill registered its statistic
+        NamespacedKey skillMaxLevelKey = McRPGStatistic.getSkillMaxLevelKey(event.getSkillKey());
+        if (statisticRegistry.getStatistic(skillMaxLevelKey).isPresent()) {
+            stats.setMaxInt(skillMaxLevelKey, event.getAfterLevel());
+        }
 
-        // Increment total levels gained
+        // Increment total levels gained (always tracked)
         int levelsGained = event.getAfterLevel() - event.getBeforeLevel();
         stats.incrementLong(McRPGStatistic.TOTAL_SKILL_LEVELS_GAINED.getStatisticKey(), levelsGained);
     }

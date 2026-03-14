@@ -86,9 +86,11 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new ScopedBoardAdapterRegistry());
         registryAccess.register(new TemplateConditionRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
+        // Statistics registrar must run before expansion registrar so that the
+        // AbilityRegisterEvent listener is active when abilities are registered
+        new McRPGStatisticRegistrar().register(bootstrapContext);
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
-        new McRPGStatisticRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(mcRPG));

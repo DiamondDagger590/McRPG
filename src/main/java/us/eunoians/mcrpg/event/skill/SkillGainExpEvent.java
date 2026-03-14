@@ -9,6 +9,17 @@ import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.experience.context.GainReason;
 import us.eunoians.mcrpg.skill.experience.context.McRPGGainReason;
 
+/**
+ * Fired <b>before</b> a {@link SkillHolder} gains experience in a skill.
+ * <p>
+ * This event is {@link Cancellable} — cancelling it prevents the experience from being
+ * awarded. Listeners may also modify the experience amount via {@link #setExperience(int)}.
+ * <p>
+ * After the experience has been successfully applied, a corresponding
+ * {@link PostSkillGainExpEvent} is fired.
+ *
+ * @see PostSkillGainExpEvent
+ */
 public class SkillGainExpEvent extends SkillEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
