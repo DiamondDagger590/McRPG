@@ -88,6 +88,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
+        new McRPGStatisticRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(mcRPG));
