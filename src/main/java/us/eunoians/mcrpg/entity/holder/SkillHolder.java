@@ -267,11 +267,15 @@ public class SkillHolder extends LoadoutHolder {
         /**
          * Gets the current experience towards the next level for the {@link Skill} represented by this data.
          * This is the partial progress towards the next level, not the total experience.
+         * Returns {@code 0} when at max level since there is no next level to progress towards.
          *
-         * @return The current experience towards the next level.
+         * @return The current experience towards the next level, or {@code 0} at max level.
          */
         public int getCurrentExperience() {
             ensureCacheValid();
+            if (cachedLevel >= skill.getMaxLevel()) {
+                return 0;
+            }
             return cachedExperienceTowardsNextLevel;
         }
 
@@ -322,16 +326,15 @@ public class SkillHolder extends LoadoutHolder {
          * Adds the provided amount of experience to the {@link Skill} with an explicit {@link GainReason}.
          * <p>
          * This method will call a {@link SkillGainExpEvent}, and only award experience if the event is not canceled.
+         * Experience always accumulates (even past max level) to support retroactive level-ups if the
+         * max level is later raised. The effective level is clamped to {@code skill.getMaxLevel()}.
          *
          * @param experience The amount of experience to add.
          * @param gainReason The reason for the experience gain.
-         * @return The amount of experience that was unused (when at max level).
+         * @return Always returns {@code 0} — all experience is consumed.
          */
         public int addExperience(int experience, @NotNull GainReason gainReason) {
-            ensureCacheValid();
-            if (cachedLevel >= skill.getMaxLevel()) {
-                return experience;
-            } else if (experience <= 0) {
+            if (experience <= 0) {
                 return 0;
             }
 
@@ -341,36 +344,27 @@ public class SkillHolder extends LoadoutHolder {
                 return experience;
             }
 
-            int previousLevel = cachedLevel;
+            int previousLevel = getCurrentLevel();
             experience = skillGainExpEvent.getExperience();
 
-            // Add to total experience
+            // Always accumulate — no cap
             totalExperience += experience;
 
-            // Recalculate level from new total
+            // Recalculate level from new total (level is naturally clamped to maxLevel
+            // by calculateLevelFromTotalExperience())
             recalculateLevelCache();
 
-            // Calculate leftover experience (experience beyond max level)
-            int leftoverExperience = 0;
-            if (cachedLevel >= skill.getMaxLevel()) {
-                // Calculate total XP needed for max level
-                int totalExpForMaxLevel = calculateTotalExperienceForLevel(skill.getMaxLevel());
-                leftoverExperience = Math.max(0, totalExperience - totalExpForMaxLevel);
-                // Cap total experience at max level
-                totalExperience = totalExpForMaxLevel;
-                recalculateLevelCache();
-            }
-
-            // Fire level up event if level changed
-            int levelsGained = cachedLevel - previousLevel;
+            // Fire level up event if effective level changed
+            int newLevel = getCurrentLevel();
+            int levelsGained = newLevel - previousLevel;
             if (levelsGained > 0) {
                 SkillGainLevelEvent skillGainLevelEvent = new SkillGainLevelEvent(getSkillHolder(), getSkillKey(), levelsGained);
                 Bukkit.getPluginManager().callEvent(skillGainLevelEvent);
-                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, cachedLevel));
+                Bukkit.getPluginManager().callEvent(new PostSkillGainLevelEvent(skillHolder, getSkillKey(), previousLevel, newLevel));
             }
 
             Bukkit.getPluginManager().callEvent(new PostSkillGainExpEvent(skillHolder, getSkillKey(), experience, gainReason));
-            return leftoverExperience;
+            return 0;
         }
 
         /**

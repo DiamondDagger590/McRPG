@@ -259,13 +259,12 @@ public class McRPGPlayer extends CorePlayer {
         failsafeTransaction.executeTransaction();
         batchTransaction.executeTransaction();
 
-        // Save statistics separately — only mark clean after successful transaction
+        // Save statistics separately
         if (getStatisticData().isDirty()) {
             FailSafeTransaction statisticTransaction = new FailSafeTransaction(connection);
             statisticTransaction.addAll(PlayerStatisticDAO.savePlayerStatistics(connection, getUUID(), getStatisticData().getModifiedEntries()));
-            if (statisticTransaction.executeTransaction()) {
-                getStatisticData().markClean();
-            }
+            statisticTransaction.executeTransaction();
+            getStatisticData().markClean();
         }
     }
 

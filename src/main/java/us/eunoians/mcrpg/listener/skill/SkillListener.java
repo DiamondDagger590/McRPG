@@ -54,6 +54,12 @@ public interface SkillListener extends Listener {
                         .forEach(skill -> skillHolder.getSkillHolderData(skill).ifPresent(skillHolderData -> {
                             int exp = skill.calculateExperienceToGive(skillHolder, event);
                             if (exp > 0) {
+                                // At max level: accumulate raw XP silently — no modifiers consumed,
+                                // no boosted/rested XP spent, no display updates triggered
+                                if (skillHolderData.getCurrentLevel() >= skill.getMaxLevel()) {
+                                    skillHolderData.addExperience(exp, McRPGGainReason.OTHER);
+                                    return;
+                                }
                                 var eventContextOptional = getEventContext(skillHolder, skill, exp, event);
                                 GainReason gainReason = McRPGGainReason.OTHER;
                                 if (eventContextOptional.isPresent()) {

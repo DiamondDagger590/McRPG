@@ -217,22 +217,21 @@ private UpdatePlayerDataSyncFunction loadPlayerStatistics(@NotNull Connection co
 failsafeTransaction.executeTransaction();
 batchTransaction.executeTransaction();
 
-// Save statistics separately — only mark clean after successful transaction
+// Save statistics separately
 if (getStatisticData().isDirty()) {
     FailSafeTransaction statisticTransaction = new FailSafeTransaction(connection);
     statisticTransaction.addAll(
         PlayerStatisticDAO.savePlayerStatistics(connection, getUUID(), getStatisticData().getModifiedEntries())
     );
-    if (statisticTransaction.executeTransaction()) {
-        getStatisticData().markClean();
-    }
+    statisticTransaction.executeTransaction();
+    getStatisticData().markClean();
 }
 ```
 
 **Design decisions:**
 1. **Separate transaction:** Statistics are saved in their own `FailSafeTransaction`, isolated from skill/loadout data. If statistics fail to save, skill data is not affected.
 2. **Dirty check:** Only creates a transaction if `isDirty()` is true, avoiding unnecessary database calls.
-3. **Conditional `markClean()`:** Only called after `executeTransaction()` returns `true`. If the transaction fails, dirty entries are preserved and will be retried on the next save cycle.
+3. **`markClean()` after execution:** `FailSafeTransaction.executeTransaction()` returns `void` (handles errors internally via rollback). We mark clean unconditionally — if the transaction rolled back, stats will be re-dirtied on the next modification and retried.
 4. **No unload changes needed:** `McRPGPlayerUnloadTask` already calls `savePlayer()`, which now includes statistics. No additional changes required.
 
 **Import additions:**
@@ -283,8 +282,16 @@ public class StatisticPlaceholder extends McRPGPlaceholder {
             return formatValue(playerOptional.get().getStatisticData().getValue(statisticKey).orElse(null));
         }
 
-        // Offline player: use StatisticCache if available, otherwise direct DB query
-        // (Implementation depends on 2.4.3 cache setup)
+        // Offline player: return cached value if available, otherwise return null and populate async
+        McRPGStatisticCacheManager cacheManager = McRPG.getInstance().registryAccess()
+                .registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.STATISTIC_CACHE);
+        Optional<StatisticEntry> cached = cacheManager.getCache().get(offlinePlayer.getUniqueId(), statisticKey);
+        if (cached.isPresent()) {
+            return formatValue(cached.get());
+        }
+
+        // Cache miss: trigger async DB fetch to populate cache for next query, return null now
+        cacheManager.populateAsync(offlinePlayer.getUniqueId(), statisticKey);
         return null;
     }
 }
@@ -394,6 +401,7 @@ public class McRPGStatisticCacheManager {
 
     /**
      * Gets a statistic value for an offline player, using cache with DB fallback.
+     * This is a synchronous method — prefer {@link #populateAsync} for non-blocking cache warming.
      */
     @NotNull
     public Optional<StatisticEntry> getOfflineStatistic(
@@ -407,6 +415,24 @@ public class McRPGStatisticCacheManager {
         Optional<StatisticEntry> fromDb = PlayerStatisticDAO.getPlayerStatistic(connection, uuid, key);
         fromDb.ifPresent(entry -> cache.put(uuid, key, entry));
         return fromDb;
+    }
+
+    /**
+     * Asynchronously populates the cache for an offline player's statistic.
+     * Used by PAPI placeholders to avoid blocking on cache miss — returns null on the first
+     * call and the cached value is available on subsequent calls.
+     */
+    public void populateAsync(@NotNull UUID uuid, @NotNull NamespacedKey key) {
+        Database database = RegistryAccess.registryAccess()
+            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                Optional<StatisticEntry> fromDb = PlayerStatisticDAO.getPlayerStatistic(connection, uuid, key);
+                fromDb.ifPresent(entry -> cache.put(uuid, key, entry));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
 ```
@@ -477,28 +503,64 @@ The HLD specifies mounting McCore's base statistic commands under `/mcrpg statis
 /mcrpg statistic reset <player> [statistic]     — Admin: reset one or all stats
 ```
 
+#### Async Feedback Pattern
+
+For commands that target offline players, the data must be fetched from the database asynchronously. All statistic commands use a consistent async feedback pattern:
+
+1. **Immediate response:** Send a "looking up statistics..." message to the command sender
+2. **Async DB query:** Submit a task to the database executor service
+3. **Callback:** On completion, send the result message back on the main thread via `Bukkit.getScheduler().runTask()`
+4. **Error handling:** If the DB query fails, send an error message to the sender
+
+```java
+// Example pattern for async offline player lookup
+player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
+    player, LocalizationKey.STATISTIC_LOADING_MESSAGE));
+
+database.getDatabaseExecutorService().submit(() -> {
+    try (Connection connection = database.getConnection()) {
+        // ... perform DB query ...
+        Bukkit.getScheduler().runTask(mcRPG, () -> {
+            // Send result on main thread
+            player.sendMessage(/* result message */);
+        });
+    } catch (SQLException e) {
+        Bukkit.getScheduler().runTask(mcRPG, () -> {
+            player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
+                player, LocalizationKey.STATISTIC_LOOKUP_ERROR_MESSAGE));
+        });
+    }
+});
+```
+
+For online players, the data is read directly from `PlayerStatisticData` — no async needed.
+
 #### New Files
 
 **`us.eunoians.mcrpg.command.statistic.StatisticViewCommand`**
 - Permission: `mcrpg.statistic.view` (or player's own stats with no permission)
-- Resolves player from `PlayerManager` (online) or queries DB (offline)
+- Online: reads from `PlayerStatisticData` directly
+- Offline: async DB query with "loading..." → result/error feedback
 - Formats statistic value based on `StatisticType` (integers formatted with commas, doubles to 2dp)
 
 **`us.eunoians.mcrpg.command.statistic.StatisticListCommand`**
 - Permission: `mcrpg.statistic.list`
 - Lists all registered statistics with current values for the target player
+- Online: reads from `PlayerStatisticData` directly
+- Offline: async DB query with "loading..." → result/error feedback
 - Paginated output for large stat lists
 
 **`us.eunoians.mcrpg.command.statistic.StatisticSetCommand`**
 - Permission: `mcrpg.statistic.set` (admin only)
 - Uses `PlayerStatisticData.setValue()` for online players
-- For offline players: direct `PlayerStatisticDAO.savePlayerStatistic()` call
+- For offline players: async `PlayerStatisticDAO.savePlayerStatistic()` with "updating..." → success/error feedback
 - Requires confirmation via `/mcrpg confirm`
 
 **`us.eunoians.mcrpg.command.statistic.StatisticResetCommand`**
 - Permission: `mcrpg.statistic.reset` (admin only)
 - Resets to default value from `Statistic.getDefaultValue()`
 - Optional `[statistic]` argument; if omitted, resets all
+- For offline players: async DB update with "resetting..." → success/error feedback
 - Requires confirmation via `/mcrpg confirm`
 
 #### Command Parser
@@ -540,6 +602,8 @@ public static final Route STATISTIC_RESET_SUCCESS = Route.fromString(toRoutePath
 public static final Route STATISTIC_RESET_ALL_SUCCESS = Route.fromString(toRoutePath(STATISTIC_HEADER, "reset-all-success"));
 public static final Route STATISTIC_NOT_FOUND = Route.fromString(toRoutePath(STATISTIC_HEADER, "not-found"));
 public static final Route STATISTIC_PLAYER_NOT_FOUND = Route.fromString(toRoutePath(STATISTIC_HEADER, "player-not-found"));
+public static final Route STATISTIC_LOADING_MESSAGE = Route.fromString(toRoutePath(STATISTIC_HEADER, "loading-message"));
+public static final Route STATISTIC_LOOKUP_ERROR_MESSAGE = Route.fromString(toRoutePath(STATISTIC_HEADER, "lookup-error-message"));
 
 // Command descriptions
 public static final Route COMMAND_DESCRIPTION_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTION_HEADER, "statistic"));
@@ -550,6 +614,106 @@ public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET = Route.fromString
 ```
 
 Corresponding entries must be added to the bundled English locale YAML files.
+
+---
+
+## Max-Level Silent Accumulation
+
+### Problem
+
+With uncapped experience (see next section), XP accumulates past max level. However, the player-facing experience pipeline should be **inert at max level** — no multiplier consumption, no display updates, no redeem. Statistics still track all XP earned. Players should be mostly unaware of overflow accumulation.
+
+### Design: Intervene at Two Call Sites
+
+The XP pipeline flows:
+1. `SkillListener.levelSkill()` → calculates base XP → applies modifiers (consumes boosted/rested) → calls `addExperience(finalExp, gainReason)`
+2. `addExperience()` → fires `SkillGainExpEvent` → accumulates XP → fires `PostSkillGainExpEvent`
+3. `OnSkillLevelUpListener` → listens to `PostSkillGainExpEvent` → triggers display
+
+We intervene at the **modifier application step** and the **display step**, keeping `addExperience()` itself clean.
+
+### Changes to `SkillListener.levelSkill()`
+
+When the skill is at max level, bypass the modifier pipeline entirely and call `addExperience()` with raw base XP:
+
+```java
+.forEach(skill -> skillHolder.getSkillHolderData(skill).ifPresent(skillHolderData -> {
+    int exp = skill.calculateExperienceToGive(skillHolder, event);
+    if (exp > 0) {
+        // At max level: accumulate raw XP silently (no modifiers consumed, no display)
+        if (skillHolderData.getCurrentLevel() >= skill.getMaxLevel()) {
+            skillHolderData.addExperience(exp, McRPGGainReason.OTHER);
+            return;
+        }
+        var eventContextOptional = getEventContext(skillHolder, skill, exp, event);
+        GainReason gainReason = McRPGGainReason.OTHER;
+        if (eventContextOptional.isPresent()) {
+            SkillExperienceContext<?> context = eventContextOptional.get();
+            double modifier = Math.min(/* ... */);
+            exp = (int) (exp * modifier);
+            gainReason = context.getGainReason();
+        }
+        skillHolderData.addExperience(exp, gainReason);
+    }
+}));
+```
+
+**What this prevents:**
+- Boosted experience is **not consumed** (modifier pipeline skipped)
+- Rested experience is **not consumed** (modifier pipeline skipped)
+- The `GainReason` is forced to `OTHER` (not the context-specific reason) so statistic listeners that filter on `BLOCK_BREAK` can optionally differentiate
+
+**What this preserves:**
+- `addExperience()` still fires `SkillGainExpEvent` and `PostSkillGainExpEvent` → statistics track all XP
+- `totalExperience` still grows unbounded → retroactive level-up works
+
+### Changes to `OnSkillLevelUpListener.handlePostExperienceGain()`
+
+Add a guard to suppress display updates at max level:
+
+```java
+@EventHandler(priority = EventPriority.LOWEST)
+public void handlePostExperienceGain(PostSkillGainExpEvent skillGainExpEvent) {
+    SkillHolder skillHolder = skillGainExpEvent.getSkillHolder();
+    Skill skill = McRPG.getInstance().registryAccess()
+        .registry(McRPGRegistryKey.SKILL)
+        .getRegisteredSkill(skillGainExpEvent.getSkillKey());
+
+    // Suppress display at max level — XP accumulates silently
+    var skillDataOptional = skillHolder.getSkillHolderData(skill);
+    if (skillDataOptional.isPresent() && skillDataOptional.get().getCurrentLevel() >= skill.getMaxLevel()) {
+        return;
+    }
+
+    // ... existing display logic ...
+}
+```
+
+This is a belt-and-suspenders check — the `return` in `levelSkill()` means the display flow is already unreachable for gameplay XP at max level, but this guard protects against other `addExperience()` callers (e.g., `GiveExperienceCommand`).
+
+### Changes to `RedeemExperienceCommand`
+
+The existing max-level guard in `redeemExperience()` already blocks redeem at max level (line 105-108). **No changes needed** — the current code sends `REDEEMABLE_EXPERIENCE_SKILL_ALREADY_MAXED_MESSAGE` and returns early. This is the desired behavior.
+
+### Summary
+
+| Concern | Where Handled | Mechanism |
+|---------|--------------|-----------|
+| Boosted/rested XP consumption | `SkillListener.levelSkill()` | Skip modifier pipeline at max level |
+| Display updates (boss bar) | `OnSkillLevelUpListener` | Guard: return early at max level |
+| Redeem command | `RedeemExperienceCommand` | Existing guard (no change) |
+| Admin give command | `GiveExperienceCommand` | No change — XP accumulates silently, display suppressed by listener guard |
+| Statistics tracking | `SkillStatisticListener` | No change — events still fire |
+
+### Unit Tests Required
+
+| Test | Assertion |
+|------|-----------|
+| `levelSkill_atMaxLevel_doesNotConsumeBoostedExperience` | Boosted XP pool unchanged after XP gain at max level |
+| `levelSkill_atMaxLevel_doesNotConsumeRestedExperience` | Rested XP pool unchanged after XP gain at max level |
+| `levelSkill_atMaxLevel_stillAccumulatesRawXP` | `totalExperience` increases by base XP (no multiplier) |
+| `handlePostExperienceGain_atMaxLevel_noDisplayUpdate` | `DisplayManager.sendExperienceUpdate()` not called at max level |
+| `redeemExperience_atMaxLevel_blocked` | Error message sent, no XP added |
 
 ---
 
@@ -656,9 +820,11 @@ The choice depends on how the UI should behave. Returning `0` is simpler and avo
 2. Refactor `SkillHolder.addExperience()` to remove experience cap and early return at max level
 3. Update `getCurrentLevel()` to clamp to `skill.getMaxLevel()`
 4. Update `getCurrentExperience()` to handle at-max-level gracefully
-5. Add unit tests for uncapped experience behavior (see test table above)
-6. Run tests and verify build
-7. Commit and push
+5. Add max-level modifier bypass in `SkillListener.levelSkill()` (skip boosted/rested at max level)
+6. Add max-level display suppression guard in `OnSkillLevelUpListener.handlePostExperienceGain()`
+7. Add unit tests for uncapped experience behavior and max-level silent accumulation
+8. Run tests and verify build
+9. Commit and push
 
 ### Phase 2.4
 1. Add config routes to `MainConfigFile` and default values to YAML
@@ -709,7 +875,8 @@ The choice depends on how the UI should behave. Returning `0` is simpler and avo
 | `event/skill/SkillGainExpEvent.java` | 2.2 | Add `GainReason` field and getter |
 | `event/skill/PostSkillGainExpEvent.java` | 2.2 | Add `experience` and `GainReason` fields |
 | `entity/holder/SkillHolder.java` | 2.2, 2.3 | Add `GainReason` param to `addExperience()`; remove experience cap; clamp level dynamically |
-| `listener/skill/SkillListener.java` | 2.2 | Pass `GainReason` to `addExperience()` |
+| `listener/skill/SkillListener.java` | 2.2, 2.3 | Pass `GainReason` to `addExperience()`; add max-level modifier bypass |
+| `listener/skill/OnSkillLevelUpListener.java` | 2.3 | Add max-level display suppression guard in `handlePostExperienceGain()` |
 | `command/redeem/RedeemExperienceCommand.java` | 2.2 | Use `McRPGGainReason.REDEEM` |
 | `command/give/GiveExperienceCommand.java` | 2.2 | Use `McRPGGainReason.COMMAND` |
 | `bootstrap/McRPGListenerRegistrar.java` | 2.2 | Register statistic listeners |
