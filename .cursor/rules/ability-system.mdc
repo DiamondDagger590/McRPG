@@ -15,6 +15,7 @@ alwaysApply: false
 5. Implement `activateAbility()`, `getSkillKey()`, `getDatabaseName()`, `getYamlDocument()`, `getAbilityEnabledRoute()`, `getDisplayItemRoute()`
 6. Create a corresponding `<AbilityName>ActivateEvent` in `event/ability/<skill>/`
 7. Register in `McRPGExpansion.getAbilityContent()`
+8. For `ActiveAbility` implementations: `getDefaultStatistics()` automatically generates an activation-count statistic via `McRPGStatistic.createAbilityActivationStatistic()`. For passive abilities, `getDefaultStatistics()` returns an empty list by default — override if custom statistics are needed.
 
 ## Minimal Ability Template
 

@@ -40,7 +40,10 @@ Players always implement all three. Non-player entities use `AbilityHolder` dire
 | Cooldown | Time lock applied to an ability after it activates |
 | Component | Modular activation/cancel/ready logic registered on an ability (priority-ordered) |
 | Attribute | `AbilityAttribute<T>` in `AbilityData` — per-holder ability state, no reflection |
-| ContentExpansion | Module bundling skills, abilities, settings, and localization for registration |
+| ContentExpansion | Module bundling skills, abilities, statistics, settings, and localization for registration |
+| StatisticContent | Wrapper pairing a McCore `Statistic` with an expansion key for content-pack registration |
+| StatisticContentPack | Content pack collecting `StatisticContent` entries — one per expansion |
+| McRPGStatistic | Utility class: global statistic constants + factory methods for per-skill/per-ability statistics |
 | DAO | Static JDBC methods for reading/writing data (`SkillDAO`, `LoadoutAbilityDAO`) |
 
 ### Quest System

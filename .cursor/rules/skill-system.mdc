@@ -25,6 +25,7 @@ Skills earn XP — abilities do the gameplay work.
 6. Create a `<Name>ConfigFile` class in `configuration/file/skill/`
 7. Register in `McRPGExpansion.getSkillContent()`
 8. Create abilities that return this skill's key from `getSkillKey()`
+9. `getDefaultStatistics()` is inherited from `McRPGSkill` — it auto-generates per-skill experience and max-level statistics via `McRPGStatistic`. Override only if you need additional custom statistics.
 
 ## Minimal Skill Template
 
