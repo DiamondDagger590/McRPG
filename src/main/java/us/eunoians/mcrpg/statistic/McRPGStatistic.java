@@ -37,8 +37,6 @@ public final class McRPGStatistic {
 
     private static final String NAMESPACE = McRPGMethods.getMcRPGNamespace();
 
-    // ── Global Gameplay Statistics ──────────────────────────────────────────
-
     /** Total blocks mined that grant skill XP (any skill). */
     public static final Statistic BLOCKS_MINED = longStat("blocks_mined",
             "Blocks Mined", "Total blocks mined that grant skill XP");
@@ -69,8 +67,6 @@ public final class McRPGStatistic {
             key("damage_taken"), StatisticType.DOUBLE, 0.0,
             "Damage Taken", "Total damage taken");
 
-    // ── Skill Progression Statistics ───────────────────────────────────────
-
     /** Sum of all levels gained across all skills. */
     public static final Statistic TOTAL_SKILL_LEVELS_GAINED = longStat("total_skill_levels_gained",
             "Total Skill Levels Gained", "Sum of all levels gained across all skills");
@@ -79,13 +75,9 @@ public final class McRPGStatistic {
     public static final Statistic TOTAL_SKILL_EXPERIENCE = longStat("total_skill_experience",
             "Total Skill Experience", "Sum of all XP earned across all skills");
 
-    // ── Ability Statistics ─────────────────────────────────────────────────
-
     /** Total ability activations across all abilities. */
     public static final Statistic ABILITIES_ACTIVATED = longStat("abilities_activated",
             "Abilities Activated", "Total ability activations across all abilities");
-
-    // ── All Static Constants ───────────────────────────────────────────────
 
     /**
      * All statically-defined global statistics. Does not include per-skill statistics
@@ -112,8 +104,6 @@ public final class McRPGStatistic {
         stats.add(ABILITIES_ACTIVATED);
         ALL_STATIC_STATISTICS = Collections.unmodifiableSet(stats);
     }
-
-    // ── Dynamic Key Helpers ────────────────────────────────────────────────
 
     /**
      * Gets the per-skill experience statistic key for a given skill key.
@@ -209,8 +199,6 @@ public final class McRPGStatistic {
         return intStat(skillKey.getKey() + "_max_level",
                 displayName + " Max Level", "Highest " + displayName + " level reached");
     }
-
-    // ── Private Helpers ────────────────────────────────────────────────────
 
     /**
      * Creates a {@link NamespacedKey} under the McRPG namespace. Uses the deprecated
