@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.ability;
 
+import com.diamonddagger590.mccore.statistic.Statistic;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
@@ -160,5 +161,24 @@ public interface Ability extends McRPGContent {
     @NotNull
     default Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         return Map.of();
+    }
+
+    /**
+     * Gets the default {@link Statistic} definitions that should be tracked for this ability.
+     * <p>
+     * Subinterfaces like {@link us.eunoians.mcrpg.ability.impl.type.ActiveAbility} override this
+     * to provide sensible defaults (e.g., an activation count statistic). Concrete ability
+     * implementations can further override to add custom statistics specific to their mechanics.
+     * <p>
+     * <b>Important:</b> This method is a convenience helper — the returned statistics are
+     * <b>not</b> automatically registered. They must be explicitly included in a
+     * {@link us.eunoians.mcrpg.expansion.content.StatisticContentPack} by the owning
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion} to be registered.
+     *
+     * @return A {@link Set} of default {@link Statistic} definitions for this ability.
+     */
+    @NotNull
+    default Set<Statistic> getDefaultStatistics() {
+        return Set.of();
     }
 }

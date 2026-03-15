@@ -1,9 +1,11 @@
 package us.eunoians.mcrpg.expansion;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.statistic.Statistic;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.herbalism.InstantIrrigation;
 import us.eunoians.mcrpg.ability.impl.herbalism.MassHarvest;
 import us.eunoians.mcrpg.ability.impl.herbalism.TooManyPlants;
@@ -30,6 +32,8 @@ import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
+import us.eunoians.mcrpg.expansion.content.StatisticContent;
+import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.DisableBonusExperienceConsumptionSetting;
@@ -42,8 +46,10 @@ import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
+import us.eunoians.mcrpg.statistic.McRPGStatistic;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -63,7 +69,9 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     @Override
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
-        return Set.of(getSkillContent(), getAbilityContent(), getPlayerSettingContent(), getLocalizationContent());
+        List<Ability> abilities = createAbilities();
+        return Set.of(getSkillContent(), getAbilityContent(abilities), getStatisticContent(abilities),
+                getPlayerSettingContent(), getLocalizationContent());
     }
 
     @NotNull
@@ -88,39 +96,68 @@ public final class McRPGExpansion extends ContentExpansion {
     }
 
     /**
+     * Creates all native McRPG ability instances. This list is shared between
+     * {@link #getAbilityContent(List)} and {@link #getStatisticContent(List)} so that
+     * abilities are only instantiated once.
+     *
+     * @return A {@link List} of all native McRPG abilities.
+     */
+    @NotNull
+    private List<Ability> createAbilities() {
+        return List.of(
+                // Swords
+                new Bleed(mcRPG), new DeeperWound(mcRPG), new Vampire(mcRPG),
+                new EnhancedBleed(mcRPG), new RageSpike(mcRPG), new SerratedStrikes(mcRPG),
+                // Mining
+                new ExtraOre(mcRPG), new ItsATriple(mcRPG), new RemoteTransfer(mcRPG), new OreScanner(mcRPG),
+                // Woodcutting
+                new ExtraLumber(mcRPG), new HeavySwing(mcRPG), new DryadsGift(mcRPG), new NymphsVitality(mcRPG),
+                // Herbalism
+                new InstantIrrigation(mcRPG), new TooManyPlants(mcRPG), new VerdantSurge(mcRPG), new MassHarvest(mcRPG)
+        );
+    }
+
+    /**
      * Gets the native {@link AbilityContentPack} for McRPG.
      *
+     * @param abilities The shared list of native ability instances.
      * @return The native {@link AbilityContentPack} for McRPG.
      */
     @NotNull
-    public AbilityContentPack getAbilityContent() {
+    private AbilityContentPack getAbilityContent(@NotNull List<Ability> abilities) {
         AbilityContentPack abilityContent = new AbilityContentPack(this);
-        // Swords Abilities
-        abilityContent.addContent(new Bleed(mcRPG));
-        abilityContent.addContent(new DeeperWound(mcRPG));
-        abilityContent.addContent(new Vampire(mcRPG));
-        abilityContent.addContent(new EnhancedBleed(mcRPG));
-        abilityContent.addContent(new RageSpike(mcRPG));
-        abilityContent.addContent(new SerratedStrikes(mcRPG));
-
-        // Mining Abilities
-        abilityContent.addContent(new ExtraOre(mcRPG));
-        abilityContent.addContent(new ItsATriple(mcRPG));
-        abilityContent.addContent(new RemoteTransfer(mcRPG));
-        abilityContent.addContent(new OreScanner(mcRPG));
-
-        // Woodcutting Abilities
-        abilityContent.addContent(new ExtraLumber(mcRPG));
-        abilityContent.addContent(new HeavySwing(mcRPG));
-        abilityContent.addContent(new DryadsGift(mcRPG));
-        abilityContent.addContent(new NymphsVitality(mcRPG));
-
-        // Herbalism Abilities
-        abilityContent.addContent(new InstantIrrigation(mcRPG));
-        abilityContent.addContent(new TooManyPlants(mcRPG));
-        abilityContent.addContent(new VerdantSurge(mcRPG));
-        abilityContent.addContent(new MassHarvest(mcRPG));
+        abilities.forEach(abilityContent::addContent);
         return abilityContent;
+    }
+
+    /**
+     * Gets the native {@link StatisticContentPack} for McRPG.
+     * <p>
+     * Includes all statically-defined statistics from {@link McRPGStatistic} as well as
+     * the default statistics provided by each ability (e.g., activation counts for active
+     * abilities). Third-party {@link ContentExpansion} plugins should follow the same
+     * pattern — include their own statistics in their expansion's {@link StatisticContentPack}.
+     *
+     * @param abilities The shared list of native ability instances.
+     * @return The native {@link StatisticContentPack} for McRPG.
+     */
+    @NotNull
+    private StatisticContentPack getStatisticContent(@NotNull List<Ability> abilities) {
+        StatisticContentPack statisticContent = new StatisticContentPack(this);
+
+        // Global and per-skill statistics
+        for (Statistic statistic : McRPGStatistic.ALL_STATIC_STATISTICS) {
+            statisticContent.addContent(new StatisticContent(statistic, EXPANSION_KEY));
+        }
+
+        // Per-ability statistics (e.g., activation counts from ActiveAbility.getDefaultStatistics())
+        for (Ability ability : abilities) {
+            for (Statistic statistic : ability.getDefaultStatistics()) {
+                statisticContent.addContent(new StatisticContent(statistic, EXPANSION_KEY));
+            }
+        }
+
+        return statisticContent;
     }
 
     /**
