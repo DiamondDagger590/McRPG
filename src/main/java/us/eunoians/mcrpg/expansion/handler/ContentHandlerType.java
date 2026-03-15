@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.expansion.handler;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.statistic.StatisticRegistry;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
@@ -15,6 +16,7 @@ import us.eunoians.mcrpg.expansion.content.QuestTemplateContentPack;
 import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.ScopedBoardAdapterContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
+import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -181,6 +183,20 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof TemplateConditionContentPack conditionContent) {
             conditionContent.getContent().forEach(condition ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.TEMPLATE_CONDITION).register(condition));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link StatisticContentPack}s.
+     * <p>
+     * Each {@link us.eunoians.mcrpg.expansion.content.StatisticContent} in the pack is
+     * unwrapped and registered to McCore's {@link StatisticRegistry}.
+     */
+    STATISTIC((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof StatisticContentPack statisticContent) {
+            StatisticRegistry registry = mcRPG.registryAccess().registry(RegistryKey.STATISTIC);
+            statisticContent.getContent().forEach(content -> registry.register(content.getStatistic()));
             return true;
         }
         return false;

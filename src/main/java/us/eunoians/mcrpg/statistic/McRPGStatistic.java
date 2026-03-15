@@ -16,7 +16,8 @@ import java.util.Set;
  * as {@link us.eunoians.mcrpg.entity.player.McRPGSetting} for player settings.
  * <p>
  * Statistics are registered during bootstrap via
- * {@link us.eunoians.mcrpg.bootstrap.McRPGStatisticRegistrar}.
+ * {@link us.eunoians.mcrpg.expansion.content.StatisticContentPack} in the
+ * {@link us.eunoians.mcrpg.expansion.ContentExpansion} system.
  * <p>
  * <b>Note on display names and descriptions:</b> The {@code displayName} and
  * {@code description} fields on each statistic are plain-English metadata used for
