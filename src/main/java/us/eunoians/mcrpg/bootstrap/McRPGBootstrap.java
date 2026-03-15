@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
@@ -40,6 +42,7 @@ import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.statistic.McRPGStatisticCacheManager;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
@@ -107,6 +110,20 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
             registryAccess.registry(RegistryKey.MANAGER).register(new McRPGDatabaseManager(mcRPG));
             registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadActiveQuestsFromDatabase();
             registryAccess.registry(RegistryKey.MANAGER).<QuestBoardManager>manager(McRPGManagerKey.QUEST_BOARD).initialize(mcRPG);
+
+            // Statistic cache manager (used by PAPI placeholders and commands)
+            FileManager fileManager = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+            boolean cacheEnabled = fileManager.getFile(FileType.MAIN_CONFIG)
+                    .getBoolean(MainConfigFile.STATISTICS_CACHE_ENABLED, true);
+            if (cacheEnabled) {
+                long maxSize = fileManager.getFile(FileType.MAIN_CONFIG)
+                        .getLong(MainConfigFile.STATISTICS_CACHE_MAX_SIZE, 1000L);
+                long ttl = fileManager.getFile(FileType.MAIN_CONFIG)
+                        .getLong(MainConfigFile.STATISTICS_CACHE_TTL, 300L);
+                registryAccess.registry(RegistryKey.MANAGER)
+                        .register(new McRPGStatisticCacheManager(mcRPG, maxSize, ttl));
+            }
+
             new McRPGCommandRegistrar().register(bootstrapContext);
             new McRPGExperienceModifiersRegistrar().register(bootstrapContext);
             new McRPGBackgroundTaskRegistrar().register(bootstrapContext);

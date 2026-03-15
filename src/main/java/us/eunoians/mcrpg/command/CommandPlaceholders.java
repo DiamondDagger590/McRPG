@@ -56,6 +56,8 @@ public enum CommandPlaceholders {
     DELETED_COUNT("deleted_count"),
     CANCELLED_COUNT("cancelled_count"),
     REFRESH_TYPE("refresh_type"),
+    STATISTIC_NAME("statistic-name"),
+    STATISTIC_VALUE("statistic-value"),
     ;
 
     private final String placeholder;

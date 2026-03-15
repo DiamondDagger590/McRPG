@@ -54,6 +54,10 @@ import us.eunoians.mcrpg.command.redeem.RedeemExperienceCommand;
 import us.eunoians.mcrpg.command.redeem.RedeemLevelsCommand;
 import us.eunoians.mcrpg.command.setting.SettingGuiCommand;
 import us.eunoians.mcrpg.command.skill.SkillGuiCommand;
+import us.eunoians.mcrpg.command.statistic.StatisticListCommand;
+import us.eunoians.mcrpg.command.statistic.StatisticResetCommand;
+import us.eunoians.mcrpg.command.statistic.StatisticSetCommand;
+import us.eunoians.mcrpg.command.statistic.StatisticViewCommand;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -129,6 +133,12 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Link commands
         LinkChestCommand.registerCommand();
         UnlinkChestCommand.registerCommand();
+
+        // Statistic commands
+        StatisticViewCommand.registerCommand();
+        StatisticListCommand.registerCommand();
+        StatisticSetCommand.registerCommand();
+        StatisticResetCommand.registerCommand();
 
         // Test commands
         LoreCommand.registerCommand();

@@ -13,7 +13,9 @@ import us.eunoians.mcrpg.external.papi.placeholder.experience.RestedExperiencePl
 import us.eunoians.mcrpg.external.papi.placeholder.skill.SkillCurrentExperiencePlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.skill.SkillCurrentLevelPlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.skill.SkillRemainingExperiencePlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.statistic.StatisticPlaceholder;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.statistic.McRPGStatistic;
 
 /**
  * This enum is responsible for registering PAPI placeholders
@@ -57,6 +59,52 @@ public enum McRPGPlaceHolderType {
     }),
     RESTED_EXPERIENCE((mcRPG, mcRPGPapiExpansion) -> {
         mcRPGPapiExpansion.registerPlaceholder(new RestedExperiencePlaceholder());
+    }),
+    STATISTIC((mcRPG, mcRPGPapiExpansion) -> {
+        // Fixed global stats
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_blocks_mined", McRPGStatistic.BLOCKS_MINED.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_ores_mined", McRPGStatistic.ORES_MINED.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_trees_chopped", McRPGStatistic.TREES_CHOPPED.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_crops_harvested", McRPGStatistic.CROPS_HARVESTED.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_mobs_killed", McRPGStatistic.MOBS_KILLED.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_damage_dealt", McRPGStatistic.DAMAGE_DEALT.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_damage_taken", McRPGStatistic.DAMAGE_TAKEN.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_total_levels", McRPGStatistic.TOTAL_SKILL_LEVELS_GAINED.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_total_xp", McRPGStatistic.TOTAL_SKILL_EXPERIENCE.getStatisticKey()));
+        mcRPGPapiExpansion.registerPlaceholder(
+                new StatisticPlaceholder("stat_abilities_activated", McRPGStatistic.ABILITIES_ACTIVATED.getStatisticKey()));
+
+        // Per-skill dynamic stats (XP + max level)
+        mcRPG.registryAccess().registry(McRPGRegistryKey.SKILL)
+                .getRegisteredSkillKeys()
+                .forEach(skillKey -> {
+                    String skillName = skillKey.getKey();
+                    mcRPGPapiExpansion.registerPlaceholder(
+                            new StatisticPlaceholder("stat_" + skillName + "_xp",
+                                    McRPGStatistic.getSkillExperienceKey(skillKey)));
+                    mcRPGPapiExpansion.registerPlaceholder(
+                            new StatisticPlaceholder("stat_" + skillName + "_max_level",
+                                    McRPGStatistic.getSkillMaxLevelKey(skillKey)));
+                });
+
+        // Per-ability dynamic stats (activation count)
+        mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY)
+                .getAllAbilities()
+                .forEach(abilityKey -> {
+                    String abilityName = abilityKey.getKey();
+                    mcRPGPapiExpansion.registerPlaceholder(
+                            new StatisticPlaceholder("stat_" + abilityName + "_activations",
+                                    McRPGStatistic.getAbilityActivationKey(abilityKey)));
+                });
     }),
     ;
 

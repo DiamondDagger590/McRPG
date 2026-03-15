@@ -121,4 +121,11 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));
     public static final Route MCMMO_CONVERSION_EQUATION = Route.fromString(toRoutePath(MCMMO_CONFIGURATION_HEADER, "conversion-equation"));
 
+    // Statistics
+    private static final String STATISTICS_HEADER = toRoutePath(CONFIGURATION_HEADER, "statistics");
+    private static final String STATISTICS_CACHE_HEADER = toRoutePath(STATISTICS_HEADER, "cache");
+    public static final Route STATISTICS_CACHE_ENABLED = Route.fromString(toRoutePath(STATISTICS_CACHE_HEADER, "enabled"));
+    public static final Route STATISTICS_CACHE_MAX_SIZE = Route.fromString(toRoutePath(STATISTICS_CACHE_HEADER, "max-size"));
+    public static final Route STATISTICS_CACHE_TTL = Route.fromString(toRoutePath(STATISTICS_CACHE_HEADER, "ttl"));
+
 }

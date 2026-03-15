@@ -689,4 +689,31 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_REWARD_COMMAND_FALLBACK_DISPLAY = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "command.fallback-display"));
     public static final Route QUEST_REWARD_SCALABLE_COMMAND_FALLBACK_DISPLAY = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "scalable-command.fallback-display"));
     public static final Route QUEST_REWARD_SCALABLE_AMOUNT_SUFFIX = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "scalable-command.amount-suffix"));
+
+    // Statistic commands
+    private static final String STATISTIC_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "statistic");
+    public static final Route STATISTIC_VIEW_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "view-message"));
+    public static final Route STATISTIC_LIST_HEADER = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "list-header"));
+    public static final Route STATISTIC_LIST_ENTRY = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "list-entry"));
+    public static final Route STATISTIC_SET_SUCCESS = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "set-success"));
+    public static final Route STATISTIC_RESET_SUCCESS = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "reset-success"));
+    public static final Route STATISTIC_RESET_ALL_SUCCESS = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "reset-all-success"));
+    public static final Route STATISTIC_LOADING_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "loading-message"));
+    public static final Route STATISTIC_LOOKUP_ERROR_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "lookup-error-message"));
+    public static final Route STATISTIC_INVALID_VALUE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "invalid-value"));
+
+    // Statistic command descriptions
+    public static final Route COMMAND_DESCRIPTION_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_VIEW = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-view"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_VIEW_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-view-player"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_VIEW_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-view-statistic"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_LIST = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-list"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_LIST_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-list-player"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_SET = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-set"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_SET_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-set-player"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_SET_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-set-statistic"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_SET_VALUE = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-set-value"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-reset"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-reset-player"));
+    public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-reset-statistic"));
 }

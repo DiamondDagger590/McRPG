@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
+import us.eunoians.mcrpg.statistic.McRPGStatisticCacheManager;
 import us.eunoians.mcrpg.world.WorldManager;
 
 import static com.diamonddagger590.mccore.registry.manager.ManagerKeyImpl.create;
@@ -42,4 +43,5 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<McRPGDatabaseManager> DATABASE = create(McRPGDatabaseManager.class);
     ManagerKey<GlowingManager> GLOWING = create(GlowingManager.class);
     ManagerKey<QuestBoardManager> QUEST_BOARD = create(QuestBoardManager.class);
+    ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
 }

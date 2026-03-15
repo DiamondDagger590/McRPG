@@ -38,6 +38,7 @@ import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.loadout.LoadoutDisplay;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerRegistry;
 import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceAccumulationType;
@@ -128,6 +129,12 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).trackQuestHolder(getCorePlayer().asQuestHolder());
         getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST)
                 .rescopePlayer(getCorePlayer().getUUID());
+
+        // Invalidate offline stat cache — live data takes over
+        ManagerRegistry managerRegistry = getPlugin().registryAccess().registry(RegistryKey.MANAGER);
+        if (managerRegistry.registered(McRPGManagerKey.STATISTIC_CACHE)) {
+            managerRegistry.manager(McRPGManagerKey.STATISTIC_CACHE).getCache().invalidate(getCorePlayer().getUUID());
+        }
 
         // Fire event
         super.onPlayerLoadSuccessfully();

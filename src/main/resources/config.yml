@@ -188,6 +188,16 @@ configuration:
     # Use mcrpg.%skill%.%level% as the perm
     enable-level-up-permissions: false
 
+  # Configure the offline statistics cache used by PAPI placeholders and commands
+  statistics:
+    cache:
+      # Whether to cache offline stat queries (used by PAPI placeholders)
+      enabled: true
+      # Maximum number of entries in the cache
+      max-size: 1000
+      # How long cached entries live before being re-fetched from the database (seconds)
+      ttl: 300
+
 # Configure McMMO integration
 mcmmo:
   # Converts a players level to exp and then convert that into 'boosted experience' using the equation below

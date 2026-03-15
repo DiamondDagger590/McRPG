@@ -40,6 +40,19 @@ commands:
     exp-bank-reset-player: "<gray>The player to reset."
     exp-bank-give-player: "<gray>The player to give something to."
     exp-bank-remove-player: "<gray>The player to remove something from."
+    statistic: "<gray>The subcommand for viewing and managing statistics."
+    statistic-view: "<gray>View a specific statistic for a player."
+    statistic-view-player: "<gray>The player to view statistics for."
+    statistic-view-statistic: "<gray>The statistic to view."
+    statistic-list: "<gray>List all statistics for a player."
+    statistic-list-player: "<gray>The player to list statistics for."
+    statistic-set: "<gray>Set a statistic value for a player."
+    statistic-set-player: "<gray>The player to set the statistic for."
+    statistic-set-statistic: "<gray>The statistic to set."
+    statistic-set-value: "<gray>The value to set the statistic to."
+    statistic-reset: "<gray>Reset a statistic (or all statistics) for a player."
+    statistic-reset-player: "<gray>The player to reset the statistic for."
+    statistic-reset-statistic: "<gray>The statistic to reset. If omitted, resets all."
   # Configure messages to surrounding /mcrpg confirm
   # This command will be used to confirm important commands such as resetting a player
   confirmation:
@@ -458,3 +471,24 @@ commands:
       # The message to send players if they successfully redeem experience.
       # Supports the following placeholders: <redeemed-experience>, <skill>
       redeemed-experience: "<gray>You have redeemed <gold><redeemed-experience> experience</gold> into <gold><skill></gold>."
+  # Configure statistic commands
+  # Supports the following placeholders: <statistic-name>, <statistic-value>, <target>, <sender>
+  statistic:
+    # The message shown when viewing a statistic value.
+    view-message: "<gray><gold><target></gold>'s <gold><statistic-name></gold>: <gold><statistic-value></gold>"
+    # The header shown at the top of the statistic list.
+    list-header: "<gray>--- Statistics for <gold><target></gold> ---"
+    # Each line in the statistic list.
+    list-entry: "<gray>  <gold><statistic-name></gold>: <gold><statistic-value></gold>"
+    # The message shown when a statistic is set successfully.
+    set-success: "<gray>Set <gold><statistic-name></gold> to <gold><statistic-value></gold> for <gold><target></gold>."
+    # The message shown when a statistic is reset successfully.
+    reset-success: "<gray>Reset <gold><statistic-name></gold> for <gold><target></gold>."
+    # The message shown when all statistics are reset.
+    reset-all-success: "<gray>Reset all statistics for <gold><target></gold>."
+    # The message shown while loading offline player data.
+    loading-message: "<gray>Loading statistics for <gold><target></gold>..."
+    # The message shown when a database lookup fails.
+    lookup-error-message: "<red>Failed to look up statistics. Please try again."
+    # The message shown when an invalid value is provided for the set command.
+    invalid-value: "<red>Invalid value <gray><statistic-value></gray> for statistic <gray><statistic-name></gray>."
