@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.skill;
 
 import com.diamonddagger590.mccore.parser.Parser;
+import com.diamonddagger590.mccore.statistic.Statistic;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
@@ -14,6 +15,7 @@ import us.eunoians.mcrpg.skill.component.EventLevelableComponent;
 import us.eunoians.mcrpg.skill.component.EventLevelableComponentAttribute;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The base interface for all skills, providing basic behavior outlines that gain some definition
@@ -158,4 +160,23 @@ public interface Skill extends McRPGContent {
      */
     boolean canEventLevelSkill(@NotNull Event event);
 
+    /**
+     * Gets the default {@link Statistic} definitions that should be tracked for this skill.
+     * <p>
+     * By default, this returns per-skill experience and max level statistics created via
+     * {@link us.eunoians.mcrpg.statistic.McRPGStatistic#createSkillExperienceStatistic(NamespacedKey, String)}
+     * and {@link us.eunoians.mcrpg.statistic.McRPGStatistic#createSkillMaxLevelStatistic(NamespacedKey, String)}.
+     * Concrete skill implementations can override to add additional custom statistics.
+     * <p>
+     * <b>Important:</b> This method is a convenience helper — the returned statistics are
+     * <b>not</b> automatically registered. They must be explicitly included in a
+     * {@link us.eunoians.mcrpg.expansion.content.StatisticContentPack} by the owning
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion} to be registered.
+     *
+     * @return A {@link Set} of default {@link Statistic} definitions for this skill.
+     */
+    @NotNull
+    default Set<Statistic> getDefaultStatistics() {
+        return Set.of();
+    }
 }

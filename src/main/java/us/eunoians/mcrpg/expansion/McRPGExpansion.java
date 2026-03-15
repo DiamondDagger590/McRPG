@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.skill.Skill;
 import us.eunoians.mcrpg.ability.impl.herbalism.InstantIrrigation;
 import us.eunoians.mcrpg.ability.impl.herbalism.MassHarvest;
 import us.eunoians.mcrpg.ability.impl.herbalism.TooManyPlants;
@@ -103,9 +104,10 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     @Override
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
+        List<Skill> skills = createSkills();
         List<Ability> abilities = createAbilities();
-        return Set.of(getSkillContent(), getAbilityContent(abilities), getStatisticContent(abilities),
-                getPlayerSettingContent(), getLocalizationContent(),
+        return Set.of(getSkillContent(skills), getAbilityContent(abilities),
+                getStatisticContent(skills, abilities), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
                 getRewardDistributionTypeContent(), getTemplateConditionContent());
@@ -118,17 +120,30 @@ public final class McRPGExpansion extends ContentExpansion {
     }
 
     /**
+     * Creates all native McRPG skill instances. This list is shared between
+     * {@link #getSkillContent(List)} and {@link #getStatisticContent(List, List)} so that
+     * skills are only instantiated once.
+     *
+     * @return A {@link List} of all native McRPG skills.
+     */
+    @NotNull
+    private List<Skill> createSkills() {
+        return List.of(
+                new Swords(mcRPG), new Mining(mcRPG),
+                new WoodCutting(mcRPG), new Herbalism(mcRPG)
+        );
+    }
+
+    /**
      * Gets the native {@link SkillContentPack} for McRPG.
      *
+     * @param skills The shared list of native skill instances.
      * @return The native {@link SkillContentPack} for McRPG.
      */
     @NotNull
-    private SkillContentPack getSkillContent() {
+    private SkillContentPack getSkillContent(@NotNull List<Skill> skills) {
         SkillContentPack skillContent = new SkillContentPack(this);
-        skillContent.addContent(new Swords(mcRPG));
-        skillContent.addContent(new Mining(mcRPG));
-        skillContent.addContent(new WoodCutting(mcRPG));
-        skillContent.addContent(new Herbalism(mcRPG));
+        skills.forEach(skillContent::addContent);
         return skillContent;
     }
 
@@ -170,21 +185,30 @@ public final class McRPGExpansion extends ContentExpansion {
     /**
      * Gets the native {@link StatisticContentPack} for McRPG.
      * <p>
-     * Includes all statically-defined statistics from {@link McRPGStatistic} as well as
-     * the default statistics provided by each ability (e.g., activation counts for active
-     * abilities). Third-party {@link ContentExpansion} plugins should follow the same
-     * pattern — include their own statistics in their expansion's {@link StatisticContentPack}.
+     * Includes all statically-defined statistics from {@link McRPGStatistic}, the default
+     * statistics provided by each skill (e.g., per-skill experience and max level), and the
+     * default statistics provided by each ability (e.g., activation counts for active abilities).
+     * Third-party {@link ContentExpansion} plugins should follow the same pattern — include
+     * their own statistics in their expansion's {@link StatisticContentPack}.
      *
+     * @param skills    The shared list of native skill instances.
      * @param abilities The shared list of native ability instances.
      * @return The native {@link StatisticContentPack} for McRPG.
      */
     @NotNull
-    private StatisticContentPack getStatisticContent(@NotNull List<Ability> abilities) {
+    private StatisticContentPack getStatisticContent(@NotNull List<Skill> skills, @NotNull List<Ability> abilities) {
         StatisticContentPack statisticContent = new StatisticContentPack(this);
 
-        // Global and per-skill statistics
+        // Global statistics (blocks mined, damage dealt, total XP, etc.)
         for (Statistic statistic : McRPGStatistic.ALL_STATIC_STATISTICS) {
             statisticContent.addContent(new StatisticContent(statistic, EXPANSION_KEY));
+        }
+
+        // Per-skill statistics (e.g., experience and max level from McRPGSkill.getDefaultStatistics())
+        for (Skill skill : skills) {
+            for (Statistic statistic : skill.getDefaultStatistics()) {
+                statisticContent.addContent(new StatisticContent(statistic, EXPANSION_KEY));
+            }
         }
 
         // Per-ability statistics (e.g., activation counts from ActiveAbility.getDefaultStatistics())
