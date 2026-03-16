@@ -13,7 +13,7 @@
 2. [Build Dependency](#2-build-dependency)
 3. [MythicMobsHook](#3-mythicmobshook)
 4. [MythicMobsIntegration](#4-mythicmobsintegration)
-5. [MythicMobBinding](#5-mythicmobbinding)
+5. [Binding Data Model](#5-binding-data-model)
 6. [MythicMobBindingRegistry](#6-mythicmobbindingregistry)
 7. [Configuration](#7-configuration)
 8. [Custom Events](#8-custom-events)
@@ -21,9 +21,10 @@
 10. [Bootstrap Registration](#10-bootstrap-registration)
 11. [Loot Evaluation](#11-loot-evaluation)
 12. [Despawn Scheduling](#12-despawn-scheduling)
-13. [Error Handling & Graceful Degradation](#13-error-handling--graceful-degradation)
-14. [Test Plan](#14-test-plan)
-15. [File Manifest](#15-file-manifest)
+13. [Config Responsibility: MM vs McRPG](#13-config-responsibility-mm-vs-mcrpg)
+14. [Error Handling & Graceful Degradation](#14-error-handling--graceful-degradation)
+15. [Test Plan](#15-test-plan)
+16. [File Manifest](#16-file-manifest)
 
 ---
 
@@ -82,26 +83,41 @@ MythicMobs is `compileOnly` — it's a soft dependency, not shaded. The version 
 
 **File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsHook.java`
 
-A lightweight marker hook following the same pattern as `McMMOHook`, `GeyserHook`, etc. Its presence in the `PluginHookRegistry` signals that MythicMobs is available.
+A lightweight hook following the same pattern as `McMMOHook`, `GeyserHook`, etc. Its presence in the `PluginHookRegistry` signals that MythicMobs is available. Owns both the integration facade and the binding registry.
 
 ```java
 package us.eunoians.mcrpg.external.mythicmobs;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.plugin.PluginHook;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBinding;
+import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBindingLoader;
+import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBindingRegistry;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * Hook registered when MythicMobs is present on the server.
- * Provides access to {@link MythicMobsIntegration} for all MM API interactions.
+ * Provides access to {@link MythicMobsIntegration} for all MM API interactions
+ * and {@link MythicMobBindingRegistry} for binding lookups.
  */
 public class MythicMobsHook extends PluginHook<McRPG> {
 
     private final MythicMobsIntegration integration;
+    private final MythicMobBindingRegistry bindingRegistry;
 
     public MythicMobsHook(@NotNull McRPG plugin) {
         super(plugin);
         this.integration = new MythicMobsIntegration();
+        this.bindingRegistry = new MythicMobBindingRegistry();
+
+        // Load bindings from config directory
+        MythicMobBindingLoader.loadBindings(plugin, bindingRegistry);
+
+        // Validate bindings against MM registry
+        validateBindings(plugin);
     }
 
     /**
@@ -112,6 +128,26 @@ public class MythicMobsHook extends PluginHook<McRPG> {
     @NotNull
     public MythicMobsIntegration getIntegration() {
         return integration;
+    }
+
+    /**
+     * Gets the binding registry for looking up bindings by type ID.
+     *
+     * @return the {@link MythicMobBindingRegistry} instance
+     */
+    @NotNull
+    public MythicMobBindingRegistry getBindingRegistry() {
+        return bindingRegistry;
+    }
+
+    private void validateBindings(@NotNull McRPG plugin) {
+        for (MythicMobBinding binding : bindingRegistry.getAllBindings()) {
+            if (binding.enabled() && !integration.isMobTypeRegistered(binding.typeId())) {
+                plugin.getLogger().warning("MythicMob binding '" + binding.typeId()
+                        + "' references a type ID not registered in MythicMobs. "
+                        + "The binding will be skipped until the mob is registered.");
+            }
+        }
     }
 }
 ```
@@ -137,18 +173,29 @@ The `MythicMobsIntegration` instance lives on the hook rather than as a standalo
 
 A facade that wraps all MythicMobs API calls. **All MM API usage in McRPG is funneled through this class.** This provides a single point of change if MM's API evolves.
 
+### Return Type: Why Not CustomEntityWrapper?
+
+McCore's `CustomEntityWrapper` wraps a Bukkit `Entity` for entity-type detection — it determines whether an entity is vanilla or custom (e.g., from a custom model) and provides `entityType()` / `customEntity()` accessors. It's designed for **type identification** at config lookup time (e.g., "what experience does this entity type give?").
+
+`spawnMob()` returns the raw Bukkit `Entity` because:
+- Callers need the entity UUID for despawn scheduling and tracking, not type identification
+- The MM type ID is already known (it was passed in as a parameter)
+- `CustomEntityWrapper` adds no value here — wrapping it would imply entity-type routing is needed, but it isn't
+- Callers that later need to identify the entity type (e.g., loot evaluation) can wrap it themselves at that point
+
 ```java
 package us.eunoians.mcrpg.external.mythicmobs;
 
 import io.lumine.mythic.api.mobs.MythicMob;
+import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -182,10 +229,7 @@ public class MythicMobsIntegration {
         if (mythicMob.isEmpty()) {
             return Optional.empty();
         }
-        ActiveMob activeMob = mythicMob.get().spawn(
-                io.lumine.mythic.bukkit.BukkitAdapter.adapt(location),
-                level
-        );
+        ActiveMob activeMob = mythicMob.get().spawn(BukkitAdapter.adapt(location), level);
         return Optional.ofNullable(activeMob.getEntity().getBukkitEntity());
     }
 
@@ -213,7 +257,7 @@ public class MythicMobsIntegration {
     @NotNull
     public Optional<String> getMobTypeId(@NotNull UUID entityUUID) {
         return MythicBukkit.inst().getMobManager().getActiveMob(entityUUID)
-                .map(activeMob -> activeMob.getMobType());
+                .map(ActiveMob::getMobType);
     }
 
     /**
@@ -246,10 +290,7 @@ public class MythicMobsIntegration {
                 Entity target = activeMob.getEntity().getBukkitEntity().getWorld()
                         .getEntity(targetUUID);
                 if (target != null) {
-                    activeMob.getThreatTable().threatGain(
-                            io.lumine.mythic.bukkit.BukkitAdapter.adapt(target),
-                            amount
-                    );
+                    activeMob.getThreatTable().threatGain(BukkitAdapter.adapt(target), amount);
                 }
             }
         });
@@ -257,7 +298,7 @@ public class MythicMobsIntegration {
 }
 ```
 
-> **API Verification Note:** The exact method signatures (`getMobManager()`, `getActiveMob()`, `getThreatTable()`, `threatGain()`, `BukkitAdapter.adapt()`) are based on MM5's documented API. These should be verified against the actual MM5 dependency at implementation time. If method names differ, update this facade — all callers go through `MythicMobsIntegration`, so changes are localized.
+> **API Verification Note:** The exact method signatures (`getMobManager()`, `getActiveMob()`, `getThreatTable()`, `threatGain()`, `BukkitAdapter.adapt()`) are based on MM5's documented API. These should be verified against the actual MM5 dependency at implementation time.
 
 ### Why a Facade?
 
@@ -267,32 +308,32 @@ public class MythicMobsIntegration {
 
 ---
 
-## 5. MythicMobBinding
+## 5. Binding Data Model
+
+**Package:** `us.eunoians.mcrpg.external.mythicmobs.binding`
+
+Each data class is its own file — no inner records. All are immutable.
+
+### 5.1 MythicMobBinding
 
 **File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/MythicMobBinding.java`
-
-An immutable data class representing what McRPG should do when events fire for a specific MM type ID. Built from YAML config at startup.
 
 ```java
 package us.eunoians.mcrpg.external.mythicmobs.binding;
 
-import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * Configuration binding between a MythicMobs type ID and McRPG behavior.
  * Immutable — constructed from YAML at startup or reload.
  *
- * @param typeId          the MythicMobs internal type ID this binding applies to
- * @param enabled         whether this binding is active
- * @param despawnPolicy   the despawn policy for mobs matching this binding
- * @param lootTable       the loot table evaluated on death
- * @param spawnEffects    optional spawn VFX (particles + sound)
- * @param fireEvents      whether to fire custom McRPG events for this binding
+ * @param typeId        the MythicMobs internal type ID this binding applies to
+ * @param enabled       whether this binding is active
+ * @param despawnPolicy the despawn policy for mobs matching this binding
+ * @param lootTable     the loot table evaluated on death
+ * @param spawnEffects  optional spawn VFX (particles + sound)
+ * @param fireEvents    whether to fire custom McRPG events for this binding
  */
 public record MythicMobBinding(
         @NotNull String typeId,
@@ -301,67 +342,138 @@ public record MythicMobBinding(
         @NotNull LootTable lootTable,
         @Nullable SpawnEffects spawnEffects,
         boolean fireEvents
+) {}
+```
+
+### 5.2 DespawnPolicy
+
+**File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/DespawnPolicy.java`
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs.binding;
+
+/**
+ * Despawn policy configuration for a bound MythicMob.
+ *
+ * @param maxLifetimeSeconds          maximum seconds before forced despawn (0 = disabled)
+ * @param despawnIfNoThreat           whether to despawn when MM ThreatTable empties
+ * @param despawnNoThreatDelaySeconds grace period (seconds) before despawning on empty threat
+ */
+public record DespawnPolicy(
+        int maxLifetimeSeconds,
+        boolean despawnIfNoThreat,
+        int despawnNoThreatDelaySeconds
+) {}
+```
+
+### 5.3 LootTable
+
+**File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/LootTable.java`
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs.binding;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+/**
+ * Loot table configuration for a bound MythicMob.
+ *
+ * @param exclusiveDrop if true, at most one entry wins per kill
+ * @param entries       the list of loot entries, evaluated in order
+ */
+public record LootTable(
+        boolean exclusiveDrop,
+        @NotNull List<LootEntry> entries
+) {}
+```
+
+### 5.4 LootEntry
+
+**File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/LootEntry.java`
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs.binding;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
+
+/**
+ * A single loot table entry. Type-specific configuration is stored in
+ * {@link #properties()} to keep the model abstract and extensible.
+ *
+ * <p>Known property keys by type:</p>
+ * <ul>
+ *   <li>{@code skill-book}: {@code "ability"} — the ability NamespacedKey string (e.g., {@code "mcrpg:phase_shift"})</li>
+ * </ul>
+ *
+ * @param id         unique identifier for this entry (for logging/debugging)
+ * @param type       the loot type (e.g., "skill-book", "item", "command")
+ * @param chance     drop chance as a decimal (0.0 to 1.0)
+ * @param properties type-specific key-value pairs parsed from YAML
+ */
+public record LootEntry(
+        @NotNull String id,
+        @NotNull String type,
+        double chance,
+        @NotNull Map<String, String> properties
+) {
+
+    /** Property key for the ability NamespacedKey string (used by "skill-book" type). */
+    public static final String PROPERTY_ABILITY = "ability";
+}
+```
+
+### 5.5 SpawnEffects
+
+**File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/SpawnEffects.java`
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs.binding;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+/**
+ * Spawn visual/audio effects for a bound MythicMob.
+ * Supports multiple effect entries to allow mixing Bukkit particles/sounds
+ * with future extensibility (ModelEngine effects, etc.).
+ *
+ * @param effects the list of individual effects to play on spawn
+ */
+public record SpawnEffects(
+        @NotNull List<SpawnEffect> effects
 ) {
 
     /**
-     * Despawn policy configuration.
+     * A single spawn effect.
      *
-     * @param maxLifetimeSeconds          maximum seconds before forced despawn (0 = disabled)
-     * @param despawnIfNoThreat           whether to despawn when MM ThreatTable empties
-     * @param despawnNoThreatDelaySeconds grace period (seconds) before despawning on empty threat
+     * @param type  the effect type (e.g., "particle", "sound"). Extensible for future types
+     *              like "modelengine" or "mythicmobs-effect"
+     * @param value the effect value (Bukkit Particle name, Sound name, or ME effect ID)
      */
-    public record DespawnPolicy(
-            int maxLifetimeSeconds,
-            boolean despawnIfNoThreat,
-            int despawnNoThreatDelaySeconds
-    ) {}
-
-    /**
-     * Loot table configuration.
-     *
-     * @param exclusiveDrop if true, at most one entry wins per kill
-     * @param entries       the list of loot entries, evaluated in order
-     */
-    public record LootTable(
-            boolean exclusiveDrop,
-            @NotNull List<LootEntry> entries
-    ) {}
-
-    /**
-     * A single loot table entry.
-     *
-     * @param id      unique identifier for this entry (for logging/debugging)
-     * @param type    the loot type (e.g., "skill-book")
-     * @param ability the ability NamespacedKey string (for skill-book type), nullable for other types
-     * @param chance  drop chance as a decimal (0.0 to 1.0)
-     */
-    public record LootEntry(
-            @NotNull String id,
+    public record SpawnEffect(
             @NotNull String type,
-            @Nullable String ability,
-            double chance
-    ) {}
-
-    /**
-     * Optional spawn visual/audio effects.
-     *
-     * @param particle the particle type to play on spawn
-     * @param sound    the sound to play on spawn
-     */
-    public record SpawnEffects(
-            @Nullable Particle particle,
-            @Nullable Sound sound
+            @NotNull String value
     ) {}
 }
 ```
 
 ### Design Decisions
 
-**Records over classes:** Bindings are pure data with no behavior. Records give immutability, `equals`/`hashCode`/`toString` for free, and signal "this is a DTO" clearly.
+**Separate files, not inner records:** Each data class gets its own file under the `binding` package. This keeps files focused and avoids a monolithic `MythicMobBinding.java`.
 
-**`LootEntry.type` as String:** Using a string rather than an enum allows future loot types (e.g., `"item"`, `"command"`, `"experience"`) to be added without modifying the binding system. LLD-3 and future LLDs define handlers for specific type strings. The binding system evaluates the chance roll; the type-specific handler produces the reward.
+**`LootEntry` uses `Map<String, String> properties`:** Instead of a nullable `ability` field that only applies to one type, all type-specific config goes into a generic properties map. This means adding a new loot type (e.g., `"command"` with a `"command"` property, or `"item"` with `"material"` and `"amount"`) requires zero changes to `LootEntry` itself. The type-specific handler (in `MythicMobLootEvaluator`) reads the properties it needs. Known property keys are documented as constants on `LootEntry`.
 
-**`LootEntry.ability` nullable:** Only relevant for `skill-book` type. Other future types may use different fields. If the number of type-specific fields grows, a refactor to a `Map<String, String> properties` would be warranted — but YAGNI for now.
+**`SpawnEffects` uses a list of typed effects:** Instead of hardcoding `Particle` and `Sound` fields, effects are a list of `(type, value)` pairs. This allows:
+- Multiple particles + multiple sounds per spawn
+- Future ModelEngine effects via `type: "modelengine"` without changing the data model
+- Future MythicMobs skill-based effects via `type: "mythicmobs-effect"`
+- The listener resolves `type` → handler at runtime (see Section 9)
 
 ---
 
@@ -449,285 +561,282 @@ public class MythicMobBindingRegistry {
 
 McCore's `Registry<T>` is keyed by `NamespacedKey` and designed for McRPG-owned content (abilities, skills). Bindings are keyed by MM type ID strings and represent external config — a plain `Map` wrapper is simpler and avoids forcing MM type IDs into the `NamespacedKey` scheme.
 
-### Reload Support
-
-`clear()` + re-populate from YAML supports hot-reload via `FileManager.reloadFiles()`. The binding loader (in the config file parser) should call `clear()` then re-register all bindings. This is called from `MythicMobBindingConfigFile.loadBindings()` (see Section 7).
-
 ---
 
 ## 7. Configuration
 
-### 7.1 FileType Entry
+### 7.1 Directory-Based Loading
 
-Add to `FileType.java`:
+Instead of a single monolithic YAML file, binding configs are loaded from a **directory**. This mirrors the localization system's directory-scanning pattern already in `FileManager` and prevents a single file from becoming unwieldy as bindings grow.
+
+**Directory:** `plugins/McRPG/mythicmob_bindings/`
+
+At startup, McRPG:
+1. Creates the directory if it doesn't exist
+2. Copies the bundled default file (`riptide_guardian.yml`) into it if the directory is empty
+3. Scans all `.yml` files in the directory
+4. Parses each file and registers all bindings found
+
+Server owners can:
+- Add new binding files (one mob per file, or grouped however they prefer)
+- Delete the default file if they don't want the Riptide Guardian binding
+- Organize bindings however makes sense for their server
+
+### 7.2 Binding Loader
+
+**File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/MythicMobBindingLoader.java`
+
+This is a static utility class (not a `ConfigFile` subclass) since it loads from a directory rather than a single `FileType` entry.
 
 ```java
-MYTHICMOB_BINDINGS_CONFIG("mythicmob_bindings_configuration.yml", new MythicMobBindingsConfigFile()),
-```
-
-### 7.2 Config File Wrapper
-
-**File:** `src/main/java/us/eunoians/mcrpg/configuration/file/MythicMobBindingsConfigFile.java`
-
-```java
-package us.eunoians.mcrpg.configuration.file;
+package us.eunoians.mcrpg.external.mythicmobs.binding;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.route.Route;
-import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
+import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBinding;
-import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBindingRegistry;
+import us.eunoians.mcrpg.McRPG;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Configuration file wrapper for {@code mythicmob_bindings_configuration.yml}.
- * Defines routes for MythicMob binding configuration and provides
- * a loader method to populate the {@link MythicMobBindingRegistry}.
+ * Loads {@link MythicMobBinding} configurations from all YAML files
+ * in the {@code mythicmob_bindings/} directory. Supports hot-reload
+ * by clearing and re-populating the registry.
  */
-public final class MythicMobBindingsConfigFile extends ConfigFile {
+public final class MythicMobBindingLoader {
 
-    private static final int CURRENT_VERSION = 1;
+    private static final String BINDINGS_DIRECTORY = "mythicmob_bindings";
+    private static final String DEFAULT_BINDING_FILE = "riptide_guardian.yml";
 
-    // Top-level
-    public static final String BINDINGS_HEADER = "bindings";
+    // YAML keys
+    private static final String TYPE_ID = "type-id";
+    private static final String ENABLED = "enabled";
+    private static final String DESPAWN_HEADER = "despawn";
+    private static final String DESPAWN_MAX_LIFETIME = "max-lifetime-seconds";
+    private static final String DESPAWN_IF_NO_THREAT = "despawn-if-no-threat";
+    private static final String DESPAWN_NO_THREAT_DELAY = "despawn-no-threat-delay-seconds";
+    private static final String LOOT_HEADER = "loot";
+    private static final String LOOT_EXCLUSIVE_DROP = "exclusive-drop";
+    private static final String LOOT_ENTRIES = "entries";
+    private static final String LOOT_ENTRY_TYPE = "type";
+    private static final String LOOT_ENTRY_CHANCE = "chance";
+    private static final String SPAWN_EFFECTS_HEADER = "spawn-effects";
+    private static final String FIRE_EVENTS = "fire-events";
 
-    // Per-binding routes (relative to binding section — used with dynamic route construction)
-    public static final String ENABLED = "enabled";
-    public static final String DESPAWN_HEADER = "despawn";
-    public static final String DESPAWN_MAX_LIFETIME = "max-lifetime-seconds";
-    public static final String DESPAWN_IF_NO_THREAT = "despawn-if-no-threat";
-    public static final String DESPAWN_NO_THREAT_DELAY = "despawn-no-threat-delay-seconds";
-    public static final String LOOT_HEADER = "loot";
-    public static final String LOOT_EXCLUSIVE_DROP = "exclusive-drop";
-    public static final String LOOT_ENTRIES = "entries";
-    public static final String LOOT_ENTRY_TYPE = "type";
-    public static final String LOOT_ENTRY_ABILITY = "ability";
-    public static final String LOOT_ENTRY_CHANCE = "chance";
-    public static final String SPAWN_EFFECTS_HEADER = "spawn-effects";
-    public static final String SPAWN_EFFECTS_PARTICLES = "particles";
-    public static final String SPAWN_EFFECTS_SOUND = "sound";
-    public static final String FIRE_EVENTS = "fire-events";
+    /** Known loot entry property keys that are parsed separately from the properties map. */
+    private static final List<String> RESERVED_LOOT_KEYS = List.of("type", "chance");
 
-    @NotNull
-    @Override
-    public UpdaterSettings getUpdaterSettings() {
-        return UpdaterSettings.builder()
-                .setVersioning(new BasicVersioning("config-version"))
-                .addIgnoredRoutes(getIgnoredRoutes())
-                .build();
-    }
-
-    @NotNull
-    private Map<String, Set<Route>> getIgnoredRoutes() {
-        Map<String, Set<Route>> ignoredRoutes = new HashMap<>();
-        for (int i = 1; i <= CURRENT_VERSION; i++) {
-            Set<Route> ignoredRouteSet = new HashSet<>();
-            // The entire bindings section is dynamic (server owners add/remove entries)
-            ignoredRouteSet.add(Route.fromString(BINDINGS_HEADER));
-            ignoredRoutes.put(String.valueOf(i), ignoredRouteSet);
-        }
-        return ignoredRoutes;
-    }
+    private MythicMobBindingLoader() {}
 
     /**
-     * Parses the YAML document and populates the binding registry.
+     * Loads all binding files from the bindings directory into the registry.
      * Clears existing bindings first to support hot-reload.
      *
-     * @param yamlDocument the loaded YAML document
-     * @param registry     the binding registry to populate
-     * @param logger       the plugin logger for warnings
+     * @param plugin   the McRPG plugin instance
+     * @param registry the binding registry to populate
      */
-    public static void loadBindings(@NotNull YamlDocument yamlDocument,
-                                    @NotNull MythicMobBindingRegistry registry,
-                                    @NotNull Logger logger) {
+    public static void loadBindings(@NotNull McRPG plugin, @NotNull MythicMobBindingRegistry registry) {
+        Logger logger = plugin.getLogger();
         registry.clear();
 
-        if (!yamlDocument.contains(BINDINGS_HEADER)) {
+        File bindingsDir = new File(plugin.getDataFolder(), BINDINGS_DIRECTORY);
+        ensureDirectoryExists(plugin, bindingsDir);
+
+        File[] files = bindingsDir.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null || files.length == 0) {
+            logger.info("No MythicMob binding files found in " + BINDINGS_DIRECTORY + "/");
             return;
         }
 
-        var bindingsSection = yamlDocument.getSection(BINDINGS_HEADER);
-        if (bindingsSection == null) {
-            return;
-        }
-
-        for (String typeId : bindingsSection.getRoutesAsStrings(false)) {
+        for (File file : files) {
             try {
-                MythicMobBinding binding = parseBinding(yamlDocument, typeId, logger);
-                registry.register(binding);
-                logger.info("Loaded MythicMob binding: " + typeId
-                            + " (enabled=" + binding.enabled() + ", "
-                            + binding.lootTable().entries().size() + " loot entries)");
+                loadBindingFile(file, registry, logger);
             } catch (Exception e) {
-                logger.warning("Failed to parse MythicMob binding '" + typeId + "': " + e.getMessage());
+                logger.warning("Failed to load binding file '" + file.getName() + "': " + e.getMessage());
             }
         }
     }
 
-    private static MythicMobBinding parseBinding(@NotNull YamlDocument doc,
-                                                  @NotNull String typeId,
-                                                  @NotNull Logger logger) {
-        String prefix = BINDINGS_HEADER + "." + typeId + ".";
+    private static void ensureDirectoryExists(@NotNull Plugin plugin, @NotNull File dir) {
+        if (!dir.exists()) {
+            dir.mkdirs();
+            // Copy default binding file
+            try (InputStream defaultStream = plugin.getResource(BINDINGS_DIRECTORY + "/" + DEFAULT_BINDING_FILE)) {
+                if (defaultStream != null) {
+                    Files.copy(defaultStream, new File(dir, DEFAULT_BINDING_FILE).toPath());
+                }
+            } catch (IOException e) {
+                plugin.getLogger().warning("Could not copy default binding file: " + e.getMessage());
+            }
+        }
+    }
 
-        boolean enabled = doc.getBoolean(Route.fromString(prefix + ENABLED), true);
+    private static void loadBindingFile(@NotNull File file,
+                                         @NotNull MythicMobBindingRegistry registry,
+                                         @NotNull Logger logger) throws IOException {
+        YamlDocument doc = YamlDocument.create(file, GeneralSettings.DEFAULT);
+
+        String typeId = doc.getString(Route.fromString(TYPE_ID));
+        if (typeId == null || typeId.isBlank()) {
+            logger.warning("Binding file '" + file.getName() + "' missing 'type-id' field, skipping.");
+            return;
+        }
+
+        boolean enabled = doc.getBoolean(Route.fromString(ENABLED), true);
 
         // Despawn policy
-        String despawnPrefix = prefix + DESPAWN_HEADER + ".";
-        var despawnPolicy = new MythicMobBinding.DespawnPolicy(
-                doc.getInt(Route.fromString(despawnPrefix + DESPAWN_MAX_LIFETIME), 300),
-                doc.getBoolean(Route.fromString(despawnPrefix + DESPAWN_IF_NO_THREAT), true),
-                doc.getInt(Route.fromString(despawnPrefix + DESPAWN_NO_THREAT_DELAY), 30)
+        var despawnPolicy = new DespawnPolicy(
+                doc.getInt(Route.fromString(DESPAWN_HEADER + "." + DESPAWN_MAX_LIFETIME), 300),
+                doc.getBoolean(Route.fromString(DESPAWN_HEADER + "." + DESPAWN_IF_NO_THREAT), true),
+                doc.getInt(Route.fromString(DESPAWN_HEADER + "." + DESPAWN_NO_THREAT_DELAY), 30)
         );
 
         // Loot table
-        String lootPrefix = prefix + LOOT_HEADER + ".";
-        boolean exclusiveDrop = doc.getBoolean(Route.fromString(lootPrefix + LOOT_EXCLUSIVE_DROP), true);
-        List<MythicMobBinding.LootEntry> lootEntries = new ArrayList<>();
+        boolean exclusiveDrop = doc.getBoolean(Route.fromString(LOOT_HEADER + "." + LOOT_EXCLUSIVE_DROP), true);
+        List<LootEntry> lootEntries = parseLootEntries(doc, logger);
+        var lootTable = new LootTable(exclusiveDrop, List.copyOf(lootEntries));
 
-        String entriesPath = lootPrefix + LOOT_ENTRIES;
-        if (doc.contains(Route.fromString(entriesPath))) {
-            var entriesSection = doc.getSection(Route.fromString(entriesPath));
-            if (entriesSection != null) {
-                for (String entryId : entriesSection.getRoutesAsStrings(false)) {
-                    String entryPrefix = entriesPath + "." + entryId + ".";
-                    String type = doc.getString(Route.fromString(entryPrefix + LOOT_ENTRY_TYPE), "skill-book");
-                    String ability = doc.getString(Route.fromString(entryPrefix + LOOT_ENTRY_ABILITY));
-                    double chance = doc.getDouble(Route.fromString(entryPrefix + LOOT_ENTRY_CHANCE), 0.0);
+        // Spawn effects
+        SpawnEffects spawnEffects = parseSpawnEffects(doc);
 
-                    lootEntries.add(new MythicMobBinding.LootEntry(entryId, type, ability, chance));
+        boolean fireEvents = doc.getBoolean(Route.fromString(FIRE_EVENTS), true);
+
+        var binding = new MythicMobBinding(typeId, enabled, despawnPolicy, lootTable, spawnEffects, fireEvents);
+        registry.register(binding);
+        logger.info("Loaded MythicMob binding: " + typeId + " from " + file.getName()
+                     + " (enabled=" + enabled + ", " + lootEntries.size() + " loot entries)");
+    }
+
+    private static List<LootEntry> parseLootEntries(@NotNull YamlDocument doc,
+                                                     @NotNull Logger logger) {
+        List<LootEntry> entries = new ArrayList<>();
+        String entriesPath = LOOT_HEADER + "." + LOOT_ENTRIES;
+
+        if (!doc.contains(Route.fromString(entriesPath))) {
+            return entries;
+        }
+
+        var entriesSection = doc.getSection(Route.fromString(entriesPath));
+        if (entriesSection == null) {
+            return entries;
+        }
+
+        for (String entryId : entriesSection.getRoutesAsStrings(false)) {
+            String entryPrefix = entriesPath + "." + entryId + ".";
+            String type = doc.getString(Route.fromString(entryPrefix + LOOT_ENTRY_TYPE), "skill-book");
+            double chance = doc.getDouble(Route.fromString(entryPrefix + LOOT_ENTRY_CHANCE), 0.0);
+
+            // All non-reserved keys become properties
+            Map<String, String> properties = new HashMap<>();
+            var entrySection = doc.getSection(Route.fromString(entriesPath + "." + entryId));
+            if (entrySection != null) {
+                for (String key : entrySection.getRoutesAsStrings(false)) {
+                    if (!RESERVED_LOOT_KEYS.contains(key)) {
+                        Object value = entrySection.get(Route.fromString(key));
+                        if (value != null) {
+                            properties.put(key, value.toString());
+                        }
+                    }
                 }
             }
-        }
-        var lootTable = new MythicMobBinding.LootTable(exclusiveDrop, List.copyOf(lootEntries));
 
-        // Spawn effects (optional)
-        MythicMobBinding.SpawnEffects spawnEffects = null;
-        String effectsPrefix = prefix + SPAWN_EFFECTS_HEADER + ".";
-        if (doc.contains(Route.fromString(prefix + SPAWN_EFFECTS_HEADER))) {
-            Particle particle = parseEnum(Particle.class,
-                    doc.getString(Route.fromString(effectsPrefix + SPAWN_EFFECTS_PARTICLES)), logger);
-            Sound sound = parseEnum(Sound.class,
-                    doc.getString(Route.fromString(effectsPrefix + SPAWN_EFFECTS_SOUND)), logger);
-            if (particle != null || sound != null) {
-                spawnEffects = new MythicMobBinding.SpawnEffects(particle, sound);
+            entries.add(new LootEntry(entryId, type, chance, Map.copyOf(properties)));
+        }
+        return entries;
+    }
+
+    private static SpawnEffects parseSpawnEffects(@NotNull YamlDocument doc) {
+        if (!doc.contains(Route.fromString(SPAWN_EFFECTS_HEADER))) {
+            return null;
+        }
+
+        var effectsSection = doc.getSection(Route.fromString(SPAWN_EFFECTS_HEADER));
+        if (effectsSection == null) {
+            return null;
+        }
+
+        List<SpawnEffects.SpawnEffect> effects = new ArrayList<>();
+        for (String key : effectsSection.getRoutesAsStrings(false)) {
+            String value = effectsSection.getString(Route.fromString(key));
+            if (value != null && !value.isBlank()) {
+                effects.add(new SpawnEffects.SpawnEffect(key, value));
             }
         }
 
-        boolean fireEvents = doc.getBoolean(Route.fromString(prefix + FIRE_EVENTS), true);
-
-        return new MythicMobBinding(typeId, enabled, despawnPolicy, lootTable, spawnEffects, fireEvents);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends Enum<E>> E parseEnum(@NotNull Class<E> enumClass,
-                                                    String value,
-                                                    @NotNull Logger logger) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        try {
-            return Enum.valueOf(enumClass, value.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            logger.warning("Invalid " + enumClass.getSimpleName() + " value: '" + value + "'");
-            return null;
-        }
+        return effects.isEmpty() ? null : new SpawnEffects(List.copyOf(effects));
     }
 }
 ```
 
-### 7.3 YAML Resource
+### 7.3 Default Binding File (Bundled Resource)
 
-**File:** `src/main/resources/mythicmob_bindings_configuration.yml`
+**File:** `src/main/resources/mythicmob_bindings/riptide_guardian.yml`
+
+Each file represents one binding. The `type-id` field at the top level identifies the MythicMobs mob.
 
 ```yaml
-config-version: 1
+# Riptide Guardian MythicMob Binding
+# This file defines what McRPG does when the RiptideGuardian MythicMob
+# spawns, dies, or despawns. The MythicMob itself must be configured
+# in MythicMobs — this file only controls McRPG's reactions.
 
-# MythicMob Bindings
-# ---
-# Each entry maps a MythicMobs internal type ID to McRPG behavior.
-# Server owners can add, remove, or modify entries freely.
-# The type ID must match the MythicMobs mob configuration file name (without .yml).
+type-id: RiptideGuardian
+enabled: true
 
-bindings:
-  RiptideGuardian:
-    enabled: true
+# Despawn policy — prevents mob storage and ensures cleanup
+despawn:
+  max-lifetime-seconds: 300       # Force despawn after 5 minutes
+  despawn-if-no-threat: true      # Despawn if all players leave (ThreatTable empties)
+  despawn-no-threat-delay-seconds: 30  # Grace period before despawning on empty threat
 
-    # Despawn policy — prevents mob storage and ensures cleanup
-    despawn:
-      max-lifetime-seconds: 300       # Force despawn after 5 minutes
-      despawn-if-no-threat: true      # Despawn if all players leave (ThreatTable empties)
-      despawn-no-threat-delay-seconds: 30  # Grace period before despawning on empty threat
+# Loot table — evaluated on mob death
+# exclusive-drop: true means at most one entry drops per kill
+loot:
+  exclusive-drop: true
+  entries:
+    phase-shift-book:
+      type: skill-book
+      ability: "mcrpg:phase_shift"
+      chance: 0.15
+    whirlpool-book:
+      type: skill-book
+      ability: "mcrpg:whirlpool"
+      chance: 0.15
+    waterlogged-strike-book:
+      type: skill-book
+      ability: "mcrpg:waterlogged_strike"
+      chance: 0.15
+    tsunami-wall-book:
+      type: skill-book
+      ability: "mcrpg:tsunami_wall"
+      chance: 0.15
 
-    # Loot table — evaluated on mob death
-    # exclusive-drop: true means at most one entry drops per kill
-    loot:
-      exclusive-drop: true
-      entries:
-        phase-shift-book:
-          type: skill-book
-          ability: "mcrpg:phase_shift"
-          chance: 0.15
-        whirlpool-book:
-          type: skill-book
-          ability: "mcrpg:whirlpool"
-          chance: 0.15
-        waterlogged-strike-book:
-          type: skill-book
-          ability: "mcrpg:waterlogged_strike"
-          chance: 0.15
-        tsunami-wall-book:
-          type: skill-book
-          ability: "mcrpg:tsunami_wall"
-          chance: 0.15
+# Spawn effects — played when the mob spawns
+# Each key is an effect type, value is the effect identifier.
+# Supported types: "particle" (Bukkit Particle), "sound" (Bukkit Sound)
+# Future types: "modelengine" (ModelEngine effect ID), "mythicmobs-effect" (MM skill)
+spawn-effects:
+  particle: SPLASH
+  sound: ENTITY_ELDER_GUARDIAN_CURSE
 
-    # Spawn effects — VFX played when the mob spawns
-    spawn-effects:
-      particles: SPLASH
-      sound: ENTITY_ELDER_GUARDIAN_CURSE
-
-    # Whether to fire custom McRPG events (CustomMobSpawnEvent, etc.)
-    # Third-party plugins can listen to these events
-    fire-events: true
+# Whether to fire custom McRPG events (CustomMobSpawnEvent, etc.)
+# Third-party plugins can listen to these events
+fire-events: true
 ```
 
-### 7.4 Binding Validation at Startup
+### 7.4 Why Directory Instead of FileType?
 
-After loading bindings, the hook constructor should validate each binding against MM's registry:
-
-```java
-// In MythicMobsHook constructor, after loadBindings():
-for (MythicMobBinding binding : bindingRegistry.getAllBindings()) {
-    if (binding.enabled() && !integration.isMobTypeRegistered(binding.typeId())) {
-        plugin.getLogger().warning("MythicMob binding '" + binding.typeId()
-                + "' references a type ID not registered in MythicMobs. "
-                + "The binding will be skipped until the mob is registered.");
-    }
-    for (MythicMobBinding.LootEntry entry : binding.lootTable().entries()) {
-        if ("skill-book".equals(entry.type()) && entry.ability() != null) {
-            NamespacedKey abilityKey = NamespacedKey.fromString(entry.ability());
-            if (abilityKey == null || !abilityRegistry.registered(abilityKey)) {
-                plugin.getLogger().warning("Loot entry '" + entry.id()
-                        + "' in binding '" + binding.typeId()
-                        + "' references unknown ability: " + entry.ability()
-                        + ". This entry will be skipped at drop time.");
-            }
-        }
-    }
-}
-```
-
-This is advisory only — the binding is still loaded (the mob might be added later via MM reload).
+The existing `FileType` enum loads a single file per entry. Adding directory support to `FileType` would require changing `FileManager` and affecting all existing configs. Instead, `MythicMobBindingLoader` handles its own directory scanning — following the same pattern `FileManager` already uses for localization files. This keeps the change isolated.
 
 ---
 
@@ -858,8 +967,8 @@ public class CustomMobDeathEvent extends CustomMobEvent {
     private final UUID killerUUID;
 
     /**
-     * @param entity  the MythicMob entity
-     * @param binding the binding
+     * @param entity     the MythicMob entity
+     * @param binding    the binding
      * @param killerUUID the UUID of the killer, or null if no killer (e.g., environment)
      */
     public CustomMobDeathEvent(@NotNull Entity entity,
@@ -937,6 +1046,27 @@ public class CustomMobDespawnEvent extends CustomMobEvent {
 
 Listens to MythicMobs events and bridges them to the binding system. **Only registered if MythicMobs is present.**
 
+### Spawn Effect Resolution
+
+The listener resolves `SpawnEffect.type()` at runtime to handle different effect systems:
+
+```java
+private void playSpawnEffects(@NotNull Entity entity, @NotNull SpawnEffects spawnEffects) {
+    for (SpawnEffects.SpawnEffect effect : spawnEffects.effects()) {
+        switch (effect.type()) {
+            case "particle" -> playParticleEffect(entity, effect.value());
+            case "sound" -> playSoundEffect(entity, effect.value());
+            default -> plugin.getLogger().warning(
+                    "Unknown spawn effect type: '" + effect.type() + "' with value '" + effect.value() + "'");
+        }
+    }
+}
+```
+
+Future ModelEngine support would add a `case "modelengine"` branch — the data model already supports it without changes.
+
+### Full Listener
+
 ```java
 package us.eunoians.mcrpg.listener.entity;
 
@@ -944,6 +1074,8 @@ import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -956,6 +1088,9 @@ import us.eunoians.mcrpg.event.entity.mythicmob.CustomMobDespawnEvent;
 import us.eunoians.mcrpg.event.entity.mythicmob.CustomMobSpawnEvent;
 import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBinding;
 import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobBindingRegistry;
+import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobDespawnScheduler;
+import us.eunoians.mcrpg.external.mythicmobs.binding.MythicMobLootEvaluator;
+import us.eunoians.mcrpg.external.mythicmobs.binding.SpawnEffects;
 
 import java.util.Optional;
 
@@ -997,14 +1132,7 @@ public class OnMythicMobEventListener implements Listener {
 
         // Play spawn effects
         if (binding.spawnEffects() != null) {
-            MythicMobBinding.SpawnEffects effects = binding.spawnEffects();
-            if (effects.particle() != null) {
-                entity.getWorld().spawnParticle(effects.particle(),
-                        entity.getLocation(), 30, 1.0, 1.0, 1.0, 0.1);
-            }
-            if (effects.sound() != null) {
-                entity.getWorld().playSound(entity.getLocation(), effects.sound(), 1.0f, 1.0f);
-            }
+            playSpawnEffects(entity, binding.spawnEffects());
         }
 
         // Schedule despawn (see Section 12)
@@ -1033,7 +1161,7 @@ public class OnMythicMobEventListener implements Listener {
         // Cancel any pending despawn task
         MythicMobDespawnScheduler.cancel(entity.getUniqueId());
 
-        // Evaluate loot (see Section 11)
+        // Evaluate loot
         if (killer instanceof Player player) {
             MythicMobLootEvaluator.evaluateAndDrop(plugin, binding.lootTable(), player, entity.getLocation());
         }
@@ -1059,10 +1187,40 @@ public class OnMythicMobEventListener implements Listener {
         // Cancel any pending despawn task
         MythicMobDespawnScheduler.cancel(entity.getUniqueId());
     }
+
+    private void playSpawnEffects(@NotNull Entity entity, @NotNull SpawnEffects spawnEffects) {
+        for (SpawnEffects.SpawnEffect effect : spawnEffects.effects()) {
+            switch (effect.type()) {
+                case "particle" -> playParticleEffect(entity, effect.value());
+                case "sound" -> playSoundEffect(entity, effect.value());
+                default -> plugin.getLogger().warning(
+                        "Unknown spawn effect type: '" + effect.type()
+                        + "' with value '" + effect.value() + "'");
+            }
+        }
+    }
+
+    private void playParticleEffect(@NotNull Entity entity, @NotNull String particleName) {
+        try {
+            Particle particle = Particle.valueOf(particleName.toUpperCase());
+            entity.getWorld().spawnParticle(particle, entity.getLocation(), 30, 1.0, 1.0, 1.0, 0.1);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid particle name: '" + particleName + "'");
+        }
+    }
+
+    private void playSoundEffect(@NotNull Entity entity, @NotNull String soundName) {
+        try {
+            Sound sound = Sound.valueOf(soundName.toUpperCase());
+            entity.getWorld().playSound(entity.getLocation(), sound, 1.0f, 1.0f);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid sound name: '" + soundName + "'");
+        }
+    }
 }
 ```
 
-> **API Verification Note:** The exact MM5 event class names (`MythicMobSpawnEvent`, `MythicMobDeathEvent`, `MythicMobDespawnEvent`) and their method signatures (`getMobType().getInternalName()`, `getEntity()`, `getKiller()`, `setCancelled()`) should be verified against the MM5 dependency at implementation time. MM5 has used different event class names and packages across versions.
+> **API Verification Note:** The exact MM5 event class names (`MythicMobSpawnEvent`, `MythicMobDeathEvent`, `MythicMobDespawnEvent`) and their method signatures should be verified against the MM5 dependency at implementation time.
 
 ---
 
@@ -1094,60 +1252,14 @@ plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK)
         });
 ```
 
-### 10.3 Binding Loading
+### 10.3 Registration Order
 
-The `MythicMobsHook` constructor loads bindings from config:
-
-```java
-public MythicMobsHook(@NotNull McRPG plugin) {
-    super(plugin);
-    this.integration = new MythicMobsIntegration();
-    this.bindingRegistry = new MythicMobBindingRegistry();
-
-    // Load bindings from config
-    YamlDocument yamlDocument = plugin.registryAccess()
-            .registry(RegistryKey.MANAGER)
-            .manager(McRPGManagerKey.FILE)
-            .getFile(FileType.MYTHICMOB_BINDINGS_CONFIG);
-    MythicMobBindingsConfigFile.loadBindings(yamlDocument, bindingRegistry, plugin.getLogger());
-
-    // Validate bindings against MM registry
-    validateBindings(plugin);
-}
-```
-
-### 10.4 Registration Order
-
-The hook registration happens in `McRPGHooksRegistrar`, which runs **after** `FileManager` is initialized but alongside other hooks. The listener registration happens in `McRPGListenerRegistrar`, which runs after hooks. Current bootstrap order already supports this — no changes to `McRPGBootstrap` ordering needed.
+The hook registration happens in `McRPGHooksRegistrar`, which runs after `FileManager` is initialized but alongside other hooks. The listener registration happens in `McRPGListenerRegistrar`, which runs after hooks. No changes to `McRPGBootstrap` ordering needed.
 
 ```
-FileManager (constructor loads all FileTypes including MYTHICMOB_BINDINGS_CONFIG)
-  → McRPGHooksRegistrar (MythicMobsHook reads the loaded config, populates registry)
+FileManager init
+  → McRPGHooksRegistrar (MythicMobsHook reads bindings directory, populates registry)
     → McRPGListenerRegistrar (registers OnMythicMobEventListener if hook exists)
-```
-
-### 10.5 MythicMobsHook Updated Signature
-
-The hook needs to expose the binding registry for the listener:
-
-```java
-public class MythicMobsHook extends PluginHook<McRPG> {
-
-    private final MythicMobsIntegration integration;
-    private final MythicMobBindingRegistry bindingRegistry;
-
-    // ... constructor as above ...
-
-    @NotNull
-    public MythicMobsIntegration getIntegration() {
-        return integration;
-    }
-
-    @NotNull
-    public MythicMobBindingRegistry getBindingRegistry() {
-        return bindingRegistry;
-    }
-}
 ```
 
 ---
@@ -1166,11 +1278,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Evaluates a {@link MythicMobBinding.LootTable} and drops rewards at the given location.
+ * Evaluates a {@link LootTable} and drops rewards at the given location.
  * Handles exclusive-drop logic (at most one entry wins per evaluation).
  */
 public final class MythicMobLootEvaluator {
@@ -1186,30 +1299,25 @@ public final class MythicMobLootEvaluator {
      * @param location  the drop location
      */
     public static void evaluateAndDrop(@NotNull McRPG plugin,
-                                       @NotNull MythicMobBinding.LootTable lootTable,
+                                       @NotNull LootTable lootTable,
                                        @NotNull Player player,
                                        @NotNull Location location) {
-        for (MythicMobBinding.LootEntry entry : lootTable.entries()) {
+        for (LootEntry entry : lootTable.entries()) {
             double roll = ThreadLocalRandom.current().nextDouble();
             if (roll >= entry.chance()) {
                 continue;
             }
 
-            // Entry won the roll
             boolean dropped = processEntry(plugin, entry, player, location);
 
             if (dropped && lootTable.exclusiveDrop()) {
-                // Exclusive mode — stop after first successful drop
                 return;
             }
         }
     }
 
-    /**
-     * Processes a single loot entry. Returns true if the entry produced a drop.
-     */
     private static boolean processEntry(@NotNull McRPG plugin,
-                                        @NotNull MythicMobBinding.LootEntry entry,
+                                        @NotNull LootEntry entry,
                                         @NotNull Player player,
                                         @NotNull Location location) {
         return switch (entry.type()) {
@@ -1222,41 +1330,35 @@ public final class MythicMobLootEvaluator {
         };
     }
 
-    /**
-     * Processes a skill-book loot entry. Delegates to LLD-3's SkillBookFactory
-     * once implemented. For now, validates the ability key and logs.
-     */
     private static boolean processSkillBookEntry(@NotNull McRPG plugin,
-                                                 @NotNull MythicMobBinding.LootEntry entry,
+                                                 @NotNull LootEntry entry,
                                                  @NotNull Player player,
                                                  @NotNull Location location) {
-        if (entry.ability() == null) {
+        String abilityKeyStr = entry.properties().get(LootEntry.PROPERTY_ABILITY);
+        if (abilityKeyStr == null) {
             plugin.getLogger().warning("Skill-book loot entry '" + entry.id()
-                    + "' has no ability key configured.");
+                    + "' has no '" + LootEntry.PROPERTY_ABILITY + "' property configured.");
             return false;
         }
 
-        NamespacedKey abilityKey = NamespacedKey.fromString(entry.ability());
+        NamespacedKey abilityKey = NamespacedKey.fromString(abilityKeyStr);
         if (abilityKey == null) {
             plugin.getLogger().warning("Invalid ability key format in loot entry '"
-                    + entry.id() + "': " + entry.ability());
+                    + entry.id() + "': " + abilityKeyStr);
             return false;
         }
 
-        // Validate ability exists in registry
-        var abilityRegistry = plugin.registryAccess()
-                .registry(us.eunoians.mcrpg.registry.McRPGRegistryKey.ABILITY);
+        var abilityRegistry = plugin.registryAccess().registry(McRPGRegistryKey.ABILITY);
         if (!abilityRegistry.registered(abilityKey)) {
             plugin.getLogger().warning("Loot entry '" + entry.id()
-                    + "' references unregistered ability: " + entry.ability());
+                    + "' references unregistered ability: " + abilityKeyStr);
             return false;
         }
 
         // TODO (LLD-3): Replace with SkillBookFactory.createSkillBook() and drop at location
-        // For now, this is a placeholder that will be completed when LLD-3 is implemented.
         // ItemStack skillBook = SkillBookFactory.createSkillBook(ability, sourceKey);
         // location.getWorld().dropItemNaturally(location, skillBook);
-        plugin.getLogger().info("Skill book drop triggered for ability " + entry.ability()
+        plugin.getLogger().info("Skill book drop triggered for ability " + abilityKeyStr
                 + " — awaiting LLD-3 implementation.");
         return true;
     }
@@ -1265,9 +1367,9 @@ public final class MythicMobLootEvaluator {
 
 ### Design Decisions
 
-**`switch` on type string:** Clean dispatch pattern. Adding a new type is one case arm. If the type roster grows beyond 4-5, refactor to a `Map<String, LootEntryHandler>` strategy pattern.
+**`switch` on type string:** Clean dispatch. Adding a new type is one case arm. If the type roster grows beyond 4-5, refactor to a `Map<String, LootEntryHandler>` strategy pattern.
 
-**Placeholder for LLD-3:** The skill-book processing validates the ability key and logs, but doesn't create the actual `ItemStack` yet. LLD-3 will implement `SkillBookFactory` and this method will be updated to call it. This avoids circular LLD dependencies.
+**`LootEntry.PROPERTY_ABILITY`:** The handler reads from the generic `properties()` map using the documented constant. No type-specific fields on the data model.
 
 **`ThreadLocalRandom`:** Thread-safe, no contention, appropriate for per-event random rolls.
 
@@ -1277,14 +1379,37 @@ public final class MythicMobLootEvaluator {
 
 **File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/binding/MythicMobDespawnScheduler.java`
 
-Manages scheduled despawn tasks for bound mobs. Handles both `max-lifetime-seconds` (fixed timer) and `despawn-if-no-threat` (periodic ThreatTable check).
+Manages despawn lifecycle for bound mobs. Uses McCore's `DelayableCoreTask` and `CancelableCoreTask` abstractions instead of raw Bukkit scheduler calls, consistent with all other McRPG scheduled tasks.
+
+### Server Reboot & Chunk Unload Resilience
+
+**Problem:** What happens when:
+1. Server reboots with living bound mobs?
+2. The chunk containing a bound mob gets unloaded and the despawn timer fires?
+
+**Server Reboot:**
+- McRPG's in-memory despawn tasks are lost on shutdown (they're `ConcurrentHashMap` entries).
+- MythicMobs persists its mobs and re-fires `MythicMobSpawnEvent` on startup for persisted mobs.
+- When that spawn event fires, `OnMythicMobEventListener` processes it like any new spawn → schedules a fresh despawn timer.
+- The mob gets a new full `max-lifetime-seconds` window. This is acceptable — the alternative (persisting remaining time to DB) adds complexity for minimal benefit. The mob was already going to die within a few minutes.
+
+**Chunk Unload:**
+- MythicMobs tracks its mobs independently of chunk state. `ActiveMob` references survive chunk unloads.
+- If a despawn timer fires while the chunk is unloaded, `MythicMobsIntegration.despawnMob()` calls MM's `ActiveMob.despawn()` which handles this correctly — MM removes the mob from its tracking, and the entity is cleaned up.
+- If the periodic threat-check task fires while the chunk is unloaded, `getThreatTableTargets()` returns empty (no players nearby). The grace period accumulates and the mob despawns. This is the desired behavior — a mob in an unloaded chunk with no players nearby should despawn.
+
+**Plugin disable/reload:**
+- On `McRPG.onDisable()`, all scheduled Bukkit tasks are cancelled automatically (Bukkit cancels all tasks for a disabling plugin).
+- `activeTasks` map becomes stale but harmless — no references leak.
+- On re-enable, MM re-fires spawn events and fresh tasks are scheduled.
 
 ```java
 package us.eunoians.mcrpg.external.mythicmobs.binding;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
+import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.external.mythicmobs.MythicMobsHook;
@@ -1299,10 +1424,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Manages scheduled despawn tasks for bound MythicMobs.
  * Each mob can have up to two tasks: a max-lifetime timer and a periodic threat check.
+ * Uses McCore task abstractions ({@link DelayableCoreTask}, {@link CancelableCoreTask}).
  */
 public final class MythicMobDespawnScheduler {
 
-    private static final long THREAT_CHECK_INTERVAL_TICKS = 100L; // 5 seconds
+    private static final double THREAT_CHECK_INTERVAL_SECONDS = 5.0;
     private static final Map<UUID, ScheduledDespawn> activeTasks = new ConcurrentHashMap<>();
 
     private MythicMobDespawnScheduler() {}
@@ -1310,33 +1436,36 @@ public final class MythicMobDespawnScheduler {
     /**
      * Schedules despawn tasks for a bound mob based on its binding's despawn policy.
      *
-     * @param plugin     the McRPG plugin instance
-     * @param mobUUID    the UUID of the mob entity
-     * @param binding    the binding containing the despawn policy
+     * @param plugin  the McRPG plugin instance
+     * @param mobUUID the UUID of the mob entity
+     * @param binding the binding containing the despawn policy
      */
     public static void schedule(@NotNull McRPG plugin,
                                 @NotNull UUID mobUUID,
                                 @NotNull MythicMobBinding binding) {
-        MythicMobBinding.DespawnPolicy policy = binding.despawnPolicy();
-        BukkitTask lifetimeTask = null;
-        BukkitTask threatCheckTask = null;
+        DespawnPolicy policy = binding.despawnPolicy();
+        DelayableCoreTask lifetimeTask = null;
+        CancelableCoreTask threatCheckTask = null;
 
         // Max lifetime timer
         if (policy.maxLifetimeSeconds() > 0) {
-            long delayTicks = policy.maxLifetimeSeconds() * 20L;
-            lifetimeTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                despawnMob(plugin, mobUUID, "max lifetime exceeded");
-            }, delayTicks);
+            lifetimeTask = new DelayableCoreTask(plugin, policy.maxLifetimeSeconds()) {
+                @Override
+                public void run() {
+                    despawnMob(plugin, mobUUID, "max lifetime exceeded");
+                }
+            };
+            lifetimeTask.runTask();
         }
 
         // Periodic threat table check
         if (policy.despawnIfNoThreat()) {
-            long graceDelayTicks = policy.despawnNoThreatDelaySeconds() * 20L;
-            threatCheckTask = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
-                private long emptyThreatTicks = 0;
+            int graceDelaySeconds = policy.despawnNoThreatDelaySeconds();
+            threatCheckTask = new CancelableCoreTask(plugin, THREAT_CHECK_INTERVAL_SECONDS) {
+                private double emptyThreatSeconds = 0;
 
                 @Override
-                public void run() {
+                protected void onIntervalComplete() {
                     MythicMobsIntegration integration = getIntegration(plugin);
                     if (integration == null) {
                         return;
@@ -1344,19 +1473,22 @@ public final class MythicMobDespawnScheduler {
 
                     Collection<UUID> targets = integration.getThreatTableTargets(mobUUID);
                     if (targets.isEmpty()) {
-                        emptyThreatTicks += THREAT_CHECK_INTERVAL_TICKS;
-                        if (emptyThreatTicks >= graceDelayTicks) {
+                        emptyThreatSeconds += THREAT_CHECK_INTERVAL_SECONDS;
+                        if (emptyThreatSeconds >= graceDelaySeconds) {
                             despawnMob(plugin, mobUUID, "no threat targets");
                         }
                     } else {
-                        emptyThreatTicks = 0;
+                        emptyThreatSeconds = 0;
                     }
                 }
-            }, THREAT_CHECK_INTERVAL_TICKS, THREAT_CHECK_INTERVAL_TICKS);
+            };
+            threatCheckTask.runTask();
         }
 
         if (lifetimeTask != null || threatCheckTask != null) {
-            activeTasks.put(mobUUID, new ScheduledDespawn(lifetimeTask, threatCheckTask));
+            activeTasks.put(mobUUID, new ScheduledDespawn(
+                    lifetimeTask != null ? lifetimeTask.getBukkitTaskId() : -1,
+                    threatCheckTask != null ? threatCheckTask.getBukkitTaskId() : -1));
         }
     }
 
@@ -1368,11 +1500,11 @@ public final class MythicMobDespawnScheduler {
     public static void cancel(@NotNull UUID mobUUID) {
         ScheduledDespawn scheduled = activeTasks.remove(mobUUID);
         if (scheduled != null) {
-            if (scheduled.lifetimeTask != null) {
-                scheduled.lifetimeTask.cancel();
+            if (scheduled.lifetimeTaskId != -1) {
+                Bukkit.getScheduler().cancelTask(scheduled.lifetimeTaskId);
             }
-            if (scheduled.threatCheckTask != null) {
-                scheduled.threatCheckTask.cancel();
+            if (scheduled.threatCheckTaskId != -1) {
+                Bukkit.getScheduler().cancelTask(scheduled.threatCheckTaskId);
             }
         }
     }
@@ -1395,47 +1527,97 @@ public final class MythicMobDespawnScheduler {
                 .orElse(null);
     }
 
-    private record ScheduledDespawn(BukkitTask lifetimeTask, BukkitTask threatCheckTask) {}
+    private record ScheduledDespawn(int lifetimeTaskId, int threatCheckTaskId) {}
 }
 ```
 
 ### Design Decisions
 
-**Static utility:** The scheduler has no per-instance state beyond the `ConcurrentHashMap` of active tasks. Static methods keep the API simple — callers don't need to find an instance.
+**McCore tasks instead of raw Bukkit scheduler:** `DelayableCoreTask` for the one-shot lifetime timer, `CancelableCoreTask` for the repeating threat check. Follows the established McRPG pattern (see `AbilityHolder.addActiveAbility()`, `BleedManager`, etc.).
 
-**`ConcurrentHashMap`:** Tasks may be cancelled from different threads (main thread death event vs. scheduled task firing).
+**Task ID tracking for cancellation:** McCore tasks are tracked by Bukkit task ID (via `getBukkitTaskId()`) in a `ConcurrentHashMap`. This mirrors the pattern in `AbilityHolder` where `abilityCooldownExpireTasks` maps keys to task IDs for later cancellation.
 
-**Grace period as tick accumulation:** Rather than scheduling a single delayed task when the threat table first empties (which would need cancellation if a player re-engages), the periodic check accumulates empty ticks. Simpler state management, and the 5-second check interval is coarse enough to not impact performance.
+**`ConcurrentHashMap`:** Tasks may be cancelled from different contexts (death event handler vs. scheduled task firing on the main thread). While both run on the main thread in Bukkit, the concurrent map is defensive and signals intent.
+
+**Grace period as seconds accumulation:** Rather than scheduling a single delayed task when the threat table first empties (which would need cancellation if a player re-engages), the periodic check accumulates empty seconds. Simpler state management.
 
 ---
 
-## 13. Error Handling & Graceful Degradation
+## 13. Config Responsibility: MM vs McRPG
+
+This is an important question. Here's the breakdown of what lives where and why:
+
+### What MythicMobs Already Handles
+
+| Config | Where | Why MM Owns It |
+|---|---|---|
+| Mob stats (HP, damage, armor) | MM mob YAML | MM's mob definition system |
+| Mob AI and skills | MM mob YAML | MM's skill/AI system (Phase Shift, Whirlpool, etc.) |
+| Mob model/appearance | MM mob YAML (+ ModelEngine) | MM's rendering hooks |
+| ThreatTable enabled/behavior | MM mob YAML | MM's native aggro system |
+| Mob targeting behavior | MM mob YAML | MM's targeting system |
+| Spawn animation/particles | MM mob YAML | MM supports onSpawn skills |
+
+### What McRPG Must Handle
+
+| Config | Where | Why McRPG Owns It |
+|---|---|---|
+| Loot table → skill books | McRPG binding YAML | Skill books are McRPG items. MM can't create them. |
+| Despawn policy (lifetime + threat check) | McRPG binding YAML | McRPG schedules its own cleanup tasks. MM's native despawn rules (chunk unload, `/mm mobs killall`) are separate concerns. |
+| Fire custom McRPG events | McRPG binding YAML | McRPG event bus, not MM's. |
+
+### What Could Go Either Way
+
+| Config | Current Owner | Could Move? | Recommendation |
+|---|---|---|---|
+| Spawn VFX (particles/sounds) | McRPG binding YAML | Yes → MM onSpawn skill | **Move to MM.** MM's onSpawn skill system already handles this well. Remove `spawn-effects` from binding config. Server owners configure it in MM's mob YAML where they already configure all other mob VFX. |
+
+### Recommendation
+
+Remove `spawn-effects` from the binding config. Server owners should configure spawn particles/sounds in MythicMobs' mob YAML using MM's `onSpawn` skill — that's where they're already configuring every other visual/audio aspect of the mob.
+
+This reduces McRPG's binding config to only what McRPG **must** own:
+- **Loot tables** (McRPG items)
+- **Despawn policy** (McRPG's cleanup logic)
+- **Event firing** (McRPG's event bus)
+
+The binding config becomes leaner and the responsibility split is clearer.
+
+> **Decision needed:** If you agree with removing spawn-effects, I'll strip it from the data model, loader, listener, and config. The `SpawnEffects` and `SpawnEffect` classes go away entirely. If you want to keep it as an option (for cases where server owners want McRPG to handle VFX independently of MM), I'll keep it but add a comment noting that MM's onSpawn is the preferred approach.
+
+---
+
+## 14. Error Handling & Graceful Degradation
 
 | Scenario | Behavior |
 |---|---|
-| MythicMobs not installed | `MythicMobsHook` not registered. Listener not registered. Config file still loaded (no error). |
-| MM type ID not found in MM registry | Warning logged at startup per binding. Binding remains loaded (mob may be added later). |
+| MythicMobs not installed | `MythicMobsHook` not registered. Listener not registered. Binding directory still created (no error). |
+| MM type ID not found in MM registry | Warning logged at startup per binding. Binding remains loaded (mob may be added later via MM reload). |
 | Binding references invalid ability key | Warning logged at startup. Loot entry skipped at drop time. |
 | MM event fires for unknown type ID | `getBinding()` returns empty. No processing. |
 | Loot entry has unknown type | Warning logged. Entry skipped. Other entries still evaluated. |
+| Loot entry missing required property | Warning logged. Entry skipped. |
 | Despawn task fires after mob already dead | `integration.despawnMob()` returns false. No error. |
-| Config YAML missing `bindings` section | No bindings loaded. No errors. System is inert. |
-| Invalid Particle/Sound enum value in config | Warning logged. That effect field is null. Other effects still apply. |
+| No `.yml` files in bindings directory | No bindings loaded. No errors. System is inert. |
+| Invalid YAML in a binding file | That file skipped with warning. Other files still loaded. |
+| Server restart with living bound mobs | MM re-fires spawn event → fresh despawn timer scheduled. |
+| Chunk unload with active despawn timer | MM handles entity state. Despawn call still works via MM's `ActiveMob`. |
+| Plugin disable/reload | Bukkit cancels all tasks. MM re-fires spawn events on re-enable. |
 
 ---
 
-## 14. Test Plan
+## 15. Test Plan
 
-### 14.1 Unit Tests (src/test/java)
+### 15.1 Unit Tests (src/test/java)
 
 | Test Class | Tests |
 |---|---|
 | `MythicMobBindingRegistryTest` | Register, unregister, getBinding (enabled/disabled), getAllBindings, clear |
-| `MythicMobBindingsConfigFileTest` | Parse valid YAML, parse with missing sections, parse with invalid enum values, exclusive-drop flag |
-| `MythicMobLootEvaluatorTest` | Exclusive-drop stops after first hit, non-exclusive evaluates all, unknown type logged, chance 0.0 never drops, chance 1.0 always drops |
-| `MythicMobBindingTest` | Record equality, immutability of loot entry list |
+| `MythicMobBindingLoaderTest` | Parse valid YAML, parse with missing sections, missing type-id field, multiple files in directory |
+| `MythicMobLootEvaluatorTest` | Exclusive-drop stops after first hit, non-exclusive evaluates all, unknown type logged, chance 0.0 never drops, chance 1.0 always drops, missing property handled |
+| `LootEntryTest` | Properties map immutability, PROPERTY_ABILITY constant |
 
-### 14.2 Tests Requiring MockBukkit (extend McRPGBaseTest)
+### 15.2 Tests Requiring MockBukkit (extend McRPGBaseTest)
 
 | Test Class | Tests |
 |---|---|
@@ -1443,43 +1625,47 @@ public final class MythicMobDespawnScheduler {
 | `CustomMobDeathEventTest` | Event creation, killer UUID nullable |
 | `CustomMobDespawnEventTest` | Event creation, handler list |
 
-### 14.3 Manual Testing (Paper Server)
+### 15.3 Manual Testing (Paper Server)
 
 | Scenario | Verification |
 |---|---|
-| MM installed, valid binding | Spawn event fires, VFX play, despawn timer starts |
+| MM installed, valid binding file | Spawn event fires, despawn timer starts |
 | MM installed, invalid type ID | Warning logged, no crash |
-| MM not installed | No errors, no listener registered, config loads silently |
+| MM not installed | No errors, no listener registered, directory created silently |
 | Kill bound mob | Death event fires, loot rolls execute (placeholder log for now) |
 | Mob despawn by lifetime | Mob removed after configured seconds |
 | Mob despawn by empty threat | Mob removed after grace period when all players leave |
-| Hot reload (`/mcrpg reload`) | Bindings re-parsed from YAML |
+| Server restart with living mob | MM re-fires spawn, McRPG re-schedules despawn |
+| Add new `.yml` binding file + `/mcrpg reload` | New binding loaded |
+| Multiple binding files in directory | All loaded correctly |
 
 ---
 
-## 15. File Manifest
+## 16. File Manifest
 
 ### New Files
 
 | File | Type | Description |
 |---|---|---|
-| `src/main/java/.../external/mythicmobs/MythicMobsHook.java` | Hook | Plugin hook for MythicMobs |
-| `src/main/java/.../external/mythicmobs/MythicMobsIntegration.java` | Facade | All MM API calls |
-| `src/main/java/.../external/mythicmobs/binding/MythicMobBinding.java` | Record | Binding data model |
-| `src/main/java/.../external/mythicmobs/binding/MythicMobBindingRegistry.java` | Registry | Type ID → binding map |
-| `src/main/java/.../external/mythicmobs/binding/MythicMobLootEvaluator.java` | Utility | Loot table evaluation |
-| `src/main/java/.../external/mythicmobs/binding/MythicMobDespawnScheduler.java` | Utility | Despawn task management |
-| `src/main/java/.../configuration/file/MythicMobBindingsConfigFile.java` | Config | YAML wrapper + parser |
-| `src/main/java/.../event/entity/mythicmob/CustomMobEvent.java` | Event | Abstract base |
-| `src/main/java/.../event/entity/mythicmob/CustomMobSpawnEvent.java` | Event | Spawn event (cancellable) |
-| `src/main/java/.../event/entity/mythicmob/CustomMobDeathEvent.java` | Event | Death event |
-| `src/main/java/.../event/entity/mythicmob/CustomMobDespawnEvent.java` | Event | Despawn event |
-| `src/main/java/.../listener/entity/OnMythicMobEventListener.java` | Listener | MM event bridge |
-| `src/main/resources/mythicmob_bindings_configuration.yml` | Config | Default YAML |
-| `src/test/java/.../external/mythicmobs/binding/MythicMobBindingRegistryTest.java` | Test | Registry tests |
-| `src/test/java/.../external/mythicmobs/binding/MythicMobBindingsConfigFileTest.java` | Test | Config parser tests |
-| `src/test/java/.../external/mythicmobs/binding/MythicMobLootEvaluatorTest.java` | Test | Loot evaluation tests |
-| `src/test/java/.../event/entity/mythicmob/CustomMobSpawnEventTest.java` | Test | Event tests |
+| `external/mythicmobs/MythicMobsHook.java` | Hook | Plugin hook for MythicMobs |
+| `external/mythicmobs/MythicMobsIntegration.java` | Facade | All MM API calls |
+| `external/mythicmobs/binding/MythicMobBinding.java` | Record | Top-level binding data |
+| `external/mythicmobs/binding/DespawnPolicy.java` | Record | Despawn policy config |
+| `external/mythicmobs/binding/LootTable.java` | Record | Loot table config |
+| `external/mythicmobs/binding/LootEntry.java` | Record | Single loot entry with properties map |
+| `external/mythicmobs/binding/SpawnEffects.java` | Record | Spawn VFX config (pending removal — see Section 13) |
+| `external/mythicmobs/binding/MythicMobBindingRegistry.java` | Registry | Type ID → binding map |
+| `external/mythicmobs/binding/MythicMobBindingLoader.java` | Loader | Directory-based YAML parser |
+| `external/mythicmobs/binding/MythicMobLootEvaluator.java` | Utility | Loot table evaluation |
+| `external/mythicmobs/binding/MythicMobDespawnScheduler.java` | Utility | Despawn task management (McCore tasks) |
+| `event/entity/mythicmob/CustomMobEvent.java` | Event | Abstract base |
+| `event/entity/mythicmob/CustomMobSpawnEvent.java` | Event | Spawn event (cancellable) |
+| `event/entity/mythicmob/CustomMobDeathEvent.java` | Event | Death event |
+| `event/entity/mythicmob/CustomMobDespawnEvent.java` | Event | Despawn event |
+| `listener/entity/OnMythicMobEventListener.java` | Listener | MM event bridge |
+| `src/main/resources/mythicmob_bindings/riptide_guardian.yml` | Config | Default binding |
+
+All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 ### Modified Files
 
@@ -1487,6 +1673,16 @@ public final class MythicMobDespawnScheduler {
 |---|---|
 | `build.gradle.kts` | Add Lumine repo + Mythic-Dist compileOnly dependency |
 | `registry/plugin/McRPGPluginHookKey.java` | Add `MYTHICMOBS` key |
-| `configuration/FileType.java` | Add `MYTHICMOB_BINDINGS_CONFIG` entry |
 | `bootstrap/McRPGHooksRegistrar.java` | Add MythicMobs hook registration |
 | `bootstrap/McRPGListenerRegistrar.java` | Add conditional MM listener registration |
+
+### Removed from Previous Draft
+
+| Item | Reason |
+|---|---|
+| `FileType.MYTHICMOB_BINDINGS_CONFIG` | Not needed — directory-based loading bypasses FileType |
+| `MythicMobBindingsConfigFile.java` | Replaced by `MythicMobBindingLoader` |
+| Inner records on `MythicMobBinding` | Extracted to separate files |
+| `LootEntry.ability` field | Replaced by generic `properties` map |
+| Raw Bukkit scheduler calls | Replaced by McCore `DelayableCoreTask` / `CancelableCoreTask` |
+| Fully qualified import names in code | Fixed |
