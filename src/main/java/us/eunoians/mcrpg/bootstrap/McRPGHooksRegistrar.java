@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.external.geyser.GeyserHook;
 import us.eunoians.mcrpg.external.lands.LandsHook;
 import us.eunoians.mcrpg.external.lunar.LunarClientHook;
 import us.eunoians.mcrpg.external.mcmmo.McMMOHook;
+import us.eunoians.mcrpg.external.mythicmobs.MythicMobsHook;
 import us.eunoians.mcrpg.external.papi.McRPGPapiHook;
 import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
 
@@ -50,6 +51,10 @@ final class McRPGHooksRegistrar implements Registrar<McRPG> {
         if (Bukkit.getPluginManager().isPluginEnabled("Lands")) {
             logger.info("Lands found... enabling support.");
             pluginHookRegistry.register(new LandsHook(plugin));
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) {
+            logger.info("MythicMobs found... enabling fishing mob support.");
+            pluginHookRegistry.register(new MythicMobsHook(plugin));
         }
     }
 }

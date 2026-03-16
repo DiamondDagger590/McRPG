@@ -46,6 +46,7 @@ repositories {
     maven("https://repo.opencollab.dev/main/")
     maven("https://repo.lunarclient.dev") //Lunar client
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") //Papi
+    maven("https://mvn.lumine.io/repository/maven-public/") //MythicMobs
 
     //Spigot
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -97,6 +98,9 @@ dependencies {
 
     val vaultVersion = "1.7.1"
     compileOnly("com.github.MilkBowl:VaultAPI:$vaultVersion")
+
+    val mythicMobsVersion = "5.7.2"
+    compileOnly("io.lumine:Mythic-Dist:$mythicMobsVersion")
 
     // Test deps
     val mockBukkitVersion = "4.100.0"

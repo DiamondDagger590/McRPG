@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.external.geyser.GeyserHook;
 import us.eunoians.mcrpg.external.lands.LandsHook;
 import us.eunoians.mcrpg.external.lunar.LunarClientHook;
 import us.eunoians.mcrpg.external.mcmmo.McMMOHook;
+import us.eunoians.mcrpg.external.mythicmobs.MythicMobsHook;
 import us.eunoians.mcrpg.external.papi.McRPGPapiHook;
 import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
 
@@ -27,4 +28,5 @@ public interface McRPGPluginHookKey extends PluginHookKey<PluginHook<?>> {
     PluginHookKey<WorldGuardHook> WORLDGUARD = create(WorldGuardHook.class);
     PluginHookKey<McMMOHook> MCMMO = create(McMMOHook.class);
     PluginHookKey<GeyserHook> GEYSER = create(GeyserHook.class);
+    PluginHookKey<MythicMobsHook> MYTHIC_MOBS = create(MythicMobsHook.class);
 }

@@ -12,6 +12,8 @@ import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
+import us.eunoians.mcrpg.external.mythicmobs.MythicMobsListener;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnComboCompleteListener;
 import us.eunoians.mcrpg.listener.ability.OnComboInputListener;
@@ -158,5 +160,10 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // Safe zones
         Bukkit.getPluginManager().registerEvents(new PlayerSafeZoneStateChangeListener(), plugin);
+
+        // MythicMobs integration (conditional)
+        if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
+            Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
+        }
     }
 }
