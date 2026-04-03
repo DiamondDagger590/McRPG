@@ -74,9 +74,14 @@ public abstract class SkillExperienceContext<T extends Event> {
      * <p>
      * Used by statistic listeners to distinguish block breaks from redeemed XP,
      * admin commands, and other sources.
+     * <p>
+     * The default implementation returns {@link McRPGGainReason#OTHER}. Subclasses
+     * should override this method to provide a more specific reason.
      *
      * @return The {@link GainReason} for this context.
      */
     @NotNull
-    public abstract GainReason getGainReason();
+    public GainReason getGainReason() {
+        return McRPGGainReason.OTHER;
+    }
 }

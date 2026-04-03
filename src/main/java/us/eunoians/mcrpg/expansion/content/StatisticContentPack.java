@@ -14,6 +14,11 @@ import us.eunoians.mcrpg.expansion.ContentExpansion;
  */
 public final class StatisticContentPack extends McRPGContentPack<StatisticContent> {
 
+    /**
+     * Creates a new {@link StatisticContentPack} for the given expansion.
+     *
+     * @param contentExpansion The {@link ContentExpansion} that owns this pack.
+     */
     public StatisticContentPack(@NotNull ContentExpansion contentExpansion) {
         super(contentExpansion);
     }

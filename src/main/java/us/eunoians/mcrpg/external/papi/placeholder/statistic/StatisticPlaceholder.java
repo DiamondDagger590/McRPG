@@ -26,8 +26,8 @@ import java.util.Optional;
  */
 public class StatisticPlaceholder extends McRPGPlaceholder {
 
-    private static final NumberFormat INTEGER_FORMAT = NumberFormat.getIntegerInstance();
-    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("#,##0.00");
+    private static final ThreadLocal<NumberFormat> INTEGER_FORMAT = ThreadLocal.withInitial(NumberFormat::getIntegerInstance);
+    private static final ThreadLocal<DecimalFormat> DOUBLE_FORMAT = ThreadLocal.withInitial(() -> new DecimalFormat("#,##0.00"));
 
     private final NamespacedKey statisticKey;
 
@@ -81,13 +81,13 @@ public class StatisticPlaceholder extends McRPGPlaceholder {
             return "0";
         }
         if (value instanceof Integer i) {
-            return INTEGER_FORMAT.format(i);
+            return INTEGER_FORMAT.get().format(i);
         }
         if (value instanceof Long l) {
-            return INTEGER_FORMAT.format(l);
+            return INTEGER_FORMAT.get().format(l);
         }
         if (value instanceof Double d) {
-            return DOUBLE_FORMAT.format(d);
+            return DOUBLE_FORMAT.get().format(d);
         }
         return value.toString();
     }

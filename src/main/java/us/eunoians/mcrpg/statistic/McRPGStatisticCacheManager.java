@@ -93,7 +93,7 @@ public class McRPGStatisticCacheManager extends Manager<McRPG> {
                 Optional<StatisticEntry> fromDb = PlayerStatisticDAO.getPlayerStatistic(connection, uuid, key);
                 fromDb.ifPresent(entry -> cache.put(uuid, key, entry));
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin().getLogger().log(java.util.logging.Level.WARNING, "Failed to populate statistic cache for player " + uuid, e);
             }
         });
     }

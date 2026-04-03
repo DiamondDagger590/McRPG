@@ -149,7 +149,7 @@ public final class McRPGExpansion extends ContentExpansion {
 
     /**
      * Creates all native McRPG ability instances. This list is shared between
-     * {@link #getAbilityContent(List)} and {@link #getStatisticContent(List)} so that
+     * {@link #getAbilityContent(List)} and {@link #getStatisticContent(List, List)} so that
      * abilities are only instantiated once.
      *
      * @return A {@link List} of all native McRPG abilities.

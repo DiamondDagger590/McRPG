@@ -15,6 +15,7 @@ public class BlockBreakContext extends SkillExperienceContext<BlockBreakEvent> {
         super(skillHolder, skill, baseExperience, event);
     }
 
+    /** {@inheritDoc} */
     @Override
     @NotNull
     public GainReason getGainReason() {

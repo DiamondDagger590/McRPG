@@ -4,6 +4,8 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.Locale;
+
 /**
  * Built-in {@link GainReason} implementations for McRPG.
  * <p>
@@ -40,16 +42,18 @@ public enum McRPGGainReason implements GainReason {
 
     @SuppressWarnings("deprecation") // NamespacedKey(String, String) — no Plugin instance available in enum constructor
     McRPGGainReason(@NotNull String displayName) {
-        this.key = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), name().toLowerCase());
+        this.key = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), name().toLowerCase(Locale.ROOT));
         this.displayName = displayName;
     }
 
+    /** {@inheritDoc} */
     @Override
     @NotNull
     public NamespacedKey getKey() {
         return key;
     }
 
+    /** {@inheritDoc} */
     @Override
     @NotNull
     public String getDisplayName() {

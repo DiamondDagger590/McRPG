@@ -43,6 +43,7 @@ public final class StatisticContent implements McRPGContent {
         return statistic;
     }
 
+    /** {@inheritDoc} */
     @Override
     @NotNull
     public Optional<NamespacedKey> getExpansionKey() {

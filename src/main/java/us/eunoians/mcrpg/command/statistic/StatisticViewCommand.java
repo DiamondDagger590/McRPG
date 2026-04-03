@@ -38,6 +38,7 @@ public class StatisticViewCommand extends StatisticCommandBase {
 
     private static final Permission VIEW_PERMISSION = Permission.of("mcrpg.statistic.view");
 
+    /** Registers the {@code /mcrpg statistic view} command. */
     public static void registerCommand() {
         McRPG mcRPG = McRPG.getInstance();
         CommandManager<CommandSourceStack> commandManager = mcRPG.registryAccess()
@@ -117,7 +118,7 @@ public class StatisticViewCommand extends StatisticCommandBase {
                                             sender, LocalizationKey.STATISTIC_LOOKUP_ERROR_MESSAGE));
                                 }
                             }.runTask();
-                            e.printStackTrace();
+                            mcRPG.getLogger().log(java.util.logging.Level.WARNING, "Failed to lookup statistic for offline player", e);
                         }
                     });
                 }));

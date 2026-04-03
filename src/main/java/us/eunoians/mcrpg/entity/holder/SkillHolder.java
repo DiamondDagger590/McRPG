@@ -333,7 +333,7 @@ public class SkillHolder extends LoadoutHolder {
          *
          * @param experience The amount of experience to add.
          * @param gainReason The reason for the experience gain.
-         * @return Always returns {@code 0} — all experience is consumed.
+         * @return {@code 0} if experience was applied, or the original {@code experience} amount if the event was cancelled.
          */
         public int addExperience(int experience, @NotNull GainReason gainReason) {
             if (experience <= 0) {

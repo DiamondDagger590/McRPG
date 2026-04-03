@@ -5,7 +5,7 @@
 #
 #######################################
 locale: en
-config-version: 1
+config-version: 2
 # Configure messages for McRPG commands
 commands:
   # The name of console to use if the sender of a command is ever console and the <sender> placeholder is used

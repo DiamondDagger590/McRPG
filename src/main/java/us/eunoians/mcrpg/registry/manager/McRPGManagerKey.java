@@ -43,5 +43,6 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<McRPGDatabaseManager> DATABASE = create(McRPGDatabaseManager.class);
     ManagerKey<GlowingManager> GLOWING = create(GlowingManager.class);
     ManagerKey<QuestBoardManager> QUEST_BOARD = create(QuestBoardManager.class);
+    /** Retrieves the {@link McRPGStatisticCacheManager} used to cache offline player statistic lookups. */
     ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
 }

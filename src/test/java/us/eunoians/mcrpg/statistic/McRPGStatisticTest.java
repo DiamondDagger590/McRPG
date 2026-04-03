@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class McRPGStatisticTest extends McRPGBaseTest {
@@ -98,6 +99,7 @@ public class McRPGStatisticTest extends McRPGBaseTest {
     public void allStaticStatistics_isNotEmptyAndUnmodifiable() {
         assertFalse(McRPGStatistic.ALL_STATIC_STATISTICS.isEmpty());
         assertNotNull(McRPGStatistic.ALL_STATIC_STATISTICS);
+        assertThrows(UnsupportedOperationException.class, () -> McRPGStatistic.ALL_STATIC_STATISTICS.add(McRPGStatistic.BLOCKS_MINED));
     }
 
     @DisplayName("Given DAMAGE_DEALT, when checking type, then it is DOUBLE")

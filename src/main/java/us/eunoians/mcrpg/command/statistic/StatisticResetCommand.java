@@ -45,6 +45,7 @@ public class StatisticResetCommand extends StatisticCommandBase {
 
     private static final Permission RESET_PERMISSION = Permission.of("mcrpg.statistic.reset");
 
+    /** Registers the {@code /mcrpg statistic reset} command. */
     public static void registerCommand() {
         McRPG mcRPG = McRPG.getInstance();
         CommandManager<CommandSourceStack> commandManager = mcRPG.registryAccess()
@@ -142,7 +143,7 @@ public class StatisticResetCommand extends StatisticCommandBase {
                                 sender, LocalizationKey.STATISTIC_LOOKUP_ERROR_MESSAGE));
                     }
                 }.runTask();
-                e.printStackTrace();
+                mcRPG.getLogger().log(java.util.logging.Level.WARNING, "Failed to lookup statistic for offline player", e);
             }
         });
     }
@@ -208,7 +209,7 @@ public class StatisticResetCommand extends StatisticCommandBase {
                                 sender, LocalizationKey.STATISTIC_LOOKUP_ERROR_MESSAGE));
                     }
                 }.runTask();
-                e.printStackTrace();
+                mcRPG.getLogger().log(java.util.logging.Level.WARNING, "Failed to lookup statistic for offline player", e);
             }
         });
     }

@@ -15,6 +15,7 @@ public class EntityDamageContext extends SkillExperienceContext<EntityDamageByEn
         super(skillHolder, skill, baseExperience, event);
     }
 
+    /** {@inheritDoc} */
     @Override
     @NotNull
     public GainReason getGainReason() {

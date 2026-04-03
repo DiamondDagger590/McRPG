@@ -49,6 +49,9 @@ public class CombatStatisticListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(@NotNull EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
+        if (entity instanceof Player) {
+            return;
+        }
         Player killer = entity.getKiller();
         if (killer == null) {
             return;

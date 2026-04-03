@@ -108,7 +108,7 @@ public class RedeemExperienceCommand extends McRPGCommandBase {
                 }
                 // Cap redeem amount at XP needed to reach max level — prevents overflow past max
                 int expToMaxLevel = skillData.calculateTotalExperienceForLevel(skill.getMaxLevel()) - skillData.getTotalExperience();
-                int effectiveAmount = Math.min(amount, Math.max(0, expToMaxLevel));
+                int effectiveAmount = Math.max(0, Math.min(amount, expToMaxLevel));
                 skillData.addExperience(effectiveAmount, us.eunoians.mcrpg.skill.experience.context.McRPGGainReason.REDEEM);
                 playerExperienceExtras.modifyRedeemableExperience(effectiveAmount * -1);
                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getName(mcRPGPlayer),

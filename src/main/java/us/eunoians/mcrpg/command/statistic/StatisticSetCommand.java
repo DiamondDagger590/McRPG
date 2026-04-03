@@ -42,6 +42,7 @@ public class StatisticSetCommand extends StatisticCommandBase {
 
     private static final Permission SET_PERMISSION = Permission.of("mcrpg.statistic.set");
 
+    /** Registers the {@code /mcrpg statistic set} command. */
     public static void registerCommand() {
         McRPG mcRPG = McRPG.getInstance();
         CommandManager<CommandSourceStack> commandManager = mcRPG.registryAccess()
@@ -73,7 +74,7 @@ public class StatisticSetCommand extends StatisticCommandBase {
                     Object parsedValue;
                     try {
                         parsedValue = parseValue(statistic, valueString);
-                    } catch (NumberFormatException e) {
+                    } catch (IllegalArgumentException e) {
                         Map<String, String> placeholders = getStatisticPlaceholders(sender, sender, sender, statistic, null);
                         placeholders.put("target", playerName);
                         placeholders.put("statistic-value", valueString);
@@ -133,7 +134,7 @@ public class StatisticSetCommand extends StatisticCommandBase {
                                             sender, LocalizationKey.STATISTIC_LOOKUP_ERROR_MESSAGE));
                                 }
                             }.runTask();
-                            e.printStackTrace();
+                            mcRPG.getLogger().log(java.util.logging.Level.WARNING, "Failed to lookup statistic for offline player", e);
                         }
                     });
                 }));
@@ -145,7 +146,8 @@ public class StatisticSetCommand extends StatisticCommandBase {
      * @param statistic   The statistic to parse the value for.
      * @param valueString The string value to parse.
      * @return The parsed value.
-     * @throws NumberFormatException If the value cannot be parsed as the expected type.
+     * @throws NumberFormatException      If the value cannot be parsed as the expected numeric type.
+     * @throws IllegalArgumentException If the statistic type does not support direct value setting.
      */
     @NotNull
     private static Object parseValue(@NotNull Statistic statistic, @NotNull String valueString) {
@@ -154,8 +156,8 @@ public class StatisticSetCommand extends StatisticCommandBase {
             case LONG -> Long.parseLong(valueString);
             case DOUBLE -> Double.parseDouble(valueString);
             case STRING -> valueString;
-            case TIMESTAMP -> throw new NumberFormatException("Timestamp statistics cannot be set via command");
-            case SET_STRING -> throw new NumberFormatException("Set statistics cannot be set via command");
+            case TIMESTAMP -> throw new IllegalArgumentException("Timestamp statistics cannot be set via command");
+            case SET_STRING -> throw new IllegalArgumentException("Set statistics cannot be set via command");
         };
     }
 }
