@@ -28,11 +28,13 @@
 
 ## 1. Overview
 
-This LLD defines the bundled MythicMobs example configuration for the Riptide Guardian — the first fishing mob shipped with McRPG. The configuration is a complete, ready-to-use MythicMobs mob YAML file that server owners can drop into their MythicMobs `Mobs/` directory (or let McRPG extract automatically on first run).
+This LLD defines the bundled MythicMobs example configuration for the Riptide Guardian — the first fishing mob shipped with McRPG. The configuration is a MythicMobs pack deployed to `plugins/MythicMobs/Packs/McRPG/`, containing mob definitions, drop tables, and skill configurations.
 
 **This LLD produces:**
-- A MythicMobs YAML file (`RiptideGuardian.yml`) bundled in the McRPG JAR
-- Java extraction logic that copies the file to the server's MythicMobs directory on first startup
+- A MythicMobs pack (`Packs/McRPG/`) with mob, drop table, and skill YAML files bundled in the McRPG JAR
+- A custom MythicMobs mechanic (`mcrpg_ability`) that delegates mob ability execution to McRPG's ability system
+- A custom MythicMobs condition (`mcrpg_ability_unlocked`) for unlock-aware drop rates
+- Java extraction logic that deploys the pack to the MythicMobs directory on first startup
 - Documentation of every skill, stat, and drop table entry for maintainability
 
 ### Boundary with Prior LLDs
@@ -54,9 +56,25 @@ This LLD defines the bundled MythicMobs example configuration for the Riptide Gu
 
 ## 2. Design Decisions
 
-### 2.1 Single File, Not a Pack
+### 2.1 MythicMobs Pack Structure
 
-The example config is a single `RiptideGuardian.yml` rather than a MythicMobs "pack" directory structure. This keeps it simple — server owners can copy or modify a single file. If future mobs are added, each gets its own file extracted independently.
+The example config ships as a MythicMobs **pack** — a self-contained directory under `plugins/MythicMobs/Packs/McRPG/`:
+
+```
+plugins/MythicMobs/Packs/McRPG/
+  Mobs/
+    RiptideGuardian.yml
+  Skills/
+    RiptideGuardianSkills.yml
+  DropTables/
+    RiptideGuardianDrops.yml
+```
+
+MythicMobs automatically discovers and loads packs from `Packs/`. Benefits over scattering files in `Mobs/`:
+- **Namespaced** — all McRPG content is isolated from server owner custom mobs
+- **Easy to identify** — obvious what came from McRPG vs custom content
+- **Easy to disable** — rename or delete the `McRPG/` folder to remove all McRPG mobs
+- **Extensible** — future mobs (Cavern Golem, Timber Wraith) drop into the same pack
 
 ### 2.2 Player-Usable Skill Book Drops
 
@@ -103,14 +121,20 @@ TriggerConditions:
 
 ### 2.5 Extraction Strategy: First-Run Copy
 
-McRPG extracts the bundled YAML to the MythicMobs plugin's `Mobs/` directory **only if the file does not already exist**. This means:
+McRPG extracts the bundled pack files to `plugins/MythicMobs/Packs/McRPG/` **only if each file does not already exist**. This means:
 - First install: file is auto-extracted, mob works out of the box
 - Subsequent runs: server owner's modifications are preserved
 - Updates: McRPG never overwrites a customized file. If the bundled version changes, server owners must manually update or delete-and-restart.
 
-### 2.6 Pure MythicMobs — No McRPG Runtime Dependency for Mob Behavior
+### 2.6 McRPG Owns Ability Execution, MM Owns AI
 
-The `RiptideGuardian.yml` is a standard MythicMobs config file. The mob's combat abilities (Phase Shift, Whirlpool, etc.) work entirely within MM's skill system. The only McRPG dependency is the `mcrpg_skillbook` custom drop type in the loot table — if McRPG is removed, the mob still functions but those specific drops won't generate.
+The mob's combat abilities are executed via a custom MythicMobs mechanic (`mcrpg_ability`) that delegates to McRPG's ability system. MythicMobs owns the AI layer — when to fire, cooldowns, conditions, and targeting — while McRPG owns execution: damage formulas, effects, attribute scaling, and event firing.
+
+This means:
+- **Balance is centralized** — tuning an ability in McRPG automatically applies to mob and (future) player versions
+- **McRPG events fire** — `AbilityActivateEvent` etc. can be observed by quests, stats, and other systems
+- **`AbilityHolder` is entity-agnostic** — the existing holder hierarchy supports non-player entities by design (see CLAUDE.md)
+- **McRPG is required** — if McRPG is removed, the mob's `mcrpg_ability` mechanics become no-ops (MM logs unknown mechanic). The mob still spawns but only melees. Server owners who want a standalone mob can replace `mcrpg_ability` calls with pure-MM skill implementations.
 
 ### 2.7 Despawn Owned by MythicMobs
 
@@ -169,29 +193,133 @@ RiptideGuardian:
 
 ## 4. Mob Abilities (MythicMobs Skills)
 
-All abilities are implemented as MythicMobs skills using MM's native mechanics. The mob uses all four abilities from the HLD — these are the mob's combat kit, independent of which ones drop as skill books.
+All four abilities from the HLD are present in the mob's combat kit. Two of them (Phase Shift, Whirlpool) are implemented via the `mcrpg_ability` custom mechanic — McRPG owns execution while MM owns AI/targeting. The other two (Waterlogged Strike, Tsunami Wall) are pure-MM skills because they don't have player ability equivalents and would gain nothing from the bridge.
 
-### 4.1 Phase Shift
+### Custom Mechanic: `mcrpg_ability`
+
+**Class:** `us.eunoians.mcrpg.external.mythicmobs.McRPGAbilityMechanic`
+
+Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, creates a temporary `AbilityHolder` for the mob, and delegates to the McRPG ability's execution logic.
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs;
+
+import io.lumine.mythic.api.adapters.AbstractEntity;
+import io.lumine.mythic.api.config.MythicLineConfig;
+import io.lumine.mythic.api.skills.ITargetedEntitySkill;
+import io.lumine.mythic.api.skills.SkillMetadata;
+import io.lumine.mythic.api.skills.SkillResult;
+import io.lumine.mythic.bukkit.BukkitAdapter;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+
+/**
+ * A custom MythicMobs mechanic that delegates ability execution to McRPG.
+ * <p>
+ * MythicMobs owns AI (when to fire, conditions, cooldowns, targeting).
+ * McRPG owns execution (damage, effects, scaling, events).
+ * <p>
+ * Usage in MythicMobs YAML:
+ * <pre>
+ *   Skills:
+ *   - mcrpg_ability{ability=mcrpg:phase_shift} @target
+ * </pre>
+ */
+public class McRPGAbilityMechanic implements ITargetedEntitySkill {
+
+    private final NamespacedKey abilityKey;
+
+    public McRPGAbilityMechanic(@NotNull MythicLineConfig config) {
+        String keyString = config.getString("ability", "");
+        this.abilityKey = NamespacedKey.fromString(keyString);
+    }
+
+    @Override
+    @NotNull
+    public SkillResult castAtEntity(@NotNull SkillMetadata data,
+                                     @NotNull AbstractEntity target) {
+        if (abilityKey == null) {
+            return SkillResult.CONDITION_FAILED;
+        }
+
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess()
+                .registry(McRPGRegistryKey.ABILITY);
+        if (!abilityRegistry.registered(abilityKey)) {
+            return SkillResult.CONDITION_FAILED;
+        }
+
+        AbstractEntity casterEntity = data.getCaster().getEntity();
+        LivingEntity bukkitCaster = (LivingEntity) BukkitAdapter.adapt(casterEntity);
+        LivingEntity bukkitTarget = (LivingEntity) BukkitAdapter.adapt(target);
+
+        // Create a transient AbilityHolder for the mob caster
+        AbilityHolder mobHolder = new AbilityHolder(McRPG.getInstance(),
+                bukkitCaster.getUniqueId());
+
+        Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
+        ability.executeMobAbility(mobHolder, bukkitCaster, bukkitTarget);
+
+        return SkillResult.SUCCESS;
+    }
+}
+```
+
+**Key design points:**
+- `AbilityHolder` is entity-agnostic (see CLAUDE.md) — no player assumptions
+- The `executeMobAbility()` method is a new contract on `Ability` that accepts a holder, caster entity, and target entity. This separates mob execution from the player component/ready/cooldown pipeline.
+- MM cooldowns prevent double-firing — McRPG does not manage cooldowns for mob abilities
+- McRPG events (`AbilityActivateEvent`) fire during execution, enabling quest/stat tracking
+- If the ability isn't registered (e.g., LLD-6 hasn't been implemented yet), the mechanic returns `CONDITION_FAILED` and MM falls through to the next skill in the priority list
+
+**Mechanic registration** (added to `MythicMobsListener`):
+
+```java
+@EventHandler
+public void onMythicMechanicLoad(@NotNull MythicMechanicLoadEvent event) {
+    if (event.getMechanicName().equalsIgnoreCase("mcrpg_ability")) {
+        event.register(new McRPGAbilityMechanic(event.getConfig()));
+    }
+}
+```
+
+**Graceful fallback for unimplemented abilities:** Until LLD-6 implements the player abilities (Phase Shift, Whirlpool, etc.), `abilityRegistry.registered()` returns false and the mechanic returns `CONDITION_FAILED`. The mob YAML includes pure-MM fallback skills that fire when the `mcrpg_ability` call fails, ensuring the mob works immediately without waiting for LLD-6.
+
+### 4.1 Phase Shift (mcrpg_ability bridge)
 
 **Purpose:** Anti-cheese teleport that punishes pillar-up, wall-in, and range-kiting tactics.
 
 **Trigger:** Target is >8 blocks away OR out of line-of-sight for 3+ seconds.
 
-**MythicMobs Skill:**
+**MythicMobs Skill (with fallback):**
+
+The skill first attempts `mcrpg_ability` to delegate execution to McRPG. If the ability isn't registered yet (e.g., LLD-6 not implemented), `mcrpg_ability` returns `CONDITION_FAILED` and MM falls through to the pure-MM `PhaseShiftFallback` skill.
 
 ```yaml
 PhaseShift:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:phase_shift} @target
+  - skill:PhaseShiftFallback
+  Cooldown: 8
+  Conditions:
+  - distance{d=>8} @target
+  TargetConditions:
+  - lineofsight false
+
+# Pure-MM fallback — used until LLD-6 implements the McRPG ability.
+# Server owners can also replace mcrpg_ability with this directly.
+PhaseShiftFallback:
   Skills:
   - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
   - sound{s=entity.enderman.teleport;v=1.0;p=0.8} @self
   - teleport{target=@target;offset=0,-1,-2} @self
   - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
   - sound{s=entity.enderman.teleport;v=1.0;p=1.2} @self
-  Cooldown: 8
-  Conditions:
-  - distance{d=>8} @target
-  TargetConditions:
-  - lineofsight false
 ```
 
 **Notes:**
@@ -199,23 +327,32 @@ PhaseShift:
 - Two sets of particles: origin (before teleport) and destination (after)
 - Pitch variation on sound (0.8 → 1.2) gives auditory feedback for the teleport direction
 - The `distance` and `lineofsight` conditions are OR'd — MM evaluates the skill tree and fires if either condition triggers
+- When `mcrpg_ability` succeeds, the fallback skill is skipped because the main skill already executed. When it returns `CONDITION_FAILED`, MM continues to the fallback.
 
-### 4.2 Whirlpool
+### 4.2 Whirlpool (mcrpg_ability bridge)
 
 **Purpose:** AoE zone that forces movement and prevents face-tanking.
 
 **Trigger:** Target is within 5 blocks (close-range engagement).
 
-**MythicMobs Skill:**
+**MythicMobs Skill (with fallback):**
+
+Same pattern as Phase Shift — `mcrpg_ability` first, pure-MM fallback second.
 
 ```yaml
 Whirlpool:
   Skills:
-  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
-  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
+  - mcrpg_ability{ability=mcrpg:whirlpool} @target
+  - skill:WhirlpoolFallback
   Cooldown: 12
   Conditions:
   - distance{d=<5} @target
+
+# Pure-MM fallback — used until LLD-6 implements the McRPG ability.
+WhirlpoolFallback:
+  Skills:
+  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
+  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
 
 WhirlpoolTick:
   Skills:
@@ -233,6 +370,7 @@ WhirlpoolTick:
 - `pk=false` prevents knockback on damage ticks (players should be slowed, not knocked out of the zone)
 - `pi=5` sets damage invulnerability to 5 ticks, preventing double-damage from overlapping ticks
 - Slowness II (`l=1`, 0-indexed) for 2 seconds (`d=40` ticks) refreshed each tick
+- `WhirlpoolTick` is shared by both the fallback and by `mcrpg_ability`'s McRPG-side implementation (which may reference it or provide its own VFX)
 
 ### 4.3 Waterlogged Strike
 
@@ -312,13 +450,15 @@ MythicMobs evaluates skills top-to-bottom. The first skill whose conditions are 
 
 ```yaml
 Skills:
-- skill:PhaseShift      # Priority 1: unreachable target
-- skill:WaterloggedStrike  # Priority 2: mid-range target
-- skill:Whirlpool        # Priority 3: close-range target
-- skill:TsunamiWall      # Priority 4: low HP defense
+- skill:PhaseShift        # Priority 1: unreachable target (mcrpg_ability → fallback)
+- skill:WaterloggedStrike # Priority 2: mid-range target (pure MM)
+- skill:Whirlpool         # Priority 3: close-range target (mcrpg_ability → fallback)
+- skill:TsunamiWall       # Priority 4: low HP defense (pure MM)
 ```
 
 Melee attacks are handled by MM's default AI — when no skills fire, the mob melees.
+
+**Fallback behavior:** Phase Shift and Whirlpool each contain an `mcrpg_ability` call followed by a pure-MM fallback skill. If McRPG's ability system handles the execution, the fallback is skipped. If the ability isn't registered (pre-LLD-6) or McRPG is absent, the fallback fires automatically. This means the mob works identically whether or not LLD-6 has been implemented — the only difference is whether McRPG events fire and ability scaling applies.
 
 ---
 
@@ -530,9 +670,11 @@ A shared skill used by both triggers. Plays a water-burst VFX and sound before r
 
 ---
 
-## 7. Full RiptideGuardian.yml
+## 7. Full Pack Files
 
-This is the complete, ready-to-use MythicMobs configuration file bundled in the McRPG JAR.
+The Riptide Guardian configuration ships as a MythicMobs pack with three files. Each file below is the complete, ready-to-use version bundled in the McRPG JAR.
+
+### 7.1 Mobs/RiptideGuardian.yml
 
 ```yaml
 #
@@ -541,15 +683,12 @@ This is the complete, ready-to-use MythicMobs configuration file bundled in the 
 # This file is auto-extracted by McRPG on first startup.
 # Customize freely — McRPG will not overwrite your changes.
 #
-# Requires: MythicMobs 5.7+, McRPG (for mcrpg_skillbook drop type
-# and mcrpg_ability_unlocked condition)
+# Requires: MythicMobs 5.7+, McRPG (for mcrpg_skillbook drop type,
+# mcrpg_ability mechanic, and mcrpg_ability_unlocked condition)
 #
-# Drop tables use the mcrpg_skillbook custom drop type and
-# mcrpg_ability_unlocked condition to reduce rates for players
-# who already unlocked the ability.
-#
-# If McRPG is removed, the mob still functions but skill book
-# drops and unlock conditions will not work.
+# If McRPG is removed, the mob still spawns and melees but
+# mcrpg_ability skills become no-ops (fallbacks fire instead)
+# and skill book drops silently fail.
 #
 
 RiptideGuardian:
@@ -580,53 +719,68 @@ RiptideGuardian:
   - skill:TsunamiWall
   - skill:DespawnSelf ~onTimer:6000
   - skill:DespawnSelf ~onCombat:600
+```
 
-# ─── Drop Tables ────────────────────────────────────────────
+### 7.2 Skills/RiptideGuardianSkills.yml
+
+```yaml
 #
-# Each skill book has two tables: full rate (ability not unlocked)
-# and reduced rate (ability already unlocked). The
-# mcrpg_ability_unlocked condition checks the killer's McRPG
-# unlock state.
+# Riptide Guardian Skills — McRPG Fishing Mob
+#
+# Phase Shift and Whirlpool use the mcrpg_ability mechanic to
+# delegate execution to McRPG's ability system. Each includes a
+# pure-MM fallback skill that fires when mcrpg_ability returns
+# CONDITION_FAILED (e.g., before LLD-6 is implemented, or if
+# McRPG is removed).
+#
+# Waterlogged Strike and Tsunami Wall are pure-MM skills with
+# no McRPG bridge (mob-only abilities, no player equivalent).
 #
 
-WhirlpoolBookDrop:
-  TriggerConditions:
-  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} false
-  Drops:
-  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
-
-WhirlpoolBookDropReduced:
-  TriggerConditions:
-  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} true
-  Drops:
-  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.02
-
-PhaseShiftBookDrop:
-  TriggerConditions:
-  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} false
-  Drops:
-  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
-
-PhaseShiftBookDropReduced:
-  TriggerConditions:
-  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} true
-  Drops:
-  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.01
-
-# ─── Abilities ──────────────────────────────────────────────
+# ─── Phase Shift (mcrpg_ability → fallback) ─────────────────
 
 PhaseShift:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:phase_shift} @target
+  - skill:PhaseShiftFallback
+  Cooldown: 8
+  Conditions:
+  - distance{d=>8} @target
+  TargetConditions:
+  - lineofsight false
+
+PhaseShiftFallback:
   Skills:
   - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
   - sound{s=entity.enderman.teleport;v=1.0;p=0.8} @self
   - teleport{target=@target;offset=0,-1,-2} @self
   - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
   - sound{s=entity.enderman.teleport;v=1.0;p=1.2} @self
-  Cooldown: 8
+
+# ─── Whirlpool (mcrpg_ability → fallback) ───────────────────
+
+Whirlpool:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:whirlpool} @target
+  - skill:WhirlpoolFallback
+  Cooldown: 12
   Conditions:
-  - distance{d=>8} @target
-  TargetConditions:
-  - lineofsight false
+  - distance{d=<5} @target
+
+WhirlpoolFallback:
+  Skills:
+  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
+  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
+
+WhirlpoolTick:
+  Skills:
+  - effect:particles{particle=WATER_SPLASH;amount=30;speed=0.3;xSpread=2.0;ySpread=0.3;zSpread=2.0} @origin
+  - effect:particles{particle=BUBBLE_POP;amount=10;speed=0.2;xSpread=1.5;ySpread=0.2;zSpread=1.5} @origin
+  - damage{a=3;pk=false;pi=5} @PlayersInRadius{r=4}
+  - potion{t=SLOWNESS;d=40;l=1} @PlayersInRadius{r=4}
+  - sound{s=block.bubble_column.whirlpool_ambient;v=0.6;p=1.0} @origin
+
+# ─── Waterlogged Strike (pure MM) ──────────────────────────
 
 WaterloggedStrike:
   Skills:
@@ -647,21 +801,7 @@ WaterloggedStrikeHit:
   - effect:particles{particle=SPLASH;amount=20;speed=0.5;xSpread=0.5;ySpread=0.5;zSpread=0.5} @target
   - sound{s=entity.generic.splash;v=1.0;p=1.2} @target
 
-Whirlpool:
-  Skills:
-  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
-  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
-  Cooldown: 12
-  Conditions:
-  - distance{d=<5} @target
-
-WhirlpoolTick:
-  Skills:
-  - effect:particles{particle=WATER_SPLASH;amount=30;speed=0.3;xSpread=2.0;ySpread=0.3;zSpread=2.0} @origin
-  - effect:particles{particle=BUBBLE_POP;amount=10;speed=0.2;xSpread=1.5;ySpread=0.2;zSpread=1.5} @origin
-  - damage{a=3;pk=false;pi=5} @PlayersInRadius{r=4}
-  - potion{t=SLOWNESS;d=40;l=1} @PlayersInRadius{r=4}
-  - sound{s=block.bubble_column.whirlpool_ambient;v=0.6;p=1.0} @origin
+# ─── Tsunami Wall (pure MM) ────────────────────────────────
 
 TsunamiWall:
   Skills:
@@ -689,11 +829,51 @@ DespawnSelf:
   - remove @self
 ```
 
+### 7.3 DropTables/RiptideGuardianDrops.yml
+
+```yaml
+#
+# Riptide Guardian Drop Tables — McRPG Fishing Mob
+#
+# Each skill book has two tables: full rate (ability not unlocked)
+# and reduced rate (ability already unlocked). The
+# mcrpg_ability_unlocked condition checks the killer's McRPG
+# unlock state.
+#
+# If McRPG is removed, mcrpg_skillbook and mcrpg_ability_unlocked
+# are unknown to MM — drop tables silently produce no items.
+#
+
+WhirlpoolBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+
+WhirlpoolBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.02
+
+PhaseShiftBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+
+PhaseShiftBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.01
+```
+
 ---
 
 ## 8. Resource Extraction
 
-McRPG bundles the `RiptideGuardian.yml` inside the JAR at `mythicmobs/RiptideGuardian.yml`. On startup, when MythicMobs is present, the file is extracted to the MythicMobs plugin's `Mobs/` directory.
+McRPG bundles the pack files inside the JAR under `mythicmobs/Packs/McRPG/`. On startup, when MythicMobs is present, the entire pack directory structure is extracted to `plugins/MythicMobs/Packs/McRPG/`.
 
 ### Extraction Logic
 
@@ -713,70 +893,77 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Extracts bundled MythicMobs configuration files from the McRPG JAR
- * to the MythicMobs plugin's data directory on first startup.
+ * Extracts bundled MythicMobs pack files from the McRPG JAR to the
+ * MythicMobs Packs directory on first startup.
  * <p>
  * Files are only extracted if they do not already exist in the target
- * directory, preserving any server-owner customizations.
+ * directory, preserving any server-owner customizations. The pack is
+ * deployed to {@code plugins/MythicMobs/Packs/McRPG/}.
  */
 public class MythicMobsConfigExtractor {
 
     /**
-     * Bundled mob config files (JAR-relative paths under {@code mythicmobs/}).
-     * Add new entries here when additional example mobs are shipped.
+     * Bundled pack files (paths relative to the pack root).
+     * Add new entries here when additional mobs or configs are shipped.
      */
-    private static final List<String> BUNDLED_MOB_CONFIGS = List.of(
-            "RiptideGuardian.yml"
+    private static final List<String> BUNDLED_PACK_FILES = List.of(
+            "Mobs/RiptideGuardian.yml",
+            "Skills/RiptideGuardianSkills.yml",
+            "DropTables/RiptideGuardianDrops.yml"
     );
 
-    private static final String JAR_RESOURCE_PREFIX = "mythicmobs/";
+    private static final String JAR_RESOURCE_PREFIX = "mythicmobs/Packs/McRPG/";
 
     private MythicMobsConfigExtractor() {
     }
 
     /**
-     * Extracts all bundled mob configs to the MythicMobs {@code Mobs/} directory.
-     * Skips any file that already exists on disk.
+     * Extracts all bundled pack files to the MythicMobs
+     * {@code Packs/McRPG/} directory. Skips any file that already
+     * exists on disk.
      *
      * @param plugin the McRPG plugin instance
      */
     public static void extractBundledConfigs(@NotNull McRPG plugin) {
-        Path mythicMobsDataFolder = plugin.getDataFolder().toPath()
+        Path packRoot = plugin.getDataFolder().toPath()
                 .getParent()  // plugins/
                 .resolve("MythicMobs")
-                .resolve("Mobs");
+                .resolve("Packs")
+                .resolve("McRPG");
 
-        if (!Files.exists(mythicMobsDataFolder)) {
-            try {
-                Files.createDirectories(mythicMobsDataFolder);
-            } catch (IOException e) {
-                plugin.getLogger().log(Level.WARNING,
-                        "Could not create MythicMobs Mobs directory for config extraction", e);
-                return;
-            }
-        }
+        for (String relativePath : BUNDLED_PACK_FILES) {
+            Path targetFile = packRoot.resolve(relativePath);
 
-        for (String fileName : BUNDLED_MOB_CONFIGS) {
-            Path targetFile = mythicMobsDataFolder.resolve(fileName);
             if (Files.exists(targetFile)) {
-                plugin.getLogger().info("MythicMobs config '" + fileName
-                        + "' already exists, skipping extraction.");
+                plugin.getLogger().info("MythicMobs pack file '"
+                        + relativePath + "' already exists, skipping extraction.");
                 continue;
             }
 
-            String resourcePath = JAR_RESOURCE_PREFIX + fileName;
+            // Ensure parent directories exist (e.g., Mobs/, Skills/, DropTables/)
+            try {
+                Files.createDirectories(targetFile.getParent());
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING,
+                        "Could not create directory for MythicMobs pack file '"
+                                + relativePath + "'", e);
+                continue;
+            }
+
+            String resourcePath = JAR_RESOURCE_PREFIX + relativePath;
             try (InputStream resourceStream = plugin.getResource(resourcePath)) {
                 if (resourceStream == null) {
-                    plugin.getLogger().warning("Bundled MythicMobs config '"
+                    plugin.getLogger().warning("Bundled MythicMobs pack file '"
                             + resourcePath + "' not found in JAR.");
                     continue;
                 }
                 Files.copy(resourceStream, targetFile);
-                plugin.getLogger().info("Extracted MythicMobs config '"
-                        + fileName + "' to " + targetFile);
+                plugin.getLogger().info("Extracted MythicMobs pack file '"
+                        + relativePath + "' to " + targetFile);
             } catch (IOException e) {
                 plugin.getLogger().log(Level.WARNING,
-                        "Failed to extract MythicMobs config '" + fileName + "'", e);
+                        "Failed to extract MythicMobs pack file '"
+                                + relativePath + "'", e);
             }
         }
     }
@@ -785,16 +972,19 @@ public class MythicMobsConfigExtractor {
 
 ### Why Not `plugin.saveResource()`?
 
-Bukkit's `saveResource()` writes to the plugin's own data folder (`plugins/McRPG/`). We need to write to `plugins/MythicMobs/Mobs/`, which is a sibling plugin's directory. Direct `Files.copy()` from an `InputStream` is the simplest approach.
+Bukkit's `saveResource()` writes to the plugin's own data folder (`plugins/McRPG/`). We need to write to `plugins/MythicMobs/Packs/McRPG/`, which is a sibling plugin's directory. Direct `Files.copy()` from an `InputStream` is the simplest approach.
 
-### JAR Resource Location
+### JAR Resource Layout
 
-The YAML file is placed at:
+The pack files are placed at:
 ```
-src/main/resources/mythicmobs/RiptideGuardian.yml
+src/main/resources/mythicmobs/Packs/McRPG/
+  Mobs/RiptideGuardian.yml
+  Skills/RiptideGuardianSkills.yml
+  DropTables/RiptideGuardianDrops.yml
 ```
 
-Gradle packages it into the JAR at `mythicmobs/RiptideGuardian.yml`, accessible via `plugin.getResource("mythicmobs/RiptideGuardian.yml")`.
+Gradle packages them into the JAR preserving the directory structure, accessible via `plugin.getResource("mythicmobs/Packs/McRPG/Mobs/RiptideGuardian.yml")` etc.
 
 ---
 
@@ -890,10 +1080,11 @@ Drops:
 | Scenario | Behavior |
 |----------|----------|
 | MythicMobs not installed | Extraction is skipped (hook check). Mob pool references `RiptideGuardian` but `MythicMobsHook.spawnMob()` returns empty. No crash. |
-| McRPG removed after extraction | `RiptideGuardian.yml` remains on disk. Mob works normally in MM. `mcrpg_skillbook` drops silently fail (MM logs unknown drop type). |
-| Server owner deletes the YAML | Mob stops spawning (MM can't find type ID). Next McRPG restart re-extracts the file. |
-| Server owner modifies the YAML | McRPG never overwrites existing files. Modifications are preserved across restarts and updates. |
-| MythicMobs `Mobs/` directory doesn't exist | Extractor creates it via `Files.createDirectories()`. |
+| McRPG removed after extraction | Pack files remain on disk. Mob spawns and melees normally. `mcrpg_ability` mechanics log "unknown mechanic" and fallback skills fire. `mcrpg_skillbook` drops silently fail. |
+| LLD-6 not yet implemented | `mcrpg_ability` returns `CONDITION_FAILED` (ability not in registry). Fallback skills fire — mob combat works identically via pure MM. |
+| Server owner deletes a pack file | Mob stops spawning (MM can't find type ID). Next McRPG restart re-extracts the missing file. |
+| Server owner modifies pack files | McRPG never overwrites existing files. Modifications are preserved across restarts and updates. |
+| MythicMobs `Packs/McRPG/` directory doesn't exist | Extractor creates it and subdirectories via `Files.createDirectories()`. |
 | Multiple McRPG instances (BungeeCord) | Each server instance extracts independently. No cross-server conflict. |
 | `plugin.getResource()` returns null | Logged as warning, extraction skipped for that file. Other files still extracted. |
 | MM loads before McRPG enables | File won't be present for MM's initial load. Available after `/mm reload` or server restart. Acceptable for first-run only. |
@@ -907,8 +1098,8 @@ Drops:
 | Test | Class | Assertion |
 |------|-------|-----------|
 | Extractor skips existing file | `MythicMobsConfigExtractorTest` | When target file exists, `Files.copy()` is not called |
-| Extractor creates missing directory | `MythicMobsConfigExtractorTest` | When `Mobs/` directory doesn't exist, it is created |
-| Extractor copies file content | `MythicMobsConfigExtractorTest` | Extracted file matches JAR resource byte-for-byte |
+| Extractor creates missing pack directories | `MythicMobsConfigExtractorTest` | When `Packs/McRPG/Mobs/` etc. don't exist, they are created |
+| Extractor copies all pack files | `MythicMobsConfigExtractorTest` | All 3 extracted files match JAR resources byte-for-byte |
 | Extractor handles missing resource | `MythicMobsConfigExtractorTest` | When JAR resource is null, logs warning and continues |
 | Extractor handles IO failure | `MythicMobsConfigExtractorTest` | When `Files.copy()` throws, logs warning and continues to next file |
 
@@ -916,7 +1107,7 @@ Drops:
 
 | Scenario | Steps | Expected |
 |----------|-------|----------|
-| First-run extraction | Install McRPG + MM, start server | `plugins/MythicMobs/Mobs/RiptideGuardian.yml` appears |
+| First-run extraction | Install McRPG + MM, start server | `plugins/MythicMobs/Packs/McRPG/` directory appears with all 3 files |
 | Mob spawns via fishing | Fish until spawn triggers | Riptide Guardian (drowned) spawns near hook |
 | Phase Shift fires | Pillar up >8 blocks | Mob teleports behind player with portal particles |
 | Whirlpool fires | Stand within 5 blocks | AoE zone appears, deals damage + slowness |
@@ -934,10 +1125,13 @@ Drops:
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/main/resources/mythicmobs/RiptideGuardian.yml` | **NEW** | Bundled MythicMobs mob configuration with DropTables |
-| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsConfigExtractor.java` | **NEW** | Extracts bundled configs to MM's data directory |
+| `src/main/resources/mythicmobs/Packs/McRPG/Mobs/RiptideGuardian.yml` | **NEW** | Mob definition (type, stats, options, skill/drop refs) |
+| `src/main/resources/mythicmobs/Packs/McRPG/Skills/RiptideGuardianSkills.yml` | **NEW** | All skills: Phase Shift, Whirlpool (with fallbacks), Waterlogged Strike, Tsunami Wall, DespawnSelf |
+| `src/main/resources/mythicmobs/Packs/McRPG/DropTables/RiptideGuardianDrops.yml` | **NEW** | Unlock-aware skill book drop tables (4 tables for 2 abilities) |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsConfigExtractor.java` | **NEW** | Extracts bundled pack files to `plugins/MythicMobs/Packs/McRPG/` |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityMechanic.java` | **NEW** | Custom MM mechanic: delegates ability execution to McRPG |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityUnlockedCondition.java` | **NEW** | Custom MM condition: checks player's ability unlock state |
-| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add `MythicConditionLoadEvent` handler for condition registration |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add `MythicMechanicLoadEvent` and `MythicConditionLoadEvent` handlers |
 | `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call after hook registration |
 
 ---
@@ -950,14 +1144,18 @@ Will define a new `UnlockCondition` interface that replaces the current `Unlocka
 
 ### LLD-6 (Player Abilities)
 
-Will define the player-side implementations of Phase Shift and Whirlpool as McRPG abilities. These are the abilities unlocked by the skill books dropped by this mob. Deferred until the ability system rework is complete.
+Will define the player-side implementations of Phase Shift and Whirlpool as McRPG abilities. These are the abilities unlocked by the skill books dropped by this mob. Key interactions with this LLD:
+
+- **`executeMobAbility()` contract:** LLD-6 must implement the `Ability.executeMobAbility(AbilityHolder, LivingEntity, LivingEntity)` method introduced by `McRPGAbilityMechanic` (this LLD). This is the bridge that allows MM to trigger McRPG ability execution on the mob.
+- **Event compatibility pass:** `AbilityActivateEvent` and related events may currently assume player-only context. LLD-6 should audit event fields and listeners to ensure they handle non-player `AbilityHolder` instances (the `AbilityHolder` base class is already entity-agnostic).
+- **Fallback removal:** Once LLD-6 registers Phase Shift and Whirlpool in the `AbilityRegistry`, the `mcrpg_ability` mechanic will find them and the pure-MM fallback skills (`PhaseShiftFallback`, `WhirlpoolFallback`) will no longer fire. The fallbacks can remain in the YAML for server owners who want a standalone mob without McRPG.
 
 ### Future: Additional Mobs
 
-The extraction system (`BUNDLED_MOB_CONFIGS` list) is designed for multiple files. Future mobs (e.g., Cavern Golem for mining, Timber Wraith for woodcutting) can be added by:
-1. Creating a new YAML file in `src/main/resources/mythicmobs/`
-2. Adding the filename to `MythicMobsConfigExtractor.BUNDLED_MOB_CONFIGS`
-3. Adding the mob to `fishing_mob_spawn_configuration.yml`'s mob pool
+The pack structure and extraction system (`BUNDLED_PACK_FILES` list) are designed for multiple mobs. Future mobs (e.g., Cavern Golem for mining, Timber Wraith for woodcutting) can be added by:
+1. Creating new YAML files in the appropriate `src/main/resources/mythicmobs/Packs/McRPG/` subdirectories
+2. Adding the relative paths to `MythicMobsConfigExtractor.BUNDLED_PACK_FILES`
+3. Adding the mob to the relevant skill's mob pool config (e.g., `fishing_mob_spawn_configuration.yml`)
 
 ### Future: ModelEngine Integration
 
