@@ -453,12 +453,12 @@ A cancellable Bukkit event fired when a player right-clicks a skill book. Fired 
 package us.eunoians.mcrpg.event.item;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.entity.player.McRPGPlayerEvent;
 
 /**
  * Fired when a player attempts to consume a skill book.
@@ -471,10 +471,10 @@ import org.jetbrains.annotations.NotNull;
  * <ul>
  *   <li>Gate consumption behind additional conditions (location, level, currency)</li>
  *   <li>Log or track skill book usage</li>
- *   <li>Replace or modify the item before consumption</li>
+ *   <li>Inspect the item being consumed (read-only clone)</li>
  * </ul>
  */
-public class SkillBookConsumeEvent extends PlayerEvent implements Cancellable {
+public class SkillBookConsumeEvent extends McRPGPlayerEvent implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
 
@@ -485,14 +485,14 @@ public class SkillBookConsumeEvent extends PlayerEvent implements Cancellable {
     /**
      * Creates a new skill book consume event.
      *
-     * @param player     the player consuming the skill book
-     * @param abilityKey the {@link NamespacedKey} of the ability being unlocked
-     * @param itemStack  the skill book item being consumed
+     * @param mcRPGPlayer the player consuming the skill book
+     * @param abilityKey  the {@link NamespacedKey} of the ability being unlocked
+     * @param itemStack   the skill book item being consumed
      */
-    public SkillBookConsumeEvent(@NotNull Player player,
+    public SkillBookConsumeEvent(@NotNull McRPGPlayer mcRPGPlayer,
                                  @NotNull NamespacedKey abilityKey,
                                  @NotNull ItemStack itemStack) {
-        super(player);
+        super(mcRPGPlayer);
         this.abilityKey = abilityKey;
         this.itemStack = itemStack;
         this.cancelled = false;
@@ -509,13 +509,17 @@ public class SkillBookConsumeEvent extends PlayerEvent implements Cancellable {
     }
 
     /**
-     * Gets the skill book item stack being consumed.
+     * Gets a defensive copy of the skill book item stack being consumed.
+     * <p>
+     * Returns a clone so that event listeners cannot mutate the actual item
+     * in the player's inventory. The real item is removed by the consumption
+     * listener after this event completes uncancelled.
      *
-     * @return the item stack (not a copy — modifications affect the original)
+     * @return a clone of the skill book item stack
      */
     @NotNull
     public ItemStack getItemStack() {
-        return itemStack;
+        return itemStack.clone();
     }
 
     @Override
@@ -543,8 +547,8 @@ public class SkillBookConsumeEvent extends PlayerEvent implements Cancellable {
 
 ### 6.1 Design Notes
 
-- **Extends `PlayerEvent`** rather than a custom base class. Skill book consumption is player-centric, not ability-centric — the ability may not even exist yet (invalid key scenario).
-- **Item stack is not copied.** Listeners can inspect but should not modify the item in ways that break PDC tags. The listener removes the item *after* the event completes uncancelled.
+- **Extends `McRPGPlayerEvent`** — follows the project convention for player-centric events, providing `getMcRPGPlayer()` instead of raw Bukkit `Player`. This gives event listeners access to the full `McRPGPlayer` (ability data, loadout, locale, etc.) without a secondary lookup.
+- **Defensive item clone:** `getItemStack()` returns `itemStack.clone()` so listeners cannot mutate the actual item in the player's inventory. The real item is removed by the consumption listener after the event completes uncancelled.
 
 ---
 
@@ -597,7 +601,7 @@ import java.util.Optional;
  */
 public class SkillBookConsumeListener implements Listener {
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteract(@NotNull PlayerInteractEvent event) {
         // Only handle right-click actions
         if (event.getAction() != Action.RIGHT_CLICK_AIR
@@ -687,7 +691,7 @@ public class SkillBookConsumeListener implements Listener {
 
         // Fire SkillBookConsumeEvent (cancellable)
         SkillBookConsumeEvent consumeEvent = new SkillBookConsumeEvent(
-                player, abilityKey, item);
+                mcRPGPlayer, abilityKey, item);
         Bukkit.getPluginManager().callEvent(consumeEvent);
 
         if (consumeEvent.isCancelled()) {
@@ -746,7 +750,7 @@ PlayerInteractEvent (RIGHT_CLICK)
 
 ### 7.2 Design Notes
 
-- **`EventPriority.NORMAL`** rather than `MONITOR` because this listener cancels the `PlayerInteractEvent` to prevent the enchanted book's default behavior (opening book UI).
+- **`EventPriority.LOWEST`** — runs before other plugins' listeners on `PlayerInteractEvent`. This ensures McRPG claims the right-click and cancels the event before other plugins (e.g., interaction protection plugins) can interfere. The event is cancelled to prevent the enchanted book's default behavior.
 - **Dual-hand guard:** `event.getHand() != EquipmentSlot.HAND` prevents the listener from firing twice (once per hand) on a single right-click.
 - **Always registered:** Unlike fishing mob listeners, this listener does not require MythicMobs. Skill books can originate from quest rewards, admin commands, or other sources.
 - **AbilityUnlockEvent reuse:** The listener does not duplicate messaging or loadout logic. It sets the unlock attribute and fires `AbilityUnlockEvent`, which `OnAbilityUnlockListener` already handles.
@@ -763,11 +767,12 @@ A `QuestRewardType` implementation that grants a physical skill book item to the
 
 ```yaml
 rewards:
-  - type: mcrpg:skill_book
+  phase_shift_book:             # unique reward identifier (used for localization routing)
+    type: mcrpg:skill_book
     ability: "mcrpg:phase_shift"
 ```
 
-The `ability` key is the full `NamespacedKey` string of the ability the skill book unlocks.
+Each reward entry is keyed by a unique identifier (e.g., `phase_shift_book`), following the same keyed-map pattern used by all existing reward types (`herbalism_xp:`, `diamond_reward:`, etc.). The key serves as both a human-readable label and the localization route suffix. The `ability` value is the full `NamespacedKey` string of the ability the skill book unlocks.
 
 ### 8.2 Class Design
 
@@ -797,7 +802,8 @@ import java.util.OptionalLong;
  * Config format:
  * <pre>
  * rewards:
- *   - type: mcrpg:skill_book
+ *   phase_shift_book:
+ *     type: mcrpg:skill_book
  *     ability: "mcrpg:phase_shift"
  * </pre>
  */
@@ -810,21 +816,26 @@ public class SkillBookRewardType implements QuestRewardType {
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "skill_book");
 
     private final NamespacedKey abilityKey;
+    private final Route localizationRoute;
 
     /**
      * Base (unconfigured) constructor for registry registration.
      */
     public SkillBookRewardType() {
         this.abilityKey = null;
+        this.localizationRoute = null;
     }
 
     /**
      * Configured constructor with a specific ability key.
      *
-     * @param abilityKey the ability this skill book unlocks
+     * @param abilityKey        the ability this skill book unlocks
+     * @param localizationRoute the auto-derived localization route, or null
      */
-    private SkillBookRewardType(@NotNull NamespacedKey abilityKey) {
+    private SkillBookRewardType(@NotNull NamespacedKey abilityKey,
+                                @Nullable Route localizationRoute) {
         this.abilityKey = abilityKey;
+        this.localizationRoute = localizationRoute;
     }
 
     @Override
@@ -842,7 +853,13 @@ public class SkillBookRewardType implements QuestRewardType {
             throw new IllegalArgumentException(
                     "Invalid ability key in skill_book reward: " + abilityKeyString);
         }
-        return new SkillBookRewardType(parsedKey);
+        return new SkillBookRewardType(parsedKey, null);
+    }
+
+    @Override
+    @NotNull
+    public QuestRewardType withLocalizationRoute(@NotNull Route route) {
+        return new SkillBookRewardType(abilityKey, route);
     }
 
     @Override
@@ -894,7 +911,7 @@ public class SkillBookRewardType implements QuestRewardType {
             throw new IllegalArgumentException(
                     "Invalid ability key in serialized skill_book reward: " + abilityKeyString);
         }
-        return new SkillBookRewardType(parsedKey);
+        return new SkillBookRewardType(parsedKey, this.localizationRoute);
     }
 
     @Override
@@ -909,7 +926,6 @@ public class SkillBookRewardType implements QuestRewardType {
         if (abilityKey == null) {
             return "Skill Book";
         }
-        // Use server default locale to resolve the item name for display
         McRPG plugin = McRPG.getInstance();
         McRPGLocalizationManager localizationManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
@@ -929,14 +945,29 @@ public class SkillBookRewardType implements QuestRewardType {
         McRPGLocalizationManager localizationManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
+
         // Resolve the ability's localized display name for this player
         String abilityName = plugin.registryAccess()
                 .registry(McRPGRegistryKey.ABILITY)
                 .getRegisteredAbility(abilityKey)
                 .map(ability -> plugin.getMiniMessage().serialize(ability.getDisplayName(player)))
                 .orElse(SkillBookFactory.formatKeyAsDisplayName(abilityKey));
+
+        Map<String, String> placeholders = Map.of("ability", abilityName);
+
+        // Localization chain (follows CommandRewardType pattern):
+        // 1. Auto-derived localizationRoute (set by withLocalizationRoute())
+        // 2. Fallback to generic SKILL_BOOK_ITEM_NAME key
+        if (localizationRoute != null) {
+            try {
+                return localizationManager.getLocalizedMessage(
+                        player, localizationRoute, placeholders);
+            } catch (Exception ignored) {
+                // Route doesn't exist in locale — fall through to generic key
+            }
+        }
         return localizationManager.getLocalizedMessage(
-                player, LocalizationKey.SKILL_BOOK_ITEM_NAME, Map.of("ability", abilityName));
+                player, LocalizationKey.SKILL_BOOK_ITEM_NAME, placeholders);
     }
 }
 ```
@@ -947,7 +978,8 @@ public class SkillBookRewardType implements QuestRewardType {
 - **Player-aware grant:** `grant()` looks up the `McRPGPlayer` to use the player-aware factory overload, localizing the item to the receiving player's locale. Falls back to server default locale if the player isn't loaded yet (e.g., `PendingReward` on login).
 - **Overflow handling:** Follows `ItemRewardType`'s pattern — items that don't fit in the inventory are dropped naturally at the player's location.
 - **No amount scaling:** `withAmountMultiplier()` returns `this` unchanged (default behavior). Skill books are not scalable rewards — you get exactly one book per reward entry.
-- **Localized `describeForDisplay`:** Both the no-arg (server default) and player-aware overloads resolve the display label through the localization system, reusing the `SKILL_BOOK_ITEM_NAME` key.
+- **Localization chain for display:** `describeForDisplay(McRPGPlayer)` follows `CommandRewardType`'s pattern — tries the auto-derived `localizationRoute` first (allowing per-quest display overrides), then falls back to the generic `SKILL_BOOK_ITEM_NAME` localization key. The no-arg overload uses server default locale directly.
+- **`withLocalizationRoute` support:** Returns a new configured instance with the route stored, following the immutable pattern used by other reward types.
 - **Serialization:** Uses a simple `Map<String, Object>` with the `ability` key string, matching the YAML config format. This supports `PendingReward` persistence for offline players.
 
 ---
