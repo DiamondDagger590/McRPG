@@ -1,8 +1,8 @@
 # Low-Level Design: MythicMobs Binding System (LLD-1)
 
-**Status:** Draft
+**Status:** Implemented
 **Date:** 2026-03-16
-**HLD Reference:** [Riptide Guardian HLD](../hld/riptide_guardian.md), Sections 2, 10
+**HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Sections 2, 10
 **Scope:** Hook, integration facade, binding registry, config file, custom events, event listener
 
 ---

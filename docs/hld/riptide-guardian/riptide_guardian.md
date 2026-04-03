@@ -1,6 +1,6 @@
 # High-Level Design: Riptide Guardian Mob System
 
-**Status:** Draft
+**Status:** Approved
 **Date:** 2026-03-15
 **Author:** McRPG Team
 

@@ -1,6 +1,6 @@
 # Low-Level Design: Fishing Mob Spawn System (LLD-2)
 
-**Status:** Draft
+**Status:** In Review
 **Date:** 2026-03-16
 **HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Section 3
 **Scope:** Spawn tracker, mob pool, per-player state, config file, custom events, MythicMobs spawning
