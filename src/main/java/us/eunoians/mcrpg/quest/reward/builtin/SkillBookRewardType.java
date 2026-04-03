@@ -20,6 +20,8 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import us.eunoians.mcrpg.expansion.McRPGExpansion;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -204,5 +206,11 @@ public class SkillBookRewardType implements QuestRewardType {
             }
         }
         return localizationManager.getLocalizedMessage(player, LocalizationKey.SKILL_BOOK_ITEM_NAME, placeholders);
+    }
+
+    @NotNull
+    @Override
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }
 }

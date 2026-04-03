@@ -112,11 +112,17 @@ public class SkillBookConsumeListener implements Listener {
         }
 
         // Check if already unlocked
-        boolean isUnlocked = mcRPGPlayer.getAbilityData(abilityKey)
-                .flatMap(data -> data.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE))
-                .filter(attr -> attr instanceof AbilityUnlockedAttribute)
-                .map(attr -> ((AbilityUnlockedAttribute) attr).getContent())
-                .orElse(false);
+        var abilityDataOptional = mcRPGPlayer.asSkillHolder().getAbilityData(abilityKey);
+        if (abilityDataOptional.isEmpty()) {
+            return;
+        }
+        var abilityData = abilityDataOptional.get();
+        var unlockedAttrOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE);
+        if (unlockedAttrOptional.isEmpty()) {
+            return;
+        }
+        AbilityUnlockedAttribute unlockedAttribute = (AbilityUnlockedAttribute) unlockedAttrOptional.get();
+        boolean isUnlocked = unlockedAttribute.getContent();
 
         if (isUnlocked) {
             String abilityName = plugin.getMiniMessage().serialize(unlockableAbility.getDisplayName(mcRPGPlayer));
@@ -134,14 +140,10 @@ public class SkillBookConsumeListener implements Listener {
             return;
         }
 
-        // Unlock the ability — set attribute and fire AbilityUnlockEvent
-        mcRPGPlayer.getAbilityData(abilityKey).ifPresent(data -> {
-            data.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE)
-                    .filter(attr -> attr instanceof AbilityUnlockedAttribute)
-                    .ifPresent(attr -> ((AbilityUnlockedAttribute) attr).setContent(true));
-        });
+        // Unlock the ability — update attribute and fire AbilityUnlockEvent
+        abilityData.updateAttribute(unlockedAttribute, true);
 
-        AbilityUnlockEvent unlockEvent = new AbilityUnlockEvent(mcRPGPlayer, unlockableAbility);
+        AbilityUnlockEvent unlockEvent = new AbilityUnlockEvent(mcRPGPlayer.asSkillHolder(), unlockableAbility);
         Bukkit.getPluginManager().callEvent(unlockEvent);
 
         // Remove one skill book from the player's hand

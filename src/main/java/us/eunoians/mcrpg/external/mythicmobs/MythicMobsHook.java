@@ -41,7 +41,7 @@ public class MythicMobsHook extends PluginHook<McRPG> {
                                       double mobLevel) {
         Optional<MythicMob> mythicMob = MythicBukkit.inst().getMobManager().getMythicMob(mythicMobsId);
         if (mythicMob.isEmpty()) {
-            getPlugin().getLogger().warning("MythicMob type '" + mythicMobsId
+            plugin().getLogger().warning("MythicMob type '" + mythicMobsId
                     + "' not found in MythicMobs registry.");
             return Optional.empty();
         }

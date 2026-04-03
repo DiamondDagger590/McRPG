@@ -4,7 +4,7 @@ import io.lumine.mythic.api.adapters.AbstractItemStack;
 import io.lumine.mythic.api.config.MythicLineConfig;
 import io.lumine.mythic.api.drops.DropMetadata;
 import io.lumine.mythic.api.drops.IItemDrop;
-import io.lumine.mythic.bukkit.adapters.BukkitItemStack;
+import io.lumine.mythic.bukkit.adapters.item.ItemComponentBukkitItemStack;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +47,6 @@ public class McRPGSkillBookDrop implements IItemDrop {
     public AbstractItemStack getDrop(@NotNull DropMetadata dropMetadata, double amount) {
         ItemStack itemStack = SkillBookFactory.createSkillBook(
                 abilityKey, abilityDisplayName, Math.max(1, (int) amount));
-        return new BukkitItemStack(itemStack);
+        return new ItemComponentBukkitItemStack(itemStack);
     }
 }
