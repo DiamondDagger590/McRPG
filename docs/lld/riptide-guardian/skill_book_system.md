@@ -364,7 +364,7 @@ The existing `McRPGSkillBookDrop` is refactored to delegate item creation to `Sk
 ### 5.1 Changes
 
 1. **Remove** the `SKILL_BOOK_KEY` and `SKILL_BOOK_SKILL_KEY` constants (moved to `SkillBookFactory` as `SKILL_BOOK_KEY` and `SKILL_BOOK_ABILITY_KEY`).
-2. **Add** an `abilityKey` field (`NamespacedKey`) parsed from the MythicMobs config. The config `skill` parameter now expects an ability key string (e.g. `"mcrpg:phase_shift"`) instead of a bare skill name.
+2. **Add** an `abilityKey` field (`NamespacedKey`) parsed from the MythicMobs config. The config `ability` parameter expects an ability key string (e.g. `"mcrpg:phase_shift"`).
 3. **Delegate** `getDrop()` to `SkillBookFactory.createSkillBook()`.
 
 ### 5.2 Refactored Class
@@ -389,7 +389,7 @@ import us.eunoians.mcrpg.item.skillbook.SkillBookFactory;
  * is passed as the argument in the drop table configuration:
  * <pre>
  *   Drops:
- *     - mcrpg_skillbook{skill=mcrpg:phase_shift} 1 0.1
+ *     - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.1
  * </pre>
  * <p>
  * Delegates to {@link SkillBookFactory} for item creation, ensuring all skill books
@@ -407,7 +407,7 @@ public class McRPGSkillBookDrop implements IItemDrop {
      * @param argument the argument string from the drop table (used as fallback ability key)
      */
     public McRPGSkillBookDrop(@NotNull MythicLineConfig config, @NotNull String argument) {
-        String keyString = config.getString("skill", argument);
+        String keyString = config.getString("ability", argument);
         this.abilityKey = NamespacedKey.fromString(keyString);
         this.abilityDisplayName = config.getString("display-name", abilityKey.getKey()
                 .replace("_", " ")
@@ -429,17 +429,17 @@ public class McRPGSkillBookDrop implements IItemDrop {
 Old format:
 ```yaml
 Drops:
-  - mcrpg_skillbook{skill=Phase Shift} 1 0.1
+  - mcrpg_skillbook{ability=Phase Shift} 1 0.1
 ```
 
 New format:
 ```yaml
 Drops:
-  - mcrpg_skillbook{skill=mcrpg:phase_shift} 1 0.1
-  - mcrpg_skillbook{skill=mcrpg:phase_shift,display-name=Phase Shift} 1 0.1  # optional display name override
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.1
+  - mcrpg_skillbook{ability=mcrpg:phase_shift,display-name=Phase Shift} 1 0.1  # optional display name override
 ```
 
-The `skill` parameter now expects a full `NamespacedKey` string. The optional `display-name` parameter overrides the auto-generated display name derived from the key.
+The `ability` parameter expects a full `NamespacedKey` string. The optional `display-name` parameter overrides the auto-generated display name derived from the key.
 
 ---
 
@@ -1173,7 +1173,7 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 | File | Change |
 |---|---|
-| `external/mythicmobs/McRPGSkillBookDrop.java` | Remove inline item creation. Delegate to `SkillBookFactory`. Change `skill` param to accept ability `NamespacedKey` string. |
+| `external/mythicmobs/McRPGSkillBookDrop.java` | Remove inline item creation. Delegate to `SkillBookFactory`. Rename `skill` param to `ability`, accept ability `NamespacedKey` string. |
 | `configuration/file/localization/LocalizationKey.java` | Add `SKILL_BOOK_CONSUMED`, `SKILL_BOOK_ALREADY_UNLOCKED`, `SKILL_BOOK_UNKNOWN_ABILITY` route constants |
 | `src/main/resources/localization/english/en_abilities.yml` | Add `ability.skill-book.*` localization entries |
 | `bootstrap/McRPGListenerRegistrar.java` | Register `SkillBookConsumeListener` unconditionally |
@@ -1194,6 +1194,6 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 ## 14. Future LLD Notes
 
-- **LLD-4 (MythicMobs Example Configuration):** Will define the bundled `RiptideGuardian.yml` in `src/main/resources/mythicmobs/`, including drop table entries that use `mcrpg_skillbook{skill=mcrpg:phase_shift}` with the new key format.
+- **LLD-4 (MythicMobs Example Configuration):** Will define the bundled `RiptideGuardian.yml` in `src/main/resources/mythicmobs/`, including drop table entries that use `mcrpg_skillbook{ability=mcrpg:phase_shift}` with the new key format.
 - **LLD-5 (UnlockCondition Refactor):** Renamed from HLD's original LLD-4. Will introduce `SkillBookUnlockCondition` that always returns `isMet() = false` — unlock happens via book consumption, not condition evaluation. The GUI will display "Obtain from [source]" for these abilities.
 - **LLD-6 (Player Abilities):** Renamed from HLD's original LLD-5. Deferred until the ability system rework is complete. Skill books for these abilities (Phase Shift, Whirlpool, etc.) will use the factory and consumption system defined in this LLD.
