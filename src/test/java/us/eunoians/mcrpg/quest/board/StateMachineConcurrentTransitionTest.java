@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -197,9 +196,10 @@ public class StateMachineConcurrentTransitionTest {
         CyclicBarrier barrier = new CyclicBarrier(threadCount);
         AtomicInteger successCount = new AtomicInteger(0);
 
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
         for (int i = 0; i < threadCount; i++) {
-            futures.add(CompletableFuture.runAsync(() -> {
+            futures.add(executor.submit(() -> {
                 try {
                     barrier.await(5, TimeUnit.SECONDS);
                     Object lock = offeringLocks.computeIfAbsent(offering.getOfferingId(), k -> new Object());
@@ -215,7 +215,10 @@ public class StateMachineConcurrentTransitionTest {
             }));
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(10, TimeUnit.SECONDS);
+        for (Future<?> f : futures) {
+            f.get(10, TimeUnit.SECONDS);
+        }
+        executor.shutdown();
 
         assertEquals(1, successCount.get(),
                 "Exactly one acceptance must succeed across " + threadCount + " concurrent threads");
