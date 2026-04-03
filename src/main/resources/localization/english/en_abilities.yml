@@ -59,6 +59,21 @@ ability:
     # The message to send when an ability cannot be added because there's already an active ability for that skill
     # Supports <skill> and <ability> placeholders
     ability-not-added-duplicate-skill: "<negative>You already have an active ability for the skill <skill> <negative>in your loadout, so <ability> <negative>was not automatically added."
+  # Configure skill book item display and messages
+  # Supports <ability> as a placeholder for the ability name
+  skill-book:
+    # Display name for the skill book item (shown in inventory)
+    item-name: "<primary>Skill Book: <ability>"
+    # Lore lines for the skill book item (shown below the name in inventory)
+    item-lore:
+      - "<body>A mysterious tome of knowledge."
+      - "<body>Right-click to unlock <ability><body>."
+    # The message to send when a player successfully consumes a skill book
+    consumed: "<positive>You consumed a skill book and learned <ability><positive>!"
+    # The message to send when a player tries to consume a skill book for an ability they already have
+    already-unlocked: "<negative>You have already unlocked <ability><negative>."
+    # The message to send when a skill book references an ability that doesn't exist
+    unknown-ability: "<negative>This skill book references an unknown ability: <ability><negative>."
   # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
   lore:
     # Configure ability upgrade quest lore

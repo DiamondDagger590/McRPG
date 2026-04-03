@@ -613,6 +613,14 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_ADDED_TO_LOADOUT_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-added-to-loadout"));
     public static final Route ABILITY_NOT_ADDED_DUPLICATE_SKILL_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-not-added-duplicate-skill"));
 
+    // Skill Book messages and item display
+    private static final String SKILL_BOOK_HEADER = toRoutePath(ABILITY_HEADER, "skill-book");
+    public static final Route SKILL_BOOK_ITEM_NAME = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "item-name"));
+    public static final Route SKILL_BOOK_ITEM_LORE = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "item-lore"));
+    public static final Route SKILL_BOOK_CONSUMED = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "consumed"));
+    public static final Route SKILL_BOOK_ALREADY_UNLOCKED = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "already-unlocked"));
+    public static final Route SKILL_BOOK_UNKNOWN_ABILITY = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "unknown-ability"));
+
     private static final String ABILITY_LORE_HEADER = toRoutePath(ABILITY_HEADER, "lore");
     private static final String ABILITY_QUEST_LORE_HEADER = toRoutePath(ABILITY_LORE_HEADER, "quest");
     public static final Route QUEST_PROGRESS_LORE = Route.fromString(toRoutePath(ABILITY_QUEST_LORE_HEADER, "quest-progress"));

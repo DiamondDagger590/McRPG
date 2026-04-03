@@ -42,6 +42,7 @@ import us.eunoians.mcrpg.listener.entity.player.CorePlayerUnloadListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerPickupItemListener;
+import us.eunoians.mcrpg.listener.item.SkillBookConsumeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.board.BoardRotationNotificationListener;
@@ -159,6 +160,9 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         // Setting listener
         Bukkit.getPluginManager().registerEvents(new PlayerSettingChangeListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerPickupItemListener(), plugin);
+
+        // Skill book listener (always registered — books can come from any source)
+        Bukkit.getPluginManager().registerEvents(new SkillBookConsumeListener(), plugin);
 
         // Statistic listeners
         Bukkit.getPluginManager().registerEvents(new SkillStatisticListener(), plugin);
