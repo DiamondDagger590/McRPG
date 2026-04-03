@@ -99,6 +99,19 @@ Skill books are always physical `ItemStack`s granted to the player's inventory. 
 
 `SkillBookConsumeEvent` fires *before* the unlock. It is cancellable and carries the item stack. If cancelled, the item is not consumed and `AbilityUnlockEvent` is never fired. This separation lets plugins gate consumption (e.g., require a specific location, level, or currency) without interfering with the general unlock flow.
 
+### 3.6 Item Localization: Baked at Creation Time
+
+Skill book display names and lore are baked into the `ItemStack` at creation time using `Component.text()`. This means the text is **frozen** — it will not update if the player changes their locale, the server owner edits localization YAML, or the book is traded to a player with a different locale.
+
+**Why not lazy localization?** McRPG's localization system (`McRPGLocalizationManager`) resolves per-player at display time for GUI items (via `Slot.getItem(player)` re-rendering), but physical `ItemStack`s in player inventories have no equivalent re-render hook. Adventure API offers `Component.translatable()` with `GlobalTranslator` for server-side per-player resolution, but McRPG does not currently use this system — all localization is resolved through the custom locale chain manager.
+
+**Accepted tradeoffs:**
+- Skill books have a short lifecycle (created → consumed), so stale text is unlikely in practice
+- This matches `ItemRewardType`'s existing behavior — granted items also bake text at creation time
+- The `SkillBookFactory` overload accepting `Component displayName` and `List<Component> lore` allows callers to pass pre-localized components when a player context is available
+
+**Future improvement:** A project-wide migration to Adventure's `GlobalTranslator` + `Component.translatable()` for physical items would solve this for skill books and all other granted items. This is tracked as a backlog item (see [diamonddagger590/mcrpg#213](https://github.com/DiamondDagger590/McRPG/issues/213)) and would require registering McRPG's locale YAML keys with `GlobalTranslator.translator()` so the server resolves them per-player at packet send time.
+
 ---
 
 ## 4. SkillBookFactory
