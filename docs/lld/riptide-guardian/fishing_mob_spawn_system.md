@@ -13,16 +13,17 @@
 2. [Existing Infrastructure (from LLD-1)](#2-existing-infrastructure-from-lld-1)
 3. [Configuration](#3-configuration)
 4. [Mob Pool Data Model](#4-mob-pool-data-model)
-5. [FishingMobSpawnTracker](#5-fishingmobspawntracker)
+5. [MythicMobs Integration](#5-mythicmobs-integration)
 6. [Per-Player State](#6-per-player-state)
-7. [Spawn Flow](#7-spawn-flow)
-8. [Death Callback Integration](#8-death-callback-integration)
-9. [Custom Events](#9-custom-events)
-10. [Bootstrap Registration](#10-bootstrap-registration)
-11. [Anti-Cheese Analysis](#11-anti-cheese-analysis)
-12. [Edge Cases & Graceful Degradation](#12-edge-cases--graceful-degradation)
-13. [Test Plan](#13-test-plan)
-14. [File Manifest](#14-file-manifest)
+7. [FishingMobSpawnListener](#7-fishingmobspawnlistener)
+8. [Spawn Flow](#8-spawn-flow)
+9. [Death Callback Integration](#9-death-callback-integration)
+10. [Custom Events](#10-custom-events)
+11. [Bootstrap Registration](#11-bootstrap-registration)
+12. [Anti-Cheese Analysis](#12-anti-cheese-analysis)
+13. [Edge Cases & Graceful Degradation](#13-edge-cases--graceful-degradation)
+14. [Test Plan](#14-test-plan)
+15. [File Manifest](#15-file-manifest)
 
 ---
 
@@ -41,10 +42,10 @@ The existing LLD-1 implementation provides:
 - `McRPGSkillBookDrop` — MythicMobs custom drop type for skill books
 - `FishingMobSpawnEvent` / `FishingMobDeathEvent` — McRPG custom events fired by the listener
 
-This LLD **depends on** those classes and does **not** modify them. Specifically:
-- The tracker spawns mobs via MythicMobs API and tags them with `FishingMobKeys` PDC keys
+This LLD **depends on** those classes and does **not** modify them (except `MythicMobsHook`, which gains spawn/despawn helper methods — see Section 5). Specifically:
+- The listener spawns mobs via `MythicMobsHook` and tags them with `FishingMobKeys` PDC keys
 - `MythicMobsListener` picks up the MM spawn/death events and fires `FishingMobSpawnEvent` / `FishingMobDeathEvent`
-- The tracker listens to `FishingMobDeathEvent` to clean up per-player state
+- The listener listens to `FishingMobDeathEvent` to clean up per-player state
 
 ### Boundary with LLD-3 (Skill Book System)
 
@@ -61,7 +62,7 @@ Mob despawn behavior (max lifetime, empty threat table cleanup) is **entirely ow
 - `~onDropCombat` — trigger despawn when the ThreatTable empties (all players leave)
 - `remove` mechanic — MM's native entity removal
 
-McRPG does **not** schedule despawn tasks or monitor the ThreatTable. Server owners configure despawn behavior in the MythicMobs mob YAML, not in McRPG config. This avoids duplicating MM's existing capabilities and keeps McRPG's scope limited to spawn triggering and state tracking.
+McRPG does **not** schedule despawn tasks or monitor the ThreatTable. Server owners configure despawn behavior in the MythicMobs mob YAML, not in McRPG config.
 
 ---
 
@@ -71,16 +72,12 @@ These classes already exist in the codebase and are used by this LLD:
 
 | Class | Location | Role in LLD-2 |
 |---|---|---|
-| `MythicMobsHook` | `external/mythicmobs/` | Presence check — if not registered, spawn calls are no-ops |
+| `MythicMobsHook` | `external/mythicmobs/` | Presence check + MM API facade (gains spawn method in this LLD) |
 | `MythicMobsListener` | `external/mythicmobs/` | Bridges MM spawn/death events; fires `FishingMobSpawnEvent`/`FishingMobDeathEvent` |
 | `FishingMobKeys` | `external/mythicmobs/` | PDC keys written to spawned entities for identification |
 | `FishingMobSpawnEvent` | `event/fishing/` | Fired by `MythicMobsListener` when a tagged mob spawns — cancellable |
-| `FishingMobDeathEvent` | `event/fishing/` | Fired by `MythicMobsListener` when a tagged mob dies — tracker listens to this |
+| `FishingMobDeathEvent` | `event/fishing/` | Fired by `MythicMobsListener` when a tagged mob dies — listener listens to this |
 | `McRPGSkillBookDrop` | `external/mythicmobs/` | MM custom drop type — not directly used but part of the end-to-end flow |
-
-### MythicMobs API Usage
-
-LLD-1 established that all MM API calls should be funneled through a facade. However, the current implementation calls MM API directly from the listener. For LLD-2, MythicMobs spawning is done via a thin helper method on `MythicMobsHook` rather than a full facade class, keeping the scope minimal. If a future LLD introduces `MythicMobsIntegration` as designed in the original LLD-1 spec, the spawn call should migrate there.
 
 ---
 
@@ -102,7 +99,6 @@ FISHING_MOB_SPAWN_CONFIG("fishing_mob_spawn_configuration.yml", new FishingMobSp
 package us.eunoians.mcrpg.configuration.file;
 
 import dev.dejvokep.boostedyaml.route.Route;
-import org.jetbrains.annotations.NotNull;
 
 import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
@@ -127,10 +123,8 @@ public final class FishingMobSpawnConfigFile extends ConfigFile {
     public static final Route SPAWN_OFFSET_FROM_HOOK = Route.fromString(toRoutePath(SPAWN_HEADER, "spawn-offset-from-hook"));
     public static final Route SPAWN_Y_OFFSET = Route.fromString(toRoutePath(SPAWN_HEADER, "spawn-y-offset"));
     public static final Route MAX_ACTIVE_MOBS_PER_PLAYER = Route.fromString(toRoutePath(SPAWN_HEADER, "max-active-mobs-per-player"));
-    public static final Route REQUIRED_BIOMES = Route.fromString(toRoutePath(SPAWN_HEADER, "required-biomes"));
-    public static final Route ALLOWED_WORLDS = Route.fromString(toRoutePath(SPAWN_HEADER, "allowed-worlds"));
 
-    // Mob pool (list-based — accessed dynamically)
+    // Mob pool (map-based — accessed dynamically by key)
     public static final Route MOB_POOL = Route.fromString(MOB_POOL_HEADER);
 }
 ```
@@ -181,35 +175,59 @@ spawn:
   # Maximum number of fishing mobs one player can have alive simultaneously
   max-active-mobs-per-player: 1
 
-  # Biome restrictions (empty list = all biomes allowed)
-  # Uses Bukkit biome names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/block/Biome.html
-  required-biomes: []
-
-  # World restrictions (empty list = all worlds allowed)
-  allowed-worlds: []
-
 # Weighted mob pool — on spawn trigger, one mob is selected by weight.
-# Each entry must reference a MythicMobs mob type ID.
+# Each entry is keyed by a unique name (used for logging/debugging).
+# The key does NOT need to match the MythicMobs mob ID.
 #
-# Despawn behavior (max lifetime, empty threat table) is configured in the
-# MythicMobs mob YAML via ~onTimer and ~onDropCombat skills, NOT here.
+# Per-mob spawn restrictions:
+#   allowed-biomes / denied-biomes — biome allow/deny lists (empty = no restriction)
+#   allowed-worlds / denied-worlds — world allow/deny lists (empty = no restriction)
+#   allowed-regions / denied-regions — WorldGuard region allow/deny lists (requires WorldGuard)
+#
+# Deny lists take priority over allow lists. If both are specified for the same
+# dimension (biomes, worlds, regions), the deny list is checked first.
+#
+# Despawn behavior is configured in the MythicMobs mob YAML via ~onTimer and
+# ~onDropCombat skills, NOT here.
 mob-pool:
-  - mythicmobs-mob-id: "RiptideGuardian"
+  riptide-guardian:
+    mythicmobs-mob-id: "RiptideGuardian"
     weight: 1
     # Only eligible when accumulated spawn chance >= this threshold
     min-chance-threshold: 0.10
     # MythicMobs mob level (used for MM's level scaling system)
     mob-level: 1.0
+    # Per-mob spawn restrictions (all optional, empty = no restriction)
+    allowed-biomes: []
+    denied-biomes: []
+    allowed-worlds: []
+    denied-worlds: []
+    # WorldGuard region restrictions (requires WorldGuard, ignored if not present)
+    allowed-regions: []
+    denied-regions: []
   # Future example:
-  # - mythicmobs-mob-id: "TideScout"
+  # tide-scout:
+  #   mythicmobs-mob-id: "TideScout"
   #   weight: 3
   #   min-chance-threshold: 0.0
   #   mob-level: 1.0
+  #   allowed-biomes: ["OCEAN", "DEEP_OCEAN", "WARM_OCEAN"]
+  #   denied-biomes: []
+  #   allowed-worlds: []
+  #   denied-worlds: ["world_nether", "world_the_end"]
+  #   allowed-regions: []
+  #   denied-regions: ["spawn"]
 ```
 
 ### 3.4 Design Decisions
 
-**Single file instead of directory:** Unlike LLD-1's binding system (which uses a directory for extensibility), the fishing mob spawn system has exactly one config with a single mob pool. Server owners customize the pool entries, not the file count. A single `FileType` entry keeps things simple.
+**Single file instead of directory:** The fishing mob spawn system has exactly one config with a single mob pool. Server owners customize the pool entries, not the file count. A single `FileType` entry keeps things simple.
+
+**Map-based mob pool keys:** The mob pool uses explicit named keys (`riptide-guardian:`, `tide-scout:`) instead of a YAML list format. This is more readable for non-technical server owners — each mob has a clear label, and entries can be commented out individually without disrupting list ordering.
+
+**Per-mob restrictions instead of global:** Biome, world, and region restrictions live on each mob pool entry rather than globally on the spawn system. This allows different mobs to spawn in different contexts (e.g., ocean-only guardians alongside river-only scouts). Deny lists take priority over allow lists.
+
+**WorldGuard region support:** Region restrictions are optional and only evaluated when the WorldGuard hook is registered. If WorldGuard is not present, region restrictions are silently ignored. This follows the existing `WorldGuardHook` pattern.
 
 ---
 
@@ -226,20 +244,36 @@ package us.eunoians.mcrpg.fishing;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+
 /**
  * A single entry in the weighted fishing mob pool.
  * Parsed from the {@code mob-pool} section of the fishing mob spawn configuration.
  *
- * @param mythicMobsId      the MythicMobs internal type ID to spawn
- * @param weight             the relative weight for random selection (higher = more likely)
- * @param minChanceThreshold the minimum accumulated spawn chance required for this mob to be eligible
- * @param mobLevel           the MythicMobs mob level for MM's scaling system
+ * @param key                a unique identifier for this entry (the YAML key, used for logging)
+ * @param mythicMobsId       the MythicMobs internal type ID to spawn
+ * @param weight              the relative weight for random selection (higher = more likely)
+ * @param minChanceThreshold  the minimum accumulated spawn chance required for this mob to be eligible
+ * @param mobLevel            the MythicMobs mob level for MM's scaling system
+ * @param allowedBiomes       biome allow list (empty = all biomes allowed)
+ * @param deniedBiomes        biome deny list (takes priority over allow list)
+ * @param allowedWorlds       world allow list (empty = all worlds allowed)
+ * @param deniedWorlds        world deny list (takes priority over allow list)
+ * @param allowedRegions      WorldGuard region allow list (empty = all regions allowed, ignored if WG absent)
+ * @param deniedRegions       WorldGuard region deny list (takes priority over allow list)
  */
 public record MobPoolEntry(
+        @NotNull String key,
         @NotNull String mythicMobsId,
         int weight,
         double minChanceThreshold,
-        double mobLevel
+        double mobLevel,
+        @NotNull Set<String> allowedBiomes,
+        @NotNull Set<String> deniedBiomes,
+        @NotNull Set<String> allowedWorlds,
+        @NotNull Set<String> deniedWorlds,
+        @NotNull Set<String> allowedRegions,
+        @NotNull Set<String> deniedRegions
 ) {}
 ```
 
@@ -247,24 +281,27 @@ public record MobPoolEntry(
 
 **File:** `src/main/java/us/eunoians/mcrpg/fishing/MobPoolSelector.java`
 
-Instantiable weighted random selector. Constructed with the pool; selects from eligible entries on each call.
+Instantiable weighted random selector. Constructed with the pool; filters by spawn chance threshold and location restrictions on each call.
 
 ```java
 package us.eunoians.mcrpg.fishing;
 
+import org.bukkit.Location;
+import org.bukkit.block.Biome;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Selects a mob from a weighted pool based on the player's current spawn chance.
- * Only entries whose {@link MobPoolEntry#minChanceThreshold()} is at or below
- * the current chance are eligible.
+ * Selects a mob from a weighted pool based on the player's current spawn chance
+ * and the hook location's biome, world, and region.
  * <p>
- * This is an instantiable class — construct it with the pool once, then call
- * {@link #select(double)} on each spawn trigger.
+ * Constructed once with the full pool. On each spawn trigger, call
+ * {@link #select(double, Location, WorldGuardHook)} to get an eligible entry.
  */
 public final class MobPoolSelector {
 
@@ -281,15 +318,26 @@ public final class MobPoolSelector {
 
     /**
      * Selects a random mob from the pool, weighted by {@link MobPoolEntry#weight()}.
-     * Only entries with {@code minChanceThreshold <= currentChance} are eligible.
+     * Only entries that pass all eligibility checks are considered:
+     * <ul>
+     *   <li>{@code minChanceThreshold <= currentChance}</li>
+     *   <li>Location passes biome allow/deny lists</li>
+     *   <li>Location passes world allow/deny lists</li>
+     *   <li>Location passes WorldGuard region allow/deny lists (if WG present)</li>
+     * </ul>
      *
-     * @param currentChance the player's current accumulated spawn chance
+     * @param currentChance  the player's current accumulated spawn chance
+     * @param hookLocation   the fishing hook location (for biome/world/region checks)
+     * @param worldGuardHook the WorldGuard hook, or null if WG is not present
      * @return a selected entry, or empty if no entries are eligible
      */
     @NotNull
-    public Optional<MobPoolEntry> select(double currentChance) {
+    public Optional<MobPoolEntry> select(double currentChance,
+                                          @NotNull Location hookLocation,
+                                          @org.jetbrains.annotations.Nullable WorldGuardHook worldGuardHook) {
         List<MobPoolEntry> eligible = pool.stream()
                 .filter(entry -> currentChance >= entry.minChanceThreshold())
+                .filter(entry -> isLocationAllowed(entry, hookLocation, worldGuardHook))
                 .toList();
 
         if (eligible.isEmpty()) {
@@ -310,7 +358,6 @@ public final class MobPoolSelector {
             }
         }
 
-        // Should not reach here, but return last eligible as fallback
         return Optional.of(eligible.getLast());
     }
 
@@ -322,397 +369,119 @@ public final class MobPoolSelector {
     public boolean hasEntries() {
         return !pool.isEmpty();
     }
+
+    private boolean isLocationAllowed(@NotNull MobPoolEntry entry,
+                                       @NotNull Location location,
+                                       @org.jetbrains.annotations.Nullable WorldGuardHook worldGuardHook) {
+        // World check — deny takes priority
+        String worldName = location.getWorld().getName();
+        if (!entry.deniedWorlds().isEmpty() && entry.deniedWorlds().contains(worldName)) {
+            return false;
+        }
+        if (!entry.allowedWorlds().isEmpty() && !entry.allowedWorlds().contains(worldName)) {
+            return false;
+        }
+
+        // Biome check — deny takes priority
+        String biomeName = location.getBlock().getBiome().name();
+        if (!entry.deniedBiomes().isEmpty() && entry.deniedBiomes().contains(biomeName)) {
+            return false;
+        }
+        if (!entry.allowedBiomes().isEmpty() && !entry.allowedBiomes().contains(biomeName)) {
+            return false;
+        }
+
+        // WorldGuard region check — only if WG is present and entry has region restrictions
+        if (worldGuardHook != null) {
+            Set<String> regionsAtLocation = worldGuardHook.getRegionIds(location);
+            if (!entry.deniedRegions().isEmpty()) {
+                for (String denied : entry.deniedRegions()) {
+                    if (regionsAtLocation.contains(denied)) {
+                        return false;
+                    }
+                }
+            }
+            if (!entry.allowedRegions().isEmpty()) {
+                boolean inAllowed = false;
+                for (String allowed : entry.allowedRegions()) {
+                    if (regionsAtLocation.contains(allowed)) {
+                        inAllowed = true;
+                        break;
+                    }
+                }
+                if (!inAllowed) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
 ```
+
+> **WorldGuard API Note:** The `WorldGuardHook.getRegionIds(Location)` method is assumed to return a `Set<String>` of region IDs at a location. If this method does not exist, it should be added to `WorldGuardHook` following the existing pattern of `WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().getApplicableRegions(location).getRegions()`.
 
 ---
 
-## 5. FishingMobSpawnTracker
+## 5. MythicMobs Integration
 
-**File:** `src/main/java/us/eunoians/mcrpg/fishing/FishingMobSpawnTracker.java`
+All MythicMobs API usage is centralized on `MythicMobsHook`. No other class in this LLD imports MM types. This follows the same pattern as `GeyserHook.isBedrockPlayer()` and `LunarClientHook.displayCooldown()` — hooks provide domain-specific utility methods wrapping the external API.
 
-This is the core class. It listens to `PlayerFishEvent` to track fishing behavior and trigger mob spawns. It also listens to `FishingMobDeathEvent` (fired by the existing `MythicMobsListener`) to clean up per-player state.
+### 5.1 Modified Class: MythicMobsHook
 
-The tracker also owns mob pool loading — the parsing logic from config is a private method on this class rather than a separate static utility, keeping the loading coupled to its only consumer.
+**File:** `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsHook.java`
 
-### Design: Listener vs. Manager
-
-The tracker is a Bukkit `Listener` rather than a McCore `Manager`. Reasons:
-1. It needs to listen to Bukkit events (`PlayerFishEvent`, `PlayerQuitEvent`, `PlayerChangedWorldEvent`)
-2. It needs to listen to McRPG events (`FishingMobDeathEvent`)
-3. Its state is transient (session-only, no DB persistence)
-4. It has no registry key or cross-system lookup requirements
-
-It is registered conditionally — only when MythicMobs is present and the system is enabled.
+The existing hook gains two methods:
 
 ```java
-package us.eunoians.mcrpg.fishing;
+/**
+ * Spawns a MythicMobs mob at the given location.
+ *
+ * @param mythicMobsId the MM internal type ID
+ * @param location     the Bukkit location to spawn at
+ * @param mobLevel     the MM mob level
+ * @return the spawned entity, or empty if the type ID is not registered in MM
+ */
+@NotNull
+public Optional<Entity> spawnMob(@NotNull String mythicMobsId,
+                                  @NotNull Location location,
+                                  double mobLevel) {
+    Optional<MythicMob> mythicMob = MythicBukkit.inst().getMobManager().getMythicMob(mythicMobsId);
+    if (mythicMob.isEmpty()) {
+        getPlugin().getLogger().warning("MythicMob type '" + mythicMobsId
+                + "' not found in MythicMobs registry.");
+        return Optional.empty();
+    }
 
-import com.diamonddagger590.mccore.registry.RegistryKey;
-import dev.dejvokep.boostedyaml.YamlDocument;
-import io.lumine.mythic.api.mobs.MythicMob;
-import io.lumine.mythic.bukkit.BukkitAdapter;
-import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.core.mobs.ActiveMob;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
-import us.eunoians.mcrpg.event.fishing.FishingMobDeathEvent;
-import us.eunoians.mcrpg.event.fishing.FishingMobSpawnChanceUpdateEvent;
-import us.eunoians.mcrpg.external.mythicmobs.FishingMobKeys;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Logger;
+    ActiveMob activeMob = mythicMob.get().spawn(BukkitAdapter.adapt(location), mobLevel);
+    return Optional.of(activeMob.getEntity().getBukkitEntity());
+}
 
 /**
- * Tracks per-player fishing behavior and triggers mob spawns via MythicMobs
- * when the accumulated spawn chance succeeds.
- * <p>
- * All state is session-only — logout discards everything. No DB persistence.
- * <p>
- * This listener is only registered when:
- * <ul>
- *   <li>MythicMobs is present (hook registered)</li>
- *   <li>The fishing mob spawn system is enabled in config</li>
- * </ul>
+ * Checks whether a MythicMobs mob type ID is registered.
+ *
+ * @param mythicMobsId the MM internal type ID
+ * @return true if the type exists in the MM registry
  */
-public class FishingMobSpawnTracker implements Listener {
-
-    private final McRPG plugin;
-    private final Map<UUID, PlayerFishingState> playerStates = new HashMap<>();
-    private final MobPoolSelector mobPoolSelector;
-
-    public FishingMobSpawnTracker(@NotNull McRPG plugin) {
-        this.plugin = plugin;
-        this.mobPoolSelector = new MobPoolSelector(loadMobPool());
-    }
-
-    /**
-     * Handles a player catching a fish or entity. Updates the player's spawn chance
-     * based on hook location proximity and rolls for a mob spawn.
-     *
-     * @param event the fish event
-     */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerFish(@NotNull PlayerFishEvent event) {
-        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH
-                && event.getState() != PlayerFishEvent.State.CAUGHT_ENTITY) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        if (event.getHook() == null) {
-            return;
-        }
-
-        Location hookLocation = event.getHook().getLocation();
-
-        // World restriction check
-        if (!isWorldAllowed(hookLocation.getWorld())) {
-            return;
-        }
-
-        // Biome restriction check
-        if (!isBiomeAllowed(hookLocation)) {
-            return;
-        }
-
-        PlayerFishingState state = playerStates.computeIfAbsent(
-                player.getUniqueId(), uuid -> new PlayerFishingState(getBaseChance()));
-
-        // Check active mob cap
-        int maxActiveMobs = getConfig().getInt(FishingMobSpawnConfigFile.MAX_ACTIVE_MOBS_PER_PLAYER, 1);
-        if (state.getActiveMobCount() >= maxActiveMobs) {
-            return;
-        }
-
-        // Update chance based on proximity to last hook
-        updateSpawnChance(player, state, hookLocation);
-        state.setLastHookLocation(hookLocation);
-
-        // Roll for spawn
-        double roll = ThreadLocalRandom.current().nextDouble();
-        if (roll < state.getCurrentSpawnChance()) {
-            attemptSpawnMob(player, state, hookLocation);
-        }
-    }
-
-    /**
-     * Handles a fishing mob death. Removes the mob from the player's active set
-     * and resets their spawn chance to the post-kill value.
-     *
-     * @param event the fishing mob death event
-     */
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onFishingMobDeath(@NotNull FishingMobDeathEvent event) {
-        UUID mobUUID = event.getMob().getUniqueId();
-
-        // Find the player who owns this mob and clean up
-        for (Map.Entry<UUID, PlayerFishingState> entry : playerStates.entrySet()) {
-            if (entry.getValue().removeActiveMob(mobUUID)) {
-                double postKillChance = getConfig().getDouble(FishingMobSpawnConfigFile.POST_KILL_CHANCE, 0.0);
-                entry.getValue().setCurrentSpawnChance(postKillChance);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Discards all state for a player on logout.
-     *
-     * @param event the quit event
-     */
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
-        playerStates.remove(event.getPlayer().getUniqueId());
-    }
-
-    /**
-     * Handles world change — optionally resets spawn chance and nulls last hook location.
-     *
-     * @param event the world change event
-     */
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onWorldChange(@NotNull PlayerChangedWorldEvent event) {
-        PlayerFishingState state = playerStates.get(event.getPlayer().getUniqueId());
-        if (state == null) {
-            return;
-        }
-
-        boolean resetOnWorldChange = getConfig().getBoolean(FishingMobSpawnConfigFile.RESET_ON_WORLD_CHANGE, true);
-        if (resetOnWorldChange) {
-            state.setCurrentSpawnChance(getBaseChance());
-        }
-        state.setLastHookLocation(null);
-    }
-
-    private void updateSpawnChance(@NotNull Player player,
-                                    @NotNull PlayerFishingState state,
-                                    @NotNull Location hookLocation) {
-        double oldChance = state.getCurrentSpawnChance();
-        double newChance;
-
-        Location lastHook = state.getLastHookLocation();
-        double sameAreaRange = getConfig().getDouble(FishingMobSpawnConfigFile.SAME_AREA_RANGE, 10.0);
-
-        if (lastHook == null || !lastHook.getWorld().equals(hookLocation.getWorld())) {
-            // First catch or different world — no change
-            newChance = oldChance;
-        } else {
-            double distance = lastHook.distance(hookLocation);
-            if (distance <= sameAreaRange) {
-                // Same area — increment
-                double increment = getConfig().getDouble(FishingMobSpawnConfigFile.CHANCE_INCREMENT_PER_CATCH, 0.02);
-                double maxChance = getConfig().getDouble(FishingMobSpawnConfigFile.MAX_CHANCE, 0.35);
-                newChance = Math.min(oldChance + increment, maxChance);
-            } else {
-                // New area — decrement
-                double decrement = getConfig().getDouble(FishingMobSpawnConfigFile.CHANCE_DECREMENT_PER_CATCH, 0.05);
-                double baseChance = getBaseChance();
-                newChance = Math.max(oldChance - decrement, baseChance);
-            }
-        }
-
-        // Fire chance update event
-        FishingMobSpawnChanceUpdateEvent updateEvent = new FishingMobSpawnChanceUpdateEvent(
-                player, oldChance, newChance, hookLocation);
-        Bukkit.getPluginManager().callEvent(updateEvent);
-
-        if (!updateEvent.isCancelled()) {
-            state.setCurrentSpawnChance(updateEvent.getNewChance());
-        }
-    }
-
-    private void attemptSpawnMob(@NotNull Player player,
-                                  @NotNull PlayerFishingState state,
-                                  @NotNull Location hookLocation) {
-        Optional<MobPoolEntry> selected = mobPoolSelector.select(state.getCurrentSpawnChance());
-        if (selected.isEmpty()) {
-            return;
-        }
-
-        MobPoolEntry entry = selected.get();
-
-        // Calculate spawn location (offset from hook)
-        Location spawnLocation = calculateSpawnLocation(hookLocation);
-
-        // Spawn via MythicMobs API
-        Optional<MythicMob> mythicMob = MythicBukkit.inst().getMobManager().getMythicMob(entry.mythicMobsId());
-        if (mythicMob.isEmpty()) {
-            plugin.getLogger().warning("Failed to spawn fishing mob: MythicMob type '"
-                    + entry.mythicMobsId() + "' not found in MythicMobs registry.");
-            return;
-        }
-
-        ActiveMob activeMob = mythicMob.get().spawn(BukkitAdapter.adapt(spawnLocation), entry.mobLevel());
-        Entity entity = activeMob.getEntity().getBukkitEntity();
-
-        // Tag the entity with PDC keys so MythicMobsListener can identify it
-        entity.getPersistentDataContainer().set(FishingMobKeys.FISHING_MOB_KEY, PersistentDataType.BOOLEAN, true);
-        entity.getPersistentDataContainer().set(FishingMobKeys.ANGLER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
-
-        // Track the mob
-        state.addActiveMob(entity.getUniqueId());
-
-        // Reset spawn chance after successful spawn
-        state.setCurrentSpawnChance(getBaseChance());
-
-        plugin.getLogger().fine("Spawned fishing mob '" + entry.mythicMobsId()
-                + "' for player " + player.getName() + " at " + spawnLocation);
-    }
-
-    @NotNull
-    private Location calculateSpawnLocation(@NotNull Location hookLocation) {
-        double offset = getConfig().getDouble(FishingMobSpawnConfigFile.SPAWN_OFFSET_FROM_HOOK, 3.0);
-        double yOffset = getConfig().getDouble(FishingMobSpawnConfigFile.SPAWN_Y_OFFSET, 1.0);
-
-        // Spawn at a random angle around the hook at the configured offset
-        double angle = ThreadLocalRandom.current().nextDouble(2 * Math.PI);
-        double x = hookLocation.getX() + offset * Math.cos(angle);
-        double z = hookLocation.getZ() + offset * Math.sin(angle);
-        double y = hookLocation.getY() + yOffset;
-
-        return new Location(hookLocation.getWorld(), x, y, z);
-    }
-
-    private boolean isWorldAllowed(@NotNull World world) {
-        List<String> allowedWorlds = getConfig().getStringList(FishingMobSpawnConfigFile.ALLOWED_WORLDS);
-        return allowedWorlds == null || allowedWorlds.isEmpty() || allowedWorlds.contains(world.getName());
-    }
-
-    private boolean isBiomeAllowed(@NotNull Location location) {
-        List<String> requiredBiomes = getConfig().getStringList(FishingMobSpawnConfigFile.REQUIRED_BIOMES);
-        if (requiredBiomes == null || requiredBiomes.isEmpty()) {
-            return true;
-        }
-
-        Biome biome = location.getBlock().getBiome();
-        return requiredBiomes.contains(biome.name());
-    }
-
-    private double getBaseChance() {
-        return getConfig().getDouble(FishingMobSpawnConfigFile.BASE_CHANCE, 0.0);
-    }
-
-    @NotNull
-    private YamlDocument getConfig() {
-        return plugin.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE)
-                .getFile(FileType.FISHING_MOB_SPAWN_CONFIG);
-    }
-
-    // --- Mob Pool Loading ---
-
-    /**
-     * Loads all mob pool entries from the configuration.
-     *
-     * @return an unmodifiable list of parsed pool entries
-     */
-    @NotNull
-    private List<MobPoolEntry> loadMobPool() {
-        YamlDocument config = getConfig();
-        Logger logger = plugin.getLogger();
-        List<MobPoolEntry> entries = new ArrayList<>();
-
-        if (!config.contains(FishingMobSpawnConfigFile.MOB_POOL)) {
-            logger.warning("No mob-pool section found in fishing mob spawn configuration.");
-            return Collections.emptyList();
-        }
-
-        List<?> poolList = config.getList(FishingMobSpawnConfigFile.MOB_POOL);
-        if (poolList == null || poolList.isEmpty()) {
-            logger.warning("Mob pool is empty in fishing mob spawn configuration.");
-            return Collections.emptyList();
-        }
-
-        for (Object element : poolList) {
-            if (!(element instanceof Map<?, ?> map)) {
-                logger.warning("Invalid mob pool entry (not a map): " + element);
-                continue;
-            }
-
-            String mobId = getStringValue(map, "mythicmobs-mob-id");
-            if (mobId == null || mobId.isBlank()) {
-                logger.warning("Mob pool entry missing 'mythicmobs-mob-id', skipping.");
-                continue;
-            }
-
-            int weight = getIntValue(map, "weight", 1);
-            double minThreshold = getDoubleValue(map, "min-chance-threshold", 0.0);
-            double mobLevel = getDoubleValue(map, "mob-level", 1.0);
-
-            if (weight <= 0) {
-                logger.warning("Mob pool entry '" + mobId + "' has weight <= 0, skipping.");
-                continue;
-            }
-
-            entries.add(new MobPoolEntry(mobId, weight, minThreshold, mobLevel));
-            logger.info("Loaded mob pool entry: " + mobId + " (weight=" + weight
-                        + ", threshold=" + minThreshold + ", level=" + mobLevel + ")");
-        }
-
-        return Collections.unmodifiableList(entries);
-    }
-
-    private static String getStringValue(@NotNull Map<?, ?> map, @NotNull String key) {
-        Object value = map.get(key);
-        return value != null ? value.toString() : null;
-    }
-
-    private static int getIntValue(@NotNull Map<?, ?> map, @NotNull String key, int defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number number) {
-            return number.intValue();
-        }
-        return defaultValue;
-    }
-
-    private static double getDoubleValue(@NotNull Map<?, ?> map, @NotNull String key, double defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number number) {
-            return number.doubleValue();
-        }
-        return defaultValue;
-    }
+public boolean isMobTypeRegistered(@NotNull String mythicMobsId) {
+    return MythicBukkit.inst().getMobManager().getMythicMob(mythicMobsId).isPresent();
 }
 ```
 
-> **API Verification Note:** The MythicMobs API calls (`MythicBukkit.inst().getMobManager().getMythicMob()`, `MythicMob.spawn()`, `BukkitAdapter.adapt()`) should be verified against the actual MM5 dependency at implementation time. These match the API patterns already used in `MythicMobsListener`.
+### 5.2 Migration Plan for Existing Code
 
-### Why Direct MM API Calls?
-
-The existing `MythicMobsListener` (from LLD-1 implementation) calls MM API directly rather than through a facade. For consistency, this tracker does the same. If `MythicMobsIntegration` is introduced later, the spawn call should migrate there. The MM imports are isolated to this one class (plus the existing `MythicMobsListener`).
+The existing `MythicMobsListener` also imports MM types directly (for event handling). Those imports are acceptable — the listener must reference `MythicMobSpawnEvent`, `MythicMobDeathEvent`, and `MythicDropLoadEvent` because they are Bukkit event types that must appear in `@EventHandler` signatures. The hook centralizes **outbound API calls** (spawn, query), not inbound event types.
 
 ---
 
 ## 6. Per-Player State
 
+### 6.1 PlayerFishingState
+
 **File:** `src/main/java/us/eunoians/mcrpg/fishing/PlayerFishingState.java`
 
-All state is transient — discarded on logout, world change (optionally), or mob death. No database persistence.
+Session-only fishing state stored as a field on `McRPGPlayer`. Discarded on logout, optionally reset on world change. No database persistence.
 
 ```java
 package us.eunoians.mcrpg.fishing;
@@ -750,76 +519,43 @@ public class PlayerFishingState {
         this.activeMobUUIDs = new HashSet<>();
     }
 
-    /**
-     * Gets the player's current accumulated spawn chance.
-     *
-     * @return the current spawn chance (0.0 to max-chance)
-     */
+    /** Gets the player's current accumulated spawn chance. */
     public double getCurrentSpawnChance() {
         return currentSpawnChance;
     }
 
-    /**
-     * Sets the player's current spawn chance.
-     *
-     * @param chance the new spawn chance
-     */
+    /** Sets the player's current spawn chance. */
     public void setCurrentSpawnChance(double chance) {
         this.currentSpawnChance = chance;
     }
 
-    /**
-     * Gets the last known hook location for this player.
-     *
-     * @return the last hook location, or null if no fishing has occurred yet
-     */
+    /** Gets the last known hook location, or null if no fishing has occurred yet. */
     @Nullable
     public Location getLastHookLocation() {
         return lastHookLocation;
     }
 
-    /**
-     * Sets the last known hook location.
-     *
-     * @param location the hook location, or null to clear
-     */
+    /** Sets the last known hook location, or null to clear. */
     public void setLastHookLocation(@Nullable Location location) {
         this.lastHookLocation = location;
     }
 
-    /**
-     * Adds a mob UUID to the active set.
-     *
-     * @param mobUUID the mob's entity UUID
-     */
+    /** Adds a mob UUID to the active set. */
     public void addActiveMob(@NotNull UUID mobUUID) {
         activeMobUUIDs.add(mobUUID);
     }
 
-    /**
-     * Removes a mob UUID from the active set.
-     *
-     * @param mobUUID the mob's entity UUID
-     * @return true if the mob was in the active set
-     */
+    /** Removes a mob UUID from the active set. Returns true if it was present. */
     public boolean removeActiveMob(@NotNull UUID mobUUID) {
         return activeMobUUIDs.remove(mobUUID);
     }
 
-    /**
-     * Gets the number of currently active fishing mobs for this player.
-     *
-     * @return the active mob count
-     */
+    /** Gets the number of currently active fishing mobs. */
     public int getActiveMobCount() {
         return activeMobUUIDs.size();
     }
 
-    /**
-     * Gets an unmodifiable view of the active mob UUIDs.
-     *
-     * @return the active mob UUIDs
-     */
+    /** Gets an unmodifiable view of the active mob UUIDs. */
     @NotNull
     public Set<UUID> getActiveMobUUIDs() {
         return Collections.unmodifiableSet(activeMobUUIDs);
@@ -827,37 +563,364 @@ public class PlayerFishingState {
 }
 ```
 
-### State Lifecycle
+### 6.2 Storage on McRPGPlayer
+
+**Modified file:** `us.eunoians.mcrpg.entity.player.McRPGPlayer`
+
+`PlayerFishingState` is stored as a session-only field on `McRPGPlayer`, following the same pattern as `standingInSafeZone` — a transient field that is never persisted to the database.
+
+```java
+// In McRPGPlayer field declarations
+private PlayerFishingState fishingState;
+
+/**
+ * Gets the player's fishing state, creating it lazily if needed.
+ *
+ * @param initialChance the initial spawn chance if state needs to be created
+ * @return the player's fishing state
+ */
+@NotNull
+public PlayerFishingState getOrCreateFishingState(double initialChance) {
+    if (fishingState == null) {
+        fishingState = new PlayerFishingState(initialChance);
+    }
+    return fishingState;
+}
+
+/**
+ * Gets the player's fishing state if it exists.
+ *
+ * @return the fishing state, or null if the player has not fished this session
+ */
+@Nullable
+public PlayerFishingState getFishingState() {
+    return fishingState;
+}
+
+/**
+ * Resets the player's fishing state. Called on logout or when a full reset is needed.
+ */
+public void resetFishingState() {
+    this.fishingState = null;
+}
+```
+
+### 6.3 State Lifecycle
 
 | Event | State Change |
 |---|---|
 | Player logs in | No state created (lazy on first catch) |
-| First catch | State created with `base-chance` |
+| First catch | State created via `getOrCreateFishingState(baseChance)` |
 | Same-area catch | `currentSpawnChance += increment` (capped at `max-chance`) |
 | New-area catch | `currentSpawnChance -= decrement` (floored at `base-chance`) |
 | Spawn succeeds | `currentSpawnChance = base-chance`, mob UUID added to `activeMobUUIDs` |
 | Mob dies | UUID removed from `activeMobUUIDs`, `currentSpawnChance = post-kill-chance` |
 | Mob despawns | UUID removed from `activeMobUUIDs` (via death event — MM fires death on despawn too) |
-| Player logs out | Entire state discarded |
+| Player logs out | `resetFishingState()` called by existing player cleanup |
 | World change | `lastHookLocation = null`, optionally `currentSpawnChance = base-chance` |
+
+### 6.4 Why Store on McRPGPlayer?
+
+Storing per-player state on the player object rather than a separate `Map<UUID, State>` on the listener:
+1. **Follows existing patterns** — `standingInSafeZone`, `readiedAbility`, `activeBoardQuestCount` are all per-player session state stored on the player/holder object
+2. **Natural lifecycle** — state is cleaned up automatically when the player object is discarded on logout
+3. **No cross-referencing** — the listener doesn't need to maintain and clean up a parallel map
+4. **Accessible elsewhere** — other systems (e.g., future fishing skill XP) can read the state without coupling to the listener
 
 ---
 
-## 7. Spawn Flow
+## 7. FishingMobSpawnListener
+
+**File:** `src/main/java/us/eunoians/mcrpg/listener/fishing/FishingMobSpawnListener.java`
+
+A pure Bukkit `Listener` — no state storage. Per-player state lives on `McRPGPlayer`. Mob pool and config values are accessed via `ReloadableContent`.
+
+```java
+package us.eunoians.mcrpg.listener.fishing;
+
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.fishing.FishingMobDeathEvent;
+import us.eunoians.mcrpg.event.fishing.FishingMobSpawnChanceUpdateEvent;
+import us.eunoians.mcrpg.external.mythicmobs.FishingMobKeys;
+import us.eunoians.mcrpg.external.mythicmobs.MythicMobsHook;
+import us.eunoians.mcrpg.external.worldguard.WorldGuardHook;
+import us.eunoians.mcrpg.fishing.MobPoolEntry;
+import us.eunoians.mcrpg.fishing.MobPoolSelector;
+import us.eunoians.mcrpg.fishing.PlayerFishingState;
+import us.eunoians.mcrpg.fishing.ReloadableMobPool;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
+
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Listens to fishing events and triggers mob spawns via MythicMobs when the
+ * player's accumulated spawn chance succeeds.
+ * <p>
+ * Per-player state is stored on {@link McRPGPlayer#getFishingState()}.
+ * The mob pool is loaded via {@link ReloadableMobPool} and refreshes on
+ * {@code /mcrpg admin reload}.
+ * <p>
+ * This listener is only registered when MythicMobs is present and the
+ * fishing mob spawn system is enabled in config.
+ */
+public class FishingMobSpawnListener implements Listener {
+
+    private final McRPG plugin;
+    private final ReloadableMobPool reloadableMobPool;
+
+    public FishingMobSpawnListener(@NotNull McRPG plugin, @NotNull ReloadableMobPool reloadableMobPool) {
+        this.plugin = plugin;
+        this.reloadableMobPool = reloadableMobPool;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerFish(@NotNull PlayerFishEvent event) {
+        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH
+                && event.getState() != PlayerFishEvent.State.CAUGHT_ENTITY) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        if (event.getHook() == null) {
+            return;
+        }
+
+        Optional<McRPGPlayer> mcRPGPlayerOpt = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(player.getUniqueId());
+
+        if (mcRPGPlayerOpt.isEmpty()) {
+            return;
+        }
+
+        McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
+        Location hookLocation = event.getHook().getLocation();
+
+        PlayerFishingState state = mcRPGPlayer.getOrCreateFishingState(getBaseChance());
+
+        // Check active mob cap
+        int maxActiveMobs = getConfig().getInt(FishingMobSpawnConfigFile.MAX_ACTIVE_MOBS_PER_PLAYER, 1);
+        if (state.getActiveMobCount() >= maxActiveMobs) {
+            return;
+        }
+
+        // Update chance based on proximity to last hook
+        updateSpawnChance(player, state, hookLocation);
+        state.setLastHookLocation(hookLocation);
+
+        // Roll for spawn
+        double roll = ThreadLocalRandom.current().nextDouble();
+        if (roll < state.getCurrentSpawnChance()) {
+            attemptSpawnMob(player, state, hookLocation);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onFishingMobDeath(@NotNull FishingMobDeathEvent event) {
+        UUID mobUUID = event.getMob().getUniqueId();
+        double postKillChance = getConfig().getDouble(FishingMobSpawnConfigFile.POST_KILL_CHANCE, 0.0);
+
+        // Find the player who owns this mob via the angler UUID PDC tag
+        // (more efficient than iterating all players)
+        String anglerUuidString = event.getMob().getPersistentDataContainer()
+                .get(FishingMobKeys.ANGLER_UUID_KEY, PersistentDataType.STRING);
+
+        if (anglerUuidString == null) {
+            return;
+        }
+
+        UUID anglerUUID = UUID.fromString(anglerUuidString);
+        plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(anglerUUID)
+                .ifPresent(mcRPGPlayer -> {
+                    PlayerFishingState state = mcRPGPlayer.getFishingState();
+                    if (state != null && state.removeActiveMob(mobUUID)) {
+                        state.setCurrentSpawnChance(postKillChance);
+                    }
+                });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onWorldChange(@NotNull PlayerChangedWorldEvent event) {
+        plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(event.getPlayer().getUniqueId())
+                .ifPresent(mcRPGPlayer -> {
+                    PlayerFishingState state = mcRPGPlayer.getFishingState();
+                    if (state == null) {
+                        return;
+                    }
+
+                    boolean resetOnWorldChange = getConfig().getBoolean(
+                            FishingMobSpawnConfigFile.RESET_ON_WORLD_CHANGE, true);
+                    if (resetOnWorldChange) {
+                        state.setCurrentSpawnChance(getBaseChance());
+                    }
+                    state.setLastHookLocation(null);
+                });
+    }
+
+    private void updateSpawnChance(@NotNull Player player,
+                                    @NotNull PlayerFishingState state,
+                                    @NotNull Location hookLocation) {
+        double oldChance = state.getCurrentSpawnChance();
+        double newChance;
+
+        Location lastHook = state.getLastHookLocation();
+        double sameAreaRange = getConfig().getDouble(FishingMobSpawnConfigFile.SAME_AREA_RANGE, 10.0);
+
+        if (lastHook == null || !lastHook.getWorld().equals(hookLocation.getWorld())) {
+            newChance = oldChance;
+        } else {
+            double distance = lastHook.distance(hookLocation);
+            if (distance <= sameAreaRange) {
+                double increment = getConfig().getDouble(FishingMobSpawnConfigFile.CHANCE_INCREMENT_PER_CATCH, 0.02);
+                double maxChance = getConfig().getDouble(FishingMobSpawnConfigFile.MAX_CHANCE, 0.35);
+                newChance = Math.min(oldChance + increment, maxChance);
+            } else {
+                double decrement = getConfig().getDouble(FishingMobSpawnConfigFile.CHANCE_DECREMENT_PER_CATCH, 0.05);
+                newChance = Math.max(oldChance - decrement, getBaseChance());
+            }
+        }
+
+        FishingMobSpawnChanceUpdateEvent updateEvent = new FishingMobSpawnChanceUpdateEvent(
+                player, oldChance, newChance, hookLocation);
+        Bukkit.getPluginManager().callEvent(updateEvent);
+
+        if (!updateEvent.isCancelled()) {
+            state.setCurrentSpawnChance(updateEvent.getNewChance());
+        }
+    }
+
+    private void attemptSpawnMob(@NotNull Player player,
+                                  @NotNull PlayerFishingState state,
+                                  @NotNull Location hookLocation) {
+        MobPoolSelector selector = reloadableMobPool.getContent();
+
+        // Resolve WorldGuard hook (nullable — region checks are skipped if absent)
+        WorldGuardHook worldGuardHook = plugin.registryAccess()
+                .registry(RegistryKey.PLUGIN_HOOK)
+                .pluginHook(McRPGPluginHookKey.WORLD_GUARD)
+                .orElse(null);
+
+        Optional<MobPoolEntry> selected = selector.select(
+                state.getCurrentSpawnChance(), hookLocation, worldGuardHook);
+
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        MobPoolEntry entry = selected.get();
+        Location spawnLocation = calculateSpawnLocation(hookLocation);
+
+        // Spawn via MythicMobsHook
+        MythicMobsHook mmHook = plugin.registryAccess()
+                .registry(RegistryKey.PLUGIN_HOOK)
+                .pluginHook(McRPGPluginHookKey.MYTHIC_MOBS)
+                .orElse(null);
+
+        if (mmHook == null) {
+            return;
+        }
+
+        Optional<Entity> entityOpt = mmHook.spawnMob(entry.mythicMobsId(), spawnLocation, entry.mobLevel());
+        if (entityOpt.isEmpty()) {
+            return;
+        }
+
+        Entity entity = entityOpt.get();
+
+        // Tag the entity with PDC keys so MythicMobsListener can identify it
+        entity.getPersistentDataContainer().set(
+                FishingMobKeys.FISHING_MOB_KEY, PersistentDataType.BOOLEAN, true);
+        entity.getPersistentDataContainer().set(
+                FishingMobKeys.ANGLER_UUID_KEY, PersistentDataType.STRING, player.getUniqueId().toString());
+
+        state.addActiveMob(entity.getUniqueId());
+        state.setCurrentSpawnChance(getBaseChance());
+
+        plugin.getLogger().fine("Spawned fishing mob '" + entry.mythicMobsId()
+                + "' for player " + player.getName() + " at " + spawnLocation);
+    }
+
+    @NotNull
+    private Location calculateSpawnLocation(@NotNull Location hookLocation) {
+        double offset = getConfig().getDouble(FishingMobSpawnConfigFile.SPAWN_OFFSET_FROM_HOOK, 3.0);
+        double yOffset = getConfig().getDouble(FishingMobSpawnConfigFile.SPAWN_Y_OFFSET, 1.0);
+
+        double angle = ThreadLocalRandom.current().nextDouble(2 * Math.PI);
+        double x = hookLocation.getX() + offset * Math.cos(angle);
+        double z = hookLocation.getZ() + offset * Math.sin(angle);
+        double y = hookLocation.getY() + yOffset;
+
+        return new Location(hookLocation.getWorld(), x, y, z);
+    }
+
+    private double getBaseChance() {
+        return getConfig().getDouble(FishingMobSpawnConfigFile.BASE_CHANCE, 0.0);
+    }
+
+    @NotNull
+    private YamlDocument getConfig() {
+        return plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.FISHING_MOB_SPAWN_CONFIG);
+    }
+}
+```
+
+### Key Design Decisions
+
+**Pure listener, no state:** The listener holds no per-player state. All mutable state lives on `McRPGPlayer.fishingState`. The listener's only field beyond `plugin` is the `ReloadableMobPool`, which is an immutable-per-reload config wrapper.
+
+**No `PlayerQuitEvent` handler needed:** Since `PlayerFishingState` lives on `McRPGPlayer`, it is automatically discarded when the player object is cleaned up on logout. The existing `PlayerLeaveListener` handles player object teardown.
+
+**Death callback uses PDC angler UUID:** Instead of iterating all players to find who owns a mob, the listener reads `ANGLER_UUID_KEY` from the dead mob's PDC and looks up that specific player. More efficient and O(1) instead of O(n).
+
+---
+
+## 8. Spawn Flow
 
 Full sequence from catch to mob appearing:
 
 ```
 Player catches fish (PlayerFishEvent CAUGHT_FISH/CAUGHT_ENTITY)
-  -> FishingMobSpawnTracker.onPlayerFish()
-    -> Check: world allowed? biome allowed? active mob cap reached?
+  -> FishingMobSpawnListener.onPlayerFish()
+    -> Look up McRPGPlayer from player manager
+    -> Get or create PlayerFishingState on the player object
+    -> Check: active mob cap reached?
     -> Update spawn chance based on hook proximity
     -> Fire FishingMobSpawnChanceUpdateEvent (cancellable)
     -> Roll against currentSpawnChance
     -> On success:
-      -> mobPoolSelector.select() — weighted random from eligible entries
+      -> reloadableMobPool.getContent().select() — weighted random from eligible entries
+        -> Filters by chance threshold, biome, world, WorldGuard region
       -> Calculate spawn location (offset from hook)
-      -> MythicMobs API: spawn mob at location
+      -> MythicMobsHook.spawnMob() — centralized MM API call
       -> Tag entity with FISHING_MOB_KEY + ANGLER_UUID_KEY (PDC)
       -> state.addActiveMob(entityUUID)
       -> state.setCurrentSpawnChance(baseChance)
@@ -874,12 +937,11 @@ The existing LLD-1 implementation uses PDC tags on entities to identify fishing 
 1. Survives server restarts (PDC is persisted by Minecraft)
 2. Doesn't require cross-system coordination (the listener reads tags independently)
 3. Is already implemented and working
-
-The tracker adds the tracking `Map<UUID, PlayerFishingState>` for spawn-chance management, but mob identification flows through PDC tags.
+4. Enables efficient death callback (read angler UUID directly from mob PDC)
 
 ---
 
-## 8. Death Callback Integration
+## 9. Death Callback Integration
 
 When a fishing mob dies:
 
@@ -888,27 +950,28 @@ MythicMobDeathEvent (from MythicMobs)
   -> MythicMobsListener.onMythicMobDeath() [existing code]
     -> Reads PDC: FISHING_MOB_KEY present?
     -> Fires FishingMobDeathEvent
-      -> FishingMobSpawnTracker.onFishingMobDeath() [new code]
-        -> Finds owning player in playerStates
-        -> Removes mob UUID from activeMobUUIDs
+      -> FishingMobSpawnListener.onFishingMobDeath() [new code]
+        -> Reads ANGLER_UUID_KEY from mob's PDC
+        -> Looks up McRPGPlayer by angler UUID
+        -> Removes mob UUID from player's fishingState.activeMobUUIDs
         -> Resets currentSpawnChance to post-kill-chance
 ```
 
-The integration is event-driven. The tracker doesn't need to know about `MythicMobDeathEvent` — it only listens to the McRPG-domain `FishingMobDeathEvent`.
+The integration is event-driven. The listener only consumes McRPG-domain `FishingMobDeathEvent`, not `MythicMobDeathEvent`.
 
 ### Death vs. Despawn
 
-When MythicMobs despawns a mob (via `ActiveMob.despawn()`, `~onTimer`, or `~onDropCombat`), it fires `MythicMobDeathEvent`. The existing `MythicMobsListener` checks PDC tags, which survive despawn, so `FishingMobDeathEvent` is fired for both death and despawn. The tracker handles both cases identically — remove from tracking state.
+When MythicMobs despawns a mob (via `~onTimer`, `~onDropCombat`, or `ActiveMob.despawn()`), it fires `MythicMobDeathEvent`. The existing `MythicMobsListener` checks PDC tags, which survive despawn, so `FishingMobDeathEvent` is fired for both death and despawn. The listener handles both identically — remove from tracking state.
 
 ---
 
-## 9. Custom Events
+## 10. Custom Events
 
-### 9.1 FishingMobSpawnChanceUpdateEvent (New)
+### 10.1 FishingMobSpawnChanceUpdateEvent (New)
 
 **File:** `src/main/java/us/eunoians/mcrpg/event/fishing/FishingMobSpawnChanceUpdateEvent.java`
 
-Fired when a player's fishing mob spawn chance changes. Cancellable — if cancelled, the chance remains unchanged.
+Fired when a player's fishing mob spawn chance changes. Cancellable — if cancelled, the chance remains unchanged. Third-party plugins can also modify the new chance via `setNewChance(double)`.
 
 ```java
 package us.eunoians.mcrpg.event.fishing;
@@ -920,15 +983,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Fired when a player's fishing mob spawn chance is about to change.
- * <p>
- * Third-party plugins can:
- * <ul>
- *   <li>Cancel the event to prevent the chance update</li>
- *   <li>Modify {@link #setNewChance(double)} to adjust the new value</li>
- * </ul>
- */
 public class FishingMobSpawnChanceUpdateEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
@@ -939,14 +993,6 @@ public class FishingMobSpawnChanceUpdateEvent extends Event implements Cancellab
     private final Location hookLocation;
     private boolean cancelled = false;
 
-    /**
-     * Creates a new {@link FishingMobSpawnChanceUpdateEvent}.
-     *
-     * @param player       the player whose spawn chance is changing
-     * @param oldChance    the spawn chance before the update
-     * @param newChance    the spawn chance after the update (modifiable)
-     * @param hookLocation the current hook location that triggered the update
-     */
     public FishingMobSpawnChanceUpdateEvent(@NotNull Player player, double oldChance,
                                              double newChance, @NotNull Location hookLocation) {
         this.player = player;
@@ -955,142 +1001,175 @@ public class FishingMobSpawnChanceUpdateEvent extends Event implements Cancellab
         this.hookLocation = hookLocation;
     }
 
-    /**
-     * Gets the player whose spawn chance is changing.
-     *
-     * @return the player
-     */
-    @NotNull
-    public Player getPlayer() {
-        return player;
-    }
+    @NotNull public Player getPlayer() { return player; }
+    public double getOldChance() { return oldChance; }
+    public double getNewChance() { return newChance; }
+    public void setNewChance(double newChance) { this.newChance = newChance; }
+    @NotNull public Location getHookLocation() { return hookLocation; }
 
-    /**
-     * Gets the spawn chance before the update.
-     *
-     * @return the old chance
-     */
-    public double getOldChance() {
-        return oldChance;
-    }
-
-    /**
-     * Gets the spawn chance that will be applied after the update.
-     *
-     * @return the new chance
-     */
-    public double getNewChance() {
-        return newChance;
-    }
-
-    /**
-     * Sets the spawn chance to apply after the update.
-     * Third-party plugins can use this to boost or reduce the chance.
-     *
-     * @param newChance the modified new chance
-     */
-    public void setNewChance(double newChance) {
-        this.newChance = newChance;
-    }
-
-    /**
-     * Gets the hook location that triggered the chance update.
-     *
-     * @return the hook location
-     */
-    @NotNull
-    public Location getHookLocation() {
-        return hookLocation;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
-    }
-
-    @Override
-    @NotNull
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    @NotNull
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+    @Override public boolean isCancelled() { return cancelled; }
+    @Override public void setCancelled(boolean cancel) { this.cancelled = cancel; }
+    @Override @NotNull public HandlerList getHandlers() { return handlers; }
+    @NotNull public static HandlerList getHandlerList() { return handlers; }
 }
 ```
 
-### 9.2 Existing Events (No Changes)
-
-These events from LLD-1 implementation are used as-is:
+### 10.2 Existing Events (No Changes)
 
 | Event | Fired By | Consumed By |
 |---|---|---|
 | `FishingMobSpawnEvent` | `MythicMobsListener` | Third-party plugins (cancellable) |
-| `FishingMobDeathEvent` | `MythicMobsListener` | `FishingMobSpawnTracker` (cleanup) |
+| `FishingMobDeathEvent` | `MythicMobsListener` | `FishingMobSpawnListener` (cleanup) |
 
-### 9.3 Event Summary
+### 10.3 Event Summary
 
 | Event | When | Cancellable | Mutable Fields |
 |---|---|---|---|
 | `FishingMobSpawnChanceUpdateEvent` | Before spawn chance changes | Yes | `newChance` |
-| `FishingMobSpawnEvent` (existing) | After MM spawns a tagged mob | Yes (removes entity) | — |
-| `FishingMobDeathEvent` (existing) | After a tagged mob dies | No | — |
+| `FishingMobSpawnEvent` (existing) | After MM spawns a tagged mob | Yes (removes entity) | -- |
+| `FishingMobDeathEvent` (existing) | After a tagged mob dies | No | -- |
 
 ---
 
-## 10. Bootstrap Registration
+## 11. Bootstrap Registration
 
-### 10.1 Listener Registration
+### 11.1 ReloadableMobPool
+
+**File:** `src/main/java/us/eunoians/mcrpg/fishing/ReloadableMobPool.java`
+
+A `ReloadableContent<MobPoolSelector>` that parses the mob pool from config and constructs a fresh `MobPoolSelector` on each reload.
+
+```java
+package us.eunoians.mcrpg.fishing;
+
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+/**
+ * A {@link ReloadableContent} that wraps the fishing mob pool configuration.
+ * On reload, re-parses the {@code mob-pool} YAML section and constructs a
+ * fresh {@link MobPoolSelector}.
+ * <p>
+ * Registered with the {@code ReloadableContentManager} at startup so that
+ * {@code /mcrpg admin reload} picks up pool changes without a server restart.
+ */
+public class ReloadableMobPool extends ReloadableContent<MobPoolSelector> {
+
+    public ReloadableMobPool(@NotNull YamlDocument config, @NotNull Logger logger) {
+        super(config, FishingMobSpawnConfigFile.MOB_POOL, (doc, route) -> {
+            List<MobPoolEntry> entries = parseMobPool(doc, logger);
+            return new MobPoolSelector(entries);
+        });
+    }
+
+    @NotNull
+    private static List<MobPoolEntry> parseMobPool(@NotNull YamlDocument config, @NotNull Logger logger) {
+        if (!config.contains(FishingMobSpawnConfigFile.MOB_POOL)) {
+            logger.warning("No mob-pool section found in fishing mob spawn configuration.");
+            return Collections.emptyList();
+        }
+
+        // Map-based: each key under mob-pool is a named entry
+        var poolSection = config.getSection(FishingMobSpawnConfigFile.MOB_POOL);
+        if (poolSection == null) {
+            logger.warning("Mob pool section is empty in fishing mob spawn configuration.");
+            return Collections.emptyList();
+        }
+
+        List<MobPoolEntry> entries = new ArrayList<>();
+
+        for (Object keyObj : poolSection.getKeys()) {
+            String key = keyObj.toString();
+            var entrySection = poolSection.getSection(key);
+            if (entrySection == null) {
+                logger.warning("Mob pool entry '" + key + "' is not a valid section, skipping.");
+                continue;
+            }
+
+            String mobId = entrySection.getString("mythicmobs-mob-id");
+            if (mobId == null || mobId.isBlank()) {
+                logger.warning("Mob pool entry '" + key + "' missing 'mythicmobs-mob-id', skipping.");
+                continue;
+            }
+
+            int weight = entrySection.getInt("weight", 1);
+            if (weight <= 0) {
+                logger.warning("Mob pool entry '" + key + "' has weight <= 0, skipping.");
+                continue;
+            }
+
+            double minThreshold = entrySection.getDouble("min-chance-threshold", 0.0);
+            double mobLevel = entrySection.getDouble("mob-level", 1.0);
+
+            Set<String> allowedBiomes = toStringSet(entrySection.getStringList("allowed-biomes"));
+            Set<String> deniedBiomes = toStringSet(entrySection.getStringList("denied-biomes"));
+            Set<String> allowedWorlds = toStringSet(entrySection.getStringList("allowed-worlds"));
+            Set<String> deniedWorlds = toStringSet(entrySection.getStringList("denied-worlds"));
+            Set<String> allowedRegions = toStringSet(entrySection.getStringList("allowed-regions"));
+            Set<String> deniedRegions = toStringSet(entrySection.getStringList("denied-regions"));
+
+            entries.add(new MobPoolEntry(key, mobId, weight, minThreshold, mobLevel,
+                    allowedBiomes, deniedBiomes, allowedWorlds, deniedWorlds,
+                    allowedRegions, deniedRegions));
+
+            logger.info("Loaded mob pool entry: " + key + " -> " + mobId
+                        + " (weight=" + weight + ", threshold=" + minThreshold + ")");
+        }
+
+        return Collections.unmodifiableList(entries);
+    }
+
+    @NotNull
+    private static Set<String> toStringSet(@org.jetbrains.annotations.Nullable List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return Set.of();
+        }
+        return Set.copyOf(list);
+    }
+}
+```
+
+### 11.2 Listener Registration
 
 **Modified file:** `us.eunoians.mcrpg.bootstrap.McRPGListenerRegistrar`
 
-The `FishingMobSpawnTracker` is registered conditionally after the MythicMobs listener block:
-
 ```java
-// Fishing mob spawn tracker (requires MythicMobs + enabled in config)
+// Fishing mob spawn listener (requires MythicMobs + enabled in config)
 if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
     YamlDocument fishingConfig = plugin.registryAccess()
             .registry(RegistryKey.MANAGER)
             .manager(McRPGManagerKey.FILE)
             .getFile(FileType.FISHING_MOB_SPAWN_CONFIG);
+
     if (fishingConfig.getBoolean(FishingMobSpawnConfigFile.SPAWN_ENABLED, true)) {
-        Bukkit.getPluginManager().registerEvents(new FishingMobSpawnTracker(plugin), plugin);
+        ReloadableMobPool reloadableMobPool = new ReloadableMobPool(fishingConfig, plugin.getLogger());
+
+        // Register for reload tracking
+        plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(Set.of(reloadableMobPool));
+
+        Bukkit.getPluginManager().registerEvents(
+                new FishingMobSpawnListener(plugin, reloadableMobPool), plugin);
     }
 }
 ```
 
-### 10.2 Registration Order
+### 11.3 Registration Order
 
-```
-FileManager init (loads fishing_mob_spawn_configuration.yml via FileType)
-  -> McRPGListenerRegistrar
-    -> MythicMobsListener registered (if MM present) [existing]
-    -> FishingMobSpawnTracker registered (if MM present AND spawn enabled) [new]
-  -> McRPGHooksRegistrar
-    -> MythicMobsHook registered (if MM present) [existing]
-```
-
-Note: The listener registrar runs before the hooks registrar in `McRPGBootstrap`. However, the tracker's conditional check uses `RegistryKey.PLUGIN_HOOK` which requires the hook to be registered. Looking at the current bootstrap order:
-
-```java
-new McRPGListenerRegistrar().register(bootstrapContext);  // line 72
-new McRPGHooksRegistrar().register(bootstrapContext);      // line 73
-```
-
-The hook is registered **after** the listener registrar. The existing `MythicMobsListener` registration already depends on the hook being present:
-
-```java
-if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
-```
-
-This works because both registrations happen synchronously during startup. **Wait — this means the hook check would fail** since hooks register after listeners.
+Note: The listener registrar runs before the hooks registrar in `McRPGBootstrap`. The hook check in the listener registrar depends on the hook being present. This is a potential latent bug — see the existing `MythicMobsListener` registration which has the same dependency.
 
 **Fix:** Swap the registration order in `McRPGBootstrap`:
 
@@ -1099,30 +1178,26 @@ new McRPGHooksRegistrar().register(bootstrapContext);      // Hooks FIRST
 new McRPGListenerRegistrar().register(bootstrapContext);    // Listeners AFTER
 ```
 
-This ensures the MythicMobs hook is available when the listener registrar checks for it. The existing `MythicMobsListener` registration has the same dependency, suggesting the current order may be a latent bug (the hook check would always return empty).
-
-> **Implementation note:** Verify the hook registration order on a live server. If the existing `MythicMobsListener` is correctly registering despite the current order, there may be a subtlety in the `PluginHookRegistry` initialization that makes it work. If so, document it; if not, the swap is required.
+> **Implementation note:** Verify on a live server whether the existing order works despite the apparent dependency. If so, document the reason; if not, apply the swap.
 
 ---
 
-## 11. Anti-Cheese Analysis
-
-The spawn system's anti-cheese properties come from the asymmetric increment/decrement design:
+## 12. Anti-Cheese Analysis
 
 | Strategy | Behavior | Outcome |
 |---|---|---|
-| **AFK same spot** | Chance accumulates: +0.02 per catch | Mob eventually spawns — **intended behavior**, not cheese (mob is the anti-AFK measure) |
+| **AFK same spot** | Chance accumulates: +0.02 per catch | Mob eventually spawns — **intended behavior** (mob is the anti-AFK measure) |
 | **Small movement (1-2 blocks)** | Still within `same-area-range` (10 blocks) | Same as AFK — chance still accumulates |
-| **Alternating two spots (>10 blocks apart)** | Alternates +0.02 and -0.05 per catch | Net -0.03 per cycle -> chance decreases -> **defeats the exploit** |
+| **Alternating two spots (>10 blocks apart)** | Alternates +0.02 and -0.05 per catch | Net -0.03 per cycle -> **defeats the exploit** |
 | **Teleporting between distant spots** | Each teleport triggers decrement | Rapid chance decay -> **defeats the exploit** |
-| **Fishing in new area then returning** | Decrement away, increment on return | Player loses progress — must rebuild chance in the original area |
-| **Multiple players in same area** | Fully independent tracking | Each player accumulates independently — no sharing or amplification |
-| **Kill mob, immediately fish again** | Chance resets to `post-kill-chance` (0.0) | Must rebuild chance from scratch — **intended pacing** |
-| **Ignore mob, keep fishing** | `max-active-mobs-per-player` cap (default 1) | No more spawns until mob dies/despawns — **prevents mob stacking** |
-| **Lure mob to pen/trap** | MM's `~onTimer` forces despawn after TTL | Mob eventually disappears — **MM handles this natively** |
-| **All players leave area** | MM's `~onDropCombat` empties ThreatTable -> despawn | Mob cleaned up — **MM handles this natively** |
+| **Fishing in new area then returning** | Decrement away, increment on return | Player loses progress — must rebuild chance |
+| **Multiple players in same area** | Fully independent tracking per player | No sharing or amplification |
+| **Kill mob, immediately fish again** | Chance resets to `post-kill-chance` (0.0) | Must rebuild from scratch — **intended pacing** |
+| **Ignore mob, keep fishing** | `max-active-mobs-per-player` cap (default 1) | No more spawns until mob dies/despawns |
+| **Lure mob to pen/trap** | MM's `~onTimer` forces despawn after TTL | **MM handles this natively** |
+| **All players leave area** | MM's `~onDropCombat` empties ThreatTable -> despawn | **MM handles this natively** |
 
-### Tuning Levers for Server Owners
+### Tuning Levers
 
 McRPG config controls spawn behavior:
 
@@ -1134,85 +1209,83 @@ McRPG config controls spawn behavior:
 | `post-kill-chance` | Higher = faster re-spawns after kills |
 | `max-active-mobs-per-player` | Prevents mob stacking |
 
-MythicMobs mob config controls despawn behavior:
+MythicMobs mob config controls despawn:
 
 | MM Config | Anti-Cheese Role |
 |---|---|
-| `~onTimer` skill with `remove` mechanic | Max lifetime — prevents mob storage |
-| `~onDropCombat` skill with `remove` mechanic | Cleans up abandoned mobs when ThreatTable empties |
+| `~onTimer` + `remove` | Max lifetime — prevents mob storage |
+| `~onDropCombat` + `remove` | Cleans up abandoned mobs |
 
 ---
 
-## 12. Edge Cases & Graceful Degradation
+## 13. Edge Cases & Graceful Degradation
 
 | Scenario | Behavior |
 |---|---|
-| MythicMobs not installed | `MythicMobsHook` not registered -> tracker not registered -> system is inert |
-| MythicMobs installed but mob type not registered | `getMythicMob()` returns empty -> warning logged -> spawn attempt silently fails |
-| Fishing mob spawn system disabled in config | Tracker not registered -> system is inert |
+| MythicMobs not installed | Hook not registered -> listener not registered -> system is inert |
+| MM installed but mob type not registered | `MythicMobsHook.spawnMob()` returns empty -> warning logged -> spawn fails silently |
+| System disabled in config | Listener not registered -> system is inert |
 | Empty mob pool | `MobPoolSelector.select()` returns empty -> no spawn -> no error |
-| All pool entries have threshold above current chance | Same as empty pool — no eligible entries |
-| Player logs out with active mob | State discarded. Mob continues living under MM rules. MM's `~onTimer`/`~onDropCombat` skills handle cleanup |
-| Player logs out and back in | Fresh state. Active mob from previous session is "orphaned" but handled by MM's despawn skills |
-| Server restart with living fishing mob | MM persists the mob. `MythicMobsListener` fires events on re-spawn. Tracker has no state (fresh session). Mob lives under MM rules. Acceptable — MM's despawn skills handle cleanup |
-| Catch event with null hook | Early return in `onPlayerFish()` — no processing |
-| World change | `lastHookLocation` nulled. Optionally resets chance (config-driven) |
-| Biome/world not in allowed list | Catch event ignored — no chance update, no spawn |
-| Multiple rapid catches | Each catch processed independently. Chance accumulates normally. Roll is per-catch |
-| Config reload | Mob pool is loaded once at construction. Config values are read live from `YamlDocument` (boostedyaml reloads in place). Pool requires tracker re-creation on reload |
-
-### Config Reload Behavior
-
-Most config values are read live from the `YamlDocument` on each event, so they take effect immediately on `/mcrpg reload`. The exception is `mob-pool`, which is parsed once in the constructor into an immutable list inside `MobPoolSelector`. To support live pool changes, the tracker would need to be re-created on reload. This could be added as a `ReloadableContent` pattern, but is deferred to a future pass since mob pool changes are rare (typically require a server restart anyway to ensure MM has the new mob type registered).
+| All pool entries filtered by threshold | Same as empty pool |
+| All pool entries filtered by location restrictions | Same as empty pool for that location |
+| WorldGuard not installed | Region restrictions silently ignored (null hook) |
+| Player logs out with active mob | `McRPGPlayer` teardown discards `fishingState`. Mob lives under MM rules. MM `~onTimer`/`~onDropCombat` handle cleanup |
+| Server restart with living mob | MM persists the mob. `McRPGPlayer` has fresh state (no `fishingState`). Mob lives under MM rules |
+| Catch event with null hook | Early return in `onPlayerFish()` |
+| World change | `lastHookLocation` nulled. Optionally resets chance |
+| Multiple rapid catches | Each processed independently. Chance accumulates normally |
+| Config reload (`/mcrpg admin reload`) | `ReloadableMobPool` re-parses mob pool. New `MobPoolSelector` constructed. Takes effect on next spawn trigger. Existing per-player state preserved |
 
 ---
 
-## 13. Test Plan
+## 14. Test Plan
 
-### 13.1 Unit Tests (src/test/java)
+### 14.1 Unit Tests (src/test/java)
 
 | Test Class | Tests |
 |---|---|
-| `MobPoolSelectorTest` | Weighted selection with single entry, multiple entries, all entries filtered by threshold, equal weights, zero total weight, empty pool, `hasEntries()` |
+| `MobPoolSelectorTest` | Weighted selection: single entry, multiple entries, all filtered by threshold, equal weights, zero total weight, empty pool, `hasEntries()`. Location filtering: biome allow/deny, world allow/deny, deny-takes-priority, WorldGuard region checks with mock hook, null WG hook skips regions |
 | `PlayerFishingStateTest` | Initial state values, chance get/set, last hook location get/set/null, active mob add/remove/count, getActiveMobUUIDs immutability |
-| `MobPoolEntryTest` | Record accessor correctness |
+| `MobPoolEntryTest` | Record accessor correctness, set immutability |
 
-### 13.2 Tests Requiring MockBukkit (extend McRPGBaseTest)
+### 14.2 Tests Requiring MockBukkit (extend McRPGBaseTest)
 
 | Test Class | Tests |
 |---|---|
 | `FishingMobSpawnChanceUpdateEventTest` | Event creation, cancellation, newChance modification, handler list |
-| `FishingMobSpawnTrackerTest` | Mob pool loading from config: valid entries, missing mob ID, zero weight (skipped), missing fields use defaults, empty pool list, non-map entries |
+| `ReloadableMobPoolTest` | Parse valid pool entries from map format, missing mob ID (skipped), zero weight (skipped), missing fields use defaults, empty pool section, per-mob restriction parsing |
 
-### 13.3 Manual Testing (Paper Server with MythicMobs)
+### 14.3 Manual Testing (Paper Server with MythicMobs)
 
 | Scenario | Verification |
 |---|---|
 | Fish repeatedly in same spot | Chance accumulates. Eventually mob spawns near hook |
 | Fish, then move far away and fish | Chance decreases |
-| Alternate between two distant spots | Net chance decrease over time |
-| Kill spawned mob | Chance resets to `post-kill-chance`. Can rebuild chance again |
-| Let mob live, keep fishing | No more spawns once `max-active-mobs-per-player` reached |
-| Log out with active mob | State discarded. Mob eventually despawns via MM skills |
-| Fish in disallowed world | No chance updates, no spawns |
-| Fish in disallowed biome | No chance updates, no spawns |
+| Kill spawned mob | Chance resets. Can rebuild again |
+| Let mob live, keep fishing | No more spawns once cap reached |
+| Log out with active mob | State discarded. Mob despawns via MM skills |
+| Fish in denied world | No spawns for that mob pool entry |
+| Fish in denied biome | No spawns for that mob pool entry |
+| Fish in denied WorldGuard region | No spawns for that mob pool entry (WG required) |
 | Disable system in config + reload | No fishing mob spawns |
-| Empty mob pool in config | No spawns, no errors |
+| Empty mob pool | No spawns, no errors |
 | MM not installed | System doesn't register, no errors |
-| Server restart with living mob | Mob persists (MM), tracker has fresh state |
+| `/mcrpg admin reload` with changed pool | New pool entries take effect |
+| Server restart with living mob | Mob persists (MM), player has fresh state |
 
 ---
 
-## 14. File Manifest
+## 15. File Manifest
 
 ### New Files
 
 | File | Type | Description |
 |---|---|---|
-| `fishing/FishingMobSpawnTracker.java` | Listener | Core tracker — listens to fish/death/quit/world events, loads mob pool |
+| `listener/fishing/FishingMobSpawnListener.java` | Listener | Pure listener — fish/death/world events, delegates to player state |
 | `fishing/PlayerFishingState.java` | Data | Per-player session state (chance, hook location, active mobs) |
-| `fishing/MobPoolEntry.java` | Record | Single weighted mob pool entry |
-| `fishing/MobPoolSelector.java` | Selector | Instantiable weighted random selection from eligible pool entries |
+| `fishing/MobPoolEntry.java` | Record | Single weighted mob pool entry with per-mob restrictions |
+| `fishing/MobPoolSelector.java` | Selector | Instantiable weighted random selection with location filtering |
+| `fishing/ReloadableMobPool.java` | Config | `ReloadableContent<MobPoolSelector>` — parses pool, reloads on command |
 | `configuration/file/FishingMobSpawnConfigFile.java` | Config | Route constants for fishing mob spawn config |
 | `event/fishing/FishingMobSpawnChanceUpdateEvent.java` | Event | Fired before spawn chance changes (cancellable) |
 | `src/main/resources/fishing_mob_spawn_configuration.yml` | YAML | Default fishing mob spawn configuration |
@@ -1223,16 +1296,18 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 | File | Change |
 |---|---|
+| `external/mythicmobs/MythicMobsHook.java` | Add `spawnMob()` and `isMobTypeRegistered()` methods |
+| `entity/player/McRPGPlayer.java` | Add `fishingState` field with get/create/reset methods |
 | `configuration/FileType.java` | Add `FISHING_MOB_SPAWN_CONFIG` entry |
-| `bootstrap/McRPGListenerRegistrar.java` | Add conditional `FishingMobSpawnTracker` registration |
-| `bootstrap/McRPGBootstrap.java` | **Potentially** swap hooks/listener registration order (see Section 10.2) |
+| `bootstrap/McRPGListenerRegistrar.java` | Add conditional `FishingMobSpawnListener` registration + `ReloadableMobPool` tracking |
+| `bootstrap/McRPGBootstrap.java` | **Potentially** swap hooks/listener registration order (see Section 11.3) |
 
 ### Not Modified (Used As-Is)
 
 | File | Role |
 |---|---|
-| `external/mythicmobs/MythicMobsHook.java` | Presence check for conditional registration |
 | `external/mythicmobs/MythicMobsListener.java` | Bridges MM events -> fires `FishingMobSpawnEvent`/`FishingMobDeathEvent` |
 | `external/mythicmobs/FishingMobKeys.java` | PDC key constants applied to spawned mobs |
+| `external/worldguard/WorldGuardHook.java` | Region query (may need `getRegionIds()` method added) |
 | `event/fishing/FishingMobSpawnEvent.java` | Cancellable spawn event (fired by `MythicMobsListener`) |
-| `event/fishing/FishingMobDeathEvent.java` | Death event (consumed by tracker for cleanup) |
+| `event/fishing/FishingMobDeathEvent.java` | Death event (consumed by listener for cleanup) |
