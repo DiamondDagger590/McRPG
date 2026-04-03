@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
+import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
@@ -28,6 +29,7 @@ public enum FileType {
     HERBALISM_CONFIG("skill_configuration" + "/" + "herbalism_configuration.yml", new HerbalismConfigFile()),
     BOARD_CONFIG("quest-board" + "/" + "board.yml", new BoardConfigFile()),
     HUD_CONFIG("hud_configuration.yml", new HudConfigFile()),
+    FISHING_MOB_SPAWN_CONFIG("fishing_mob_spawn_configuration.yml", new FishingMobSpawnConfigFile()),
     ;
 
     private final String filePath;

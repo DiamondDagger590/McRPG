@@ -4,16 +4,23 @@ import com.diamonddagger590.mccore.bootstrap.BootstrapContext;
 import com.diamonddagger590.mccore.bootstrap.StartupProfile;
 import com.diamonddagger590.mccore.bootstrap.registrar.Registrar;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.jeff_media.customblockdata.CustomBlockData;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
 import us.eunoians.mcrpg.external.mythicmobs.MythicMobsListener;
+import us.eunoians.mcrpg.fishing.ReloadableMobPool;
+import us.eunoians.mcrpg.listener.fishing.FishingMobSpawnListener;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
+
+import java.util.Set;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnComboCompleteListener;
 import us.eunoians.mcrpg.listener.ability.OnComboInputListener;
@@ -164,6 +171,24 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         // MythicMobs integration (conditional)
         if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
             Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
+
+            // Fishing mob spawn listener (requires MythicMobs + enabled in config)
+            YamlDocument fishingConfig = plugin.registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.FILE)
+                    .getFile(FileType.FISHING_MOB_SPAWN_CONFIG);
+
+            if (fishingConfig.getBoolean(FishingMobSpawnConfigFile.SPAWN_ENABLED, true)) {
+                ReloadableMobPool reloadableMobPool = new ReloadableMobPool(fishingConfig);
+
+                plugin.registryAccess()
+                        .registry(RegistryKey.MANAGER)
+                        .manager(ManagerKey.RELOADABLE_CONTENT)
+                        .trackReloadableContent(Set.of(reloadableMobPool));
+
+                Bukkit.getPluginManager().registerEvents(
+                        new FishingMobSpawnListener(plugin, reloadableMobPool), plugin);
+            }
         }
     }
 }

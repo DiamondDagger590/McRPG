@@ -41,6 +41,8 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.stat.instance.PlayerStatData;
 
+import us.eunoians.mcrpg.fishing.PlayerFishingState;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -70,6 +72,7 @@ public class McRPGPlayer extends CorePlayer {
     private final PlayerComboState comboState = new PlayerComboState();
     private final Map<Class<? extends PlayerDisplay>, PlayerDisplay> displays = new HashMap<>();
     private boolean standingInSafeZone;
+    private PlayerFishingState fishingState;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
         super(player.getUniqueId(), mcRPG);
@@ -300,6 +303,43 @@ public class McRPGPlayer extends CorePlayer {
             display.cleanDisplay();
         }
         displays.clear();
+    }
+
+    /**
+     * Gets the player's fishing state, creating it lazily if needed.
+     * <p>
+     * This is the primary entry point for the fishing mob spawn system.
+     * On the player's first catch of the session, this creates a fresh
+     * {@link PlayerFishingState} with the given initial chance.
+     *
+     * @param initialChance the initial spawn chance if state needs to be created
+     *                      (typically {@code base-chance} from config)
+     * @return the player's fishing state, never empty
+     */
+    @NotNull
+    public PlayerFishingState getOrCreateFishingState(double initialChance) {
+        if (fishingState == null) {
+            fishingState = new PlayerFishingState(initialChance);
+        }
+        return fishingState;
+    }
+
+    /**
+     * Gets the player's fishing state if it exists.
+     *
+     * @return the fishing state, or empty if the player has not fished this session
+     */
+    @NotNull
+    public Optional<PlayerFishingState> getFishingState() {
+        return Optional.ofNullable(fishingState);
+    }
+
+    /**
+     * Resets the player's fishing state. Called on logout or when a full
+     * reset is needed (e.g. world change with reset enabled).
+     */
+    public void resetFishingState() {
+        this.fishingState = null;
     }
 
     /**

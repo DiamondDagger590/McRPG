@@ -12,11 +12,16 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.exception.external.worldguard.WorldGuardFlagRegisterException;
@@ -72,5 +77,26 @@ public class WorldGuardHook extends PluginHook<McRPG> implements SafeZonePluginH
             return applicableRegionSet.testState(null, safeZoneFlag);
         }
         return false;
+    }
+
+    /**
+     * Gets the set of WorldGuard region IDs that apply at the given location.
+     *
+     * @param bukkitLocation the Bukkit location to check
+     * @return an unmodifiable set of region IDs at the location, or an empty set
+     *         if WorldGuard has no region manager for the location's world
+     */
+    @NotNull
+    public Set<String> getRegionIds(@NotNull org.bukkit.Location bukkitLocation) {
+        Location location = BukkitAdapter.adapt(bukkitLocation);
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionManager regionManager = container.get(BukkitAdapter.adapt(bukkitLocation.getWorld()));
+        if (regionManager == null) {
+            return Collections.emptySet();
+        }
+        ApplicableRegionSet applicableRegions = regionManager.getApplicableRegions(location.toVector().toBlockPoint());
+        return applicableRegions.getRegions().stream()
+                .map(ProtectedRegion::getId)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }
