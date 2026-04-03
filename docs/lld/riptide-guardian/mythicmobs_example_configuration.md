@@ -134,7 +134,7 @@ This means:
 - **Balance is centralized** — tuning an ability in McRPG automatically applies to mob and (future) player versions
 - **McRPG events fire** — `AbilityActivateEvent` etc. can be observed by quests, stats, and other systems
 - **`AbilityHolder` is entity-agnostic** — the existing holder hierarchy supports non-player entities by design (see CLAUDE.md)
-- **McRPG is required** — if McRPG is removed, the mob's `mcrpg_ability` mechanics become no-ops (MM logs unknown mechanic). The mob still spawns but only melees. Server owners who want a standalone mob can replace `mcrpg_ability` calls with pure-MM skill implementations.
+- **McRPG is required** — Phase Shift and Whirlpool are purely `mcrpg_ability` driven. If McRPG is removed or the abilities aren't registered, those skills become no-ops (MM logs unknown mechanic). The mob still spawns and uses Waterlogged Strike + Tsunami Wall (pure MM) plus melee, but loses two of its four combat abilities. This is acceptable — the mob is an McRPG feature and is designed to require McRPG.
 
 ### 2.7 Despawn Owned by MythicMobs
 
@@ -193,7 +193,7 @@ RiptideGuardian:
 
 ## 4. Mob Abilities (MythicMobs Skills)
 
-All four abilities from the HLD are present in the mob's combat kit. Two of them (Phase Shift, Whirlpool) are implemented via the `mcrpg_ability` custom mechanic — McRPG owns execution while MM owns AI/targeting. The other two (Waterlogged Strike, Tsunami Wall) are pure-MM skills because they don't have player ability equivalents and would gain nothing from the bridge.
+All four abilities from the HLD are present in the mob's combat kit. Two of them (Phase Shift, Whirlpool) are implemented purely via the `mcrpg_ability` custom mechanic — McRPG owns all execution (VFX, damage, effects, events) while MM owns AI/targeting/cooldowns. The other two (Waterlogged Strike, Tsunami Wall) are pure-MM skills because they don't have player ability equivalents and would gain nothing from the bridge. There are no MM fallbacks for the McRPG-driven abilities — they require McRPG to function.
 
 ### Custom Mechanic: `mcrpg_ability`
 
@@ -275,7 +275,7 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 - The `executeMobAbility()` method is a new contract on `Ability` that accepts a holder, caster entity, and target entity. This separates mob execution from the player component/ready/cooldown pipeline.
 - MM cooldowns prevent double-firing — McRPG does not manage cooldowns for mob abilities
 - McRPG events (`AbilityActivateEvent`) fire during execution, enabling quest/stat tracking
-- If the ability isn't registered (e.g., LLD-6 hasn't been implemented yet), the mechanic returns `CONDITION_FAILED` and MM falls through to the next skill in the priority list
+- If the ability isn't registered (e.g., LLD-6 hasn't been implemented yet), the mechanic returns `CONDITION_FAILED` and the skill is a no-op. The mob loses that ability until the McRPG ability is implemented.
 
 **Mechanic registration** (added to `MythicMobsListener`):
 
@@ -288,89 +288,51 @@ public void onMythicMechanicLoad(@NotNull MythicMechanicLoadEvent event) {
 }
 ```
 
-**Graceful fallback for unimplemented abilities:** Until LLD-6 implements the player abilities (Phase Shift, Whirlpool, etc.), `abilityRegistry.registered()` returns false and the mechanic returns `CONDITION_FAILED`. The mob YAML includes pure-MM fallback skills that fire when the `mcrpg_ability` call fails, ensuring the mob works immediately without waiting for LLD-6.
-
-### 4.1 Phase Shift (mcrpg_ability bridge)
+### 4.1 Phase Shift (mcrpg_ability)
 
 **Purpose:** Anti-cheese teleport that punishes pillar-up, wall-in, and range-kiting tactics.
 
 **Trigger:** Target is >8 blocks away OR out of line-of-sight for 3+ seconds.
 
-**MythicMobs Skill (with fallback):**
-
-The skill first attempts `mcrpg_ability` to delegate execution to McRPG. If the ability isn't registered yet (e.g., LLD-6 not implemented), `mcrpg_ability` returns `CONDITION_FAILED` and MM falls through to the pure-MM `PhaseShiftFallback` skill.
+**MythicMobs Skill:**
 
 ```yaml
 PhaseShift:
   Skills:
   - mcrpg_ability{ability=mcrpg:phase_shift} @target
-  - skill:PhaseShiftFallback
   Cooldown: 8
   Conditions:
   - distance{d=>8} @target
   TargetConditions:
   - lineofsight false
-
-# Pure-MM fallback — used until LLD-6 implements the McRPG ability.
-# Server owners can also replace mcrpg_ability with this directly.
-PhaseShiftFallback:
-  Skills:
-  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
-  - sound{s=entity.enderman.teleport;v=1.0;p=0.8} @self
-  - teleport{target=@target;offset=0,-1,-2} @self
-  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
-  - sound{s=entity.enderman.teleport;v=1.0;p=1.2} @self
 ```
 
 **Notes:**
-- `offset=0,-1,-2` places the mob 2 blocks behind the target (relative to target facing)
-- Two sets of particles: origin (before teleport) and destination (after)
-- Pitch variation on sound (0.8 → 1.2) gives auditory feedback for the teleport direction
+- Purely driven by McRPG's ability system — all VFX, teleport logic, damage, and events are handled inside `Ability.executeMobAbility()`
 - The `distance` and `lineofsight` conditions are OR'd — MM evaluates the skill tree and fires if either condition triggers
-- When `mcrpg_ability` succeeds, the fallback skill is skipped because the main skill already executed. When it returns `CONDITION_FAILED`, MM continues to the fallback.
+- If the ability isn't registered in McRPG (e.g., LLD-6 not yet implemented), the mechanic returns `CONDITION_FAILED` and the skill is a no-op. The mob loses this ability until the McRPG ability is implemented — this is intentional, not a fallback scenario.
 
-### 4.2 Whirlpool (mcrpg_ability bridge)
+### 4.2 Whirlpool (mcrpg_ability)
 
 **Purpose:** AoE zone that forces movement and prevents face-tanking.
 
 **Trigger:** Target is within 5 blocks (close-range engagement).
 
-**MythicMobs Skill (with fallback):**
-
-Same pattern as Phase Shift — `mcrpg_ability` first, pure-MM fallback second.
+**MythicMobs Skill:**
 
 ```yaml
 Whirlpool:
   Skills:
   - mcrpg_ability{ability=mcrpg:whirlpool} @target
-  - skill:WhirlpoolFallback
   Cooldown: 12
   Conditions:
   - distance{d=<5} @target
-
-# Pure-MM fallback — used until LLD-6 implements the McRPG ability.
-WhirlpoolFallback:
-  Skills:
-  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
-  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
-
-WhirlpoolTick:
-  Skills:
-  - effect:particles{particle=WATER_SPLASH;amount=30;speed=0.3;xSpread=2.0;ySpread=0.3;zSpread=2.0} @origin
-  - effect:particles{particle=BUBBLE_POP;amount=10;speed=0.2;xSpread=1.5;ySpread=0.2;zSpread=1.5} @origin
-  - damage{a=3;pk=false;pi=5} @PlayersInRadius{r=4}
-  - potion{t=SLOWNESS;d=40;l=1} @PlayersInRadius{r=4}
-  - sound{s=block.bubble_column.whirlpool_ambient;v=0.6;p=1.0} @origin
 ```
 
 **Notes:**
-- Uses a stationary projectile (`v=0`, `g=false`) as an invisible AoE anchor at the target's location
-- `WhirlpoolTick` fires every 5 ticks (0.25s) for 100 ticks (5 seconds) = 20 ticks total
-- Damage: 3 per tick at 5-tick interval = 1.5 hearts/sec (matches HLD spec of 1.5 hearts/sec)
-- `pk=false` prevents knockback on damage ticks (players should be slowed, not knocked out of the zone)
-- `pi=5` sets damage invulnerability to 5 ticks, preventing double-damage from overlapping ticks
-- Slowness II (`l=1`, 0-indexed) for 2 seconds (`d=40` ticks) refreshed each tick
-- `WhirlpoolTick` is shared by both the fallback and by `mcrpg_ability`'s McRPG-side implementation (which may reference it or provide its own VFX)
+- Purely driven by McRPG's ability system — AoE zone placement, damage ticks, VFX, slowness, and events are all handled inside `Ability.executeMobAbility()`
+- McRPG controls all tunable values: damage per tick, radius, duration, slowness level
+- Same no-op behavior as Phase Shift if the ability isn't registered yet
 
 ### 4.3 Waterlogged Strike
 
@@ -450,15 +412,15 @@ MythicMobs evaluates skills top-to-bottom. The first skill whose conditions are 
 
 ```yaml
 Skills:
-- skill:PhaseShift        # Priority 1: unreachable target (mcrpg_ability → fallback)
+- skill:PhaseShift        # Priority 1: unreachable target (mcrpg_ability)
 - skill:WaterloggedStrike # Priority 2: mid-range target (pure MM)
-- skill:Whirlpool         # Priority 3: close-range target (mcrpg_ability → fallback)
+- skill:Whirlpool         # Priority 3: close-range target (mcrpg_ability)
 - skill:TsunamiWall       # Priority 4: low HP defense (pure MM)
 ```
 
 Melee attacks are handled by MM's default AI — when no skills fire, the mob melees.
 
-**Fallback behavior:** Phase Shift and Whirlpool each contain an `mcrpg_ability` call followed by a pure-MM fallback skill. If McRPG's ability system handles the execution, the fallback is skipped. If the ability isn't registered (pre-LLD-6) or McRPG is absent, the fallback fires automatically. This means the mob works identically whether or not LLD-6 has been implemented — the only difference is whether McRPG events fire and ability scaling applies.
+**Degraded mode:** If McRPG abilities aren't registered (pre-LLD-6), Phase Shift and Whirlpool are no-ops. The mob still has Waterlogged Strike + Tsunami Wall + melee, making it functional but missing two abilities. This is acceptable — the full combat kit is the intended experience and requires McRPG.
 
 ---
 
@@ -728,57 +690,32 @@ RiptideGuardian:
 # Riptide Guardian Skills — McRPG Fishing Mob
 #
 # Phase Shift and Whirlpool use the mcrpg_ability mechanic to
-# delegate execution to McRPG's ability system. Each includes a
-# pure-MM fallback skill that fires when mcrpg_ability returns
-# CONDITION_FAILED (e.g., before LLD-6 is implemented, or if
-# McRPG is removed).
+# delegate execution to McRPG's ability system. McRPG owns all
+# VFX, damage, and effects for these abilities.
 #
 # Waterlogged Strike and Tsunami Wall are pure-MM skills with
 # no McRPG bridge (mob-only abilities, no player equivalent).
 #
 
-# ─── Phase Shift (mcrpg_ability → fallback) ─────────────────
+# ─── Phase Shift (mcrpg_ability) ────────────────────────────
 
 PhaseShift:
   Skills:
   - mcrpg_ability{ability=mcrpg:phase_shift} @target
-  - skill:PhaseShiftFallback
   Cooldown: 8
   Conditions:
   - distance{d=>8} @target
   TargetConditions:
   - lineofsight false
 
-PhaseShiftFallback:
-  Skills:
-  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
-  - sound{s=entity.enderman.teleport;v=1.0;p=0.8} @self
-  - teleport{target=@target;offset=0,-1,-2} @self
-  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
-  - sound{s=entity.enderman.teleport;v=1.0;p=1.2} @self
-
-# ─── Whirlpool (mcrpg_ability → fallback) ───────────────────
+# ─── Whirlpool (mcrpg_ability) ──────────────────────────────
 
 Whirlpool:
   Skills:
   - mcrpg_ability{ability=mcrpg:whirlpool} @target
-  - skill:WhirlpoolFallback
   Cooldown: 12
   Conditions:
   - distance{d=<5} @target
-
-WhirlpoolFallback:
-  Skills:
-  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
-  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
-
-WhirlpoolTick:
-  Skills:
-  - effect:particles{particle=WATER_SPLASH;amount=30;speed=0.3;xSpread=2.0;ySpread=0.3;zSpread=2.0} @origin
-  - effect:particles{particle=BUBBLE_POP;amount=10;speed=0.2;xSpread=1.5;ySpread=0.2;zSpread=1.5} @origin
-  - damage{a=3;pk=false;pi=5} @PlayersInRadius{r=4}
-  - potion{t=SLOWNESS;d=40;l=1} @PlayersInRadius{r=4}
-  - sound{s=block.bubble_column.whirlpool_ambient;v=0.6;p=1.0} @origin
 
 # ─── Waterlogged Strike (pure MM) ──────────────────────────
 
@@ -1080,8 +1017,8 @@ Drops:
 | Scenario | Behavior |
 |----------|----------|
 | MythicMobs not installed | Extraction is skipped (hook check). Mob pool references `RiptideGuardian` but `MythicMobsHook.spawnMob()` returns empty. No crash. |
-| McRPG removed after extraction | Pack files remain on disk. Mob spawns and melees normally. `mcrpg_ability` mechanics log "unknown mechanic" and fallback skills fire. `mcrpg_skillbook` drops silently fail. |
-| LLD-6 not yet implemented | `mcrpg_ability` returns `CONDITION_FAILED` (ability not in registry). Fallback skills fire — mob combat works identically via pure MM. |
+| McRPG removed after extraction | Pack files remain on disk. Mob spawns with Waterlogged Strike + Tsunami Wall + melee. `mcrpg_ability` mechanics log "unknown mechanic" (Phase Shift + Whirlpool are no-ops). `mcrpg_skillbook` drops silently fail. |
+| LLD-6 not yet implemented | `mcrpg_ability` returns `CONDITION_FAILED` (ability not in registry). Phase Shift and Whirlpool are no-ops. Mob fights with Waterlogged Strike + Tsunami Wall + melee. |
 | Server owner deletes a pack file | Mob stops spawning (MM can't find type ID). Next McRPG restart re-extracts the missing file. |
 | Server owner modifies pack files | McRPG never overwrites existing files. Modifications are preserved across restarts and updates. |
 | MythicMobs `Packs/McRPG/` directory doesn't exist | Extractor creates it and subdirectories via `Files.createDirectories()`. |
@@ -1148,7 +1085,7 @@ Will define the player-side implementations of Phase Shift and Whirlpool as McRP
 
 - **`executeMobAbility()` contract:** LLD-6 must implement the `Ability.executeMobAbility(AbilityHolder, LivingEntity, LivingEntity)` method introduced by `McRPGAbilityMechanic` (this LLD). This is the bridge that allows MM to trigger McRPG ability execution on the mob.
 - **Event compatibility pass:** `AbilityActivateEvent` and related events may currently assume player-only context. LLD-6 should audit event fields and listeners to ensure they handle non-player `AbilityHolder` instances (the `AbilityHolder` base class is already entity-agnostic).
-- **Fallback removal:** Once LLD-6 registers Phase Shift and Whirlpool in the `AbilityRegistry`, the `mcrpg_ability` mechanic will find them and the pure-MM fallback skills (`PhaseShiftFallback`, `WhirlpoolFallback`) will no longer fire. The fallbacks can remain in the YAML for server owners who want a standalone mob without McRPG.
+- **Ability activation:** Once LLD-6 registers Phase Shift and Whirlpool in the `AbilityRegistry`, the `mcrpg_ability` mechanic will find them and the mob's full combat kit becomes active. Until then, those two skills are no-ops and the mob fights with Waterlogged Strike + Tsunami Wall + melee only.
 
 ### Future: Additional Mobs
 
