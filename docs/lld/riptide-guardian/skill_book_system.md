@@ -99,18 +99,23 @@ Skill books are always physical `ItemStack`s granted to the player's inventory. 
 
 `SkillBookConsumeEvent` fires *before* the unlock. It is cancellable and carries the item stack. If cancelled, the item is not consumed and `AbilityUnlockEvent` is never fired. This separation lets plugins gate consumption (e.g., require a specific location, level, or currency) without interfering with the general unlock flow.
 
-### 3.6 Item Localization: Baked at Creation Time
+### 3.6 Item Display Text: Localized but Baked at Creation Time
 
-Skill book display names and lore are baked into the `ItemStack` at creation time using `Component.text()`. This means the text is **frozen** — it will not update if the player changes their locale, the server owner edits localization YAML, or the book is traded to a player with a different locale.
+Skill book display names and lore are resolved through the localization system (`McRPGLocalizationManager`) at creation time, not hardcoded. The factory has two resolution paths:
 
-**Why not lazy localization?** McRPG's localization system (`McRPGLocalizationManager`) resolves per-player at display time for GUI items (via `Slot.getItem(player)` re-rendering), but physical `ItemStack`s in player inventories have no equivalent re-render hook. Adventure API offers `Component.translatable()` with `GlobalTranslator` for server-side per-player resolution, but McRPG does not currently use this system — all localization is resolved through the custom locale chain manager.
+- **Player-aware path:** When a player context is available (e.g., quest rewards), `SkillBookFactory.createSkillBook(abilityKey, mcRPGPlayer, amount)` resolves text using the player's locale chain. The ability's localized display name is substituted into the `<ability>` placeholder.
+- **Server-default path:** When no player is available (e.g., MythicMobs drops), `SkillBookFactory.createSkillBook(abilityKey, abilityDisplayName, amount)` resolves text using the server's default locale.
+
+Server owners can customize skill book appearance (name, lore, colors) via the `ability.skill-book.item-name` and `ability.skill-book.item-lore` localization keys. Translators can add locale-specific versions.
+
+**Limitation:** The resolved text is still **baked into the ItemStack** at creation time. Once the item exists, its display name and lore are frozen — they will not update if the player changes their locale, the server owner edits localization YAML, or the book is traded to a player with a different locale. This is because physical `ItemStack`s in player inventories have no re-render hook (unlike GUI items which re-resolve via `Slot.getItem(player)` on every display).
 
 **Accepted tradeoffs:**
 - Skill books have a short lifecycle (created → consumed), so stale text is unlikely in practice
 - This matches `ItemRewardType`'s existing behavior — granted items also bake text at creation time
-- The `SkillBookFactory` overload accepting `Component displayName` and `List<Component> lore` allows callers to pass pre-localized components when a player context is available
+- The player-aware factory overload ensures the creating player sees text in their locale
 
-**Future improvement:** A project-wide migration to Adventure's `GlobalTranslator` + `Component.translatable()` for physical items would solve this for skill books and all other granted items. This is tracked as a backlog item (see [diamonddagger590/mcrpg#213](https://github.com/DiamondDagger590/McRPG/issues/213)) and would require registering McRPG's locale YAML keys with `GlobalTranslator.translator()` so the server resolves them per-player at packet send time.
+**Future improvement:** A project-wide migration to Adventure's `GlobalTranslator` + `Component.translatable()` for physical items would enable true per-player lazy resolution at packet send time. This is tracked in [diamonddagger590/mcrpg#213](https://github.com/DiamondDagger590/McRPG/issues/213).
 
 ---
 
@@ -132,9 +137,8 @@ A static factory that creates skill book `ItemStack`s with the correct PDC tags,
 ```java
 package us.eunoians.mcrpg.item.skillbook;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -142,9 +146,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Static factory for creating skill book {@link ItemStack}s.
@@ -153,6 +164,11 @@ import java.util.List;
  * McRPG skill books and specify which ability they unlock. All skill book
  * sources (MythicMobs drops, quest rewards, commands) should delegate to
  * this factory to ensure consistent item format.
+ * <p>
+ * Display text is resolved through the localization system. When a player
+ * context is available, the item is localized to that player's locale.
+ * When no player is available (e.g., MythicMobs drops), the server default
+ * locale is used.
  */
 public final class SkillBookFactory {
 
@@ -173,10 +189,14 @@ public final class SkillBookFactory {
     }
 
     /**
-     * Creates a skill book item that unlocks the specified ability.
+     * Creates a skill book item with explicit display name and lore components.
+     * <p>
+     * This is the low-level overload. Prefer {@link #createSkillBook(NamespacedKey, String, int)}
+     * or {@link #createSkillBook(NamespacedKey, McRPGPlayer, int)} which resolve
+     * display text through the localization system.
      *
      * @param abilityKey   the {@link NamespacedKey} of the ability this book unlocks
-     * @param displayName  the display name for the item (typically localized ability name)
+     * @param displayName  the display name for the item
      * @param lore         the lore lines for the item
      * @param amount       the stack size (typically 1)
      * @return a fully tagged skill book {@link ItemStack}
@@ -201,34 +221,69 @@ public final class SkillBookFactory {
     }
 
     /**
-     * Creates a skill book with default display formatting.
+     * Creates a skill book with display text resolved from the localization system
+     * using the given player's locale chain.
      * <p>
-     * Uses gold display name "Skill Book: {abilityName}" and gray lore.
-     * Suitable for MythicMobs drops and other non-localized contexts.
+     * The display name and lore are resolved via {@link LocalizationKey#SKILL_BOOK_ITEM_NAME}
+     * and {@link LocalizationKey#SKILL_BOOK_ITEM_LORE} with the {@code <ability>} placeholder
+     * substituted with the ability's localized display name.
      *
-     * @param abilityKey  the {@link NamespacedKey} of the ability this book unlocks
-     * @param abilityName a human-readable ability name for display
-     * @param amount      the stack size (typically 1)
+     * @param abilityKey the {@link NamespacedKey} of the ability this book unlocks
+     * @param player     the player whose locale chain is used for text resolution
+     * @param amount     the stack size (typically 1)
      * @return a fully tagged skill book {@link ItemStack}
      */
     @NotNull
     public static ItemStack createSkillBook(@NotNull NamespacedKey abilityKey,
-                                            @NotNull String abilityName,
+                                            @NotNull McRPGPlayer player,
                                             int amount) {
-        Component name = Component.text("Skill Book: " + abilityName)
-                .color(NamedTextColor.GOLD)
-                .decoration(TextDecoration.ITALIC, false);
+        McRPG plugin = McRPG.getInstance();
+        McRPGLocalizationManager localizationManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
 
-        List<Component> lore = List.of(
-                Component.text("A mysterious tome of knowledge.")
-                        .color(NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false),
-                Component.text("Right-click to unlock " + abilityName + ".")
-                        .color(NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false)
-        );
+        String abilityDisplayName = resolveAbilityDisplayName(abilityKey, player);
+        Map<String, String> placeholders = Map.of("ability", abilityDisplayName);
 
-        return createSkillBook(abilityKey, name, lore, amount);
+        Component displayName = localizationManager.getLocalizedMessageAsComponent(
+                player, LocalizationKey.SKILL_BOOK_ITEM_NAME, placeholders);
+
+        List<Component> lore = localizationManager.getLocalizedMessagesAsComponents(
+                player, LocalizationKey.SKILL_BOOK_ITEM_LORE, placeholders);
+
+        return createSkillBook(abilityKey, displayName, lore, amount);
+    }
+
+    /**
+     * Creates a skill book with display text resolved from the localization system
+     * using the server default locale.
+     * <p>
+     * Used when no player context is available (e.g., MythicMobs drops, which are
+     * created before being assigned to a specific player).
+     *
+     * @param abilityKey       the {@link NamespacedKey} of the ability this book unlocks
+     * @param abilityDisplayName a human-readable ability name for the {@code <ability>} placeholder
+     * @param amount           the stack size (typically 1)
+     * @return a fully tagged skill book {@link ItemStack}
+     */
+    @NotNull
+    public static ItemStack createSkillBook(@NotNull NamespacedKey abilityKey,
+                                            @NotNull String abilityDisplayName,
+                                            int amount) {
+        McRPG plugin = McRPG.getInstance();
+        McRPGLocalizationManager localizationManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+
+        Map<String, String> placeholders = Map.of("ability", abilityDisplayName);
+
+        Component displayName = localizationManager.getLocalizedMessageAsComponent(
+                LocalizationKey.SKILL_BOOK_ITEM_NAME, placeholders);
+
+        List<Component> lore = localizationManager.getLocalizedMessagesAsComponents(
+                LocalizationKey.SKILL_BOOK_ITEM_LORE, placeholders);
+
+        return createSkillBook(abilityKey, displayName, lore, amount);
     }
 
     /**
@@ -251,7 +306,7 @@ public final class SkillBookFactory {
      * @param itemStack the skill book item
      * @return the ability {@link NamespacedKey} string, or {@code null} if not present
      */
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     public static String getAbilityKeyString(@NotNull ItemStack itemStack) {
         if (!itemStack.hasItemMeta()) {
             return null;
@@ -259,14 +314,44 @@ public final class SkillBookFactory {
         return itemStack.getItemMeta().getPersistentDataContainer()
                 .get(SKILL_BOOK_ABILITY_KEY, PersistentDataType.STRING);
     }
+
+    /**
+     * Resolves the localized display name for an ability, falling back to a
+     * formatted version of the key if the ability is not registered.
+     */
+    @NotNull
+    private static String resolveAbilityDisplayName(@NotNull NamespacedKey abilityKey,
+                                                    @NotNull McRPGPlayer player) {
+        McRPG plugin = McRPG.getInstance();
+        return plugin.registryAccess()
+                .registry(us.eunoians.mcrpg.registry.McRPGRegistryKey.ABILITY)
+                .getRegisteredAbility(abilityKey)
+                .map(ability -> plugin.getMiniMessage().serialize(ability.getDisplayName(player)))
+                .orElse(formatKeyAsDisplayName(abilityKey));
+    }
+
+    /**
+     * Converts a NamespacedKey to a human-readable display name by replacing
+     * underscores with spaces and capitalizing the first letter.
+     * <p>
+     * Public so that callers (e.g., {@link us.eunoians.mcrpg.quest.reward.builtin.SkillBookRewardType})
+     * can use the same formatting logic when a player context is unavailable.
+     */
+    @NotNull
+    public static String formatKeyAsDisplayName(@NotNull NamespacedKey key) {
+        String raw = key.getKey().replace("_", " ");
+        return raw.substring(0, 1).toUpperCase() + raw.substring(1);
+    }
 }
 ```
 
 ### 4.3 Design Notes
 
-- **Two `createSkillBook` overloads:** The simple overload (abilityKey + abilityName string) is used by `McRPGSkillBookDrop` and other contexts where localization is not available. The full overload (with Component display name and lore) supports localized item creation for quest rewards and future GUI displays.
+- **Three `createSkillBook` overloads:** (1) Low-level with explicit Components — for callers that build their own display. (2) Player-aware — resolves display name/lore via the player's locale chain and the ability's localized display name from the registry. (3) Server-default — resolves via server default locale with a provided ability display name string, used by `McRPGSkillBookDrop` and other contexts without a player reference.
+- **All display text comes from localization YAML.** The `SKILL_BOOK_ITEM_NAME` and `SKILL_BOOK_ITEM_LORE` keys are resolved through `McRPGLocalizationManager`, so server owners can customize skill book appearance and translators can localize it. No hardcoded strings.
+- **`resolveAbilityDisplayName` looks up the ability registry** to get the localized display name. Falls back to a formatted key string if the ability is not registered (defensive — should not happen in practice).
 - **`isSkillBook` and `getAbilityKeyString` helpers:** Used by `SkillBookConsumeListener` to read items without coupling to raw PDC key constants.
-- **Non-instantiable:** Pure static utility — no state, no dependencies.
+- **Non-instantiable:** Pure static utility — no state beyond what's resolved at call time.
 
 ---
 
@@ -766,12 +851,23 @@ public class SkillBookRewardType implements QuestRewardType {
             throw new IllegalStateException("Cannot grant unconfigured SkillBookRewardType");
         }
 
-        // Derive a display name from the ability key
-        String displayName = abilityKey.getKey()
-                .replace("_", " ");
-        displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
+        // Use the player-aware factory overload to localize the item
+        // to the receiving player's locale
+        McRPG plugin = McRPG.getInstance();
+        Optional<McRPGPlayer> mcRPGPlayerOptional = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(player.getUniqueId());
 
-        ItemStack skillBook = SkillBookFactory.createSkillBook(abilityKey, displayName, 1);
+        ItemStack skillBook;
+        if (mcRPGPlayerOptional.isPresent()) {
+            skillBook = SkillBookFactory.createSkillBook(abilityKey, mcRPGPlayerOptional.get(), 1);
+        } else {
+            // Fallback: player not loaded yet (e.g., PendingReward on login).
+            // Use server default locale with formatted key name.
+            String displayName = SkillBookFactory.formatKeyAsDisplayName(abilityKey);
+            skillBook = SkillBookFactory.createSkillBook(abilityKey, displayName, 1);
+        }
 
         // Add to inventory, drop overflow naturally
         Map<Integer, ItemStack> overflow = player.getInventory().addItem(skillBook);
@@ -813,9 +909,34 @@ public class SkillBookRewardType implements QuestRewardType {
         if (abilityKey == null) {
             return "Skill Book";
         }
-        String name = abilityKey.getKey().replace("_", " ");
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        return "Skill Book: " + name;
+        // Use server default locale to resolve the item name for display
+        McRPG plugin = McRPG.getInstance();
+        McRPGLocalizationManager localizationManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        String abilityName = SkillBookFactory.formatKeyAsDisplayName(abilityKey);
+        return localizationManager.getLocalizedMessage(
+                LocalizationKey.SKILL_BOOK_ITEM_NAME, Map.of("ability", abilityName));
+    }
+
+    @Override
+    @NotNull
+    public String describeForDisplay(@NotNull McRPGPlayer player) {
+        if (abilityKey == null) {
+            return "Skill Book";
+        }
+        McRPG plugin = McRPG.getInstance();
+        McRPGLocalizationManager localizationManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        // Resolve the ability's localized display name for this player
+        String abilityName = plugin.registryAccess()
+                .registry(McRPGRegistryKey.ABILITY)
+                .getRegisteredAbility(abilityKey)
+                .map(ability -> plugin.getMiniMessage().serialize(ability.getDisplayName(player)))
+                .orElse(SkillBookFactory.formatKeyAsDisplayName(abilityKey));
+        return localizationManager.getLocalizedMessage(
+                player, LocalizationKey.SKILL_BOOK_ITEM_NAME, Map.of("ability", abilityName));
     }
 }
 ```
@@ -823,8 +944,10 @@ public class SkillBookRewardType implements QuestRewardType {
 ### 8.3 Design Notes
 
 - **Same-item-as-drops principle:** `grant()` creates the item via `SkillBookFactory`, identical to what `McRPGSkillBookDrop` produces. Players see the same item from mob drops and quest rewards.
+- **Player-aware grant:** `grant()` looks up the `McRPGPlayer` to use the player-aware factory overload, localizing the item to the receiving player's locale. Falls back to server default locale if the player isn't loaded yet (e.g., `PendingReward` on login).
 - **Overflow handling:** Follows `ItemRewardType`'s pattern — items that don't fit in the inventory are dropped naturally at the player's location.
 - **No amount scaling:** `withAmountMultiplier()` returns `this` unchanged (default behavior). Skill books are not scalable rewards — you get exactly one book per reward entry.
+- **Localized `describeForDisplay`:** Both the no-arg (server default) and player-aware overloads resolve the display label through the localization system, reusing the `SKILL_BOOK_ITEM_NAME` key.
 - **Serialization:** Uses a simple `Map<String, Object>` with the `ability` key string, matching the YAML config format. This supports `PendingReward` persistence for offline players.
 
 ---
@@ -838,14 +961,18 @@ public class SkillBookRewardType implements QuestRewardType {
 Add the following constants under the existing `ABILITY_HEADER` section, after the `ABILITY_UNLOCK_HEADER` block:
 
 ```java
-// Skill Book messages
+// Skill Book messages and item display
 private static final String SKILL_BOOK_HEADER = toRoutePath(ABILITY_HEADER, "skill-book");
+public static final Route SKILL_BOOK_ITEM_NAME = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "item-name"));
+public static final Route SKILL_BOOK_ITEM_LORE = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "item-lore"));
 public static final Route SKILL_BOOK_CONSUMED = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "consumed"));
 public static final Route SKILL_BOOK_ALREADY_UNLOCKED = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "already-unlocked"));
 public static final Route SKILL_BOOK_UNKNOWN_ABILITY = Route.fromString(toRoutePath(SKILL_BOOK_HEADER, "unknown-ability"));
 ```
 
 These produce the following YAML paths:
+- `ability.skill-book.item-name`
+- `ability.skill-book.item-lore`
 - `ability.skill-book.consumed`
 - `ability.skill-book.already-unlocked`
 - `ability.skill-book.unknown-ability`
@@ -857,9 +984,15 @@ These produce the following YAML paths:
 Add the following section after the existing `unlock:` block (under the `ability:` root):
 
 ```yaml
-  # Configure messages for skill book consumption
+  # Configure skill book item display and messages
   # Supports <ability> as a placeholder for the ability name
   skill-book:
+    # Display name for the skill book item (shown in inventory)
+    item-name: "<gold>Skill Book: <ability>"
+    # Lore lines for the skill book item (shown below the name in inventory)
+    item-lore:
+      - "<gray>A mysterious tome of knowledge."
+      - "<gray>Right-click to unlock <ability><gray>."
     # The message to send when a player successfully consumes a skill book
     consumed: "<green>You consumed a skill book and learned <ability><green>!"
     # The message to send when a player tries to consume a skill book for an ability they already have
@@ -872,7 +1005,31 @@ Add the following section after the existing `unlock:` block (under the `ability
 
 | Placeholder | Context | Value |
 |---|---|---|
-| `<ability>` | All three messages | MiniMessage-serialized display name of the ability (or raw key string for unknown abilities) |
+| `<ability>` | `item-name`, `item-lore`, `consumed`, `already-unlocked` | MiniMessage-serialized display name of the ability (resolved from `AbilityRegistry` when available) |
+| `<ability>` | `unknown-ability` | Raw ability key string (ability is not registered, so no display name is available) |
+
+### 9.4 Customization Examples
+
+Server owners can fully customize skill book appearance in their locale files:
+
+```yaml
+  # Example: Minimalist style
+  skill-book:
+    item-name: "<light_purple>✦ <ability>"
+    item-lore:
+      - ""
+      - "<gray>Right-click to learn this ability."
+      - ""
+
+  # Example: Verbose style with instructions
+  skill-book:
+    item-name: "<gold><bold>Tome of <ability>"
+    item-lore:
+      - "<gray>This ancient tome contains the secrets of <ability><gray>."
+      - ""
+      - "<yellow>Right-click while holding to consume."
+      - "<dark_gray>The tome will be destroyed upon use."
+```
 
 ---
 
