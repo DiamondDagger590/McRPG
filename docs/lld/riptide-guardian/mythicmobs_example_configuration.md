@@ -82,18 +82,37 @@ Skill book drops have different rarities to create chase items:
 
 These are starting values. Server owners can tune them in their copy of the YAML.
 
-### 2.4 Extraction Strategy: First-Run Copy
+### 2.4 Unlock-Aware Drop Rate Reduction
+
+Players who have already unlocked an ability receive a **reduced** skill book drop rate for that ability. This discourages farming books purely for resale/trading while still allowing drops for alt accounts or guild members.
+
+**Implementation:** A custom MythicMobs condition (`mcrpg_ability_unlocked`) is registered via `MythicConditionLoadEvent`. The mob's drops are split into DropTables with `TriggerConditions` (checked against the killer):
+
+| Scenario | Whirlpool Rate | Phase Shift Rate |
+|----------|:-:|:-:|
+| Ability **not** unlocked | 12% | 5% |
+| Ability **already** unlocked | 2% | 1% |
+
+Each ability gets two DropTable entries — one for unlocked, one for not-unlocked — referenced from the mob's `Drops:` list. MythicMobs DropTables support `TriggerConditions` at the table level (per the [MM wiki](https://git.mythiccraft.io/mythiccraft/MythicMobs/-/wikis/drops/DropTables)), which evaluate against the killing player. Individual drop lines do not support inline conditions, so the split-table approach is required.
+
+The condition syntax follows MM's standard `condition{params} true/false` format:
+```yaml
+TriggerConditions:
+- mcrpg_ability_unlocked{ability=mcrpg:whirlpool} false
+```
+
+### 2.5 Extraction Strategy: First-Run Copy
 
 McRPG extracts the bundled YAML to the MythicMobs plugin's `Mobs/` directory **only if the file does not already exist**. This means:
 - First install: file is auto-extracted, mob works out of the box
 - Subsequent runs: server owner's modifications are preserved
 - Updates: McRPG never overwrites a customized file. If the bundled version changes, server owners must manually update or delete-and-restart.
 
-### 2.5 Pure MythicMobs — No McRPG Runtime Dependency for Mob Behavior
+### 2.6 Pure MythicMobs — No McRPG Runtime Dependency for Mob Behavior
 
 The `RiptideGuardian.yml` is a standard MythicMobs config file. The mob's combat abilities (Phase Shift, Whirlpool, etc.) work entirely within MM's skill system. The only McRPG dependency is the `mcrpg_skillbook` custom drop type in the loot table — if McRPG is removed, the mob still functions but those specific drops won't generate.
 
-### 2.6 Despawn Owned by MythicMobs
+### 2.7 Despawn Owned by MythicMobs
 
 Per LLD-2's design decision, McRPG does not schedule despawn timers. The mob YAML includes MM-native `~onTimer` and `~onCombat` triggers that handle max lifetime and combat dropout despawn. Server owners configure these values directly in the mob YAML.
 
@@ -305,35 +324,156 @@ Melee attacks are handled by MM's default AI — when no skills fire, the mob me
 
 ## 5. Drop Table
 
-The Riptide Guardian uses MythicMobs' native drop table system with the `mcrpg_skillbook` custom drop type registered by LLD-1.
+The Riptide Guardian uses MythicMobs' native DropTable system with the `mcrpg_skillbook` custom drop type (LLD-1) and the `mcrpg_ability_unlocked` custom condition (this LLD).
 
-### Drop Table Configuration
+### DropTable Architecture
+
+Because MythicMobs DropTables support `TriggerConditions` at the table level but **not** on individual drop lines, each skill book requires two DropTable entries — one for players who haven't unlocked the ability (full rate) and one for players who have (reduced rate).
+
+The mob's `Drops:` list references all four DropTables. MM evaluates each table's `TriggerConditions` against the killer; only the matching table fires.
+
+### DropTable Configuration
 
 ```yaml
-Drops:
-- mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
-- mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+# ─── Drop Tables (placed in DropTables/ or same file) ──────
+
+WhirlpoolBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+
+WhirlpoolBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.02
+
+PhaseShiftBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+
+PhaseShiftBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.01
 ```
 
-### Drop Entry Format
+The mob references these tables:
+```yaml
+RiptideGuardian:
+  Drops:
+  - WhirlpoolBookDrop
+  - WhirlpoolBookDropReduced
+  - PhaseShiftBookDrop
+  - PhaseShiftBookDropReduced
+```
 
-Each entry follows MythicMobs' `<drop_type>{<params>} <amount> <chance>` syntax:
+### Drop Rate Summary
 
-| Field | Value | Meaning |
-|-------|-------|---------|
-| Drop type | `mcrpg_skillbook` | Custom drop registered via `MythicDropLoadEvent` (LLD-1) |
-| `ability` | `mcrpg:whirlpool` / `mcrpg:phase_shift` | NamespacedKey of the ability the book unlocks |
-| Amount | `1` | One book per drop |
-| Chance | `0.12` / `0.05` | 12% / 5% drop rate per kill |
+| Skill Book | Not Unlocked | Already Unlocked |
+|------------|:---:|:---:|
+| Whirlpool | 12% | 2% |
+| Phase Shift | 5% | 1% |
+
+### Custom Condition: `mcrpg_ability_unlocked`
+
+**Class:** `us.eunoians.mcrpg.external.mythicmobs.McRPGAbilityUnlockedCondition`
+
+Registered via `MythicConditionLoadEvent` in `MythicMobsListener`. Implements `IEntityCondition` — checks whether the entity (the killer) has the specified ability unlocked in McRPG.
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs;
+
+import io.lumine.mythic.api.adapters.AbstractEntity;
+import io.lumine.mythic.api.config.MythicLineConfig;
+import io.lumine.mythic.api.skills.conditions.IEntityCondition;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.ability.attribute.AbilityUnlockedAttribute;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGManagerKey;
+
+import java.util.Optional;
+
+/**
+ * A custom MythicMobs condition that checks whether a player has unlocked
+ * the specified McRPG ability.
+ * <p>
+ * Registered as {@code mcrpg_ability_unlocked} in MythicMobs. Used in
+ * DropTable {@code TriggerConditions} to vary drop rates based on unlock state.
+ * <p>
+ * Configuration:
+ * <pre>
+ *   TriggerConditions:
+ *   - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} true
+ * </pre>
+ */
+public class McRPGAbilityUnlockedCondition implements IEntityCondition {
+
+    private final NamespacedKey abilityKey;
+
+    public McRPGAbilityUnlockedCondition(@NotNull MythicLineConfig config) {
+        String keyString = config.getString("ability", "");
+        this.abilityKey = NamespacedKey.fromString(keyString);
+    }
+
+    @Override
+    public boolean check(@NotNull AbstractEntity abstractEntity) {
+        if (abilityKey == null) {
+            return false;
+        }
+        if (!abstractEntity.isPlayer()) {
+            return false;
+        }
+        Player player = (Player) abstractEntity.getBukkitEntity();
+        Optional<McRPGPlayer> mcRPGPlayerOpt = McRPG.getInstance().registryAccess()
+                .registry(us.eunoians.mcrpg.registry.RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.ENTITY)
+                .getPlayer(player.getUniqueId());
+        if (mcRPGPlayerOpt.isEmpty()) {
+            return false;
+        }
+        McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
+        return mcRPGPlayer.asSkillHolder().getAbilityData(abilityKey)
+                .flatMap(data -> data.getAbilityAttribute(
+                        AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE))
+                .filter(attr -> attr instanceof AbilityUnlockedAttribute)
+                .map(attr -> ((AbilityUnlockedAttribute) attr).getContent())
+                .orElse(false);
+    }
+}
+```
+
+### Condition Registration
+
+Added to `MythicMobsListener`:
+
+```java
+@EventHandler
+public void onMythicConditionLoad(@NotNull MythicConditionLoadEvent event) {
+    if (event.getConditionName().equalsIgnoreCase("mcrpg_ability_unlocked")) {
+        event.register(new McRPGAbilityUnlockedCondition(event.getConfig()));
+    }
+}
+```
 
 ### Drop Flow
 
-1. Riptide Guardian dies → MM evaluates the drop table
-2. For each `mcrpg_skillbook` entry, MM rolls against the chance
-3. On success, MM calls `McRPGSkillBookDrop.getDrop()` (LLD-1/3)
-4. `McRPGSkillBookDrop` delegates to `SkillBookFactory.createSkillBook()` (LLD-3)
-5. The factory creates an `ENCHANTED_BOOK` ItemStack with PDC tags and localized display text
-6. MM drops the item at the mob's death location
+1. Riptide Guardian dies → MM evaluates each referenced DropTable
+2. For each table, MM checks `TriggerConditions` against the killing player
+3. `mcrpg_ability_unlocked` queries the player's `AbilityUnlockedAttribute` via McRPG
+4. Only the matching table (unlocked or not-unlocked) fires its drop entries
+5. MM rolls the chance; on success, calls `McRPGSkillBookDrop.getDrop()` (LLD-1/3)
+6. `McRPGSkillBookDrop` delegates to `SkillBookFactory.createSkillBook()` (LLD-3)
+7. The factory creates an `ENCHANTED_BOOK` ItemStack with PDC tags and localized display text
+8. MM drops the item at the mob's death location
 
 ### Why No Vanilla Drops
 
@@ -401,11 +541,15 @@ This is the complete, ready-to-use MythicMobs configuration file bundled in the 
 # This file is auto-extracted by McRPG on first startup.
 # Customize freely — McRPG will not overwrite your changes.
 #
-# Requires: MythicMobs 5.7+, McRPG (for mcrpg_skillbook drop type)
+# Requires: MythicMobs 5.7+, McRPG (for mcrpg_skillbook drop type
+# and mcrpg_ability_unlocked condition)
 #
-# Drop table uses the mcrpg_skillbook custom drop type.
+# Drop tables use the mcrpg_skillbook custom drop type and
+# mcrpg_ability_unlocked condition to reduce rates for players
+# who already unlocked the ability.
+#
 # If McRPG is removed, the mob still functions but skill book
-# drops will not generate.
+# drops and unlock conditions will not work.
 #
 
 RiptideGuardian:
@@ -425,8 +569,10 @@ RiptideGuardian:
   Faction: mcrpg_fishing_mob
   ThreatTable: true
   Drops:
-  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
-  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+  - WhirlpoolBookDrop
+  - WhirlpoolBookDropReduced
+  - PhaseShiftBookDrop
+  - PhaseShiftBookDropReduced
   Skills:
   - skill:PhaseShift
   - skill:WaterloggedStrike
@@ -434,6 +580,38 @@ RiptideGuardian:
   - skill:TsunamiWall
   - skill:DespawnSelf ~onTimer:6000
   - skill:DespawnSelf ~onCombat:600
+
+# ─── Drop Tables ────────────────────────────────────────────
+#
+# Each skill book has two tables: full rate (ability not unlocked)
+# and reduced rate (ability already unlocked). The
+# mcrpg_ability_unlocked condition checks the killer's McRPG
+# unlock state.
+#
+
+WhirlpoolBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+
+WhirlpoolBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.02
+
+PhaseShiftBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+
+PhaseShiftBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.01
 
 # ─── Abilities ──────────────────────────────────────────────
 
@@ -669,8 +847,11 @@ This section documents the tunable values server owners are most likely to modif
 
 | What to Change | Where | Default | Notes |
 |----------------|-------|---------|-------|
-| Whirlpool book rate | `Drops:` line 1, last number | 0.12 | 12% per kill |
-| Phase Shift book rate | `Drops:` line 2, last number | 0.05 | 5% per kill |
+| Whirlpool book rate (not unlocked) | `WhirlpoolBookDrop:` → `Drops:` chance | 0.12 | 12% per kill |
+| Whirlpool book rate (already unlocked) | `WhirlpoolBookDropReduced:` → `Drops:` chance | 0.02 | 2% per kill |
+| Phase Shift book rate (not unlocked) | `PhaseShiftBookDrop:` → `Drops:` chance | 0.05 | 5% per kill |
+| Phase Shift book rate (already unlocked) | `PhaseShiftBookDropReduced:` → `Drops:` chance | 0.01 | 1% per kill |
+| Disable unlock-aware reduction | Remove the `*Reduced` DropTable references from mob `Drops:` and remove `TriggerConditions` from the remaining tables | — | All players get the same rate |
 | Add vanilla drops | Set `PreventOtherDrops: false` | true | Enables vanilla drowned drops alongside skill books |
 
 ### Ability Tuning
@@ -753,8 +934,10 @@ Drops:
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/main/resources/mythicmobs/RiptideGuardian.yml` | **NEW** | Bundled MythicMobs mob configuration |
+| `src/main/resources/mythicmobs/RiptideGuardian.yml` | **NEW** | Bundled MythicMobs mob configuration with DropTables |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsConfigExtractor.java` | **NEW** | Extracts bundled configs to MM's data directory |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityUnlockedCondition.java` | **NEW** | Custom MM condition: checks player's ability unlock state |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add `MythicConditionLoadEvent` handler for condition registration |
 | `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call after hook registration |
 
 ---
