@@ -1,0 +1,781 @@
+# Low-Level Design: MythicMobs Example Configuration (LLD-4)
+
+**Status:** Draft
+**Date:** 2026-04-03
+**HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Sections 4, 8, 9
+**Scope:** Bundled MythicMobs mob YAML, resource extraction logic, mob abilities, drop table, despawn config
+
+---
+
+## Table of Contents
+
+1. [Overview](#1-overview)
+2. [Design Decisions](#2-design-decisions)
+3. [Mob Statistics & Traits](#3-mob-statistics--traits)
+4. [Mob Abilities (MythicMobs Skills)](#4-mob-abilities-mythicmobs-skills)
+5. [Drop Table](#5-drop-table)
+6. [Despawn Configuration](#6-despawn-configuration)
+7. [Full RiptideGuardian.yml](#7-full-riptideguardianyml)
+8. [Resource Extraction](#8-resource-extraction)
+9. [Bootstrap Registration](#9-bootstrap-registration)
+10. [Server Owner Customization Guide](#10-server-owner-customization-guide)
+11. [Edge Cases & Graceful Degradation](#11-edge-cases--graceful-degradation)
+12. [Test Plan](#12-test-plan)
+13. [File Manifest](#13-file-manifest)
+14. [Future LLD Notes](#14-future-lld-notes)
+
+---
+
+## 1. Overview
+
+This LLD defines the bundled MythicMobs example configuration for the Riptide Guardian — the first fishing mob shipped with McRPG. The configuration is a complete, ready-to-use MythicMobs mob YAML file that server owners can drop into their MythicMobs `Mobs/` directory (or let McRPG extract automatically on first run).
+
+**This LLD produces:**
+- A MythicMobs YAML file (`RiptideGuardian.yml`) bundled in the McRPG JAR
+- Java extraction logic that copies the file to the server's MythicMobs directory on first startup
+- Documentation of every skill, stat, and drop table entry for maintainability
+
+### Boundary with Prior LLDs
+
+| LLD | Relationship |
+|-----|-------------|
+| **LLD-1** (MythicMobs Binding) | Provides `McRPGSkillBookDrop` custom drop type used in the drop table. Provides `MythicMobsListener` that bridges MM events into McRPG. |
+| **LLD-2** (Fishing Mob Spawn) | References `RiptideGuardian` as the `mythicmobs-mob-id` in the mob pool config. Owns spawn triggering — this LLD owns what happens after the mob exists. |
+| **LLD-3** (Skill Book System) | Defines the `mcrpg_skillbook{ability=...}` drop format and item consumption flow. This LLD's drop table produces those items. |
+
+### What This LLD Does NOT Cover
+
+- Player abilities unlocked by skill books (LLD-6)
+- UnlockCondition refactor (LLD-5)
+- Custom model / ModelEngine integration (future backlog)
+- Additional mob variants or tiers (future backlog)
+
+---
+
+## 2. Design Decisions
+
+### 2.1 Single File, Not a Pack
+
+The example config is a single `RiptideGuardian.yml` rather than a MythicMobs "pack" directory structure. This keeps it simple — server owners can copy or modify a single file. If future mobs are added, each gets its own file extracted independently.
+
+### 2.2 Player-Usable Skill Book Drops
+
+Of the four mob abilities, only **two** drop as skill books (player-unlockable abilities):
+
+| Ability | Drops as Skill Book | Rationale |
+|---------|:---:|-----------|
+| Phase Shift | **Yes** | Mobility/teleport is a universally useful player ability |
+| Whirlpool | **Yes** | AoE zone control translates well to player combat |
+| Waterlogged Strike | No | A generic ranged projectile doesn't feel "special" as an unlock |
+| Tsunami Wall | No | Particle wall mechanic is mob-centric, poor player UX |
+
+All four abilities exist as MythicMobs skills on the mob itself — the mob uses them all in combat. Only the two marked above appear in the drop table as `mcrpg_skillbook` entries.
+
+### 2.3 Rarity-Differentiated Drop Rates
+
+Skill book drops have different rarities to create chase items:
+
+| Skill Book | Drop Chance | Rarity Feel |
+|------------|:-----------:|-------------|
+| Whirlpool | 12% | Uncommon — players see it regularly |
+| Phase Shift | 5% | Rare — exciting drop, worth farming for |
+
+These are starting values. Server owners can tune them in their copy of the YAML.
+
+### 2.4 Extraction Strategy: First-Run Copy
+
+McRPG extracts the bundled YAML to the MythicMobs plugin's `Mobs/` directory **only if the file does not already exist**. This means:
+- First install: file is auto-extracted, mob works out of the box
+- Subsequent runs: server owner's modifications are preserved
+- Updates: McRPG never overwrites a customized file. If the bundled version changes, server owners must manually update or delete-and-restart.
+
+### 2.5 Pure MythicMobs — No McRPG Runtime Dependency for Mob Behavior
+
+The `RiptideGuardian.yml` is a standard MythicMobs config file. The mob's combat abilities (Phase Shift, Whirlpool, etc.) work entirely within MM's skill system. The only McRPG dependency is the `mcrpg_skillbook` custom drop type in the loot table — if McRPG is removed, the mob still functions but those specific drops won't generate.
+
+### 2.6 Despawn Owned by MythicMobs
+
+Per LLD-2's design decision, McRPG does not schedule despawn timers. The mob YAML includes MM-native `~onTimer` and `~onCombat` triggers that handle max lifetime and combat dropout despawn. Server owners configure these values directly in the mob YAML.
+
+---
+
+## 3. Mob Statistics & Traits
+
+The Riptide Guardian is a mid-difficulty combat encounter designed for solo or small-group fishing players. Stats are balanced for a player in iron-to-diamond gear.
+
+### Base Statistics
+
+| Stat | Value | Notes |
+|------|------:|-------|
+| Health | 80 (40 hearts) | Enough for a 30-60 second fight |
+| Damage | 6 (3 hearts) | Melee hit — punishing but survivable |
+| Armor | 8 | Equivalent to ~32% damage reduction |
+| Speed | 0.3 | Slightly faster than a player's walk speed (0.2) |
+| Follow Range | 24 | Keeps pressure on the player within a reasonable area |
+| Knockback Resistance | 0.4 | Partially resists knockback — can't be easily juggled |
+| Attack Speed | 1.0 | Default attack cooldown |
+
+### MythicMobs Configuration
+
+```yaml
+RiptideGuardian:
+  Type: DROWNED
+  Display: "&3Riptide Guardian"
+  Health: 80
+  Damage: 6
+  Armor: 8
+  Options:
+    MovementSpeed: 0.3
+    FollowRange: 24
+    KnockbackResistance: 0.4
+    PreventOtherDrops: true
+    PreventRandomEquipment: true
+    PreventSunburn: true
+    Silent: false
+  Faction: mcrpg_fishing_mob
+  ThreatTable: true
+```
+
+### Stat Rationale
+
+- **Type: DROWNED** — Thematically appropriate (aquatic undead), swims in water, has a trident attack animation natively.
+- **Health: 80** — Low enough for solo play with iron gear (~45s fight), high enough to feel threatening. Diamond-geared players finish in ~25s.
+- **Damage: 6** — Three-hearts melee matches a drowned's trident throw. Combined with ability damage, total DPS is ~4-5 hearts/sec during burst windows.
+- **Armor: 8** — Keeps the fight from being trivialized by sharpness swords while not being a damage sponge.
+- **PreventOtherDrops: true** — Only the custom drop table fires. No vanilla drowned loot (tridents, nautilus shells) to confuse the economy.
+- **ThreatTable: true** — Enables MM's aggro system. The spawning player is seeded as initial target (see LLD-2 spawn flow).
+- **Faction: mcrpg_fishing_mob** — Prevents infighting with other McRPG mobs if multiple are ever spawned.
+
+---
+
+## 4. Mob Abilities (MythicMobs Skills)
+
+All abilities are implemented as MythicMobs skills using MM's native mechanics. The mob uses all four abilities from the HLD — these are the mob's combat kit, independent of which ones drop as skill books.
+
+### 4.1 Phase Shift
+
+**Purpose:** Anti-cheese teleport that punishes pillar-up, wall-in, and range-kiting tactics.
+
+**Trigger:** Target is >8 blocks away OR out of line-of-sight for 3+ seconds.
+
+**MythicMobs Skill:**
+
+```yaml
+PhaseShift:
+  Skills:
+  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
+  - sound{s=entity.enderman.teleport;v=1.0;p=0.8} @self
+  - teleport{target=@target;offset=0,-1,-2} @self
+  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
+  - sound{s=entity.enderman.teleport;v=1.0;p=1.2} @self
+  Cooldown: 8
+  Conditions:
+  - distance{d=>8} @target
+  TargetConditions:
+  - lineofsight false
+```
+
+**Notes:**
+- `offset=0,-1,-2` places the mob 2 blocks behind the target (relative to target facing)
+- Two sets of particles: origin (before teleport) and destination (after)
+- Pitch variation on sound (0.8 → 1.2) gives auditory feedback for the teleport direction
+- The `distance` and `lineofsight` conditions are OR'd — MM evaluates the skill tree and fires if either condition triggers
+
+### 4.2 Whirlpool
+
+**Purpose:** AoE zone that forces movement and prevents face-tanking.
+
+**Trigger:** Target is within 5 blocks (close-range engagement).
+
+**MythicMobs Skill:**
+
+```yaml
+Whirlpool:
+  Skills:
+  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
+  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
+  Cooldown: 12
+  Conditions:
+  - distance{d=<5} @target
+
+WhirlpoolTick:
+  Skills:
+  - effect:particles{particle=WATER_SPLASH;amount=30;speed=0.3;xSpread=2.0;ySpread=0.3;zSpread=2.0} @origin
+  - effect:particles{particle=BUBBLE_POP;amount=10;speed=0.2;xSpread=1.5;ySpread=0.2;zSpread=1.5} @origin
+  - damage{a=3;pk=false;pi=5} @PlayersInRadius{r=4}
+  - potion{t=SLOWNESS;d=40;l=1} @PlayersInRadius{r=4}
+  - sound{s=block.bubble_column.whirlpool_ambient;v=0.6;p=1.0} @origin
+```
+
+**Notes:**
+- Uses a stationary projectile (`v=0`, `g=false`) as an invisible AoE anchor at the target's location
+- `WhirlpoolTick` fires every 5 ticks (0.25s) for 100 ticks (5 seconds) = 20 ticks total
+- Damage: 3 per tick at 5-tick interval = 1.5 hearts/sec (matches HLD spec of 1.5 hearts/sec)
+- `pk=false` prevents knockback on damage ticks (players should be slowed, not knocked out of the zone)
+- `pi=5` sets damage invulnerability to 5 ticks, preventing double-damage from overlapping ticks
+- Slowness II (`l=1`, 0-indexed) for 2 seconds (`d=40` ticks) refreshed each tick
+
+### 4.3 Waterlogged Strike
+
+**Purpose:** Ranged projectile that punishes bow kiting at mid-range.
+
+**Trigger:** Target is 5-15 blocks away.
+
+**MythicMobs Skill:**
+
+```yaml
+WaterloggedStrike:
+  Skills:
+  - projectile{ot=WaterloggedStrikeTrail;oh=WaterloggedStrikeHit;v=8;i=1;d=40;mr=20;g=false;se=true;sb=true;sfo=false} @target
+  - sound{s=entity.drowned.shoot;v=1.0;p=0.8} @self
+  Cooldown: 6
+  Conditions:
+  - distance{d=5to15} @target
+
+WaterloggedStrikeTrail:
+  Skills:
+  - effect:particles{particle=DRIPPING_WATER;amount=5;speed=0.1;xSpread=0.2;ySpread=0.2;zSpread=0.2} @origin
+
+WaterloggedStrikeHit:
+  Skills:
+  - damage{a=6;pk=true} @target
+  - potion{t=SLOWNESS;d=80;l=0} @target
+  - effect:particles{particle=SPLASH;amount=20;speed=0.5;xSpread=0.5;ySpread=0.5;zSpread=0.5} @target
+  - sound{s=entity.generic.splash;v=1.0;p=1.2} @target
+```
+
+**Notes:**
+- Projectile speed `v=8` is fast but dodgeable (comparable to a skeleton arrow)
+- `mr=20` max range prevents the projectile from traveling indefinitely
+- `se=true` stops on hitting an entity, `sb=true` stops on hitting a block
+- Damage: 6 (3 hearts) matching HLD spec
+- Slowness I (`l=0`) for 4 seconds (`d=80` ticks)
+- `DRIPPING_WATER` trail gives visual warning of incoming projectile
+
+### 4.4 Tsunami Wall
+
+**Purpose:** Blocks retreat when the mob is wounded, forcing continued engagement.
+
+**Trigger:** Mob HP below 50%.
+
+**MythicMobs Skill:**
+
+```yaml
+TsunamiWall:
+  Skills:
+  - sound{s=entity.elder_guardian.curse;v=1.0;p=0.6} @self
+  - projectile{ot=TsunamiWallTick;i=5;d=80;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @forward{f=4;y=0}
+  Cooldown: 15
+  Conditions:
+  - health{h=<50%}
+  TargetConditions:
+  - distance{d=<10} @target
+
+TsunamiWallTick:
+  Skills:
+  - effect:particles{particle=SPLASH;amount=40;speed=0.3;xSpread=2.5;ySpread=1.5;zSpread=0.3} @origin
+  - effect:particles{particle=ENCHANTMENT_TABLE;amount=15;speed=0.2;xSpread=2.0;ySpread=1.0;zSpread=0.2} @origin
+  - potion{t=SLOWNESS;d=60;l=2} @PlayersInRadius{r=3}
+  - throw{v=1.5;vy=0.4} @PlayersInRadius{r=3}
+```
+
+**Notes:**
+- Placed 4 blocks in front of the mob (`@forward{f=4}`) — between the mob and the retreating player
+- Stationary projectile anchor like Whirlpool, lasting 4 seconds (`d=80` ticks)
+- `SPLASH` + `ENCHANTMENT_TABLE` particles create a shimmering water wall effect
+- Slowness III (`l=2`) on contact for 3 seconds (`d=60`)
+- `throw{v=1.5;vy=0.4}` provides moderate knockback on contact
+- Only triggers below 50% HP and when target is within 10 blocks (no wall if target already far away)
+
+### AI Priority (Skill List Order)
+
+MythicMobs evaluates skills top-to-bottom. The first skill whose conditions are met fires (respecting cooldowns). The ordering implements the HLD's priority:
+
+```yaml
+Skills:
+- skill:PhaseShift      # Priority 1: unreachable target
+- skill:WaterloggedStrike  # Priority 2: mid-range target
+- skill:Whirlpool        # Priority 3: close-range target
+- skill:TsunamiWall      # Priority 4: low HP defense
+```
+
+Melee attacks are handled by MM's default AI — when no skills fire, the mob melees.
+
+---
+
+## 5. Drop Table
+
+The Riptide Guardian uses MythicMobs' native drop table system with the `mcrpg_skillbook` custom drop type registered by LLD-1.
+
+### Drop Table Configuration
+
+```yaml
+Drops:
+- mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+- mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+```
+
+### Drop Entry Format
+
+Each entry follows MythicMobs' `<drop_type>{<params>} <amount> <chance>` syntax:
+
+| Field | Value | Meaning |
+|-------|-------|---------|
+| Drop type | `mcrpg_skillbook` | Custom drop registered via `MythicDropLoadEvent` (LLD-1) |
+| `ability` | `mcrpg:whirlpool` / `mcrpg:phase_shift` | NamespacedKey of the ability the book unlocks |
+| Amount | `1` | One book per drop |
+| Chance | `0.12` / `0.05` | 12% / 5% drop rate per kill |
+
+### Drop Flow
+
+1. Riptide Guardian dies → MM evaluates the drop table
+2. For each `mcrpg_skillbook` entry, MM rolls against the chance
+3. On success, MM calls `McRPGSkillBookDrop.getDrop()` (LLD-1/3)
+4. `McRPGSkillBookDrop` delegates to `SkillBookFactory.createSkillBook()` (LLD-3)
+5. The factory creates an `ENCHANTED_BOOK` ItemStack with PDC tags and localized display text
+6. MM drops the item at the mob's death location
+
+### Why No Vanilla Drops
+
+`PreventOtherDrops: true` in the mob options ensures only the custom drop table fires. This prevents:
+- Trident drops from drowned (economy disruption)
+- Nautilus shells or other vanilla drowned loot
+- XP orb duplication (MM controls XP separately if desired)
+
+Server owners who want vanilla drops can set `PreventOtherDrops: false` in their copy.
+
+---
+
+## 6. Despawn Configuration
+
+Per LLD-2's design decision, MythicMobs owns all despawn behavior. The mob YAML includes MM-native triggers for two despawn scenarios.
+
+### Max Lifetime Despawn
+
+```yaml
+  Skills:
+  - ...
+  - skill:DespawnSelf ~onTimer:6000
+```
+
+The mob auto-despawns after 300 seconds (6000 ticks / 5 minutes). This prevents:
+- Players luring the mob to a storage location
+- Orphaned mobs from disconnected players persisting indefinitely
+- Server entity count bloat
+
+### Combat Dropout Despawn
+
+```yaml
+  Skills:
+  - ...
+  - skill:DespawnSelf ~onCombat:600
+```
+
+If the mob's ThreatTable has been empty for 30 seconds (600 ticks), the mob despawns. This handles:
+- Player death (respawn elsewhere)
+- Player logout
+- Player running far enough away that MM drops combat
+
+### Despawn Skill
+
+```yaml
+DespawnSelf:
+  Skills:
+  - effect:particles{particle=WATER_SPLASH;amount=50;speed=0.5;ySpread=1.0;xSpread=1.0;zSpread=1.0} @self
+  - sound{s=entity.elder_guardian.ambient;v=1.0;p=0.4} @self
+  - remove @self
+```
+
+A shared skill used by both triggers. Plays a water-burst VFX and sound before removing the entity, giving nearby players visual feedback that the mob is gone (not just silently vanishing).
+
+---
+
+## 7. Full RiptideGuardian.yml
+
+This is the complete, ready-to-use MythicMobs configuration file bundled in the McRPG JAR.
+
+```yaml
+#
+# Riptide Guardian — McRPG Fishing Mob
+#
+# This file is auto-extracted by McRPG on first startup.
+# Customize freely — McRPG will not overwrite your changes.
+#
+# Requires: MythicMobs 5.7+, McRPG (for mcrpg_skillbook drop type)
+#
+# Drop table uses the mcrpg_skillbook custom drop type.
+# If McRPG is removed, the mob still functions but skill book
+# drops will not generate.
+#
+
+RiptideGuardian:
+  Type: DROWNED
+  Display: "&3Riptide Guardian"
+  Health: 80
+  Damage: 6
+  Armor: 8
+  Options:
+    MovementSpeed: 0.3
+    FollowRange: 24
+    KnockbackResistance: 0.4
+    PreventOtherDrops: true
+    PreventRandomEquipment: true
+    PreventSunburn: true
+    Silent: false
+  Faction: mcrpg_fishing_mob
+  ThreatTable: true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+  Skills:
+  - skill:PhaseShift
+  - skill:WaterloggedStrike
+  - skill:Whirlpool
+  - skill:TsunamiWall
+  - skill:DespawnSelf ~onTimer:6000
+  - skill:DespawnSelf ~onCombat:600
+
+# ─── Abilities ──────────────────────────────────────────────
+
+PhaseShift:
+  Skills:
+  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
+  - sound{s=entity.enderman.teleport;v=1.0;p=0.8} @self
+  - teleport{target=@target;offset=0,-1,-2} @self
+  - effect:particles{particle=PORTAL;amount=40;speed=0.5;ySpread=1.0;xSpread=0.5;zSpread=0.5} @self
+  - sound{s=entity.enderman.teleport;v=1.0;p=1.2} @self
+  Cooldown: 8
+  Conditions:
+  - distance{d=>8} @target
+  TargetConditions:
+  - lineofsight false
+
+WaterloggedStrike:
+  Skills:
+  - projectile{ot=WaterloggedStrikeTrail;oh=WaterloggedStrikeHit;v=8;i=1;d=40;mr=20;g=false;se=true;sb=true;sfo=false} @target
+  - sound{s=entity.drowned.shoot;v=1.0;p=0.8} @self
+  Cooldown: 6
+  Conditions:
+  - distance{d=5to15} @target
+
+WaterloggedStrikeTrail:
+  Skills:
+  - effect:particles{particle=DRIPPING_WATER;amount=5;speed=0.1;xSpread=0.2;ySpread=0.2;zSpread=0.2} @origin
+
+WaterloggedStrikeHit:
+  Skills:
+  - damage{a=6;pk=true} @target
+  - potion{t=SLOWNESS;d=80;l=0} @target
+  - effect:particles{particle=SPLASH;amount=20;speed=0.5;xSpread=0.5;ySpread=0.5;zSpread=0.5} @target
+  - sound{s=entity.generic.splash;v=1.0;p=1.2} @target
+
+Whirlpool:
+  Skills:
+  - sound{s=entity.generic.splash;v=1.0;p=0.6} @target
+  - projectile{ot=WhirlpoolTick;i=5;d=100;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @target
+  Cooldown: 12
+  Conditions:
+  - distance{d=<5} @target
+
+WhirlpoolTick:
+  Skills:
+  - effect:particles{particle=WATER_SPLASH;amount=30;speed=0.3;xSpread=2.0;ySpread=0.3;zSpread=2.0} @origin
+  - effect:particles{particle=BUBBLE_POP;amount=10;speed=0.2;xSpread=1.5;ySpread=0.2;zSpread=1.5} @origin
+  - damage{a=3;pk=false;pi=5} @PlayersInRadius{r=4}
+  - potion{t=SLOWNESS;d=40;l=1} @PlayersInRadius{r=4}
+  - sound{s=block.bubble_column.whirlpool_ambient;v=0.6;p=1.0} @origin
+
+TsunamiWall:
+  Skills:
+  - sound{s=entity.elder_guardian.curse;v=1.0;p=0.6} @self
+  - projectile{ot=TsunamiWallTick;i=5;d=80;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @forward{f=4;y=0}
+  Cooldown: 15
+  Conditions:
+  - health{h=<50%}
+  TargetConditions:
+  - distance{d=<10} @target
+
+TsunamiWallTick:
+  Skills:
+  - effect:particles{particle=SPLASH;amount=40;speed=0.3;xSpread=2.5;ySpread=1.5;zSpread=0.3} @origin
+  - effect:particles{particle=ENCHANTMENT_TABLE;amount=15;speed=0.2;xSpread=2.0;ySpread=1.0;zSpread=0.2} @origin
+  - potion{t=SLOWNESS;d=60;l=2} @PlayersInRadius{r=3}
+  - throw{v=1.5;vy=0.4} @PlayersInRadius{r=3}
+
+# ─── Despawn ────────────────────────────────────────────────
+
+DespawnSelf:
+  Skills:
+  - effect:particles{particle=WATER_SPLASH;amount=50;speed=0.5;ySpread=1.0;xSpread=1.0;zSpread=1.0} @self
+  - sound{s=entity.elder_guardian.ambient;v=1.0;p=0.4} @self
+  - remove @self
+```
+
+---
+
+## 8. Resource Extraction
+
+McRPG bundles the `RiptideGuardian.yml` inside the JAR at `mythicmobs/RiptideGuardian.yml`. On startup, when MythicMobs is present, the file is extracted to the MythicMobs plugin's `Mobs/` directory.
+
+### Extraction Logic
+
+**Class:** `us.eunoians.mcrpg.external.mythicmobs.MythicMobsConfigExtractor`
+
+```java
+package us.eunoians.mcrpg.external.mythicmobs;
+
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.logging.Level;
+
+/**
+ * Extracts bundled MythicMobs configuration files from the McRPG JAR
+ * to the MythicMobs plugin's data directory on first startup.
+ * <p>
+ * Files are only extracted if they do not already exist in the target
+ * directory, preserving any server-owner customizations.
+ */
+public class MythicMobsConfigExtractor {
+
+    /**
+     * Bundled mob config files (JAR-relative paths under {@code mythicmobs/}).
+     * Add new entries here when additional example mobs are shipped.
+     */
+    private static final List<String> BUNDLED_MOB_CONFIGS = List.of(
+            "RiptideGuardian.yml"
+    );
+
+    private static final String JAR_RESOURCE_PREFIX = "mythicmobs/";
+
+    private MythicMobsConfigExtractor() {
+    }
+
+    /**
+     * Extracts all bundled mob configs to the MythicMobs {@code Mobs/} directory.
+     * Skips any file that already exists on disk.
+     *
+     * @param plugin the McRPG plugin instance
+     */
+    public static void extractBundledConfigs(@NotNull McRPG plugin) {
+        Path mythicMobsDataFolder = plugin.getDataFolder().toPath()
+                .getParent()  // plugins/
+                .resolve("MythicMobs")
+                .resolve("Mobs");
+
+        if (!Files.exists(mythicMobsDataFolder)) {
+            try {
+                Files.createDirectories(mythicMobsDataFolder);
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING,
+                        "Could not create MythicMobs Mobs directory for config extraction", e);
+                return;
+            }
+        }
+
+        for (String fileName : BUNDLED_MOB_CONFIGS) {
+            Path targetFile = mythicMobsDataFolder.resolve(fileName);
+            if (Files.exists(targetFile)) {
+                plugin.getLogger().info("MythicMobs config '" + fileName
+                        + "' already exists, skipping extraction.");
+                continue;
+            }
+
+            String resourcePath = JAR_RESOURCE_PREFIX + fileName;
+            try (InputStream resourceStream = plugin.getResource(resourcePath)) {
+                if (resourceStream == null) {
+                    plugin.getLogger().warning("Bundled MythicMobs config '"
+                            + resourcePath + "' not found in JAR.");
+                    continue;
+                }
+                Files.copy(resourceStream, targetFile);
+                plugin.getLogger().info("Extracted MythicMobs config '"
+                        + fileName + "' to " + targetFile);
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING,
+                        "Failed to extract MythicMobs config '" + fileName + "'", e);
+            }
+        }
+    }
+}
+```
+
+### Why Not `plugin.saveResource()`?
+
+Bukkit's `saveResource()` writes to the plugin's own data folder (`plugins/McRPG/`). We need to write to `plugins/MythicMobs/Mobs/`, which is a sibling plugin's directory. Direct `Files.copy()` from an `InputStream` is the simplest approach.
+
+### JAR Resource Location
+
+The YAML file is placed at:
+```
+src/main/resources/mythicmobs/RiptideGuardian.yml
+```
+
+Gradle packages it into the JAR at `mythicmobs/RiptideGuardian.yml`, accessible via `plugin.getResource("mythicmobs/RiptideGuardian.yml")`.
+
+---
+
+## 9. Bootstrap Registration
+
+The extraction runs once during plugin enable, after hooks are registered (so we know MythicMobs is present).
+
+### Integration Point
+
+**File:** `us.eunoians.mcrpg.bootstrap.McRPGListenerRegistrar` (or equivalent bootstrap class)
+
+The extraction is called conditionally, only when the MythicMobs hook is active:
+
+```java
+// In the bootstrap sequence, after hooks are registered:
+if (mcRPG.registryAccess()
+        .registry(RegistryKey.MANAGER)
+        .manager(McRPGManagerKey.HOOK)
+        .isHookActive(McRPGPluginHookKey.MYTHICMOBS)) {
+    MythicMobsConfigExtractor.extractBundledConfigs(mcRPG);
+}
+```
+
+### Timing
+
+Extraction runs during `onEnable()`, before MythicMobs loads its mob configs. The Paper/Spigot plugin load order ensures this works because:
+1. McRPG declares MythicMobs as a `softdepend` in `plugin.yml` / `paper-plugin.yml`
+2. This means McRPG loads **after** MythicMobs
+3. However, MythicMobs reloads its configs on a delayed task after all plugins enable
+4. By extracting during `onEnable()`, the file is in place before MM's reload pass picks it up
+
+If MM has already loaded by the time McRPG enables (edge case with async loading), the mob will be available after the next `/mm reload` or server restart. This is acceptable for a first-run scenario.
+
+---
+
+## 10. Server Owner Customization Guide
+
+This section documents the tunable values server owners are most likely to modify.
+
+### Stat Tuning
+
+| What to Change | Where | Default | Notes |
+|----------------|-------|---------|-------|
+| Mob HP | `Health:` | 80 | Scale with your server's average gear level |
+| Melee damage | `Damage:` | 6 | Halve for casual servers, double for hardcore |
+| Movement speed | `MovementSpeed:` | 0.3 | Player walk is 0.2, sprint is 0.26 |
+| Armor | `Armor:` | 8 | 0 = no damage reduction, 30 = nearly invulnerable |
+
+### Drop Rate Tuning
+
+| What to Change | Where | Default | Notes |
+|----------------|-------|---------|-------|
+| Whirlpool book rate | `Drops:` line 1, last number | 0.12 | 12% per kill |
+| Phase Shift book rate | `Drops:` line 2, last number | 0.05 | 5% per kill |
+| Add vanilla drops | Set `PreventOtherDrops: false` | true | Enables vanilla drowned drops alongside skill books |
+
+### Ability Tuning
+
+| What to Change | Where | Default | Notes |
+|----------------|-------|---------|-------|
+| Phase Shift cooldown | `PhaseShift:` → `Cooldown:` | 8 | Seconds between teleports |
+| Whirlpool damage/tick | `WhirlpoolTick:` → `damage{a=...}` | 3 (1.5 hearts) | Raw damage per tick |
+| Whirlpool radius | `WhirlpoolTick:` → `@PlayersInRadius{r=...}` | 4 | Blocks |
+| Waterlogged Strike damage | `WaterloggedStrikeHit:` → `damage{a=...}` | 6 (3 hearts) | Raw damage |
+| Tsunami Wall HP threshold | `TsunamiWall:` → `health{h=<...%}` | 50% | Lower = later activation |
+
+### Despawn Tuning
+
+| What to Change | Where | Default | Notes |
+|----------------|-------|---------|-------|
+| Max lifetime | `~onTimer:` value | 6000 (5 min) | In ticks (20 ticks = 1 second) |
+| Combat dropout | `~onCombat:` value | 600 (30 sec) | Ticks after threat table empties |
+
+### Adding Custom Drops
+
+Server owners can add any MythicMobs-compatible drop alongside skill books:
+
+```yaml
+Drops:
+- mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+- mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+- DIAMOND 1-3 0.25          # 25% chance for 1-3 diamonds
+- EXPERIENCE_BOTTLE 2-5 1.0 # Guaranteed XP bottles
+```
+
+---
+
+## 11. Edge Cases & Graceful Degradation
+
+| Scenario | Behavior |
+|----------|----------|
+| MythicMobs not installed | Extraction is skipped (hook check). Mob pool references `RiptideGuardian` but `MythicMobsHook.spawnMob()` returns empty. No crash. |
+| McRPG removed after extraction | `RiptideGuardian.yml` remains on disk. Mob works normally in MM. `mcrpg_skillbook` drops silently fail (MM logs unknown drop type). |
+| Server owner deletes the YAML | Mob stops spawning (MM can't find type ID). Next McRPG restart re-extracts the file. |
+| Server owner modifies the YAML | McRPG never overwrites existing files. Modifications are preserved across restarts and updates. |
+| MythicMobs `Mobs/` directory doesn't exist | Extractor creates it via `Files.createDirectories()`. |
+| Multiple McRPG instances (BungeeCord) | Each server instance extracts independently. No cross-server conflict. |
+| `plugin.getResource()` returns null | Logged as warning, extraction skipped for that file. Other files still extracted. |
+| MM loads before McRPG enables | File won't be present for MM's initial load. Available after `/mm reload` or server restart. Acceptable for first-run only. |
+
+---
+
+## 12. Test Plan
+
+### Unit Tests
+
+| Test | Class | Assertion |
+|------|-------|-----------|
+| Extractor skips existing file | `MythicMobsConfigExtractorTest` | When target file exists, `Files.copy()` is not called |
+| Extractor creates missing directory | `MythicMobsConfigExtractorTest` | When `Mobs/` directory doesn't exist, it is created |
+| Extractor copies file content | `MythicMobsConfigExtractorTest` | Extracted file matches JAR resource byte-for-byte |
+| Extractor handles missing resource | `MythicMobsConfigExtractorTest` | When JAR resource is null, logs warning and continues |
+| Extractor handles IO failure | `MythicMobsConfigExtractorTest` | When `Files.copy()` throws, logs warning and continues to next file |
+
+### Manual Validation
+
+| Scenario | Steps | Expected |
+|----------|-------|----------|
+| First-run extraction | Install McRPG + MM, start server | `plugins/MythicMobs/Mobs/RiptideGuardian.yml` appears |
+| Mob spawns via fishing | Fish until spawn triggers | Riptide Guardian (drowned) spawns near hook |
+| Phase Shift fires | Pillar up >8 blocks | Mob teleports behind player with portal particles |
+| Whirlpool fires | Stand within 5 blocks | AoE zone appears, deals damage + slowness |
+| Waterlogged Strike fires | Stand 5-15 blocks away | Projectile with water trail, impact damage + slowness |
+| Tsunami Wall fires | Get mob below 50% HP | Particle wall spawns between mob and player |
+| Skill book drops | Kill mob multiple times | Whirlpool book (~12%) and Phase Shift book (~5%) drop |
+| Skill book consumption | Right-click dropped book | Ability unlocked (if not already), book consumed |
+| Despawn on timeout | Spawn mob, walk away, wait 5 min | Mob despawns with water-burst VFX |
+| Despawn on combat drop | Spawn mob, die, wait 30s | Mob despawns with water-burst VFX |
+| No overwrite on restart | Modify YAML, restart server | Modifications preserved |
+
+---
+
+## 13. File Manifest
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/main/resources/mythicmobs/RiptideGuardian.yml` | **NEW** | Bundled MythicMobs mob configuration |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsConfigExtractor.java` | **NEW** | Extracts bundled configs to MM's data directory |
+| `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call after hook registration |
+
+---
+
+## 14. Future LLD Notes
+
+### LLD-5 (UnlockCondition Refactor)
+
+Will define a new `UnlockCondition` interface that replaces the current `UnlockableAbility.getUnlockLevel()` mechanism. Skill book consumption (LLD-3) will become one implementation of `UnlockCondition`, alongside level-based unlocking and potential future conditions (quest completion, achievement, etc.).
+
+### LLD-6 (Player Abilities)
+
+Will define the player-side implementations of Phase Shift and Whirlpool as McRPG abilities. These are the abilities unlocked by the skill books dropped by this mob. Deferred until the ability system rework is complete.
+
+### Future: Additional Mobs
+
+The extraction system (`BUNDLED_MOB_CONFIGS` list) is designed for multiple files. Future mobs (e.g., Cavern Golem for mining, Timber Wraith for woodcutting) can be added by:
+1. Creating a new YAML file in `src/main/resources/mythicmobs/`
+2. Adding the filename to `MythicMobsConfigExtractor.BUNDLED_MOB_CONFIGS`
+3. Adding the mob to `fishing_mob_spawn_configuration.yml`'s mob pool
+
+### Future: ModelEngine Integration
+
+MythicMobs natively supports ModelEngine for custom mob models. Server owners can add `Model:` configuration to the mob YAML without any McRPG changes. A future pass could bundle a default model ID reference.

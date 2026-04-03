@@ -1194,6 +1194,6 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 ## 14. Future LLD Notes
 
-- **LLD-4 (MythicMobs Example Configuration):** Will define the bundled `RiptideGuardian.yml` in `src/main/resources/mythicmobs/`, including drop table entries that use `mcrpg_skillbook{ability=mcrpg:phase_shift}` with the new key format.
+- **LLD-4 (MythicMobs Example Configuration):** Defines the bundled `RiptideGuardian.yml` in `src/main/resources/mythicmobs/`, including drop table entries that use `mcrpg_skillbook{ability=mcrpg:phase_shift}` and `mcrpg_skillbook{ability=mcrpg:whirlpool}` with the new key format. Also covers the `MythicMobsConfigExtractor` that auto-deploys the file to the MythicMobs `Mobs/` directory on first run. See [LLD-4](mythicmobs_example_configuration.md).
 - **LLD-5 (UnlockCondition Refactor):** Renamed from HLD's original LLD-4. Will introduce `SkillBookUnlockCondition` that always returns `isMet() = false` — unlock happens via book consumption, not condition evaluation. The GUI will display "Obtain from [source]" for these abilities.
 - **LLD-6 (Player Abilities):** Renamed from HLD's original LLD-5. Deferred until the ability system rework is complete. Skill books for these abilities (Phase Shift, Whirlpool, etc.) will use the factory and consumption system defined in this LLD.
