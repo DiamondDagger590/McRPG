@@ -2,8 +2,8 @@
 
 **Status:** Draft
 **Date:** 2026-03-16
-**HLD Reference:** [Riptide Guardian HLD](../hld/riptide_guardian.md), Sections 3, 8
-**Scope:** Spawn tracker, mob pool, per-player state, config file, custom events, despawn scheduling, MythicMobs spawning
+**HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Section 3
+**Scope:** Spawn tracker, mob pool, per-player state, config file, custom events, MythicMobs spawning
 
 ---
 
@@ -16,14 +16,13 @@
 5. [FishingMobSpawnTracker](#5-fishingmobspawntracker)
 6. [Per-Player State](#6-per-player-state)
 7. [Spawn Flow](#7-spawn-flow)
-8. [Despawn Scheduling](#8-despawn-scheduling)
-9. [Death Callback Integration](#9-death-callback-integration)
-10. [Custom Events](#10-custom-events)
-11. [Bootstrap Registration](#11-bootstrap-registration)
-12. [Anti-Cheese Analysis](#12-anti-cheese-analysis)
-13. [Edge Cases & Graceful Degradation](#13-edge-cases--graceful-degradation)
-14. [Test Plan](#14-test-plan)
-15. [File Manifest](#15-file-manifest)
+8. [Death Callback Integration](#8-death-callback-integration)
+9. [Custom Events](#9-custom-events)
+10. [Bootstrap Registration](#10-bootstrap-registration)
+11. [Anti-Cheese Analysis](#11-anti-cheese-analysis)
+12. [Edge Cases & Graceful Degradation](#12-edge-cases--graceful-degradation)
+13. [Test Plan](#13-test-plan)
+14. [File Manifest](#14-file-manifest)
 
 ---
 
@@ -54,6 +53,15 @@ This LLD does **not** cover:
 - MythicMobs drop table configuration for skill books (handled by MM config + `McRPGSkillBookDrop`)
 
 Loot is entirely owned by MythicMobs' drop table system. When a bound mob dies, MM evaluates its configured drops (including `mcrpg_skillbook` entries). McRPG's role is limited to spawning the mob and cleaning up tracking state on death.
+
+### Despawn Responsibility
+
+Mob despawn behavior (max lifetime, empty threat table cleanup) is **entirely owned by MythicMobs** via native mob skills:
+- `~onTimer` — schedule forced despawn after a configurable TTL
+- `~onDropCombat` — trigger despawn when the ThreatTable empties (all players leave)
+- `remove` mechanic — MM's native entity removal
+
+McRPG does **not** schedule despawn tasks or monitor the ThreatTable. Server owners configure despawn behavior in the MythicMobs mob YAML, not in McRPG config. This avoids duplicating MM's existing capabilities and keeps McRPG's scope limited to spawn triggering and state tracking.
 
 ---
 
@@ -106,7 +114,6 @@ public final class FishingMobSpawnConfigFile extends ConfigFile {
     // Top-level headers
     private static final String SPAWN_HEADER = "spawn";
     private static final String MOB_POOL_HEADER = "mob-pool";
-    private static final String DESPAWN_HEADER = "despawn";
 
     // Spawn settings
     public static final Route SPAWN_ENABLED = Route.fromString(toRoutePath(SPAWN_HEADER, "enabled"));
@@ -125,12 +132,6 @@ public final class FishingMobSpawnConfigFile extends ConfigFile {
 
     // Mob pool (list-based — accessed dynamically)
     public static final Route MOB_POOL = Route.fromString(MOB_POOL_HEADER);
-
-    // Despawn settings
-    public static final Route DESPAWN_MAX_LIFETIME_SECONDS = Route.fromString(toRoutePath(DESPAWN_HEADER, "max-lifetime-seconds"));
-    public static final Route DESPAWN_IF_NO_THREAT = Route.fromString(toRoutePath(DESPAWN_HEADER, "despawn-if-no-threat"));
-    public static final Route DESPAWN_NO_THREAT_DELAY_SECONDS = Route.fromString(toRoutePath(DESPAWN_HEADER, "despawn-no-threat-delay-seconds"));
-    public static final Route DESPAWN_THREAT_CHECK_INTERVAL_SECONDS = Route.fromString(toRoutePath(DESPAWN_HEADER, "threat-check-interval-seconds"));
 }
 ```
 
@@ -189,6 +190,9 @@ spawn:
 
 # Weighted mob pool — on spawn trigger, one mob is selected by weight.
 # Each entry must reference a MythicMobs mob type ID.
+#
+# Despawn behavior (max lifetime, empty threat table) is configured in the
+# MythicMobs mob YAML via ~onTimer and ~onDropCombat skills, NOT here.
 mob-pool:
   - mythicmobs-mob-id: "RiptideGuardian"
     weight: 1
@@ -201,28 +205,11 @@ mob-pool:
   #   weight: 3
   #   min-chance-threshold: 0.0
   #   mob-level: 1.0
-
-# Despawn policy for fishing mobs — prevents indefinite mob storage
-despawn:
-  # Maximum seconds a fishing mob can live before forced despawn (0 = disabled)
-  max-lifetime-seconds: 300
-
-  # Whether to despawn the mob when its MythicMobs ThreatTable empties
-  # (all players leave the area or log out)
-  despawn-if-no-threat: true
-
-  # Grace period (seconds) before despawning after ThreatTable empties
-  despawn-no-threat-delay-seconds: 30
-
-  # How often (seconds) to check the ThreatTable for active targets
-  threat-check-interval-seconds: 5
 ```
 
 ### 3.4 Design Decisions
 
 **Single file instead of directory:** Unlike LLD-1's binding system (which uses a directory for extensibility), the fishing mob spawn system has exactly one config with a single mob pool. Server owners customize the pool entries, not the file count. A single `FileType` entry keeps things simple.
-
-**Despawn config lives here, not on bindings:** The HLD placed despawn policy on the binding config. However, since LLD-1 was implemented without a binding registry (using PDC tags + MM drop tables), and despawn scheduling is tightly coupled to the spawn tracker, the despawn config lives alongside the spawn config. This avoids creating a binding system solely to hold despawn values.
 
 ---
 
@@ -260,7 +247,7 @@ public record MobPoolEntry(
 
 **File:** `src/main/java/us/eunoians/mcrpg/fishing/MobPoolSelector.java`
 
-Weighted random selection from eligible pool entries.
+Instantiable weighted random selector. Constructed with the pool; selects from eligible entries on each call.
 
 ```java
 package us.eunoians.mcrpg.fishing;
@@ -272,24 +259,35 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Selects a mob from the weighted pool based on the player's current spawn chance.
+ * Selects a mob from a weighted pool based on the player's current spawn chance.
  * Only entries whose {@link MobPoolEntry#minChanceThreshold()} is at or below
  * the current chance are eligible.
+ * <p>
+ * This is an instantiable class — construct it with the pool once, then call
+ * {@link #select(double)} on each spawn trigger.
  */
 public final class MobPoolSelector {
 
-    private MobPoolSelector() {}
+    private final List<MobPoolEntry> pool;
+
+    /**
+     * Creates a new selector with the given mob pool.
+     *
+     * @param pool the weighted mob pool entries
+     */
+    public MobPoolSelector(@NotNull List<MobPoolEntry> pool) {
+        this.pool = List.copyOf(pool);
+    }
 
     /**
      * Selects a random mob from the pool, weighted by {@link MobPoolEntry#weight()}.
      * Only entries with {@code minChanceThreshold <= currentChance} are eligible.
      *
-     * @param pool          the full mob pool
      * @param currentChance the player's current accumulated spawn chance
      * @return a selected entry, or empty if no entries are eligible
      */
     @NotNull
-    public static Optional<MobPoolEntry> select(@NotNull List<MobPoolEntry> pool, double currentChance) {
+    public Optional<MobPoolEntry> select(double currentChance) {
         List<MobPoolEntry> eligible = pool.stream()
                 .filter(entry -> currentChance >= entry.minChanceThreshold())
                 .toList();
@@ -315,106 +313,14 @@ public final class MobPoolSelector {
         // Should not reach here, but return last eligible as fallback
         return Optional.of(eligible.getLast());
     }
-}
-```
-
-### 4.3 MobPoolLoader
-
-**File:** `src/main/java/us/eunoians/mcrpg/fishing/MobPoolLoader.java`
-
-Static utility to parse the mob pool from config.
-
-```java
-package us.eunoians.mcrpg.fishing;
-
-import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.route.Route;
-import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
-/**
- * Parses the weighted mob pool from the fishing mob spawn configuration.
- */
-public final class MobPoolLoader {
-
-    private MobPoolLoader() {}
 
     /**
-     * Loads all mob pool entries from the configuration.
+     * Returns whether the pool has any entries.
      *
-     * @param config the YAML config document
-     * @param logger the logger for warnings
-     * @return an unmodifiable list of parsed pool entries
+     * @return true if the pool is non-empty
      */
-    @NotNull
-    public static List<MobPoolEntry> load(@NotNull YamlDocument config, @NotNull Logger logger) {
-        List<MobPoolEntry> entries = new ArrayList<>();
-
-        if (!config.contains(FishingMobSpawnConfigFile.MOB_POOL)) {
-            logger.warning("No mob-pool section found in fishing mob spawn configuration.");
-            return Collections.emptyList();
-        }
-
-        List<?> poolList = config.getList(FishingMobSpawnConfigFile.MOB_POOL);
-        if (poolList == null || poolList.isEmpty()) {
-            logger.warning("Mob pool is empty in fishing mob spawn configuration.");
-            return Collections.emptyList();
-        }
-
-        for (Object element : poolList) {
-            if (!(element instanceof Map<?, ?> map)) {
-                logger.warning("Invalid mob pool entry (not a map): " + element);
-                continue;
-            }
-
-            String mobId = getStringValue(map, "mythicmobs-mob-id");
-            if (mobId == null || mobId.isBlank()) {
-                logger.warning("Mob pool entry missing 'mythicmobs-mob-id', skipping.");
-                continue;
-            }
-
-            int weight = getIntValue(map, "weight", 1);
-            double minThreshold = getDoubleValue(map, "min-chance-threshold", 0.0);
-            double mobLevel = getDoubleValue(map, "mob-level", 1.0);
-
-            if (weight <= 0) {
-                logger.warning("Mob pool entry '" + mobId + "' has weight <= 0, skipping.");
-                continue;
-            }
-
-            entries.add(new MobPoolEntry(mobId, weight, minThreshold, mobLevel));
-            logger.info("Loaded mob pool entry: " + mobId + " (weight=" + weight
-                        + ", threshold=" + minThreshold + ", level=" + mobLevel + ")");
-        }
-
-        return Collections.unmodifiableList(entries);
-    }
-
-    private static String getStringValue(@NotNull Map<?, ?> map, @NotNull String key) {
-        Object value = map.get(key);
-        return value != null ? value.toString() : null;
-    }
-
-    private static int getIntValue(@NotNull Map<?, ?> map, @NotNull String key, int defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number number) {
-            return number.intValue();
-        }
-        return defaultValue;
-    }
-
-    private static double getDoubleValue(@NotNull Map<?, ?> map, @NotNull String key, double defaultValue) {
-        Object value = map.get(key);
-        if (value instanceof Number number) {
-            return number.doubleValue();
-        }
-        return defaultValue;
+    public boolean hasEntries() {
+        return !pool.isEmpty();
     }
 }
 ```
@@ -426,6 +332,8 @@ public final class MobPoolLoader {
 **File:** `src/main/java/us/eunoians/mcrpg/fishing/FishingMobSpawnTracker.java`
 
 This is the core class. It listens to `PlayerFishEvent` to track fishing behavior and trigger mob spawns. It also listens to `FishingMobDeathEvent` (fired by the existing `MythicMobsListener`) to clean up per-player state.
+
+The tracker also owns mob pool loading — the parsing logic from config is a private method on this class rather than a separate static utility, keeping the loading coupled to its only consumer.
 
 ### Design: Listener vs. Manager
 
@@ -468,13 +376,15 @@ import us.eunoians.mcrpg.event.fishing.FishingMobSpawnChanceUpdateEvent;
 import us.eunoians.mcrpg.external.mythicmobs.FishingMobKeys;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Logger;
 
 /**
  * Tracks per-player fishing behavior and triggers mob spawns via MythicMobs
@@ -492,11 +402,11 @@ public class FishingMobSpawnTracker implements Listener {
 
     private final McRPG plugin;
     private final Map<UUID, PlayerFishingState> playerStates = new HashMap<>();
-    private final List<MobPoolEntry> mobPool;
+    private final MobPoolSelector mobPoolSelector;
 
     public FishingMobSpawnTracker(@NotNull McRPG plugin) {
         this.plugin = plugin;
-        this.mobPool = MobPoolLoader.load(getConfig(), plugin.getLogger());
+        this.mobPoolSelector = new MobPoolSelector(loadMobPool());
     }
 
     /**
@@ -564,9 +474,6 @@ public class FishingMobSpawnTracker implements Listener {
             if (entry.getValue().removeActiveMob(mobUUID)) {
                 double postKillChance = getConfig().getDouble(FishingMobSpawnConfigFile.POST_KILL_CHANCE, 0.0);
                 entry.getValue().setCurrentSpawnChance(postKillChance);
-
-                // Cancel despawn task
-                FishingMobDespawnScheduler.cancel(mobUUID);
                 break;
             }
         }
@@ -579,13 +486,7 @@ public class FishingMobSpawnTracker implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(@NotNull PlayerQuitEvent event) {
-        PlayerFishingState removed = playerStates.remove(event.getPlayer().getUniqueId());
-        if (removed != null) {
-            // Cancel despawn tasks for all their active mobs
-            for (UUID mobUUID : removed.getActiveMobUUIDs()) {
-                FishingMobDespawnScheduler.cancel(mobUUID);
-            }
-        }
+        playerStates.remove(event.getPlayer().getUniqueId());
     }
 
     /**
@@ -647,7 +548,7 @@ public class FishingMobSpawnTracker implements Listener {
     private void attemptSpawnMob(@NotNull Player player,
                                   @NotNull PlayerFishingState state,
                                   @NotNull Location hookLocation) {
-        Optional<MobPoolEntry> selected = MobPoolSelector.select(mobPool, state.getCurrentSpawnChance());
+        Optional<MobPoolEntry> selected = mobPoolSelector.select(state.getCurrentSpawnChance());
         if (selected.isEmpty()) {
             return;
         }
@@ -677,9 +578,6 @@ public class FishingMobSpawnTracker implements Listener {
 
         // Reset spawn chance after successful spawn
         state.setCurrentSpawnChance(getBaseChance());
-
-        // Schedule despawn
-        FishingMobDespawnScheduler.schedule(plugin, entity.getUniqueId(), getConfig());
 
         plugin.getLogger().fine("Spawned fishing mob '" + entry.mythicMobsId()
                 + "' for player " + player.getName() + " at " + spawnLocation);
@@ -724,6 +622,80 @@ public class FishingMobSpawnTracker implements Listener {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.FISHING_MOB_SPAWN_CONFIG);
+    }
+
+    // --- Mob Pool Loading ---
+
+    /**
+     * Loads all mob pool entries from the configuration.
+     *
+     * @return an unmodifiable list of parsed pool entries
+     */
+    @NotNull
+    private List<MobPoolEntry> loadMobPool() {
+        YamlDocument config = getConfig();
+        Logger logger = plugin.getLogger();
+        List<MobPoolEntry> entries = new ArrayList<>();
+
+        if (!config.contains(FishingMobSpawnConfigFile.MOB_POOL)) {
+            logger.warning("No mob-pool section found in fishing mob spawn configuration.");
+            return Collections.emptyList();
+        }
+
+        List<?> poolList = config.getList(FishingMobSpawnConfigFile.MOB_POOL);
+        if (poolList == null || poolList.isEmpty()) {
+            logger.warning("Mob pool is empty in fishing mob spawn configuration.");
+            return Collections.emptyList();
+        }
+
+        for (Object element : poolList) {
+            if (!(element instanceof Map<?, ?> map)) {
+                logger.warning("Invalid mob pool entry (not a map): " + element);
+                continue;
+            }
+
+            String mobId = getStringValue(map, "mythicmobs-mob-id");
+            if (mobId == null || mobId.isBlank()) {
+                logger.warning("Mob pool entry missing 'mythicmobs-mob-id', skipping.");
+                continue;
+            }
+
+            int weight = getIntValue(map, "weight", 1);
+            double minThreshold = getDoubleValue(map, "min-chance-threshold", 0.0);
+            double mobLevel = getDoubleValue(map, "mob-level", 1.0);
+
+            if (weight <= 0) {
+                logger.warning("Mob pool entry '" + mobId + "' has weight <= 0, skipping.");
+                continue;
+            }
+
+            entries.add(new MobPoolEntry(mobId, weight, minThreshold, mobLevel));
+            logger.info("Loaded mob pool entry: " + mobId + " (weight=" + weight
+                        + ", threshold=" + minThreshold + ", level=" + mobLevel + ")");
+        }
+
+        return Collections.unmodifiableList(entries);
+    }
+
+    private static String getStringValue(@NotNull Map<?, ?> map, @NotNull String key) {
+        Object value = map.get(key);
+        return value != null ? value.toString() : null;
+    }
+
+    private static int getIntValue(@NotNull Map<?, ?> map, @NotNull String key, int defaultValue) {
+        Object value = map.get(key);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return defaultValue;
+    }
+
+    private static double getDoubleValue(@NotNull Map<?, ?> map, @NotNull String key, double defaultValue) {
+        Object value = map.get(key);
+        if (value instanceof Number number) {
+            return number.doubleValue();
+        }
+        return defaultValue;
     }
 }
 ```
@@ -877,24 +849,23 @@ Full sequence from catch to mob appearing:
 
 ```
 Player catches fish (PlayerFishEvent CAUGHT_FISH/CAUGHT_ENTITY)
-  → FishingMobSpawnTracker.onPlayerFish()
-    → Check: world allowed? biome allowed? active mob cap reached?
-    → Update spawn chance based on hook proximity
-    → Fire FishingMobSpawnChanceUpdateEvent (cancellable)
-    → Roll against currentSpawnChance
-    → On success:
-      → MobPoolSelector.select() — weighted random from eligible entries
-      → Calculate spawn location (offset from hook)
-      → MythicMobs API: spawn mob at location
-      → Tag entity with FISHING_MOB_KEY + ANGLER_UUID_KEY (PDC)
-      → state.addActiveMob(entityUUID)
-      → state.setCurrentSpawnChance(baseChance)
-      → FishingMobDespawnScheduler.schedule()
-      → [MythicMobs fires MythicMobSpawnEvent internally]
-        → MythicMobsListener.onMythicMobSpawn() (existing code)
-          → Reads PDC tags, finds angler
-          → Fires FishingMobSpawnEvent (cancellable)
-          → If cancelled: entity.remove()
+  -> FishingMobSpawnTracker.onPlayerFish()
+    -> Check: world allowed? biome allowed? active mob cap reached?
+    -> Update spawn chance based on hook proximity
+    -> Fire FishingMobSpawnChanceUpdateEvent (cancellable)
+    -> Roll against currentSpawnChance
+    -> On success:
+      -> mobPoolSelector.select() — weighted random from eligible entries
+      -> Calculate spawn location (offset from hook)
+      -> MythicMobs API: spawn mob at location
+      -> Tag entity with FISHING_MOB_KEY + ANGLER_UUID_KEY (PDC)
+      -> state.addActiveMob(entityUUID)
+      -> state.setCurrentSpawnChance(baseChance)
+      -> [MythicMobs fires MythicMobSpawnEvent internally]
+        -> MythicMobsListener.onMythicMobSpawn() (existing code)
+          -> Reads PDC tags, finds angler
+          -> Fires FishingMobSpawnEvent (cancellable)
+          -> If cancelled: entity.remove()
 ```
 
 ### Why PDC Tags Instead of a Tracking Map?
@@ -908,192 +879,32 @@ The tracker adds the tracking `Map<UUID, PlayerFishingState>` for spawn-chance m
 
 ---
 
-## 8. Despawn Scheduling
-
-**File:** `src/main/java/us/eunoians/mcrpg/fishing/FishingMobDespawnScheduler.java`
-
-Manages scheduled despawn tasks for fishing mobs. Each mob can have up to two tasks: a max-lifetime timer and a periodic threat-table check.
-
-```java
-package us.eunoians.mcrpg.fishing;
-
-import com.diamonddagger590.mccore.registry.RegistryKey;
-import dev.dejvokep.boostedyaml.YamlDocument;
-import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.core.mobs.ActiveMob;
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-/**
- * Manages scheduled despawn tasks for fishing mobs spawned by the
- * {@link FishingMobSpawnTracker}. Each mob can have:
- * <ul>
- *   <li>A max-lifetime timer — forces despawn after N seconds regardless</li>
- *   <li>A periodic threat-table check — despawns when no players are engaged for N seconds</li>
- * </ul>
- * <p>
- * Uses Bukkit scheduler directly since the tasks are simple delayed/repeating runnables
- * and McCore's task abstractions are not strictly needed for this use case.
- */
-public final class FishingMobDespawnScheduler {
-
-    private static final Map<UUID, ScheduledDespawn> activeTasks = new ConcurrentHashMap<>();
-
-    private FishingMobDespawnScheduler() {}
-
-    /**
-     * Schedules despawn tasks for a fishing mob based on the despawn config.
-     *
-     * @param plugin  the McRPG plugin instance
-     * @param mobUUID the UUID of the spawned mob entity
-     * @param config  the fishing mob spawn configuration
-     */
-    public static void schedule(@NotNull McRPG plugin,
-                                @NotNull UUID mobUUID,
-                                @NotNull YamlDocument config) {
-        int maxLifetime = config.getInt(FishingMobSpawnConfigFile.DESPAWN_MAX_LIFETIME_SECONDS, 300);
-        boolean despawnIfNoThreat = config.getBoolean(FishingMobSpawnConfigFile.DESPAWN_IF_NO_THREAT, true);
-        int noThreatDelay = config.getInt(FishingMobSpawnConfigFile.DESPAWN_NO_THREAT_DELAY_SECONDS, 30);
-        int checkInterval = config.getInt(FishingMobSpawnConfigFile.DESPAWN_THREAT_CHECK_INTERVAL_SECONDS, 5);
-
-        BukkitTask lifetimeTask = null;
-        BukkitTask threatCheckTask = null;
-
-        // Max lifetime timer
-        if (maxLifetime > 0) {
-            lifetimeTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                despawnMob(mobUUID, "max lifetime exceeded (" + maxLifetime + "s)");
-            }, maxLifetime * 20L);
-        }
-
-        // Periodic threat table check
-        if (despawnIfNoThreat) {
-            long intervalTicks = checkInterval * 20L;
-            final int[] emptyThreatTicks = {0}; // Mutable counter for lambda
-
-            threatCheckTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (!isMobAlive(mobUUID)) {
-                    cancel(mobUUID);
-                    return;
-                }
-
-                boolean hasTargets = hasThreatTargets(mobUUID);
-                if (hasTargets) {
-                    emptyThreatTicks[0] = 0;
-                } else {
-                    emptyThreatTicks[0] += checkInterval;
-                    if (emptyThreatTicks[0] >= noThreatDelay) {
-                        despawnMob(mobUUID, "no threat targets for " + noThreatDelay + "s");
-                    }
-                }
-            }, intervalTicks, intervalTicks);
-        }
-
-        if (lifetimeTask != null || threatCheckTask != null) {
-            activeTasks.put(mobUUID, new ScheduledDespawn(
-                    lifetimeTask != null ? lifetimeTask.getTaskId() : -1,
-                    threatCheckTask != null ? threatCheckTask.getTaskId() : -1));
-        }
-    }
-
-    /**
-     * Cancels all pending despawn tasks for a mob.
-     *
-     * @param mobUUID the UUID of the mob entity
-     */
-    public static void cancel(@NotNull UUID mobUUID) {
-        ScheduledDespawn scheduled = activeTasks.remove(mobUUID);
-        if (scheduled != null) {
-            if (scheduled.lifetimeTaskId != -1) {
-                Bukkit.getScheduler().cancelTask(scheduled.lifetimeTaskId);
-            }
-            if (scheduled.threatCheckTaskId != -1) {
-                Bukkit.getScheduler().cancelTask(scheduled.threatCheckTaskId);
-            }
-        }
-    }
-
-    private static void despawnMob(@NotNull UUID mobUUID, @NotNull String reason) {
-        cancel(mobUUID);
-        Optional<ActiveMob> activeMob = MythicBukkit.inst().getMobManager().getActiveMob(mobUUID);
-        if (activeMob.isPresent()) {
-            activeMob.get().despawn();
-            McRPG.getInstance().getLogger().fine("Despawned fishing mob " + mobUUID + ": " + reason);
-        }
-    }
-
-    private static boolean isMobAlive(@NotNull UUID mobUUID) {
-        return MythicBukkit.inst().getMobManager().getActiveMob(mobUUID).isPresent();
-    }
-
-    private static boolean hasThreatTargets(@NotNull UUID mobUUID) {
-        Optional<ActiveMob> activeMob = MythicBukkit.inst().getMobManager().getActiveMob(mobUUID);
-        if (activeMob.isPresent() && activeMob.get().hasThreatTable()) {
-            return !activeMob.get().getThreatTable().getAllThreatTargets().isEmpty();
-        }
-        return false;
-    }
-
-    private record ScheduledDespawn(int lifetimeTaskId, int threatCheckTaskId) {}
-}
-```
-
-### Design Decisions
-
-**Bukkit scheduler instead of McCore tasks:** The existing codebase uses both patterns. McCore tasks (`DelayableCoreTask`, `CancelableCoreTask`) are used for recurring system tasks (save task, rested XP, etc.), while Bukkit scheduler is used for one-shot or simple repeating tasks. The despawn scheduler uses Bukkit directly because:
-1. The tasks are isolated and simple
-2. No McCore task lifecycle benefits are needed
-3. Bukkit's `runTaskLater` / `runTaskTimer` are straightforward for this use case
-
-**`ConcurrentHashMap`:** Same reasoning as LLD-1 — defensive concurrent access pattern for task ID tracking.
-
-### Server Restart Resilience
-
-Same behavior documented in LLD-1 Section 12:
-- McRPG's in-memory despawn tasks are lost on shutdown
-- MythicMobs persists its mobs and re-fires `MythicMobSpawnEvent` on startup
-- `MythicMobsListener` will fire `FishingMobSpawnEvent` for persisted mobs
-- However, the `FishingMobSpawnTracker` won't have per-player state, so the mob continues to live under MM's own rules
-- The `max-lifetime-seconds` despawn won't restart automatically. This is acceptable — orphaned mobs will eventually despawn via MM's native rules or the threat-table check (empty → despawn)
-- For stronger restart resilience, a future pass could persist active mob UUIDs and re-schedule despawn on startup
-
----
-
-## 9. Death Callback Integration
+## 8. Death Callback Integration
 
 When a fishing mob dies:
 
 ```
 MythicMobDeathEvent (from MythicMobs)
-  → MythicMobsListener.onMythicMobDeath() [existing code]
-    → Reads PDC: FISHING_MOB_KEY present?
-    → Fires FishingMobDeathEvent
-      → FishingMobSpawnTracker.onFishingMobDeath() [new code]
-        → Finds owning player in playerStates
-        → Removes mob UUID from activeMobUUIDs
-        → Resets currentSpawnChance to post-kill-chance
-        → Cancels despawn tasks via FishingMobDespawnScheduler.cancel()
+  -> MythicMobsListener.onMythicMobDeath() [existing code]
+    -> Reads PDC: FISHING_MOB_KEY present?
+    -> Fires FishingMobDeathEvent
+      -> FishingMobSpawnTracker.onFishingMobDeath() [new code]
+        -> Finds owning player in playerStates
+        -> Removes mob UUID from activeMobUUIDs
+        -> Resets currentSpawnChance to post-kill-chance
 ```
 
 The integration is event-driven. The tracker doesn't need to know about `MythicMobDeathEvent` — it only listens to the McRPG-domain `FishingMobDeathEvent`.
 
-### Despawn vs. Death
+### Death vs. Despawn
 
-When MythicMobs despawns a mob (via `ActiveMob.despawn()`), it fires `MythicMobDeathEvent`. The existing `MythicMobsListener` checks PDC tags, which survive despawn, so `FishingMobDeathEvent` is fired for both death and despawn. The tracker handles both cases identically — remove from tracking and cancel tasks.
+When MythicMobs despawns a mob (via `ActiveMob.despawn()`, `~onTimer`, or `~onDropCombat`), it fires `MythicMobDeathEvent`. The existing `MythicMobsListener` checks PDC tags, which survive despawn, so `FishingMobDeathEvent` is fired for both death and despawn. The tracker handles both cases identically — remove from tracking state.
 
 ---
 
-## 10. Custom Events
+## 9. Custom Events
 
-### 10.1 FishingMobSpawnChanceUpdateEvent (New)
+### 9.1 FishingMobSpawnChanceUpdateEvent (New)
 
 **File:** `src/main/java/us/eunoians/mcrpg/event/fishing/FishingMobSpawnChanceUpdateEvent.java`
 
@@ -1215,7 +1026,7 @@ public class FishingMobSpawnChanceUpdateEvent extends Event implements Cancellab
 }
 ```
 
-### 10.2 Existing Events (No Changes)
+### 9.2 Existing Events (No Changes)
 
 These events from LLD-1 implementation are used as-is:
 
@@ -1224,7 +1035,7 @@ These events from LLD-1 implementation are used as-is:
 | `FishingMobSpawnEvent` | `MythicMobsListener` | Third-party plugins (cancellable) |
 | `FishingMobDeathEvent` | `MythicMobsListener` | `FishingMobSpawnTracker` (cleanup) |
 
-### 10.3 Event Summary
+### 9.3 Event Summary
 
 | Event | When | Cancellable | Mutable Fields |
 |---|---|---|---|
@@ -1234,9 +1045,9 @@ These events from LLD-1 implementation are used as-is:
 
 ---
 
-## 11. Bootstrap Registration
+## 10. Bootstrap Registration
 
-### 11.1 Listener Registration
+### 10.1 Listener Registration
 
 **Modified file:** `us.eunoians.mcrpg.bootstrap.McRPGListenerRegistrar`
 
@@ -1255,15 +1066,15 @@ if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPl
 }
 ```
 
-### 11.2 Registration Order
+### 10.2 Registration Order
 
 ```
 FileManager init (loads fishing_mob_spawn_configuration.yml via FileType)
-  → McRPGListenerRegistrar
-    → MythicMobsListener registered (if MM present) [existing]
-    → FishingMobSpawnTracker registered (if MM present AND spawn enabled) [new]
-  → McRPGHooksRegistrar
-    → MythicMobsHook registered (if MM present) [existing]
+  -> McRPGListenerRegistrar
+    -> MythicMobsListener registered (if MM present) [existing]
+    -> FishingMobSpawnTracker registered (if MM present AND spawn enabled) [new]
+  -> McRPGHooksRegistrar
+    -> MythicMobsHook registered (if MM present) [existing]
 ```
 
 Note: The listener registrar runs before the hooks registrar in `McRPGBootstrap`. However, the tracker's conditional check uses `RegistryKey.PLUGIN_HOOK` which requires the hook to be registered. Looking at the current bootstrap order:
@@ -1294,7 +1105,7 @@ This ensures the MythicMobs hook is available when the listener registrar checks
 
 ---
 
-## 12. Anti-Cheese Analysis
+## 11. Anti-Cheese Analysis
 
 The spawn system's anti-cheese properties come from the asymmetric increment/decrement design:
 
@@ -1302,18 +1113,18 @@ The spawn system's anti-cheese properties come from the asymmetric increment/dec
 |---|---|---|
 | **AFK same spot** | Chance accumulates: +0.02 per catch | Mob eventually spawns — **intended behavior**, not cheese (mob is the anti-AFK measure) |
 | **Small movement (1-2 blocks)** | Still within `same-area-range` (10 blocks) | Same as AFK — chance still accumulates |
-| **Alternating two spots (>10 blocks apart)** | Alternates +0.02 and -0.05 per catch | Net -0.03 per cycle → chance decreases → **defeats the exploit** |
-| **Teleporting between distant spots** | Each teleport triggers decrement | Rapid chance decay → **defeats the exploit** |
+| **Alternating two spots (>10 blocks apart)** | Alternates +0.02 and -0.05 per catch | Net -0.03 per cycle -> chance decreases -> **defeats the exploit** |
+| **Teleporting between distant spots** | Each teleport triggers decrement | Rapid chance decay -> **defeats the exploit** |
 | **Fishing in new area then returning** | Decrement away, increment on return | Player loses progress — must rebuild chance in the original area |
 | **Multiple players in same area** | Fully independent tracking | Each player accumulates independently — no sharing or amplification |
 | **Kill mob, immediately fish again** | Chance resets to `post-kill-chance` (0.0) | Must rebuild chance from scratch — **intended pacing** |
 | **Ignore mob, keep fishing** | `max-active-mobs-per-player` cap (default 1) | No more spawns until mob dies/despawns — **prevents mob stacking** |
-| **Lure mob to pen/trap for later** | `max-lifetime-seconds` (300s) forces despawn | Mob eventually disappears — **prevents mob storage** |
-| **All players leave area** | ThreatTable empties → grace period → despawn | Mob cleaned up — **prevents orphaned mobs** |
+| **Lure mob to pen/trap** | MM's `~onTimer` forces despawn after TTL | Mob eventually disappears — **MM handles this natively** |
+| **All players leave area** | MM's `~onDropCombat` empties ThreatTable -> despawn | Mob cleaned up — **MM handles this natively** |
 
 ### Tuning Levers for Server Owners
 
-All anti-cheese values are config-driven:
+McRPG config controls spawn behavior:
 
 | Config Key | Anti-Cheese Role |
 |---|---|
@@ -1322,23 +1133,28 @@ All anti-cheese values are config-driven:
 | `chance-decrement-per-catch` | Controls how strongly movement resets progress |
 | `post-kill-chance` | Higher = faster re-spawns after kills |
 | `max-active-mobs-per-player` | Prevents mob stacking |
-| `max-lifetime-seconds` | Prevents mob storage |
-| `despawn-if-no-threat` + delay | Cleans up abandoned mobs |
+
+MythicMobs mob config controls despawn behavior:
+
+| MM Config | Anti-Cheese Role |
+|---|---|
+| `~onTimer` skill with `remove` mechanic | Max lifetime — prevents mob storage |
+| `~onDropCombat` skill with `remove` mechanic | Cleans up abandoned mobs when ThreatTable empties |
 
 ---
 
-## 13. Edge Cases & Graceful Degradation
+## 12. Edge Cases & Graceful Degradation
 
 | Scenario | Behavior |
 |---|---|
-| MythicMobs not installed | `MythicMobsHook` not registered → tracker not registered → system is inert |
-| MythicMobs installed but mob type not registered | `getMythicMob()` returns empty → warning logged → spawn attempt silently fails |
-| Fishing mob spawn system disabled in config | Tracker not registered → system is inert |
-| Empty mob pool | `MobPoolSelector.select()` returns empty → no spawn → no error |
+| MythicMobs not installed | `MythicMobsHook` not registered -> tracker not registered -> system is inert |
+| MythicMobs installed but mob type not registered | `getMythicMob()` returns empty -> warning logged -> spawn attempt silently fails |
+| Fishing mob spawn system disabled in config | Tracker not registered -> system is inert |
+| Empty mob pool | `MobPoolSelector.select()` returns empty -> no spawn -> no error |
 | All pool entries have threshold above current chance | Same as empty pool — no eligible entries |
-| Player logs out with active mob | State discarded. Mob continues living under MM rules. Despawn timer (if still running as a Bukkit task) will eventually clean it up |
-| Player logs out and back in | Fresh state. Active mob from previous session is "orphaned" but handled by despawn timer |
-| Server restart with living fishing mob | MM persists the mob. `MythicMobsListener` fires events on re-spawn. Tracker has no state (fresh session). Mob lives under MM rules + no despawn timer. Acceptable — mob will eventually die or MM will handle it |
+| Player logs out with active mob | State discarded. Mob continues living under MM rules. MM's `~onTimer`/`~onDropCombat` skills handle cleanup |
+| Player logs out and back in | Fresh state. Active mob from previous session is "orphaned" but handled by MM's despawn skills |
+| Server restart with living fishing mob | MM persists the mob. `MythicMobsListener` fires events on re-spawn. Tracker has no state (fresh session). Mob lives under MM rules. Acceptable — MM's despawn skills handle cleanup |
 | Catch event with null hook | Early return in `onPlayerFish()` — no processing |
 | World change | `lastHookLocation` nulled. Optionally resets chance (config-driven) |
 | Biome/world not in allowed list | Catch event ignored — no chance update, no spawn |
@@ -1347,28 +1163,28 @@ All anti-cheese values are config-driven:
 
 ### Config Reload Behavior
 
-Most config values are read live from the `YamlDocument` on each event, so they take effect immediately on `/mcrpg reload`. The exception is `mob-pool`, which is parsed once in the constructor into an immutable list. To support live pool changes, the tracker would need to be re-created on reload. This could be added as a `ReloadableContent` pattern, but is deferred to a future pass since mob pool changes are rare (typically require a server restart anyway to ensure MM has the new mob type registered).
+Most config values are read live from the `YamlDocument` on each event, so they take effect immediately on `/mcrpg reload`. The exception is `mob-pool`, which is parsed once in the constructor into an immutable list inside `MobPoolSelector`. To support live pool changes, the tracker would need to be re-created on reload. This could be added as a `ReloadableContent` pattern, but is deferred to a future pass since mob pool changes are rare (typically require a server restart anyway to ensure MM has the new mob type registered).
 
 ---
 
-## 14. Test Plan
+## 13. Test Plan
 
-### 14.1 Unit Tests (src/test/java)
+### 13.1 Unit Tests (src/test/java)
 
 | Test Class | Tests |
 |---|---|
-| `MobPoolSelectorTest` | Weighted selection with single entry, multiple entries, all entries filtered by threshold, equal weights, zero total weight, empty pool |
-| `MobPoolLoaderTest` | Parse valid pool entries, missing mob ID, zero weight (skipped), missing fields use defaults, empty pool list, non-map entries |
+| `MobPoolSelectorTest` | Weighted selection with single entry, multiple entries, all entries filtered by threshold, equal weights, zero total weight, empty pool, `hasEntries()` |
 | `PlayerFishingStateTest` | Initial state values, chance get/set, last hook location get/set/null, active mob add/remove/count, getActiveMobUUIDs immutability |
 | `MobPoolEntryTest` | Record accessor correctness |
 
-### 14.2 Tests Requiring MockBukkit (extend McRPGBaseTest)
+### 13.2 Tests Requiring MockBukkit (extend McRPGBaseTest)
 
 | Test Class | Tests |
 |---|---|
 | `FishingMobSpawnChanceUpdateEventTest` | Event creation, cancellation, newChance modification, handler list |
+| `FishingMobSpawnTrackerTest` | Mob pool loading from config: valid entries, missing mob ID, zero weight (skipped), missing fields use defaults, empty pool list, non-map entries |
 
-### 14.3 Manual Testing (Paper Server with MythicMobs)
+### 13.3 Manual Testing (Paper Server with MythicMobs)
 
 | Scenario | Verification |
 |---|---|
@@ -1377,30 +1193,26 @@ Most config values are read live from the `YamlDocument` on each event, so they 
 | Alternate between two distant spots | Net chance decrease over time |
 | Kill spawned mob | Chance resets to `post-kill-chance`. Can rebuild chance again |
 | Let mob live, keep fishing | No more spawns once `max-active-mobs-per-player` reached |
-| Log out with active mob | State discarded. Mob eventually despawns via timer |
+| Log out with active mob | State discarded. Mob eventually despawns via MM skills |
 | Fish in disallowed world | No chance updates, no spawns |
 | Fish in disallowed biome | No chance updates, no spawns |
 | Disable system in config + reload | No fishing mob spawns |
 | Empty mob pool in config | No spawns, no errors |
 | MM not installed | System doesn't register, no errors |
 | Server restart with living mob | Mob persists (MM), tracker has fresh state |
-| Mob despawn by max lifetime | Mob disappears after configured seconds |
-| Mob despawn by empty threat table | Mob disappears after grace period when player leaves area |
 
 ---
 
-## 15. File Manifest
+## 14. File Manifest
 
 ### New Files
 
 | File | Type | Description |
 |---|---|---|
-| `fishing/FishingMobSpawnTracker.java` | Listener | Core tracker — listens to fish/death/quit/world events |
+| `fishing/FishingMobSpawnTracker.java` | Listener | Core tracker — listens to fish/death/quit/world events, loads mob pool |
 | `fishing/PlayerFishingState.java` | Data | Per-player session state (chance, hook location, active mobs) |
 | `fishing/MobPoolEntry.java` | Record | Single weighted mob pool entry |
-| `fishing/MobPoolSelector.java` | Utility | Weighted random selection from eligible pool entries |
-| `fishing/MobPoolLoader.java` | Utility | Parses mob pool from YAML config |
-| `fishing/FishingMobDespawnScheduler.java` | Utility | Schedules max-lifetime and threat-check despawn tasks |
+| `fishing/MobPoolSelector.java` | Selector | Instantiable weighted random selection from eligible pool entries |
 | `configuration/file/FishingMobSpawnConfigFile.java` | Config | Route constants for fishing mob spawn config |
 | `event/fishing/FishingMobSpawnChanceUpdateEvent.java` | Event | Fired before spawn chance changes (cancellable) |
 | `src/main/resources/fishing_mob_spawn_configuration.yml` | YAML | Default fishing mob spawn configuration |
@@ -1413,14 +1225,14 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 |---|---|
 | `configuration/FileType.java` | Add `FISHING_MOB_SPAWN_CONFIG` entry |
 | `bootstrap/McRPGListenerRegistrar.java` | Add conditional `FishingMobSpawnTracker` registration |
-| `bootstrap/McRPGBootstrap.java` | **Potentially** swap hooks/listener registration order (see Section 11.2) |
+| `bootstrap/McRPGBootstrap.java` | **Potentially** swap hooks/listener registration order (see Section 10.2) |
 
 ### Not Modified (Used As-Is)
 
 | File | Role |
 |---|---|
 | `external/mythicmobs/MythicMobsHook.java` | Presence check for conditional registration |
-| `external/mythicmobs/MythicMobsListener.java` | Bridges MM events → fires `FishingMobSpawnEvent`/`FishingMobDeathEvent` |
+| `external/mythicmobs/MythicMobsListener.java` | Bridges MM events -> fires `FishingMobSpawnEvent`/`FishingMobDeathEvent` |
 | `external/mythicmobs/FishingMobKeys.java` | PDC key constants applied to spawned mobs |
 | `event/fishing/FishingMobSpawnEvent.java` | Cancellable spawn event (fired by `MythicMobsListener`) |
 | `event/fishing/FishingMobDeathEvent.java` | Death event (consumed by tracker for cleanup) |
