@@ -87,7 +87,7 @@ Of the four mob abilities, only **two** drop as skill books (player-unlockable a
 | Waterlogged Strike | No | A generic ranged projectile doesn't feel "special" as an unlock |
 | Tsunami Wall | No | Particle wall mechanic is mob-centric, poor player UX |
 
-All four abilities exist as MythicMobs skills on the mob itself — the mob uses them all in combat. Only the two marked above appear in the drop table as `mcrpg_skillbook` entries.
+All four abilities are McRPG abilities executed via the `mcrpg_ability` mechanic — the mob uses them all in combat. Only the two marked above appear in the drop table as `mcrpg_skillbook` entries (player-unlockable).
 
 ### 2.3 Rarity-Differentiated Drop Rates
 
@@ -134,7 +134,7 @@ This means:
 - **Balance is centralized** — tuning an ability in McRPG automatically applies to mob and (future) player versions
 - **McRPG events fire** — `AbilityActivateEvent` etc. can be observed by quests, stats, and other systems
 - **`AbilityHolder` is entity-agnostic** — the existing holder hierarchy supports non-player entities by design (see CLAUDE.md)
-- **McRPG is required** — Phase Shift and Whirlpool are purely `mcrpg_ability` driven. If McRPG is removed or the abilities aren't registered, those skills become no-ops (MM logs unknown mechanic). The mob still spawns and uses Waterlogged Strike + Tsunami Wall (pure MM) plus melee, but loses two of its four combat abilities. This is acceptable — the mob is an McRPG feature and is designed to require McRPG.
+- **McRPG is required** — all four combat abilities are purely `mcrpg_ability` driven. If McRPG is removed or the abilities aren't registered, all skills become no-ops (MM logs unknown mechanic) and the mob is melee-only. This is acceptable — the mob is an McRPG feature and is designed to require McRPG.
 
 ### 2.7 Despawn Owned by MythicMobs
 
@@ -193,7 +193,7 @@ RiptideGuardian:
 
 ## 4. Mob Abilities (MythicMobs Skills)
 
-All four abilities from the HLD are present in the mob's combat kit. Two of them (Phase Shift, Whirlpool) are implemented purely via the `mcrpg_ability` custom mechanic — McRPG owns all execution (VFX, damage, effects, events) while MM owns AI/targeting/cooldowns. The other two (Waterlogged Strike, Tsunami Wall) are pure-MM skills because they don't have player ability equivalents and would gain nothing from the bridge. There are no MM fallbacks for the McRPG-driven abilities — they require McRPG to function.
+All four abilities from the HLD are present in the mob's combat kit. All four are implemented via the `mcrpg_ability` custom mechanic — McRPG owns all execution (VFX, damage, effects, events) while MM owns AI/targeting/cooldowns. This keeps the entire combat system internal to McRPG, making balance changes, event tracking, and future extensibility consistent across all abilities. The mob requires McRPG to function with its full combat kit.
 
 ### Custom Mechanic: `mcrpg_ability`
 
@@ -334,7 +334,7 @@ Whirlpool:
 - McRPG controls all tunable values: damage per tick, radius, duration, slowness level
 - Same no-op behavior as Phase Shift if the ability isn't registered yet
 
-### 4.3 Waterlogged Strike
+### 4.3 Waterlogged Strike (mcrpg_ability)
 
 **Purpose:** Ranged projectile that punishes bow kiting at mid-range.
 
@@ -345,33 +345,18 @@ Whirlpool:
 ```yaml
 WaterloggedStrike:
   Skills:
-  - projectile{ot=WaterloggedStrikeTrail;oh=WaterloggedStrikeHit;v=8;i=1;d=40;mr=20;g=false;se=true;sb=true;sfo=false} @target
-  - sound{s=entity.drowned.shoot;v=1.0;p=0.8} @self
+  - mcrpg_ability{ability=mcrpg:waterlogged_strike} @target
   Cooldown: 6
   Conditions:
   - distance{d=5to15} @target
-
-WaterloggedStrikeTrail:
-  Skills:
-  - effect:particles{particle=DRIPPING_WATER;amount=5;speed=0.1;xSpread=0.2;ySpread=0.2;zSpread=0.2} @origin
-
-WaterloggedStrikeHit:
-  Skills:
-  - damage{a=6;pk=true} @target
-  - potion{t=SLOWNESS;d=80;l=0} @target
-  - effect:particles{particle=SPLASH;amount=20;speed=0.5;xSpread=0.5;ySpread=0.5;zSpread=0.5} @target
-  - sound{s=entity.generic.splash;v=1.0;p=1.2} @target
 ```
 
 **Notes:**
-- Projectile speed `v=8` is fast but dodgeable (comparable to a skeleton arrow)
-- `mr=20` max range prevents the projectile from traveling indefinitely
-- `se=true` stops on hitting an entity, `sb=true` stops on hitting a block
-- Damage: 6 (3 hearts) matching HLD spec
-- Slowness I (`l=0`) for 4 seconds (`d=80` ticks)
-- `DRIPPING_WATER` trail gives visual warning of incoming projectile
+- Purely driven by McRPG — projectile spawning, trail VFX, hit damage (6 / 3 hearts), slowness, and impact effects are all handled inside `Ability.executeMobAbility()`
+- McRPG controls projectile speed, max range, damage, and slowness duration
+- Same no-op behavior as Phase Shift if the ability isn't registered yet
 
-### 4.4 Tsunami Wall
+### 4.4 Tsunami Wall (mcrpg_ability)
 
 **Purpose:** Blocks retreat when the mob is wounded, forcing continued engagement.
 
@@ -382,29 +367,18 @@ WaterloggedStrikeHit:
 ```yaml
 TsunamiWall:
   Skills:
-  - sound{s=entity.elder_guardian.curse;v=1.0;p=0.6} @self
-  - projectile{ot=TsunamiWallTick;i=5;d=80;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @forward{f=4;y=0}
+  - mcrpg_ability{ability=mcrpg:tsunami_wall} @target
   Cooldown: 15
   Conditions:
   - health{h=<50%}
   TargetConditions:
   - distance{d=<10} @target
-
-TsunamiWallTick:
-  Skills:
-  - effect:particles{particle=SPLASH;amount=40;speed=0.3;xSpread=2.5;ySpread=1.5;zSpread=0.3} @origin
-  - effect:particles{particle=ENCHANTMENT_TABLE;amount=15;speed=0.2;xSpread=2.0;ySpread=1.0;zSpread=0.2} @origin
-  - potion{t=SLOWNESS;d=60;l=2} @PlayersInRadius{r=3}
-  - throw{v=1.5;vy=0.4} @PlayersInRadius{r=3}
 ```
 
 **Notes:**
-- Placed 4 blocks in front of the mob (`@forward{f=4}`) — between the mob and the retreating player
-- Stationary projectile anchor like Whirlpool, lasting 4 seconds (`d=80` ticks)
-- `SPLASH` + `ENCHANTMENT_TABLE` particles create a shimmering water wall effect
-- Slowness III (`l=2`) on contact for 3 seconds (`d=60`)
-- `throw{v=1.5;vy=0.4}` provides moderate knockback on contact
+- Purely driven by McRPG — wall placement, particle VFX, slowness, knockback, and duration are all handled inside `Ability.executeMobAbility()`
 - Only triggers below 50% HP and when target is within 10 blocks (no wall if target already far away)
+- Same no-op behavior as Phase Shift if the ability isn't registered yet
 
 ### AI Priority (Skill List Order)
 
@@ -412,15 +386,15 @@ MythicMobs evaluates skills top-to-bottom. The first skill whose conditions are 
 
 ```yaml
 Skills:
-- skill:PhaseShift        # Priority 1: unreachable target (mcrpg_ability)
-- skill:WaterloggedStrike # Priority 2: mid-range target (pure MM)
-- skill:Whirlpool         # Priority 3: close-range target (mcrpg_ability)
-- skill:TsunamiWall       # Priority 4: low HP defense (pure MM)
+- skill:PhaseShift        # Priority 1: unreachable target
+- skill:WaterloggedStrike # Priority 2: mid-range target
+- skill:Whirlpool         # Priority 3: close-range target
+- skill:TsunamiWall       # Priority 4: low HP defense
 ```
 
-Melee attacks are handled by MM's default AI — when no skills fire, the mob melees.
+All four skills use `mcrpg_ability`. Melee attacks are handled by MM's default AI — when no skills fire, the mob melees.
 
-**Degraded mode:** If McRPG abilities aren't registered (pre-LLD-6), Phase Shift and Whirlpool are no-ops. The mob still has Waterlogged Strike + Tsunami Wall + melee, making it functional but missing two abilities. This is acceptable — the full combat kit is the intended experience and requires McRPG.
+**Degraded mode:** If McRPG abilities aren't registered (pre-LLD-6), all four skills are no-ops and the mob is melee-only. This is acceptable — the mob is an McRPG feature and its full combat kit requires McRPG.
 
 ---
 
@@ -689,15 +663,16 @@ RiptideGuardian:
 #
 # Riptide Guardian Skills — McRPG Fishing Mob
 #
-# Phase Shift and Whirlpool use the mcrpg_ability mechanic to
+# All four combat abilities use the mcrpg_ability mechanic to
 # delegate execution to McRPG's ability system. McRPG owns all
-# VFX, damage, and effects for these abilities.
+# VFX, damage, effects, and events. MM owns AI (when to fire,
+# cooldowns, conditions, targeting).
 #
-# Waterlogged Strike and Tsunami Wall are pure-MM skills with
-# no McRPG bridge (mob-only abilities, no player equivalent).
+# If McRPG is removed, all skills become no-ops and the mob
+# is melee-only.
 #
 
-# ─── Phase Shift (mcrpg_ability) ────────────────────────────
+# ─── Phase Shift ────────────────────────────────────────────
 
 PhaseShift:
   Skills:
@@ -708,7 +683,16 @@ PhaseShift:
   TargetConditions:
   - lineofsight false
 
-# ─── Whirlpool (mcrpg_ability) ──────────────────────────────
+# ─── Waterlogged Strike ────────────────────────────────────
+
+WaterloggedStrike:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:waterlogged_strike} @target
+  Cooldown: 6
+  Conditions:
+  - distance{d=5to15} @target
+
+# ─── Whirlpool ─────────────────────────────────────────────
 
 Whirlpool:
   Skills:
@@ -717,45 +701,16 @@ Whirlpool:
   Conditions:
   - distance{d=<5} @target
 
-# ─── Waterlogged Strike (pure MM) ──────────────────────────
-
-WaterloggedStrike:
-  Skills:
-  - projectile{ot=WaterloggedStrikeTrail;oh=WaterloggedStrikeHit;v=8;i=1;d=40;mr=20;g=false;se=true;sb=true;sfo=false} @target
-  - sound{s=entity.drowned.shoot;v=1.0;p=0.8} @self
-  Cooldown: 6
-  Conditions:
-  - distance{d=5to15} @target
-
-WaterloggedStrikeTrail:
-  Skills:
-  - effect:particles{particle=DRIPPING_WATER;amount=5;speed=0.1;xSpread=0.2;ySpread=0.2;zSpread=0.2} @origin
-
-WaterloggedStrikeHit:
-  Skills:
-  - damage{a=6;pk=true} @target
-  - potion{t=SLOWNESS;d=80;l=0} @target
-  - effect:particles{particle=SPLASH;amount=20;speed=0.5;xSpread=0.5;ySpread=0.5;zSpread=0.5} @target
-  - sound{s=entity.generic.splash;v=1.0;p=1.2} @target
-
-# ─── Tsunami Wall (pure MM) ────────────────────────────────
+# ─── Tsunami Wall ──────────────────────────────────────────
 
 TsunamiWall:
   Skills:
-  - sound{s=entity.elder_guardian.curse;v=1.0;p=0.6} @self
-  - projectile{ot=TsunamiWallTick;i=5;d=80;v=0;ho=0;vo=0;g=false;se=false;sb=false;sfo=true} @forward{f=4;y=0}
+  - mcrpg_ability{ability=mcrpg:tsunami_wall} @target
   Cooldown: 15
   Conditions:
   - health{h=<50%}
   TargetConditions:
   - distance{d=<10} @target
-
-TsunamiWallTick:
-  Skills:
-  - effect:particles{particle=SPLASH;amount=40;speed=0.3;xSpread=2.5;ySpread=1.5;zSpread=0.3} @origin
-  - effect:particles{particle=ENCHANTMENT_TABLE;amount=15;speed=0.2;xSpread=2.0;ySpread=1.0;zSpread=0.2} @origin
-  - potion{t=SLOWNESS;d=60;l=2} @PlayersInRadius{r=3}
-  - throw{v=1.5;vy=0.4} @PlayersInRadius{r=3}
 
 # ─── Despawn ────────────────────────────────────────────────
 
@@ -1017,8 +972,8 @@ Drops:
 | Scenario | Behavior |
 |----------|----------|
 | MythicMobs not installed | Extraction is skipped (hook check). Mob pool references `RiptideGuardian` but `MythicMobsHook.spawnMob()` returns empty. No crash. |
-| McRPG removed after extraction | Pack files remain on disk. Mob spawns with Waterlogged Strike + Tsunami Wall + melee. `mcrpg_ability` mechanics log "unknown mechanic" (Phase Shift + Whirlpool are no-ops). `mcrpg_skillbook` drops silently fail. |
-| LLD-6 not yet implemented | `mcrpg_ability` returns `CONDITION_FAILED` (ability not in registry). Phase Shift and Whirlpool are no-ops. Mob fights with Waterlogged Strike + Tsunami Wall + melee. |
+| McRPG removed after extraction | Pack files remain on disk. Mob spawns but is melee-only — all `mcrpg_ability` mechanics log "unknown mechanic" and are no-ops. `mcrpg_skillbook` drops silently fail. |
+| LLD-6 not yet implemented | `mcrpg_ability` returns `CONDITION_FAILED` for all four abilities (not in registry). Mob is melee-only until McRPG abilities are registered. |
 | Server owner deletes a pack file | Mob stops spawning (MM can't find type ID). Next McRPG restart re-extracts the missing file. |
 | Server owner modifies pack files | McRPG never overwrites existing files. Modifications are preserved across restarts and updates. |
 | MythicMobs `Packs/McRPG/` directory doesn't exist | Extractor creates it and subdirectories via `Files.createDirectories()`. |
@@ -1083,9 +1038,9 @@ Will define a new `UnlockCondition` interface that replaces the current `Unlocka
 
 Will define the player-side implementations of Phase Shift and Whirlpool as McRPG abilities. These are the abilities unlocked by the skill books dropped by this mob. Key interactions with this LLD:
 
-- **`executeMobAbility()` contract:** LLD-6 must implement the `Ability.executeMobAbility(AbilityHolder, LivingEntity, LivingEntity)` method introduced by `McRPGAbilityMechanic` (this LLD). This is the bridge that allows MM to trigger McRPG ability execution on the mob.
+- **`executeMobAbility()` contract:** LLD-6 must implement the `Ability.executeMobAbility(AbilityHolder, LivingEntity, LivingEntity)` method introduced by `McRPGAbilityMechanic` (this LLD) for all four abilities: Phase Shift, Whirlpool, Waterlogged Strike, and Tsunami Wall. This is the bridge that allows MM to trigger McRPG ability execution on the mob.
 - **Event compatibility pass:** `AbilityActivateEvent` and related events may currently assume player-only context. LLD-6 should audit event fields and listeners to ensure they handle non-player `AbilityHolder` instances (the `AbilityHolder` base class is already entity-agnostic).
-- **Ability activation:** Once LLD-6 registers Phase Shift and Whirlpool in the `AbilityRegistry`, the `mcrpg_ability` mechanic will find them and the mob's full combat kit becomes active. Until then, those two skills are no-ops and the mob fights with Waterlogged Strike + Tsunami Wall + melee only.
+- **Ability activation:** Once LLD-6 registers all four abilities in the `AbilityRegistry`, the `mcrpg_ability` mechanic will find them and the mob's full combat kit becomes active. Until then, the mob is melee-only.
 
 ### Future: Additional Mobs
 
