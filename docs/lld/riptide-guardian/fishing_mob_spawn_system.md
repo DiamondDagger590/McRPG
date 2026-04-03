@@ -488,19 +488,23 @@ package us.eunoians.mcrpg.fishing;
 
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Session-only fishing state for a single player. Tracks spawn chance,
- * last hook location, and active fishing mob UUIDs.
+ * Session-only fishing state for a single player. Tracks the accumulated
+ * spawn chance, last hook location, and the set of currently active fishing
+ * mob UUIDs.
  * <p>
- * This state is never persisted to the database. It is discarded on logout
- * and optionally reset on world change.
+ * This state is <strong>never persisted</strong> to the database. It is
+ * discarded when the player logs out and optionally reset on world change.
+ * <p>
+ * Created lazily via {@link McRPGPlayer#getOrCreateFishingState(double)}
+ * on the player's first catch of the session.
  */
 public class PlayerFishingState {
 
@@ -511,7 +515,8 @@ public class PlayerFishingState {
     /**
      * Creates a new player fishing state with the given initial spawn chance.
      *
-     * @param initialChance the starting spawn chance (typically base-chance from config)
+     * @param initialChance the starting spawn chance, typically the {@code base-chance}
+     *                      value from the fishing mob spawn configuration (0.0–1.0)
      */
     public PlayerFishingState(double initialChance) {
         this.currentSpawnChance = initialChance;
@@ -519,43 +524,94 @@ public class PlayerFishingState {
         this.activeMobUUIDs = new HashSet<>();
     }
 
-    /** Gets the player's current accumulated spawn chance. */
+    /**
+     * Gets the player's current accumulated spawn chance.
+     * <p>
+     * This value increases when the player fishes in the same area and
+     * decreases when they move to a new area.
+     *
+     * @return the current spawn chance, between {@code 0.0} and the configured {@code max-chance}
+     */
     public double getCurrentSpawnChance() {
         return currentSpawnChance;
     }
 
-    /** Sets the player's current spawn chance. */
+    /**
+     * Sets the player's current spawn chance.
+     *
+     * @param chance the new spawn chance value
+     */
     public void setCurrentSpawnChance(double chance) {
         this.currentSpawnChance = chance;
     }
 
-    /** Gets the last known hook location, or null if no fishing has occurred yet. */
-    @Nullable
-    public Location getLastHookLocation() {
-        return lastHookLocation;
+    /**
+     * Gets the last known hook location for this player.
+     * <p>
+     * Used to determine whether consecutive casts are in the "same area"
+     * (within {@code same-area-range} blocks). Empty if the player has not
+     * yet cast or if the location was cleared on world change.
+     *
+     * @return the last hook location, or empty if no fishing has occurred yet
+     */
+    @NotNull
+    public Optional<Location> getLastHookLocation() {
+        return Optional.ofNullable(lastHookLocation);
     }
 
-    /** Sets the last known hook location, or null to clear. */
-    public void setLastHookLocation(@Nullable Location location) {
-        this.lastHookLocation = location;
+    /**
+     * Sets the last known hook location. Pass {@code null} to clear
+     * (e.g. on world change).
+     *
+     * @param location the hook location, or {@code null} to clear
+     */
+    public void setLastHookLocation(@NotNull Optional<Location> location) {
+        this.lastHookLocation = location.orElse(null);
     }
 
-    /** Adds a mob UUID to the active set. */
+    /**
+     * Clears the last known hook location.
+     */
+    public void clearLastHookLocation() {
+        this.lastHookLocation = null;
+    }
+
+    /**
+     * Adds a mob UUID to the set of active fishing mobs owned by this player.
+     *
+     * @param mobUUID the entity UUID of the spawned fishing mob
+     */
     public void addActiveMob(@NotNull UUID mobUUID) {
         activeMobUUIDs.add(mobUUID);
     }
 
-    /** Removes a mob UUID from the active set. Returns true if it was present. */
+    /**
+     * Removes a mob UUID from the active set. Called when the mob dies or despawns.
+     *
+     * @param mobUUID the entity UUID of the mob to remove
+     * @return {@code true} if the mob was in the active set and was removed
+     */
     public boolean removeActiveMob(@NotNull UUID mobUUID) {
         return activeMobUUIDs.remove(mobUUID);
     }
 
-    /** Gets the number of currently active fishing mobs. */
+    /**
+     * Gets the number of currently active fishing mobs for this player.
+     * <p>
+     * Compared against {@code max-active-mobs-per-player} to determine
+     * whether new spawns are allowed.
+     *
+     * @return the active mob count (zero or greater)
+     */
     public int getActiveMobCount() {
         return activeMobUUIDs.size();
     }
 
-    /** Gets an unmodifiable view of the active mob UUIDs. */
+    /**
+     * Gets an unmodifiable view of the active fishing mob UUIDs.
+     *
+     * @return an unmodifiable set of active mob entity UUIDs
+     */
     @NotNull
     public Set<UUID> getActiveMobUUIDs() {
         return Collections.unmodifiableSet(activeMobUUIDs);
@@ -575,9 +631,14 @@ private PlayerFishingState fishingState;
 
 /**
  * Gets the player's fishing state, creating it lazily if needed.
+ * <p>
+ * This is the primary entry point for the fishing mob spawn system.
+ * On the player's first catch of the session, this creates a fresh
+ * {@link PlayerFishingState} with the given initial chance.
  *
  * @param initialChance the initial spawn chance if state needs to be created
- * @return the player's fishing state
+ *                      (typically {@code base-chance} from config)
+ * @return the player's fishing state, never empty
  */
 @NotNull
 public PlayerFishingState getOrCreateFishingState(double initialChance) {
@@ -590,15 +651,16 @@ public PlayerFishingState getOrCreateFishingState(double initialChance) {
 /**
  * Gets the player's fishing state if it exists.
  *
- * @return the fishing state, or null if the player has not fished this session
+ * @return the fishing state, or empty if the player has not fished this session
  */
-@Nullable
-public PlayerFishingState getFishingState() {
-    return fishingState;
+@NotNull
+public Optional<PlayerFishingState> getFishingState() {
+    return Optional.ofNullable(fishingState);
 }
 
 /**
- * Resets the player's fishing state. Called on logout or when a full reset is needed.
+ * Resets the player's fishing state. Called on logout or when a full
+ * reset is needed (e.g. world change with reset enabled).
  */
 public void resetFishingState() {
     this.fishingState = null;
@@ -726,7 +788,7 @@ public class FishingMobSpawnListener implements Listener {
 
         // Update chance based on proximity to last hook
         updateSpawnChance(player, state, hookLocation);
-        state.setLastHookLocation(hookLocation);
+        state.setLastHookLocation(Optional.of(hookLocation));
 
         // Roll for spawn
         double roll = ThreadLocalRandom.current().nextDouble();
@@ -754,12 +816,11 @@ public class FishingMobSpawnListener implements Listener {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER)
                 .getPlayer(anglerUUID)
-                .ifPresent(mcRPGPlayer -> {
-                    PlayerFishingState state = mcRPGPlayer.getFishingState();
-                    if (state != null && state.removeActiveMob(mobUUID)) {
+                .ifPresent(mcRPGPlayer -> mcRPGPlayer.getFishingState().ifPresent(state -> {
+                    if (state.removeActiveMob(mobUUID)) {
                         state.setCurrentSpawnChance(postKillChance);
                     }
-                });
+                }));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -768,19 +829,14 @@ public class FishingMobSpawnListener implements Listener {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER)
                 .getPlayer(event.getPlayer().getUniqueId())
-                .ifPresent(mcRPGPlayer -> {
-                    PlayerFishingState state = mcRPGPlayer.getFishingState();
-                    if (state == null) {
-                        return;
-                    }
-
+                .ifPresent(mcRPGPlayer -> mcRPGPlayer.getFishingState().ifPresent(state -> {
                     boolean resetOnWorldChange = getConfig().getBoolean(
                             FishingMobSpawnConfigFile.RESET_ON_WORLD_CHANGE, true);
                     if (resetOnWorldChange) {
                         state.setCurrentSpawnChance(getBaseChance());
                     }
-                    state.setLastHookLocation(null);
-                });
+                    state.clearLastHookLocation();
+                }));
     }
 
     private void updateSpawnChance(@NotNull Player player,
@@ -789,13 +845,13 @@ public class FishingMobSpawnListener implements Listener {
         double oldChance = state.getCurrentSpawnChance();
         double newChance;
 
-        Location lastHook = state.getLastHookLocation();
+        Optional<Location> lastHookOpt = state.getLastHookLocation();
         double sameAreaRange = getConfig().getDouble(FishingMobSpawnConfigFile.SAME_AREA_RANGE, 10.0);
 
-        if (lastHook == null || !lastHook.getWorld().equals(hookLocation.getWorld())) {
+        if (lastHookOpt.isEmpty() || !lastHookOpt.get().getWorld().equals(hookLocation.getWorld())) {
             newChance = oldChance;
         } else {
-            double distance = lastHook.distance(hookLocation);
+            double distance = lastHookOpt.get().distance(hookLocation);
             if (distance <= sameAreaRange) {
                 double increment = getConfig().getDouble(FishingMobSpawnConfigFile.CHANCE_INCREMENT_PER_CATCH, 0.02);
                 double maxChance = getConfig().getDouble(FishingMobSpawnConfigFile.MAX_CHANCE, 0.35);
@@ -1055,6 +1111,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import us.eunoians.mcrpg.McRPG;
 
 /**
  * A {@link ReloadableContent} that wraps the fishing mob pool configuration.
@@ -1066,15 +1123,16 @@ import java.util.logging.Logger;
  */
 public class ReloadableMobPool extends ReloadableContent<MobPoolSelector> {
 
-    public ReloadableMobPool(@NotNull YamlDocument config, @NotNull Logger logger) {
+    public ReloadableMobPool(@NotNull YamlDocument config) {
         super(config, FishingMobSpawnConfigFile.MOB_POOL, (doc, route) -> {
-            List<MobPoolEntry> entries = parseMobPool(doc, logger);
+            List<MobPoolEntry> entries = parseMobPool(doc);
             return new MobPoolSelector(entries);
         });
     }
 
     @NotNull
-    private static List<MobPoolEntry> parseMobPool(@NotNull YamlDocument config, @NotNull Logger logger) {
+    private static List<MobPoolEntry> parseMobPool(@NotNull YamlDocument config) {
+        Logger logger = McRPG.getInstance().getLogger();
         if (!config.contains(FishingMobSpawnConfigFile.MOB_POOL)) {
             logger.warning("No mob-pool section found in fishing mob spawn configuration.");
             return Collections.emptyList();
@@ -1153,7 +1211,7 @@ if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPl
             .getFile(FileType.FISHING_MOB_SPAWN_CONFIG);
 
     if (fishingConfig.getBoolean(FishingMobSpawnConfigFile.SPAWN_ENABLED, true)) {
-        ReloadableMobPool reloadableMobPool = new ReloadableMobPool(fishingConfig, plugin.getLogger());
+        ReloadableMobPool reloadableMobPool = new ReloadableMobPool(fishingConfig);
 
         // Register for reload tracking
         plugin.registryAccess()
