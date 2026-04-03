@@ -175,43 +175,82 @@ spawn:
   # Maximum number of fishing mobs one player can have alive simultaneously
   max-active-mobs-per-player: 1
 
-# Weighted mob pool — on spawn trigger, one mob is selected by weight.
-# Each entry is keyed by a unique name (used for logging/debugging).
+# Weighted mob pool — when a spawn triggers, one mob is randomly selected
+# from all eligible entries. "Eligible" means the player's accumulated spawn
+# chance meets the entry's min-chance-threshold AND the hook location passes
+# the entry's biome/world/region restrictions.
+#
+# Selection is weighted: if two mobs are both eligible, the one with the
+# higher weight is proportionally more likely to be chosen. For example,
+# with weights 3 and 1, the first mob is picked ~75% of the time.
+#
+# Each entry is keyed by a unique name (used for logging and debugging).
 # The key does NOT need to match the MythicMobs mob ID.
 #
-# Per-mob spawn restrictions:
-#   allowed-biomes / denied-biomes — biome allow/deny lists (empty = no restriction)
-#   allowed-worlds / denied-worlds — world allow/deny lists (empty = no restriction)
-#   allowed-regions / denied-regions — WorldGuard region allow/deny lists (requires WorldGuard)
+# Deny lists take priority over allow lists. If both are specified for the
+# same dimension (biomes, worlds, regions), the deny list is checked first.
+# An empty list means "no restriction" for that dimension.
 #
-# Deny lists take priority over allow lists. If both are specified for the same
-# dimension (biomes, worlds, regions), the deny list is checked first.
-#
-# Despawn behavior is configured in the MythicMobs mob YAML via ~onTimer and
-# ~onDropCombat skills, NOT here.
+# Despawn behavior (max lifetime, threat table cleanup) is configured in the
+# MythicMobs mob YAML via ~onTimer and ~onDropCombat skills, NOT here.
 mob-pool:
   riptide-guardian:
+    # The MythicMobs internal mob type ID to spawn. Must match the mob's
+    # filename/ID in your MythicMobs mobs/ directory.
     mythicmobs-mob-id: "RiptideGuardian"
+
+    # Relative weight for random selection when multiple mobs are eligible.
+    # Higher weight = more likely to be chosen. With two entries at weights
+    # 1 and 3, the first is picked 25% of the time and the second 75%.
     weight: 1
-    # Only eligible when accumulated spawn chance >= this threshold
+
+    # Minimum accumulated spawn chance required before this mob becomes
+    # eligible. Use this to gate stronger mobs behind higher thresholds,
+    # creating a natural progression (e.g. weak scouts at 0.0, guardians
+    # at 0.10, bosses at 0.25).
+    # Range: 0.0 (always eligible) to max-chance (only at cap).
     min-chance-threshold: 0.10
-    # MythicMobs mob level (used for MM's level scaling system)
+
+    # MythicMobs mob level passed to MM's spawn API. MM uses this for its
+    # own level-scaling system (stat scaling, skill scaling, drop scaling).
+    # See: https://git.lumine.io/mythiccraft/MythicMobs/-/wikis/Mobs/Levels
     mob-level: 1.0
-    # Per-mob spawn restrictions (all optional, empty = no restriction)
+
+    # Biome restrictions — controls which biomes this mob can spawn in.
+    # Uses Bukkit biome names (e.g. OCEAN, DEEP_OCEAN, RIVER, BEACH).
+    # Full list: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/block/Biome.html
+    #
+    # allowed-biomes: only spawn in these biomes (empty = all biomes allowed)
+    # denied-biomes:  never spawn in these biomes (takes priority over allowed)
     allowed-biomes: []
     denied-biomes: []
+
+    # World restrictions — controls which worlds this mob can spawn in.
+    # Uses the world folder name (e.g. "world", "world_nether", "world_the_end").
+    #
+    # allowed-worlds: only spawn in these worlds (empty = all worlds allowed)
+    # denied-worlds:  never spawn in these worlds (takes priority over allowed)
     allowed-worlds: []
     denied-worlds: []
-    # WorldGuard region restrictions (requires WorldGuard, ignored if not present)
+
+    # WorldGuard region restrictions — controls which regions this mob can
+    # spawn in. Requires WorldGuard to be installed; silently ignored if absent.
+    # Uses the region ID as defined in WorldGuard (e.g. "spawn", "arena", "shop").
+    #
+    # allowed-regions: only spawn inside these regions (empty = all regions allowed)
+    # denied-regions:  never spawn inside these regions (takes priority over allowed)
     allowed-regions: []
     denied-regions: []
-  # Future example:
+
+  # Example: a weaker scout mob that spawns more frequently in oceans.
+  # Uncomment and configure a matching MythicMobs mob to use.
+  #
   # tide-scout:
   #   mythicmobs-mob-id: "TideScout"
-  #   weight: 3
-  #   min-chance-threshold: 0.0
+  #   weight: 3                    # 3x more likely than the guardian when both are eligible
+  #   min-chance-threshold: 0.0    # eligible immediately — no chance buildup needed
   #   mob-level: 1.0
-  #   allowed-biomes: ["OCEAN", "DEEP_OCEAN", "WARM_OCEAN"]
+  #   allowed-biomes: ["OCEAN", "DEEP_OCEAN", "WARM_OCEAN", "LUKEWARM_OCEAN", "COLD_OCEAN"]
   #   denied-biomes: []
   #   allowed-worlds: []
   #   denied-worlds: ["world_nether", "world_the_end"]
