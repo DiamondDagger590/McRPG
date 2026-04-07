@@ -18,60 +18,60 @@ These user stories drive the design of every feature in the editor. Each story i
 
 | ID | Story | Acceptance Criteria |
 |----|-------|-------------------|
-| US-1 | As a server owner, I want to run `/mcrpg editor` and get a link I can open in my browser to edit quests | Command generates a URL; opening it loads my server's current quest data |
-| US-2 | As a server owner, I want to edit an existing quest's objectives, rewards, and metadata through a visual form | Changes to any field are reflected in the editor state; no YAML knowledge required |
-| US-3 | As a server owner, I want to create a new quest using a step-by-step wizard that supports both simple (single-phase) and advanced (multi-phase) modes | Simple mode: basics → objectives → rewards → review → save. Advanced mode adds phase configuration and branching between steps 1 and 2. |
-| US-4 | As a server owner, I want to choose which YAML file a new quest is saved to, or create a new file | File picker shows existing files; "New File" option lets me name and place a new one |
-| US-5 | As a server owner, I want to delete a quest from the editor | Quest is removed from the editor state; on apply, removed from the YAML file |
-| US-6 | As a server owner, I want to see a preview of how my quest looks in the Minecraft GUI, toggling between rarity tiers if the quest supports multiple | Editor renders the quest board offering slot (per rarity), the active quest detail view, and the reward display. Rarity toggle shows how display material, name color, and scaling change per tier. |
-| US-7 | As a server owner, I want to review a summary of all my changes before applying them, then apply and have them take effect on my server | "Apply" opens a change review modal showing added/modified/deleted quests with a diff view. Confirm writes YAML and shows "Run `/mcrpg quest admin reload` to apply." |
-| US-8 | As a server owner, I want to export my in-progress work as YAML if my connection drops | "Export as YAML" button is always available; downloads a zip of all modified files |
-| US-9 | As a server owner, I want to **duplicate an existing quest** as a starting point for a new variant | "Duplicate" button on any quest creates a copy with a new key; opens it in the editor with all fields pre-filled |
-| US-10 | As a server owner, I want to **move a quest** from one YAML file to another | Right-click or menu option on a quest opens the file picker to reassign its target file |
-| US-11 | As a server owner, I want to **search and filter** my quest list by name, objective type, reward type, source file, or board eligibility | Search bar at top of quest list with type-ahead; filter dropdowns for objective type, reward type, and file |
-| US-12 | As a server owner, I want to **undo and redo changes** within my editing session | Ctrl+Z / Ctrl+Y (or on-screen buttons) step through an operation history. Applies to all editor actions (field edits, quest creation, deletion, reordering). |
-| US-13 | As a server owner, I want to **see the raw YAML preview** of a quest I'm editing | "View as YAML" toggle or side panel shows the generated YAML in real-time as fields change |
-| US-14 | As a server owner, I want to **discard all changes** and revert to the server's current state | "Discard All Changes" button with confirmation dialog reloads the original payload |
+| QE-1 | As a server owner, I want to run `/mcrpg editor` and get a link I can open in my browser to edit quests | Command generates a URL; opening it loads my server's current quest data |
+| QE-2 | As a server owner, I want to edit an existing quest's objectives, rewards, and metadata through a visual form | Changes to any field are reflected in the editor state; no YAML knowledge required |
+| QE-3 | As a server owner, I want to create a new quest using a step-by-step wizard that supports both simple (single-phase) and advanced (multi-phase) modes | Simple mode: basics → objectives → rewards → review → save. Advanced mode adds phase configuration and branching between steps 1 and 2. |
+| QE-4 | As a server owner, I want to choose which YAML file a new quest is saved to, or create a new file | File picker shows existing files; "New File" option lets me name and place a new one |
+| QE-5 | As a server owner, I want to delete a quest from the editor | Quest is removed from the editor state; on apply, removed from the YAML file |
+| QE-6 | As a server owner, I want to see a preview of how my quest looks in the Minecraft GUI, toggling between rarity tiers if the quest supports multiple | Editor renders the quest board offering slot (per rarity), the active quest detail view, and the reward display. Rarity toggle shows how display material, name color, and scaling change per tier. |
+| QE-7 | As a server owner, I want to review a summary of all my changes before applying them, then apply and have them take effect on my server | "Apply" opens a change review modal showing added/modified/deleted quests with a diff view. Confirm writes YAML and shows "Run `/mcrpg quest admin reload` to apply." |
+| QE-8 | As a server owner, I want to export my in-progress work as YAML if my connection drops | "Export as YAML" button is always available; downloads a zip of all modified files |
+| QE-9 | As a server owner, I want to **duplicate an existing quest** as a starting point for a new variant | "Duplicate" button on any quest creates a copy with a new key; opens it in the editor with all fields pre-filled |
+| QE-10 | As a server owner, I want to **move a quest** from one YAML file to another | Right-click or menu option on a quest opens the file picker to reassign its target file |
+| QE-11 | As a server owner, I want to **see the raw YAML preview** of a quest I'm editing | "View as YAML" toggle or side panel shows the generated YAML in real-time as fields change |
 
-### Contextual Help & Onboarding (Phase 1)
+### Editor Experience (Phase 1)
 
 | ID | Story | Acceptance Criteria |
 |----|-------|-------------------|
-| US-15 | As a server owner, I want to **understand what each field means** via tooltips or inline help without leaving the editor | Every non-obvious field has an ⓘ icon that shows a plain-English explanation on hover/click. Examples: "Completion Mode: ALL means every stage must be completed. ANY means completing any single stage advances the quest." |
-| US-16 | As a server owner, I want to **understand what a reward type or objective type does** before selecting it | Dropdowns for objective types and reward types show a brief description beneath each option. Selecting one shows a detailed help panel explaining its config fields. |
+| DX-1 | As a server owner, I want to **search and filter** my quest list by name, objective type, reward type, source file, or board eligibility | Search bar at top of quest list with type-ahead; filter dropdowns for objective type, reward type, and file |
+| DX-2 | As a server owner, I want to **undo and redo changes** within my editing session | Ctrl+Z / Ctrl+Y (or on-screen buttons) step through an operation history. Applies to all editor actions (field edits, quest creation, deletion, reordering). |
+| DX-3 | As a server owner, I want to **discard all changes** and revert to the server's current state | "Discard All Changes" button with confirmation dialog reloads the original payload |
+| DX-4 | As a server owner, I want to **understand what each field means** via tooltips or inline help without leaving the editor | Every non-obvious field has an ⓘ icon that shows a plain-English explanation on hover/click. Examples: "Completion Mode: ALL means every stage must be completed. ANY means completing any single stage advances the quest." |
+| DX-5 | As a server owner, I want to **understand what a reward type or objective type does** before selecting it | Dropdowns for objective types and reward types show a brief description beneath each option. Selecting one shows a detailed help panel explaining its config fields. |
 
 ### Board Configuration (Phase 1)
 
 | ID | Story | Acceptance Criteria |
 |----|-------|-------------------|
-| US-17 | As a server owner, I want to edit board rarity tiers (weights, multipliers, display settings) | Visual form with sliders for weights, numeric inputs for multipliers, material picker for display |
-| US-18 | As a server owner, I want to edit board categories (slot counts, visibility, refresh types) | Form shows all category fields with dropdowns for enums and numeric inputs for bounds |
-| US-19 | As a server owner, I want to create or delete board categories | "Add Category" and "Delete" buttons with confirmation dialogs |
-| US-20 | As a server owner, I want to edit rotation schedule (time, timezone, weekly reset day) | Timezone picker, time input, day-of-week dropdown |
-| US-21 | As a server owner, I want to **see which quests are eligible for each board category** and understand why ineligible quests are excluded | Category detail view shows a list of matching quests and a list of excluded quests with reasons (e.g., "Missing DAILY refresh type", "No matching rarity") |
+| BC-1 | As a server owner, I want to edit board rarity tiers (weights, multipliers, display settings) | Visual form with sliders for weights, numeric inputs for multipliers, material picker for display |
+| BC-2 | As a server owner, I want to edit board categories (slot counts, visibility, refresh types) | Form shows all category fields with dropdowns for enums and numeric inputs for bounds |
+| BC-3 | As a server owner, I want to create or delete board categories | "Add Category" and "Delete" buttons with confirmation dialogs |
+| BC-4 | As a server owner, I want to edit rotation schedule (time, timezone, weekly reset day) | Timezone picker, time input, day-of-week dropdown |
+| BC-5 | As a server owner, I want to **see which quests are eligible for each board category** and understand why ineligible quests are excluded | Category detail view shows a list of matching quests and a list of excluded quests with reasons (e.g., "Missing DAILY refresh type", "No matching rarity"). Shares matching logic with DG-2. |
 
 ### Configuration Diagnostics (Phase 1)
 
 | ID | Story | Acceptance Criteria |
 |----|-------|-------------------|
-| US-22 | As a server owner, I want to **see warnings when my quest configuration has logical issues** beyond schema errors | Warning panel highlights issues like: "Quest 'Deep Dive' has no supported rarities matching any category, so it will never appear on the board" or "Category 'land-daily' uses scope provider 'mcrpg:land' but no quests support the SCOPED visibility" |
-| US-23 | As a server owner, I want to **check if a specific quest can appear on the board** and understand exactly why or why not | Quest detail view has a "Board Eligibility" diagnostic section: lists each category and shows ✅ eligible / ❌ ineligible with specific reasons per category |
+| DG-1 | As a server owner, I want to **see warnings when my quest configuration has logical issues** beyond schema errors | Warning panel highlights issues like: "Quest 'Deep Dive' has no supported rarities matching any category, so it will never appear on the board" or "Category 'land-daily' uses scope provider 'mcrpg:land' but no quests support the SCOPED visibility" |
+| DG-2 | As a server owner, I want to **check if a specific quest can appear on the board** and understand exactly why or why not | Quest detail view has a "Board Eligibility" diagnostic section: lists each category and shows ✅ eligible / ❌ ineligible with specific reasons per category. Shares matching logic with BC-5. |
 
 ### Board Simulator (Phase 1.5)
 
 | ID | Story | Acceptance Criteria |
 |----|-------|-------------------|
-| US-24 | As a server owner, I want to simulate N board rolls and see how often each quest appears | Simulator tab with roll count input; results show quest frequency distribution as a sortable table |
-| US-25 | As a server owner, I want to simulate rolls for a specific **player profile** to test personal offerings | Player profile builder with: permission checkboxes, land membership toggles, skill levels, quest completion history, and active quest list. Simulator uses profile for personal offering generation and filtering. |
-| US-26 | As a server owner, I want to see rarity distribution statistics across simulated rolls | Bar chart or table showing actual vs. expected rarity distribution with deviation highlighting |
-| US-27 | As a server owner, I want to **tweak rarity weights or category settings in the simulator** and re-run without going back to the config editor | Simulator has inline override controls for key parameters; results show a comparison between current config and overridden values |
+| SIM-1 | As a server owner, I want to simulate N board rolls and see how often each quest appears | Simulator tab with roll count input; results show quest frequency distribution as a sortable table |
+| SIM-2 | As a server owner, I want to simulate rolls for a specific **player profile** to test personal offerings | Player profile builder with: permission checkboxes, land membership toggles, skill levels, quest completion history, and active quest list. Simulator uses profile for personal offering generation and filtering. |
+| SIM-3 | As a server owner, I want to see rarity distribution statistics across simulated rolls | Bar chart or table showing actual vs. expected rarity distribution with deviation highlighting |
+| SIM-4 | As a server owner, I want to **tweak rarity weights or category settings in the simulator** and re-run without going back to the config editor | Simulator has inline override controls for key parameters; results show a comparison between current config and overridden values |
 
 ### Quest Templates (Phase 2 — Future)
 
 | ID | Story | Acceptance Criteria |
 |----|-------|-------------------|
-| US-28 | As a server owner, I want to create quest templates using a visual builder | Drag-and-drop or form-based variable, phase, and objective creation; expression syntax hidden behind visual controls |
-| US-29 | As a server owner, I want to preview generated quests from a template at each rarity tier | "Preview" button generates sample quests and shows them side-by-side by rarity |
+| TMP-1 | As a server owner, I want to create quest templates using a visual builder | Drag-and-drop or form-based variable, phase, and objective creation; expression syntax hidden behind visual controls |
+| TMP-2 | As a server owner, I want to preview generated quests from a template at each rarity tier | "Preview" button generates sample quests and shows them side-by-side by rarity |
 
 ---
 
@@ -121,7 +121,7 @@ These user stories drive the design of every feature in the editor. Each story i
 10. Web editor decompresses the payload and renders the quest data as visual forms
 11. Web editor connects to the bytesocks channel and performs the **RSA trust handshake** (see Security Model)
 12. Admin makes edits in the browser
-13. Admin clicks "Apply Changes" → editor shows a **change review modal** with a summary of all added/modified/deleted quests and a diff view (US-7)
+13. Admin clicks "Apply Changes" → editor shows a **change review modal** with a summary of all added/modified/deleted quests and a diff view (QE-7)
 14. Admin reviews and clicks "Confirm"
 15. Web editor compresses the change payload and uploads it to bytebin → receives a `changeKey`
 16. Web editor sends the `changeKey` to the plugin via the bytesocks channel (signed message)
@@ -657,25 +657,25 @@ Clicking a quest loads it into the content area as a form. The form is organized
 
 ### New Quest Wizard
 
-Creating a new quest uses a multi-step wizard (US-3) to avoid overwhelming the user. The wizard supports two modes:
+Creating a new quest uses a multi-step wizard (QE-3) to avoid overwhelming the user. The wizard supports two modes:
 
 - **Simple mode** (default): Creates a single-phase, single-stage quest — covers ~90% of use cases
 - **Advanced mode**: Unlocked via a toggle; allows multi-phase configuration with branching and per-stage rewards
 
-The wizard can also be entered via the **Duplicate** action (US-9), which pre-fills all fields from the source quest and focuses the user on changing the key and the fields they want to differ.
+The wizard can also be entered via the **Duplicate** action (QE-9), which pre-fills all fields from the source quest and focuses the user on changing the key and the fields they want to differ.
 
 #### Simple Mode Steps
 
 **Step 1 — Basics:**
 - "What should this quest be called?" → text input for display name
-- "Who can do this quest?" → dropdown (Single Player / Land Group / etc.) with ⓘ tooltip explaining each option (US-15)
+- "Who can do this quest?" → dropdown (Single Player / Land Group / etc.) with ⓘ tooltip explaining each option (DX-4)
 - "Does this quest expire?" → toggle + duration input
 - "Can this quest be repeated?" → dropdown (Once / Repeatable / Cooldown / etc.) with ⓘ tooltip
 - [Switch to Advanced Mode] link at the bottom
 
 **Step 2 — Objectives:**
 - "What do players need to do?" → [+ Add Objective] button
-- Each objective: type dropdown (with descriptions per US-16) → dynamic form based on type
+- Each objective: type dropdown (with descriptions per DX-5) → dynamic form based on type
   - "Break Blocks" → block type picker + count input
   - "Kill Mobs" → entity type picker + count input
   - etc.
@@ -683,14 +683,14 @@ The wizard can also be entered via the **Duplicate** action (US-9), which pre-fi
 
 **Step 3 — Rewards:**
 - "What do players earn?" → [+ Add Reward] button
-- Each reward: type dropdown (with descriptions per US-16) → dynamic form
+- Each reward: type dropdown (with descriptions per DX-5) → dynamic form
   - "Skill Experience" → skill dropdown + amount input
   - "Server Command" → command text input + description
 
 **Step 4 — Board Settings:**
 - "Should this quest appear on the quest board?" → toggle
 - If yes: rarity checkboxes, refresh type checkboxes
-- Board eligibility diagnostic (US-23) shown inline: "This quest will be eligible for: personal-daily, shared-daily"
+- Board eligibility diagnostic (DG-2) shown inline: "This quest will be eligible for: personal-daily, shared-daily"
 
 **Step 5 — Save Location:**
 - "Where should this quest be saved?" → file picker
@@ -698,8 +698,8 @@ The wizard can also be entered via the **Duplicate** action (US-9), which pre-fi
   - "Create new file" option → directory picker + file name input
 
 **Step 6 — Review:**
-- Summary of all choices + in-game preview (US-6) with rarity toggle
-- Raw YAML preview tab (US-13)
+- Summary of all choices + in-game preview (QE-6) with rarity toggle
+- Raw YAML preview tab (QE-11)
 - [Create Quest] button
 
 #### Advanced Mode Additional Steps
@@ -735,7 +735,7 @@ Schema type → UI widget mapping:
 | `material_ref` | MaterialPicker | Display material |
 | `namespaced_key` | NamespacedKeyInput | Custom reference |
 
-### In-Game Preview (US-6)
+### In-Game Preview (QE-6)
 
 The preview component renders an approximation of how the quest appears in Minecraft:
 
@@ -854,22 +854,22 @@ This is a non-trivial porting effort, but the logic is pure math with no Bukkit 
 3. Implement RSA crypto service (Web Crypto API)
 4. Implement session store (connection lifecycle, trust handshake)
 5. Implement manifest store and common picker components (MaterialPicker, EntityTypePicker, BlockTypePicker, etc.)
-6. Implement quest store with change tracking and undo/redo history (US-12)
-7. Implement QuestList with search and filter (US-11), grouped by source file
+6. Implement quest store with change tracking and undo/redo history (DX-2)
+7. Implement QuestList with search and filter (DX-1), grouped by source file
 8. Implement QuestEditor and all sub-editors (Phase, Stage, Objective, Reward)
-9. Implement QuestWizard with simple/advanced modes (US-3) and duplicate entry point (US-9)
-10. Implement FilePicker for YAML file targeting and quest move (US-10)
-11. Implement QuestPreview with rarity toggle (US-6)
-12. Implement raw YAML preview panel (US-13)
+9. Implement QuestWizard with simple/advanced modes (QE-3) and duplicate entry point (QE-9)
+10. Implement FilePicker for YAML file targeting and quest move (QE-10)
+11. Implement QuestPreview with rarity toggle (QE-6)
+12. Implement raw YAML preview panel (QE-11)
 13. Implement board config store and editors (RarityEditor, CategoryEditor, RotationEditor)
-14. Implement category → quest eligibility view (US-21)
-15. Implement contextual help tooltips and type descriptions (US-15, US-16)
-16. Implement configuration diagnostics: logical warnings (US-22) and per-quest board eligibility diagnostic (US-23)
+14. Implement category → quest eligibility view (BC-5)
+15. Implement contextual help tooltips and type descriptions (DX-4, DX-5)
+16. Implement configuration diagnostics: logical warnings (DG-1) and per-quest board eligibility diagnostic (DG-2)
 17. Implement validation layer (schema validation + logical warnings)
-18. Implement change review modal with diff view (US-7)
+18. Implement change review modal with diff view (QE-7)
 19. Implement "Apply Changes" flow (review → compress → upload → notify → confirm)
-20. Implement "Export as YAML" emergency export (US-8)
-21. Implement "Discard All Changes" with confirmation (US-14)
+20. Implement "Export as YAML" emergency export (QE-8)
+21. Implement "Discard All Changes" with confirmation (DX-3)
 22. Implement error handling and reconnection logic
 23. Implement ConnectionStatus indicator
 
@@ -881,10 +881,10 @@ This is a non-trivial porting effort, but the logic is pure math with no Bukkit 
 
 **Frontend work:**
 1. Port `SlotGenerationLogic` and `QuestPool` weighted selection to TypeScript
-2. Implement `PlayerProfileBuilder` component (permissions, land membership, skill levels, quest history, active quests) (US-25)
+2. Implement `PlayerProfileBuilder` component (permissions, land membership, skill levels, quest history, active quests) (SIM-2)
 3. Implement `BoardSimulator` runner with support for both shared and personal offering generation
-4. Implement `SimulationResults` with frequency tables, rarity distribution charts, and category fill rates (US-24, US-26)
-5. Implement inline parameter override controls for A/B comparison (US-27)
+4. Implement `SimulationResults` with frequency tables, rarity distribution charts, and category fill rates (SIM-1, SIM-3)
+5. Implement inline parameter override controls for A/B comparison (SIM-4)
 6. Validate TypeScript simulation output against Java implementation for correctness
 
 **Plugin-side work:** None — the simulator runs entirely in the browser using the already-loaded configuration data.
