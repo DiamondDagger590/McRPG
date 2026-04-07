@@ -220,6 +220,9 @@ us/eunoians/mcrpg/
 │   ├── WebEditorSecurityManager.java  # RSA key management, message signing/verification
 │   ├── RegistryManifest.java          # Snapshot of all registered types for the editor
 │   └── WebEditorSocket.java           # bytesocks WebSocket client wrapper
+├── editor/schema/
+│   ├── ConfigFieldDescriptor.java     # Record describing a single config field
+│   └── ConfigFieldType.java           # Enum of field types (BLOCK_LIST, ENTITY_TYPE_LIST, etc.)
 ├── command/
 │   └── editor/
 │       ├── EditorCommand.java         # /mcrpg editor — opens session
@@ -264,19 +267,34 @@ The manifest tells the editor what types, skills, and entities exist on this ser
 ```json
 {
     "manifest": {
+        "minecraftVersion": "1.21.1",
         "objectiveTypes": [
             {
                 "key": "mcrpg:block_break",
                 "displayName": "Break Blocks",
+                "description": "Track blocks broken by the player. Supports vanilla and custom blocks.",
                 "configSchema": {
-                    "blocks": { "type": "block_list", "required": true }
+                    "blocks": {
+                        "type": "block_list",
+                        "displayName": "Target Blocks",
+                        "description": "Which blocks count toward this objective",
+                        "required": true,
+                        "defaultValue": null
+                    }
                 }
             },
             {
                 "key": "mcrpg:mob_kill",
                 "displayName": "Kill Mobs",
+                "description": "Track mobs killed by the player. Supports vanilla and custom entities.",
                 "configSchema": {
-                    "mobs": { "type": "entity_type_list", "required": true }
+                    "mobs": {
+                        "type": "entity_type_list",
+                        "displayName": "Target Mobs",
+                        "description": "Which mob types count toward this objective",
+                        "required": true,
+                        "defaultValue": null
+                    }
                 }
             }
         ],
@@ -284,23 +302,57 @@ The manifest tells the editor what types, skills, and entities exist on this ser
             {
                 "key": "mcrpg:experience",
                 "displayName": "Skill Experience",
+                "description": "Grants experience points to a specific McRPG skill.",
                 "configSchema": {
-                    "skill": { "type": "skill_ref", "required": true },
-                    "amount": { "type": "positive_integer", "required": true }
+                    "skill": {
+                        "type": "skill_ref",
+                        "displayName": "Skill",
+                        "description": "Which skill receives the experience",
+                        "required": true,
+                        "defaultValue": null
+                    },
+                    "amount": {
+                        "type": "positive_integer",
+                        "displayName": "Amount",
+                        "description": "How much experience to grant",
+                        "required": true,
+                        "defaultValue": null
+                    }
                 }
             },
             {
                 "key": "mcrpg:command",
                 "displayName": "Server Command",
+                "description": "Executes a command from the server console. Use {player} for the player's name.",
                 "configSchema": {
-                    "command": { "type": "string", "required": true },
-                    "description": { "type": "string", "required": false }
+                    "command": {
+                        "type": "string",
+                        "displayName": "Command",
+                        "description": "The command to run (without leading /). Use {player} as a placeholder.",
+                        "required": true,
+                        "defaultValue": null
+                    },
+                    "description": {
+                        "type": "string",
+                        "displayName": "Display Description",
+                        "description": "Optional text shown to the player describing this reward",
+                        "required": false,
+                        "defaultValue": null
+                    }
                 }
             }
         ],
         "scopeProviders": [
-            { "key": "mcrpg:single_player", "displayName": "Single Player" },
-            { "key": "mcrpg:land", "displayName": "Land (Lands Plugin)" }
+            {
+                "key": "mcrpg:single_player",
+                "displayName": "Single Player",
+                "description": "Quest progress is tracked per individual player."
+            },
+            {
+                "key": "mcrpg:land",
+                "displayName": "Land (Lands Plugin)",
+                "description": "Quest progress is shared across all members of a Lands territory."
+            }
         ],
         "skills": [
             { "key": "mcrpg:swords", "displayName": "Swords" },
@@ -308,9 +360,21 @@ The manifest tells the editor what types, skills, and entities exist on this ser
             { "key": "mcrpg:herbalism", "displayName": "Herbalism" },
             { "key": "mcrpg:woodcutting", "displayName": "Woodcutting" }
         ],
-        "entityTypes": ["ZOMBIE", "SKELETON", "SPIDER", "CREEPER", "..."],
-        "blockTypes": ["STONE", "IRON_ORE", "DIAMOND_ORE", "OAK_LOG", "..."],
-        "materials": ["DIAMOND_SWORD", "IRON_PICKAXE", "..."],
+        "entityTypes": [
+            { "key": "ZOMBIE", "source": "vanilla", "displayName": "Zombie" },
+            { "key": "SKELETON", "source": "vanilla", "displayName": "Skeleton" },
+            { "key": "SPIDER", "source": "vanilla", "displayName": "Spider" },
+            { "key": "nexo:frost_golem", "source": "nexo", "displayName": "Frost Golem" }
+        ],
+        "blockTypes": [
+            { "key": "STONE", "source": "vanilla", "displayName": "Stone" },
+            { "key": "DIAMOND_ORE", "source": "vanilla", "displayName": "Diamond Ore" },
+            { "key": "nexo:mythril_ore", "source": "nexo", "displayName": "Mythril Ore" }
+        ],
+        "materials": [
+            { "key": "DIAMOND_SWORD", "source": "vanilla", "displayName": "Diamond Sword" },
+            { "key": "itemsadder:ruby_pickaxe", "source": "itemsadder", "displayName": "Ruby Pickaxe" }
+        ],
         "refreshTypes": ["DAILY", "WEEKLY"],
         "visibilityTypes": ["PERSONAL", "SHARED", "SCOPED"],
         "completionModes": ["ALL", "ANY"],
@@ -321,7 +385,28 @@ The manifest tells the editor what types, skills, and entities exist on this ser
 }
 ```
 
-**Key design decision:** Each objective type and reward type includes a `configSchema` that describes what fields its `config` section expects. This allows the editor to dynamically render the correct form fields for any objective or reward type — including third-party types registered by expansions. The schema uses simple type descriptors (`block_list`, `entity_type_list`, `skill_ref`, `positive_integer`, `string`, `duration`) that the editor maps to appropriate UI widgets.
+**Key design decisions:**
+
+1. **Config schema on types (requires Java-side changes):** Each objective type and reward type includes a `configSchema` that describes what fields its `config` section expects. This allows the editor to dynamically render the correct form fields for any type — including third-party types registered by expansions. This requires adding a `getConfigSchema()` method to the `QuestObjectiveType` and `QuestRewardType` interfaces. Types that don't implement the method inherit an empty schema; the editor falls back to a raw key-value editor for their config fields. The `ConfigFieldDescriptor` record and `ConfigFieldType` enum live in `us.eunoians.mcrpg.editor.schema`.
+
+2. **Entity/block/material entries include source metadata:** Each entry carries a `source` field (`"vanilla"`, `"nexo"`, `"itemsadder"`, etc.) populated from `CustomBlockWrapper` and `CustomEntityWrapper`. The editor uses this to decide whether a sprite preview is available (vanilla) or should show a placeholder badge (custom). Custom entries also carry a `displayName` from the source plugin's registry.
+
+3. **Type descriptions power DX-4 and DX-5:** Every objective type, reward type, and scope provider includes a `description` field that the editor renders as help text in dropdowns and tooltip panels. This is populated from the Java-side schema and lets third-party types self-document without requiring editor changes.
+
+### Minecraft Asset Loading
+
+The editor does **not** bundle Minecraft textures. Mojang's textures are copyrighted and redistributing them would violate the EULA.
+
+Instead, the editor fetches textures at runtime from Mojang's public asset CDN:
+
+1. The payload includes `minecraftVersion` (e.g., `"1.21.1"`)
+2. On first load, the editor fetches the [version manifest](https://piston-meta.mojang.com/mc/game/version_manifest_v2.json) → version JSON → asset index
+3. The asset index maps texture paths to content-addressable URLs on Mojang's CDN
+4. The editor downloads item/block textures as needed and caches them in the browser's `IndexedDB`
+5. Subsequent sessions skip the download (cache hit by Minecraft version)
+6. For custom items (source ≠ `"vanilla"`), the editor shows the `displayName` with a "Custom texture — preview unavailable" badge
+
+This approach is used by community tools like mcasset.cloud and is consistent with how Mojang's own launcher downloads assets.
 
 ### Quest Data Structure
 
@@ -540,7 +625,7 @@ mcrpg-web-editor/
 ├── public/
 │   ├── index.html
 │   └── assets/
-│       └── minecraft-sprites/          # Vanilla item/block sprite atlas for previews
+│       └── textures/                   # Texture cache management (fetched from Mojang CDN at runtime)
 ├── src/
 │   ├── App.vue                         # Root component (layout, nav bar, connection status)
 │   ├── main.ts                         # Entry point (Vue app initialization)
@@ -743,9 +828,7 @@ The preview component renders an approximation of how the quest appears in Minec
 - **Quest detail view**: Multi-slot layout showing phase progression, objective descriptions with progress bars, and reward list
 - **Rarity toggle**: If the quest supports multiple rarities, a dropdown or tab bar lets the user switch between them to see how the display material, name color, difficulty scaling, and reward multipliers change per tier
 
-Rendering uses a canvas element (or CSS-based Minecraft font rendering) with vanilla Minecraft item sprites. For custom resource pack items (custom model data), the preview shows the base material with a badge: "Custom texture — preview unavailable".
-
-The sprite atlas for vanilla items is shipped as a static asset in the web editor repo. It covers all standard Minecraft materials and entity types. This atlas must be updated when Minecraft adds new content, but only on major version bumps.
+Rendering uses a canvas element (or CSS-based Minecraft font rendering) with vanilla Minecraft textures fetched from Mojang's asset CDN (see Minecraft Asset Loading section). For custom items from Nexo, ItemsAdder, or other plugins (entries with `source` ≠ `"vanilla"` in the manifest), the preview shows the item's `displayName` with a "Custom texture — preview unavailable" badge.
 
 ### Validation
 
@@ -832,14 +915,18 @@ This is a non-trivial porting effort, but the logic is pure math with no Bukkit 
 **Goal:** Server owners can create, edit, and delete hand-crafted quests and board configuration through a visual web editor.
 
 **Plugin-side work:**
-1. Implement `WebEditorManager`, `WebEditorSession`, `WebEditorSocket`
-2. Implement `WebEditorSecurityManager` (RSA keypair generation, signing, trust management)
-3. Implement `WebEditorPayloadSerializer` (quest data → JSON, JSON → YAML round-trip)
-4. Implement `RegistryManifest` (snapshot all registered types with config schemas)
-5. Implement `/mcrpg editor`, `/mcrpg editor close`, `/mcrpg editor trust` commands
-6. Add `mcrpg.editor` permission node
-7. Add HTTP client for bytebin (POST/GET with gzip)
-8. Add WebSocket client for bytesocks
+1. Add `ConfigFieldDescriptor` record and `ConfigFieldType` enum to `us.eunoians.mcrpg.editor.schema`
+2. Add `getConfigSchema()` method to `QuestObjectiveType` and `QuestRewardType` interfaces (default returns empty map for backwards compatibility with third-party types)
+3. Implement `getConfigSchema()` on all built-in objective types and reward types
+4. Add `description` field (or method) to `QuestObjectiveType`, `QuestRewardType`, and `QuestScopeProvider` for editor help text (DX-4, DX-5)
+5. Implement `WebEditorManager`, `WebEditorSession`, `WebEditorSocket`
+6. Implement `WebEditorSecurityManager` (RSA keypair generation, signing, trust management)
+7. Implement `WebEditorPayloadSerializer` (quest data → JSON, JSON → YAML round-trip)
+8. Implement `RegistryManifest` — snapshot all registered types (including custom blocks/entities from `CustomBlockWrapper`/`CustomEntityWrapper`), skills, and config schemas
+9. Implement `/mcrpg editor`, `/mcrpg editor close`, `/mcrpg editor trust` commands
+10. Add `mcrpg.editor` permission node
+11. Add HTTP client for bytebin (POST/GET with gzip)
+12. Add WebSocket client for bytesocks
 
 **Infrastructure work:**
 1. Provision VPS, install Docker
@@ -853,25 +940,26 @@ This is a non-trivial porting effort, but the logic is pure math with no Bukkit 
 2. Implement bytebin and bytesocks service clients
 3. Implement RSA crypto service (Web Crypto API)
 4. Implement session store (connection lifecycle, trust handshake)
-5. Implement manifest store and common picker components (MaterialPicker, EntityTypePicker, BlockTypePicker, etc.)
-6. Implement quest store with change tracking and undo/redo history (DX-2)
-7. Implement QuestList with search and filter (DX-1), grouped by source file
-8. Implement QuestEditor and all sub-editors (Phase, Stage, Objective, Reward)
-9. Implement QuestWizard with simple/advanced modes (QE-3) and duplicate entry point (QE-9)
-10. Implement FilePicker for YAML file targeting and quest move (QE-10)
-11. Implement QuestPreview with rarity toggle (QE-6)
-12. Implement raw YAML preview panel (QE-11)
-13. Implement board config store and editors (RarityEditor, CategoryEditor, RotationEditor)
-14. Implement category → quest eligibility view (BC-5)
-15. Implement contextual help tooltips and type descriptions (DX-4, DX-5)
-16. Implement configuration diagnostics: logical warnings (DG-1) and per-quest board eligibility diagnostic (DG-2)
-17. Implement validation layer (schema validation + logical warnings)
-18. Implement change review modal with diff view (QE-7)
-19. Implement "Apply Changes" flow (review → compress → upload → notify → confirm)
-20. Implement "Export as YAML" emergency export (QE-8)
-21. Implement "Discard All Changes" with confirmation (DX-3)
-22. Implement error handling and reconnection logic
-23. Implement ConnectionStatus indicator
+5. Implement Mojang asset CDN texture fetcher with IndexedDB caching
+6. Implement manifest store and common picker components (MaterialPicker, EntityTypePicker, BlockTypePicker, etc.) with vanilla sprite previews and custom item badges
+7. Implement quest store with change tracking and undo/redo history (DX-2)
+8. Implement QuestList with search and filter (DX-1), grouped by source file
+9. Implement QuestEditor and all sub-editors (Phase, Stage, Objective, Reward)
+10. Implement QuestWizard with simple/advanced modes (QE-3) and duplicate entry point (QE-9)
+11. Implement FilePicker for YAML file targeting and quest move (QE-10)
+12. Implement QuestPreview with rarity toggle (QE-6)
+13. Implement raw YAML preview panel (QE-11)
+14. Implement board config store and editors (RarityEditor, CategoryEditor, RotationEditor)
+15. Implement category → quest eligibility view (BC-5)
+16. Implement contextual help tooltips and type descriptions (DX-4, DX-5)
+17. Implement configuration diagnostics: logical warnings (DG-1) and per-quest board eligibility diagnostic (DG-2)
+18. Implement validation layer (schema validation + logical warnings)
+19. Implement change review modal with diff view (QE-7)
+20. Implement "Apply Changes" flow (review → compress → upload → notify → confirm)
+21. Implement "Export as YAML" emergency export (QE-8)
+22. Implement "Discard All Changes" with confirmation (DX-3)
+23. Implement error handling and reconnection logic
+24. Implement ConnectionStatus indicator
 
 **Estimated complexity:** Large. This is a full-stack project spanning three codebases (plugin, infrastructure, frontend). The plugin-side work is moderate (mostly serialization and HTTP/WebSocket plumbing). The infrastructure is a one-time setup. The frontend is the bulk of the effort.
 
@@ -927,7 +1015,7 @@ This phase is intentionally left under-specified. The design should be informed 
 | Repository | Separate from McRPG | Clean separation of Java and TypeScript tooling; independent deployment |
 | YAML serialization | Plugin handles all YAML ↔ JSON conversion | Avoids JavaScript YAML serialization pitfalls; plugin owns the canonical format |
 | Payload format | gzip-compressed JSON | Efficient transfer; pako library handles compression in browser |
-| In-game preview | Vanilla sprites only; custom resource pack items show placeholder | Honest UX; avoids requiring resource pack upload |
+| In-game preview | Vanilla textures fetched from Mojang CDN at runtime; custom items show placeholder | Avoids EULA violation from bundling Mojang assets; honest UX for custom items |
 | Board simulator location | Same app, separate tab | Shares configuration data; no additional infrastructure needed |
 | Template editor | Deferred to Phase 2 | Templates are complex; Phase 1 feedback should inform the visual builder design |
 
