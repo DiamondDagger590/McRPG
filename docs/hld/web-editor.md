@@ -387,7 +387,7 @@ The manifest tells the editor what types, skills, and entities exist on this ser
 
 **Key design decisions:**
 
-1. **Config schema on types (requires Java-side changes):** Each objective type and reward type includes a `configSchema` that describes what fields its `config` section expects. This allows the editor to dynamically render the correct form fields for any type — including third-party types registered by expansions. This requires adding a `getConfigSchema()` method to the `QuestObjectiveType` and `QuestRewardType` interfaces. Types that don't implement the method inherit an empty schema; the editor falls back to a raw key-value editor for their config fields. The `ConfigFieldDescriptor` record and `ConfigFieldType` enum live in `us.eunoians.mcrpg.editor.schema`.
+1. **Config schema on types (requires Java-side changes):** Each objective type and reward type includes a `configSchema` that describes what fields its `config` section expects. This allows the editor to dynamically render the correct form fields for any type — including future third-party types registered by expansions. This requires adding an abstract `getConfigSchema()` method to the `QuestObjectiveType` and `QuestRewardType` interfaces. Since no third-party plugins currently implement these interfaces, this is a clean breaking change. All built-in types must implement the method. The `ConfigFieldDescriptor` record and `ConfigFieldType` enum live in `us.eunoians.mcrpg.editor.schema`.
 
 2. **Entity/block/material entries include source metadata:** Each entry carries a `source` field (`"vanilla"`, `"nexo"`, `"itemsadder"`, etc.) populated from `CustomBlockWrapper` and `CustomEntityWrapper`. The editor uses this to decide whether a sprite preview is available (vanilla) or should show a placeholder badge (custom). Custom entries also carry a `displayName` from the source plugin's registry.
 
@@ -916,9 +916,9 @@ This is a non-trivial porting effort, but the logic is pure math with no Bukkit 
 
 **Plugin-side work:**
 1. Add `ConfigFieldDescriptor` record and `ConfigFieldType` enum to `us.eunoians.mcrpg.editor.schema`
-2. Add `getConfigSchema()` method to `QuestObjectiveType` and `QuestRewardType` interfaces (default returns empty map for backwards compatibility with third-party types)
+2. Add abstract `getConfigSchema()` method to `QuestObjectiveType` and `QuestRewardType` interfaces (breaking change — no third-party implementations exist)
 3. Implement `getConfigSchema()` on all built-in objective types and reward types
-4. Add `description` field (or method) to `QuestObjectiveType`, `QuestRewardType`, and `QuestScopeProvider` for editor help text (DX-4, DX-5)
+4. Add abstract `getDescription()` method to `QuestObjectiveType`, `QuestRewardType`, and `QuestScopeProvider` for editor help text (DX-4, DX-5)
 5. Implement `WebEditorManager`, `WebEditorSession`, `WebEditorSocket`
 6. Implement `WebEditorSecurityManager` (RSA keypair generation, signing, trust management)
 7. Implement `WebEditorPayloadSerializer` (quest data → JSON, JSON → YAML round-trip)
