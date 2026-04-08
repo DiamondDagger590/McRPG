@@ -29,10 +29,11 @@ import java.util.Map;
  * checking preconditions (hunger, cooldown), and dispatching
  * {@link ComboActivatable#comboActivate(us.eunoians.mcrpg.entity.holder.AbilityHolder)}.
  * <p>
- * Slot assignment is purely positional: all {@link ComboActivatable} abilities in the player's
- * available ability set are sorted alphabetically by their {@link org.bukkit.NamespacedKey#toString()}
- * and mapped to slots 1–3 by index. This makes slot assignment deterministic without requiring
- * any UI or database changes for the PoC.
+ * Slot assignment is derived from the player's active loadout: all {@link ComboActivatable}
+ * abilities present in the loadout are sorted alphabetically by
+ * {@link org.bukkit.NamespacedKey#toString()} and mapped to slots 1–3. Only abilities the
+ * player explicitly placed in their loadout are considered — default (non-unlockable) abilities
+ * are excluded.
  */
 public class OnComboCompleteListener implements Listener {
 
@@ -60,16 +61,16 @@ public class OnComboCompleteListener implements Listener {
 
         var abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
-        // Build a map of NamespacedKey -> ComboActivatable so we can sort by key deterministically
+        // Only consider abilities the player placed in their loadout (not default abilities)
         Map<String, ComboActivatable> comboAbilityMap = new HashMap<>();
-        for (var key : loadoutHolder.getAvailableAbilitiesToUse()) {
+        for (var key : loadoutHolder.getLoadout().getAbilities()) {
             Ability ability = abilityRegistry.getRegisteredAbility(key);
             if (ability instanceof ComboActivatable comboActivatable) {
                 comboAbilityMap.put(key.toString(), comboActivatable);
             }
         }
 
-        // Sort alphabetically by key string so slot assignment is deterministic across restarts
+        // Sort alphabetically by key for deterministic slot assignment across restarts
         List<ComboActivatable> comboAbilities = comboAbilityMap.entrySet().stream()
                 .sorted(Comparator.comparing(Map.Entry::getKey))
                 .map(Map.Entry::getValue)

@@ -5,6 +5,8 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -139,38 +141,39 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
         Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
         player.setVelocity(unitVector.multiply(getVelocity(tier)));
 
+        // Launch sound
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BREEZE_SHOOT, 1.0f, 1.4f);
+
         RageSpike rageSpike = this;
         abilityHolder.addActiveAbility(rageSpike);
-        // After they've traveled we need to iteratee 20 times (1 second)
         AtomicInteger count = new AtomicInteger(0);
-        //A list of all entities hit by rage spike so we arent double hitting
         List<UUID> entities = new ArrayList<>();
-        //Damage entities as we fly by
         new BukkitRunnable() {
             @Override
             public void run() {
-                //verify that this runs 20 times
                 if (!abilityHolder.isAbilityActive(rageSpike) || !player.isOnline()
                         || player.isDead() || player.isSleeping()
                         || count.incrementAndGet() == 21) {
                     abilityHolder.removeActiveAbility(rageSpike);
                     cancel();
                 } else {
-                    //get all the entities in a 2 by 2 radius
+                    // Dash trail: cloud puffs at feet + crit sparkle at chest
+                    player.getWorld().spawnParticle(Particle.CLOUD, player.getLocation().add(0, 0.1, 0), 4, 0.15, 0.05, 0.15, 0.02);
+                    player.getWorld().spawnParticle(Particle.CRIT, player.getLocation().add(0, 0.8, 0), 6, 0.25, 0.25, 0.25, 0.05);
+
                     for (Entity entity : player.getNearbyEntities(2, 2, 2)) {
-                        //if the entity is living (avoids items and such) and isnt already hit
                         if (entity instanceof LivingEntity livingEntity && !isNPC(entity) && !entities.contains(entity.getUniqueId())) {
                             RageSpikeDamageEvent rageSpikeDamageEvent = new RageSpikeDamageEvent(abilityHolder, livingEntity, getDamage(tier));
                             Bukkit.getPluginManager().callEvent(rageSpikeDamageEvent);
                             if (rageSpikeDamageEvent.isCancelled()) {
                                 continue;
                             }
-                            //make target go voom
                             Vector targVector = new Vector(entity.getLocation().getDirection().getX(), entity.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
                             entity.setVelocity(targVector.multiply(-4.3));
-                            //damage target and add them to list
                             livingEntity.damage(rageSpikeDamageEvent.getDamage());
                             entities.add(entity.getUniqueId());
+                            // Hit confirmation particles on the struck entity
+                            player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, livingEntity.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.02);
                         }
                     }
                 }

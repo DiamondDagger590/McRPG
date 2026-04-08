@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.BaseAbility;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
@@ -117,6 +118,7 @@ public interface AbilityListener extends Listener {
             allAbilities.stream()
                     .map(ability -> (BaseAbility) abilityRegistry.getRegisteredAbility(ability))
                     .filter(ability -> ability instanceof ReadyAbility)
+                    .filter(ability -> !(ability instanceof ComboActivatable))
                     .filter(ability -> ability.canEventReadyAbility(event))
                     .filter(ability -> ability.checkIfComponentFailsReady(abilityHolder, event).isEmpty())
                     .filter(ability -> {

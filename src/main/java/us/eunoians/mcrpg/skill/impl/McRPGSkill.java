@@ -40,7 +40,7 @@ public abstract class McRPGSkill extends BaseSkill {
     @Override
     @NotNull
     public Set<Statistic> getDefaultStatistics() {
-        var displayName = titleCase(getSkillKey().getKey());
+        String displayName = titleCase(getSkillKey().getKey());
         return Set.of(
                 new SimpleStatistic(getExperienceStatisticKey(), StatisticType.LONG, 0L,
                         displayName + " Experience", "Total " + displayName + " XP earned"),

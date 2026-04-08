@@ -47,7 +47,7 @@ public interface ActiveAbility extends Ability {
     @Override
     @NotNull
     default Set<Statistic> getDefaultStatistics() {
-        var displayName = titleCase(getAbilityKey().getKey());
+        String displayName = titleCase(getAbilityKey().getKey());
         return Set.of(new SimpleStatistic(
                 getActivationStatisticKey(),
                 StatisticType.LONG,

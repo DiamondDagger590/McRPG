@@ -139,25 +139,11 @@ public final class Loadout {
      */
     public boolean canAbilityBeAddedToLoadout(@NotNull NamespacedKey key) {
         Ability ability = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(key);
-        // Check if it's a default ability
         if (!(ability instanceof UnlockableAbility)) {
             return false;
         }
-        for (NamespacedKey abilityKey : abilities) {
-            if (ability instanceof ActiveAbility && ability instanceof SkillAbility skillAbility) {
-                NamespacedKey skillKey = skillAbility.getSkillKey();
-                Ability abilityInLoadout = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(abilityKey);
-                // Check for active abilities in the same skill;
-                if (abilityInLoadout instanceof ActiveAbility && abilityInLoadout instanceof SkillAbility skillAbilityInLoadout && skillAbilityInLoadout.getSkillKey().equals(skillKey)) {
-                    return false;
-                }
-            }
-            // Check for same ability
-            if (abilityKey.equals(key)) {
-                return false;
-            }
-        }
-        return true;
+        // TODO: Re-enable one-active-per-skill restriction after PoC combo testing
+        return !abilities.contains(key);
     }
 
     /**

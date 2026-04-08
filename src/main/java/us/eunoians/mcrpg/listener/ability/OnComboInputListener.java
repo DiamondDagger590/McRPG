@@ -5,6 +5,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboInput;
@@ -13,14 +14,16 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
- * Translates {@link PlayerInteractEvent}s with {@link Action#RIGHT_CLICK_AIR} or
- * {@link Action#LEFT_CLICK_AIR} into combo inputs fed to {@link ComboTracker}.
+ * Translates {@link PlayerInteractEvent}s (both air and block clicks) into combo
+ * inputs fed to {@link ComboTracker}.
  * <p>
- * Block and entity interactions are intentionally ignored so that mining, combat,
- * container usage, and block placement do not interfere with combo sequences.
+ * Both air and block interactions are accepted because players are almost always
+ * looking at blocks in normal gameplay. The held-item filter in
+ * {@link ComboTracker#isAllowedHeldItem} prevents combos while holding non-weapon items,
+ * and the tracker itself discards standalone left-clicks that have no in-progress combo.
  * <p>
- * A {@link ComboInput#LEFT} is forwarded to the tracker only when the player already
- * has an in-progress sequence; standalone left-click-in-air is discarded.
+ * Uses {@code ignoreCancelled = false} because Bukkit marks {@code _AIR} interact
+ * events as cancelled (no interacted block), which would silently drop air clicks.
  */
 public class OnComboInputListener implements Listener {
 
@@ -30,10 +33,16 @@ public class OnComboInputListener implements Listener {
         this.comboTracker = comboTracker;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onInteract(@NotNull PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+
         Action action = event.getAction();
-        if (action != Action.RIGHT_CLICK_AIR && action != Action.LEFT_CLICK_AIR) {
+        boolean isRightClick = action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK;
+        boolean isLeftClick = action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK;
+        if (!isRightClick && !isLeftClick) {
             return;
         }
 
@@ -43,7 +52,7 @@ public class OnComboInputListener implements Listener {
             return;
         }
 
-        ComboInput input = (action == Action.RIGHT_CLICK_AIR) ? ComboInput.RIGHT : ComboInput.LEFT;
+        ComboInput input = isRightClick ? ComboInput.RIGHT : ComboInput.LEFT;
         comboTracker.processInput(event.getPlayer(), input);
     }
 }

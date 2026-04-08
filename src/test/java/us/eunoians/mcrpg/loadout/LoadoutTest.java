@@ -265,15 +265,15 @@ public class LoadoutTest extends McRPGBaseTest {
         assertTrue(loadout.shouldSaveDisplay());
     }
 
-    @DisplayName("Given ability already in another loadout, when checking canAbilityBeAddedToLoadout, then it returns false for the first and true for the second")
+    @DisplayName("Given ability already in one loadout, when checking canAbilityBeAddedToLoadout for a different ability in the same skill, then it returns true for both loadouts")
     @Test
-    public void canAbilityBeAddedToLoadout_returnsFalse_whenAbilityAlreadyInOtherLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void canAbilityBeAddedToLoadout_returnsTrue_whenDifferentAbilitySameSkill(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
         Loadout loadout1 = mcRPGPlayer.asSkillHolder().getLoadout(1);
         Loadout loadout2 = mcRPGPlayer.asSkillHolder().getLoadout(2);
         assertDoesNotThrow(() -> loadout1.addAbility(massHarvest.getAbilityKey()));
-        assertFalse(loadout1.canAbilityBeAddedToLoadout(verdantSurge.getAbilityKey()));
+        assertTrue(loadout1.canAbilityBeAddedToLoadout(verdantSurge.getAbilityKey()));
         assertTrue(loadout2.canAbilityBeAddedToLoadout(verdantSurge.getAbilityKey()));
     }
 

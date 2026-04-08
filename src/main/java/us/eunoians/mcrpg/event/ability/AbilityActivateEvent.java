@@ -6,7 +6,10 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 /**
- * This event is called whenever an {@link Ability} activates
+ * This event is called whenever an {@link Ability} activates.
+ * <p>
+ * Provides a {@link HandlerList} so listeners can subscribe at this abstract level
+ * and receive all concrete ability activation events polymorphically.
  */
 public abstract class AbilityActivateEvent extends AbilityEvent {
 
