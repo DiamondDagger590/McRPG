@@ -6,6 +6,7 @@ import io.lumine.mythic.api.skills.ITargetedEntitySkill;
 import io.lumine.mythic.api.skills.SkillMetadata;
 import io.lumine.mythic.api.skills.SkillResult;
 import io.lumine.mythic.bukkit.BukkitAdapter;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
@@ -22,11 +23,9 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
  * MythicMobs owns AI (when to fire, conditions, cooldowns, targeting).
  * McRPG owns execution (damage, effects, scaling, events).
  * <p>
- * This mechanic creates a {@link MobAbilityTriggerEvent} and calls
- * {@link Ability#activateAbility(AbilityHolder, org.bukkit.event.Event)} —
- * the same activation path used by all abilities. Ability implementations
- * register an {@code EventActivatableComponent} for {@link MobAbilityTriggerEvent}
- * to handle mob-triggered execution.
+ * This mechanic fires a {@link MobAbilityTriggerEvent} through Bukkit's event system.
+ * A separate listener handles the actual ability activation, keeping the MM integration
+ * decoupled from McRPG's activation logic.
  * <p>
  * Usage in MythicMobs YAML:
  * <pre>
@@ -72,15 +71,16 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
         Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
 
-        // Create a transient AbilityHolder for the mob caster
+        // Create a transient AbilityHolder for the mob caster.
+        // TODO: Replace with a properly tracked AbilityHolder created at mob spawn time
+        //  so that abilities have access to AbilityData, attributes, and the entity tracker.
         AbilityHolder mobHolder = new AbilityHolder(McRPG.getInstance(),
                 bukkitCaster.getUniqueId());
 
-        // Fire through the standard activation path — ability implementations
-        // handle MobAbilityTriggerEvent via their EventActivatableComponents
+        // Fire the event through Bukkit — a listener handles the actual activation
         MobAbilityTriggerEvent triggerEvent = new MobAbilityTriggerEvent(
                 mobHolder, ability, bukkitCaster, bukkitTarget);
-        ability.activateAbility(mobHolder, triggerEvent);
+        Bukkit.getPluginManager().callEvent(triggerEvent);
 
         return SkillResult.SUCCESS;
     }

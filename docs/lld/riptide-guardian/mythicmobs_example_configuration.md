@@ -199,15 +199,19 @@ All four abilities from the HLD are present in the mob's combat kit. All four ar
 
 **Class:** `us.eunoians.mcrpg.external.mythicmobs.McRPGAbilityMechanic`
 
-Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, creates a transient `AbilityHolder` for the mob, and fires a `MobAbilityTriggerEvent` through the standard `activateAbility()` path.
+Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, creates a transient `AbilityHolder` for the mob, and fires a `MobAbilityTriggerEvent` through `Bukkit.getPluginManager().callEvent()`.
 
 **Event:** `us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent`
 
-A Bukkit event (extends `AbilityActivateEvent`) that carries the caster `LivingEntity` and target `LivingEntity`. The mechanic constructs this event and passes it to `ability.activateAbility(mobHolder, triggerEvent)` — the same activation path used by all abilities. Ability implementations register an `EventActivatableComponent` for `MobAbilityTriggerEvent` to handle mob-triggered execution.
+A Bukkit event (extends `AbilityActivateEvent`) that carries the caster `LivingEntity` and target `LivingEntity`. The mechanic fires this event through Bukkit's event system. A separate listener (`OnMobAbilityTriggerListener`) handles the event and calls `ability.activateAbility(abilityHolder, event)` — the same activation method used by all abilities. This keeps the MM integration decoupled from McRPG's activation logic.
+
+**Listener:** `us.eunoians.mcrpg.listener.ability.OnMobAbilityTriggerListener`
+
+A Bukkit listener registered conditionally when MythicMobs is present. Listens for `MobAbilityTriggerEvent` and directly calls `activateAbility()` on the specific ability from the event. Component checks are intentionally bypassed — MythicMobs has already decided the ability should fire, and the mob's transient `AbilityHolder` does not carry the same component state as a player holder.
 
 This means:
 - **No special mob API** — abilities use the same `activateAbility(AbilityHolder, Event)` contract for both player and mob execution
-- **Component pipeline applies** — ability implementations can gate mob execution with the same component system used for player abilities
+- **Decoupled design** — the mechanic fires an event, a listener handles activation, following McRPG's standard event-driven pattern
 - **`AbilityHolder` is entity-agnostic** (see CLAUDE.md) — no player assumptions
 - **MM cooldowns prevent double-firing** — McRPG does not manage cooldowns for mob abilities
 - **McRPG events fire** — `MobAbilityTriggerEvent` extends `AbilityActivateEvent`, so listeners observing ability activations see mob activations too
@@ -244,7 +248,7 @@ PhaseShift:
 ```
 
 **Notes:**
-- Purely driven by McRPG's ability system — all VFX, teleport logic, damage, and events are handled inside `Ability.executeMobAbility()`
+- Purely driven by McRPG's ability system — all VFX, teleport logic, damage, and events are handled inside `Ability.activateAbility()`
 - The `distance` and `lineofsight` conditions are OR'd — MM evaluates the skill tree and fires if either condition triggers
 - If the ability isn't registered in McRPG (e.g., LLD-6 not yet implemented), the mechanic returns `CONDITION_FAILED` and the skill is a no-op. The mob loses this ability until the McRPG ability is implemented — this is intentional, not a fallback scenario.
 
@@ -266,7 +270,7 @@ Whirlpool:
 ```
 
 **Notes:**
-- Purely driven by McRPG's ability system — AoE zone placement, damage ticks, VFX, slowness, and events are all handled inside `Ability.executeMobAbility()`
+- Purely driven by McRPG's ability system — AoE zone placement, damage ticks, VFX, slowness, and events are all handled inside `Ability.activateAbility()`
 - McRPG controls all tunable values: damage per tick, radius, duration, slowness level
 - Same no-op behavior as Phase Shift if the ability isn't registered yet
 
@@ -288,7 +292,7 @@ WaterloggedStrike:
 ```
 
 **Notes:**
-- Purely driven by McRPG — projectile spawning, trail VFX, hit damage (6 / 3 hearts), slowness, and impact effects are all handled inside `Ability.executeMobAbility()`
+- Purely driven by McRPG — projectile spawning, trail VFX, hit damage (6 / 3 hearts), slowness, and impact effects are all handled inside `Ability.activateAbility()`
 - McRPG controls projectile speed, max range, damage, and slowness duration
 - Same no-op behavior as Phase Shift if the ability isn't registered yet
 
@@ -312,7 +316,7 @@ TsunamiWall:
 ```
 
 **Notes:**
-- Purely driven by McRPG — wall placement, particle VFX, slowness, knockback, and duration are all handled inside `Ability.executeMobAbility()`
+- Purely driven by McRPG — wall placement, particle VFX, slowness, knockback, and duration are all handled inside `Ability.activateAbility()`
 - Only triggers below 50% HP and when target is within 10 blocks (no wall if target already far away)
 - Same no-op behavior as Phase Shift if the ability isn't registered yet
 
@@ -559,8 +563,8 @@ The Riptide Guardian configuration ships as a MythicMobs pack with three files. 
 # mcrpg_ability mechanic, and mcrpg_ability_unlocked condition)
 #
 # If McRPG is removed, the mob still spawns and melees but
-# mcrpg_ability skills become no-ops (fallbacks fire instead)
-# and skill book drops silently fail.
+# mcrpg_ability skills become no-ops and skill book drops
+# silently fail.
 #
 
 RiptideGuardian:
@@ -957,11 +961,12 @@ Drops:
 | `src/main/resources/mythicmobs/Packs/McRPG/Skills/RiptideGuardianSkills.yml` | **NEW** | All skills: Phase Shift, Whirlpool (with fallbacks), Waterlogged Strike, Tsunami Wall, DespawnSelf |
 | `src/main/resources/mythicmobs/Packs/McRPG/DropTables/RiptideGuardianDrops.yml` | **NEW** | Unlock-aware skill book drop tables (4 tables for 2 abilities) |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsConfigExtractor.java` | **NEW** | Extracts bundled pack files to `plugins/MythicMobs/Packs/McRPG/` |
-| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityMechanic.java` | **NEW** | Custom MM mechanic: fires `MobAbilityTriggerEvent` through `activateAbility()` |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityMechanic.java` | **NEW** | Custom MM mechanic: fires `MobAbilityTriggerEvent` through Bukkit event system |
 | `src/main/java/us/eunoians/mcrpg/event/ability/MobAbilityTriggerEvent.java` | **NEW** | Bukkit event carrying caster + target for mob-triggered ability activation |
+| `src/main/java/us/eunoians/mcrpg/listener/ability/OnMobAbilityTriggerListener.java` | **NEW** | Listener for `MobAbilityTriggerEvent`: calls `activateAbility()` on the event's ability |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityUnlockedCondition.java` | **NEW** | Custom MM condition: checks player's ability unlock state |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add `MythicMechanicLoadEvent` and `MythicConditionLoadEvent` handlers |
-| `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call after hook registration |
+| `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call, register `OnMobAbilityTriggerListener` in MM conditional block |
 
 ---
 
@@ -975,7 +980,7 @@ Will define a new `UnlockCondition` interface that replaces the current `Unlocka
 
 Will define the player-side implementations of Phase Shift and Whirlpool as McRPG abilities. These are the abilities unlocked by the skill books dropped by this mob. Key interactions with this LLD:
 
-- **`MobAbilityTriggerEvent` handling:** LLD-6 must register `EventActivatableComponent`s for `MobAbilityTriggerEvent` on all four abilities (Phase Shift, Whirlpool, Waterlogged Strike, Tsunami Wall). The mechanic fires this event through the standard `activateAbility()` path — no special mob API is needed. The event carries the caster and target `LivingEntity` references.
+- **`MobAbilityTriggerEvent` handling:** LLD-6 ability implementations receive `MobAbilityTriggerEvent` as the `Event` parameter in `activateAbility()`. The event carries the caster and target `LivingEntity` references. Abilities should check `event instanceof MobAbilityTriggerEvent` to extract caster/target context for mob-triggered execution. Component checks are bypassed for mob abilities — `OnMobAbilityTriggerListener` calls `activateAbility()` directly.
 - **Event listener audit:** `AbilityActivateEvent` listeners and downstream event handlers may currently assume player-only context. LLD-6 should audit event fields and listeners to ensure they handle non-player `AbilityHolder` instances (the `AbilityHolder` base class is already entity-agnostic).
 - **Ability activation:** Once LLD-6 registers all four abilities in the `AbilityRegistry`, the `mcrpg_ability` mechanic will find them and the mob's full combat kit becomes active. Until then, the mob is melee-only.
 

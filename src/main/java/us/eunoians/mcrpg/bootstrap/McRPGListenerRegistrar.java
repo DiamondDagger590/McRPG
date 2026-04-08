@@ -35,6 +35,7 @@ import us.eunoians.mcrpg.listener.ability.OnBlockDropItemListener;
 import us.eunoians.mcrpg.listener.ability.OnExtraOreActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnFoodLevelChangeAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
+import us.eunoians.mcrpg.listener.ability.OnMobAbilityTriggerListener;
 import us.eunoians.mcrpg.listener.ability.OnPlayerMoveAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
 import us.eunoians.mcrpg.listener.entity.EntitySpawnListener;
@@ -177,6 +178,7 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
             MythicMobsConfigExtractor.extractBundledConfigs(plugin);
             Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
+            Bukkit.getPluginManager().registerEvents(new OnMobAbilityTriggerListener(), plugin);
 
             // Fishing mob spawn listener (requires MythicMobs + enabled in config)
             YamlDocument fishingConfig = plugin.registryAccess()
