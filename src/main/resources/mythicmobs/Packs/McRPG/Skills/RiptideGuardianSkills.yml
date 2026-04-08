@@ -1,0 +1,59 @@
+#
+# Riptide Guardian Skills — McRPG Fishing Mob
+#
+# All four combat abilities use the mcrpg_ability mechanic to
+# delegate execution to McRPG's ability system. McRPG owns all
+# VFX, damage, effects, and events. MM owns AI (when to fire,
+# cooldowns, conditions, targeting).
+#
+# If McRPG is removed, all skills become no-ops and the mob
+# is melee-only.
+#
+
+# ─── Phase Shift ────────────────────────────────────────────
+
+PhaseShift:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:phase_shift} @target
+  Cooldown: 8
+  Conditions:
+  - distance{d=>8} @target
+  TargetConditions:
+  - lineofsight false
+
+# ─── Waterlogged Strike ────────────────────────────────────
+
+WaterloggedStrike:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:waterlogged_strike} @target
+  Cooldown: 6
+  Conditions:
+  - distance{d=5to15} @target
+
+# ─── Whirlpool ─────────────────────────────────────────────
+
+Whirlpool:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:whirlpool} @target
+  Cooldown: 12
+  Conditions:
+  - distance{d=<5} @target
+
+# ─── Tsunami Wall ──────────────────────────────────────────
+
+TsunamiWall:
+  Skills:
+  - mcrpg_ability{ability=mcrpg:tsunami_wall} @target
+  Cooldown: 15
+  Conditions:
+  - health{h=<50%}
+  TargetConditions:
+  - distance{d=<10} @target
+
+# ─── Despawn ────────────────────────────────────────────────
+
+DespawnSelf:
+  Skills:
+  - effect:particles{particle=WATER_SPLASH;amount=50;speed=0.5;ySpread=1.0;xSpread=1.0;zSpread=1.0} @self
+  - sound{s=entity.elder_guardian.ambient;v=1.0;p=0.4} @self
+  - remove @self

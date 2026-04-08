@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability;
 import com.diamonddagger590.mccore.statistic.Statistic;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -131,6 +132,43 @@ public interface Ability extends McRPGContent {
      *         should refund mana when this returns {@code false}.
      */
     boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event);
+
+    /**
+     * Executes this ability on behalf of a non-player entity (e.g., a MythicMobs mob).
+     * <p>
+     * MythicMobs owns AI decisions (when to fire, cooldowns, targeting). McRPG owns
+     * execution (damage formulas, effects, attribute scaling, event firing). This method
+     * is the bridge between the two systems, called by {@code McRPGAbilityMechanic}.
+     * <p>
+     * The default implementation is a no-op. Abilities that support mob execution should
+     * override this method. Until an ability provides an implementation, the MythicMobs
+     * mechanic will treat the ability as unimplemented (the mechanic checks
+     * {@link #supportsMobExecution()} before calling this).
+     *
+     * @param abilityHolder The {@link AbilityHolder} representing the mob caster
+     * @param caster        The {@link LivingEntity} casting the ability (the mob)
+     * @param target        The {@link LivingEntity} being targeted
+     */
+    default void executeMobAbility(@NotNull AbilityHolder abilityHolder,
+                                   @NotNull LivingEntity caster,
+                                   @NotNull LivingEntity target) {
+        // No-op by default — abilities must override to support mob execution
+    }
+
+    /**
+     * Checks whether this ability supports execution by non-player entities via
+     * {@link #executeMobAbility(AbilityHolder, LivingEntity, LivingEntity)}.
+     * <p>
+     * Abilities that override {@link #executeMobAbility} should also override this
+     * method to return {@code true}. The {@code mcrpg_ability} MythicMobs mechanic
+     * uses this to determine whether to delegate to the ability or return a failure
+     * result.
+     *
+     * @return {@code true} if this ability has a mob execution implementation.
+     */
+    default boolean supportsMobExecution() {
+        return false;
+    }
 
     /**
      * Checks to see if this ability is enabled.

@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.external.mythicmobs;
 
+import io.lumine.mythic.bukkit.events.MythicConditionLoadEvent;
 import io.lumine.mythic.bukkit.events.MythicDropLoadEvent;
+import io.lumine.mythic.bukkit.events.MythicMechanicLoadEvent;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
 import org.bukkit.Bukkit;
@@ -23,6 +25,8 @@ import java.util.UUID;
  * It performs three functions:
  * <ol>
  *   <li>Registers the {@code mcrpg_skillbook} custom drop type via {@link MythicDropLoadEvent}</li>
+ *   <li>Registers the {@code mcrpg_ability} custom mechanic via {@link MythicMechanicLoadEvent}</li>
+ *   <li>Registers the {@code mcrpg_ability_unlocked} custom condition via {@link MythicConditionLoadEvent}</li>
  *   <li>Fires {@link FishingMobSpawnEvent} when a MythicMob tagged as a fishing mob spawns</li>
  *   <li>Fires {@link FishingMobDeathEvent} when a MythicMob tagged as a fishing mob dies</li>
  * </ol>
@@ -44,6 +48,33 @@ public class MythicMobsListener implements Listener {
     public void onMythicDropLoad(@NotNull MythicDropLoadEvent event) {
         if (event.getDropName().equalsIgnoreCase("mcrpg_skillbook")) {
             event.register(new McRPGSkillBookDrop(event.getConfig(), event.getArgument()));
+        }
+    }
+
+    /**
+     * Registers the {@code mcrpg_ability} custom mechanic when MythicMobs loads its mechanics.
+     * This mechanic delegates ability execution from MythicMobs AI to McRPG's ability system.
+     *
+     * @param event The mechanic load event fired by MythicMobs
+     */
+    @EventHandler
+    public void onMythicMechanicLoad(@NotNull MythicMechanicLoadEvent event) {
+        if (event.getMechanicName().equalsIgnoreCase("mcrpg_ability")) {
+            event.register(new McRPGAbilityMechanic(event.getConfig()));
+        }
+    }
+
+    /**
+     * Registers the {@code mcrpg_ability_unlocked} custom condition when MythicMobs loads
+     * its conditions. This condition checks whether the killing player has unlocked a
+     * specific McRPG ability, used in DropTable TriggerConditions for unlock-aware drop rates.
+     *
+     * @param event The condition load event fired by MythicMobs
+     */
+    @EventHandler
+    public void onMythicConditionLoad(@NotNull MythicConditionLoadEvent event) {
+        if (event.getConditionName().equalsIgnoreCase("mcrpg_ability_unlocked")) {
+            event.register(new McRPGAbilityUnlockedCondition(event.getConfig()));
         }
     }
 

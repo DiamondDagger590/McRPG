@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
+import us.eunoians.mcrpg.external.mythicmobs.MythicMobsConfigExtractor;
 import us.eunoians.mcrpg.external.mythicmobs.MythicMobsListener;
 import us.eunoians.mcrpg.fishing.ReloadableMobPool;
 import us.eunoians.mcrpg.listener.fishing.FishingMobSpawnListener;
@@ -174,6 +175,7 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // MythicMobs integration (conditional)
         if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
+            MythicMobsConfigExtractor.extractBundledConfigs(plugin);
             Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
 
             // Fishing mob spawn listener (requires MythicMobs + enabled in config)
