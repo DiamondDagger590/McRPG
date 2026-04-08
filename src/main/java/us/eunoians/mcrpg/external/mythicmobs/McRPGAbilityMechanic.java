@@ -32,9 +32,10 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  * A separate listener handles the actual ability activation, keeping the MM integration
  * decoupled from McRPG's activation logic.
  * <p>
- * On first fire for a given ability on a given mob, this mechanic lazily registers the
- * ability on the mob's tracked {@link AbilityHolder} with the configured tier. The holder
- * itself is created at {@code MythicMobSpawnEvent} time and cleaned up on death/despawn.
+ * Abilities are eagerly registered on the mob's {@link AbilityHolder} at spawn time by
+ * {@link MythicMobAbilityParser}. This mechanic also includes a fallback that lazily registers
+ * the ability if it was somehow missed during spawn parsing (e.g., dynamically added skills).
+ * The holder itself is created at {@code MythicMobSpawnEvent} time and cleaned up on death/despawn.
  * <p>
  * Usage in MythicMobs YAML:
  * <pre>
@@ -47,6 +48,25 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
     private final NamespacedKey abilityKey;
     private final int tier;
+
+    /**
+     * Gets the McRPG ability key this mechanic targets.
+     *
+     * @return The ability {@link NamespacedKey}, or {@code null} if the config was invalid
+     */
+    @org.jetbrains.annotations.Nullable
+    public NamespacedKey getAbilityKey() {
+        return abilityKey;
+    }
+
+    /**
+     * Gets the configured tier for this mechanic (defaults to 1).
+     *
+     * @return The tier value
+     */
+    public int getTier() {
+        return tier;
+    }
 
     /**
      * Creates a new ability mechanic from a MythicMobs line config.

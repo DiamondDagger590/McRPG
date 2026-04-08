@@ -199,19 +199,26 @@ All four abilities from the HLD are present in the mob's combat kit. All four ar
 
 **Class:** `us.eunoians.mcrpg.external.mythicmobs.McRPGAbilityMechanic`
 
-Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, looks up the mob's tracked `AbilityHolder` (created at spawn time), lazily registers the ability with its configured tier, and fires a `MobAbilityTriggerEvent` through `Bukkit.getPluginManager().callEvent()`.
+Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, looks up the mob's tracked `AbilityHolder` (created and populated at spawn time), and fires a `MobAbilityTriggerEvent` through `Bukkit.getPluginManager().callEvent()`. Includes a fallback that lazily registers the ability if it was missed during spawn parsing (e.g., dynamically added skills).
 
 **Syntax:** `mcrpg_ability{ability=<key>}` or `mcrpg_ability{ability=<key>;tier=<n>}` (tier defaults to 1)
 
 **AbilityHolder Lifecycle:**
 
-Each MythicMob gets an `AbilityHolder` tracked in `EntityManager`:
-- **Spawn:** `MythicMobSpawnEvent` → create empty holder, track in `EntityManager`
-- **First ability fire:** `McRPGAbilityMechanic` lazily registers the ability + `AbilityData(tier)` on the holder
+Each MythicMob gets an `AbilityHolder` tracked in `EntityManager`, eagerly populated with all `mcrpg_ability` mechanics found in the mob's skill tree:
+- **Spawn:** `MythicMobSpawnEvent` → `MythicMobAbilityParser` traverses the mob type's skill tree across all triggers, extracts all `mcrpg_ability` mechanics with their ability keys and tiers, creates a fully populated `AbilityHolder`, and tracks it in `EntityManager`
+- **Ability fire:** `McRPGAbilityMechanic` looks up the existing holder and fires `MobAbilityTriggerEvent`. If the ability was somehow not registered at spawn (edge case), it is lazily added as a fallback.
 - **Death:** `MythicMobDeathEvent` → remove holder from `EntityManager`
 - **Despawn:** `MythicMobDespawnEvent` → remove holder from `EntityManager`
+- **MM Reload:** `MythicReloadedEvent` → clear the parser cache so skill tree changes are picked up on next spawn
 
-Abilities are lazily populated (not parsed from MM's skill tree at spawn time) because MM nests skills behind `skill:` references, making recursive parsing fragile. The lazy approach is functionally equivalent — abilities are inferred from the MM config since they only get registered when MM fires them.
+**Eager parsing via `MythicMobAbilityParser`:**
+
+The parser resolves abilities at spawn time using a two-pass approach:
+1. **Direct mechanics:** iterates top-level `SkillMechanic` entries across all `SkillTrigger` values and timer skills. If a mechanic is a `CustomMechanic` wrapping a `McRPGAbilityMechanic`, the ability key and tier are extracted directly from the mechanic instance.
+2. **Nested skill references:** for `MetaSkillMechanic` entries (`skill:SkillName`), the parser resolves the referenced `Skill` and reads its raw YAML `Skills` config lines via `Skill.getConfig().getStringList("Skills")`, searching for `mcrpg_ability{...}` patterns. Nested `skill:` references are recursively resolved with cycle detection and a maximum depth of 10.
+
+Results are cached by mob type internal name since skill trees are static per type. The cache is invalidated on MythicMobs reload.
 
 **Event:** `us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent`
 
@@ -975,11 +982,12 @@ Drops:
 | `src/main/resources/mythicmobs/Packs/McRPG/Skills/RiptideGuardianSkills.yml` | **NEW** | All skills: Phase Shift, Whirlpool (with fallbacks), Waterlogged Strike, Tsunami Wall, DespawnSelf |
 | `src/main/resources/mythicmobs/Packs/McRPG/DropTables/RiptideGuardianDrops.yml` | **NEW** | Unlock-aware skill book drop tables (4 tables for 2 abilities) |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsConfigExtractor.java` | **NEW** | Extracts bundled pack files to `plugins/MythicMobs/Packs/McRPG/` |
-| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityMechanic.java` | **NEW** | Custom MM mechanic: fires `MobAbilityTriggerEvent` through Bukkit event system |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityMechanic.java` | **NEW** | Custom MM mechanic: fires `MobAbilityTriggerEvent` through Bukkit event system, with lazy registration fallback |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobAbilityParser.java` | **NEW** | Parses `mcrpg_ability` mechanics from a MythicMob's skill tree at spawn time for eager AbilityHolder population. Caches by mob type, invalidated on MM reload. |
 | `src/main/java/us/eunoians/mcrpg/event/ability/MobAbilityTriggerEvent.java` | **NEW** | Bukkit event carrying caster + target for mob-triggered ability activation |
 | `src/main/java/us/eunoians/mcrpg/listener/ability/OnMobAbilityTriggerListener.java` | **NEW** | Listener for `MobAbilityTriggerEvent`: calls `activateAbility()` on the event's ability |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityUnlockedCondition.java` | **NEW** | Custom MM condition: checks player's ability unlock state |
-| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add mechanic/condition load handlers, AbilityHolder spawn/death/despawn lifecycle |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add mechanic/condition load handlers, eager AbilityHolder population at spawn with parser, death/despawn cleanup, MM reload cache invalidation |
 | `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call, register `OnMobAbilityTriggerListener` in MM conditional block |
 
 ---

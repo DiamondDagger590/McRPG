@@ -6,7 +6,9 @@ import io.lumine.mythic.bukkit.events.MythicMechanicLoadEvent;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
+import io.lumine.mythic.bukkit.events.MythicReloadedEvent;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -17,12 +19,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.fishing.FishingMobDeathEvent;
 import us.eunoians.mcrpg.event.fishing.FishingMobSpawnEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,8 +41,11 @@ import java.util.UUID;
  *   <li>Registers the {@code mcrpg_skillbook} custom drop type via {@link MythicDropLoadEvent}</li>
  *   <li>Registers the {@code mcrpg_ability} custom mechanic via {@link MythicMechanicLoadEvent}</li>
  *   <li>Registers the {@code mcrpg_ability_unlocked} custom condition via {@link MythicConditionLoadEvent}</li>
- *   <li>Creates and tracks an {@link AbilityHolder} for each MythicMob at spawn time</li>
+ *   <li>Creates and tracks an {@link AbilityHolder} for each MythicMob at spawn time,
+ *       eagerly populated with all {@code mcrpg_ability} mechanics found in the mob's skill tree
+ *       via {@link MythicMobAbilityParser}</li>
  *   <li>Removes tracked {@link AbilityHolder} instances on mob death and despawn</li>
+ *   <li>Clears the {@link MythicMobAbilityParser} cache on MythicMobs reload</li>
  *   <li>Fires {@link FishingMobSpawnEvent} when a MythicMob tagged as a fishing mob spawns</li>
  *   <li>Fires {@link FishingMobDeathEvent} when a MythicMob tagged as a fishing mob dies</li>
  * </ol>
@@ -88,10 +98,14 @@ public class MythicMobsListener implements Listener {
     }
 
     /**
-     * Creates and tracks an {@link AbilityHolder} for each MythicMob that spawns.
-     * The holder starts empty — abilities are lazily registered by
-     * {@link McRPGAbilityMechanic} when MM fires each skill. The holder is removed
-     * on death ({@link #onMythicMobDeathCleanup}) or despawn ({@link #onMythicMobDespawnCleanup}).
+     * Creates and tracks an {@link AbilityHolder} for each MythicMob that spawns,
+     * eagerly populated with all {@code mcrpg_ability} mechanics found in the mob's
+     * skill tree via {@link MythicMobAbilityParser}.
+     * <p>
+     * This ensures that any system querying the {@link EntityManager} for a mob's abilities
+     * gets a complete picture immediately, without waiting for each ability to fire once.
+     * The holder is removed on death ({@link #onMythicMobDeathCleanup}) or despawn
+     * ({@link #onMythicMobDespawnCleanup}).
      *
      * @param event The MythicMob spawn event
      */
@@ -104,10 +118,28 @@ public class MythicMobsListener implements Listener {
         EntityManager entityManager = McRPG.getInstance().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.ENTITY);
-        if (!entityManager.isAbilityHolderTracked(entity.getUniqueId())) {
-            AbilityHolder holder = new AbilityHolder(McRPG.getInstance(), entity.getUniqueId());
-            entityManager.trackAbilityHolder(holder);
+        if (entityManager.isAbilityHolderTracked(entity.getUniqueId())) {
+            return;
         }
+
+        AbilityHolder holder = new AbilityHolder(McRPG.getInstance(), entity.getUniqueId());
+        AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess()
+                .registry(McRPGRegistryKey.ABILITY);
+
+        List<MythicMobAbilityParser.ParsedAbilityInfo> parsedAbilities =
+                MythicMobAbilityParser.parseAbilities(event.getMobType());
+
+        for (MythicMobAbilityParser.ParsedAbilityInfo info : parsedAbilities) {
+            NamespacedKey abilityKey = info.abilityKey();
+            if (!abilityRegistry.registered(abilityKey)) {
+                continue;
+            }
+            holder.addAvailableAbility(abilityKey);
+            AbilityData abilityData = new AbilityData(abilityKey, new AbilityTierAttribute(info.tier()));
+            holder.addAbilityData(abilityData);
+        }
+
+        entityManager.trackAbilityHolder(holder);
     }
 
     /**
@@ -190,5 +222,17 @@ public class MythicMobsListener implements Listener {
         String mobType = event.getMobType().getInternalName();
         FishingMobDeathEvent fishingEvent = new FishingMobDeathEvent(entity, killer, mobType);
         Bukkit.getPluginManager().callEvent(fishingEvent);
+    }
+
+    /**
+     * Clears the {@link MythicMobAbilityParser} cache when MythicMobs reloads its configuration.
+     * This ensures that any skill tree changes made by server owners are picked up on the next
+     * mob spawn.
+     *
+     * @param event The MythicMobs reload event
+     */
+    @EventHandler
+    public void onMythicMobsReload(@NotNull MythicReloadedEvent event) {
+        MythicMobAbilityParser.clearCache();
     }
 }
