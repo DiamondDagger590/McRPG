@@ -4,29 +4,38 @@ import io.lumine.mythic.bukkit.events.MythicConditionLoadEvent;
 import io.lumine.mythic.bukkit.events.MythicDropLoadEvent;
 import io.lumine.mythic.bukkit.events.MythicMechanicLoadEvent;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
+import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.entity.EntityManager;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.fishing.FishingMobDeathEvent;
 import us.eunoians.mcrpg.event.fishing.FishingMobSpawnEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.UUID;
 
 /**
- * Bridges MythicMobs events into McRPG's fishing mob event system.
+ * Bridges MythicMobs events into McRPG's event and entity systems.
  * <p>
  * This listener is only registered when the MythicMobs plugin is present on the server.
- * It performs three functions:
+ * It performs the following:
  * <ol>
  *   <li>Registers the {@code mcrpg_skillbook} custom drop type via {@link MythicDropLoadEvent}</li>
  *   <li>Registers the {@code mcrpg_ability} custom mechanic via {@link MythicMechanicLoadEvent}</li>
  *   <li>Registers the {@code mcrpg_ability_unlocked} custom condition via {@link MythicConditionLoadEvent}</li>
+ *   <li>Creates and tracks an {@link AbilityHolder} for each MythicMob at spawn time</li>
+ *   <li>Removes tracked {@link AbilityHolder} instances on mob death and despawn</li>
  *   <li>Fires {@link FishingMobSpawnEvent} when a MythicMob tagged as a fishing mob spawns</li>
  *   <li>Fires {@link FishingMobDeathEvent} when a MythicMob tagged as a fishing mob dies</li>
  * </ol>
@@ -79,6 +88,29 @@ public class MythicMobsListener implements Listener {
     }
 
     /**
+     * Creates and tracks an {@link AbilityHolder} for each MythicMob that spawns.
+     * The holder starts empty — abilities are lazily registered by
+     * {@link McRPGAbilityMechanic} when MM fires each skill. The holder is removed
+     * on death ({@link #onMythicMobDeathCleanup}) or despawn ({@link #onMythicMobDespawnCleanup}).
+     *
+     * @param event The MythicMob spawn event
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMythicMobSpawnTrackHolder(@NotNull MythicMobSpawnEvent event) {
+        Entity entity = event.getEntity();
+        if (!(entity instanceof LivingEntity)) {
+            return;
+        }
+        EntityManager entityManager = McRPG.getInstance().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.ENTITY);
+        if (!entityManager.isAbilityHolderTracked(entity.getUniqueId())) {
+            AbilityHolder holder = new AbilityHolder(McRPG.getInstance(), entity.getUniqueId());
+            entityManager.trackAbilityHolder(holder);
+        }
+    }
+
+    /**
      * Listens for MythicMob spawns and fires a {@link FishingMobSpawnEvent} if the mob
      * is tagged as a fishing mob.
      *
@@ -108,6 +140,33 @@ public class MythicMobsListener implements Listener {
         if (fishingEvent.isCancelled()) {
             entity.remove();
         }
+    }
+
+    /**
+     * Removes the tracked {@link AbilityHolder} for a MythicMob on death.
+     *
+     * @param event The MythicMob death event
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onMythicMobDeathCleanup(@NotNull MythicMobDeathEvent event) {
+        McRPG.getInstance().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .<EntityManager>manager(McRPGManagerKey.ENTITY)
+                .removeAbilityHolder(event.getEntity().getUniqueId());
+    }
+
+    /**
+     * Removes the tracked {@link AbilityHolder} for a MythicMob on despawn
+     * (e.g., max lifetime, combat dropout, chunk unload).
+     *
+     * @param event The MythicMob despawn event
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onMythicMobDespawnCleanup(@NotNull MythicMobDespawnEvent event) {
+        McRPG.getInstance().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .<EntityManager>manager(McRPGManagerKey.ENTITY)
+                .removeAbilityHolder(event.getEntity().getUniqueId());
     }
 
     /**

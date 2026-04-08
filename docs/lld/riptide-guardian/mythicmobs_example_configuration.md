@@ -199,7 +199,19 @@ All four abilities from the HLD are present in the mob's combat kit. All four ar
 
 **Class:** `us.eunoians.mcrpg.external.mythicmobs.McRPGAbilityMechanic`
 
-Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, creates a transient `AbilityHolder` for the mob, and fires a `MobAbilityTriggerEvent` through `Bukkit.getPluginManager().callEvent()`.
+Registered via `MythicMechanicLoadEvent` in `MythicMobsListener`. Implements `ITargetedEntitySkill` — receives the caster (mob) and target from MM, looks up the mob's tracked `AbilityHolder` (created at spawn time), lazily registers the ability with its configured tier, and fires a `MobAbilityTriggerEvent` through `Bukkit.getPluginManager().callEvent()`.
+
+**Syntax:** `mcrpg_ability{ability=<key>}` or `mcrpg_ability{ability=<key>;tier=<n>}` (tier defaults to 1)
+
+**AbilityHolder Lifecycle:**
+
+Each MythicMob gets an `AbilityHolder` tracked in `EntityManager`:
+- **Spawn:** `MythicMobSpawnEvent` → create empty holder, track in `EntityManager`
+- **First ability fire:** `McRPGAbilityMechanic` lazily registers the ability + `AbilityData(tier)` on the holder
+- **Death:** `MythicMobDeathEvent` → remove holder from `EntityManager`
+- **Despawn:** `MythicMobDespawnEvent` → remove holder from `EntityManager`
+
+Abilities are lazily populated (not parsed from MM's skill tree at spawn time) because MM nests skills behind `skill:` references, making recursive parsing fragile. The lazy approach is functionally equivalent — abilities are inferred from the MM config since they only get registered when MM fires them.
 
 **Event:** `us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent`
 
@@ -207,11 +219,13 @@ A Bukkit event (extends `AbilityActivateEvent`) that carries the caster `LivingE
 
 **Listener:** `us.eunoians.mcrpg.listener.ability.OnMobAbilityTriggerListener`
 
-A Bukkit listener registered conditionally when MythicMobs is present. Listens for `MobAbilityTriggerEvent` and directly calls `activateAbility()` on the specific ability from the event. Component checks are intentionally bypassed — MythicMobs has already decided the ability should fire, and the mob's transient `AbilityHolder` does not carry the same component state as a player holder.
+A Bukkit listener registered conditionally when MythicMobs is present. Listens for `MobAbilityTriggerEvent` and directly calls `activateAbility()` on the specific ability from the event. Component checks are intentionally bypassed — MythicMobs has already decided the ability should fire.
 
 This means:
 - **No special mob API** — abilities use the same `activateAbility(AbilityHolder, Event)` contract for both player and mob execution
 - **Decoupled design** — the mechanic fires an event, a listener handles activation, following McRPG's standard event-driven pattern
+- **Tracked holder** — mob holders are tracked in `EntityManager` from spawn, cleaned up on death/despawn
+- **Tier support** — abilities carry per-mob tier via `AbilityTierAttribute` in `AbilityData` (defaults to 1)
 - **`AbilityHolder` is entity-agnostic** (see CLAUDE.md) — no player assumptions
 - **MM cooldowns prevent double-firing** — McRPG does not manage cooldowns for mob abilities
 - **McRPG events fire** — `MobAbilityTriggerEvent` extends `AbilityActivateEvent`, so listeners observing ability activations see mob activations too
@@ -965,7 +979,7 @@ Drops:
 | `src/main/java/us/eunoians/mcrpg/event/ability/MobAbilityTriggerEvent.java` | **NEW** | Bukkit event carrying caster + target for mob-triggered ability activation |
 | `src/main/java/us/eunoians/mcrpg/listener/ability/OnMobAbilityTriggerListener.java` | **NEW** | Listener for `MobAbilityTriggerEvent`: calls `activateAbility()` on the event's ability |
 | `src/main/java/us/eunoians/mcrpg/external/mythicmobs/McRPGAbilityUnlockedCondition.java` | **NEW** | Custom MM condition: checks player's ability unlock state |
-| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add `MythicMechanicLoadEvent` and `MythicConditionLoadEvent` handlers |
+| `src/main/java/us/eunoians/mcrpg/external/mythicmobs/MythicMobsListener.java` | **MODIFY** | Add mechanic/condition load handlers, AbilityHolder spawn/death/despawn lifecycle |
 | `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java` | **MODIFY** | Add extraction call, register `OnMobAbilityTriggerListener` in MM conditional block |
 
 ---
