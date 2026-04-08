@@ -99,7 +99,22 @@ Skill books are always physical `ItemStack`s granted to the player's inventory. 
 
 `SkillBookConsumeEvent` fires *before* the unlock. It is cancellable and carries the item stack. If cancelled, the item is not consumed and `AbilityUnlockEvent` is never fired. This separation lets plugins gate consumption (e.g., require a specific location, level, or currency) without interfering with the general unlock flow.
 
-### 3.6 Item Display Text: Localized but Baked at Creation Time
+### 3.6 Immediate Save on Consumption
+
+When a skill book is consumed, player data is immediately flushed to the database (asynchronously) **before** the item is removed from inventory. This ensures the unlock is persisted as quickly as possible.
+
+**Crash failure analysis:** Skill book consumption is a two-part operation — unlock the ability and remove the item. In a crash scenario:
+
+| Persisted? | Item removed? | Result |
+|:---:|:---:|---------|
+| Yes | Yes | Normal success |
+| **Yes** | **No** (world rolled back) | Player still has the book but ability is already unlocked. Next right-click shows "already unlocked" message. **Best achievable fail state.** |
+| No | No (world rolled back) | Full rollback — player retries. Acceptable. |
+| No | Yes | Worst case — ability lost and book consumed. **The immediate save minimizes this window.** |
+
+The save follows the same `database.getDatabaseExecutorService().submit()` pattern used by `OnSkillLevelUpListener` for immediate ability unlock persistence. It calls `mcRPGPlayer.savePlayer(connection)` — a full player data flush — because the unlock attribute is stored within the `SkillHolder`'s ability data structures, not as a standalone DAO operation.
+
+### 3.7 Item Display Text: Localized but Baked at Creation Time
 
 Skill book display names and lore are resolved through the localization system (`McRPGLocalizationManager`) at creation time, not hardcoded. The factory has two resolution paths:
 
@@ -707,6 +722,25 @@ public class SkillBookConsumeListener implements Listener {
         AbilityUnlockEvent unlockEvent = new AbilityUnlockEvent(abilityHolder, unlockableAbility);
         Bukkit.getPluginManager().callEvent(unlockEvent);
 
+        // Immediately flush player data to database (async) so that the unlock
+        // survives a crash. If the server crashes after this point, the worst case
+        // is that the world rolls back and the player still has the skill book in
+        // their inventory — but the ability is already persisted as unlocked. This
+        // is a strictly better fail state than losing both the book and the unlock.
+        // Follows the same pattern as OnSkillLevelUpListener's immediate save.
+        Database database = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE)
+                .getDatabase();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                mcRPGPlayer.savePlayer(connection);
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE,
+                        "Failed to save player data after skill book consumption", e);
+            }
+        });
+
         // Remove one skill book from the player's hand
         item.setAmount(item.getAmount() - 1);
 
@@ -742,6 +776,8 @@ PlayerInteractEvent (RIGHT_CLICK)
   │
   ├─ Fire AbilityUnlockEvent
   │   └─ OnAbilityUnlockListener handles: unlock message + auto-add to loadout
+  │
+  ├─ Flush player data to DB (async) — persists unlock before item removal
   │
   ├─ Remove item (decrement stack by 1)
   │
