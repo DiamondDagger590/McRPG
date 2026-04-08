@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 /**
@@ -21,14 +22,17 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
  * MythicMobs owns AI (when to fire, conditions, cooldowns, targeting).
  * McRPG owns execution (damage, effects, scaling, events).
  * <p>
+ * This mechanic creates a {@link MobAbilityTriggerEvent} and calls
+ * {@link Ability#activateAbility(AbilityHolder, org.bukkit.event.Event)} —
+ * the same activation path used by all abilities. Ability implementations
+ * register an {@code EventActivatableComponent} for {@link MobAbilityTriggerEvent}
+ * to handle mob-triggered execution.
+ * <p>
  * Usage in MythicMobs YAML:
  * <pre>
  *   Skills:
  *   - mcrpg_ability{ability=mcrpg:phase_shift} @target
  * </pre>
- *
- * @see McRPG
- * @see Ability#executeMobAbility
  */
 public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
@@ -58,11 +62,6 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
             return SkillResult.CONDITION_FAILED;
         }
 
-        Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
-        if (!ability.supportsMobExecution()) {
-            return SkillResult.CONDITION_FAILED;
-        }
-
         AbstractEntity casterEntity = data.getCaster().getEntity();
         if (!(BukkitAdapter.adapt(casterEntity) instanceof LivingEntity bukkitCaster)) {
             return SkillResult.CONDITION_FAILED;
@@ -71,11 +70,17 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
             return SkillResult.CONDITION_FAILED;
         }
 
+        Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
+
         // Create a transient AbilityHolder for the mob caster
         AbilityHolder mobHolder = new AbilityHolder(McRPG.getInstance(),
                 bukkitCaster.getUniqueId());
 
-        ability.executeMobAbility(mobHolder, bukkitCaster, bukkitTarget);
+        // Fire through the standard activation path — ability implementations
+        // handle MobAbilityTriggerEvent via their EventActivatableComponents
+        MobAbilityTriggerEvent triggerEvent = new MobAbilityTriggerEvent(
+                mobHolder, ability, bukkitCaster, bukkitTarget);
+        ability.activateAbility(mobHolder, triggerEvent);
 
         return SkillResult.SUCCESS;
     }
