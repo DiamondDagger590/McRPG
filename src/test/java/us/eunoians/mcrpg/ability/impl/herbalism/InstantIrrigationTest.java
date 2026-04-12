@@ -82,6 +82,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_ACTIVE_LOADOUT_SIZE, 3)).thenReturn(3);
 
         ReloadableContentManager reloadableContentManager = new ReloadableContentManager(mcRPG);
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(reloadableContentManager);

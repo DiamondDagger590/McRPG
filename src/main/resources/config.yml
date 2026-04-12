@@ -175,8 +175,9 @@ configuration:
   # Configure various gameplay mechanics
   gameplay:
     loadout:
-      max-loadout-amount: 3
-      max-loadout-size: 15
+      max-loadout-amount: 10
+      max-loadout-size: 9
+      max-active-loadout-size: 3
       loadout-display-name-response-timeout: 10
     redeemable:
       custom-experience-amount-response-timeout: 10

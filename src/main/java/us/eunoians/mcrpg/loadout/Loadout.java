@@ -142,8 +142,26 @@ public final class Loadout {
         if (!(ability instanceof UnlockableAbility)) {
             return false;
         }
-        // TODO: Re-enable one-active-per-skill restriction after PoC combo testing
-        return !abilities.contains(key);
+        if (abilities.contains(key)) {
+            return false;
+        }
+        if (ability instanceof ActiveAbility) {
+            long activeCount = abilities.stream()
+                    .map(k -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(k))
+                    .filter(a -> a instanceof ActiveAbility)
+                    .count();
+            return activeCount < getMaxActiveLoadoutSize();
+        }
+        return true;
+    }
+
+    /**
+     * Gets the maximum number of {@link ActiveAbility ActiveAbilities} allowed in this loadout.
+     *
+     * @return The maximum active ability count from config.
+     */
+    private int getMaxActiveLoadoutSize() {
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_ACTIVE_LOADOUT_SIZE, 3);
     }
 
     /**
