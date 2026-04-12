@@ -47,14 +47,16 @@ public class LoadoutAbilityDAO {
          ** Table Description:
          ** Contains player loadout slots
          *
-         *
-         * loadout_id is the slot of the player's loadout the data belongs to
-         * uuid is an integer representing the slot in the loadout that the ability is stored in
-         * ability_id is the ability id that is used to find the corresponding {@link UnlockedAbilities} value
+         * holder_uuid  - UUID of the player who owns the loadout
+         * loadout_id   - which numbered loadout slot this row belongs to
+         * ability_id   - the database name of the ability stored in this slot
+         * slot_number  - zero-based position of the ability within the loadout; preserved across saves so the
+         *                player's preferred arrangement is restored on login
          **
          ** Reasoning for structure:
-         ** PK is the composite of `loadout_id` field, `slot_number` and `uuid`, as a loadout id will be present once for each ability in the loadout,
-         * so the combination of that and the slot number will be used to look up individual abilities and each player uuid is unique.
+         ** PK is the composite of `loadout_id`, `ability_id`, and `holder_uuid` — a given ability can only
+         ** appear once per loadout per player. `slot_number` is not part of the PK because its value may
+         ** change when the player rearranges their loadout; the delete-then-reinsert save strategy handles this.
          *
          * The foreign key requires the player's uuid to be present in the loadout table as that's where the player's loadout info is stored
          *****/
@@ -63,6 +65,7 @@ public class LoadoutAbilityDAO {
                 "`holder_uuid` varchar(36) NOT NULL," +
                 "`loadout_id` int(11) NOT NULL," +
                 "`ability_id` varchar(32) NOT NULL," +
+                "`slot_number` int(11) NOT NULL," +
                 "PRIMARY KEY (`loadout_id`, `ability_id`, `holder_uuid`), " +
                 // Ensure that the loadout is stored in the info table, also if it ever gets removed from that table, ensure it's deleted here
                 "CONSTRAINT FK_loadout FOREIGN KEY (`holder_uuid`, `loadout_id`) REFERENCES " + LoadoutInfoDAO.TABLE_NAME + " (`holder_uuid`, `loadout_id`) ON DELETE CASCADE" +
@@ -106,6 +109,7 @@ public class LoadoutAbilityDAO {
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
             lastStoredVersion = 1;
         }
+
     }
 
     /**
@@ -123,7 +127,8 @@ public class LoadoutAbilityDAO {
     public static Loadout getLoadout(@NotNull Connection connection, @NotNull UUID holderUUID, int loadoutId) {
         AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         Loadout loadout = new Loadout(holderUUID, loadoutId);
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT ability_id FROM " + TABLE_NAME + " WHERE holder_uuid = ? AND loadout_id = ?;")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT ability_id FROM " + TABLE_NAME + " WHERE holder_uuid = ? AND loadout_id = ? ORDER BY slot_number ASC;")) {
             preparedStatement.setString(1, holderUUID.toString());
             preparedStatement.setInt(2, loadoutId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -178,11 +183,15 @@ public class LoadoutAbilityDAO {
             return preparedStatements;
         }
         try {
-            for (NamespacedKey namespacedKey : loadout.getAbilities()) {
-                PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO " + TABLE_NAME + " (holder_uuid, loadout_id, ability_id) VALUES (?, ?, ?);");
+            var orderedAbilities = loadout.getOrderedAbilities();
+            for (int i = 0; i < orderedAbilities.size(); i++) {
+                NamespacedKey namespacedKey = orderedAbilities.get(i);
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                        "INSERT INTO " + TABLE_NAME + " (holder_uuid, loadout_id, ability_id, slot_number) VALUES (?, ?, ?, ?);");
                 preparedStatement.setString(1, uuid.toString());
                 preparedStatement.setInt(2, loadout.getLoadoutSlot());
                 preparedStatement.setString(3, abilityRegistry.getRegisteredAbility(namespacedKey).getDatabaseName());
+                preparedStatement.setInt(4, i);
                 preparedStatements.add(preparedStatement);
             }
         } catch (SQLException e) {

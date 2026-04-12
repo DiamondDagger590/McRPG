@@ -33,6 +33,7 @@ import us.eunoians.mcrpg.world.WorldManager;
 import java.util.List;
 import java.util.UUID;
 
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -296,5 +297,47 @@ public class LoadoutTest extends McRPGBaseTest {
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertFalse(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), massHarvest.getAbilityKey()));
+    }
+
+    @DisplayName("Given two active abilities from the same skill both in the loadout, when replacing one with the other, then both remain with their positions swapped")
+    @Test
+    public void replaceAbility_swapsPositions_whenBothAbilitiesAlreadyInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.addAbility(verdantSurge.getAbilityKey());
+        assertEquals(List.of(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()), loadout.getOrderedAbilities());
+
+        assertDoesNotThrow(() -> loadout.replaceAbility(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
+
+        // Both abilities must still be present — the swap must not remove either one.
+        assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
+        assertTrue(loadout.getAbilities().contains(verdantSurge.getAbilityKey()));
+        assertEquals(2, loadout.getAbilities().size());
+        // Positions must be exchanged: verdantSurge moves to index 0, massHarvest to index 1.
+        assertEquals(List.of(verdantSurge.getAbilityKey(), massHarvest.getAbilityKey()), loadout.getOrderedAbilities());
+    }
+
+    @DisplayName("Given two active abilities from the same skill both in the loadout, when checking canAbilityBeReplacedIntoLoadout, then it returns true")
+    @Test
+    public void canAbilityBeReplacedIntoLoadout_returnsTrue_whenNewAbilityAlreadyInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.addAbility(verdantSurge.getAbilityKey());
+        assertTrue(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
+    }
+
+    @DisplayName("Given an ability added to the loadout, when getting ordered abilities, then it is at the expected position")
+    @Test
+    public void getOrderedAbilities_preservesInsertionOrder(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.addAbility(verdantSurge.getAbilityKey());
+        assertEquals(List.of(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()), loadout.getOrderedAbilities());
     }
 }

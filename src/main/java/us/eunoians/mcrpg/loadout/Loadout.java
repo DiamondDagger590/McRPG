@@ -16,7 +16,8 @@ import us.eunoians.mcrpg.exception.loadout.LoadoutMaxSizeExceededException;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,34 +28,36 @@ import java.util.UUID;
  * A {@link us.eunoians.mcrpg.entity.holder.LoadoutHolder} also can possess multiple loadouts. Each loadout comes with an id that
  * is tied to its holder, representing the slot of the loadout for that holder.
  * <p>
- * A loadout also has a restriction where it can only possess one {@link ActiveAbility} per {@link us.eunoians.mcrpg.skill.Skill}.
+ * Abilities are stored in insertion order. This order is persisted in the database via a {@code slot_number} column
+ * so that the player's preferred arrangement is preserved across sessions. When two abilities are both already present
+ * in the loadout, {@link #replaceAbility(NamespacedKey, NamespacedKey)} swaps their positions rather than removing one.
  */
 public final class Loadout {
 
     private final UUID loadoutHolder;
     private final int loadoutSlot;
-    private final Set<NamespacedKey> abilities;
+    private final List<NamespacedKey> abilities;
     @NotNull
     private LoadoutDisplay loadoutDisplay;
 
     public Loadout(@NotNull UUID loadoutHolder, int loadoutSlot) {
         this.loadoutHolder = loadoutHolder;
         this.loadoutSlot = loadoutSlot;
-        this.abilities = new HashSet<>();
+        this.abilities = new ArrayList<>();
         this.loadoutDisplay = getDefaultDisplayItem();
     }
 
     public Loadout(@NotNull UUID loadoutHolder, int loadoutSlot, @NotNull Set<NamespacedKey> abilities) {
         this.loadoutHolder = loadoutHolder;
         this.loadoutSlot = loadoutSlot;
-        this.abilities = abilities;
+        this.abilities = new ArrayList<>(abilities);
         this.loadoutDisplay = getDefaultDisplayItem();
     }
 
     public Loadout(@NotNull UUID loadoutHolder, int loadoutSlot, @NotNull Set<NamespacedKey> abilities, @NotNull LoadoutDisplay loadoutDisplay) {
         this.loadoutHolder = loadoutHolder;
         this.loadoutSlot = loadoutSlot;
-        this.abilities = abilities;
+        this.abilities = new ArrayList<>(abilities);
         this.loadoutDisplay = loadoutDisplay;
     }
 
@@ -80,12 +83,11 @@ public final class Loadout {
     }
 
     /**
-     * Adds the {@link NamespacedKey} to this loadout.
+     * Adds the {@link NamespacedKey} to this loadout at the next available position.
      *
      * @param key The {@link NamespacedKey} corresponding to the {@link Ability} to add to this loadout.
      * @throws LoadoutMaxSizeExceededException   If the loadout is at or above the {@link #getMaxLoadoutSize()}.
-     * @throws InvalidAbilityForLoadoutException If the loadout already has an {@link ActiveAbility} for the {@link us.eunoians.mcrpg.skill.Skill}
-     *                                           belonging to the ability.
+     * @throws InvalidAbilityForLoadoutException If the ability cannot be added (already present or exceeds the active ability limit).
      */
     public void addAbility(@NotNull NamespacedKey key) {
         if (abilities.size() >= getMaxLoadoutSize()) {
@@ -93,7 +95,8 @@ public final class Loadout {
                     loadoutSlot, loadoutHolder, getMaxLoadoutSize(), abilities.size()));
         }
         if (!canAbilityBeAddedToLoadout(key)) {
-            throw new InvalidAbilityForLoadoutException(this, key, String.format("Loadout %d for user %s already has an active ability with the same skill as %s.", loadoutSlot, loadoutHolder, key));
+            throw new InvalidAbilityForLoadoutException(this, key, String.format("Loadout %d for user %s cannot add %s: ability is already present or the maximum number of active abilities has been reached.",
+                    loadoutSlot, loadoutHolder, key));
         }
         abilities.add(key);
     }
@@ -108,17 +111,32 @@ public final class Loadout {
     }
 
     /**
-     * Removes an existing ability to replace it with a new one.
+     * Replaces an existing ability in the loadout with a new one, preserving positions.
+     * <p>
+     * If {@code newAbility} is already present in the loadout at a different position, the two abilities
+     * swap positions — both remain in the loadout. Otherwise, {@code newAbility} is inserted at the
+     * position previously held by {@code oldAbility}.
      *
-     * @param oldAbility The {@link NamespacedKey} to remove.
-     * @param newAbility The {@link NamespacedKey} to add.
+     * @param oldAbility The {@link NamespacedKey} to replace.
+     * @param newAbility The {@link NamespacedKey} to place into the loadout.
+     * @throws InvalidAbilityForLoadoutException If {@link #canAbilityBeReplacedIntoLoadout(NamespacedKey, NamespacedKey)}
+     *                                           returns {@code false} for the given pair.
      */
     public void replaceAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
         if (!canAbilityBeReplacedIntoLoadout(oldAbility, newAbility)) {
-            throw new InvalidAbilityForLoadoutException(this, newAbility, String.format("Loadout %d for user %s tried to replace %s with %s, but the replacement is not valid.", loadoutSlot, loadoutHolder, oldAbility, newAbility));
+            throw new InvalidAbilityForLoadoutException(this, newAbility, String.format("Loadout %d for user %s tried to replace %s with %s, but the replacement is not valid.",
+                    loadoutSlot, loadoutHolder, oldAbility, newAbility));
         }
-        removeAbility(oldAbility);
-        addAbility(newAbility);
+        int oldIndex = abilities.indexOf(oldAbility);
+        int newIndex = abilities.indexOf(newAbility);
+        if (newIndex != -1) {
+            // Both abilities are already in the loadout — swap their positions.
+            abilities.set(oldIndex, newAbility);
+            abilities.set(newIndex, oldAbility);
+        } else {
+            // Normal replacement: put the new ability at the position previously held by the old one.
+            abilities.set(oldIndex, newAbility);
+        }
     }
 
     /**
@@ -166,6 +184,13 @@ public final class Loadout {
 
     /**
      * Checks to see if the provided ability key that is being replaced can be replaced by the new ability key.
+     * <p>
+     * A replacement is considered valid if:
+     * <ul>
+     *   <li>The new ability is already in the loadout at a different position (positional swap).</li>
+     *   <li>The old and new abilities are both active abilities belonging to the same skill (skill-slot swap).</li>
+     *   <li>The new ability passes {@link #canAbilityBeAddedToLoadout(NamespacedKey)} (fresh addition at this slot).</li>
+     * </ul>
      *
      * @param oldAbilityKey The old ability key that is being replaced.
      * @param newAbilityKey The new ability key that is replacing the old ability key.
@@ -174,13 +199,16 @@ public final class Loadout {
     public boolean canAbilityBeReplacedIntoLoadout(@NotNull NamespacedKey oldAbilityKey, @NotNull NamespacedKey newAbilityKey) {
         Ability newAbility = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(newAbilityKey);
         Ability oldAbility = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(oldAbilityKey);
-        // Check if it's a default ability
         if (!(newAbility instanceof UnlockableAbility)) {
             return false;
         } else if (oldAbilityKey.equals(newAbilityKey)) {
             return false;
         }
-        // If the abilities being replaced are both actives from the same skill, allow being replaced.
+        // If the new ability is already in the loadout at a different position, the operation is a positional swap.
+        if (abilities.contains(newAbilityKey)) {
+            return true;
+        }
+        // If both abilities are active abilities belonging to the same skill, allow the replacement (skill-slot swap).
         if (oldAbility instanceof ActiveAbility && oldAbility instanceof SkillAbility oldSkillAbility
                 && newAbility instanceof ActiveAbility && newAbility instanceof SkillAbility newSkillAbility
                 && oldSkillAbility.getSkillKey().equals(newSkillAbility.getSkillKey())) {
@@ -191,12 +219,27 @@ public final class Loadout {
 
     /**
      * Gets a {@link Set} of {@link NamespacedKey}s for all abilities in this loadout.
+     * <p>
+     * The returned set is unordered. To iterate abilities in their stored slot order, use {@link #getOrderedAbilities()}.
      *
-     * @return A {@link Set} of {@link NamespacedKey} for all abilities in this loadout.
+     * @return An unordered {@link Set} of {@link NamespacedKey}s for all abilities in this loadout.
      */
     @NotNull
     public Set<NamespacedKey> getAbilities() {
         return Set.copyOf(abilities);
+    }
+
+    /**
+     * Gets the abilities in this loadout in their stored slot order.
+     * <p>
+     * The order reflects the position each ability occupies in the loadout GUI. Use this when the position
+     * of each ability matters (e.g., saving to the database or rendering in slot order).
+     *
+     * @return An ordered, unmodifiable {@link List} of {@link NamespacedKey}s for all abilities in this loadout.
+     */
+    @NotNull
+    public List<NamespacedKey> getOrderedAbilities() {
+        return List.copyOf(abilities);
     }
 
     /**
@@ -209,7 +252,7 @@ public final class Loadout {
     }
 
     /**
-     * Creates a copy of the provided loadout that is owned by the provided uuid.
+     * Creates a copy of the provided loadout that is owned by the provided uuid, preserving ability order.
      *
      * @param loadoutHolder The uuid of the {@link us.eunoians.mcrpg.entity.holder.LoadoutHolder} that will own the new loadout.
      * @param loadoutSlot   The slot of the loadout for the {@link us.eunoians.mcrpg.entity.holder.LoadoutHolder}
@@ -217,7 +260,9 @@ public final class Loadout {
      */
     @NotNull
     public Loadout copyLoadout(@NotNull UUID loadoutHolder, int loadoutSlot) {
-        return new Loadout(loadoutHolder, loadoutSlot, new HashSet<>(abilities));
+        Loadout copy = new Loadout(loadoutHolder, loadoutSlot);
+        copy.abilities.addAll(this.abilities);
+        return copy;
     }
 
     /**
