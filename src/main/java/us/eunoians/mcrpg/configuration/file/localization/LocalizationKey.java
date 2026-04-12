@@ -36,6 +36,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route COMMAND_DESCRIPTION_RESET_SKILL = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "reset-skill"));
     public static final Route COMMAND_DESCRIPTION_LOADOUT_SLOT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "loadout-slot"));
     public static final Route COMMAND_DESCRIPTION_LOADOUT_EDIT_SLOT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "loadout-edit-slot"));
+    public static final Route COMMAND_DESCRIPTION_LOADOUT_COPY_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "loadout-copy-player"));
+    public static final Route COMMAND_DESCRIPTION_LOADOUT_COPY_SLOT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "loadout-copy-slot"));
     public static final Route COMMAND_DESCRIPTION_DEBUG_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "debug-player"));
     public static final Route COMMAND_DESCRIPTION_EXP_BANK_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-player"));
     public static final Route COMMAND_DESCRIPTION_EXP_BANK_AMOUNT = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "exp-bank-amount"));
@@ -77,6 +79,12 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LOADOUT_SET_COMMAND_NO_LOADOUT_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "no-loadout-matches"));
     public static final Route LOADOUT_SET_COMMAND_AMBIGUOUS_MATCHES_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "ambiguous-matches"));
     public static final Route LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LOADOUT_SET_COMMAND_HEADER, "loadout-set-success-message"));
+    private static final String LOADOUT_COPY_COMMAND_HEADER = toRoutePath(LOADOUT_COMMAND_HEADER, "copy");
+    public static final Route LOADOUT_COPY_COMMAND_PLAYER_ONLY_MESSAGE = Route.fromString(toRoutePath(LOADOUT_COPY_COMMAND_HEADER, "player-only-message"));
+    public static final Route LOADOUT_COPY_COMMAND_INVALID_SLOT_MESSAGE = Route.fromString(toRoutePath(LOADOUT_COPY_COMMAND_HEADER, "invalid-slot-message"));
+    public static final Route LOADOUT_COPY_COMMAND_EXECUTOR_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LOADOUT_COPY_COMMAND_HEADER, "executor-success-message"));
+    public static final Route LOADOUT_COPY_COMMAND_EXECUTOR_PARTIAL_SUCCESS_MESSAGE = Route.fromString(toRoutePath(LOADOUT_COPY_COMMAND_HEADER, "executor-partial-success-message"));
+    public static final Route LOADOUT_COPY_COMMAND_TARGET_NOTIFICATION_MESSAGE = Route.fromString(toRoutePath(LOADOUT_COPY_COMMAND_HEADER, "target-notification-message"));
 
     private static final String ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "admin");
     private static final String RELOAD_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reload");

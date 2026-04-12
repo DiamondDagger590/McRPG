@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.minecraft.extras.RichDescription;
-import org.incendo.cloud.parser.standard.StringParser;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.command.loadout.parser.LoadoutParser;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -42,7 +42,7 @@ public class LoadoutSetCommand extends McRPGCommandBase {
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("loadout")
                 .literal("set")
-                .required("slot", StringParser.greedyStringParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_LOADOUT_SLOT)))
+                .required("slot", LoadoutParser.loadoutParser(), RichDescription.richDescription(localizationManager.getLocalizedMessageAsComponent(LocalizationKey.COMMAND_DESCRIPTION_LOADOUT_SLOT)))
                 .handler(commandContext -> {
                     CommandSender commandSender = commandContext.sender().getSender();
                     CloudKey<String> slotKey = CloudKey.of("slot", String.class);

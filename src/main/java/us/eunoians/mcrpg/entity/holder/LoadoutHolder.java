@@ -248,6 +248,24 @@ public class LoadoutHolder extends AbilityHolder {
     }
 
     /**
+     * Returns all loadouts that the player has explicitly customised (i.e. whose display differs
+     * from the per-slot default), within the current max slot limit.
+     * <p>
+     * Only loadouts that have already been created or loaded from storage are inspected —
+     * this method never auto-creates an empty slot. The result is intended for use cases such
+     * as tab-completion where only meaningful, player-chosen names should be offered.
+     *
+     * @return An unmodifiable list of customised loadouts.
+     */
+    @NotNull
+    public List<Loadout> getNamedLoadouts() {
+        int maxSlots = getMaxLoadoutAmount();
+        return loadouts.values().stream()
+                .filter(l -> l.getLoadoutSlot() >= 1 && l.getLoadoutSlot() <= maxSlots && l.shouldSaveDisplay())
+                .toList();
+    }
+
+    /**
      * Returns the number of {@link Loadout}s currently held in memory for this holder.
      * <p>
      * Only loadouts that have been explicitly created or loaded from storage are counted.

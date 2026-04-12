@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.command.admin.board.BoardAdminScopedCommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
+import us.eunoians.mcrpg.command.loadout.LoadoutCopyCommand;
 import us.eunoians.mcrpg.command.admin.bank.BoostedExperienceModifyCommand;
 import us.eunoians.mcrpg.command.admin.bank.RestedExperienceModifyCommand;
 import us.eunoians.mcrpg.command.admin.bank.redeemable.RedeemableExperienceModifyCommand;
@@ -82,6 +83,7 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         LoadoutCommand.registerCommand();
         LoadoutEditCommand.registerCommand();
         LoadoutSetCommand.registerCommand();
+        LoadoutCopyCommand.registerCommand();
 
         // Give Commands
         GiveLevelsCommand.registerCommand();

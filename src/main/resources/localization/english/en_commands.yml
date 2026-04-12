@@ -30,6 +30,8 @@ commands:
     reset-skill: "<gray>The skill to reset."
     loadout-slot: "<gray>The loadout to set."
     loadout-edit-slot: "<gray>The loadout to edit."
+    loadout-copy-player: "<gray>The player to copy your current loadout to."
+    loadout-copy-slot: "<gray>The target loadout slot to overwrite (defaults to the player's current slot)."
     debug-player: "<gray>The player to debug."
     exp-bank-player: "<gray>The player to modify."
     exp-bank-amount: "<gray>The amount to modify."
@@ -99,6 +101,22 @@ commands:
     no-linked-chest-message: "<gray>You don't have a linked chest."
   # Configure the different /mcrpg loadout commands.
   loadout:
+    # Configure the /mcrpg loadout copy command.
+    copy:
+      # The message sent when a non-player (e.g. console) tries to use this command.
+      player-only-message: "<red>Only players can use this command."
+      # The message sent when the specified target slot is not valid for that player.
+      # Supports: <target>, <loadout-slot>
+      invalid-slot-message: "<red>Slot <gold><loadout-slot></gold> is not a valid loadout slot for <gold><target></gold>."
+      # The message sent to the executor when all abilities in their loadout were copied successfully.
+      # Supports: <target>, <loadout-slot>
+      executor-success-message: "<gray>Copied your current loadout to <gold><target></gold>'s slot <gold><loadout-slot></gold>."
+      # The message sent to the executor when some abilities were skipped because the target lacks access.
+      # Supports: <target>, <loadout-slot>, <skipped-abilities>
+      executor-partial-success-message: "<gray>Copied your current loadout to <gold><target></gold>'s slot <gold><loadout-slot></gold>. <yellow><skipped-abilities> ability(s) were skipped because <gold><target></gold> does not have access.</yellow>"
+      # The message sent to the target player to notify them that their loadout slot was updated.
+      # Supports: <loadout-slot>
+      target-notification-message: "<gray>A player copied their current loadout to your slot <gold><loadout-slot></gold>."
     # Configure the loadout edit command.
     edit:
       # The message to be sent to the player who ran the command if they don't have a loadout

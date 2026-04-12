@@ -58,6 +58,7 @@ public enum CommandPlaceholders {
     REFRESH_TYPE("refresh_type"),
     STATISTIC_NAME("statistic-name"),
     STATISTIC_VALUE("statistic-value"),
+    SKIPPED_ABILITIES("skipped-abilities"),
     ;
 
     private final String placeholder;
