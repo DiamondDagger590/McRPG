@@ -22,8 +22,6 @@ import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.Optional;
-
 /**
  * A custom MythicMobs mechanic that delegates ability execution to McRPG.
  * <p>
@@ -40,6 +38,11 @@ import java.util.Optional;
  * added skills). The holder itself is created at {@code MythicMobSpawnEvent} time and
  * cleaned up on death/despawn.
  * <p>
+ * This mechanic is also the canonical parser for {@code mcrpg_ability} config lines.
+ * {@link MythicMobAbilityParser} constructs instances of this class directly when scanning
+ * nested {@code MetaSkill} configs, so any new config fields added here are automatically
+ * picked up by spawn-time parsing — there is no secondary YAML parser to keep in sync.
+ * <p>
  * Usage in MythicMobs YAML:
  * <pre>
  *   Skills:
@@ -54,29 +57,40 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
     /**
      * Creates a new ability mechanic from a MythicMobs line config.
+     * <p>
+     * The {@code ability} parameter is <b>required</b>. If it is missing or not a valid
+     * {@link NamespacedKey}, this constructor throws {@link IllegalArgumentException}
+     * so that MythicMobs fails mechanic registration loudly at config load time rather
+     * than at mob cast time. The {@code tier} parameter is clamped to a minimum of {@code 1}.
      *
      * @param config The MythicMobs line config containing the {@code ability} parameter
      *               and optional {@code tier} parameter (defaults to 1)
+     * @throws IllegalArgumentException If the {@code ability} parameter is missing or invalid
      */
     public McRPGAbilityMechanic(@NotNull MythicLineConfig config) {
         String keyString = config.getString("ability", "");
-        this.abilityKey = NamespacedKey.fromString(keyString);
-        this.tier = config.getInteger("tier", 1);
+        NamespacedKey parsedKey = NamespacedKey.fromString(keyString);
+        if (parsedKey == null) {
+            throw new IllegalArgumentException(
+                    "mcrpg_ability mechanic requires a valid 'ability' parameter (got: '" + keyString + "')");
+        }
+        this.abilityKey = parsedKey;
+        this.tier = Math.max(1, config.getInteger("tier", 1));
     }
 
     /**
-     * Gets the McRPG ability key this mechanic targets.
+     * Gets the McRPG ability key this mechanic targets. Guaranteed non-null — a missing
+     * or invalid key causes construction to fail.
      *
-     * @return An {@link Optional} containing the ability {@link NamespacedKey}, or
-     *         an empty Optional if the config was invalid
+     * @return The ability {@link NamespacedKey}
      */
     @NotNull
-    public Optional<NamespacedKey> getAbilityKey() {
-        return Optional.ofNullable(abilityKey);
+    public NamespacedKey getAbilityKey() {
+        return abilityKey;
     }
 
     /**
-     * Gets the configured tier for this mechanic (defaults to 1).
+     * Gets the configured tier for this mechanic. Guaranteed to be at least {@code 1}.
      *
      * @return The tier value
      */
@@ -88,10 +102,6 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
     @NotNull
     public SkillResult castAtEntity(@NotNull SkillMetadata data,
                                      @NotNull AbstractEntity target) {
-        if (abilityKey == null) {
-            return SkillResult.CONDITION_FAILED;
-        }
-
         AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess()
                 .registry(McRPGRegistryKey.ABILITY);
         if (!abilityRegistry.registered(abilityKey)) {

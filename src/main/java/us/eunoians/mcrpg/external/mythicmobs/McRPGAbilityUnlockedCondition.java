@@ -47,10 +47,9 @@ public class McRPGAbilityUnlockedCondition implements IEntityCondition {
         if (abilityKey == null) {
             return false;
         }
-        if (!abstractEntity.isPlayer()) {
+        if (!(abstractEntity.getBukkitEntity() instanceof Player player)) {
             return false;
         }
-        Player player = (Player) abstractEntity.getBukkitEntity();
         Optional<McRPGPlayer> mcRPGPlayerOpt = McRPG.getInstance().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER)

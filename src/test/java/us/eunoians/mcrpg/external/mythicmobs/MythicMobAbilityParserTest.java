@@ -63,7 +63,7 @@ public class MythicMobAbilityParserTest {
         NamespacedKey expectedKey = NamespacedKey.fromString("mcrpg:phase_shift");
 
         McRPGAbilityMechanic mcrpgMechanic = mock(McRPGAbilityMechanic.class);
-        when(mcrpgMechanic.getAbilityKey()).thenReturn(Optional.of(expectedKey));
+        when(mcrpgMechanic.getAbilityKey()).thenReturn(expectedKey);
         when(mcrpgMechanic.getTier()).thenReturn(2);
 
         CustomMechanic customMechanic = mock(CustomMechanic.class);
@@ -155,7 +155,7 @@ public class MythicMobAbilityParserTest {
     public void parseAbilities_extractsMultipleAbilitiesAcrossTriggersAndTimers() {
         // Ability from trigger skills
         McRPGAbilityMechanic mcrpgMechanic1 = mock(McRPGAbilityMechanic.class);
-        when(mcrpgMechanic1.getAbilityKey()).thenReturn(Optional.of(NamespacedKey.fromString("mcrpg:phase_shift")));
+        when(mcrpgMechanic1.getAbilityKey()).thenReturn(NamespacedKey.fromString("mcrpg:phase_shift"));
         when(mcrpgMechanic1.getTier()).thenReturn(1);
 
         CustomMechanic customMechanic1 = mock(CustomMechanic.class);
@@ -271,27 +271,18 @@ public class MythicMobAbilityParserTest {
     }
 
     @Test
-    public void parseAbilities_skipsAbilityWithNullKeyInCustomMechanic() {
-        McRPGAbilityMechanic mcrpgMechanic = mock(McRPGAbilityMechanic.class);
-        when(mcrpgMechanic.getAbilityKey()).thenReturn(Optional.empty());
-        when(mcrpgMechanic.getTier()).thenReturn(1);
+    public void parsedAbilityInfo_clampsZeroAndNegativeTierToOne() {
+        NamespacedKey key = NamespacedKey.fromString("mcrpg:phase_shift");
 
-        CustomMechanic customMechanic = mock(CustomMechanic.class);
-        when(customMechanic.getMechanic()).thenReturn(Optional.of(mcrpgMechanic));
+        MythicMobAbilityParser.ParsedAbilityInfo zeroTier =
+                new MythicMobAbilityParser.ParsedAbilityInfo(key, 0);
+        MythicMobAbilityParser.ParsedAbilityInfo negativeTier =
+                new MythicMobAbilityParser.ParsedAbilityInfo(key, -5);
+        MythicMobAbilityParser.ParsedAbilityInfo validTier =
+                new MythicMobAbilityParser.ParsedAbilityInfo(key, 3);
 
-        SkillTrigger<?> trigger = mock(SkillTrigger.class);
-        skillTriggerStatic.when(SkillTrigger::values).thenReturn(List.of(trigger));
-
-        Queue<SkillMechanic> queue = new LinkedList<>();
-        queue.add(customMechanic);
-
-        MythicMob mythicMob = mock(MythicMob.class);
-        when(mythicMob.getInternalName()).thenReturn("NullKeyMob");
-        when(mythicMob.getSkills(trigger)).thenReturn(queue);
-        when(mythicMob.getTimerSkills()).thenReturn(null);
-
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
-
-        assertTrue(result.isEmpty());
+        assertEquals(1, zeroTier.tier(), "Tier 0 should be clamped to 1");
+        assertEquals(1, negativeTier.tier(), "Negative tier should be clamped to 1");
+        assertEquals(3, validTier.tier(), "Valid tier should be preserved");
     }
 }
