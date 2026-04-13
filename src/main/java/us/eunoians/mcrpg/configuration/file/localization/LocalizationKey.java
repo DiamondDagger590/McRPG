@@ -276,6 +276,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "upgradable-abilities.display-item"));
     public static final Route ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "passive-abilities.display-item"));
     public static final Route ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "active-abilities.display-item"));
+    public static final Route ABILITY_SORT_LOADOUT_ORDER_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_SORT_TYPE_HEADER, "loadout-order.display-item"));
 
     private static final String SKILL_SORT_TYPE_HEADER = toRoutePath(GUI_HEADER, "skill-sort-types");
     public static final Route SKILL_SORT_ALPHABETICAL_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_SORT_TYPE_HEADER, "alphabetical.display-item"));

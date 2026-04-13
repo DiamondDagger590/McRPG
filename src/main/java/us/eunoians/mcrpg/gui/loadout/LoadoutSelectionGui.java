@@ -85,9 +85,11 @@ public class LoadoutSelectionGui extends McRPGPaginatedGui {
         for (int i = 1; i <= loadoutHolder.getMaxLoadoutAmount(); i++) {
             loadouts.add(loadoutHolder.getLoadout(i));
         }
+        int pageOffset = (page - 1) * NAVIGATION_ROW_START_INDEX;
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
-            if (i < loadouts.size()) {
-                Loadout loadout = loadouts.get(i);
+            int loadoutIndex = pageOffset + i;
+            if (loadoutIndex < loadouts.size()) {
+                Loadout loadout = loadouts.get(loadoutIndex);
                 LoadoutSelectionSlot loadoutSelectionSlot = new LoadoutSelectionSlot(getCreatingPlayer(), loadout);
                 setSlot(i, loadoutSelectionSlot);
             }
@@ -121,7 +123,8 @@ public class LoadoutSelectionGui extends McRPGPaginatedGui {
 
     @Override
     public int getMaximumPage() {
-        return Math.max(1, getCreatingPlayer().asSkillHolder().getMaxLoadoutAmount() / 9);
+        int maxLoadouts = getCreatingPlayer().asSkillHolder().getMaxLoadoutAmount();
+        return Math.max(1, (maxLoadouts + NAVIGATION_ROW_START_INDEX - 1) / NAVIGATION_ROW_START_INDEX);
     }
 
     @Override

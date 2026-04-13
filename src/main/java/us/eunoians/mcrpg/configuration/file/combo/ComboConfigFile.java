@@ -17,6 +17,9 @@ public final class ComboConfigFile extends ConfigFile {
     // Root header
     private static final String COMBO_HEADER = "combo";
 
+    // Allowed held items
+    public static final Route COMBO_ALLOWED_ITEMS = Route.fromString(toRoutePath(COMBO_HEADER, "allowed-items"));
+
     // Timing
     private static final String TIMING_HEADER = toRoutePath(COMBO_HEADER, "timing");
     public static final Route TIMING_WINDOW_TICKS = Route.fromString(toRoutePath(TIMING_HEADER, "window-ticks"));

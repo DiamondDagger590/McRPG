@@ -66,6 +66,7 @@ public final class SwordsConfigFile extends SkillConfigFile {
     public static final Route RAGE_SPIKE_ENABLED = Route.fromString(toRoutePath(RAGE_SPIKE_HEADER, "enabled"));
     public static final Route RAGE_SPIKE_AMOUNT_OF_TIERS = Route.fromString(toRoutePath(RAGE_SPIKE_HEADER, "amount-of-tiers"));
     public static final Route RAGE_SPIKE_CONFIGURATION_HEADER = Route.fromString(toRoutePath(RAGE_SPIKE_HEADER, "tier-configuration"));
+    public static final Route RAGE_SPIKE_MAX_VERTICAL_VELOCITY = Route.fromString(toRoutePath(RAGE_SPIKE_HEADER, "max-vertical-velocity"));
 
 
     @NotNull

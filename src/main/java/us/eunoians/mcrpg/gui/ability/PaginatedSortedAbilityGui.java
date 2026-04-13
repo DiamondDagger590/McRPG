@@ -72,6 +72,8 @@ public abstract class PaginatedSortedAbilityGui extends McRPGPaginatedGui implem
         if (cachedSorts.containsKey(sortType)) {
             abilities = cachedSorts.get(sortType);
         } else {
+            // Preserve encounter order from the source list so that LOADOUT_ORDER (no-op comparator)
+            // can reflect the stored slot arrangement.
             abilities = getUnsortedAbilities()
                     .stream()
                     .map(namespacedKey -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey)).toList();
@@ -142,14 +144,17 @@ public abstract class PaginatedSortedAbilityGui extends McRPGPaginatedGui implem
     public abstract int getNavigationRowStartIndex();
 
     /**
-     * Gets a {@link Set} of {@link NamespacedKey}s that represents all {@link Ability Abilities} that can be possibly displayed
+     * Gets a {@link List} of {@link NamespacedKey}s that represents all {@link Ability Abilities} that can be possibly displayed
      * by this gui before sorting.
+     * <p>
+     * The list's encounter order is used as the base for {@link AbilitySortType#LOADOUT_ORDER}.
+     * Implementations that do not care about order may return any stable {@link List} wrapping their source set.
      *
-     * @return A {@link Set} of {@link NamespacedKey}s that represents all {@link Ability Abilities} that can be possibly displayed
+     * @return A {@link List} of {@link NamespacedKey}s that represents all {@link Ability Abilities} that can be possibly displayed
      * by this gui before sorting.
      */
     @NotNull
-    public abstract Set<NamespacedKey> getUnsortedAbilities();
+    public abstract List<NamespacedKey> getUnsortedAbilities();
 
     /**
      * Paints the abilities for a given page.

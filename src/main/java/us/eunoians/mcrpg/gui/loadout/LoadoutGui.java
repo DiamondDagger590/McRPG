@@ -47,6 +47,7 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     public LoadoutGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
         super(mcRPGPlayer);
         this.loadout = loadout;
+        setAbilitySortNode(AbilitySortType.getLoadoutOrderNode());
     }
 
     @NotNull
@@ -69,8 +70,8 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     }
 
     @Override
-    public @NotNull Set<NamespacedKey> getUnsortedAbilities() {
-        return loadout.getAbilities();
+    public @NotNull List<NamespacedKey> getUnsortedAbilities() {
+        return loadout.getOrderedAbilities();
     }
 
     @Override

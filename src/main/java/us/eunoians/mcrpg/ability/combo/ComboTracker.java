@@ -1,17 +1,25 @@
 package us.eunoians.mcrpg.ability.combo;
 
+import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Manages per-player combo input state for the combo ability activation system.
@@ -19,10 +27,14 @@ import java.util.UUID;
  * All public methods must be called from the main server thread (they are invoked
  * from Bukkit event handlers).
  * <p>
- * When a player inputs {@link ComboInput#RIGHT} while holding an allowed item, a combo
- * sequence begins (or continues). Each subsequent input is validated against the known
+ * When a player inputs {@link ComboInput#RIGHT} while holding an allowed item (or bare hand),
+ * a combo sequence begins (or continues). Each subsequent input is validated against the known
  * {@link ComboPattern}s. When a 3-click pattern is complete, a {@link ComboCompleteEvent}
  * is fired. If no valid continuation exists, the state is reset with feedback.
+ * <p>
+ * The allowed item list is loaded from {@code combo.allowed-items} in {@code combo_configuration.yml}
+ * and reloads automatically when {@code /mcrpg admin reload} is run. An empty hand (AIR) is always
+ * permitted regardless of the config list.
  */
 public class ComboTracker {
 
@@ -31,9 +43,23 @@ public class ComboTracker {
 
     private final McRPG plugin;
     private final Map<UUID, PlayerComboState> playerStates = new HashMap<>();
+    private final ReloadableSet<CustomItemWrapper> allowedItems;
 
     public ComboTracker(@NotNull McRPG plugin) {
         this.plugin = plugin;
+        var comboConfig = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.COMBO_CONFIG);
+        this.allowedItems = new ReloadableSet<>(
+                comboConfig,
+                ComboConfigFile.COMBO_ALLOWED_ITEMS,
+                strings -> strings.stream().map(CustomItemWrapper::new).collect(Collectors.toSet())
+        );
+        plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(Set.of(allowedItems));
     }
 
     /**
@@ -106,28 +132,20 @@ public class ComboTracker {
     }
 
     /**
-     * Checks whether the given item stack's material is permitted to initiate or continue a combo.
+     * Checks whether the given item stack is permitted to initiate or continue a combo.
      * <p>
-     * Allowed items: empty hand (AIR) and any tool or weapon (swords, axes, pickaxes, shovels, hoes).
-     * This prevents combos from firing while holding food, buckets, shields, etc.
+     * An empty hand ({@link Material#AIR}) is always allowed. All other items are checked
+     * against the {@code combo.allowed-items} list in {@code combo_configuration.yml},
+     * which reloads automatically on {@code /mcrpg admin reload}.
      *
      * @param item The item currently held in the main hand.
      * @return {@code true} if combo input is allowed with this item.
      */
     public boolean isAllowedHeldItem(@NotNull ItemStack item) {
-        Material material = item.getType();
-        if (material == Material.AIR) {
+        if (item.getType() == Material.AIR) {
             return true;
         }
-        String name = material.name();
-        return name.endsWith("_SWORD")
-                || name.endsWith("_AXE")
-                || name.endsWith("_PICKAXE")
-                || name.endsWith("_SHOVEL")
-                || name.endsWith("_HOE")
-                || name.equals("BOW")
-                || name.equals("CROSSBOW")
-                || name.equals("TRIDENT");
+        return allowedItems.getContent().contains(new CustomItemWrapper(item));
     }
 
     // --- Internal helpers ---

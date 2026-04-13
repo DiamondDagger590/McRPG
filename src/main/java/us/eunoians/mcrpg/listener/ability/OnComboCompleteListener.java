@@ -19,21 +19,19 @@ import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Handles {@link ComboCompleteEvent} by resolving which ability occupies the completed slot,
  * checking preconditions (hunger, cooldown), and dispatching
  * {@link ComboActivatable#comboActivate(us.eunoians.mcrpg.entity.holder.AbilityHolder)}.
  * <p>
- * Slot assignment is derived from the player's active loadout: all {@link ComboActivatable}
- * abilities present in the loadout are sorted alphabetically by
- * {@link org.bukkit.NamespacedKey#toString()} and mapped to slots 1–3. Only abilities the
- * player explicitly placed in their loadout are considered — default (non-unlockable) abilities
- * are excluded.
+ * Slot assignment mirrors the player's loadout GUI order: combo slot 1 is the first
+ * {@link ComboActivatable} in the loadout, slot 2 is the second, and so on. Abilities
+ * are iterated via {@link us.eunoians.mcrpg.loadout.Loadout#getOrderedAbilities()} to
+ * preserve insertion order. Only abilities the player explicitly placed in their loadout
+ * are considered — default (non-unlockable) abilities are excluded.
  */
 public class OnComboCompleteListener implements Listener {
 
@@ -61,20 +59,15 @@ public class OnComboCompleteListener implements Listener {
 
         var abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
-        // Only consider abilities the player placed in their loadout (not default abilities)
-        Map<String, ComboActivatable> comboAbilityMap = new HashMap<>();
-        for (var key : loadoutHolder.getLoadout().getAbilities()) {
+        // Collect ComboActivatable abilities in the player's loadout order so that
+        // combo slot 1 always corresponds to the first combo ability visible in the GUI.
+        List<ComboActivatable> comboAbilities = new ArrayList<>();
+        for (var key : loadoutHolder.getLoadout().getOrderedAbilities()) {
             Ability ability = abilityRegistry.getRegisteredAbility(key);
             if (ability instanceof ComboActivatable comboActivatable) {
-                comboAbilityMap.put(key.toString(), comboActivatable);
+                comboAbilities.add(comboActivatable);
             }
         }
-
-        // Sort alphabetically by key for deterministic slot assignment across restarts
-        List<ComboActivatable> comboAbilities = comboAbilityMap.entrySet().stream()
-                .sorted(Comparator.comparing(Map.Entry::getKey))
-                .map(Map.Entry::getValue)
-                .toList();
 
         int slotIndex = event.getSlotIndex();
         if (slotIndex > comboAbilities.size()) {

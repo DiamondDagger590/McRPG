@@ -321,6 +321,12 @@ ability-configuration:
   rage-spike:
     enabled: true
     amount-of-tiers: 5
+    # Maximum Y velocity applied during a Rage Spike dash when the player is looking upward.
+    # This value is the actual Y velocity added — it is NOT multiplied by the tier velocity,
+    # so the cap is easy to tune. A normal Minecraft jump is ~0.42, so values below that
+    # feel like a gentle lift rather than a full launch.
+    # Set to 0.0 to restore the original horizontal-only behavior.
+    max-vertical-velocity: 0.3
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
@@ -334,22 +340,22 @@ ability-configuration:
         upgrade-quest: "mcrpg:rage_spike_upgrade"
       tier-1:
         unlock-level: 1
-        cooldown: 240
+        cooldown: 10
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:rage_spike_tier2"
-        cooldown: 220
+        cooldown: 10
       tier-3:
         unlock-level: 3
         upgrade-quest: "mcrpg:rage_spike_tier3"
-        cooldown: 200
+        cooldown: 10
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:rage_spike_tier4"
-        cooldown: 160
+        cooldown: 10
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 850
         upgrade-quest: "mcrpg:rage_spike_tier5"
-        cooldown: 120
+        cooldown: 10

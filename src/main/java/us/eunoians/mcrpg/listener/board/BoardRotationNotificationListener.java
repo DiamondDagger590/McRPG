@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,23 +17,36 @@ import us.eunoians.mcrpg.event.board.BoardRotationEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * Broadcasts a notification to all online players whenever the quest board rotates.
  * <p>
- * {@link BoardRotationEvent} fires asynchronously from the database executor thread.
- * The message broadcast is therefore scheduled back to the main thread using
- * {@link org.bukkit.scheduler.BukkitScheduler#runTask}.
+ * Multiple refresh types (daily + weekly) can rotate the same board in the same cycle,
+ * each firing a {@link BoardRotationEvent}. A per-board cooldown suppresses duplicates
+ * so players see exactly one notification per rotation window.
  */
 public class BoardRotationNotificationListener implements Listener {
 
+    private static final long COOLDOWN_MS = 30_000L;
+
     /**
-     * Schedules a main-thread task that sends a localized board-rotated notification
-     * to every online player.
+     * Timestamp of the last broadcast per board. Bounded by the number of boards;
+     * entries are never removed but the map stays trivially small (one entry per board).
      */
+    private final Map<NamespacedKey, Long> lastBroadcastMillis = new HashMap<>();
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBoardRotation(@NotNull BoardRotationEvent event) {
+        NamespacedKey boardKey = event.getBoard().getBoardKey();
+        long now = System.currentTimeMillis();
+        if (now - lastBroadcastMillis.getOrDefault(boardKey, 0L) < COOLDOWN_MS) {
+            return;
+        }
+        lastBroadcastMillis.put(boardKey, now);
+
         McRPG plugin = McRPG.getInstance();
         Bukkit.getScheduler().runTask(plugin, () -> {
             McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
@@ -50,7 +64,6 @@ public class BoardRotationNotificationListener implements Listener {
                             mcRPGPlayer, LocalizationKey.QUEST_BOARD_ROTATED_NOTIFICATION);
                     onlinePlayer.sendMessage(message);
                 } else {
-                    // Fallback for players not yet tracked — use server locale
                     Component message = localizationManager.getLocalizedMessageAsComponent(
                             LocalizationKey.QUEST_BOARD_ROTATED_NOTIFICATION);
                     onlinePlayer.sendMessage(message);

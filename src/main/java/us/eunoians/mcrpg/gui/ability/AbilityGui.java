@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.slot.AbilitySlot;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.home.HomeGui;
@@ -114,8 +115,14 @@ public class AbilityGui extends PaginatedSortedAbilityGui {
 
     @Override
     @NotNull
-    public Set<NamespacedKey> getUnsortedAbilities() {
-        return getCreatingPlayer().asSkillHolder().getAvailableAbilities();
+    public List<NamespacedKey> getUnsortedAbilities() {
+        return List.copyOf(getCreatingPlayer().asSkillHolder().getAvailableAbilities());
+    }
+
+    @Override
+    @NotNull
+    protected Set<AbilitySortType> getSkippedSortTypes() {
+        return Set.of(AbilitySortType.LOADOUT_ORDER);
     }
 
     @Override

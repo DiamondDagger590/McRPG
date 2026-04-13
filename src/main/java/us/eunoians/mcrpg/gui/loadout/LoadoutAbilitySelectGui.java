@@ -70,8 +70,8 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
     }
 
     @Override
-    public @NotNull Set<NamespacedKey> getUnsortedAbilities() {
-        return Set.copyOf(abilityKeyFilter.filter(getCreatingPlayer(), getCreatingPlayer().asSkillHolder().getAvailableAbilities()));
+    public @NotNull List<NamespacedKey> getUnsortedAbilities() {
+        return List.copyOf(abilityKeyFilter.filter(getCreatingPlayer(), getCreatingPlayer().asSkillHolder().getAvailableAbilities()));
     }
 
     @Override
@@ -151,6 +151,6 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
 
     @Override
     protected @NotNull Set<AbilitySortType> getSkippedSortTypes() {
-        return Set.of(AbilitySortType.UPGRADEABLE_ABILITIES, AbilitySortType.INNATE_ABILITIES);
+        return Set.of(AbilitySortType.UPGRADEABLE_ABILITIES, AbilitySortType.INNATE_ABILITIES, AbilitySortType.LOADOUT_ORDER);
     }
 }

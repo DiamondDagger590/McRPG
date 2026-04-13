@@ -100,9 +100,18 @@ public enum AbilitySortType {
     UPGRADEABLE_ABILITIES(LocalizationKey.ABILITY_SORT_UPGRADABLE_ABILITIES_DISPLAY_ITEM, new AbilityUpgradeFilter(),
             SKILL::getAbilityComparator),
     PASSIVE_ABILITIES(LocalizationKey.ABILITY_SORT_PASSIVE_ABILITIES_DISPLAY_ITEM, new PassiveAbilityFilter(), SKILL::getAbilityComparator),
-    ACTIVE_ABILITIES(LocalizationKey.ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM, new ActiveAbilityFilter(), SKILL::getAbilityComparator);
+    ACTIVE_ABILITIES(LocalizationKey.ABILITY_SORT_ACTIVE_ABILITIES_DISPLAY_ITEM, new ActiveAbilityFilter(), SKILL::getAbilityComparator),
+    /**
+     * Preserves the order in which abilities appear in the source list (insertion/slot order).
+     * The comparator is a no-op so that the downstream stable sort leaves the stream encounter
+     * order unchanged. Only meaningful when the {@link PaginatedSortedAbilityGui#getUnsortedAbilities()}
+     * implementation returns an ordered {@link java.util.List}; specifically, {@link us.eunoians.mcrpg.gui.loadout.LoadoutGui}
+     * uses this to reflect the player's current {@link us.eunoians.mcrpg.loadout.Loadout#getOrderedAbilities()} arrangement.
+     */
+    LOADOUT_ORDER(LocalizationKey.ABILITY_SORT_LOADOUT_ORDER_DISPLAY_ITEM, null, mcrpgPlayer -> (a, b) -> 0);
 
     private final static LinkedNode<AbilitySortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilitySortType.SKILL);
+    private static LinkedNode<AbilitySortType> loadoutOrderNode;
     static {
         LinkedNode<AbilitySortType> prev = FIRST_SORT_TYPE;
         // Using definition order as the link order
@@ -112,6 +121,9 @@ public enum AbilitySortType {
                 LinkedNode<AbilitySortType> next = new LinkedNode<>(type);
                 prev.setNext(next);
                 prev = next;
+                if (type == LOADOUT_ORDER) {
+                    loadoutOrderNode = next;
+                }
             }
         }
         // Set the tail of these linked nodes to start back at the head
@@ -198,5 +210,18 @@ public enum AbilitySortType {
     @NotNull
     public static LinkedNode<AbilitySortType> getFirstSortType() {
         return FIRST_SORT_TYPE;
+    }
+
+    /**
+     * Gets the {@link LinkedNode} for {@link #LOADOUT_ORDER}.
+     * <p>
+     * Use this to initialise a GUI that should display abilities in their stored slot order by default,
+     * e.g. {@link us.eunoians.mcrpg.gui.loadout.LoadoutGui}.
+     *
+     * @return The {@link LinkedNode} wrapping {@link #LOADOUT_ORDER}.
+     */
+    @NotNull
+    public static LinkedNode<AbilitySortType> getLoadoutOrderNode() {
+        return loadoutOrderNode;
     }
 }

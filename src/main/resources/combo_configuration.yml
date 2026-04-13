@@ -1,10 +1,58 @@
 config-version: 1
 
 combo:
+  # Items that are allowed to register combo inputs. An empty hand always counts regardless of this list,
+  # but note that right-clicking air with empty hands does not produce a server event (Minecraft client
+  # limitation), so empty-hand combos only work when looking at a block or entity.
+  # Each entry is a Material name (e.g. DIAMOND_SWORD) or a custom item key for custom items.
+  # This list is reloaded live via /mcrpg admin reload — no restart required.
+  allowed-items:
+    - WOODEN_SWORD
+    - STONE_SWORD
+    - IRON_SWORD
+    - GOLDEN_SWORD
+    - DIAMOND_SWORD
+    - NETHERITE_SWORD
+    - WOODEN_AXE
+    - STONE_AXE
+    - IRON_AXE
+    - GOLDEN_AXE
+    - DIAMOND_AXE
+    - NETHERITE_AXE
+    - WOODEN_PICKAXE
+    - STONE_PICKAXE
+    - IRON_PICKAXE
+    - GOLDEN_PICKAXE
+    - DIAMOND_PICKAXE
+    - NETHERITE_PICKAXE
+    - WOODEN_SHOVEL
+    - STONE_SHOVEL
+    - IRON_SHOVEL
+    - GOLDEN_SHOVEL
+    - DIAMOND_SHOVEL
+    - NETHERITE_SHOVEL
+    - WOODEN_HOE
+    - STONE_HOE
+    - IRON_HOE
+    - GOLDEN_HOE
+    - DIAMOND_HOE
+    - NETHERITE_HOE
+    - WOODEN_SPEAR
+    - STONE_SPEAR
+    - COPPER_SPEAR
+    - IRON_SPEAR
+    - GOLDEN_SPEAR
+    - DIAMOND_SPEAR
+    - NETHERITE_SPEAR
+    - BOW
+    - CROSSBOW
+    - TRIDENT
+    - MACE
+
   timing:
     # How many server ticks to wait for the next input before resetting the combo sequence.
     # 14 ticks ≈ 700 ms at 20 TPS.
-    window-ticks: 14
+    window-ticks: 30
 
   failure-feedback:
     # Sound played when a combo fails (insufficient hunger or cooldown).

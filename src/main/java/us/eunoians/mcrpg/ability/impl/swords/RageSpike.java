@@ -138,8 +138,13 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
      */
     private void performRageSpike(@NotNull AbilityHolder abilityHolder, @NotNull Player player) {
         int tier = getCurrentAbilityTier(abilityHolder);
-        Vector unitVector = new Vector(player.getLocation().getDirection().getX(), 0, player.getLocation().getDirection().getZ());
-        player.setVelocity(unitVector.multiply(getVelocity(tier)));
+        var direction = player.getLocation().getDirection();
+        double clampedY = Math.min(direction.getY(), getMaxVerticalVelocity());
+        // Horizontal components are scaled by the tier velocity; Y is applied directly so
+        // the config cap represents the actual Y velocity and is not amplified by the multiplier.
+        Vector launchVector = new Vector(direction.getX(), 0, direction.getZ()).multiply(getVelocity(tier));
+        launchVector.setY(clampedY);
+        player.setVelocity(launchVector);
 
         // Launch sound
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BREEZE_SHOOT, 1.0f, 1.4f);
@@ -208,6 +213,17 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
         } else {
             return swordsConfig.getDouble(allTiersRoute);
         }
+    }
+
+    /**
+     * Gets the maximum vertical velocity component that can be applied to the player during a Rage Spike dash.
+     * The player's raw look-direction Y value is clamped to this value, so looking slightly upward yields
+     * a gentle lift while extreme upward angles are prevented from launching the player into the sky.
+     *
+     * @return The maximum vertical velocity cap, defaulting to {@code 0.3} if not set in config.
+     */
+    public double getMaxVerticalVelocity() {
+        return getYamlDocument().getDouble(SwordsConfigFile.RAGE_SPIKE_MAX_VERTICAL_VELOCITY, 0.3);
     }
 
     /**

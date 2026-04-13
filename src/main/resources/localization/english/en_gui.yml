@@ -457,6 +457,12 @@ gui:
         material: STONE_SWORD
         lore:
           - '<gray>Click to change how abilities are sorted.'
+    loadout-order:
+      display-item:
+        name: "<red>Sort by Loadout Order"
+        material: PAPER
+        lore:
+          - '<gray>Click to change how abilities are sorted.'
   # This GUI allows players to view and edit their skills.
   skill-gui:
     title: '<gold>Viewing Skills'
