@@ -58,6 +58,16 @@ import java.util.UUID;
  */
 public class MythicMobsListener implements Listener {
 
+    private final MythicMobAbilityParser abilityParser;
+
+    /**
+     * Creates a new listener, instantiating the {@link MythicMobAbilityParser} it will use
+     * to eagerly populate {@link AbilityHolder}s at spawn time.
+     */
+    public MythicMobsListener() {
+        this.abilityParser = new MythicMobAbilityParser();
+    }
+
     /**
      * Registers the {@code mcrpg_skillbook} custom drop type when MythicMobs loads its drop table.
      *
@@ -127,7 +137,7 @@ public class MythicMobsListener implements Listener {
                 .registry(McRPGRegistryKey.ABILITY);
 
         List<MythicMobAbilityParser.ParsedAbilityInfo> parsedAbilities =
-                MythicMobAbilityParser.parseAbilities(event.getMobType());
+                abilityParser.parseAbilities(event.getMobType());
 
         for (MythicMobAbilityParser.ParsedAbilityInfo info : parsedAbilities) {
             NamespacedKey abilityKey = info.abilityKey();
@@ -233,6 +243,6 @@ public class MythicMobsListener implements Listener {
      */
     @EventHandler
     public void onMythicMobsReload(@NotNull MythicReloadedEvent event) {
-        MythicMobAbilityParser.clearCache();
+        abilityParser.clearCache();
     }
 }

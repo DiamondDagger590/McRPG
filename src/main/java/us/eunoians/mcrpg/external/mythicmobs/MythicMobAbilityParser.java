@@ -10,17 +10,18 @@ import io.lumine.mythic.core.skills.mechanics.CustomMechanic;
 import io.lumine.mythic.core.skills.mechanics.MetaSkillMechanic;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,17 +42,11 @@ import java.util.regex.Pattern;
  *       patterns. Nested {@code skill:} references are recursively resolved with cycle detection.</li>
  * </ol>
  * <p>
- * Results are cached by mob type internal name since skill trees are static per type.
- * The cache is invalidated on MythicMobs reload via {@link #clearCache()}.
+ * Parsed results are cached per instance, keyed by mob type internal name, since skill trees
+ * are static per type. The cache should be invalidated via {@link #clearCache()} whenever
+ * MythicMobs reloads its configuration.
  */
-public final class MythicMobAbilityParser {
-
-    private static final Logger LOGGER = Logger.getLogger(MythicMobAbilityParser.class.getName());
-
-    /**
-     * Cache of parsed abilities keyed by MythicMob internal name.
-     */
-    private static final Map<String, List<ParsedAbilityInfo>> CACHE = new ConcurrentHashMap<>();
+public class MythicMobAbilityParser {
 
     /**
      * Pattern to match {@code mcrpg_ability{...}} in raw YAML skill lines.
@@ -69,8 +64,7 @@ public final class MythicMobAbilityParser {
      */
     private static final int MAX_RECURSION_DEPTH = 10;
 
-    private MythicMobAbilityParser() {
-    }
+    private final Map<String, List<ParsedAbilityInfo>> cache = new ConcurrentHashMap<>();
 
     /**
      * Holds a parsed McRPG ability key and its configured tier from a MythicMobs skill definition.
@@ -89,23 +83,23 @@ public final class MythicMobAbilityParser {
      * @return An unmodifiable list of parsed ability info, or an empty list if none found
      */
     @NotNull
-    public static List<ParsedAbilityInfo> parseAbilities(@NotNull MythicMob mythicMob) {
-        return CACHE.computeIfAbsent(mythicMob.getInternalName(), name -> parseAbilitiesInternal(mythicMob));
+    public List<ParsedAbilityInfo> parseAbilities(@NotNull MythicMob mythicMob) {
+        return cache.computeIfAbsent(mythicMob.getInternalName(), name -> parseAbilitiesInternal(mythicMob));
     }
 
     /**
      * Clears the parsed ability cache. Should be called when MythicMobs reloads
      * its configuration so that skill tree changes are picked up on next mob spawn.
      */
-    public static void clearCache() {
-        CACHE.clear();
+    public void clearCache() {
+        cache.clear();
     }
 
     /**
      * Internal parsing logic that traverses all trigger-based and timer-based skills.
      */
     @NotNull
-    private static List<ParsedAbilityInfo> parseAbilitiesInternal(@NotNull MythicMob mythicMob) {
+    private List<ParsedAbilityInfo> parseAbilitiesInternal(@NotNull MythicMob mythicMob) {
         List<ParsedAbilityInfo> results = new ArrayList<>();
         Set<String> visitedSkills = new HashSet<>();
 
@@ -138,10 +132,10 @@ public final class MythicMobAbilityParser {
      * @param visitedSkills Set of already-visited skill names for cycle detection
      * @param depth         Current recursion depth
      */
-    private static void collectFromMechanic(@NotNull SkillMechanic mechanic,
-                                            @NotNull List<ParsedAbilityInfo> results,
-                                            @NotNull Set<String> visitedSkills,
-                                            int depth) {
+    private void collectFromMechanic(@NotNull SkillMechanic mechanic,
+                                     @NotNull List<ParsedAbilityInfo> results,
+                                     @NotNull Set<String> visitedSkills,
+                                     int depth) {
         if (depth > MAX_RECURSION_DEPTH) {
             return;
         }
@@ -150,10 +144,9 @@ public final class MythicMobAbilityParser {
         if (mechanic instanceof CustomMechanic customMechanic) {
             customMechanic.getMechanic().ifPresent(inner -> {
                 if (inner instanceof McRPGAbilityMechanic mcrpgMechanic) {
-                    NamespacedKey key = mcrpgMechanic.getAbilityKey();
-                    if (key != null) {
-                        results.add(new ParsedAbilityInfo(key, mcrpgMechanic.getTier()));
-                    }
+                    mcrpgMechanic.getAbilityKey().ifPresent(key ->
+                            results.add(new ParsedAbilityInfo(key, mcrpgMechanic.getTier()))
+                    );
                 }
             });
         }
@@ -166,7 +159,8 @@ public final class MythicMobAbilityParser {
                     parseSkillConfig(skill, results, visitedSkills, depth + 1);
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to resolve MetaSkillMechanic for McRPG ability parsing", e);
+                McRPG.getInstance().getLogger().log(Level.WARNING,
+                        "Failed to resolve MetaSkillMechanic for McRPG ability parsing", e);
             }
         }
     }
@@ -180,10 +174,10 @@ public final class MythicMobAbilityParser {
      * @param visitedSkills Set of already-visited skill names for cycle detection
      * @param depth         Current recursion depth
      */
-    private static void parseSkillConfig(@NotNull Skill skill,
-                                         @NotNull List<ParsedAbilityInfo> results,
-                                         @NotNull Set<String> visitedSkills,
-                                         int depth) {
+    private void parseSkillConfig(@NotNull Skill skill,
+                                  @NotNull List<ParsedAbilityInfo> results,
+                                  @NotNull Set<String> visitedSkills,
+                                  int depth) {
         if (depth > MAX_RECURSION_DEPTH) {
             return;
         }
@@ -202,10 +196,7 @@ public final class MythicMobAbilityParser {
             // Check for mcrpg_ability mechanic
             Matcher abilityMatcher = ABILITY_MECHANIC_PATTERN.matcher(line);
             if (abilityMatcher.find()) {
-                ParsedAbilityInfo info = parseAbilityParams(abilityMatcher.group(1));
-                if (info != null) {
-                    results.add(info);
-                }
+                parseAbilityParams(abilityMatcher.group(1)).ifPresent(results::add);
                 continue;
             }
 
@@ -227,10 +218,11 @@ public final class MythicMobAbilityParser {
      * Expected format: {@code ability=mcrpg:phase_shift;tier=1} or {@code ability=mcrpg:phase_shift}.
      *
      * @param params The raw parameter string between curly braces
-     * @return A {@link ParsedAbilityInfo} if parsing succeeds, or {@code null} if the ability key is missing/invalid
+     * @return An {@link Optional} containing a {@link ParsedAbilityInfo} if parsing succeeds,
+     *         or empty if the ability key is missing/invalid
      */
-    @org.jetbrains.annotations.Nullable
-    private static ParsedAbilityInfo parseAbilityParams(@NotNull String params) {
+    @NotNull
+    private Optional<ParsedAbilityInfo> parseAbilityParams(@NotNull String params) {
         String abilityStr = null;
         int tier = 1;
 
@@ -245,21 +237,22 @@ public final class MythicMobAbilityParser {
                     try {
                         tier = Integer.parseInt(value);
                     } catch (NumberFormatException e) {
-                        LOGGER.log(Level.WARNING, "Invalid tier value in mcrpg_ability config: " + value, e);
+                        McRPG.getInstance().getLogger().log(Level.WARNING,
+                                "Invalid tier value in mcrpg_ability config: " + value, e);
                     }
                 }
             }
         }
 
         if (abilityStr == null) {
-            return null;
+            return Optional.empty();
         }
 
         NamespacedKey key = NamespacedKey.fromString(abilityStr);
         if (key == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return new ParsedAbilityInfo(key, tier);
+        return Optional.of(new ParsedAbilityInfo(key, tier));
     }
 }

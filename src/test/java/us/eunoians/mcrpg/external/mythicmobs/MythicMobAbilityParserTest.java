@@ -32,10 +32,11 @@ import static org.mockito.Mockito.when;
 public class MythicMobAbilityParserTest {
 
     private MockedStatic<SkillTrigger> skillTriggerStatic;
+    private MythicMobAbilityParser parser;
 
     @BeforeEach
     public void setup() {
-        MythicMobAbilityParser.clearCache();
+        parser = new MythicMobAbilityParser();
         // Mock SkillTrigger.values() to return a controllable set of triggers
         skillTriggerStatic = mockStatic(SkillTrigger.class);
     }
@@ -43,7 +44,6 @@ public class MythicMobAbilityParserTest {
     @AfterEach
     public void tearDown() {
         skillTriggerStatic.close();
-        MythicMobAbilityParser.clearCache();
     }
 
     @Test
@@ -53,7 +53,7 @@ public class MythicMobAbilityParserTest {
         skillTriggerStatic.when(SkillTrigger::values).thenReturn(List.of());
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertTrue(result.isEmpty());
     }
@@ -63,7 +63,7 @@ public class MythicMobAbilityParserTest {
         NamespacedKey expectedKey = NamespacedKey.fromString("mcrpg:phase_shift");
 
         McRPGAbilityMechanic mcrpgMechanic = mock(McRPGAbilityMechanic.class);
-        when(mcrpgMechanic.getAbilityKey()).thenReturn(expectedKey);
+        when(mcrpgMechanic.getAbilityKey()).thenReturn(Optional.of(expectedKey));
         when(mcrpgMechanic.getTier()).thenReturn(2);
 
         CustomMechanic customMechanic = mock(CustomMechanic.class);
@@ -80,7 +80,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getSkills(trigger)).thenReturn(queue);
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertEquals(1, result.size());
         assertEquals(expectedKey, result.get(0).abilityKey());
@@ -113,7 +113,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getSkills(trigger)).thenReturn(queue);
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertEquals(1, result.size());
         assertEquals(NamespacedKey.fromString("mcrpg:phase_shift"), result.get(0).abilityKey());
@@ -145,7 +145,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getSkills(trigger)).thenReturn(queue);
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).tier());
@@ -155,7 +155,7 @@ public class MythicMobAbilityParserTest {
     public void parseAbilities_extractsMultipleAbilitiesAcrossTriggersAndTimers() {
         // Ability from trigger skills
         McRPGAbilityMechanic mcrpgMechanic1 = mock(McRPGAbilityMechanic.class);
-        when(mcrpgMechanic1.getAbilityKey()).thenReturn(NamespacedKey.fromString("mcrpg:phase_shift"));
+        when(mcrpgMechanic1.getAbilityKey()).thenReturn(Optional.of(NamespacedKey.fromString("mcrpg:phase_shift")));
         when(mcrpgMechanic1.getTier()).thenReturn(1);
 
         CustomMechanic customMechanic1 = mock(CustomMechanic.class);
@@ -187,7 +187,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getSkills(trigger)).thenReturn(triggerQueue);
         when(mythicMob.getTimerSkills()).thenReturn(timerQueue);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertEquals(2, result.size());
         assertEquals(NamespacedKey.fromString("mcrpg:phase_shift"), result.get(0).abilityKey());
@@ -203,8 +203,8 @@ public class MythicMobAbilityParserTest {
         skillTriggerStatic.when(SkillTrigger::values).thenReturn(List.of());
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result1 = MythicMobAbilityParser.parseAbilities(mythicMob);
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result2 = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result1 = parser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result2 = parser.parseAbilities(mythicMob);
 
         // Should be the same object (cached)
         assertTrue(result1 == result2, "Second call should return cached result");
@@ -217,9 +217,9 @@ public class MythicMobAbilityParserTest {
         skillTriggerStatic.when(SkillTrigger::values).thenReturn(List.of());
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result1 = MythicMobAbilityParser.parseAbilities(mythicMob);
-        MythicMobAbilityParser.clearCache();
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result2 = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result1 = parser.parseAbilities(mythicMob);
+        parser.clearCache();
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result2 = parser.parseAbilities(mythicMob);
 
         // After clearing cache, should be a new object
         assertTrue(result1 != result2, "After cache clear, should return new result");
@@ -242,7 +242,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
         // Should not throw
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertTrue(result.isEmpty());
     }
@@ -265,7 +265,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getSkills(trigger)).thenReturn(queue);
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertTrue(result.isEmpty());
     }
@@ -273,7 +273,7 @@ public class MythicMobAbilityParserTest {
     @Test
     public void parseAbilities_skipsAbilityWithNullKeyInCustomMechanic() {
         McRPGAbilityMechanic mcrpgMechanic = mock(McRPGAbilityMechanic.class);
-        when(mcrpgMechanic.getAbilityKey()).thenReturn(null);
+        when(mcrpgMechanic.getAbilityKey()).thenReturn(Optional.empty());
         when(mcrpgMechanic.getTier()).thenReturn(1);
 
         CustomMechanic customMechanic = mock(CustomMechanic.class);
@@ -290,7 +290,7 @@ public class MythicMobAbilityParserTest {
         when(mythicMob.getSkills(trigger)).thenReturn(queue);
         when(mythicMob.getTimerSkills()).thenReturn(null);
 
-        List<MythicMobAbilityParser.ParsedAbilityInfo> result = MythicMobAbilityParser.parseAbilities(mythicMob);
+        List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertTrue(result.isEmpty());
     }

@@ -22,6 +22,8 @@ import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.Optional;
+
 /**
  * A custom MythicMobs mechanic that delegates ability execution to McRPG.
  * <p>
@@ -32,10 +34,11 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  * A separate listener handles the actual ability activation, keeping the MM integration
  * decoupled from McRPG's activation logic.
  * <p>
- * Abilities are eagerly registered on the mob's {@link AbilityHolder} at spawn time by
- * {@link MythicMobAbilityParser}. This mechanic also includes a fallback that lazily registers
- * the ability if it was somehow missed during spawn parsing (e.g., dynamically added skills).
- * The holder itself is created at {@code MythicMobSpawnEvent} time and cleaned up on death/despawn.
+ * Abilities are eagerly added to the mob's {@link AbilityHolder} at spawn time by
+ * {@link MythicMobAbilityParser}. This mechanic also includes a fallback that lazily
+ * attaches the ability if it was somehow missed during spawn parsing (e.g., dynamically
+ * added skills). The holder itself is created at {@code MythicMobSpawnEvent} time and
+ * cleaned up on death/despawn.
  * <p>
  * Usage in MythicMobs YAML:
  * <pre>
@@ -50,25 +53,6 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
     private final int tier;
 
     /**
-     * Gets the McRPG ability key this mechanic targets.
-     *
-     * @return The ability {@link NamespacedKey}, or {@code null} if the config was invalid
-     */
-    @org.jetbrains.annotations.Nullable
-    public NamespacedKey getAbilityKey() {
-        return abilityKey;
-    }
-
-    /**
-     * Gets the configured tier for this mechanic (defaults to 1).
-     *
-     * @return The tier value
-     */
-    public int getTier() {
-        return tier;
-    }
-
-    /**
      * Creates a new ability mechanic from a MythicMobs line config.
      *
      * @param config The MythicMobs line config containing the {@code ability} parameter
@@ -78,6 +62,26 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
         String keyString = config.getString("ability", "");
         this.abilityKey = NamespacedKey.fromString(keyString);
         this.tier = config.getInteger("tier", 1);
+    }
+
+    /**
+     * Gets the McRPG ability key this mechanic targets.
+     *
+     * @return An {@link Optional} containing the ability {@link NamespacedKey}, or
+     *         an empty Optional if the config was invalid
+     */
+    @NotNull
+    public Optional<NamespacedKey> getAbilityKey() {
+        return Optional.ofNullable(abilityKey);
+    }
+
+    /**
+     * Gets the configured tier for this mechanic (defaults to 1).
+     *
+     * @return The tier value
+     */
+    public int getTier() {
+        return tier;
     }
 
     @Override
@@ -104,7 +108,7 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
         Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
         AbilityHolder mobHolder = getOrCreateHolder(bukkitCaster);
-        ensureAbilityRegistered(mobHolder, ability);
+        addAbilityToHolderIfAbsent(mobHolder, ability);
 
         MobAbilityTriggerEvent triggerEvent = new MobAbilityTriggerEvent(
                 mobHolder, ability, bukkitCaster, bukkitTarget);
@@ -136,14 +140,15 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
     }
 
     /**
-     * Ensures the ability is registered on the holder with the configured tier.
-     * If the ability is already registered, this is a no-op.
+     * Attaches the ability to the holder with the configured tier if it is not already
+     * present on the holder. This is a safety net for cases where the spawn-time parser
+     * missed an ability (e.g., dynamically added skills).
      *
      * @param holder  The mob's ability holder
-     * @param ability The ability to register
+     * @param ability The ability to attach
      */
-    private void ensureAbilityRegistered(@NotNull AbilityHolder holder,
-                                         @NotNull Ability ability) {
+    private void addAbilityToHolderIfAbsent(@NotNull AbilityHolder holder,
+                                            @NotNull Ability ability) {
         if (holder.getAvailableAbilities().contains(ability.getAbilityKey())) {
             return;
         }
