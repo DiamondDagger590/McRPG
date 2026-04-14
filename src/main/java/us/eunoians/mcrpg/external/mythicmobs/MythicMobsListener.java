@@ -8,6 +8,7 @@ import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
 import io.lumine.mythic.bukkit.events.MythicReloadedEvent;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -62,10 +63,25 @@ public class MythicMobsListener implements Listener {
 
     /**
      * Creates a new listener, instantiating the {@link MythicMobAbilityParser} it will use
-     * to eagerly populate {@link AbilityHolder}s at spawn time.
+     * to eagerly populate {@link AbilityHolder}s at spawn time. The parser reads its cache
+     * TTL from the provided main config document and supports runtime reloading.
+     *
+     * @param mainConfig The main McRPG config document, forwarded to the parser
      */
-    public MythicMobsListener() {
-        this.abilityParser = new MythicMobAbilityParser();
+    public MythicMobsListener(@NotNull YamlDocument mainConfig) {
+        this.abilityParser = new MythicMobAbilityParser(mainConfig);
+    }
+
+    /**
+     * Returns the {@link MythicMobAbilityParser} used by this listener so the bootstrap
+     * can register its reloadable TTL content with the
+     * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
+     *
+     * @return The parser instance
+     */
+    @NotNull
+    public MythicMobAbilityParser getAbilityParser() {
+        return abilityParser;
     }
 
     /**

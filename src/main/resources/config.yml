@@ -305,6 +305,16 @@ configuration:
       # Requires server restart to take effect.
       ttl: 300
 
+  # Configure the MythicMobs integration layer. Only relevant when MythicMobs is installed.
+  mythicmobs:
+    ability-parser:
+      # How long parsed ability definitions for a given MythicMob type remain cached
+      # after their last read before being dropped (in minutes). The parser walks each
+      # mob type's skill tree once on first spawn and caches the result so subsequent
+      # spawns are free. Values of 0 or below fall back to the built-in default of 60.
+      # Applied immediately on /mcrpg reload.
+      cache-ttl-minutes: 60
+
 # Configure McMMO integration
 mcmmo:
   # Converts a players level to exp and then convert that into 'boosted experience' using the equation below

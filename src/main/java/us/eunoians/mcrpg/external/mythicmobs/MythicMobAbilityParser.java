@@ -1,7 +1,10 @@
 package us.eunoians.mcrpg.external.mythicmobs;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.configuration.common.ReloadableInteger;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import io.lumine.mythic.api.config.MythicConfig;
 import io.lumine.mythic.api.config.MythicLineConfig;
 import io.lumine.mythic.api.mobs.MythicMob;
@@ -15,6 +18,7 @@ import io.lumine.mythic.core.skills.mechanics.MetaSkillMechanic;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -50,19 +54,19 @@ import java.util.regex.Pattern;
  * </ol>
  * <p>
  * Parsed results are cached per instance in a {@link Caffeine} cache keyed by mob type
- * internal name. Entries expire after {@link #CACHE_EXPIRE_AFTER_ACCESS} of no reads so the
+ * internal name. Entries expire after a configurable TTL (see
+ * {@link MainConfigFile#MYTHICMOBS_ABILITY_PARSER_CACHE_TTL_MINUTES}) of no reads so the
  * cache does not grow unbounded on long-running servers where obscure mob types are only
- * spawned rarely. The cache is also explicitly cleared via {@link #clearCache()} on
- * MythicMobs reload.
+ * spawned rarely. The TTL is reloadable: when the reloadable content fires, the Caffeine
+ * cache is rebuilt with the new TTL (Caffeine's TTL is fixed at build time). The cache is
+ * also explicitly cleared via {@link #clearCache()} on MythicMobs reload.
  */
 public class MythicMobAbilityParser {
 
     /**
-     * TTL applied to cache entries after their last access. Long-lived enough to be a hit
-     * on repeat spawns of the same mob type within a typical play session, but short enough
-     * to let entries fall out on long-running servers that occasionally spawn rare mobs.
+     * Fallback TTL (in minutes) applied when the configured value is missing or non-positive.
      */
-    private static final Duration CACHE_EXPIRE_AFTER_ACCESS = Duration.ofHours(1);
+    private static final int DEFAULT_CACHE_TTL_MINUTES = 60;
 
     /**
      * Pattern to match {@code mcrpg_ability{...}} in raw YAML skill lines. Group 0 returns
@@ -82,9 +86,19 @@ public class MythicMobAbilityParser {
      */
     private static final int MAX_RECURSION_DEPTH = 10;
 
-    private final Cache<String, List<ParsedAbilityInfo>> cache = Caffeine.newBuilder()
-            .expireAfterAccess(CACHE_EXPIRE_AFTER_ACCESS)
-            .build();
+    /**
+     * Reloadable wrapper around the cache TTL config value. Overrides
+     * {@link ReloadableContent#reloadContent()} to rebuild the Caffeine cache, since
+     * Caffeine's {@code expireAfterAccess} is fixed at build time and cannot be mutated
+     * in place.
+     */
+    private final ReloadableInteger cacheTtlMinutes;
+
+    /**
+     * The cache of parsed ability info per mob type. Rebuilt whenever the TTL reloads,
+     * so the reference is {@code volatile} rather than {@code final}.
+     */
+    private volatile Cache<String, List<ParsedAbilityInfo>> cache;
 
     /**
      * Holds a parsed McRPG ability key and its configured tier from a MythicMobs skill definition.
@@ -98,6 +112,54 @@ public class MythicMobAbilityParser {
         public ParsedAbilityInfo {
             tier = Math.max(1, tier);
         }
+    }
+
+    /**
+     * Creates a new parser backed by a Caffeine cache whose TTL is read from and
+     * reloadable via the provided main config document.
+     *
+     * @param mainConfig The McRPG main config document providing the cache TTL route
+     */
+    public MythicMobAbilityParser(@NotNull YamlDocument mainConfig) {
+        // Anonymous override rebuilds the Caffeine cache whenever the TTL value reloads,
+        // since Caffeine's expireAfterAccess is fixed at build time. Calling getContent()
+        // on `this` (the reloadable) is safe here because super.reloadContent() has just
+        // assigned it; we avoid touching the outer `cacheTtlMinutes` field because it
+        // hasn't been assigned yet while the super constructor is still running.
+        this.cacheTtlMinutes = new ReloadableInteger(mainConfig,
+                MainConfigFile.MYTHICMOBS_ABILITY_PARSER_CACHE_TTL_MINUTES) {
+            @Override
+            public void reloadContent() {
+                super.reloadContent();
+                rebuildCache(getContent());
+            }
+        };
+    }
+
+    /**
+     * Returns the reloadable wrapping the cache TTL value. Callers should register this
+     * with the {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}
+     * so that {@code /mcrpg reload} picks up runtime changes to the TTL.
+     *
+     * @return The reloadable content backing the cache TTL
+     */
+    @NotNull
+    public ReloadableContent<Integer> getCacheTtlReloadable() {
+        return cacheTtlMinutes;
+    }
+
+    /**
+     * Rebuilds the Caffeine cache with the given TTL in minutes. Called during construction
+     * (via the reloadable's initial reload) and on every subsequent reload. Values of
+     * {@code 0} or below fall back to {@link #DEFAULT_CACHE_TTL_MINUTES}.
+     *
+     * @param ttlMinutes The TTL in minutes, possibly {@code null} or non-positive
+     */
+    private void rebuildCache(Integer ttlMinutes) {
+        int effective = (ttlMinutes != null && ttlMinutes > 0) ? ttlMinutes : DEFAULT_CACHE_TTL_MINUTES;
+        this.cache = Caffeine.newBuilder()
+                .expireAfterAccess(Duration.ofMinutes(effective))
+                .build();
     }
 
     /**

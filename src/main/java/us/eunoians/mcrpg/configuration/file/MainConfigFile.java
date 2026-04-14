@@ -167,4 +167,9 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route STATISTICS_CACHE_MAX_SIZE = Route.fromString(toRoutePath(STATISTICS_CACHE_HEADER, "max-size"));
     public static final Route STATISTICS_CACHE_TTL = Route.fromString(toRoutePath(STATISTICS_CACHE_HEADER, "ttl"));
 
+    // MythicMobs integration
+    private static final String MYTHICMOBS_HEADER = toRoutePath(CONFIGURATION_HEADER, "mythicmobs");
+    private static final String MYTHICMOBS_ABILITY_PARSER_HEADER = toRoutePath(MYTHICMOBS_HEADER, "ability-parser");
+    public static final Route MYTHICMOBS_ABILITY_PARSER_CACHE_TTL_MINUTES = Route.fromString(toRoutePath(MYTHICMOBS_ABILITY_PARSER_HEADER, "cache-ttl-minutes"));
+
 }

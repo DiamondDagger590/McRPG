@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.external.mythicmobs;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import io.lumine.mythic.api.config.MythicConfig;
 import io.lumine.mythic.api.mobs.MythicMob;
 import io.lumine.mythic.api.skills.ISkillMechanic;
@@ -22,6 +24,7 @@ import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -33,10 +36,15 @@ public class MythicMobAbilityParserTest {
 
     private MockedStatic<SkillTrigger> skillTriggerStatic;
     private MythicMobAbilityParser parser;
+    private YamlDocument mainConfig;
 
     @BeforeEach
     public void setup() {
-        parser = new MythicMobAbilityParser();
+        mainConfig = mock(YamlDocument.class);
+        // The ReloadableInteger inside the parser reads the TTL via Section::getInt(Route);
+        // returning a positive value lets the Caffeine cache build normally.
+        when(mainConfig.getInt(any(Route.class))).thenReturn(60);
+        parser = new MythicMobAbilityParser(mainConfig);
         // Mock SkillTrigger.values() to return a controllable set of triggers
         skillTriggerStatic = mockStatic(SkillTrigger.class);
     }
