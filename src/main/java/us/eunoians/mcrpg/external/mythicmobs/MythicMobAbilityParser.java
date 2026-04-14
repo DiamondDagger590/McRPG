@@ -113,9 +113,8 @@ public class MythicMobAbilityParser {
     }
 
     /**
-     * Clears the parsed ability cache. Called from
-     * {@link MythicMobsListener#onMythicMobsReload(io.lumine.mythic.bukkit.events.MythicReloadedEvent)}
-     * so that skill tree changes are picked up on next mob spawn.
+     * Clears the parsed ability cache so that skill tree changes are picked up
+     * on next mob spawn.
      */
     public void clearCache() {
         cache.invalidateAll();
