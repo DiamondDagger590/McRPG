@@ -8,7 +8,7 @@ import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
 import io.lumine.mythic.bukkit.events.MythicReloadedEvent;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import dev.dejvokep.boostedyaml.YamlDocument;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
+import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.fishing.FishingMobDeathEvent;
@@ -63,25 +64,22 @@ public class MythicMobsListener implements Listener {
 
     /**
      * Creates a new listener, instantiating the {@link MythicMobAbilityParser} it will use
-     * to eagerly populate {@link AbilityHolder}s at spawn time. The parser reads its cache
-     * TTL from the provided main config document and supports runtime reloading.
-     *
-     * @param mainConfig The main McRPG config document, forwarded to the parser
+     * to eagerly populate {@link AbilityHolder}s at spawn time. The parser pulls its cache
+     * TTL from {@link FileType#MAIN_CONFIG} directly so callers can't hand it a foreign
+     * {@link dev.dejvokep.boostedyaml.YamlDocument}, and the TTL reloadable is registered
+     * with the {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}
+     * here as well.
      */
-    public MythicMobsListener(@NotNull YamlDocument mainConfig) {
-        this.abilityParser = new MythicMobAbilityParser(mainConfig);
-    }
-
-    /**
-     * Returns the {@link MythicMobAbilityParser} used by this listener so the bootstrap
-     * can register its reloadable TTL content with the
-     * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
-     *
-     * @return The parser instance
-     */
-    @NotNull
-    public MythicMobAbilityParser getAbilityParser() {
-        return abilityParser;
+    public MythicMobsListener() {
+        this.abilityParser = new MythicMobAbilityParser(
+                McRPG.getInstance().registryAccess()
+                        .registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.FILE)
+                        .getFile(FileType.MAIN_CONFIG));
+        McRPG.getInstance().registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(ManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(abilityParser.getCacheTtlReloadable());
     }
 
     /**

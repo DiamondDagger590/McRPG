@@ -177,17 +177,7 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         // MythicMobs integration (conditional)
         if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
             MythicMobsConfigExtractor.extractBundledConfigs(plugin);
-
-            YamlDocument mainConfig = plugin.registryAccess()
-                    .registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.FILE)
-                    .getFile(FileType.MAIN_CONFIG);
-            MythicMobsListener mythicMobsListener = new MythicMobsListener(mainConfig);
-            plugin.registryAccess()
-                    .registry(RegistryKey.MANAGER)
-                    .manager(ManagerKey.RELOADABLE_CONTENT)
-                    .trackReloadableContent(Set.of(mythicMobsListener.getAbilityParser().getCacheTtlReloadable()));
-            Bukkit.getPluginManager().registerEvents(mythicMobsListener, plugin);
+            Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
             Bukkit.getPluginManager().registerEvents(new OnMobAbilityTriggerListener(), plugin);
 
             // Fishing mob spawn listener (requires MythicMobs + enabled in config)

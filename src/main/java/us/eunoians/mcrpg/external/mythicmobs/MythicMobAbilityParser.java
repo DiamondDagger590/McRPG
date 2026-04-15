@@ -153,10 +153,11 @@ public class MythicMobAbilityParser {
      * (via the reloadable's initial reload) and on every subsequent reload. Values of
      * {@code 0} or below fall back to {@link #DEFAULT_CACHE_TTL_MINUTES}.
      *
-     * @param ttlMinutes The TTL in minutes, possibly {@code null} or non-positive
+     * @param ttlMinutes The TTL in minutes from the reloadable content; non-positive values
+     *                   fall back to the default
      */
-    private void rebuildCache(Integer ttlMinutes) {
-        int effective = (ttlMinutes != null && ttlMinutes > 0) ? ttlMinutes : DEFAULT_CACHE_TTL_MINUTES;
+    private void rebuildCache(@NotNull Integer ttlMinutes) {
+        int effective = ttlMinutes > 0 ? ttlMinutes : DEFAULT_CACHE_TTL_MINUTES;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(effective))
                 .build();
