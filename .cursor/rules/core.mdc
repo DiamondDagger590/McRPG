@@ -102,8 +102,9 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 
 - 4-space indentation, K&R brace style (standard Java)
 - Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
-- Javadoc on all public methods with `@param` and `@return` semantics
+- Javadoc on all methods (public and private) with `@param` and `@return` semantics
 - Prefer object collaborators with instance methods for domain behavior; avoid introducing static helper classes when behavior naturally belongs to a service/slot/manager object
+- No section-divider comments (`// --- Section name ---` or `// ===== Section =====`) — if a class needs labeled sections, it is too large or has too many concerns. Extract a collaborator or use natural method ordering instead
 - **Third-party developer mindset:** McRPG is extensible by external plugins. Changes to public APIs, events, and registries should be made as if you were a third-party plugin hooking in — prefer additive non-breaking changes, fire Bukkit events where external plugins would want to intercept, document extension points.
 
 ## Anti-Patterns
@@ -112,7 +113,8 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No hard-coded values** — all tunable values must come from YAML config via `Route`
 - **No deep inheritance** — compose via interfaces (`PassiveAbility`, `CooldownableAbility`, etc.)
 - **No mutable global static** — use registries; only `McRPG.getInstance()` is acceptable as static access
-- **No static utility classes for domain logic** — if behavior needs dependencies or context, model it as an object collaborator with injected state
+- **No `getInstance()` singletons for domain state** — per-player state belongs on the player object (`McRPGPlayer`); per-system state should be a `Manager` registered in the registry and accessed via `registryAccess()`. `getInstance()` singletons hide coupling, prevent constructor injection, and force tests to set up global state instead of passing parameters
+- **No static utility classes for domain logic** — a method that calls any global accessor (`SomeClass.getInstance()`, `McRPG.getInstance()`, or accesses a singleton) has a dependency even if it does not appear in the parameter list. If a static method would break when the global state it reaches for is null, it has a hidden dependency. Model it as an object collaborator with injected state
 - **No ability state on ability objects** — abilities are shared singletons; state lives in `AbilityData`/`AbilityAttribute` per holder
 - **No direct entity casts** — use `instanceof` pattern matching: `if (entity instanceof Player p) { ... }`
 - **No McRPG-specific logic in McCore** — McCore changes affect all downstream plugins

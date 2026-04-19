@@ -12,18 +12,18 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboInput;
-import us.eunoians.mcrpg.ability.combo.ComboTracker;
+import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
  * Translates {@link PlayerInteractEvent}s (both air and block clicks) and melee
- * attacks ({@link EntityDamageByEntityEvent}) into combo inputs fed to {@link ComboTracker}.
+ * attacks ({@link EntityDamageByEntityEvent}) into combo inputs fed to {@link ComboManager}.
  * <p>
  * Both air and block interactions are accepted because players are almost always
  * looking at blocks in normal gameplay. The held-item filter in
- * {@link ComboTracker#isAllowedHeldItem} prevents combos while holding non-weapon items,
- * and the tracker itself discards standalone left-clicks that have no in-progress combo.
+ * {@link ComboManager#isAllowedHeldItem} prevents combos while holding non-weapon items,
+ * and the manager itself discards standalone left-clicks that have no in-progress combo.
  * <p>
  * Melee attacks are also treated as {@link ComboInput#LEFT} inputs because Bukkit does
  * not fire a {@link PlayerInteractEvent} when a player swings at an entity — only
@@ -39,10 +39,10 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  */
 public class OnComboInputListener implements Listener {
 
-    private final ComboTracker comboTracker;
+    private final ComboManager comboManager;
 
-    public OnComboInputListener(@NotNull ComboTracker comboTracker) {
-        this.comboTracker = comboTracker;
+    public OnComboInputListener(@NotNull ComboManager comboManager) {
+        this.comboManager = comboManager;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
@@ -68,7 +68,7 @@ public class OnComboInputListener implements Listener {
         }
 
         ComboInput input = isRightClick ? ComboInput.RIGHT : ComboInput.LEFT;
-        comboTracker.processInput(event.getPlayer(), input);
+        comboManager.processInput(event.getPlayer(), input);
     }
 
     /**
@@ -98,6 +98,6 @@ public class OnComboInputListener implements Listener {
             return;
         }
 
-        comboTracker.processInput(player, ComboInput.LEFT);
+        comboManager.processInput(player, ComboInput.LEFT);
     }
 }

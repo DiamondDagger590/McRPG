@@ -8,7 +8,10 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.combo.ComboTracker;
+import us.eunoians.mcrpg.ability.combo.ComboManager;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
+import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnComboCompleteListener;
 import us.eunoians.mcrpg.listener.ability.OnComboInputListener;
@@ -78,9 +81,16 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         }
 
         // Combo activation listeners (PoC)
-        ComboTracker comboTracker = new ComboTracker(plugin);
-        Bukkit.getPluginManager().registerEvents(new OnComboInputListener(comboTracker), plugin);
+        ComboManager comboManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBO);
+        Bukkit.getPluginManager().registerEvents(new OnComboInputListener(comboManager), plugin);
         Bukkit.getPluginManager().registerEvents(new OnComboCompleteListener(), plugin);
+
+        // Action bar HUD task
+        int hudInterval = plugin.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
+                .getInt(ComboConfigFile.HUD_UPDATE_INTERVAL_TICKS, 2);
+        new ActionBarHudTask(plugin, hudInterval).start();
 
         // Ability activation/ready listeners
         Bukkit.getPluginManager().registerEvents(new OnAttackAbilityListener(), plugin);

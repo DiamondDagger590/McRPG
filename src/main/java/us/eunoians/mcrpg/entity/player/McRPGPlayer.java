@@ -8,12 +8,14 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
+import us.eunoians.mcrpg.ability.combo.PlayerComboState;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -34,11 +36,13 @@ import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
+import us.eunoians.mcrpg.stat.PlayerCombatData;
 
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -54,6 +58,10 @@ public class McRPGPlayer extends CorePlayer {
     private final SkillHolder skillHolder;
     private final QuestHolder questHolder;
     private final PlayerExperienceExtras playerExperienceExtras;
+    private final PlayerCombatData playerCombatData;
+    private final PlayerComboState comboState = new PlayerComboState();
+    private Component actionBarCenterContent;
+    private long actionBarCenterContentExpiryTick;
     private boolean standingInSafeZone;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
@@ -61,6 +69,7 @@ public class McRPGPlayer extends CorePlayer {
         this.skillHolder = new SkillHolder(mcRPG, getUUID());
         this.questHolder = new QuestHolder(getUUID());
         this.playerExperienceExtras = new PlayerExperienceExtras();
+        this.playerCombatData = initCombatData(mcRPG);
         this.standingInSafeZone = false;
     }
 
@@ -69,7 +78,28 @@ public class McRPGPlayer extends CorePlayer {
         this.skillHolder = new SkillHolder(mcRPG, getUUID());
         this.questHolder = new QuestHolder(getUUID());
         this.playerExperienceExtras = new PlayerExperienceExtras();
+        this.playerCombatData = initCombatData(mcRPG);
         this.standingInSafeZone = false;
+    }
+
+    /**
+     * Builds the initial {@link PlayerCombatData} for this player by looking up
+     * the {@link us.eunoians.mcrpg.stat.StatManager} via the manager registry and
+     * applying config-driven base stat overrides. Returns an empty container if
+     * either the stat manager or the combo config is not registered yet
+     * (primarily a defensive path for non-PROD startup profiles).
+     *
+     * @param mcRPG The McRPG plugin instance.
+     * @return A fully initialized {@link PlayerCombatData} for this player.
+     */
+    @NotNull
+    private PlayerCombatData initCombatData(@NotNull McRPG mcRPG) {
+        var managerRegistry = mcRPG.registryAccess().registry(RegistryKey.MANAGER);
+        if (!managerRegistry.registered(McRPGManagerKey.STAT) || !managerRegistry.registered(McRPGManagerKey.FILE)) {
+            return new PlayerCombatData();
+        }
+        var comboConfig = managerRegistry.manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG);
+        return managerRegistry.manager(McRPGManagerKey.STAT).createPlayerCombatData(comboConfig);
     }
 
     @Override
@@ -179,6 +209,84 @@ public class McRPGPlayer extends CorePlayer {
     @NotNull
     public PlayerExperienceExtras getExperienceExtras() {
         return playerExperienceExtras;
+    }
+
+    /**
+     * Gets the {@link PlayerCombatData} for this player, containing all combat stat
+     * instances (HP, Mana, etc.).
+     *
+     * @return The {@link PlayerCombatData} for this player.
+     */
+    @NotNull
+    public PlayerCombatData getPlayerCombatData() {
+        return playerCombatData;
+    }
+
+    /**
+     * Gets the mutable combo input state for this player. Managed by
+     * {@link us.eunoians.mcrpg.ability.combo.ComboManager}.
+     *
+     * @return The combo state for this player.
+     */
+    @NotNull
+    public PlayerComboState getComboState() {
+        return comboState;
+    }
+
+    // TODO(#216): Move the action bar center content API off McRPGPlayer and
+    // into the display manager system. McRPGPlayer should not own HUD-layer state
+    // directly — the display manager should hold per-player center content with
+    // priority/layering so third-party plugins can compete for the zone cleanly.
+
+    /**
+     * Sets the action bar center content with a tick-based expiry. The content is
+     * automatically cleared by the HUD renderer once the current server tick reaches
+     * or exceeds the expiry tick. Newer writes overwrite older ones.
+     *
+     * @param content    The component to display in the center zone.
+     * @param expiryTick The server tick at which this content expires.
+     */
+    public void setActionBarCenterContent(@NotNull Component content, long expiryTick) {
+        this.actionBarCenterContent = content;
+        this.actionBarCenterContentExpiryTick = expiryTick;
+    }
+
+    /**
+     * Sets the action bar center content that persists until explicitly cleared.
+     * Used for ongoing displays like combo progress dots.
+     *
+     * @param content The component to display in the center zone.
+     */
+    public void setActionBarCenterContentPersistent(@NotNull Component content) {
+        this.actionBarCenterContent = content;
+        this.actionBarCenterContentExpiryTick = Long.MAX_VALUE;
+    }
+
+    /**
+     * Returns the current action bar center content if it has not expired, or empty
+     * if no content is set or the entry has expired.
+     *
+     * @param currentTick The current server tick for expiry checking.
+     * @return The center content component, or empty.
+     */
+    @NotNull
+    public Optional<Component> getActionBarCenterContent(long currentTick) {
+        if (actionBarCenterContent == null) {
+            return Optional.empty();
+        }
+        if (currentTick >= actionBarCenterContentExpiryTick) {
+            clearActionBarCenterContent();
+            return Optional.empty();
+        }
+        return Optional.of(actionBarCenterContent);
+    }
+
+    /**
+     * Clears the action bar center content immediately.
+     */
+    public void clearActionBarCenterContent() {
+        this.actionBarCenterContent = null;
+        this.actionBarCenterContentExpiryTick = 0;
     }
 
     /**

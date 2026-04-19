@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.listener.ability;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,16 +16,20 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.stat.CombatStatInstance;
+import us.eunoians.mcrpg.stat.McRPGCombatStat;
+import us.eunoians.mcrpg.stat.PlayerCombatData;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Handles {@link ComboCompleteEvent} by resolving which ability occupies the completed slot,
- * checking preconditions (hunger, cooldown), and dispatching
+ * checking preconditions (mana, cooldown), and dispatching
  * {@link ComboActivatable#comboActivate(us.eunoians.mcrpg.entity.holder.AbilityHolder)}.
  * <p>
  * Slot assignment mirrors the player's loadout GUI order: combo slot 1 is the first
@@ -34,6 +39,15 @@ import java.util.List;
  * are considered — default (non-unlockable) abilities are excluded.
  */
 public class OnComboCompleteListener implements Listener {
+
+    private static final long CENTER_CONTENT_DURATION_TICKS = 60L;
+
+    // TODO(#217): Break this method up and make the feedback messages / sounds /
+    // durations configurable. Right now preconditions (cooldown check, mana check,
+    // ability resolution) are inlined into one ~90-line handler, and the feedback
+    // strings / sounds / tick durations are hard-coded. Split into private helpers
+    // (or a small collaborator) per precondition and move user-facing text to the
+    // localization system plus the combo config YAML.
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onComboComplete(@NotNull ComboCompleteEvent event) {
@@ -47,20 +61,16 @@ public class OnComboCompleteListener implements Listener {
         }
         var abilityHolder = abilityHolderOptional.get();
 
-        // Validate McRPG is enabled for this holder
         if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
             return;
         }
 
-        // Only LoadoutHolders can have combo abilities
         if (!(abilityHolder instanceof LoadoutHolder loadoutHolder)) {
             return;
         }
 
         var abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
-        // Collect ComboActivatable abilities in the player's loadout order so that
-        // combo slot 1 always corresponds to the first combo ability visible in the GUI.
         List<ComboActivatable> comboAbilities = new ArrayList<>();
         for (var key : loadoutHolder.getLoadout().getOrderedAbilities()) {
             Ability ability = abilityRegistry.getRegisteredAbility(key);
@@ -71,35 +81,61 @@ public class OnComboCompleteListener implements Listener {
 
         int slotIndex = event.getSlotIndex();
         if (slotIndex > comboAbilities.size()) {
-            // No ability assigned to this slot — play a soft "empty" click
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
             return;
         }
 
+        var mcRPGPlayerOpt = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
+        if (mcRPGPlayerOpt.isEmpty()) {
+            return;
+        }
+        McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
+
         ComboActivatable comboAbility = comboAbilities.get(slotIndex - 1);
         Ability ability = (Ability) comboAbility;
 
-        // Hunger check
-        int hungerCost = comboAbility.getHungerCost(abilityHolder);
-        if (player.getFoodLevel() < hungerCost) {
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
-            player.sendActionBar(Component.text("Not enough hunger to use " + ability.getName() + "!", NamedTextColor.RED));
-            return;
-        }
-
-        // Cooldown check
         if (comboAbility instanceof CooldownableAbility cooldownableAbility && cooldownableAbility.isAbilityOnCooldown(abilityHolder)) {
-            player.sendActionBar(Component.text(ability.getName() + " is on cooldown!", NamedTextColor.RED));
+            long expiryMillis = cooldownableAbility.getCooldownForHolder(abilityHolder);
+            long remainingSeconds = Math.max(1, (expiryMillis - mcRPG.getTimeProvider().now().toEpochMilli()) / 1000);
+
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
+
+            mcRPGPlayer.setActionBarCenterContent(
+                    Component.text("On Cooldown (" + remainingSeconds + "s)", NamedTextColor.RED),
+                    Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS
+            );
+
+            player.sendMessage(
+                    Component.text(ability.getName() + " is on cooldown! ", NamedTextColor.RED)
+                            .append(Component.text("(" + remainingSeconds + "s remaining)", NamedTextColor.GRAY))
+            );
             return;
         }
 
-        // Deduct hunger before activation
-        player.setFoodLevel(player.getFoodLevel() - hungerCost);
+        PlayerCombatData combatData = mcRPGPlayer.getPlayerCombatData();
+        CombatStatInstance manaInstance = combatData.getInstance(McRPGCombatStat.MANA_KEY).orElseThrow();
 
-        // Dispatch the combo activation
+        int manaCost = comboAbility.getManaCost(abilityHolder);
+        if (!manaInstance.consume(manaCost)) {
+            int currentMana = (int) Math.round(manaInstance.getCurrent());
+
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
+
+            mcRPGPlayer.setActionBarCenterContent(
+                    Component.text("Not Enough Mana", NamedTextColor.RED),
+                    Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS
+            );
+
+            player.sendMessage(
+                    Component.text("Not enough mana to use " + ability.getName() + "! ", NamedTextColor.RED)
+                            .append(Component.text("(need " + manaCost + ", have " + currentMana + ")", NamedTextColor.GRAY))
+            );
+            return;
+        }
+
         comboAbility.comboActivate(abilityHolder);
 
-        // Put on cooldown after activation if applicable
         if (comboAbility instanceof CooldownableAbility cooldownableAbility) {
             cooldownableAbility.putHolderOnCooldown(abilityHolder);
         }

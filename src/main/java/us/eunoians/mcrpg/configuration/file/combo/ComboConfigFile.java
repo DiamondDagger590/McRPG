@@ -6,15 +6,31 @@ import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
 /**
- * Configuration file for the combo activation system (PoC).
+ * Configuration file for the combo activation system and combat stat / HUD settings.
  * <p>
- * All keys are nested under the {@code combo} root section.
+ * Combo keys are nested under {@code combo}. Stat base values under {@code stats}.
+ * HUD settings under {@code hud}.
  */
 public final class ComboConfigFile extends ConfigFile {
 
-    private static final int CURRENT_VERSION = 1;
+    private static final int CURRENT_VERSION = 2;
 
-    // Root header
+    // --- Stats ---
+    private static final String STATS_HEADER = "stats";
+
+    private static final String HEALTH_HEADER = toRoutePath(STATS_HEADER, "health");
+    public static final Route HEALTH_BASE_MAX = Route.fromString(toRoutePath(HEALTH_HEADER, "base-max"));
+
+    private static final String MANA_HEADER = toRoutePath(STATS_HEADER, "mana");
+    public static final Route MANA_BASE_MAX = Route.fromString(toRoutePath(MANA_HEADER, "base-max"));
+    public static final Route MANA_REGEN_PER_SECOND = Route.fromString(toRoutePath(MANA_HEADER, "regen-per-second"));
+
+    // --- HUD ---
+    private static final String HUD_HEADER = "hud";
+    private static final String ACTION_BAR_HEADER = toRoutePath(HUD_HEADER, "action-bar");
+    public static final Route HUD_UPDATE_INTERVAL_TICKS = Route.fromString(toRoutePath(ACTION_BAR_HEADER, "update-interval-ticks"));
+
+    // --- Combo ---
     private static final String COMBO_HEADER = "combo";
 
     // Allowed held items
@@ -35,25 +51,25 @@ public final class ComboConfigFile extends ConfigFile {
 
     // Shockwave
     private static final String SHOCKWAVE_HEADER = toRoutePath(ABILITIES_HEADER, "shockwave");
-    public static final Route SHOCKWAVE_HUNGER_COST = Route.fromString(toRoutePath(SHOCKWAVE_HEADER, "hunger-cost"));
+    public static final Route SHOCKWAVE_MANA_COST = Route.fromString(toRoutePath(SHOCKWAVE_HEADER, "mana-cost"));
     public static final Route SHOCKWAVE_RADIUS = Route.fromString(toRoutePath(SHOCKWAVE_HEADER, "radius"));
     public static final Route SHOCKWAVE_KNOCKBACK_FORCE = Route.fromString(toRoutePath(SHOCKWAVE_HEADER, "knockback-force"));
 
     // Cleave
     private static final String CLEAVE_HEADER = toRoutePath(ABILITIES_HEADER, "cleave");
-    public static final Route CLEAVE_HUNGER_COST = Route.fromString(toRoutePath(CLEAVE_HEADER, "hunger-cost"));
+    public static final Route CLEAVE_MANA_COST = Route.fromString(toRoutePath(CLEAVE_HEADER, "mana-cost"));
     public static final Route CLEAVE_RADIUS = Route.fromString(toRoutePath(CLEAVE_HEADER, "radius"));
     public static final Route CLEAVE_DAMAGE = Route.fromString(toRoutePath(CLEAVE_HEADER, "damage"));
 
     // RageSpike
     private static final String RAGE_SPIKE_HEADER = toRoutePath(ABILITIES_HEADER, "rage-spike");
-    public static final Route RAGE_SPIKE_HUNGER_COST = Route.fromString(toRoutePath(RAGE_SPIKE_HEADER, "hunger-cost"));
+    public static final Route RAGE_SPIKE_MANA_COST = Route.fromString(toRoutePath(RAGE_SPIKE_HEADER, "mana-cost"));
 
     // OreScanner
     private static final String ORE_SCANNER_HEADER = toRoutePath(ABILITIES_HEADER, "ore-scanner");
-    public static final Route ORE_SCANNER_HUNGER_COST = Route.fromString(toRoutePath(ORE_SCANNER_HEADER, "hunger-cost"));
+    public static final Route ORE_SCANNER_MANA_COST = Route.fromString(toRoutePath(ORE_SCANNER_HEADER, "mana-cost"));
 
     // MassHarvest
     private static final String MASS_HARVEST_HEADER = toRoutePath(ABILITIES_HEADER, "mass-harvest");
-    public static final Route MASS_HARVEST_HUNGER_COST = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "hunger-cost"));
+    public static final Route MASS_HARVEST_MANA_COST = Route.fromString(toRoutePath(MASS_HARVEST_HEADER, "mana-cost"));
 }

@@ -9,8 +9,10 @@ import java.util.OptionalInt;
 /**
  * Tracks the in-progress combo sequence for a single player.
  * <p>
- * Instances are managed by {@link ComboTracker}. State is mutable and not thread-safe
- * (all access occurs on the main server thread via Bukkit events).
+ * Each instance lives on {@link us.eunoians.mcrpg.entity.player.McRPGPlayer#getComboState()}.
+ * {@link ComboManager} orchestrates transitions but does not own the state.
+ * State is mutable and not thread-safe (all access occurs on the main server thread
+ * via Bukkit events).
  */
 public class PlayerComboState {
 
@@ -43,7 +45,7 @@ public class PlayerComboState {
 
     /**
      * Clears the current input sequence without touching the timeout task.
-     * Use {@link ComboTracker#resetState(java.util.UUID)} to also cancel the timeout.
+     * Use {@link ComboManager#resetState(java.util.UUID)} to also cancel the timeout.
      */
     public void clearSequence() {
         currentSequence.clear();
@@ -83,8 +85,6 @@ public class PlayerComboState {
     public boolean isEmpty() {
         return currentSequence.isEmpty();
     }
-
-    // --- Timeout task management ---
 
     /**
      * Returns the Bukkit scheduler task ID for the current timeout, or {@code -1} if none.

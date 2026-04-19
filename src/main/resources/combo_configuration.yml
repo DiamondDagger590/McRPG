@@ -1,4 +1,22 @@
-config-version: 1
+config-version: 2
+
+# Combat stat base values. These define the starting pools for all players.
+stats:
+  health:
+    # Maximum custom HP displayed in the action bar. Vanilla hearts show a percentage of this value.
+    base-max: 200
+  mana:
+    # Maximum mana pool. Combo abilities consume mana on activation.
+    base-max: 220
+    # Passive mana regeneration rate (mana points restored per second).
+    regen-per-second: 5
+
+# Action bar HUD configuration.
+hud:
+  action-bar:
+    # How often (in server ticks) the action bar HUD refreshes. 2 ticks = 100ms at 20 TPS.
+    # Lower values are smoother but marginally more expensive. Range: 1-20.
+    update-interval-ticks: 2
 
 combo:
   # Items that are allowed to register combo inputs. An empty hand always counts regardless of this list,
@@ -55,36 +73,36 @@ combo:
     window-ticks: 30
 
   failure-feedback:
-    # Sound played when a combo fails (insufficient hunger or cooldown).
+    # Sound played when a combo fails (insufficient mana or cooldown).
     sound: BLOCK_NOTE_BLOCK_BASS
     volume: 1.0
     pitch: 0.5
 
   abilities:
     shockwave:
-      # Hunger cost in half-points (Minecraft food level units, range 0-20).
-      hunger-cost: 2
+      # Mana cost to activate this ability via combo.
+      mana-cost: 30
       # Radius in blocks within which entities are knocked back.
       radius: 6.0
       # Velocity multiplier applied outward from the player to each nearby entity.
       knockback-force: 2.5
 
     cleave:
-      # Hunger cost in half-points.
-      hunger-cost: 2
+      # Mana cost to activate this ability via combo.
+      mana-cost: 20
       # Radius in blocks within which entities are damaged.
       radius: 3.0
       # Raw damage dealt to each entity within range (respects armor and enchantments).
       damage: 4.0
 
     rage-spike:
-      # Hunger cost in half-points.
-      hunger-cost: 2
+      # Mana cost to activate this ability via combo.
+      mana-cost: 25
 
     ore-scanner:
-      # Hunger cost in half-points.
-      hunger-cost: 4
+      # Mana cost to activate this ability via combo.
+      mana-cost: 40
 
     mass-harvest:
-      # Hunger cost in half-points.
-      hunger-cost: 4
+      # Mana cost to activate this ability via combo.
+      mana-cost: 40

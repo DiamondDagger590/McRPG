@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
@@ -47,6 +48,7 @@ import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
+import us.eunoians.mcrpg.stat.StatManager;
 import us.eunoians.mcrpg.world.WorldManager;
 
 import java.sql.Connection;
@@ -93,10 +95,12 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new StatManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new DisplayManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestBoardManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new BleedManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new ComboManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new WorldManager(mcRPG));
         registryAccess.register(new ExperienceModifierRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new RestedExperienceManager(mcRPG));

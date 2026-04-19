@@ -123,10 +123,10 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
     }
 
     @Override
-    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
         return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.RAGE_SPIKE_HUNGER_COST, 6);
+                .getInt(ComboConfigFile.RAGE_SPIKE_MANA_COST, 25);
     }
 
     /**

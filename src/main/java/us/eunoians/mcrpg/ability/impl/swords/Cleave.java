@@ -101,10 +101,10 @@ public final class Cleave extends McRPGAbility implements ComboActivatable, Acti
     }
 
     @Override
-    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
         return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.CLEAVE_HUNGER_COST, 6);
+                .getInt(ComboConfigFile.CLEAVE_MANA_COST, 20);
     }
 
     @Override
@@ -153,7 +153,7 @@ public final class Cleave extends McRPGAbility implements ComboActivatable, Acti
         meta.lore(List.of(
                 Component.text("AoE melee damage around you", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
                 Component.empty(),
-                Component.text("Hunger: " + getHungerCost(player.asSkillHolder()), NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false)
+                Component.text("Mana: " + getManaCost(player.asSkillHolder()), NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false)
         ));
         item.setItemMeta(meta);
         return new AbilityItemBuilder(item, player, this);

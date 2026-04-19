@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Fired by {@link us.eunoians.mcrpg.ability.combo.ComboTracker} when a player successfully
+ * Fired by {@link us.eunoians.mcrpg.ability.combo.ComboManager} when a player successfully
  * completes a 3-click combo sequence that matches one of the known {@link us.eunoians.mcrpg.ability.combo.ComboPattern}s.
  * <p>
  * Cancelling this event prevents ability activation but still resets the combo state.

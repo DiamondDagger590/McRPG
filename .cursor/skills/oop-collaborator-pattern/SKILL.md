@@ -24,12 +24,53 @@ If behavior needs runtime context (player, manager, offering, scope, config), mo
 
 - Static utility classes for domain logic.
 - "God utility" files mixing unrelated concerns.
-- Hiding dependency lookup inside static methods.
+- Hiding dependency lookup inside static methods (calling `SomeClass.getInstance()` or `McRPG.getInstance()` inside a static method IS a hidden dependency).
+- `getInstance()` singletons for per-player or per-system state. Per-player state belongs on `McRPGPlayer`; per-system state should be a `Manager` in the registry.
 
 ## Allowed exceptions
 
 - DAO operations that are intentionally static by project convention.
 - Pure constants or tiny stateless value-format helpers where no domain dependency exists.
+
+## Concrete example: ComboDisplayManager refactor
+
+**Before (anti-pattern):**
+```java
+// Static utility with hidden singleton dependency
+public final class ComboDisplayManager {
+    private ComboDisplayManager() {}
+    public static void updateDisplay(Player player, List<ComboInput> sequence) {
+        Component display = buildDisplay(sequence, totalLength);
+        ActionBarCenterContent.getInstance().setPersistent(player.getUniqueId(), display);
+    }
+}
+
+// Singleton holding per-player state in a global Map
+public final class ActionBarCenterContent {
+    private static final ActionBarCenterContent INSTANCE = new ActionBarCenterContent();
+    private final Map<UUID, Entry> entries = new ConcurrentHashMap<>();
+    public static ActionBarCenterContent getInstance() { return INSTANCE; }
+}
+```
+
+**After (collaborator pattern):**
+```java
+// Manager registered via McRPGManagerKey.COMBO — discoverable, injectable, testable
+public class ComboManager extends Manager<McRPG> {
+    public void processInput(Player player, ComboInput input) { ... }
+    private void updateDisplay(McRPGPlayer player, List<ComboInput> sequence) {
+        player.setActionBarCenterContentPersistent(buildComboDisplay(sequence, totalLength));
+    }
+}
+
+// Per-player state lives on the player object — no global map, no cleanup needed
+public class McRPGPlayer extends CorePlayer {
+    public void setActionBarCenterContent(Component content, long expiryTick) { ... }
+    public Optional<Component> getActionBarCenterContent(long currentTick) { ... }
+}
+```
+
+Key improvements: dependencies are explicit, per-player state lifecycle is automatic, third-party plugins can access `ComboManager` via `registryAccess()`, and unit tests pass collaborators directly instead of setting up global singletons.
 
 ## Quick checklist
 
@@ -37,3 +78,4 @@ If behavior needs runtime context (player, manager, offering, scope, config), mo
 - Are dependencies explicit in constructor or method signature? -> yes.
 - Can this be tested directly with mocks/fakes? -> yes.
 - Is a static helper still necessary after design review? -> usually no.
+- Does a static method call `getInstance()` or `McRPG.getInstance()`? -> it has a hidden dependency; refactor to collaborator.

@@ -426,7 +426,8 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - **No hard-coded behavior values** — all tunable values (damage, cooldown, chance) must come from YAML config via `Route`
 - **No deep inheritance** — compose behavior by implementing multiple interfaces (`PassiveAbility`, `CooldownableAbility`, `ConfigurableSkillAbility`); avoid 3+ level hierarchies
 - **No mutable global static state** — use registries accessed via `RegistryAccess`; the only acceptable static access is `McRPG.getInstance()` when no instance is available
-- **No static utility classes for domain logic** — when behavior depends on context (manager, player, offering, etc.), model it as an object collaborator with instance methods
+- **No `getInstance()` singletons for domain state** — per-player state belongs on the player object (`McRPGPlayer`); per-system state should be a `Manager` registered in the registry and accessed via `registryAccess()`. `getInstance()` singletons hide coupling, prevent constructor injection, and force tests to set up global state instead of passing parameters.
+- **No static utility classes for domain logic** — a method that calls any global accessor (`SomeClass.getInstance()`, `McRPG.getInstance()`, or accesses a singleton) has a dependency even if it does not appear in the parameter list. If a static method would break when the global state it reaches for is null, it has a hidden dependency. Model it as an object collaborator with injected state.
 - **No direct entity casting without guard** — use `instanceof` pattern matching: `if (entity instanceof Player player) { ... }`
 - **No ability state stored on the ability object** — ability state is per-holder, stored in `AbilityData`/`AbilityAttribute`; ability objects are shared singletons
 - **Don't put McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
@@ -449,7 +450,8 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
 - Keep methods focused and short — split logic into private helpers rather than long method bodies
 - Prefer instance collaborators over static helpers when encoding domain behavior
-- Javadoc on all public methods with `@param` and `@return` semantics
+- No section-divider comments (`// --- Section name ---` or `// ===== Section =====`) — if a class needs labeled sections, it is too large or has too many concerns. Extract a collaborator or use natural method ordering instead
+- Javadoc on all methods (public and private) with `@param` and `@return` semantics
 
 **Third-party developer mindset:** McRPG is designed to be extensible by external plugins. Any change to a public API, event, or registry should be made as if you were a third-party developer hooking in. Prefer additive, non-breaking changes; fire Bukkit events wherever an external plugin would reasonably want to intercept; document extension points clearly.
 

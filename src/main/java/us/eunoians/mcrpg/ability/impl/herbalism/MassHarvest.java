@@ -141,10 +141,10 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
     }
 
     @Override
-    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
         return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.MASS_HARVEST_HUNGER_COST, 4);
+                .getInt(ComboConfigFile.MASS_HARVEST_MANA_COST, 40);
     }
 
     /**

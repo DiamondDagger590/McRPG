@@ -119,10 +119,10 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     }
 
     @Override
-    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
         return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.ORE_SCANNER_HUNGER_COST, 4);
+                .getInt(ComboConfigFile.ORE_SCANNER_MANA_COST, 40);
     }
 
     /**

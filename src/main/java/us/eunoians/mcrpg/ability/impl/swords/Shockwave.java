@@ -121,10 +121,10 @@ public final class Shockwave extends McRPGAbility implements ComboActivatable, A
     }
 
     @Override
-    public int getHungerCost(@NotNull AbilityHolder abilityHolder) {
+    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
         return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.SHOCKWAVE_HUNGER_COST, 8);
+                .getInt(ComboConfigFile.SHOCKWAVE_MANA_COST, 30);
     }
 
     @Override
@@ -173,7 +173,7 @@ public final class Shockwave extends McRPGAbility implements ComboActivatable, A
         meta.lore(List.of(
                 Component.text("Knockback nova — blast nearby enemies away", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
                 Component.empty(),
-                Component.text("Hunger: " + getHungerCost(player.asSkillHolder()), NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false)
+                Component.text("Mana: " + getManaCost(player.asSkillHolder()), NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false)
         ));
         item.setItemMeta(meta);
         return new AbilityItemBuilder(item, player, this);
