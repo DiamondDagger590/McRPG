@@ -9,14 +9,16 @@
 
 1. [Philosophy](#1-philosophy)
 2. [Primary Stats](#2-primary-stats)
-3. [Custom HP Implementation](#3-custom-hp-implementation)
-4. [Defense Math](#4-defense-math)
-5. [Secondary Combat Stats](#5-secondary-combat-stats)
-6. [Loadout System](#6-loadout-system)
-7. [Stat Passives](#7-stat-passives)
-8. [Fitness Skill](#8-fitness-skill)
-9. [HP Growth Sources](#9-hp-growth-sources)
-10. [Design Constraints](#10-design-constraints)
+3. [Action Bar HUD Layout](#3-action-bar-hud-layout)
+4. [Custom HP Implementation](#4-custom-hp-implementation)
+5. [Defense Math](#5-defense-math)
+6. [Secondary Combat Stats](#6-secondary-combat-stats)
+7. [Loadout System](#7-loadout-system)
+8. [Stat Passives](#8-stat-passives)
+9. [Fitness Skill](#9-fitness-skill)
+10. [HP Growth Sources](#10-hp-growth-sources)
+11. [Design Constraints](#11-design-constraints)
+12. [Future Work / Open Design Questions](#12-future-work--open-design-questions)
 
 ---
 
@@ -39,7 +41,7 @@ Five stats form the primary system. Three are always visible in the action bar. 
 | Stat | Display | One-line description |
 |------|---------|----------------------|
 | **HP** | Action bar | How much damage you absorb before dying |
-| **Mana** | Action bar | How many abilities you can cast before running dry |
+| **Mana** | Action bar | Resource consumed by combo abilities; regenerates passively |
 | **Defense** | Action bar | Reduces incoming damage (feeds DR formula — see Section 4) |
 | **Attack Power** | Tooltip | Scales outgoing melee and ability damage |
 | **Mana Regen** | Tooltip | Passive mana recovery rate per tick |
@@ -55,7 +57,55 @@ Action bar display:
 
 ---
 
-## 3. Custom HP Implementation
+## 3. Action Bar HUD Layout
+
+The action bar is the primary real-time stat display. It uses a three-zone layout with pixel-width anchoring so that HP and Mana remain visually locked regardless of what the center zone displays.
+
+### Zone Layout
+
+```
+[HP Zone]  [Left Pad]  [Center Zone]  [Right Pad]  [Mana Zone]
+```
+
+| Zone | Content | Example |
+|------|---------|---------|
+| HP (left) | `❤ current/max` | `❤ 147/200` |
+| Center | Combo progress, status messages, or empty | `⬤ ⬤ ○` / `On Cooldown (33s)` / (empty) |
+| Mana (right) | `✦ current/max` | `✦ 180/220` |
+
+### Pixel-Width Anchoring
+
+Minecraft's action bar is center-aligned and uses a proportional bitmap font. To keep HP and Mana at fixed screen positions:
+
+1. The renderer computes the pixel width of the center zone content using a character-width lookup table for the default Minecraft font (most characters = 6px, space = 4px, `i`/`l` = 2px, etc.).
+2. Padding spaces are inserted on both sides of the center content so that the total width of `leftPad + center + rightPad` equals a constant (`FIXED_CENTER_ZONE_WIDTH`).
+3. Because `HP + fixedCenterZone + Mana` always sums to the same total pixel width, and the bar is center-aligned, HP and Mana never shift.
+
+### Center Zone States
+
+The center zone displays one of the following (in priority order):
+
+| State | Display | Duration |
+|-------|---------|----------|
+| Combo in progress | `⬤ ⬤ ○` (gold/aqua circles) | Until combo completes, times out, or dead-ends |
+| Cooldown failure | `On Cooldown (33s)` in red, countdown updates live | ~3 seconds (configurable), counts down each HUD tick |
+| Insufficient mana | `Not Enough Mana` in red | ~3 seconds (configurable) |
+| Idle | Empty (padding only) | Default state |
+
+### Feedback Layering
+
+Combo activation failures produce two layers of feedback:
+
+- **Action bar (center zone):** Terse, fixed-width-safe, no ability name (ability names are unbounded and would break the pixel budget). Updates live for countdowns.
+- **Chat message:** Sent once at the moment of failure. Includes the ability name and specifics (e.g., `Cleave is on cooldown! (33s remaining)` or `Not enough mana to use Cleave! (need 30, have 12)`).
+
+### Mana as the Combo Activation Resource
+
+Mana replaces vanilla hunger as the resource consumed by combo abilities. Each combo ability has a configurable `mana-cost`. The mana pool has a base maximum (default 220) and regenerates passively at a configurable rate (default 5/sec). Mana is tracked in memory per player with no database persistence in the PoC.
+
+---
+
+## 4. Custom HP Implementation
 
 ### The Problem
 
@@ -96,7 +146,7 @@ Hearts always occupy the same space and always look clean. As a player's custom 
 
 ---
 
-## 4. Defense Math
+## 5. Defense Math
 
 ### Formula
 
@@ -131,7 +181,7 @@ Order of operations: percentage armor pen reduces effective Defense first, then 
 
 ---
 
-## 5. Secondary Combat Stats
+## 6. Secondary Combat Stats
 
 Secondary stats are not universal gear affixes. They come from specific ability passives or item affixes and are situational — strong in specific matchups, not mandatory in all builds. They do not appear in the action bar.
 
@@ -149,7 +199,7 @@ Secondary stats are not universal gear affixes. They come from specific ability 
 
 ---
 
-## 6. Loadout System
+## 7. Loadout System
 
 A loadout is a cross-skill selection of abilities drawn from everything the player has unlocked. It is not per-skill — a player freely mixes Swords, Unarmed, Axes, Herbalism, Fitness, and any other unlocked skill in the same loadout.
 
@@ -181,7 +231,7 @@ A player who fills 2 of 5 passive slots with HP stat passives has made a deliber
 
 ---
 
-## 7. Stat Passives
+## 8. Stat Passives
 
 Stat passives are loadout items that provide a pure numerical stat bonus with no other effect. They allow players to reinforce a playstyle identity at the cost of a passive slot that could hold an interesting ability.
 
@@ -207,7 +257,7 @@ All stat passives follow the standard tier upgrade system:
 
 ---
 
-## 8. Fitness Skill
+## 9. Fitness Skill
 
 Fitness is a combat-universal skill. It does not belong to a weapon type or playstyle — it levels through the act of taking damage, meaning any combat-engaged player develops it naturally regardless of what skills they use offensively. This makes it the extensible, skill-agnostic path to base survivability growth.
 
@@ -254,7 +304,7 @@ Fitness level feeds a base Defense value that scales with level, independent of 
 
 ---
 
-## 9. HP Growth Sources
+## 10. HP Growth Sources
 
 HP is 100 at baseline for all players. Multiple sources contribute additively:
 
@@ -276,7 +326,7 @@ HP is 100 at baseline for all players. Multiple sources contribute additively:
 
 ---
 
-## 10. Design Constraints
+## 11. Design Constraints
 
 ### Stat Complexity Ceiling
 
@@ -296,3 +346,21 @@ The two primary levers are item HP contributions (easiest to adjust post-launch)
 The crafting expansion introduces a Shield pool from Epic+ gear — a second HP layer displayed on the boss bar. This stacks on top of the custom HP pool but is visually and mechanically distinct. Base McRPG does not include Shield.
 
 Combined effective HP for a fully geared endgame player: ~250 custom HP (hearts, percentage display) + significant Shield pool (boss bar). These are displayed across two clearly distinct channels with different visual language. Players understand they have two layers without the displays conflicting.
+
+---
+
+## 12. Future Work / Open Design Questions
+
+Items identified during the PoC stat HUD implementation that require design decisions before production:
+
+### Mana Consumption Event
+
+A cancellable `CombatStatConsumeEvent` should be fired before `CombatStatInstance.consume()` so third-party plugins can modify mana costs, cancel consumption, or implement mana-drain/mana-shield effects. The event should carry the `AbilityHolder`, the stat key, the requested amount, and allow modification of the effective cost.
+
+### Registry Access Keys
+
+`McRPGManagerKey.STAT` and `McRPGRegistryKey.COMBAT_STAT` constants are needed so addon developers can access `StatManager` and `CombatStatRegistry` through the standard `registryAccess()` pattern. Without these, the stat system has no supported public API surface for extensions.
+
+### Action Bar Center Zone Priority
+
+The action bar center content API on `McRPGPlayer` needs a priority or layering system so third-party plugins can write to the center zone without stomping McRPG's combo display (and vice versa). Higher-priority content wins; ties resolve by recency. This is required before any addon attempts to use the center zone for custom feedback messages.
